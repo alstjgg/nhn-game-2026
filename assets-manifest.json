@@ -1,0 +1,4 @@
+{
+  "$schema-note": "Tracks third-party assets and their licenses, separate from our MIT-licensed code. One entry per external asset. Required before shipping any asset we did not create.",
+  "assets": []
+}
