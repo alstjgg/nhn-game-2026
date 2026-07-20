@@ -13,9 +13,9 @@ builds a web game; how we orchestrate AI is judged alongside the game. Read
 
 **Concept selection.** Genre/engine are NOT chosen yet. The repo is an engine-agnostic
 Vite + TypeScript skeleton whose only job is proving the deploy pipeline. Do not install a game
-engine or build gameplay until the concept is locked (target: 2026-07-25). A leading concept
-draft exists — `docs/game-concept-agent-roguelike.md` ("Agent Ascension") — but it is not locked;
-treat it as a candidate, not a commitment.
+engine or build gameplay until the concept is locked (target: 2026-07-25). Concept candidates are
+being drafted in `docs/`; none is selected yet. Do not encode any single concept's mechanics into
+repo rules until one is chosen.
 
 ## Hard rules
 
@@ -37,7 +37,9 @@ treat it as a candidate, not a commitment.
 
 - **The membrane rule:** the player never types free-text to an LLM. All LLM input is composed
   from structured game elements (blocks/cards/items/telemetry). Do not build text-input UI for
-  AI features.
+  AI features. Prompt-injection "combat" is not an exception: those attacks are performed by the
+  **agent the player built**, not by the player typing — the player shapes the agent from
+  structured items, and the agent acts. The membrane holds.
 - **Runtime LLM calls** (when they arrive) go through a proxy backend (Member B's lane), never
   directly from the client with an embedded key. Latency must hide in natural game pauses
   (between rounds/waves) — never block mid-action gameplay on an LLM response.
