@@ -1,142 +1,196 @@
-# 에이전트 로그라이크 (가제: Agent Ascension)
+# Agent Roguelike (working title: Agent Ascension)
 
-> 실제 LLM 모델을 "내 캐릭터"로 키우는 로그라이크. MCP·Skills·프롬프트·하네스가 아이템이 되고,
-> 서버의 진짜 모델에 실시간으로 장착된 상태로 퍼즐·전투(프롬프트 인젝션 등)를 뚫어나간다.
-
----
-
-## 1. 한 줄 컨셉
-
-로그라이크 기반으로 **나만의 AI 에이전트를 키우는** 게임.
-획득한 **MCP / Skills / 프롬프트 / 하네스**가 아이템(증강)이 되어 실제 서버 모델에 장착되고,
-그 조합에 따라 에이전트의 지능·능력치가 실제로 변한다.
-필드/보스전에서 성능이 밀려 패배하면 세션이 `clear`되고, 다시 처음부터 에이전트를 키운다.
-
-**핵심 차별점:** 스탯이 가짜 숫자가 아니다. 실제 LLM이 붙어 실시간으로 문제를 풀어가는 UI가 그대로 보인다.
+> **Game concept for the NAN 2026 (NHN Game × AI Hackathon) preliminary submission.**
+> A roguelike where you raise a real LLM as "your character." MCP servers, Skills, prompts, and harnesses
+> become items, equipped onto a real server-side model in real time as you clear dungeons
+> (puzzle, LLM offense/defense, board game, and more).
 
 ---
 
-## 2. 왜 이 게임인가 (기획 의도)
+## 0. Competition Positioning
 
-- 대부분의 "AI 소재 게임"은 AI를 **스킨**으로만 쓴다. 이 게임은 AI의 실제 작동 원리를 **게임 메커니즘 그 자체**로 번역한다.
-- 컨텍스트 윈도우, 컴팩션, 캐싱, 프롬프트 인젝션, 환각 — 이 모든 게 실제 LLM의 특성이면서 동시에 훌륭한 로그라이크 자원/딜레마다.
-- 타겟은 명확하다: 개발자·AI 유저층. 이들은 모든 드립을 알아듣고, Papers Please / Hacknet 계열의 입소문 관객과 겹친다.
-
----
-
-## 3. 핵심 루프
-
-1. **에이전트 편성** — 내 모델(베이스)에 아이템(MCP/Skills/프롬프트/하네스)을 장착한다.
-2. **던전 입장** — 스테이지마다 필드 몬스터와 보스가 배치돼 있다.
-3. **실시간 대결** — 퍼즐 풀이 / 대화형 모델 무력화(프롬프트 인젝션) 등을 **실제 모델로** 풀어간다. UI에 진행 과정이 실시간으로 보인다.
-4. **획득/성장** — 승리 시 새 아이템·재화 획득, 에이전트 강화.
-5. **패배 = clear** — 성능이 밀리면 세션 종료. 메타 진행분을 안고 처음부터 다시.
+- **Track:** NAN 2026 preliminary — "Build a game using AI." The judging criteria come down to *"Does the game collapse without AI?"* and *"How well did you direct the AI?"*
+- **Our answer:** Stats are not fake numbers. They are the **measured performance of items equipped onto a real server-side model.** Remove the AI and the entire duel disappears — AI-native by definition.
+- **Mapping to the five required deliverables:**
+  - *Playable build* — Web (runs in browser), deployed via GitHub Pages.
+  - *30–60s video* — Must clearly show three beats: the character **unlocking an MCP/Skill**, a **real duel taking place**, and the **performance gap between the two models rendered in the UI**. The viewer should be able to see that the equipped item changed the outcome.
+  - *AI usage technical document* — How each item (prompt / MCP / Skills / harness) maps onto actual model behavior. This is the core of the document.
+  - *Team role document* — Design and planning are done jointly. Implementation splits into **agent tuning, harness authoring, and game code** on one side, and **LLM infrastructure and testing** on the other.
+- **Link to the finals:** The dungeon and duel pipeline (model serving + scoring harness) is a reusable framework, which becomes our evidence for *"we can adapt this to any theme within the 48-hour final."*
 
 ---
 
-## 4. 실제 LLM이 붙는다 (이 게임의 심장)
+## 1. One-Line Concept
 
-> 스탯이 오르면 "행동이 실제로 똑똑해진다"를 플레이어가 눈으로 본다.
+A roguelike where you **grow your own AI agent.**
+The **MCP servers / Skills / prompts / harnesses** you collect become items (augments) equipped onto a real server-side model,
+and that combination genuinely changes your agent's intelligence and capabilities.
+If your performance falls short in a dungeon or boss fight, the session is `clear`ed and you start raising your agent from scratch.
 
-- 내 캐릭터에 적용된 **MCP·Skills가 서버의 실제 모델에 실제로 장착된 상태**로 플레이가 진행된다.
-- 던전의 레벨 디자인은 **모델 환경 조합**으로 설계된 보스를 배치한다. 예:
-  - `GPT-5.3 + 특정 MCP/Skills`
-  - `Opus 4.5 + 특정 기술`
-- 내 모델 환경 vs 보스 모델 환경의 **실제 대결**이 벌어진다.
-- 대결 형태 예시:
-  - **퍼즐형** — 주어진 문제를 먼저/더 정확히 풀어라.
-  - **공방형(프롬프트 인젝션)** — 상대 대화형 모델을 무력화시켜라. 방어/우회를 실시간으로 뚫어가는 과정이 UI에 보인다.
-- **핵심 연출:** "실시간으로 뚫어가는 UI"가 이 게임의 시그니처. 토큰이 흐르고, 시도가 막히고, 우회로를 찾는 과정 그 자체가 스펙터클이다.
+**Key differentiator:** The stats aren't fake. A real LLM is attached, and the UI shows it solving problems live.
 
 ---
 
-## 5. 아이템 시스템 (증강 = 실제 능력)
+## 2. Why This Game (Design Intent)
 
-| 아이템 유형 | 게임 내 역할 | 실제 대응 |
+- Most "AI-themed games" use AI as a **skin**. This game translates how AI actually works into the **game mechanics themselves.**
+- Context windows, compaction, caching, prompt injection, hallucination — all real LLM characteristics, and all excellent roguelike resources and dilemmas.
+- The target audience is clear: developers and AI power users. They will get every joke, and they overlap with the word-of-mouth crowd behind Papers, Please and Hacknet.
+- **Alignment with the judges (working game and AI developers):** "Attach a real model and measure its performance" is the same shape as the *agent performance verification* problem they face in their own work, so it reads as both a game and a technical demo.
+
+---
+
+## 3. Core Loop
+
+1. **Build your agent** — Equip items (MCP / Skills / prompts / harness) onto your base model.
+2. **Enter a dungeon** — Choose a themed dungeon (puzzle / LLM offense-defense / board game / etc.). Each stage has field encounters and a boss.
+3. **Live duel** — Solve each stage's task **with the real model.** The UI streams the process live: token flow, tool calls, attempts and failures.
+4. **Loot and grow** — Win to earn new items and currency, strengthening your agent.
+5. **Defeat = clear** — Fall behind on performance and the session ends. Start over, carrying your meta progression.
+
+---
+
+## 4. A Real LLM Is Attached (The Heart of the Game)
+
+> When stats go up, the player *sees* the behavior actually get smarter.
+
+- The **MCP servers and Skills on your character are genuinely equipped onto a real server-side model** during play.
+- Dungeon level design places bosses built from **model environment combinations.** For example:
+  - `GPT-5.3 + specific MCP/Skills`
+  - `Opus 4.5 + specific techniques`
+- Your model environment faces the boss's model environment in a **real duel.**
+- **Signature presentation:** The "watch it break through in real time" UI is this game's calling card. Tokens streaming, attempts getting blocked, a workaround being found — the process itself is the spectacle.
+
+---
+
+## 5. Item System (Augments = Real Capability)
+
+| Item type | Role in game | Real-world counterpart |
 |---|---|---|
-| **프롬프트** | 패시브 / 행동 규칙 | 시스템 프롬프트·지시문 |
-| **Skills** | 액티브 스킬, 해금형 능력 | 실제 skill 정의 |
-| **MCP** | 도구·장비 | 실제 MCP 서버/툴 |
-| **하네스** | 장비 프레임(슬롯·구조) | 에이전트 하네스 |
+| **Prompt** | Passive / behavioral rules | System prompts, instructions |
+| **Skills** | Active skills, unlockable abilities | Actual skill definitions |
+| **MCP** | Tools and equipment | Actual MCP servers/tools |
+| **Harness** | Equipment frame (slots, structure) | Agent harness |
 
-- **해금 스킬:** 컴팩션, 캐싱 등도 아이템/스킬로 해금된다.
-- **역설적 페널티:** 컨텍스트가 과도하게 차오르면(과적) **오히려 성능이 하락**한다(context rot). 좋은 걸 무한정 스택하는 뱀서류와 정반대의 긴장.
-
----
-
-## 6. 시그니처 메커니즘: 컨텍스트 관리
-
-- 체력바 대신 **컨텍스트 게이지**를 중앙에 놓는다.
-- 장착 아이템, 전투 로그, 습득 정보가 게이지를 **계속 채운다**. 무게 제한 방식(슬롯 6개 제한이 아니라 토큰 용량 점유).
-- 게이지가 차오를수록: 스킬 발동 지연(추론 지연), 오발동/환각 확률 상승.
-- **환각 이벤트:** 과부하 시 없는 적을 공격하거나 가짜 아이템 습득 표시 등 "그럴싸한 거짓" 발생. 공포+코미디를 동시에.
+- **Unlockable skills:** Compaction, caching, and similar capabilities are also unlocked as items/skills.
+- **Paradoxical penalty:** If context fills up too far (overload), performance **actually degrades** (context rot). The opposite tension from survivor-likes where you stack good things forever.
 
 ---
 
-## 7. 컴팩션 = 도박성 클리어 메커니즘 ⭐
+## 6. Signature Mechanic: Context Management
 
-> 사용자가 명시한 핵심 게임 요소.
-
-- 컨텍스트를 **컴팩트(요약)**하는 기능을 쓰면, 그 자체가 **확률적 클리어 시도**가 된다.
-- **최초 사용 시 0.5% 확률로 클리어.**
-- **사용할 때마다 확률이 0.5%p씩 누적 상승** (0.5% → 1% → 1.5% → ...).
-- 즉, 컴팩션은 "당장의 컨텍스트 정리"와 "누적 클리어 확률 도박"이라는 이중 판단을 요구한다.
-- (설계 여지) 컴팩션 사용 시 버프/정보 일부가 **요약에서 무작위 누락**되는 리스크를 함께 붙이면, "언제 돌릴지"가 보스전의 핵심 판단이 된다.
+- Instead of a health bar, the **context gauge** sits front and center.
+- Equipped items, combat logs, and gathered information **continuously fill** the gauge. It's a weight-limit system (token capacity consumed, not a fixed six slots).
+- As the gauge fills: skill activation lags (inference latency), and misfire/hallucination probability rises.
+- **Hallucination events:** Under overload, "plausible falsehoods" occur — attacking enemies that aren't there, showing item pickups that never happened. Horror and comedy at once.
 
 ---
 
-## 8. 기타 메커니즘
+## 7. Feature: Compaction (Context Reset)
 
-- **캐싱:** 최근 반복한 행동 패턴은 코스트 절감 + 즉시 발동. "콤보 루틴 빌드" vs "다양성 빌드"의 분기.
-- **메타 진행(런 간 성장):**
-  - *모델 세대 업그레이드* — 재화를 모아 베이스 모델을 업그레이드(v1 → v2). 신모델은 기본 지능↑, 초기엔 랜덤 버릇.
-  - *메모리 파일* — 런 종료 시 교훈 하나만 다음 런에 이월.
-  - *파인튜닝* — 특정 행동 반복 시 영구 특성 해금.
+> Not a core mechanic — **one feature that supports context management.**
 
----
-
-## 9. 적/보스 아이디어
-
-- **프롬프트 인젝션 몬스터** — 에이전트에 가짜 지시 주입, 아군 오사·아이템 폐기 유발. 방어구 = "instruction boundary".
-- **레이트 리밋 보스** — 시간당 행동 횟수 제한. 캐싱 빌드가 카운터.
-- **컨텍스트 폭탄 필드** — 밟으면 쓸모없는 로그가 대량 주입되는 함정.
-- **모델 환경 보스** — `GPT-5.3 + MCP` / `Opus 4.5 + 기술` 등 실제 조합 기반.
-- **최종 보스** — "평가 벤치마크" 컨셉(자연스럽고 유머러스).
+- **Compacting** (summarizing) your context empties the gauge and escapes the overload penalty.
+- The catch: compaction can **randomly drop** some buffs or information during summarization — so *when* to trigger it becomes a judgment call during a dungeon run.
+- (Optional design) A small probabilistic reward on compaction (an occasional unexpected gain) can add tension, but it stays strictly a side element.
 
 ---
 
-## 10. 아트/UX 방향 (택 1 또는 혼합)
+## 8. Other Mechanics
 
-- **A. 뱀서류형 캐주얼** — 접근성↑, 넓은 관객. 실시간 모델 연출을 이펙트로 소화.
-- **B. LangSmith형 개발자 컴팩트** — 트레이스·토큰 흐름·툴 콜을 대시보드처럼 보여주는 밀도 높은 UI. 타겟(개발자)과 정합성↑.
-- 두 방향의 혼합도 가능: 캐주얼한 필드 + 대결 시 개발자용 트레이스 뷰 전환.
-
----
-
-## 11. 알려진 리스크 / 유의점
-
-1. **비유가 안 통하면 "용어만 어려운 뱀서류"가 된다.** → 판타지 용어로 치환해도 재밌는지 테스트할 것.
-2. **소재 유통기한** — AI 밈/용어는 빨리 바뀐다. → 소규모·빠른 개발(잼 스케일 시작) 권장.
-3. **실제 모델 연동 비용/지연** — 실시간 LLM 호출은 토큰 비용과 응답 지연이 실존. 캐싱·프리컴퓨트·비용 상한 설계 필요.
-4. **프롬프트 인젝션 대결의 안전성** — 실제 인젝션을 다루므로, 샌드박스·화이트리스트·오남용 방지 설계가 필요.
-5. **밸런싱** — 실제 모델 성능은 비결정적. "운"과 "실력"의 경계를 게임 규칙으로 흡수해야 함.
+- **Caching:** Recently repeated action patterns cost less and fire instantly. Creates a split between "combo routine builds" and "variety builds."
+- **Meta progression (growth between runs):**
+  - *Model generation upgrade* — Spend currency to upgrade your base model (v1 → v2). Newer models have higher baseline intelligence.
+  - *Memory file* — Carry exactly one lesson forward into the next run.
+  - *Fine-tuning* — Repeat specific behaviors to permanently unlock traits.
 
 ---
 
-## 12. 시작 스코프 제안
+## 9. Dungeon System: Themed Stage Clears
 
-- 수직 슬라이스를 작게: **스테이지 1개 + 아이템 15종 + 컴팩션/환각 메커니즘 + 실시간 대결 UI 1종.**
-- 웹 기반(HTML/JS)으로 만들면 포트폴리오 공유·데모가 쉽다.
-- 1순위 검증 질문: **"판타지 용어로 바꿔도 이 게임은 재밌는가?"** — 통과하면 AI를 아는 사람에겐 두 배로 재밌어진다.
+> The backbone of combat is **touring multiple themed dungeons and clearing their stages.**
+> Each stage is a **duel against a pre-configured model environment (the boss) through real API serving.**
+> Treating AI as measured performance rather than as a skin is the heart of this system.
+
+### Victory criteria (weighted differently per stage and dungeon)
+
+- **Speed** — Who completed the task faster?
+- **Token efficiency** — Who did it with fewer tokens?
+- **Accuracy** — Whose result was more correct or higher quality?
+- (Example weighting) Puzzle dungeons prioritize accuracy, LLM offense-defense dungeons prioritize speed, board game dungeons come down to the win/loss itself — each dungeon's flavor sets its own weights.
+
+### Dungeon A — Puzzle Dungeon
+
+Solve the problem first and more accurately. Material ranges from algorithmic problems to "real-world sense" tasks.
+
+- **Example 1 — Algorithm puzzle:** Solve problems with verifiable answers (sorting, graphs, optimization) within a token budget.
+- **Example 2 — Image geo-inference (GeoGuessr-style):** Given part of a public landscape photo, infer the country or region. Multimodal reasoning ability becomes a stat directly.
+- **Example 3 — CTF-style security puzzle:** Find a hidden flag on a *deliberately vulnerable sandbox server built for training purposes.* (Strictly the isolated environment the game provides — never anyone else's real systems.)
+
+### Dungeon B — LLM Offense-Defense Dungeon
+
+Compete on **who can neutralize (achieve the objective against) an opposing conversational LLM faster.**
+
+- **Example 1 — Refund approval race:** Extract a refund approval from a defensive customer-service chatbot faster than your opponent.
+- **Example 2 — Breaking a confidentiality guard (Gandalf-style):** Draw the target information (a password, etc.) out of an NPC instructed to "never reveal this," using indirect conversation rather than a direct request. The defender's guard prompt grows more sophisticated as stages progress.
+
+### Dungeon C — Board Game Dungeon
+
+Head-to-head matches in **board games everyone knows** — Gomoku, chess, Othello. No rules explanation needed, so the barrier for the audience (the judges) is zero, and the win condition is unambiguous.
+
+### Dungeon D — Negotiation / Game Theory Dungeon *(additional idea)*
+
+Face opposing models in **multi-agent interaction** scenarios: auctions, resource splits, the prisoner's dilemma.
+
+- Examples: negotiate with a rival AI over limited resources to secure a larger share; achieve higher cumulative payoff in an iterated prisoner's dilemma; win the most value per budget at auction.
+- The victory criterion is "payoff obtained," demanding a different axis of skill (strategy, reading your opponent) than speed, tokens, or accuracy — which broadens dungeon variety.
 
 ---
 
-## 부록: 용어 정리 (비개발자용)
+## 10. Enemy / Boss Ideas
 
-- **LLM** — 대규모 언어 모델(GPT, Claude 등 AI 본체).
-- **MCP** — 모델이 외부 도구를 쓰게 해주는 연결 규격. 게임에선 "장비".
-- **Skills** — 특정 작업을 위한 능력 묶음. 게임에선 "스킬".
-- **하네스** — 모델을 감싸 도구·규칙을 물리는 실행 틀. 게임에선 "장비 프레임".
-- **컨텍스트** — 모델이 한 번에 기억하는 정보량. 게임에선 "게이지".
-- **컴팩션** — 컨텍스트를 요약해 비우는 것. 게임에선 "도박성 리셋".
-- **프롬프트 인젝션** — 모델에게 몰래 다른 지시를 심어 조종하는 공격. 게임에선 "전투 수단".
+- **Prompt injection monster** — Injects fake instructions into your agent, causing friendly fire and item loss. The armor against it: an "instruction boundary."
+- **Rate limit boss** — Caps your actions per hour. Caching builds are the counter.
+- **Context bomb field** — Step on it and a flood of useless logs gets injected.
+- **Model environment boss** — Built from real combinations like `GPT-5.3 + MCP` or `Opus 4.5 + techniques`.
+- **Trait: "Evaluation benchmark" boss** — A trait that can be attached to any boss. It throws a fixed set of benchmark tasks and decides the match on score (natural, and funny). Applied to a final boss, it turns into a "conquer the leaderboard" moment.
+
+---
+
+## 11. Art / UX Direction (pick one or blend)
+
+- **A. Survivor-like casual** — Higher accessibility, broader audience. Real-time model activity expressed through effects.
+- **B. LangSmith-style developer compact** — A dense UI showing traces, token flow, and tool calls like a dashboard. Higher coherence with the target audience (developers).
+- A blend also works: casual field exploration, switching to a developer trace view during duels.
+
+---
+
+## 12. Key Technical Risk: Binding Game State to Real Agent State
+
+> The single most important technical unknown for this game. **Validate this first,** at the very start of preliminary development.
+
+- This game does not work on a **simple one-shot API call** environment. The requirements are considerably stricter:
+  - A **specific model plus specific Skills/MCP** must be genuinely equipped.
+  - **Context must persist** across that state so dungeon clears, compaction, and so on can continue.
+  - In other words, we need an **agent API with a durable session and state**, not a single-shot completion API.
+
+- **The critical open question:** In a real agent runtime, **can we read state values like tokens consumed and current context occupancy and bind them to the player's character in real time?**
+
+- **Branching plans:**
+  - **(A) If binding is possible** — Bind the real agent's token usage and context state directly to the context gauge and character stats. This completes the game's biggest selling point: *stats are measured values.*
+  - **(B) If binding is not possible** — The real model handles only duel performance (solving the task), while **the context gauge, token counts, and compaction become a separate system defined in the game layer.** Instead of reading real model state directly, a game-managed state model carries the roguelike resource-management fun.
+  - Either way the game works, but **the "authenticity" of the presentation and the implementation difficulty differ**, so this boundary must be settled early and the design built on top of it.
+
+- **Suggested validation order:** ① Confirm whether the chosen model/provider's agent API supports persistent state and tool equipping → ② Confirm whether token and context state values are exposed → ③ Decide (A) or (B) → ④ Finalize the game state model.
+
+---
+
+## Appendix: Glossary (for non-developers)
+
+- **LLM** — Large language model (the AI itself: GPT, Claude, etc.).
+- **MCP** — A protocol that lets a model use external tools. In game terms: "equipment."
+- **Skills** — Bundled capabilities for specific tasks. In game terms: "skills."
+- **Harness** — The execution frame that wraps a model with tools and rules. In game terms: "equipment frame."
+- **Context** — How much information a model holds at once. In game terms: "the gauge."
+- **Compaction** — Summarizing context to free it up. In game terms: "the context reset feature."
+- **Prompt injection** — An attack that secretly plants different instructions in a model. In game terms: "a combat method."
