@@ -1,196 +1,300 @@
-# Agent Roguelike (working title: Agent Ascension)
+# 게임 기획서 — 에이전트 로그라이크 (Agent Ascension)
 
-> **Game concept for the NAN 2026 (NHN Game × AI Hackathon) preliminary submission.**
-> A roguelike where you raise a real LLM as "your character." MCP servers, Skills, prompts, and harnesses
-> become items, equipped onto a real server-side model in real time as you clear dungeons
-> (puzzle, LLM offense/defense, board game, and more).
+**가제 후보:** 「에이전트 승천」 / 「컨텍스트가 부족합니다」 / 「Agent Ascension」 (미정)
 
----
-
-## 0. Competition Positioning
-
-- **Track:** NAN 2026 preliminary — "Build a game using AI." The judging criteria come down to *"Does the game collapse without AI?"* and *"How well did you direct the AI?"*
-- **Our answer:** Stats are not fake numbers. They are the **measured performance of items equipped onto a real server-side model.** Remove the AI and the entire duel disappears — AI-native by definition.
-- **Mapping to the five required deliverables:**
-  - *Playable build* — Web (runs in browser), deployed via GitHub Pages.
-  - *30–60s video* — Must clearly show three beats: the character **unlocking an MCP/Skill**, a **real duel taking place**, and the **performance gap between the two models rendered in the UI**. The viewer should be able to see that the equipped item changed the outcome.
-  - *AI usage technical document* — How each item (prompt / MCP / Skills / harness) maps onto actual model behavior. This is the core of the document.
-  - *Team role document* — Design and planning are done jointly. Implementation splits into **agent tuning, harness authoring, and game code** on one side, and **LLM infrastructure and testing** on the other.
-- **Link to the finals:** The dungeon and duel pipeline (model serving + scoring harness) is a reusable framework, which becomes our evidence for *"we can adapt this to any theme within the 48-hour final."*
+> "스탯이 가짜 숫자가 아니다."
 
 ---
 
-## 1. One-Line Concept
+## 1. 개요
 
-A roguelike where you **grow your own AI agent.**
-The **MCP servers / Skills / prompts / harnesses** you collect become items (augments) equipped onto a real server-side model,
-and that combination genuinely changes your agent's intelligence and capabilities.
-If your performance falls short in a dungeon or boss fight, the session is `clear`ed and you start raising your agent from scratch.
+**한 줄 피치:** 프롬프트·Skills·MCP·하네스를 아이템으로 주워 나만의 AI 에이전트를 조립하고, 그
+에이전트를 던전에 들여보내 상대 모델과 실제로 겨루는 로그라이크. 싸우는 것은 플레이어가 아니라
+플레이어가 만든 에이전트다.
 
-**Key differentiator:** The stats aren't fake. A real LLM is attached, and the UI shows it solving problems live.
+| 항목 | 내용 |
+|---|---|
+| 장르 | 빌드형 로그라이크 (관전 전투) |
+| 플랫폼 | 웹 (GitHub Pages — 링크 클릭 즉시 플레이) |
+| 세션 구조 | 스테이지 1개 ≈ 90초(편성 30초 + 대결 60초). 심사 기준 3–5분 플레이에 스테이지 3개 + 보스 1회 + 아이템 획득 3회 보장 |
+| 타겟 | Slay the Spire·Balatro류 빌드 로그라이크 팬, 개발자·AI 유저층. 용어를 몰라도 "장착한 게 결과를 바꾼다"는 읽힌다 |
+| 레퍼런스 | Slay the Spire (덱 빌드) / Vampire Survivors (관전의 쾌감) / Gandalf, Suck Up! (LLM 공방) — 결정적 차이는 §7 |
 
----
-
-## 2. Why This Game (Design Intent)
-
-- Most "AI-themed games" use AI as a **skin**. This game translates how AI actually works into the **game mechanics themselves.**
-- Context windows, compaction, caching, prompt injection, hallucination — all real LLM characteristics, and all excellent roguelike resources and dilemmas.
-- The target audience is clear: developers and AI power users. They will get every joke, and they overlap with the word-of-mouth crowd behind Papers, Please and Hacknet.
-- **Alignment with the judges (working game and AI developers):** "Attach a real model and measure its performance" is the same shape as the *agent performance verification* problem they face in their own work, so it reads as both a game and a technical demo.
-
----
-
-## 3. Core Loop
-
-1. **Build your agent** — Equip items (MCP / Skills / prompts / harness) onto your base model.
-2. **Enter a dungeon** — Choose a themed dungeon (puzzle / LLM offense-defense / board game / etc.). Each stage has field encounters and a boss.
-3. **Live duel** — Solve each stage's task **with the real model.** The UI streams the process live: token flow, tool calls, attempts and failures.
-4. **Loot and grow** — Win to earn new items and currency, strengthening your agent.
-5. **Defeat = clear** — Fall behind on performance and the session ends. Start over, carrying your meta progression.
+플레이어는 AI에게 자유 텍스트를 입력하지 않는다. 플레이어의 동사는 아이템을 줍고, 슬롯에 꽂고, 던전을
+고르는 것뿐이다. 상대 모델에게 말을 거는 것은 그렇게 조립된 에이전트다. 이 원칙을 이 문서에서
+**멤브레인**이라 부른다 (부록 B).
 
 ---
 
-## 4. A Real LLM Is Attached (The Heart of the Game)
+## 2. 첫 60초 — 심사위원이 보게 될 장면
 
-> When stats go up, the player *sees* the behavior actually get smarter.
+인벤토리에 아이템 세 개가 있다. *지시문: 짧게 답하라* · *MCP: 계산기* · *Skill: 단계적 추론*.
+하네스 슬롯은 두 칸뿐이다. 계산기와 짧게 답하라를 꽂는다. [입장].
+화면이 둘로 갈라진다. 왼쪽은 내 에이전트, 오른쪽은 보스 — `Haiku 4.5 + 검색 MCP`. 가운데에
+과제가 뜬다. *주어진 좌표 목록에서 최단 순회 경로를 찾아라.*
 
-- The **MCP servers and Skills on your character are genuinely equipped onto a real server-side model** during play.
-- Dungeon level design places bosses built from **model environment combinations.** For example:
-  - `GPT-5.3 + specific MCP/Skills`
-  - `Opus 4.5 + specific techniques`
-- Your model environment faces the boss's model environment in a **real duel.**
-- **Signature presentation:** The "watch it break through in real time" UI is this game's calling card. Tokens streaming, attempts getting blocked, a workaround being found — the process itself is the spectacle.
+토큰이 양쪽에서 동시에 흐른다. 보스가 검색 툴을 부르는 게 오른쪽에 찍히고, 내 에이전트는
+계산기를 세 번 연달아 두드린다. 화면 아래 컨텍스트 게이지가 왼쪽부터 차오른다. 보스가 먼저
+답을 낸다. 틀렸다. 내 에이전트가 4초 뒤 답을 낸다. 맞았다. 판정 막대가 뜬다 — 속도 ●○,
+정확성 ●●, 토큰 효율 ●●. 승리.
+
+보상 카드 세 장 중 하나를 고른다. *Skill: 컴팩션 — 컨텍스트를 요약해 게이지를 비운다. 요약
+과정에서 무언가는 사라진다. 그리고 0.5%의 확률로, 그대로 승천한다.* 집는다. 슬롯은 여전히 두
+칸이다. 무엇을 뺄 것인가. 이 60초에 게임의 전부가 있다: 조립 → 관전 → 판정 → 보상 → 다시 조립.
 
 ---
 
-## 5. Item System (Augments = Real Capability)
+## 3. 경험 목표
 
-| Item type | Role in game | Real-world counterpart |
+| 키워드 | 플레이어가 느끼는 것 |
+|---|---|
+| **장착의 인과** | 내가 꽂은 아이템이 화면 위 행동으로 그대로 나타난다 |
+| **관전의 긴장** | 던져놓고 나면 개입할 수 없다. 내 판단은 이미 끝났다 |
+| **과적의 공포** | 좋은 것을 더 꽂을수록 느려지고 헛것을 본다 |
+| **실측의 무게** | 승패가 연출이 아니라 실제로 측정된 속도·정확성·토큰이다 |
+| **아는 자의 웃음** | 컨텍스트 폭탄, 레이트 리밋, 환각 — 겪어본 사람에게 두 배로 웃긴다 |
+
+---
+
+## 4. 핵심 루프 (1사이클 ≈ 90초)
+
+```
+편성 — 하네스 슬롯에 아이템 장착 (30초)
+  → 던전 선택 (퍼즐 / 공방 / 보드게임 / 협상)
+  → [입장] — 명시적 커밋. 이후 개입 불가
+  → 실시간 대결 관전 (60초) — 토큰 흐름 · 툴 콜 · 시도와 실패
+  → 판정: 속도 · 정확성 · 토큰 효율의 가중 합
+  → 승리 시 보상 카드 3장 중 1장 / 패배 시 런 종료 → 리더보드 제출
+  → 컨텍스트 게이지는 다음 스테이지로 이월 → 다시 편성
+```
+
+- **게이지는 리셋되지 않는다.** 스테이지 사이에 남는 컨텍스트가 다음 편성을 압박한다. 런이 길어질수록 선택은 좁아진다.
+- **커밋 후 관전.** [입장] 다음부터 플레이어는 손을 뗀다. 긴장은 개입이 아니라 무력함에서 온다.
+- **심사 페이싱:** 첫 스테이지는 과제 길이를 줄여 40초 안에 판정까지 간다. 3–5분 안에 서로 다른 던전 타입 2개와 보스 1회가 나오도록 스테이지 순서를 고정한다.
+
+---
+
+## 5. 핵심 시스템
+
+### 5.1 아이템과 하네스
+
+| 아이템 유형 | 게임 내 역할 | 실제 대응 |
 |---|---|---|
-| **Prompt** | Passive / behavioral rules | System prompts, instructions |
-| **Skills** | Active skills, unlockable abilities | Actual skill definitions |
-| **MCP** | Tools and equipment | Actual MCP servers/tools |
-| **Harness** | Equipment frame (slots, structure) | Agent harness |
+| **프롬프트** | 패시브 · 행동 규칙 | 시스템 프롬프트·지시문 |
+| **Skills** | 액티브 · 해금형 능력 | 실제 skill 정의 |
+| **MCP** | 도구·장비 | 실제 MCP 서버/툴 |
+| **하네스** | 슬롯 구조 그 자체 | 에이전트 하네스 |
 
-- **Unlockable skills:** Compaction, caching, and similar capabilities are also unlocked as items/skills.
-- **Paradoxical penalty:** If context fills up too far (overload), performance **actually degrades** (context rot). The opposite tension from survivor-likes where you stack good things forever.
+하네스가 슬롯 수와 배치를 정한다. 슬롯은 개수 제한이 아니라 **토큰 용량**이다. 아이템마다 차지하는 컨텍스트가 다르므로, 좋은 것을 무한정 스택하는 뱀서류형 성장이 구조적으로 막힌다.
 
----
+### 5.2 컨텍스트 게이지
 
-## 6. Signature Mechanic: Context Management
+체력바 자리에 컨텍스트 게이지가 있다. 장착 아이템, 전투 로그, 습득한 정보가 게이지를 계속 채운다.
+차오를수록 스킬 발동이 지연되고 오발동과 환각 확률이 오른다. 과부하 상태에서는 없는 적을 공격하거나
+가짜 아이템 획득 표시가 뜬다. 이 게임의 자원은 체력이 아니라 **자리**이고, 강해지는 것과 무거워지는
+것이 같은 행동이라는 점이 빌드 판단의 뿌리다.
 
-- Instead of a health bar, the **context gauge** sits front and center.
-- Equipped items, combat logs, and gathered information **continuously fill** the gauge. It's a weight-limit system (token capacity consumed, not a fixed six slots).
-- As the gauge fills: skill activation lags (inference latency), and misfire/hallucination probability rises.
-- **Hallucination events:** Under overload, "plausible falsehoods" occur — attacking enemies that aren't there, showing item pickups that never happened. Horror and comedy at once.
+### 5.3 실시간 대결 뷰 — 최우선 빌드 타깃
 
----
+플레이어는 60초 동안 화면을 본다. 그 60초가 지루하면 게임 전체가 실패한다. 토큰이 흐르는 속도, 툴
+콜이 찍히는 순간, 시도가 막히고 우회로를 찾는 과정이 그 자체로 스펙터클이어야 한다. 결과만 뜨는
+화면이면 아이템과 결과의 인과가 보이지 않고, 인과가 안 보이면 빌드를 고민할 이유가 사라진다.
+최우선 빌드 타깃으로 선언한다. 이 시스템의 겉모습이 §8의 두 후보다.
 
-## 7. Feature: Compaction (Context Reset)
+### 5.4 던전과 승리 판정
 
-> Not a core mechanic — **one feature that supports context management.**
+판정은 **속도 · 토큰 효율 · 정확성**의 가중 합이다. 가중치는 던전마다 다르고 입장 전에 공개된다.
 
-- **Compacting** (summarizing) your context empties the gauge and escapes the overload penalty.
-- The catch: compaction can **randomly drop** some buffs or information during summarization — so *when* to trigger it becomes a judgment call during a dungeon run.
-- (Optional design) A small probabilistic reward on compaction (an occasional unexpected gain) can add tension, but it stays strictly a side element.
+- **퍼즐 던전** (정확성 우선) — 검증 가능한 정답이 있는 문제. 알고리즘, 이미지 지리 추론, 격리 샌드박스 안의 CTF형 보안 퍼즐.
+- **공방 던전** (속도 우선) — 상대 대화형 모델에게서 목표를 더 빨리 얻어내라. 방어형 상담 챗봇에게 환불 승인 받기, 발설 금지 NPC에게서 정보 끌어내기. 말을 거는 것은 내 에이전트다.
+- **보드게임 던전** (승패 그 자체) — 오목·체스·오델로. 룰 설명이 필요 없어 진입장벽이 0이다.
+- **협상 던전** (획득 이득) — 경매, 자원 분배, 반복 죄수의 딜레마. 다른 축의 실력을 요구한다.
 
----
+### 5.5 컴팩션 · 캐싱 · 메타 진행
 
-## 8. Other Mechanics
+**컴팩션**은 컨텍스트를 요약해 게이지를 비우는 밸브다. 대가와 보상이 함께 붙는다. 버프와 정보
+일부가 요약에서 무작위로 누락되고, 동시에 **승천 확률**이 굴러간다 — 첫 사용은 0.5%, 돌릴
+때마다 0.5%p씩 누적된다. 터지면 그 런은 그 자리에서 클리어다. 게이지를 비우려고 누른 버튼이
+런을 끝내버릴 수도 있다는 것, 그게 이 게임에서 가장 자주 오는 도박이다. 확률은 항상 버튼 옆에
+떠 있고, 누적치는 런 내내 유지된다. 언제 돌릴 것인가가 보스전 직전의 판단이 된다.
 
-- **Caching:** Recently repeated action patterns cost less and fire instantly. Creates a split between "combo routine builds" and "variety builds."
-- **Meta progression (growth between runs):**
-  - *Model generation upgrade* — Spend currency to upgrade your base model (v1 → v2). Newer models have higher baseline intelligence.
-  - *Memory file* — Carry exactly one lesson forward into the next run.
-  - *Fine-tuning* — Repeat specific behaviors to permanently unlock traits.
+**캐싱**은 반복한 행동 패턴의 코스트를 줄이고 즉시 발동시켜 콤보 루틴 빌드와 다양성 빌드를
+가른다. 런 사이에는 셋이 남는다 — 베이스 모델 세대 업그레이드, 교훈 한 줄만 이월하는 메모리
+파일, 특정 행동 반복으로 해금되는 영구 특성.
 
----
+### 5.6 적과 보스
 
-## 9. Dungeon System: Themed Stage Clears
+프롬프트 인젝션 몬스터는 내 에이전트에 가짜 지시를 주입해 아군 오사와 아이템 폐기를 유발한다
+(방어구는 instruction boundary). 레이트 리밋 보스는 시간당 행동 횟수를 묶어 캐싱 빌드를 요구하고,
+컨텍스트 폭탄 필드는 밟으면 쓸모없는 로그를 대량 주입한다. 보스는 `Haiku 4.5 + 검색 MCP` 같은 실제 모델 환경 조합으로 정의한다.
 
-> The backbone of combat is **touring multiple themed dungeons and clearing their stages.**
-> Each stage is a **duel against a pre-configured model environment (the boss) through real API serving.**
-> Treating AI as measured performance rather than as a skin is the heart of this system.
+### 5.7 리더보드 — 내 에이전트의 벤치마크
 
-### Victory criteria (weighted differently per stage and dungeon)
-
-- **Speed** — Who completed the task faster?
-- **Token efficiency** — Who did it with fewer tokens?
-- **Accuracy** — Whose result was more correct or higher quality?
-- (Example weighting) Puzzle dungeons prioritize accuracy, LLM offense-defense dungeons prioritize speed, board game dungeons come down to the win/loss itself — each dungeon's flavor sets its own weights.
-
-### Dungeon A — Puzzle Dungeon
-
-Solve the problem first and more accurately. Material ranges from algorithmic problems to "real-world sense" tasks.
-
-- **Example 1 — Algorithm puzzle:** Solve problems with verifiable answers (sorting, graphs, optimization) within a token budget.
-- **Example 2 — Image geo-inference (GeoGuessr-style):** Given part of a public landscape photo, infer the country or region. Multimodal reasoning ability becomes a stat directly.
-- **Example 3 — CTF-style security puzzle:** Find a hidden flag on a *deliberately vulnerable sandbox server built for training purposes.* (Strictly the isolated environment the game provides — never anyone else's real systems.)
-
-### Dungeon B — LLM Offense-Defense Dungeon
-
-Compete on **who can neutralize (achieve the objective against) an opposing conversational LLM faster.**
-
-- **Example 1 — Refund approval race:** Extract a refund approval from a defensive customer-service chatbot faster than your opponent.
-- **Example 2 — Breaking a confidentiality guard (Gandalf-style):** Draw the target information (a password, etc.) out of an NPC instructed to "never reveal this," using indirect conversation rather than a direct request. The defender's guard prompt grows more sophisticated as stages progress.
-
-### Dungeon C — Board Game Dungeon
-
-Head-to-head matches in **board games everyone knows** — Gomoku, chess, Othello. No rules explanation needed, so the barrier for the audience (the judges) is zero, and the win condition is unambiguous.
-
-### Dungeon D — Negotiation / Game Theory Dungeon *(additional idea)*
-
-Face opposing models in **multi-agent interaction** scenarios: auctions, resource splits, the prisoner's dilemma.
-
-- Examples: negotiate with a rival AI over limited resources to secure a larger share; achieve higher cumulative payoff in an iterated prisoner's dilemma; win the most value per budget at auction.
-- The victory criterion is "payoff obtained," demanding a different axis of skill (strategy, reading your opponent) than speed, tokens, or accuracy — which broadens dungeon variety.
+런을 끝낸 에이전트는 **고정 과제 세트**에 한 번 더 들어간다. 매주 갱신되는 같은 문제, 같은 토큰
+상한, 같은 판정 가중치다. 결과는 속도·정확성·토큰 효율 세 축의 점수가 되어 리더보드에 올라가고,
+함께 올라가는 것은 점수만이 아니라 **그 점수를 만든 장착 조합**이다. 다른 로그라이크의 랭킹은
+플레이어의 손이 만든 기록이지만, 여기 올라가는 것은 내가 설계한 에이전트가 남과 같은 조건에서
+실제로 낸 성능이다. 상위 빌드를 열어 내 슬롯과 비교하는 것이 다음 런의 동기가 된다. 제출은 런당
+1회, 채점은 서버에서만 한다.
 
 ---
 
-## 10. Enemy / Boss Ideas
+## 6. AI 활용
 
-- **Prompt injection monster** — Injects fake instructions into your agent, causing friendly fire and item loss. The armor against it: an "instruction boundary."
-- **Rate limit boss** — Caps your actions per hour. Caching builds are the counter.
-- **Context bomb field** — Step on it and a flood of useless logs gets injected.
-- **Model environment boss** — Built from real combinations like `GPT-5.3 + MCP` or `Opus 4.5 + techniques`.
-- **Trait: "Evaluation benchmark" boss** — A trait that can be attached to any boss. It throws a fixed set of benchmark tasks and decides the match on score (natural, and funny). Applied to a final boss, it turns into a "conquer the leaderboard" moment.
+런타임 AI의 역할은 네 가지다.
 
----
+| # | 역할 | 한 줄 설명 |
+|---|---|---|
+| ① | 플레이어 에이전트 실행 | 장착된 프롬프트·Skills·MCP를 실제로 물린 상태로 과제를 수행 |
+| ② | 보스 에이전트 실행 | 스테이지가 지정한 모델 환경으로 같은 과제를 수행 |
+| ③ | 공방 던전의 수비 NPC | 방어 지침을 받은 대화형 상대 역할 |
+| ④ | 전투 로그 각색 | 실제 트레이스를 로그라이크 어휘의 한 줄 대사로 변환 |
 
-## 11. Art / UX Direction (pick one or blend)
+### 공정성 설계 — 판정은 측정값에서만 나온다
 
-- **A. Survivor-like casual** — Higher accessibility, broader audience. Real-time model activity expressed through effects.
-- **B. LangSmith-style developer compact** — A dense UI showing traces, token flow, and tool calls like a dashboard. Higher coherence with the target audience (developers).
-- A blend also works: casual field exploration, switching to a developer trace view during duels.
+- **측정 판정:** 대결의 승패는 실측값과 사전 공개된 가중치로 결정한다. 서술 모델은 승패에 관여하지
+  않는다. 컴팩션의 승천 확률은 대결 판정이 아니라 플레이어가 스스로 켜는 도박이고, 수치가 화면에
+  공개된 채로 굴러간다 — 판정에 운을 섞는 것과 운을 버튼으로 파는 것은 다르다.
+- **채점 가능한 과제만:** 정답 검증기나 명확한 종료 조건이 없는 과제는 던전에 넣지 않는다. 보드게임과 퍼즐은 판정기가, 공방 던전은 목표 문자열 도달 여부가 결정한다.
+- **동일 조건:** 내 에이전트와 보스는 같은 과제, 같은 토큰 상한, 같은 시작 시각을 받는다. 리더보드도 같은 규칙 위에 선다. 차이는 장착물뿐이다.
+- **인젝션은 게임 안에서만:** 공방 던전의 공격 대상은 게임이 제공하는 격리 NPC와 샌드박스 서버뿐이다.
 
----
+### 비용·지연 설계
 
-## 12. Key Technical Risk: Binding Game State to Real Agent State
-
-> The single most important technical unknown for this game. **Validate this first,** at the very start of preliminary development.
-
-- This game does not work on a **simple one-shot API call** environment. The requirements are considerably stricter:
-  - A **specific model plus specific Skills/MCP** must be genuinely equipped.
-  - **Context must persist** across that state so dungeon clears, compaction, and so on can continue.
-  - In other words, we need an **agent API with a durable session and state**, not a single-shot completion API.
-
-- **The critical open question:** In a real agent runtime, **can we read state values like tokens consumed and current context occupancy and bind them to the player's character in real time?**
-
-- **Branching plans:**
-  - **(A) If binding is possible** — Bind the real agent's token usage and context state directly to the context gauge and character stats. This completes the game's biggest selling point: *stats are measured values.*
-  - **(B) If binding is not possible** — The real model handles only duel performance (solving the task), while **the context gauge, token counts, and compaction become a separate system defined in the game layer.** Instead of reading real model state directly, a game-managed state model carries the roguelike resource-management fun.
-  - Either way the game works, but **the "authenticity" of the presentation and the implementation difficulty differ**, so this boundary must be settled early and the design built on top of it.
-
-- **Suggested validation order:** ① Confirm whether the chosen model/provider's agent API supports persistent state and tool equipping → ② Confirm whether token and context state values are exposed → ③ Decide (A) or (B) → ④ Finalize the game state model.
+- 보스 측은 **사전 실행 트레이스를 녹화해 재생**한다. 라이브 호출은 플레이어 에이전트 하나뿐이다.
+- 스테이지마다 토큰 상한이 있고, 상한이 곧 게임 규칙(토큰 효율 판정)이다. 비용 상한이 밸런스 수치로 흡수된다.
+- 동일 [장착 조합 × 과제]의 결과는 캐시한다. 반복 플레이에서 빌드의 법칙이 학습 가능해진다.
+- 지연은 관전 구간에 통째로 숨는다. 응답을 기다리는 시간이 곧 대결 장면이다.
+- 모든 호출은 프록시 서버 경유(팀원 B 담당). 클라이언트에 키를 심지 않는다.
 
 ---
 
-## Appendix: Glossary (for non-developers)
+## 7. 차별화 — 세 가지
 
-- **LLM** — Large language model (the AI itself: GPT, Claude, etc.).
-- **MCP** — A protocol that lets a model use external tools. In game terms: "equipment."
-- **Skills** — Bundled capabilities for specific tasks. In game terms: "skills."
-- **Harness** — The execution frame that wraps a model with tools and rules. In game terms: "equipment frame."
-- **Context** — How much information a model holds at once. In game terms: "the gauge."
-- **Compaction** — Summarizing context to free it up. In game terms: "the context reset feature."
-- **Prompt injection** — An attack that secretly plants different instructions in a model. In game terms: "a combat method."
+1. **스탯이 실측값이다.** 다른 AI 소재 게임의 능력치는 AI를 소재로 한 숫자일 뿐이다. 여기서 능력치는
+   장착물을 물린 모델이 방금 낸 속도·토큰·정답률 그 자체다. AI를 빼면 판정이 사라지고, 그래서
+   리더보드가 성립한다 — 랭킹에 오르는 것은 손기술이 아니라 설계된 에이전트다.
+2. **강해지는 것이 곧 무거워지는 것이다.** 빌드 로그라이크는 스택할수록 강해진다. 이 게임의 컨텍스트 게이지는 좋은 아이템일수록 자리를 먹고, 과적은 지연과 환각으로 돌아온다.
+3. **싸우는 것은 내가 아니라 내가 만든 것이다.** 기존 LLM 게임은 플레이어가 직접 타이핑해 모델과 겨룬다. 여기서 플레이어는 조립하고 손을 뗀다. 타이핑이 없는 대신 빌드가 있다.
+
+정직한 주석 하나: 기술적 해자는 없다. 해자는 던전 채점기와 관전 연출의 공예이고, 대회 규모에서는 그것으로 충분하다.
+
+---
+
+## 8. 아트 & 화면 — 후보 둘
+
+**톤 방향은 아직 하나로 정하지 않는다.** 같은 대결 장면을 두 가지로 그려두고 1주차 대결 뷰
+스파이크에서 하나를 고른다. 판단 기준은 §5.3 하나다 — 어느 쪽이 60초 관전을 안 지루하게 하는가.
+
+| 후보 | 성격 | 얻는 것 | 잃는 것 |
+|---|---|---|---|
+| **A. 계측 터미널** | 모노스페이스 로그. [상세] 토글로 지연·토큰·비용 트레이스까지 | 아트 리소스 0. 개발자 심사위원과 정합성 최고 | 미완성으로 읽힐 위험. 밀도가 비개발자에겐 장벽 |
+| **B. 캐주얼** | 뱀서류풍 캐릭터·이펙트를 로그 위에 얹음 | 관객 폭이 넓고 영상 30–60초에 유리 | 아트 제작 시간. 트레이스 밀도가 희생됨 |
+
+**A — 계측 터미널.** 기본 뷰는 좌우 분할 로그다. [상세]를 누르면 같은 대결이 스팬 트리로 펼쳐져
+지연·토큰·비용이 드러난다.
+
+```
+[기본]                                                 [상세] ▾
+│ STAGE 3 · 퍼즐 던전    정확성 ●● 속도 ●  │ run#3 · puzzle.tsp  w{acc .6 spd .3 tok .1}│
+│ MY AGENT            │ BOSS · Haiku 4.5 │ ▾ my-agent      p50 1.2s in 840 out 400 $.004│
+│ ▸ tool: calculator  │ ▸ tool: search   │   ├ sys "짧게 답하라"          12 tok        │
+│ ▸ 경로 3개 비교 중… │ ▸ 답안 제출 → ✗  │   ├ ▸ calculator(dist) 0.3s ✓ ×3  210 tok   │
+│ tok 1,240 / 4,000   │ tok 2,980/4,000  │   └ ▸ answer           1.1s ✓ verified      │
+│ 컨텍스트 ▮▮▮▮▮▮▯▯▯▯ 62%  ⚠ 과적 시 환각 │ ▾ boss@haiku-4.5  p50 0.8s → answer ✗       │
+│ 하네스 [지시문:짧게][MCP:계산기][ + ]    │ ctx 62% ████████░░░░  rot threshold 75%     │
+```
+
+**B — 캐주얼.** 같은 정보를 캐릭터와 이펙트로 옮긴다. 툴 콜은 말풍선으로 튀고, 게이지는 캐릭터
+아래에 붙고, 과적 환각은 화면 흔들림으로 나온다. 로그를 못 읽어도 무슨 일이 벌어지는지 읽힌다.
+
+```
+│   (๑>ᴗ<)  ⚔  (҂◡_◡)      STAGE 3 · 정확성 ●● 속도 ● │
+│   💡 계산기!      🔍 검색…   ← 툴 콜이 말풍선으로 튐   │
+│   ▰▰▰▰▰▱ 62%    ▰▰▰▱▱▱     ← 게이지는 캐릭터 아래   │
+│   과적! 😵‍💫 헛것이 보인다      ← 환각은 화면 흔들림     │
+│   [지시문:짧게][MCP:계산기][ + ]        [ 입장 ]     │
+```
+
+---
+
+## 9. 스코프 & 3주 마일스톤 (제안)
+
+> 최종 컷라인은 컨셉 확정 후 분해 단계에서 확정한다. 아래는 실현 가능성 판단을 위한 제안이다.
+
+**수직 슬라이스 (Must):**
+던전 2종(퍼즐·보드게임) · 스테이지 6개 + 보스 2체 · 아이템 15종 · 하네스 2종 · 컨텍스트 게이지 +
+과적 페널티 · 환각 이벤트 3종 · **컴팩션 + 승천 확률** · 실시간 대결 뷰 **1종(§8에서 고른 것만)** ·
+판정기(속도·토큰·정확성) · 보스 트레이스 녹화 재생 · 보상 카드 3택
+
+**확장 (Nice):**
+공방 던전 · 협상 던전 · 캐싱 · 메타 진행 3종 · 아이템 30종 · 프롬프트 인젝션 몬스터 · 레이트
+리밋 보스 · **리더보드(고정 과제 세트 + 서버 채점 + 빌드 공개)**
+
+| 주차 | 목표 |
+|---|---|
+| 1주차 (~07/29) | 상태 바인딩 결정 + **아트 후보 A·B 선택**(§8) + 수직 슬라이스 관통 — 편성 → 대결 뷰 → 판정 → 보상 |
+| 2주차 (~08/05) | 콘텐츠 폭 — 던전·아이템·보스 확장, 게이지 밸런스, 보스 트레이스 녹화. 08/02 외부 플레이테스트 |
+| 3주차 (~08/10) | 기능 동결. 폴리시(로그 타이포·사운드) + 제출물(영상 30–60초, 소개·기술 문서) |
+
+기술 노트: 웹 네이티브(Vite + TS strict, 엔진은 컨셉 확정 후 선정). 아이템 토큰 비용·판정 가중치·
+과적 임계값·상한 토큰은 전부 `data/`에 데이터로 둔다.
+
+---
+
+## 10. 리스크 & 대응
+
+| 리스크 | 대응 |
+|---|---|
+| 게임 상태와 실제 에이전트 상태를 연동하지 못할 위험 | 착수 전 최우선 검증. (A) 실측 바인딩 / (B) 게임 레이어 시뮬레이션 분기 (부록 A) |
+| 60초 관전이 지루할 위험 | §5.3을 최우선 빌드 타깃으로 선언. §8 두 후보를 실물로 비교해 1주차에 선택 (부록 A) |
+| 모델 성능의 비결정성이 승패를 운으로 만들 위험 | 동일 조건 + 사전 공개 가중치 + 보스 트레이스 고정(§6). 운은 아이템 드랍에만 둔다 |
+| 실시간 호출의 비용·지연 | 보스 트레이스 재생 + 스테이지 토큰 상한 + 결과 캐시(§6) |
+| 인젝션 소재의 오남용 | 대상은 게임 내 격리 NPC와 샌드박스로 한정(§6) |
+| 리더보드의 서버 비용·점수 조작 | 제출 런당 1회, 채점은 서버에서만, 클라이언트 보고 점수 불신(§5.7). 확장 등급이라 수직 슬라이스를 막지 않는다 |
+
+---
+
+## 부록 A — 검증 근거
+
+### 검증 격차
+
+**이 컨셉은 페이퍼 테스트를 실시하지 않았다.** 아래는 전부 미검증 가설이며, 컨셉이 선택될
+경우 착수 직후 다음 순서로 검증한다.
+
+1. **에이전트 상태 바인딩 (P0).** 이 게임은 단발 completion API로 성립하지 않는다. 특정 모델 +
+   Skills/MCP가 장착된 상태로 컨텍스트가 유지된 채 스테이지가 이어져야 한다. 확인할 것은 둘 —
+   agent API가 상태 유지와 툴 장착을 지원하는가, 사용 토큰량과 컨텍스트 점유량을 읽어올 수 있는가.
+   **(A) 읽을 수 있으면** 실측값을 게이지에 바인딩해 §7-1이 완성된다. **(B) 읽을 수 없으면** 모델은
+   대결 성능만 담당하고 게이지·토큰·컴팩션은 게임 레이어에서 시뮬레이션한다. 게임은 성립하되
+   §7-1의 강도가 낮아진다. 설계가 이 경계 위에 얹히므로 1주차 첫 이틀 안에 확정한다.
+2. **관전 재미와 아트 후보 선택 (P0).** §8의 두 후보를 같은 대결 장면으로 만들어 아무 설명 없이
+   3–5명에게 보여주고 "다음 판이 궁금한가"를 묻는다. 여기서 A/B가 결정된다. 둘 다 아니오면
+   아트가 아니라 대결 길이와 로그 밀도를 먼저 재설계한다.
+3. **판정 체감 공정성 (P1).** 같은 빌드로 5회 반복해 승패가 뒤집히는 빈도를 센다. 잦으면
+   가중치나 토큰 상한을 조정한다. 리더보드는 이 수치가 안정된 뒤에만 연다.
+
+### 보류한 설계 (검토했으나 스코프에서 제외)
+
+플레이어가 직접 프롬프트를 타이핑하는 조작(멤브레인 위반) · 실시간 대인전 · 모델 파인튜닝의 실제
+수행 · 플레이어 제작 던전 공유. 전부 3주 스코프를 넘거나 프로젝트 제약을 깬다. 리더보드를 비동기
+점수 경쟁으로 둔 것도 같은 이유다 — 실시간 매칭은 3주 안에 들어가지 않는다. §8 두 후보를 동시에
+만드는 것도 제외다. 하나를 고르고 나머지는 버린다.
+
+---
+
+## 부록 B — 용어집
+
+- **멤브레인** — 플레이어와 AI 사이의 막. 플레이어는 자유 텍스트를 입력하지 않고, 아이템 장착과
+  던전 선택이라는 구조화된 동사로만 에이전트를 만든다. 말을 거는 것은 에이전트다.
+- **하네스** — 모델을 감싸 도구와 규칙을 물리는 실행 틀. 게임에서는 슬롯 구조 그 자체다.
+- **MCP** — 모델이 외부 도구를 쓰게 해주는 연결 규격. 게임에서는 장비.
+- **Skills** — 특정 작업을 위한 능력 묶음. 게임에서는 스킬.
+- **컨텍스트 게이지** — 모델이 한 번에 감당하는 정보량을 체력바 자리에 놓은 것. 장착물과 로그가 채운다.
+- **과적** — 컨텍스트 게이지가 임계값을 넘긴 상태. 성능이 오히려 하락한다.
+- **컴팩션** — 컨텍스트를 요약해 게이지를 비우는 것. 요약 누락이 대가이고, 승천 확률이 보상이다.
+- **승천 확률** — 컴팩션을 돌릴 때마다 0.5%p씩 누적되는 즉시 클리어 확률. 첫 사용은 0.5%.
+- **프롬프트 인젝션** — 모델에게 몰래 다른 지시를 심어 조종하는 공격. 게임에서는 몬스터의 공격 수단이자 공방 던전의 과제다.
+- **고정 과제 세트** — 리더보드 채점에만 쓰는, 매주 갱신되는 동일 조건의 문제 묶음.
+- **보스 트레이스** — 보스 에이전트의 실행 기록을 미리 녹화해 재생하는 것. 비용과 판정 안정성을 동시에 얻는다.
+- **수직 슬라이스** — 폭은 좁아도 편성부터 보상까지 전 층을 관통하는 최소 완결 빌드.
