@@ -9,13 +9,12 @@ builds a web game; how we orchestrate AI is judged alongside the game. Read
 `docs/competition.md` for the 5 required deliverables — several repo rules below exist
 *because of* those requirements.
 
-## Current phase
+## Where are we now?
 
-**Concept selection.** Genre/engine are NOT chosen yet. The repo is an engine-agnostic
-Vite + TypeScript skeleton whose only job is proving the deploy pipeline. Do not install a game
-engine or build gameplay until the concept is locked (target: 2026-07-25). Concept candidates are
-being drafted in `docs/`; none is selected yet. Do not encode any single concept's mechanics into
-repo rules until one is chosen.
+This file holds only permanent rules. For the current phase, active tracks, and next
+steps, read `docs/status.md` **before starting any work** — it is the single source of
+truth for project state and is updated freely. CLAUDE.md itself changes only at phase
+transitions (planning → demo → production).
 
 ## Hard rules
 
@@ -35,6 +34,10 @@ repo rules until one is chosen.
 
 ## Design constraints that affect code
 
+- **Demo phase structure:** three concept demos live under `demos/<slug>/`, each free
+  to choose its own minimal stack. The repo root remains the engine-agnostic skeleton;
+  the final selected game will be built at the root after the demo bake-off. Do not
+  install game engines or frameworks at the root during the demo phase.
 - **The membrane rule:** the player never types free-text to an LLM. All LLM input is composed
   from structured game elements (blocks/cards/items/telemetry). Do not build text-input UI for
   AI features. Prompt-injection "combat" is not an exception: those attacks are performed by the
@@ -62,6 +65,7 @@ anything the harness isn't suited for.
 
 ```
 src/            game source (placeholder render loop for now)
+demos/          three concept demos, own stacks — see docs/status.md
 public/assets/  static assets (each one manifested — see rule 5)
 data/           balance-as-data
 docs/           competition requirements + design docs + deliverable drafts

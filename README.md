@@ -5,6 +5,8 @@ The game is still unnamed and the engine/genre is not yet chosen; this repo curr
 engine-agnostic Vite + TypeScript skeleton that renders a placeholder so the deploy pipeline can
 be verified end-to-end.
 
+**Status:** demo phase — see [docs/status.md](./docs/status.md) for current state.
+
 **Live (placeholder):** https://alstjgg.github.io/nhn-game-2026/
 
 ## Stack
