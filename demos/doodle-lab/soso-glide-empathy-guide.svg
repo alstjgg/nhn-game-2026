@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="480" viewBox="0 0 720 480" role="img" aria-labelledby="title description">
+  <title id="title">소소의 부탁을 위한 활공과 교감 낙서 예시</title>
+  <desc id="description">캔버스 위쪽에 놓인 보라색 연 모양과 네 가지 색의 세로 획</desc>
+  <rect width="720" height="480" rx="28" fill="#fffaf0"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="12">
+    <path d="M360 80 L448 172" stroke="#8d72ad"/>
+    <path d="M448 172 L402 230" stroke="#8d72ad"/>
+    <path d="M402 230 L360 208" stroke="#8d72ad"/>
+    <path d="M360 208 L318 230" stroke="#8d72ad"/>
+    <path d="M318 230 L272 172" stroke="#8d72ad"/>
+    <path d="M272 172 L360 80" stroke="#8d72ad"/>
+
+    <path d="M285 250 L275 205 L285 155 L275 105" stroke="#f06f5f"/>
+    <path d="M335 250 L325 205 L335 155 L325 105" stroke="#f4bd4f"/>
+    <path d="M385 250 L375 205 L385 155 L375 105" stroke="#79a96b"/>
+    <path d="M435 250 L425 205 L435 155 L425 105" stroke="#5e91b8"/>
+  </g>
+</svg>
