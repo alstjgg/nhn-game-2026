@@ -1,0 +1,127 @@
+[
+  {
+    "beat": 1,
+    "durationMs": 720,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "move",
+        "actorId": "player-1a31e8b8-fd5f-4ad2-9398-0052a1a5fe1e",
+        "to": {
+          "x": 5,
+          "y": 31.5
+        },
+        "rotate": null,
+        "scale": 1.04
+      }
+    ]
+  },
+  {
+    "beat": 2,
+    "durationMs": 520,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "look",
+        "actorId": "npc-1-5nwaq3",
+        "targetId": "player-1a31e8b8-fd5f-4ad2-9398-0052a1a5fe1e"
+      }
+    ]
+  },
+  {
+    "beat": 3,
+    "durationMs": 1800,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "speak",
+        "actorId": "player-1a31e8b8-fd5f-4ad2-9398-0052a1a5fe1e",
+        "text": "음, 내 색갈래가 조금씩 다른데… 같이 보기 좋은 틈을 찾아 볼까?"
+      },
+      {
+        "order": 2,
+        "kind": "prop_create",
+        "propId": "scene_2_13ulkpl_wind_note",
+        "label": "둘 사이에서 접힌 바람 조각",
+        "symbol": "⌁",
+        "color": "보라색",
+        "position": {
+          "x": 11,
+          "y": 23.5
+        },
+        "actorId": "player-1a31e8b8-fd5f-4ad2-9398-0052a1a5fe1e"
+      }
+    ]
+  },
+  {
+    "beat": 4,
+    "durationMs": 880,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "gesture",
+        "actorId": "npc-1-5nwaq3",
+        "gesture": "stretch",
+        "status": "몸을 작게 튀기고 꼬리를 크게 둥글린다."
+      },
+      {
+        "order": 2,
+        "kind": "prop_transform",
+        "propId": "scene_2_13ulkpl_wind_note",
+        "scale": 1.18,
+        "rotate": 12,
+        "opacity": 0.92
+      }
+    ]
+  },
+  {
+    "beat": 5,
+    "durationMs": 1900,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "speak",
+        "actorId": "npc-1-5nwaq3",
+        "text": "음, 네 선 옆에 이 조각을 두면… 빛이 더 맑아질 것 같아."
+      }
+    ]
+  },
+  {
+    "beat": 6,
+    "durationMs": 980,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "effect",
+        "effect": "music",
+        "targetId": null,
+        "color": "호박색",
+        "intensity": 0.58
+      },
+      {
+        "order": 2,
+        "kind": "prop_transform",
+        "propId": "scene_2_13ulkpl_wind_note",
+        "scale": 0.82,
+        "rotate": -8,
+        "opacity": 0.48
+      }
+    ]
+  },
+  {
+    "beat": 7,
+    "durationMs": 460,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "pause",
+        "durationMs": 460
+      },
+      {
+        "order": 2,
+        "kind": "prop_remove",
+        "propId": "scene_2_13ulkpl_wind_note"
+      }
+    ]
+  }
+]

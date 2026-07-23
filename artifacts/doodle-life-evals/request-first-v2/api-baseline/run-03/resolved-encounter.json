@@ -1,0 +1,98 @@
+{
+  "requestId": "eval-request-first-v2-r03-react",
+  "worldRevision": 1,
+  "encounter": {
+    "sceneId": "scene_quest_soso_last_note_1",
+    "title": "해결 · 끊긴 길이 이어졌어요",
+    "statusText": "마름날개가 길을 폈어… 세 번째 박자, 또렷이 도착했어.",
+    "participantIds": [
+      "npc_soso",
+      "npc_dari",
+      "doodle_89d06ff323eb80303fed"
+    ],
+    "commands": [
+      {
+        "kind": "look",
+        "actorId": "npc_soso",
+        "targetId": "doodle_89d06ff323eb80303fed"
+      },
+      {
+        "kind": "gesture",
+        "actorId": "npc_soso",
+        "gesture": "stretch"
+      },
+      {
+        "kind": "prop-motion",
+        "actorId": "npc_soso",
+        "targetId": "far_bell",
+        "motion": "ring"
+      },
+      {
+        "kind": "speak",
+        "actorId": "npc_soso",
+        "text": "마름날개가 길을 폈어… 세 번째 박자, 또렷이 도착했어."
+      },
+      {
+        "kind": "look",
+        "actorId": "npc_dari",
+        "targetId": "doodle_89d06ff323eb80303fed"
+      },
+      {
+        "kind": "gesture",
+        "actorId": "npc_dari",
+        "gesture": "spark"
+      },
+      {
+        "kind": "speak",
+        "actorId": "npc_dari",
+        "text": "하나, 둘, 셋. 마지막도 건넜다."
+      }
+    ],
+    "discardedCommandCount": 0,
+    "fallbackActorIds": []
+  },
+  "trace": {
+    "mode": "staged",
+    "calls": [
+      {
+        "id": "resp_0077ec25a43a65b0016a62372945848198ab10f220ad9c3ce8",
+        "role": "quest-owner-reaction",
+        "provider": "openai",
+        "model": "gpt-5.6-terra",
+        "startedAt": "2026-07-23T15:45:45.053Z",
+        "latencyMs": 2528,
+        "usage": {
+          "inputTokens": 1596,
+          "cachedInputTokens": 0,
+          "outputTokens": 183,
+          "reasoningTokens": 0,
+          "totalTokens": 1779
+        }
+      },
+      {
+        "id": "resp_03f759853633c589016a62372bcdb48198b928748acc8db4d3",
+        "role": "quest-observer-reaction",
+        "provider": "openai",
+        "model": "gpt-5.6-terra",
+        "startedAt": "2026-07-23T15:45:45.054Z",
+        "latencyMs": 5407,
+        "usage": {
+          "inputTokens": 1570,
+          "cachedInputTokens": 0,
+          "outputTokens": 134,
+          "reasoningTokens": 0,
+          "totalTokens": 1704
+        }
+      }
+    ],
+    "usage": {
+      "inputTokens": 3166,
+      "cachedInputTokens": 0,
+      "outputTokens": 317,
+      "reasoningTokens": 0,
+      "totalTokens": 3483
+    },
+    "totalLatencyMs": 7935,
+    "wallClockMs": 5409
+  }
+}

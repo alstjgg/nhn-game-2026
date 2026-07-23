@@ -1,0 +1,205 @@
+{
+  "operations": [
+    {
+      "mode": "full-max",
+      "calls": [
+        {
+          "id": "resp_05d411b0bbf881ba016a61cde786d8819a8d9db341b8640ddf",
+          "role": "world-author",
+          "provider": "openai",
+          "model": "gpt-5.6-terra",
+          "startedAt": "2026-07-23T08:16:39.352Z",
+          "latencyMs": 57466,
+          "usage": {
+            "inputTokens": 1789,
+            "cachedInputTokens": 1786,
+            "outputTokens": 6351,
+            "reasoningTokens": 308,
+            "totalTokens": 8140
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 1789,
+        "cachedInputTokens": 1786,
+        "outputTokens": 6351,
+        "reasoningTokens": 308,
+        "totalTokens": 8140
+      },
+      "totalLatencyMs": 57466,
+      "wallClockMs": 57473
+    },
+    {
+      "mode": "full-max",
+      "calls": [
+        {
+          "id": "resp_03145a87d0c52877016a61ce2118a0819a9918a4bd70dcc396",
+          "role": "doodle-vision",
+          "provider": "openai",
+          "model": "gpt-5.6-sol",
+          "startedAt": "2026-07-23T08:17:36.834Z",
+          "latencyMs": 45324,
+          "usage": {
+            "inputTokens": 1903,
+            "cachedInputTokens": 1831,
+            "outputTokens": 2668,
+            "reasoningTokens": 282,
+            "totalTokens": 4571
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 1903,
+        "cachedInputTokens": 1831,
+        "outputTokens": 2668,
+        "reasoningTokens": 282,
+        "totalTokens": 4571
+      },
+      "totalLatencyMs": 45324,
+      "wallClockMs": 45326
+    },
+    {
+      "mode": "full-max",
+      "calls": [
+        {
+          "id": "resp_0b51c3206a3595c1016a61ce4e54708199b1354912f64a77c6",
+          "role": "npc-mind",
+          "provider": "openai",
+          "model": "gpt-5.6-terra",
+          "startedAt": "2026-07-23T08:18:22.184Z",
+          "latencyMs": 4924,
+          "usage": {
+            "inputTokens": 6451,
+            "cachedInputTokens": 0,
+            "outputTokens": 319,
+            "reasoningTokens": 71,
+            "totalTokens": 6770
+          }
+        },
+        {
+          "id": "resp_04ee2d458d5c6ae8016a61ce533c908198b310d49853a1508c",
+          "role": "npc-mind",
+          "provider": "openai",
+          "model": "gpt-5.6-terra",
+          "startedAt": "2026-07-23T08:18:22.185Z",
+          "latencyMs": 8051,
+          "usage": {
+            "inputTokens": 6431,
+            "cachedInputTokens": 0,
+            "outputTokens": 252,
+            "reasoningTokens": 0,
+            "totalTokens": 6683
+          }
+        },
+        {
+          "id": "resp_0e3014a2987fcf2e016a61ce565eec8199980f3b16fbf60c66",
+          "role": "npc-mind",
+          "provider": "openai",
+          "model": "gpt-5.6-terra",
+          "startedAt": "2026-07-23T08:18:22.185Z",
+          "latencyMs": 10924,
+          "usage": {
+            "inputTokens": 6434,
+            "cachedInputTokens": 0,
+            "outputTokens": 238,
+            "reasoningTokens": 0,
+            "totalTokens": 6672
+          }
+        },
+        {
+          "id": "resp_0bd529d09023c1cb016a61ce593b788198bd7e53b65c7187bc",
+          "role": "npc-mind",
+          "provider": "openai",
+          "model": "gpt-5.6-terra",
+          "startedAt": "2026-07-23T08:18:22.186Z",
+          "latencyMs": 14132,
+          "usage": {
+            "inputTokens": 6469,
+            "cachedInputTokens": 0,
+            "outputTokens": 249,
+            "reasoningTokens": 0,
+            "totalTokens": 6718
+          }
+        },
+        {
+          "id": "resp_0f39f10712651217016a61ce5c7e7c819ba9fa30cc885a3904",
+          "role": "world-director",
+          "provider": "openai",
+          "model": "gpt-5.6-sol",
+          "startedAt": "2026-07-23T08:18:36.318Z",
+          "latencyMs": 39584,
+          "usage": {
+            "inputTokens": 7590,
+            "cachedInputTokens": 0,
+            "outputTokens": 2679,
+            "reasoningTokens": 967,
+            "totalTokens": 10269
+          }
+        },
+        {
+          "id": "resp_01c069404bda45e4016a61ce8416d48198adc8f788494e8b3d",
+          "role": "continuity-critic",
+          "provider": "openai",
+          "model": "gpt-5.6-terra",
+          "startedAt": "2026-07-23T08:19:15.907Z",
+          "latencyMs": 16501,
+          "usage": {
+            "inputTokens": 9486,
+            "cachedInputTokens": 0,
+            "outputTokens": 2338,
+            "reasoningTokens": 397,
+            "totalTokens": 11824
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 42861,
+        "cachedInputTokens": 0,
+        "outputTokens": 6075,
+        "reasoningTokens": 1435,
+        "totalTokens": 48936
+      },
+      "totalLatencyMs": 94116,
+      "wallClockMs": 70230
+    }
+  ],
+  "totals": {
+    "calls": 8,
+    "usage": {
+      "inputTokens": 46553,
+      "cachedInputTokens": 3617,
+      "outputTokens": 15094,
+      "reasoningTokens": 2025,
+      "totalTokens": 61647
+    },
+    "totalLatencyMs": 196906,
+    "wallClockMs": 173029,
+    "roles": {
+      "world-author": {
+        "calls": 1,
+        "tokens": 8140,
+        "latencyMs": 57466
+      },
+      "doodle-vision": {
+        "calls": 1,
+        "tokens": 4571,
+        "latencyMs": 45324
+      },
+      "npc-mind": {
+        "calls": 4,
+        "tokens": 26843,
+        "latencyMs": 38031
+      },
+      "world-director": {
+        "calls": 1,
+        "tokens": 10269,
+        "latencyMs": 39584
+      },
+      "continuity-critic": {
+        "calls": 1,
+        "tokens": 11824,
+        "latencyMs": 16501
+      }
+    }
+  }
+}

@@ -1,0 +1,485 @@
+{
+  "schemaVersion": "doodle-life-evaluation-summary.v1",
+  "label": "dialogue-only-api",
+  "provider": "openai",
+  "autonomy": "dialogue-only",
+  "flow": "newcomer",
+  "completedRuns": 3,
+  "failedRuns": 0,
+  "runs": [
+    {
+      "run": 1,
+      "temperature": "cold",
+      "startedAt": "2026-07-23T08:21:09.353Z",
+      "endedAt": "2026-07-23T08:22:46.004Z",
+      "ok": true,
+      "timeline": [
+        {
+          "stage": "bootstrap",
+          "startedAt": "2026-07-23T08:21:09.353Z",
+          "endedAt": "2026-07-23T08:22:03.233Z",
+          "wallClockMs": 53880,
+          "ok": true
+        },
+        {
+          "stage": "doodle-birth",
+          "startedAt": "2026-07-23T08:22:03.235Z",
+          "endedAt": "2026-07-23T08:22:44.031Z",
+          "wallClockMs": 40796,
+          "ok": true
+        },
+        {
+          "stage": "newcomer-arrived",
+          "startedAt": "2026-07-23T08:22:44.042Z",
+          "endedAt": "2026-07-23T08:22:45.992Z",
+          "wallClockMs": 1949,
+          "ok": true
+        }
+      ],
+      "trace": {
+        "operations": [
+          {
+            "mode": "dialogue-only",
+            "calls": [
+              {
+                "id": "resp_0a561070229d91ac016a61cef5da3481998ec11cd6d9a1553e",
+                "role": "world-author",
+                "provider": "openai",
+                "model": "gpt-5.6-terra",
+                "startedAt": "2026-07-23T08:21:09.358Z",
+                "latencyMs": 53863,
+                "usage": {
+                  "inputTokens": 1791,
+                  "cachedInputTokens": 0,
+                  "outputTokens": 6056,
+                  "reasoningTokens": 234,
+                  "totalTokens": 7847
+                }
+              }
+            ],
+            "usage": {
+              "inputTokens": 1791,
+              "cachedInputTokens": 0,
+              "outputTokens": 6056,
+              "reasoningTokens": 234,
+              "totalTokens": 7847
+            },
+            "totalLatencyMs": 53863,
+            "wallClockMs": 53869
+          },
+          {
+            "mode": "dialogue-only",
+            "calls": [
+              {
+                "id": "resp_00c953fae491b50f016a61cf2b74608198893e95e9674a7d32",
+                "role": "doodle-vision",
+                "provider": "openai",
+                "model": "gpt-5.6-sol",
+                "startedAt": "2026-07-23T08:22:03.239Z",
+                "latencyMs": 40786,
+                "usage": {
+                  "inputTokens": 1904,
+                  "cachedInputTokens": 0,
+                  "outputTokens": 2181,
+                  "reasoningTokens": 324,
+                  "totalTokens": 4085
+                }
+              }
+            ],
+            "usage": {
+              "inputTokens": 1904,
+              "cachedInputTokens": 0,
+              "outputTokens": 2181,
+              "reasoningTokens": 324,
+              "totalTokens": 4085
+            },
+            "totalLatencyMs": 40786,
+            "wallClockMs": 40788
+          },
+          {
+            "mode": "dialogue-only",
+            "calls": [
+              {
+                "id": "resp_06f6622f35c570b3016a61cf542d4c819899d8fa9596394752",
+                "role": "dialogue-writer",
+                "provider": "openai",
+                "model": "gpt-5.6-terra",
+                "startedAt": "2026-07-23T08:22:44.046Z",
+                "latencyMs": 1931,
+                "usage": {
+                  "inputTokens": 6297,
+                  "cachedInputTokens": 0,
+                  "outputTokens": 144,
+                  "reasoningTokens": 0,
+                  "totalTokens": 6441
+                }
+              }
+            ],
+            "usage": {
+              "inputTokens": 6297,
+              "cachedInputTokens": 0,
+              "outputTokens": 144,
+              "reasoningTokens": 0,
+              "totalTokens": 6441
+            },
+            "totalLatencyMs": 1931,
+            "wallClockMs": 1941
+          }
+        ],
+        "totals": {
+          "calls": 3,
+          "usage": {
+            "inputTokens": 9992,
+            "cachedInputTokens": 0,
+            "outputTokens": 8381,
+            "reasoningTokens": 558,
+            "totalTokens": 18373
+          },
+          "totalLatencyMs": 96580,
+          "wallClockMs": 96598,
+          "roles": {
+            "world-author": {
+              "calls": 1,
+              "tokens": 7847,
+              "latencyMs": 53863
+            },
+            "doodle-vision": {
+              "calls": 1,
+              "tokens": 4085,
+              "latencyMs": 40786
+            },
+            "dialogue-writer": {
+              "calls": 1,
+              "tokens": 6441,
+              "latencyMs": 1931
+            }
+          }
+        }
+      }
+    },
+    {
+      "run": 2,
+      "temperature": "warm",
+      "startedAt": "2026-07-23T08:22:46.006Z",
+      "endedAt": "2026-07-23T08:24:28.546Z",
+      "ok": true,
+      "timeline": [
+        {
+          "stage": "bootstrap",
+          "startedAt": "2026-07-23T08:22:46.006Z",
+          "endedAt": "2026-07-23T08:23:35.227Z",
+          "wallClockMs": 49221,
+          "ok": true
+        },
+        {
+          "stage": "doodle-birth",
+          "startedAt": "2026-07-23T08:23:35.231Z",
+          "endedAt": "2026-07-23T08:24:26.590Z",
+          "wallClockMs": 51359,
+          "ok": true
+        },
+        {
+          "stage": "newcomer-arrived",
+          "startedAt": "2026-07-23T08:24:26.597Z",
+          "endedAt": "2026-07-23T08:24:28.543Z",
+          "wallClockMs": 1946,
+          "ok": true
+        }
+      ],
+      "trace": {
+        "operations": [
+          {
+            "mode": "dialogue-only",
+            "calls": [
+              {
+                "id": "resp_0e98cf8d5a9471e4016a61cf5649d0819a87296d4c44a0d12f",
+                "role": "world-author",
+                "provider": "openai",
+                "model": "gpt-5.6-terra",
+                "startedAt": "2026-07-23T08:22:46.009Z",
+                "latencyMs": 49210,
+                "usage": {
+                  "inputTokens": 1791,
+                  "cachedInputTokens": 1788,
+                  "outputTokens": 5498,
+                  "reasoningTokens": 77,
+                  "totalTokens": 7289
+                }
+              }
+            ],
+            "usage": {
+              "inputTokens": 1791,
+              "cachedInputTokens": 1788,
+              "outputTokens": 5498,
+              "reasoningTokens": 77,
+              "totalTokens": 7289
+            },
+            "totalLatencyMs": 49210,
+            "wallClockMs": 49216
+          },
+          {
+            "mode": "dialogue-only",
+            "calls": [
+              {
+                "id": "resp_0704fbe32318e546016a61cf876d208199807bc4706e2aead9",
+                "role": "doodle-vision",
+                "provider": "openai",
+                "model": "gpt-5.6-sol",
+                "startedAt": "2026-07-23T08:23:35.234Z",
+                "latencyMs": 51350,
+                "usage": {
+                  "inputTokens": 1904,
+                  "cachedInputTokens": 1832,
+                  "outputTokens": 2862,
+                  "reasoningTokens": 286,
+                  "totalTokens": 4766
+                }
+              }
+            ],
+            "usage": {
+              "inputTokens": 1904,
+              "cachedInputTokens": 1832,
+              "outputTokens": 2862,
+              "reasoningTokens": 286,
+              "totalTokens": 4766
+            },
+            "totalLatencyMs": 51350,
+            "wallClockMs": 51352
+          },
+          {
+            "mode": "dialogue-only",
+            "calls": [
+              {
+                "id": "resp_0d26bb429427bff3016a61cfbac3b8819a856446763c6501c4",
+                "role": "dialogue-writer",
+                "provider": "openai",
+                "model": "gpt-5.6-terra",
+                "startedAt": "2026-07-23T08:24:26.602Z",
+                "latencyMs": 1936,
+                "usage": {
+                  "inputTokens": 6531,
+                  "cachedInputTokens": 0,
+                  "outputTokens": 146,
+                  "reasoningTokens": 0,
+                  "totalTokens": 6677
+                }
+              }
+            ],
+            "usage": {
+              "inputTokens": 6531,
+              "cachedInputTokens": 0,
+              "outputTokens": 146,
+              "reasoningTokens": 0,
+              "totalTokens": 6677
+            },
+            "totalLatencyMs": 1936,
+            "wallClockMs": 1941
+          }
+        ],
+        "totals": {
+          "calls": 3,
+          "usage": {
+            "inputTokens": 10226,
+            "cachedInputTokens": 3620,
+            "outputTokens": 8506,
+            "reasoningTokens": 363,
+            "totalTokens": 18732
+          },
+          "totalLatencyMs": 102496,
+          "wallClockMs": 102509,
+          "roles": {
+            "world-author": {
+              "calls": 1,
+              "tokens": 7289,
+              "latencyMs": 49210
+            },
+            "doodle-vision": {
+              "calls": 1,
+              "tokens": 4766,
+              "latencyMs": 51350
+            },
+            "dialogue-writer": {
+              "calls": 1,
+              "tokens": 6677,
+              "latencyMs": 1936
+            }
+          }
+        }
+      }
+    },
+    {
+      "run": 3,
+      "temperature": "warm",
+      "startedAt": "2026-07-23T08:24:28.547Z",
+      "endedAt": "2026-07-23T08:26:04.614Z",
+      "ok": true,
+      "timeline": [
+        {
+          "stage": "bootstrap",
+          "startedAt": "2026-07-23T08:24:28.547Z",
+          "endedAt": "2026-07-23T08:25:21.373Z",
+          "wallClockMs": 52826,
+          "ok": true
+        },
+        {
+          "stage": "doodle-birth",
+          "startedAt": "2026-07-23T08:25:21.375Z",
+          "endedAt": "2026-07-23T08:26:02.751Z",
+          "wallClockMs": 41377,
+          "ok": true
+        },
+        {
+          "stage": "newcomer-arrived",
+          "startedAt": "2026-07-23T08:26:02.756Z",
+          "endedAt": "2026-07-23T08:26:04.613Z",
+          "wallClockMs": 1856,
+          "ok": true
+        }
+      ],
+      "trace": {
+        "operations": [
+          {
+            "mode": "dialogue-only",
+            "calls": [
+              {
+                "id": "resp_0b9e145da9b89426016a61cfbcbde4819ab09ff11ad38be582",
+                "role": "world-author",
+                "provider": "openai",
+                "model": "gpt-5.6-terra",
+                "startedAt": "2026-07-23T08:24:28.549Z",
+                "latencyMs": 52820,
+                "usage": {
+                  "inputTokens": 1791,
+                  "cachedInputTokens": 1788,
+                  "outputTokens": 5484,
+                  "reasoningTokens": 342,
+                  "totalTokens": 7275
+                }
+              }
+            ],
+            "usage": {
+              "inputTokens": 1791,
+              "cachedInputTokens": 1788,
+              "outputTokens": 5484,
+              "reasoningTokens": 342,
+              "totalTokens": 7275
+            },
+            "totalLatencyMs": 52820,
+            "wallClockMs": 52822
+          },
+          {
+            "mode": "dialogue-only",
+            "calls": [
+              {
+                "id": "resp_04339859a3be69e6016a61cff18ffc819aa5a4bbc6143af132",
+                "role": "doodle-vision",
+                "provider": "openai",
+                "model": "gpt-5.6-sol",
+                "startedAt": "2026-07-23T08:25:21.378Z",
+                "latencyMs": 41371,
+                "usage": {
+                  "inputTokens": 1904,
+                  "cachedInputTokens": 1832,
+                  "outputTokens": 2260,
+                  "reasoningTokens": 247,
+                  "totalTokens": 4164
+                }
+              }
+            ],
+            "usage": {
+              "inputTokens": 1904,
+              "cachedInputTokens": 1832,
+              "outputTokens": 2260,
+              "reasoningTokens": 247,
+              "totalTokens": 4164
+            },
+            "totalLatencyMs": 41371,
+            "wallClockMs": 41373
+          },
+          {
+            "mode": "dialogue-only",
+            "calls": [
+              {
+                "id": "resp_0f7901f49d73a8ea016a61d01ae2d8819ba358098f8966f069",
+                "role": "dialogue-writer",
+                "provider": "openai",
+                "model": "gpt-5.6-terra",
+                "startedAt": "2026-07-23T08:26:02.760Z",
+                "latencyMs": 1847,
+                "usage": {
+                  "inputTokens": 6307,
+                  "cachedInputTokens": 0,
+                  "outputTokens": 147,
+                  "reasoningTokens": 0,
+                  "totalTokens": 6454
+                }
+              }
+            ],
+            "usage": {
+              "inputTokens": 6307,
+              "cachedInputTokens": 0,
+              "outputTokens": 147,
+              "reasoningTokens": 0,
+              "totalTokens": 6454
+            },
+            "totalLatencyMs": 1847,
+            "wallClockMs": 1851
+          }
+        ],
+        "totals": {
+          "calls": 3,
+          "usage": {
+            "inputTokens": 10002,
+            "cachedInputTokens": 3620,
+            "outputTokens": 7891,
+            "reasoningTokens": 589,
+            "totalTokens": 17893
+          },
+          "totalLatencyMs": 96038,
+          "wallClockMs": 96046,
+          "roles": {
+            "world-author": {
+              "calls": 1,
+              "tokens": 7275,
+              "latencyMs": 52820
+            },
+            "doodle-vision": {
+              "calls": 1,
+              "tokens": 4164,
+              "latencyMs": 41371
+            },
+            "dialogue-writer": {
+              "calls": 1,
+              "tokens": 6454,
+              "latencyMs": 1847
+            }
+          }
+        }
+      }
+    }
+  ],
+  "observed": {
+    "wallClockMs": {
+      "values": [
+        96598,
+        102509,
+        96046
+      ],
+      "min": 96046,
+      "max": 102509,
+      "mean": 98384
+    },
+    "totalTokens": {
+      "values": [
+        18373,
+        18732,
+        17893
+      ],
+      "min": 17893,
+      "max": 18732,
+      "mean": 18333
+    },
+    "structuredOutputSuccesses": 3,
+    "failures": 0
+  }
+}

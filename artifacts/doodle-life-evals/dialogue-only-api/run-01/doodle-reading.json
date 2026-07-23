@@ -1,0 +1,332 @@
+{
+  "requestId": "eval-doodle-life-dialogue-only-v1-birth",
+  "expectedRevision": 0,
+  "character": {
+    "id": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+    "kind": "player",
+    "name": "무지느러미",
+    "epithet": "빛깔 사이를 헤엄치는 새싹 물고기",
+    "essence": "서로 다른 빛깔을 한데 품고, 낯선 이의 기분을 조용히 살피는 다정한 물고기 주민",
+    "origin": "보랏빛 물결이 포개진 순간, 네 줄의 색이 작은 지느러미처럼 흔들리며 정원에 태어났다.",
+    "traits": [
+      {
+        "id": "trait_color_curious",
+        "label": "색깔 호기심",
+        "description": "새로운 색과 그 색에 얽힌 이야기를 발견하면 가까이 다가간다.",
+        "visibleEvidence": "몸 안쪽에 빨강, 노랑, 초록, 파랑의 선이 나란히 놓여 있다.",
+        "behavioralEffect": "처음 보는 꽃이나 장식 주변을 천천히 돌며 색을 비교한다.",
+        "confidence": 0.96
+      },
+      {
+        "id": "trait_gentle_observer",
+        "label": "다정한 관찰자",
+        "description": "먼저 지켜본 뒤 상대가 편안해 보일 때 조심스럽게 인사한다.",
+        "visibleEvidence": "둥근 모서리의 보랏빛 윤곽과 가지런한 내부 선이 차분한 인상을 준다.",
+        "behavioralEffect": "대화에 끼어들기보다 곁에서 몸을 살짝 기울여 듣는다.",
+        "confidence": 0.84
+      },
+      {
+        "id": "trait_wobbly_brave",
+        "label": "꼬불꼬불 용기",
+        "description": "긴장하면 몸이 흔들리지만 궁금한 곳으로 한 걸음 더 나아간다.",
+        "visibleEvidence": "곧지 않고 부드럽게 꺾이는 색 선들이 몸을 가로지른다.",
+        "behavioralEffect": "낯선 상황에서 잠시 뒤로 물러났다가 작은 인사를 건넨다.",
+        "confidence": 0.88
+      }
+    ],
+    "drives": [
+      "정원 곳곳의 색을 만나 자기만의 색 지도를 만들기",
+      "서로 다른 친구들이 나란히 머물 수 있는 순간 찾기",
+      "기분에 어울리는 조용한 헤엄 리듬 발견하기"
+    ],
+    "needs": [
+      "서두르지 않고 주변을 살필 시간",
+      "밝은 색이나 익숙한 친구처럼 안심할 수 있는 표식",
+      "혼자 쉬었다가 다시 다가갈 수 있는 여유"
+    ],
+    "boundaries": [
+      "갑자기 몸을 붙잡거나 밀면 뒤로 물러난다.",
+      "큰 소리가 오래 이어지면 조용한 곳에서 쉬고 싶어 한다.",
+      "몸의 색을 허락 없이 바꾸려는 장난은 싫어한다."
+    ],
+    "abilities": [
+      "몸의 네 가지 색을 차례로 흔들어 현재 기분을 알릴 수 있다.",
+      "친구가 고른 색을 기억해 다음 만남의 인사에 활용한다.",
+      "좁은 틈에서도 몸을 살짝 접듯 움직여 부드럽게 지나간다."
+    ],
+    "visibleSignals": [
+      "빨간 선이 먼저 흔들리면 용기를 내는 중이다.",
+      "노란 선이 통통 튀면 무척 궁금하다는 뜻이다.",
+      "초록 선이 천천히 기울면 편안히 듣고 있다는 뜻이다.",
+      "파란 선이 몸쪽으로 모이면 잠깐 쉬고 싶다는 뜻이다."
+    ],
+    "voice": {
+      "rhythm": "짧은 문장 사이에 생각하는 틈을 두며 물결처럼 잔잔하게 말한다.",
+      "vocabulary": "색, 빛, 나란히, 천천히, 반짝 같은 부드럽고 감각적인 말을 즐겨 쓴다.",
+      "sampleLine": "안녕, 네 마음은 오늘 어떤 색으로 흔들려?"
+    },
+    "motion": {
+      "idle": "제자리에서 좌우로 아주 작게 떠다니며 네 색 선이 서로 다른 박자로 흔들린다.",
+      "approach": "몸 앞쪽을 살짝 기울이고 짧게 두 번 헤엄친 뒤, 한 걸음 거리를 남겨 멈춘다.",
+      "delight": "보랏빛 윤곽이 가볍게 위로 솟고 네 색 선이 차례대로 통통 튄다.",
+      "discomfort": "몸을 조금 납작하게 오므리고 파란 선을 안쪽으로 기울인 채 천천히 거리를 둔다."
+    },
+    "mood": "조심스럽지만 알록달록한 세상이 궁금하다.",
+    "currentGoal": "가장 먼저 만난 친구에게 좋아하는 색을 물어보기",
+    "homePosition": {
+      "x": 0.5,
+      "y": 0.36
+    },
+    "design": {
+      "silhouette": "양옆이 뾰족하고 위아래가 부드럽게 꺾인 보랏빛 물고기형 윤곽 안에 네 색의 세로 물결이 놓인 모습",
+      "palette": [
+        "보라",
+        "산호빛 빨강",
+        "꿀빛 노랑",
+        "잎빛 초록",
+        "맑은 파랑"
+      ],
+      "body": {
+        "kind": "polygon",
+        "fill": "#FFF9EF",
+        "stroke": "#8D72B5",
+        "strokeWidth": 10,
+        "opacity": 1,
+        "points": [
+          {
+            "x": -88,
+            "y": 0
+          },
+          {
+            "x": 0,
+            "y": -92
+          },
+          {
+            "x": 90,
+            "y": 0
+          },
+          {
+            "x": 43,
+            "y": 59
+          },
+          {
+            "x": 0,
+            "y": 36
+          },
+          {
+            "x": -43,
+            "y": 59
+          }
+        ]
+      },
+      "parts": [
+        {
+          "id": "red_wave",
+          "shape": {
+            "kind": "line",
+            "fill": "#F06455",
+            "stroke": "#F06455",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": -85,
+            "y1": -67,
+            "x2": -74,
+            "y2": 78,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "yellow_wave",
+          "shape": {
+            "kind": "line",
+            "fill": "#F3B843",
+            "stroke": "#F3B843",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": -36,
+            "y1": -66,
+            "x2": -25,
+            "y2": 78,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "green_wave",
+          "shape": {
+            "kind": "line",
+            "fill": "#6FA65E",
+            "stroke": "#6FA65E",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 18,
+            "y1": -67,
+            "x2": 29,
+            "y2": 78,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "blue_wave",
+          "shape": {
+            "kind": "line",
+            "fill": "#4F89B4",
+            "stroke": "#4F89B4",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 67,
+            "y1": -67,
+            "x2": 78,
+            "y2": 78,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "left_eye_anchor",
+          "shape": {
+            "kind": "ellipse",
+            "fill": "#4B4056",
+            "stroke": "#4B4056",
+            "strokeWidth": 1,
+            "opacity": 1,
+            "cx": 45,
+            "cy": -13,
+            "rx": 3,
+            "ry": 4
+          },
+          "zIndex": 3
+        },
+        {
+          "id": "right_eye_anchor",
+          "shape": {
+            "kind": "ellipse",
+            "fill": "#4B4056",
+            "stroke": "#4B4056",
+            "strokeWidth": 1,
+            "opacity": 1,
+            "cx": 61,
+            "cy": -11,
+            "rx": 3,
+            "ry": 4
+          },
+          "zIndex": 3
+        },
+        {
+          "id": "mouth_anchor",
+          "shape": {
+            "kind": "line",
+            "fill": "#8D72B5",
+            "stroke": "#8D72B5",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "x1": 51,
+            "y1": 4,
+            "x2": 59,
+            "y2": 5,
+            "linecap": "round"
+          },
+          "zIndex": 3
+        }
+      ],
+      "faceAnchors": {
+        "leftEye": {
+          "x": 45,
+          "y": -13
+        },
+        "rightEye": {
+          "x": 61,
+          "y": -11
+        },
+        "mouth": {
+          "x": 55,
+          "y": 5
+        }
+      },
+      "expressivePartIds": [
+        "red_wave",
+        "yellow_wave",
+        "green_wave",
+        "blue_wave",
+        "left_eye_anchor",
+        "right_eye_anchor",
+        "mouth_anchor"
+      ],
+      "idleMotions": [
+        {
+          "targetPartId": null,
+          "property": "translateY",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1800,
+          "delayMs": 0
+        },
+        {
+          "targetPartId": "red_wave",
+          "property": "rotate",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1300,
+          "delayMs": 0
+        },
+        {
+          "targetPartId": "yellow_wave",
+          "property": "translateY",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1450,
+          "delayMs": 180
+        },
+        {
+          "targetPartId": "green_wave",
+          "property": "rotate",
+          "from": 2,
+          "to": -2,
+          "durationMs": 1600,
+          "delayMs": 320
+        },
+        {
+          "targetPartId": "blue_wave",
+          "property": "translateY",
+          "from": 2,
+          "to": -2,
+          "durationMs": 1500,
+          "delayMs": 480
+        }
+      ]
+    }
+  },
+  "evidenceSummary": "색깔 호기심: 몸 안쪽에 빨강, 노랑, 초록, 파랑의 선이 나란히 놓여 있다. · 다정한 관찰자: 둥근 모서리의 보랏빛 윤곽과 가지런한 내부 선이 차분한 인상을 준다. · 꼬불꼬불 용기: 곧지 않고 부드럽게 꺾이는 색 선들이 몸을 가로지른다.",
+  "uncertainties": [],
+  "trace": {
+    "mode": "dialogue-only",
+    "calls": [
+      {
+        "id": "resp_00c953fae491b50f016a61cf2b74608198893e95e9674a7d32",
+        "role": "doodle-vision",
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "startedAt": "2026-07-23T08:22:03.239Z",
+        "latencyMs": 40786,
+        "usage": {
+          "inputTokens": 1904,
+          "cachedInputTokens": 0,
+          "outputTokens": 2181,
+          "reasoningTokens": 324,
+          "totalTokens": 4085
+        }
+      }
+    ],
+    "usage": {
+      "inputTokens": 1904,
+      "cachedInputTokens": 0,
+      "outputTokens": 2181,
+      "reasoningTokens": 324,
+      "totalTokens": 4085
+    },
+    "totalLatencyMs": 40786,
+    "wallClockMs": 40788
+  }
+}

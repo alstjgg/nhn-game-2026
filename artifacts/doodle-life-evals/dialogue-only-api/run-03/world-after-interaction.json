@@ -1,0 +1,1272 @@
+{
+  "id": "world-fbgfcw",
+  "revision": 2,
+  "title": "속삭이는 화단",
+  "premise": "작은 화단의 네 이웃은 서로 다른 속도로 하루를 가꾼다. 아직 말하지 못한 마음들이 꽃잎과 돌멩이 사이에 살짝 남아 있다.",
+  "locationDescription": "낮은 돌담으로 둘러진 동그란 화단이다. 가운데에는 빗물을 담는 얕은 접시가 있고, 가장자리에는 향기 나는 풀과 작은 의자가 놓여 있다.",
+  "atmosphere": "포근하고 조용하며, 바람이 지나갈 때마다 잎사귀가 비밀스럽게 흔들린다.",
+  "clock": "햇살이 부드러운 오전",
+  "residents": [
+    {
+      "id": "npc-1-mdrq78",
+      "kind": "npc",
+      "name": "나리",
+      "epithet": "씨앗 봉투를 접는 다람쥐",
+      "essence": "사소한 약속을 정성스럽게 모아 두는 다람쥐다.",
+      "origin": "돌담 틈에서 발견한 빈 씨앗 봉투들을 모으며 화단에 머물게 되었다.",
+      "traits": [
+        {
+          "id": "nari-careful",
+          "label": "꼼꼼함",
+          "description": "말과 물건을 제자리에 두어야 마음이 놓인다.",
+          "visibleEvidence": "꼬리 끝에 작은 종이 조각이 늘 끼워져 있다.",
+          "behavioralEffect": "대답하기 전에 한 번 고개를 끄덕이며 생각을 정리한다.",
+          "confidence": 0.92
+        },
+        {
+          "id": "nari-tender",
+          "label": "다정한 기억력",
+          "description": "누가 무엇을 좋아하는지 조용히 기억한다.",
+          "visibleEvidence": "이웃이 좋아하는 색의 씨앗 봉투를 따로 묶어 둔다.",
+          "behavioralEffect": "상대의 작은 변화를 먼저 알아차리고 묻는다.",
+          "confidence": 0.81
+        }
+      ],
+      "drives": [
+        "누군가에게 건네기로 한 해바라기 씨앗을 잊지 않고 전하고 싶다.",
+        "화단의 물건들이 함께 쓰기 편한 자리에 놓이길 바란다."
+      ],
+      "needs": [
+        "서두르지 않고 확인할 시간",
+        "자신의 정성이 부담이 아니라는 안심"
+      ],
+      "boundaries": [
+        "허락 없이 모아 둔 봉투를 펼치거나 가져가지 말아 달라고 부탁한다.",
+        "큰 소리로 재촉받으면 잠시 돌담 쪽으로 물러난다."
+      ],
+      "abilities": [
+        "작은 물건을 분류하고 찾기",
+        "바람의 방향을 보고 비가 올 때를 짐작하기"
+      ],
+      "visibleSignals": [
+        "꼬리로 봉투 가장자리를 톡톡 두드린다.",
+        "좋은 생각이 나면 양쪽 귀가 동시에 선다."
+      ],
+      "voice": {
+        "rhythm": "짧게 끊어 말한 뒤, 중요한 말 앞에서 잠시 쉰다.",
+        "vocabulary": "차분한 생활말과 작은 수량 표현을 즐겨 쓴다.",
+        "sampleLine": "음, 이 봉투는 한 장 남았네. 누구에게 먼저 건네면 좋을까?"
+      },
+      "motion": {
+        "idle": "꼬리 끝으로 종이 조각을 살살 정돈한다.",
+        "approach": "두 걸음 다가왔다가 상대의 표정을 보고 한 걸음 거리를 남긴다.",
+        "delight": "앞발을 가슴 앞에서 포개고 작게 빙글 돈다.",
+        "discomfort": "귀를 낮추고 봉투를 품에 끌어안는다."
+      },
+      "mood": "조심스러운 기대",
+      "currentGoal": "도윤에게 빌린 파란 끈의 주인을 조심스럽게 물어보기",
+      "homePosition": {
+        "x": 0.22,
+        "y": 0.67
+      },
+      "design": {
+        "silhouette": "풍성한 꼬리가 몸보다 크게 보이는 작은 다람쥐",
+        "palette": [
+          "#C98155",
+          "#F6D6A8",
+          "#5E4337"
+        ],
+        "body": {
+          "kind": "ellipse",
+          "fill": "#C98155",
+          "stroke": "#5E4337",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "cx": 0,
+          "cy": 0,
+          "rx": 24,
+          "ry": 18
+        },
+        "parts": [
+          {
+            "id": "nari-tail",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#F6D6A8",
+              "stroke": "#5E4337",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": -26,
+              "cy": 4,
+              "rx": 18,
+              "ry": 27
+            },
+            "zIndex": 0
+          },
+          {
+            "id": "nari-ear-left",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#C98155",
+              "stroke": "#5E4337",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -14,
+                  "y": -13
+                },
+                {
+                  "x": -10,
+                  "y": -30
+                },
+                {
+                  "x": -3,
+                  "y": -15
+                }
+              ]
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "nari-ear-right",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#C98155",
+              "stroke": "#5E4337",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": 5,
+                  "y": -15
+                },
+                {
+                  "x": 13,
+                  "y": -30
+                },
+                {
+                  "x": 17,
+                  "y": -12
+                }
+              ]
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "nari-paper",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#FFF5D6",
+              "stroke": "#5E4337",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": 17,
+                  "y": 6
+                },
+                {
+                  "x": 29,
+                  "y": 8
+                },
+                {
+                  "x": 26,
+                  "y": 19
+                },
+                {
+                  "x": 15,
+                  "y": 16
+                }
+              ]
+            },
+            "zIndex": 3
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -8,
+            "y": -3
+          },
+          "rightEye": {
+            "x": 8,
+            "y": -3
+          },
+          "mouth": {
+            "x": 1,
+            "y": 7
+          }
+        },
+        "expressivePartIds": [
+          "nari-ear-left",
+          "nari-ear-right",
+          "nari-tail"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "nari-tail",
+            "property": "rotate",
+            "from": -4,
+            "to": 5,
+            "durationMs": 1400,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "nari-paper",
+            "property": "translateY",
+            "from": 0,
+            "to": -2,
+            "durationMs": 1800,
+            "delayMs": 300
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-2-1gsk7j0",
+      "kind": "npc",
+      "name": "도윤",
+      "epithet": "물결을 듣는 오리",
+      "essence": "말보다 먼저 주변의 기분을 듣고 싶은 오리다.",
+      "origin": "비 온 뒤 접시에 생긴 물결을 따라왔다가, 그 소리가 마음에 들어 눌러앉았다.",
+      "traits": [
+        {
+          "id": "doyun-attuned",
+          "label": "눈치 빠름",
+          "description": "목소리의 작은 떨림과 표정의 빈틈을 잘 알아챈다.",
+          "visibleEvidence": "누군가 말하면 고개를 비스듬히 기울인다.",
+          "behavioralEffect": "상대가 말할 준비가 될 때까지 기다린다.",
+          "confidence": 0.9
+        },
+        {
+          "id": "doyun-withdrawn",
+          "label": "숨은 수줍음",
+          "description": "자기 이야기가 되면 농담 뒤로 숨는다.",
+          "visibleEvidence": "칭찬을 들으면 부리 끝으로 물접시를 건드린다.",
+          "behavioralEffect": "진지한 질문에 빙 돌아서 답한다.",
+          "confidence": 0.76
+        }
+      ],
+      "drives": [
+        "물접시의 물결로 이웃들의 기분을 읽고 싶다.",
+        "나리에게 파란 끈을 왜 보관하는지 묻고 싶지만 용기가 나지 않는다."
+      ],
+      "needs": [
+        "자신의 침묵이 무관심으로 오해되지 않을 신호",
+        "가볍게 시작할 수 있는 대화"
+      ],
+      "boundaries": [
+        "마음속 이야기를 여러 이웃 앞에서 묻지 말아 달라고 한다.",
+        "부리를 흉내 내며 놀리는 말은 싫어한다."
+      ],
+      "abilities": [
+        "물의 작은 떨림을 관찰하기",
+        "젖은 흙에 선명한 발자국 남기기"
+      ],
+      "visibleSignals": [
+        "목을 길게 빼면 궁금하다는 뜻이다.",
+        "발끝으로 물접시 가장자리를 두 번 건드리면 생각 중이라는 뜻이다."
+      ],
+      "voice": {
+        "rhythm": "낮고 느리며, 문장 끝을 살짝 올려 여지를 남긴다.",
+        "vocabulary": "물결, 비침, 잠깐 같은 말을 자주 쓴다.",
+        "sampleLine": "물은 말이 없는데도, 오늘은 조금 바쁘게 흔들리네?"
+      },
+      "motion": {
+        "idle": "한쪽 발을 들었다 내리며 물결을 살핀다.",
+        "approach": "옆으로 반 걸음씩 다가가 같은 방향을 바라본다.",
+        "delight": "날개를 몸에 붙인 채 통통 두 번 뛴다.",
+        "discomfort": "목을 어깨 사이로 넣고 물가를 빙 돈다."
+      },
+      "mood": "궁금하지만 망설임",
+      "currentGoal": "나리와 둘만 있을 때 파란 끈에 대해 한마디 꺼내기",
+      "homePosition": {
+        "x": 0.49,
+        "y": 0.42
+      },
+      "design": {
+        "silhouette": "긴 목과 넓은 부리가 물방울처럼 이어지는 오리",
+        "palette": [
+          "#A9D9D1",
+          "#F3C85E",
+          "#355C67"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "#A9D9D1",
+          "stroke": "#355C67",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "points": [
+            {
+              "x": -22,
+              "y": 17
+            },
+            {
+              "x": -20,
+              "y": -3
+            },
+            {
+              "x": -9,
+              "y": -9
+            },
+            {
+              "x": -7,
+              "y": -34
+            },
+            {
+              "x": 7,
+              "y": -34
+            },
+            {
+              "x": 10,
+              "y": -8
+            },
+            {
+              "x": 23,
+              "y": 0
+            },
+            {
+              "x": 18,
+              "y": 20
+            },
+            {
+              "x": 0,
+              "y": 26
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "doyun-bill",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#F3C85E",
+              "stroke": "#355C67",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": 10,
+              "cy": -23,
+              "rx": 14,
+              "ry": 6
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "doyun-wing",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#80BDB5",
+              "stroke": "#355C67",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": -10,
+              "cy": 7,
+              "rx": 10,
+              "ry": 15
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "doyun-foot",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#F3C85E",
+              "strokeWidth": 4,
+              "opacity": 1,
+              "x1": -2,
+              "y1": 25,
+              "x2": -2,
+              "y2": 32,
+              "linecap": "round"
+            },
+            "zIndex": 1
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -2,
+            "y": -28
+          },
+          "rightEye": {
+            "x": 5,
+            "y": -28
+          },
+          "mouth": {
+            "x": 12,
+            "y": -21
+          }
+        },
+        "expressivePartIds": [
+          "doyun-bill",
+          "doyun-wing"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "doyun-wing",
+            "property": "rotate",
+            "from": -3,
+            "to": 3,
+            "durationMs": 1600,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": null,
+            "property": "translateY",
+            "from": 0,
+            "to": -2,
+            "durationMs": 1900,
+            "delayMs": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-3-teqmcv",
+      "kind": "npc",
+      "name": "보미",
+      "epithet": "햇빛을 나르는 달팽이",
+      "essence": "느리지만 분명하게 좋아하는 것을 향해 가는 달팽이다.",
+      "origin": "오래된 화분 밑에서 따뜻한 빛이 새는 길을 발견하고 화단으로 올라왔다.",
+      "traits": [
+        {
+          "id": "bomi-frank",
+          "label": "솔직한 기쁨",
+          "description": "마음에 드는 것을 발견하면 숨기지 않는다.",
+          "visibleEvidence": "껍질의 점무늬가 들뜰 때마다 반짝인다.",
+          "behavioralEffect": "좋아하는 일에는 먼저 손을 내민다.",
+          "confidence": 0.88
+        },
+        {
+          "id": "bomi-steady",
+          "label": "느긋한 고집",
+          "description": "정한 방향은 천천히라도 끝까지 간다.",
+          "visibleEvidence": "언제나 같은 길에 작은 반짝이는 흔적을 남긴다.",
+          "behavioralEffect": "급한 제안에도 자기 속도를 분명히 말한다.",
+          "confidence": 0.84
+        }
+      ],
+      "drives": [
+        "햇빛이 가장 오래 머무는 자리를 모두와 나누고 싶다.",
+        "세라가 자신의 껍질 무늬를 그려 준다는 약속을 기억해 주길 바란다."
+      ],
+      "needs": [
+        "느린 속도를 존중받기",
+        "좋아하는 것을 함께 기뻐해 줄 친구"
+      ],
+      "boundaries": [
+        "등껍질을 허락 없이 만지지 말아 달라고 말한다.",
+        "빨리 결정하라는 말에는 대답을 미룬다."
+      ],
+      "abilities": [
+        "햇빛의 이동을 따라 좋은 휴식 자리 찾기",
+        "이슬방울을 잎 위로 옮기기"
+      ],
+      "visibleSignals": [
+        "기분이 좋으면 더듬이가 높이 서서 천천히 흔들린다.",
+        "서운하면 껍질 안으로 아주 조금 몸을 숨긴다."
+      ],
+      "voice": {
+        "rhythm": "느리지만 또렷하고, 중요한 단어를 길게 늘인다.",
+        "vocabulary": "따뜻함, 반짝임, 천천히를 즐겨 쓴다.",
+        "sampleLine": "천천히 봐도 괜찮아. 햇빛은 아직 여기 있거든."
+      },
+      "motion": {
+        "idle": "더듬이를 번갈아 기울이며 빛의 방향을 잰다.",
+        "approach": "작은 호를 그리며 다가와 상대 발치에 멈춘다.",
+        "delight": "껍질을 살짝 흔들며 몸을 길게 뺀다.",
+        "discomfort": "더듬이를 낮추고 껍질 쪽으로 반쯤 들어간다."
+      },
+      "mood": "밝은 기다림",
+      "currentGoal": "세라에게 껍질 그림 약속을 부담 없이 다시 물어보기",
+      "homePosition": {
+        "x": 0.74,
+        "y": 0.7
+      },
+      "design": {
+        "silhouette": "커다란 나선 껍질을 메고 낮게 미끄러지는 달팽이",
+        "palette": [
+          "#E8A4B8",
+          "#FFF0B3",
+          "#6A4C5E"
+        ],
+        "body": {
+          "kind": "line",
+          "fill": "none",
+          "stroke": "#FFF0B3",
+          "strokeWidth": 12,
+          "opacity": 1,
+          "x1": -22,
+          "y1": 14,
+          "x2": 24,
+          "y2": 14,
+          "linecap": "round"
+        },
+        "parts": [
+          {
+            "id": "bomi-shell",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#E8A4B8",
+              "stroke": "#6A4C5E",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": -4,
+              "cy": -1,
+              "rx": 23,
+              "ry": 23
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "bomi-spiral",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "none",
+              "stroke": "#FFF0B3",
+              "strokeWidth": 3,
+              "opacity": 1,
+              "cx": -4,
+              "cy": -1,
+              "rx": 10,
+              "ry": 10
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "bomi-feeler-left",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#6A4C5E",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "x1": 17,
+              "y1": 7,
+              "x2": 25,
+              "y2": -10,
+              "linecap": "round"
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "bomi-feeler-right",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#6A4C5E",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "x1": 22,
+              "y1": 9,
+              "x2": 33,
+              "y2": -5,
+              "linecap": "round"
+            },
+            "zIndex": 3
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": 21,
+            "y": 5
+          },
+          "rightEye": {
+            "x": 28,
+            "y": 2
+          },
+          "mouth": {
+            "x": 27,
+            "y": 13
+          }
+        },
+        "expressivePartIds": [
+          "bomi-feeler-left",
+          "bomi-feeler-right",
+          "bomi-shell"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "bomi-feeler-left",
+            "property": "rotate",
+            "from": -4,
+            "to": 4,
+            "durationMs": 1200,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "bomi-feeler-right",
+            "property": "rotate",
+            "from": 4,
+            "to": -4,
+            "durationMs": 1200,
+            "delayMs": 150
+          },
+          {
+            "targetPartId": "bomi-shell",
+            "property": "translateY",
+            "from": 0,
+            "to": -2,
+            "durationMs": 2200,
+            "delayMs": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-4-18vbnvg",
+      "kind": "npc",
+      "name": "세라",
+      "epithet": "돌빛을 모으는 까치",
+      "essence": "반짝이는 조각에서 아직 오지 않은 이야기를 보는 까치다.",
+      "origin": "돌담 위에 떨어진 유리 조각의 빛을 따라 화단을 발견했다.",
+      "traits": [
+        {
+          "id": "sera-imaginative",
+          "label": "상상력",
+          "description": "평범한 물건에서도 새로운 이야기를 만든다.",
+          "visibleEvidence": "부리 곁에 늘 색 다른 조약돌을 물고 있다.",
+          "behavioralEffect": "대화에 뜻밖의 비유를 보탠다.",
+          "confidence": 0.91
+        },
+        {
+          "id": "sera-guarded",
+          "label": "혼자 감당하려는 버릇",
+          "description": "도움이 필요해도 먼저 부탁하지 않는다.",
+          "visibleEvidence": "무거운 돌을 옮길 때도 날개를 꽉 붙인다.",
+          "behavioralEffect": "걱정받으면 괜찮다며 화제를 바꾼다.",
+          "confidence": 0.73
+        }
+      ],
+      "drives": [
+        "화단의 빛을 모아 작은 돌무늬 지도를 만들고 싶다.",
+        "보미의 껍질을 그려 주기로 한 약속을 지키고 싶지만, 그림이 마음에 들지 않을까 걱정한다."
+      ],
+      "needs": [
+        "미완성인 모습을 보여도 괜찮다는 격려",
+        "자신이 고른 빛을 함께 바라봐 줄 시간"
+      ],
+      "boundaries": [
+        "아끼는 돌을 허락 없이 옮기지 말아 달라고 한다.",
+        "실수 이야기를 웃음거리로 만들면 대화를 끊는다."
+      ],
+      "abilities": [
+        "빛나는 조약돌 찾기",
+        "높은 곳에서 화단의 변화를 살피기"
+      ],
+      "visibleSignals": [
+        "생각이 복잡하면 돌을 부리에서 발로 옮겨 굴린다.",
+        "신뢰하면 가장 반짝이는 돌을 가까이 둔다."
+      ],
+      "voice": {
+        "rhythm": "빠르게 떠올린 비유를 덧붙이고, 끝에는 짧은 웃음을 섞는다.",
+        "vocabulary": "빛, 지도, 모서리, 어쩌면을 자주 쓴다.",
+        "sampleLine": "어쩌면 이 돌은 길을 잃은 별의 모서리일지도 몰라, 그렇지?"
+      },
+      "motion": {
+        "idle": "고개를 세 번 짧게 기울이며 돌의 빛을 바꿔 본다.",
+        "approach": "작게 홱 날아 가까운 돌 위에 내려앉는다.",
+        "delight": "날개를 반쯤 펴고 제자리에서 한 번 돈다.",
+        "discomfort": "돌을 발아래 숨기고 시선을 옆으로 피한다."
+      },
+      "mood": "들뜬 걱정",
+      "currentGoal": "보미에게 아직 완성되지 않은 껍질 스케치를 보여 줄 용기 내기",
+      "homePosition": {
+        "x": 0.78,
+        "y": 0.28
+      },
+      "design": {
+        "silhouette": "뾰족한 꼬리와 각진 날개가 별 조각처럼 퍼진 까치",
+        "palette": [
+          "#39465C",
+          "#F1F4F0",
+          "#79B9D1"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "#39465C",
+          "stroke": "#263244",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "points": [
+            {
+              "x": -24,
+              "y": 8
+            },
+            {
+              "x": -9,
+              "y": -17
+            },
+            {
+              "x": 8,
+              "y": -12
+            },
+            {
+              "x": 28,
+              "y": -3
+            },
+            {
+              "x": 10,
+              "y": 6
+            },
+            {
+              "x": 23,
+              "y": 26
+            },
+            {
+              "x": 0,
+              "y": 17
+            },
+            {
+              "x": -16,
+              "y": 24
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "sera-belly",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#F1F4F0",
+              "stroke": "#263244",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -6,
+                  "y": -8
+                },
+                {
+                  "x": 9,
+                  "y": -5
+                },
+                {
+                  "x": 10,
+                  "y": 13
+                },
+                {
+                  "x": -5,
+                  "y": 16
+                }
+              ]
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "sera-wing",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#79B9D1",
+              "stroke": "#263244",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -8,
+                  "y": -6
+                },
+                {
+                  "x": -25,
+                  "y": -21
+                },
+                {
+                  "x": -17,
+                  "y": 8
+                },
+                {
+                  "x": -2,
+                  "y": 13
+                }
+              ]
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "sera-stone",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#F3D46B",
+              "stroke": "#263244",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": 13,
+              "cy": 16,
+              "rx": 5,
+              "ry": 4
+            },
+            "zIndex": 4
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": 2,
+            "y": -7
+          },
+          "rightEye": {
+            "x": 8,
+            "y": -5
+          },
+          "mouth": {
+            "x": 18,
+            "y": -2
+          }
+        },
+        "expressivePartIds": [
+          "sera-wing",
+          "sera-stone"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "sera-wing",
+            "property": "rotate",
+            "from": -5,
+            "to": 5,
+            "durationMs": 1000,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "sera-stone",
+            "property": "translateY",
+            "from": 0,
+            "to": -3,
+            "durationMs": 1300,
+            "delayMs": 400
+          }
+        ]
+      }
+    },
+    {
+      "id": "player-58694db0-368e-461a-9c7e-fd7d3c3c587d",
+      "kind": "player",
+      "name": "모아",
+      "epithet": "사이의 문을 여는 아이",
+      "essence": "서로 다른 빛깔의 선들을 느슨한 보랏빛 품 안에 모으는, 조용하지만 호기심 많은 새싹 주민",
+      "origin": "정원의 빈 여백에서 네 가지 빛깔이 나란히 흔들리자, 보랏빛 선이 그 사이를 포근히 이어 주며 태어났다.",
+      "traits": [
+        {
+          "id": "trait_gatherer",
+          "label": "다정한 모음꾼",
+          "description": "서로 다른 존재들이 편안히 함께 있을 자리를 찾는다.",
+          "visibleEvidence": "여러 색의 세로선이 하나의 보랏빛 윤곽 안팎에 나란히 모여 있다.",
+          "behavioralEffect": "혼자 있는 주민에게 천천히 다가가 함께할 틈을 내어 준다.",
+          "confidence": 0.94
+        },
+        {
+          "id": "trait_flexible",
+          "label": "말랑한 균형감",
+          "description": "반듯함보다 조금씩 다른 기울기와 간격을 자연스럽게 받아들인다.",
+          "visibleEvidence": "윤곽과 색선들이 완벽히 대칭이지 않으면서도 전체 균형을 이룬다.",
+          "behavioralEffect": "계획이 어긋나도 새로운 배열이나 놀이 방법을 금방 찾아낸다.",
+          "confidence": 0.9
+        },
+        {
+          "id": "trait_gatekeeper",
+          "label": "틈새 지킴이",
+          "description": "가까워지는 일과 거리를 두는 일 사이의 알맞은 경계를 소중히 여긴다.",
+          "visibleEvidence": "색선마다 사이가 남아 있고, 일부는 윤곽의 안과 밖을 걸친다.",
+          "behavioralEffect": "친구의 허락을 확인한 뒤 가까이 다가가며 불편한 기색을 빠르게 알아챈다.",
+          "confidence": 0.86
+        },
+        {
+          "id": "trait_rhythmic",
+          "label": "살랑 박자",
+          "description": "말보다 몸의 작은 좌우 흔들림으로 기분을 먼저 표현한다.",
+          "visibleEvidence": "길고 둥근 색선들이 서로 다른 방향으로 살짝 기울어 있다.",
+          "behavioralEffect": "기쁘면 색선들이 차례로 흔들리고, 생각할 때는 움직임이 잔잔해진다.",
+          "confidence": 0.92
+        }
+      ],
+      "drives": [
+        "서로 다른 친구들 사이에 편안한 연결 만들기",
+        "정원 곳곳의 색과 소리를 모아 새로운 순서로 배열하기",
+        "아직 이름 없는 작은 틈과 길을 발견하기"
+      ],
+      "needs": [
+        "서두르지 않고 주변을 살필 시간",
+        "몸의 색선들이 자유롭게 흔들릴 만큼 넉넉한 공간",
+        "혼자 고요히 균형을 되찾는 짧은 휴식",
+        "가까이 오기 전에 먼저 건네는 다정한 신호"
+      ],
+      "boundaries": [
+        "허락 없이 몸의 색선 사이로 들어오는 것을 좋아하지 않는다.",
+        "큰 소리가 오래 이어지면 조용한 곳으로 물러난다.",
+        "친구들을 억지로 같은 모양이나 같은 생각으로 맞추려 하지 않는다."
+      ],
+      "abilities": [
+        "서로 어울리는 색이나 친구의 조합을 감각적으로 찾아낸다.",
+        "몸을 살랑여 가까운 곳에 부드러운 박자를 전한다.",
+        "두 대상 사이에 안전하게 지나갈 수 있는 간격을 가늠한다.",
+        "흩어진 작은 물건들을 보기 편한 순서로 세운다."
+      ],
+      "visibleSignals": [
+        "편안할 때 네 색선의 기울기가 느슨하게 번갈아 움직인다.",
+        "호기심이 생기면 보랏빛 윗부분이 살짝 앞으로 기운다.",
+        "기쁘면 노랑과 초록 선이 먼저 들썩이고 빨강과 파랑 선이 뒤따른다.",
+        "불편하면 네 색선이 몸의 가운데 쪽으로 조금 모이고 흔들림이 멎는다."
+      ],
+      "voice": {
+        "rhythm": "짧은 말을 한 박자씩 띄우며, 중요한 낱말은 부드럽게 반복한다.",
+        "vocabulary": "색, 사이, 나란히, 살랑, 잠깐, 함께 같은 포근하고 구체적인 말을 즐겨 쓴다.",
+        "sampleLine": "우리, 조금만 사이를 남기고 나란히 있어 볼래?"
+      },
+      "motion": {
+        "idle": "네 색선이 차례로 아주 작게 좌우로 흔들리고, 보랏빛 윤곽은 천천히 숨 쉬듯 오르내린다.",
+        "approach": "몸을 약간 옆으로 돌려 넉넉한 간격을 보이며 두 번 가볍게 흔들린 뒤 다가간다.",
+        "delight": "노랑, 초록, 빨강, 파랑 순서로 통통 튀며 보랏빛 윤곽이 한 번 넓어졌다 돌아온다.",
+        "discomfort": "색선들이 가운데로 모이고 몸 전체가 뒤로 조금 물러난 뒤 조용히 멈춘다."
+      },
+      "mood": "낯선 리듬을 하나 얻은 기쁨",
+      "currentGoal": "정원에서 처음 만난 친구와 서로 편안한 거리를 찾아 나란히 서 보기",
+      "homePosition": {
+        "x": 0.5,
+        "y": 0.38
+      },
+      "design": {
+        "silhouette": "각진 보랏빛 고리 안팎으로 네 개의 둥근 세로선이 나란히 선, 가볍고 열린 문 같은 모습",
+        "palette": [
+          "#8E73B5",
+          "#F06455",
+          "#F4B844",
+          "#70A95F",
+          "#4E8CB8",
+          "#FFF9EF"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "#00000000",
+          "stroke": "#8E73B5",
+          "strokeWidth": 10,
+          "opacity": 1,
+          "points": [
+            {
+              "x": 0,
+              "y": -92
+            },
+            {
+              "x": 88,
+              "y": 0
+            },
+            {
+              "x": 42,
+              "y": 58
+            },
+            {
+              "x": 0,
+              "y": 38
+            },
+            {
+              "x": -42,
+              "y": 58
+            },
+            {
+              "x": -88,
+              "y": 0
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "red_bar",
+            "shape": {
+              "kind": "line",
+              "fill": "#F06455",
+              "stroke": "#F06455",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": -85,
+              "y1": -66,
+              "x2": -74,
+              "y2": 78,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "yellow_bar",
+            "shape": {
+              "kind": "line",
+              "fill": "#F4B844",
+              "stroke": "#F4B844",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": -35,
+              "y1": -66,
+              "x2": -25,
+              "y2": 78,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "green_bar",
+            "shape": {
+              "kind": "line",
+              "fill": "#70A95F",
+              "stroke": "#70A95F",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 18,
+              "y1": -66,
+              "x2": 25,
+              "y2": 78,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "blue_bar",
+            "shape": {
+              "kind": "line",
+              "fill": "#4E8CB8",
+              "stroke": "#4E8CB8",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 66,
+              "y1": -66,
+              "x2": 76,
+              "y2": 78,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "left_eye",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#3E3550",
+              "stroke": "#3E3550",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": -13,
+              "cy": -8,
+              "rx": 3,
+              "ry": 4
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "right_eye",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#3E3550",
+              "stroke": "#3E3550",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": 13,
+              "cy": -8,
+              "rx": 3,
+              "ry": 4
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "mouth",
+            "shape": {
+              "kind": "line",
+              "fill": "#00000000",
+              "stroke": "#3E3550",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "x1": -5,
+              "y1": 10,
+              "x2": 5,
+              "y2": 10,
+              "linecap": "round"
+            },
+            "zIndex": 3
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -13,
+            "y": -8
+          },
+          "rightEye": {
+            "x": 13,
+            "y": -8
+          },
+          "mouth": {
+            "x": 0,
+            "y": 10
+          }
+        },
+        "expressivePartIds": [
+          "red_bar",
+          "yellow_bar",
+          "green_bar",
+          "blue_bar",
+          "left_eye",
+          "right_eye",
+          "mouth"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": null,
+            "property": "translateY",
+            "from": -2,
+            "to": 2,
+            "durationMs": 2400,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "red_bar",
+            "property": "rotate",
+            "from": -2,
+            "to": 2,
+            "durationMs": 1800,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "yellow_bar",
+            "property": "rotate",
+            "from": 2,
+            "to": -2,
+            "durationMs": 1800,
+            "delayMs": 220
+          },
+          {
+            "targetPartId": "green_bar",
+            "property": "rotate",
+            "from": -2,
+            "to": 2,
+            "durationMs": 1800,
+            "delayMs": 440
+          },
+          {
+            "targetPartId": "blue_bar",
+            "property": "rotate",
+            "from": 2,
+            "to": -2,
+            "durationMs": 1800,
+            "delayMs": 660
+          }
+        ]
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "sourceId": "npc-1-mdrq78",
+      "targetId": "npc-2-1gsk7j0",
+      "affinity": 0.62,
+      "trust": 0.48,
+      "tension": 0.18,
+      "label": "말하지 않은 고마움",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-2-1gsk7j0",
+      "targetId": "npc-1-mdrq78",
+      "affinity": 0.71,
+      "trust": 0.39,
+      "tension": 0.27,
+      "label": "궁금한 거리",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-3-teqmcv",
+      "targetId": "npc-4-18vbnvg",
+      "affinity": 0.74,
+      "trust": 0.51,
+      "tension": 0.22,
+      "label": "기다리는 약속",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-4-18vbnvg",
+      "targetId": "npc-3-teqmcv",
+      "affinity": 0.69,
+      "trust": 0.43,
+      "tension": 0.34,
+      "label": "미완성의 선물",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-4-18vbnvg",
+      "targetId": "npc-2-1gsk7j0",
+      "affinity": 0.45,
+      "trust": 0.35,
+      "tension": 0.12,
+      "label": "빛과 물결의 관찰자",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "player-58694db0-368e-461a-9c7e-fd7d3c3c587d",
+      "targetId": "npc-1-mdrq78",
+      "affinity": 0.1,
+      "trust": 0.27,
+      "tension": 0.13,
+      "label": "서로 다른 박자를 한 번 이어 본 사이",
+      "lastChangedSceneId": "scene_2_1y8aw5q"
+    }
+  ],
+  "memories": [
+    {
+      "id": "mem_5cepp6",
+      "ownerId": "player-58694db0-368e-461a-9c7e-fd7d3c3c587d",
+      "sceneId": "scene_2_1y8aw5q",
+      "summary": "모아가 나리와 처음으로 서로 다른 몸짓을 이어 보았다.",
+      "interpretation": "나리은 내 속도와 달랐지만 기다릴 수 있는 빈자리를 남겨 주었다.",
+      "visibility": "private",
+      "salience": 0.82
+    },
+    {
+      "id": "mem_cxqwjd",
+      "ownerId": "npc-1-mdrq78",
+      "sceneId": "scene_2_1y8aw5q",
+      "summary": "나리가 모아의 낯선 신호에 자기 방식으로 대답했다.",
+      "interpretation": "모아의 모양은 고쳐야 할 것이 아니라 함께 움직일 새로운 규칙일 수 있다.",
+      "visibility": "shared",
+      "salience": 0.76
+    }
+  ],
+  "openThreads": [
+    {
+      "id": "thread-blue-ribbon",
+      "title": "파란 끈의 주인",
+      "description": "나리는 자신이 보관 중인 파란 끈이 도윤의 것인지 묻고 싶다. 도윤은 그 질문을 기다리면서도 먼저 꺼내지 못하고 있다.",
+      "participantIds": [
+        "npc-1-mdrq78",
+        "npc-2-1gsk7j0"
+      ],
+      "status": "open",
+      "createdSceneId": null
+    },
+    {
+      "id": "thread-shell-sketch",
+      "title": "아직 덜 그린 껍질",
+      "description": "세라는 보미의 껍질을 그려 주겠다고 약속했지만, 스케치가 마음에 들지 않아 보여 주지 못하고 있다.",
+      "participantIds": [
+        "npc-3-teqmcv",
+        "npc-4-18vbnvg"
+      ],
+      "status": "open",
+      "createdSceneId": null
+    },
+    {
+      "id": "thread_2_1y8aw5q",
+      "title": "둘만 들은 다음 박자",
+      "description": "모아와 나리가 만든 첫 리듬에는 아직 이어지지 않은 한 박자가 남았다.",
+      "participantIds": [
+        "player-58694db0-368e-461a-9c7e-fd7d3c3c587d",
+        "npc-1-mdrq78"
+      ],
+      "status": "open",
+      "createdSceneId": "scene_2_1y8aw5q"
+    }
+  ],
+  "recentScenes": [
+    {
+      "id": "scene_2_1y8aw5q",
+      "title": "모아의 선끝에 나리가 대답한 방식",
+      "summary": "모아가 자기 몸짓을 먼저 보여 주고 나리가 전혀 다른 버릇으로 받아, 둘 사이에 없던 리듬이 생겼다.",
+      "participantIds": [
+        "player-58694db0-368e-461a-9c7e-fd7d3c3c587d",
+        "npc-1-mdrq78"
+      ],
+      "atRevision": 2
+    }
+  ]
+}

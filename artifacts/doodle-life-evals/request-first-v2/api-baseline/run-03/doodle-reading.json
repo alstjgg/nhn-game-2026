@@ -1,0 +1,444 @@
+{
+  "response": {
+    "requestId": "eval-request-first-v2-r03-read",
+    "readIndex": 0,
+    "canReread": true,
+    "usedFallback": false,
+    "fallbackReason": null,
+    "reading": {
+      "name": "마름날개",
+      "essence": "좌우로 길게 펼쳐진 각진 윤곽 위에 중앙의 세로 고리들과 오른쪽의 겹마름모가 이어진 검은 선 그림입니다.",
+      "visibleFeatures": [
+        {
+          "id": "left-wing",
+          "label": "왼쪽 각진 날개",
+          "description": "왼쪽 끝에서 중앙으로 넓게 펼쳐지며 위아래가 꺾이는 빈 윤곽입니다.",
+          "evidence": "굵은 검은 선이 왼쪽 꼭짓점과 위·아래 모서리를 지나 중앙의 좁은 부분으로 이어집니다.",
+          "region": {
+            "x": 0.115,
+            "y": 0.369,
+            "width": 0.265,
+            "height": 0.375
+          },
+          "confidence": 0.97
+        },
+        {
+          "id": "center-loops",
+          "label": "가운데 솟은 고리선",
+          "description": "몸체 중앙 위로 세 개의 뾰족한 봉우리처럼 보이는 선 구조가 솟아 있습니다.",
+          "evidence": "세로로 올라간 선들이 꼭짓점과 사선으로 연결되고, 아래쪽 끝은 본체 안에서 끊겨 있습니다.",
+          "region": {
+            "x": 0.321,
+            "y": 0.273,
+            "width": 0.167,
+            "height": 0.258
+          },
+          "confidence": 0.91
+        },
+        {
+          "id": "right-wing",
+          "label": "오른쪽 각진 날개",
+          "description": "중앙에서 오른쪽으로 벌어졌다가 다시 좁아지는 대칭에 가까운 빈 윤곽입니다.",
+          "evidence": "위쪽과 아래쪽의 긴 사선이 바깥 모서리를 만들며 오른쪽 끝의 선 구조로 모입니다.",
+          "region": {
+            "x": 0.432,
+            "y": 0.36,
+            "width": 0.312,
+            "height": 0.397
+          },
+          "confidence": 0.96
+        },
+        {
+          "id": "right-diamonds",
+          "label": "오른쪽 겹마름모",
+          "description": "오른쪽 끝에 작은 마름모 두 개가 겹쳐 교차선을 만듭니다.",
+          "evidence": "네 방향의 사선들이 중앙에서 교차하고 바깥쪽에 뾰족한 끝을 형성합니다.",
+          "region": {
+            "x": 0.641,
+            "y": 0.501,
+            "width": 0.142,
+            "height": 0.149
+          },
+          "confidence": 0.94
+        }
+      ],
+      "motionHints": [
+        {
+          "featureId": "left-wing",
+          "motion": "bend",
+          "anchor": {
+            "x": 0.31,
+            "y": 0.515
+          },
+          "description": "중앙 가까운 좁은 연결점을 기준으로 넓은 왼쪽 윤곽이 위아래로 굽힐 수 있는 형태입니다."
+        },
+        {
+          "featureId": "right-wing",
+          "motion": "bend",
+          "anchor": {
+            "x": 0.49,
+            "y": 0.52
+          },
+          "description": "중앙 연결부를 축으로 오른쪽의 긴 각진 윤곽이 굽혀지는 움직임이 어울립니다."
+        },
+        {
+          "featureId": "right-diamonds",
+          "motion": "rotate",
+          "anchor": {
+            "x": 0.704,
+            "y": 0.575
+          },
+          "description": "교차점이 뚜렷해 겹마름모가 그 중심 둘레로 도는 움직임을 떠올릴 수 있습니다."
+        }
+      ],
+      "uncertainties": [
+        {
+          "region": {
+            "x": 0.321,
+            "y": 0.273,
+            "width": 0.167,
+            "height": 0.258
+          },
+          "reason": "가운데 선들이 고리, 돌기, 다리 중 무엇을 나타내는지는 선만으로 확정하기 어렵습니다."
+        },
+        {
+          "region": {
+            "x": 0.641,
+            "y": 0.501,
+            "width": 0.142,
+            "height": 0.149
+          },
+          "reason": "겹마름모의 구체적인 기능이나 앞뒤 방향은 시각적으로 충분히 표시되지 않았습니다."
+        }
+      ]
+    },
+    "trace": {
+      "mode": "staged",
+      "calls": [
+        {
+          "id": "resp_02f972f738f7594f016a623714f97c819a8935657d50c2313e",
+          "role": "doodle-reader",
+          "provider": "openai",
+          "model": "gpt-5.6-sol",
+          "startedAt": "2026-07-23T15:45:24.809Z",
+          "latencyMs": 20240,
+          "usage": {
+            "inputTokens": 1129,
+            "cachedInputTokens": 1051,
+            "outputTokens": 985,
+            "reasoningTokens": 144,
+            "totalTokens": 2114
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 1129,
+        "cachedInputTokens": 1051,
+        "outputTokens": 985,
+        "reasoningTokens": 144,
+        "totalTokens": 2114
+      },
+      "totalLatencyMs": 20240,
+      "wallClockMs": 20241
+    }
+  },
+  "rawProviderOutput": {
+    "name": "마름날개",
+    "essence": "좌우로 길게 펼쳐진 각진 윤곽 위에 중앙의 세로 고리들과 오른쪽의 겹마름모가 이어진 검은 선 그림입니다.",
+    "visibleFeatures": [
+      {
+        "id": "left-wing",
+        "label": "왼쪽 각진 날개",
+        "description": "왼쪽 끝에서 중앙으로 넓게 펼쳐지며 위아래가 꺾이는 빈 윤곽입니다.",
+        "evidence": "굵은 검은 선이 왼쪽 꼭짓점과 위·아래 모서리를 지나 중앙의 좁은 부분으로 이어집니다.",
+        "region": {
+          "x": 0.115,
+          "y": 0.369,
+          "width": 0.265,
+          "height": 0.375
+        },
+        "confidence": 0.97,
+        "affordances": [
+          "glide",
+          "stretch"
+        ]
+      },
+      {
+        "id": "center-loops",
+        "label": "가운데 솟은 고리선",
+        "description": "몸체 중앙 위로 세 개의 뾰족한 봉우리처럼 보이는 선 구조가 솟아 있습니다.",
+        "evidence": "세로로 올라간 선들이 꼭짓점과 사선으로 연결되고, 아래쪽 끝은 본체 안에서 끊겨 있습니다.",
+        "region": {
+          "x": 0.321,
+          "y": 0.273,
+          "width": 0.167,
+          "height": 0.258
+        },
+        "confidence": 0.91,
+        "affordances": [
+          "grip"
+        ]
+      },
+      {
+        "id": "right-wing",
+        "label": "오른쪽 각진 날개",
+        "description": "중앙에서 오른쪽으로 벌어졌다가 다시 좁아지는 대칭에 가까운 빈 윤곽입니다.",
+        "evidence": "위쪽과 아래쪽의 긴 사선이 바깥 모서리를 만들며 오른쪽 끝의 선 구조로 모입니다.",
+        "region": {
+          "x": 0.432,
+          "y": 0.36,
+          "width": 0.312,
+          "height": 0.397
+        },
+        "confidence": 0.96,
+        "affordances": [
+          "glide",
+          "stretch"
+        ]
+      },
+      {
+        "id": "right-diamonds",
+        "label": "오른쪽 겹마름모",
+        "description": "오른쪽 끝에 작은 마름모 두 개가 겹쳐 교차선을 만듭니다.",
+        "evidence": "네 방향의 사선들이 중앙에서 교차하고 바깥쪽에 뾰족한 끝을 형성합니다.",
+        "region": {
+          "x": 0.641,
+          "y": 0.501,
+          "width": 0.142,
+          "height": 0.149
+        },
+        "confidence": 0.94,
+        "affordances": [
+          "connect",
+          "signal"
+        ]
+      }
+    ],
+    "motionHints": [
+      {
+        "featureId": "left-wing",
+        "motion": "bend",
+        "anchor": {
+          "x": 0.31,
+          "y": 0.515
+        },
+        "description": "중앙 가까운 좁은 연결점을 기준으로 넓은 왼쪽 윤곽이 위아래로 굽힐 수 있는 형태입니다."
+      },
+      {
+        "featureId": "right-wing",
+        "motion": "bend",
+        "anchor": {
+          "x": 0.49,
+          "y": 0.52
+        },
+        "description": "중앙 연결부를 축으로 오른쪽의 긴 각진 윤곽이 굽혀지는 움직임이 어울립니다."
+      },
+      {
+        "featureId": "right-diamonds",
+        "motion": "rotate",
+        "anchor": {
+          "x": 0.704,
+          "y": 0.575
+        },
+        "description": "교차점이 뚜렷해 겹마름모가 그 중심 둘레로 도는 움직임을 떠올릴 수 있습니다."
+      }
+    ],
+    "uncertainties": [
+      {
+        "region": {
+          "x": 0.321,
+          "y": 0.273,
+          "width": 0.167,
+          "height": 0.258
+        },
+        "reason": "가운데 선들이 고리, 돌기, 다리 중 무엇을 나타내는지는 선만으로 확정하기 어렵습니다."
+      },
+      {
+        "region": {
+          "x": 0.641,
+          "y": 0.501,
+          "width": 0.142,
+          "height": 0.149
+        },
+        "reason": "겹마름모의 구체적인 기능이나 앞뒤 방향은 시각적으로 충분히 표시되지 않았습니다."
+      }
+    ]
+  },
+  "providerCall": {
+    "role": "doodle-reader",
+    "schemaName": "doodle_life_doodle_reading",
+    "reasoning": "low",
+    "maxOutputTokens": 2400,
+    "inputMetadata": [
+      {
+        "type": "input_text",
+        "json": {
+          "image": {
+            "mimeType": "image/jpeg",
+            "width": 904,
+            "height": 396,
+            "sha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680"
+          },
+          "drawingMetrics": null,
+          "coordinateConvention": "normalized bounding rectangles relative to the attached cropped image"
+        }
+      },
+      {
+        "type": "input_image",
+        "attached": true,
+        "detail": "high",
+        "dataUrlOmitted": true,
+        "image": {
+          "file": "soso-last-note-full.jpg",
+          "sha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680",
+          "mimeType": "image/jpeg",
+          "width": 904,
+          "height": 396,
+          "drawingMetrics": null
+        }
+      }
+    ],
+    "startedAt": "2026-07-23T15:45:24.809Z",
+    "endedAt": "2026-07-23T15:45:45.049Z",
+    "wallClockMs": 20241,
+    "status": "completed",
+    "output": {
+      "name": "마름날개",
+      "essence": "좌우로 길게 펼쳐진 각진 윤곽 위에 중앙의 세로 고리들과 오른쪽의 겹마름모가 이어진 검은 선 그림입니다.",
+      "visibleFeatures": [
+        {
+          "id": "left-wing",
+          "label": "왼쪽 각진 날개",
+          "description": "왼쪽 끝에서 중앙으로 넓게 펼쳐지며 위아래가 꺾이는 빈 윤곽입니다.",
+          "evidence": "굵은 검은 선이 왼쪽 꼭짓점과 위·아래 모서리를 지나 중앙의 좁은 부분으로 이어집니다.",
+          "region": {
+            "x": 0.115,
+            "y": 0.369,
+            "width": 0.265,
+            "height": 0.375
+          },
+          "confidence": 0.97,
+          "affordances": [
+            "glide",
+            "stretch"
+          ]
+        },
+        {
+          "id": "center-loops",
+          "label": "가운데 솟은 고리선",
+          "description": "몸체 중앙 위로 세 개의 뾰족한 봉우리처럼 보이는 선 구조가 솟아 있습니다.",
+          "evidence": "세로로 올라간 선들이 꼭짓점과 사선으로 연결되고, 아래쪽 끝은 본체 안에서 끊겨 있습니다.",
+          "region": {
+            "x": 0.321,
+            "y": 0.273,
+            "width": 0.167,
+            "height": 0.258
+          },
+          "confidence": 0.91,
+          "affordances": [
+            "grip"
+          ]
+        },
+        {
+          "id": "right-wing",
+          "label": "오른쪽 각진 날개",
+          "description": "중앙에서 오른쪽으로 벌어졌다가 다시 좁아지는 대칭에 가까운 빈 윤곽입니다.",
+          "evidence": "위쪽과 아래쪽의 긴 사선이 바깥 모서리를 만들며 오른쪽 끝의 선 구조로 모입니다.",
+          "region": {
+            "x": 0.432,
+            "y": 0.36,
+            "width": 0.312,
+            "height": 0.397
+          },
+          "confidence": 0.96,
+          "affordances": [
+            "glide",
+            "stretch"
+          ]
+        },
+        {
+          "id": "right-diamonds",
+          "label": "오른쪽 겹마름모",
+          "description": "오른쪽 끝에 작은 마름모 두 개가 겹쳐 교차선을 만듭니다.",
+          "evidence": "네 방향의 사선들이 중앙에서 교차하고 바깥쪽에 뾰족한 끝을 형성합니다.",
+          "region": {
+            "x": 0.641,
+            "y": 0.501,
+            "width": 0.142,
+            "height": 0.149
+          },
+          "confidence": 0.94,
+          "affordances": [
+            "connect",
+            "signal"
+          ]
+        }
+      ],
+      "motionHints": [
+        {
+          "featureId": "left-wing",
+          "motion": "bend",
+          "anchor": {
+            "x": 0.31,
+            "y": 0.515
+          },
+          "description": "중앙 가까운 좁은 연결점을 기준으로 넓은 왼쪽 윤곽이 위아래로 굽힐 수 있는 형태입니다."
+        },
+        {
+          "featureId": "right-wing",
+          "motion": "bend",
+          "anchor": {
+            "x": 0.49,
+            "y": 0.52
+          },
+          "description": "중앙 연결부를 축으로 오른쪽의 긴 각진 윤곽이 굽혀지는 움직임이 어울립니다."
+        },
+        {
+          "featureId": "right-diamonds",
+          "motion": "rotate",
+          "anchor": {
+            "x": 0.704,
+            "y": 0.575
+          },
+          "description": "교차점이 뚜렷해 겹마름모가 그 중심 둘레로 도는 움직임을 떠올릴 수 있습니다."
+        }
+      ],
+      "uncertainties": [
+        {
+          "region": {
+            "x": 0.321,
+            "y": 0.273,
+            "width": 0.167,
+            "height": 0.258
+          },
+          "reason": "가운데 선들이 고리, 돌기, 다리 중 무엇을 나타내는지는 선만으로 확정하기 어렵습니다."
+        },
+        {
+          "region": {
+            "x": 0.641,
+            "y": 0.501,
+            "width": 0.142,
+            "height": 0.149
+          },
+          "reason": "겹마름모의 구체적인 기능이나 앞뒤 방향은 시각적으로 충분히 표시되지 않았습니다."
+        }
+      ]
+    },
+    "trace": {
+      "id": "resp_02f972f738f7594f016a623714f97c819a8935657d50c2313e",
+      "role": "doodle-reader",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "startedAt": "2026-07-23T15:45:24.809Z",
+      "latencyMs": 20240,
+      "usage": {
+        "inputTokens": 1129,
+        "cachedInputTokens": 1051,
+        "outputTokens": 985,
+        "reasoningTokens": 144,
+        "totalTokens": 2114
+      }
+    },
+    "error": null
+  }
+}

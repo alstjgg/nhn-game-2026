@@ -1,0 +1,41 @@
+{
+  "questBlind": true,
+  "forbiddenKeysPresent": [],
+  "input": [
+    {
+      "type": "input_text",
+      "json": {
+        "image": {
+          "mimeType": "image/jpeg",
+          "width": 904,
+          "height": 396,
+          "sha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680"
+        },
+        "drawingMetrics": null,
+        "coordinateConvention": "normalized bounding rectangles relative to the attached cropped image"
+      }
+    },
+    {
+      "type": "input_image",
+      "attached": true,
+      "detail": "high",
+      "dataUrlOmitted": true,
+      "image": {
+        "file": "soso-last-note-full.jpg",
+        "sha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680",
+        "mimeType": "image/jpeg",
+        "width": 904,
+        "height": 396,
+        "drawingMetrics": null
+      }
+    }
+  ],
+  "image": {
+    "file": "soso-last-note-full.jpg",
+    "sha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680",
+    "mimeType": "image/jpeg",
+    "width": 904,
+    "height": 396,
+    "drawingMetrics": null
+  }
+}

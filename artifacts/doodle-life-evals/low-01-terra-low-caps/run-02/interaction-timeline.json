@@ -1,0 +1,127 @@
+[
+  {
+    "beat": 1,
+    "durationMs": 720,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "move",
+        "actorId": "player-1a3bfdc8-9c35-4567-86ac-a239e02dfee5",
+        "to": {
+          "x": 30,
+          "y": 59.00000000000001
+        },
+        "rotate": null,
+        "scale": 1.04
+      }
+    ]
+  },
+  {
+    "beat": 2,
+    "durationMs": 520,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "look",
+        "actorId": "npc-1-3ttb7e",
+        "targetId": "player-1a3bfdc8-9c35-4567-86ac-a239e02dfee5"
+      }
+    ]
+  },
+  {
+    "beat": 3,
+    "durationMs": 1800,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "speak",
+        "actorId": "player-1a3bfdc8-9c35-4567-86ac-a239e02dfee5",
+        "text": "안녕. 이슬 자국 사이에도 색줄이 지나갈 작은 길이 보여."
+      },
+      {
+        "order": 2,
+        "kind": "prop_create",
+        "propId": "scene_2_13ulkpl_wind_note",
+        "label": "둘 사이에서 접힌 바람 조각",
+        "symbol": "⌁",
+        "color": "보라색",
+        "position": {
+          "x": 36,
+          "y": 51.000000000000014
+        },
+        "actorId": "player-1a3bfdc8-9c35-4567-86ac-a239e02dfee5"
+      }
+    ]
+  },
+  {
+    "beat": 4,
+    "durationMs": 880,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "gesture",
+        "actorId": "npc-1-3ttb7e",
+        "gesture": "stretch",
+        "status": "등껍질을 살짝 들어 올리고 더듬이를 펼친다."
+      },
+      {
+        "order": 2,
+        "kind": "prop_transform",
+        "propId": "scene_2_13ulkpl_wind_note",
+        "scale": 1.18,
+        "rotate": 12,
+        "opacity": 0.92
+      }
+    ]
+  },
+  {
+    "beat": 5,
+    "durationMs": 1900,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "speak",
+        "actorId": "npc-1-3ttb7e",
+        "text": "음… 흔적은 건드리지 않았어요. 조심스럽게, 그 길도 세어 볼게요."
+      }
+    ]
+  },
+  {
+    "beat": 6,
+    "durationMs": 980,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "effect",
+        "effect": "dust",
+        "targetId": null,
+        "color": "#F3F7E8",
+        "intensity": 0.58
+      },
+      {
+        "order": 2,
+        "kind": "prop_transform",
+        "propId": "scene_2_13ulkpl_wind_note",
+        "scale": 0.82,
+        "rotate": -8,
+        "opacity": 0.48
+      }
+    ]
+  },
+  {
+    "beat": 7,
+    "durationMs": 460,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "pause",
+        "durationMs": 460
+      },
+      {
+        "order": 2,
+        "kind": "prop_remove",
+        "propId": "scene_2_13ulkpl_wind_note"
+      }
+    ]
+  }
+]

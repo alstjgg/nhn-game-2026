@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Doodle Life — Mode Comparison</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#eee5d7;color:#302a27;font-family:Inter,Pretendard,system-ui,sans-serif}
+    main{width:1440px;min-height:900px;margin:auto;padding:48px;background:#fffaf0}
+    .eyebrow{font:800 12px ui-monospace,monospace;letter-spacing:.15em;color:#7d6d5e}h1{font:900 44px Georgia,serif;margin:8px 0 12px}p{line-height:1.6}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:30px}.mode{border:2px solid #392f2a;border-radius:26px;padding:26px;background:white;box-shadow:0 12px 30px #4a352018}
+    .mode h2{display:flex;justify-content:space-between;font-size:27px;margin:0 0 22px}.pill{font-size:13px;padding:8px 11px;border-radius:999px;background:#f2e4ca}
+    .numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.num{padding:18px;border-radius:18px;background:#f8f2e7}.num small{display:block;font-weight:800;color:#7b6a5d}.num strong{font-size:28px;display:block;margin-top:6px}
+    table{width:100%;border-collapse:collapse;margin-top:22px}th,td{text-align:right;padding:12px;border-bottom:1px solid #ded1bd}th:first-child,td:first-child{text-align:left}.ok{color:#477143;font-weight:900}.fail{color:#ad4c46;font-weight:900}
+    .story{margin-top:20px;padding:18px;border-radius:18px;background:#eef3e5;min-height:130px}.story strong{display:block;margin-bottom:10px}.note{margin-top:25px;padding:20px;border-left:6px solid #d6776b;background:#fff0e7;border-radius:14px}
+    footer{display:flex;justify-content:space-between;margin-top:28px;color:#756457;font:700 12px ui-monospace,monospace}
+  </style>
+</head>
+<body><main>
+  <div class="eyebrow">SAME FIXED NEWCOMER SCENARIO · OPENAI API · 3 RUNS EACH</div>
+  <h1>LLM 개입 수준별 실제 실행 비교</h1>
+  <p>품질 점수 없이 호출·토큰·시간·성공 여부와 생성 원문을 그대로 비교한다.</p>
+  <section class="grid">
+    <article class="mode">
+      <h2>full-max <span class="pill">NPC 4 + Director + Critic</span></h2>
+      <div class="numbers">
+        <div class="num"><small>성공 실행 호출</small><strong>8</strong></div>
+        <div class="num"><small>성공 실행 토큰</small><strong>61,647</strong></div>
+        <div class="num"><small>성공 실행 시간</small><strong>173.0초</strong></div>
+      </div>
+      <table><tr><th>Run</th><th>결과</th><th>토큰</th><th>초</th></tr>
+        <tr><td>01</td><td class="fail">실패</td><td>57,346</td><td>154.2</td></tr>
+        <tr><td>02</td><td class="fail">실패</td><td>12,524</td><td>103.6</td></tr>
+        <tr><td>03</td><td class="ok">성공</td><td>61,647</td><td>173.0</td></tr></table>
+      <div class="story"><strong>세 번 흔들린 사이바람</strong>“물결이 바람의 길을 알려 줘. 천천히 같이 볼래?”<br>“사이바람... 좋아. 같이, 천천히.”</div>
+    </article>
+    <article class="mode">
+      <h2>dialogue-only <span class="pill">엔진 골격 + 대사 1회</span></h2>
+      <div class="numbers">
+        <div class="num"><small>평균 호출</small><strong>3</strong></div>
+        <div class="num"><small>평균 토큰</small><strong>18,333</strong></div>
+        <div class="num"><small>평균 시간</small><strong>98.4초</strong></div>
+      </div>
+      <table><tr><th>Run</th><th>결과</th><th>토큰</th><th>초</th></tr>
+        <tr><td>01</td><td class="ok">성공</td><td>18,373</td><td>96.6</td></tr>
+        <tr><td>02</td><td class="ok">성공</td><td>18,732</td><td>102.5</td></tr>
+        <tr><td>03</td><td class="ok">성공</td><td>17,893</td><td>96.0</td></tr></table>
+      <div class="story"><strong>실제 대사 예시</strong>“나리, 여기 사이를 조금 남기고 나란히 있을래?”<br>“응. 한 걸음만 여기 둘게. 모아의 살랑한 박자도 들리네.”</div>
+    </article>
+  </section>
+  <div class="note"><strong>관측:</strong> dialogue-only 상호작용 호출 자체는 약 1.8–1.9초였다. 전체 약 98초의 대부분은 두 모드가 공통으로 매번 수행한 World Author와 Doodle VLM에서 발생했다.</div>
+  <footer><span>2026-07-23 · provider gate: API selected</span><span>원본 JSON과 오류 partial trace 보존</span></footer>
+</main></body></html>

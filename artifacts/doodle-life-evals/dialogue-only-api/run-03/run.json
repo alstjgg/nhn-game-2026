@@ -1,0 +1,150 @@
+{
+  "run": 3,
+  "temperature": "warm",
+  "startedAt": "2026-07-23T08:24:28.547Z",
+  "endedAt": "2026-07-23T08:26:04.614Z",
+  "ok": true,
+  "timeline": [
+    {
+      "stage": "bootstrap",
+      "startedAt": "2026-07-23T08:24:28.547Z",
+      "endedAt": "2026-07-23T08:25:21.373Z",
+      "wallClockMs": 52826,
+      "ok": true
+    },
+    {
+      "stage": "doodle-birth",
+      "startedAt": "2026-07-23T08:25:21.375Z",
+      "endedAt": "2026-07-23T08:26:02.751Z",
+      "wallClockMs": 41377,
+      "ok": true
+    },
+    {
+      "stage": "newcomer-arrived",
+      "startedAt": "2026-07-23T08:26:02.756Z",
+      "endedAt": "2026-07-23T08:26:04.613Z",
+      "wallClockMs": 1856,
+      "ok": true
+    }
+  ],
+  "trace": {
+    "operations": [
+      {
+        "mode": "dialogue-only",
+        "calls": [
+          {
+            "id": "resp_0b9e145da9b89426016a61cfbcbde4819ab09ff11ad38be582",
+            "role": "world-author",
+            "provider": "openai",
+            "model": "gpt-5.6-terra",
+            "startedAt": "2026-07-23T08:24:28.549Z",
+            "latencyMs": 52820,
+            "usage": {
+              "inputTokens": 1791,
+              "cachedInputTokens": 1788,
+              "outputTokens": 5484,
+              "reasoningTokens": 342,
+              "totalTokens": 7275
+            }
+          }
+        ],
+        "usage": {
+          "inputTokens": 1791,
+          "cachedInputTokens": 1788,
+          "outputTokens": 5484,
+          "reasoningTokens": 342,
+          "totalTokens": 7275
+        },
+        "totalLatencyMs": 52820,
+        "wallClockMs": 52822
+      },
+      {
+        "mode": "dialogue-only",
+        "calls": [
+          {
+            "id": "resp_04339859a3be69e6016a61cff18ffc819aa5a4bbc6143af132",
+            "role": "doodle-vision",
+            "provider": "openai",
+            "model": "gpt-5.6-sol",
+            "startedAt": "2026-07-23T08:25:21.378Z",
+            "latencyMs": 41371,
+            "usage": {
+              "inputTokens": 1904,
+              "cachedInputTokens": 1832,
+              "outputTokens": 2260,
+              "reasoningTokens": 247,
+              "totalTokens": 4164
+            }
+          }
+        ],
+        "usage": {
+          "inputTokens": 1904,
+          "cachedInputTokens": 1832,
+          "outputTokens": 2260,
+          "reasoningTokens": 247,
+          "totalTokens": 4164
+        },
+        "totalLatencyMs": 41371,
+        "wallClockMs": 41373
+      },
+      {
+        "mode": "dialogue-only",
+        "calls": [
+          {
+            "id": "resp_0f7901f49d73a8ea016a61d01ae2d8819ba358098f8966f069",
+            "role": "dialogue-writer",
+            "provider": "openai",
+            "model": "gpt-5.6-terra",
+            "startedAt": "2026-07-23T08:26:02.760Z",
+            "latencyMs": 1847,
+            "usage": {
+              "inputTokens": 6307,
+              "cachedInputTokens": 0,
+              "outputTokens": 147,
+              "reasoningTokens": 0,
+              "totalTokens": 6454
+            }
+          }
+        ],
+        "usage": {
+          "inputTokens": 6307,
+          "cachedInputTokens": 0,
+          "outputTokens": 147,
+          "reasoningTokens": 0,
+          "totalTokens": 6454
+        },
+        "totalLatencyMs": 1847,
+        "wallClockMs": 1851
+      }
+    ],
+    "totals": {
+      "calls": 3,
+      "usage": {
+        "inputTokens": 10002,
+        "cachedInputTokens": 3620,
+        "outputTokens": 7891,
+        "reasoningTokens": 589,
+        "totalTokens": 17893
+      },
+      "totalLatencyMs": 96038,
+      "wallClockMs": 96046,
+      "roles": {
+        "world-author": {
+          "calls": 1,
+          "tokens": 7275,
+          "latencyMs": 52820
+        },
+        "doodle-vision": {
+          "calls": 1,
+          "tokens": 4164,
+          "latencyMs": 41371
+        },
+        "dialogue-writer": {
+          "calls": 1,
+          "tokens": 6454,
+          "latencyMs": 1847
+        }
+      }
+    }
+  }
+}

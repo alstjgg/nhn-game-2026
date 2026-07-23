@@ -1,0 +1,198 @@
+{
+  "role": "quest-observer-reaction",
+  "schemaName": "doodle_life_npc_reaction",
+  "reasoning": "low",
+  "maxOutputTokens": 900,
+  "inputMetadata": [
+    {
+      "type": "input_text",
+      "json": {
+        "actor": {
+          "id": "npc_dari",
+          "name": "다리",
+          "epithet": "세 발로 물길의 틈을 재는 씨앗",
+          "essence": "한 발이 닿을 때마다 다른 두 발이 안전한 다음 자리를 계산한다.",
+          "voiceStyle": "짧은 거리와 순서를 세어 말한다.",
+          "repeatedBehavior": "세 갈래 다리를 번갈아 내밀어 얕은 물길을 건너려다 끊긴 디딤 자국 앞에서 멈춘다."
+        },
+        "participants": [
+          {
+            "id": "npc_soso",
+            "name": "소소",
+            "role": "request-owner"
+          },
+          {
+            "id": "npc_dari",
+            "name": "다리",
+            "role": "observer"
+          },
+          {
+            "id": "doodle_89d06ff323eb80303fed",
+            "name": "잔물결 매듭",
+            "role": "new-doodle-creature"
+          }
+        ],
+        "publicProblem": {
+          "title": "기다리던 마지막 박자",
+          "problemState": "높은 리본 풍경은 세 번 울리지만 건너편 작은 종에는 마지막 소리가 도착하지 않는다.",
+          "observationFocus": "높은 곳 · 끊긴 마지막 소리"
+        },
+        "doodle": {
+          "name": "잔물결 매듭",
+          "essence": "가로로 길게 펼쳐진 굵은 지그재그 윤곽 위에 뾰족한 고리들이 솟고, 오른쪽 끝에는 선이 교차하는 작은 마름모 구조가 붙어 있다.",
+          "visibleFeatures": [
+            {
+              "id": "long_zigzag",
+              "label": "길게 펼쳐진 지그재그 윤곽",
+              "description": "좌우로 넓게 이어지며 위아래 가장자리가 각진 굴곡을 이루는 열린 선 구조다.",
+              "evidence": "짙은 선이 왼쪽 꼭짓점에서 중앙의 굴곡들을 지나 오른쪽으로 이어지고, 아래쪽 선도 여러 꼭짓점을 거쳐 되돌아온다.",
+              "region": {
+                "x": 0.117,
+                "y": 0.365,
+                "width": 0.666,
+                "height": 0.401
+              },
+              "confidence": 0.97
+            },
+            {
+              "id": "central_peaks",
+              "label": "가운데의 세로 고리와 봉우리",
+              "description": "중앙 위쪽에 세 개의 뾰족한 봉우리처럼 보이는 선들이 나란히 솟아 있다.",
+              "evidence": "약 x 0.33~0.48 구간에서 선이 위로 올라가 각진 꼭대기를 만들고, 여러 세로선이 아래 윤곽 쪽으로 내려온다.",
+              "region": {
+                "x": 0.324,
+                "y": 0.277,
+                "width": 0.163,
+                "height": 0.251
+              },
+              "confidence": 0.93
+            },
+            {
+              "id": "right_crossing",
+              "label": "오른쪽의 교차 마름모",
+              "description": "오른쪽 끝 가까이에 작은 마름모 두 개가 겹친 듯한 교차선 구조가 있다.",
+              "evidence": "네 방향으로 기울어진 선들이 중앙에서 교차하며 여러 개의 작은 삼각형과 마름모꼴 빈칸을 만든다.",
+              "region": {
+                "x": 0.643,
+                "y": 0.501,
+                "width": 0.141,
+                "height": 0.158
+              },
+              "confidence": 0.96
+            }
+          ],
+          "motionHints": [
+            {
+              "featureId": "long_zigzag",
+              "motion": "bend",
+              "anchor": {
+                "x": 0.408,
+                "y": 0.755
+              },
+              "description": "아래쪽 중앙의 깊은 꼭짓점을 축으로 긴 윤곽이 위아래로 접히듯 굽을 수 있다."
+            },
+            {
+              "featureId": "central_peaks",
+              "motion": "pulse",
+              "anchor": {
+                "x": 0.407,
+                "y": 0.337
+              },
+              "description": "반복되는 세로 봉우리들이 차례로 높아졌다 낮아지는 박동을 암시한다."
+            },
+            {
+              "featureId": "right_crossing",
+              "motion": "rotate",
+              "anchor": {
+                "x": 0.713,
+                "y": 0.579
+              },
+              "description": "교차선의 중심을 기준으로 작은 마름모 구조가 회전하는 움직임을 붙일 수 있다."
+            }
+          ],
+          "uncertainties": [
+            {
+              "region": {
+                "x": 0.324,
+                "y": 0.277,
+                "width": 0.163,
+                "height": 0.251
+              },
+              "reason": "봉우리와 세로선의 정확한 용도는 드러나지 않아, 고리인지 돌기인지 확정하기 어렵다."
+            },
+            {
+              "region": {
+                "x": 0.643,
+                "y": 0.501,
+                "width": 0.141,
+                "height": 0.158
+              },
+              "reason": "교차 구조는 분명하지만 매듭, 장식, 끝부분 중 무엇을 나타내는지는 시각적으로 확정되지 않는다."
+            }
+          ]
+        },
+        "fixedResult": {
+          "verdict": "full",
+          "summary": "받은 울림이 건너편 종까지 세 번 모두 도착한다. 두 소품 사이에 세 박자의 바람 소리가 남는다. 새 생명체가 높은 울림을 받고 소소와 같은 박자로 건너편에 전했다.",
+          "questResolved": true,
+          "appliedEffectDescriptions": [
+            "받은 울림이 건너편 종까지 세 번 모두 도착한다.",
+            "두 소품 사이에 세 박자의 바람 소리가 남는다.",
+            "새 생명체가 높은 울림을 받고 소소와 같은 박자로 건너편에 전했다."
+          ]
+        },
+        "allowedPropIds": [
+          "far_bell",
+          "far_bell"
+        ],
+        "allowedParticipantIds": [
+          "npc_soso",
+          "npc_dari",
+          "doodle_89d06ff323eb80303fed"
+        ]
+      }
+    }
+  ],
+  "startedAt": "2026-07-23T15:44:55.871Z",
+  "endedAt": "2026-07-23T15:45:00.929Z",
+  "wallClockMs": 5058,
+  "status": "completed",
+  "output": {
+    "actorId": "npc_dari",
+    "emotion": "delighted",
+    "grounding": "세 번째 울림이 건너편 작은 종까지 이어지고, 잔물결 매듭의 긴 윤곽이 박자처럼 가늘게 흔들린다.",
+    "commands": [
+      {
+        "kind": "look",
+        "actorId": "npc_dari",
+        "targetId": "doodle_89d06ff323eb80303fed"
+      },
+      {
+        "kind": "gesture",
+        "actorId": "npc_dari",
+        "gesture": "nod"
+      },
+      {
+        "kind": "speak",
+        "actorId": "npc_dari",
+        "text": "하나, 둘, 셋. 마지막 자리까지 닿았네."
+      }
+    ]
+  },
+  "trace": {
+    "id": "resp_0298928823c3dc29016a6236fac458819a9c533ae47f759f64",
+    "role": "quest-observer-reaction",
+    "provider": "openai",
+    "model": "gpt-5.6-terra",
+    "startedAt": "2026-07-23T15:44:55.872Z",
+    "latencyMs": 5057,
+    "usage": {
+      "inputTokens": 1535,
+      "cachedInputTokens": 0,
+      "outputTokens": 145,
+      "reasoningTokens": 0,
+      "totalTokens": 1680
+    }
+  },
+  "error": null
+}

@@ -1,0 +1,195 @@
+{
+  "requestId": "eval-doodle-life-off-v1-birth",
+  "expectedRevision": 0,
+  "character": {
+    "id": "player-82d11066-2060-496d-9d56-3277d4e29736",
+    "kind": "player",
+    "name": "포롱",
+    "epithet": "바람의 빈칸을 타고난 낙서 생명",
+    "essence": "한 번 발견한 방향을 오래 따라가며 다른 주민의 망설임에 기준점을 만든다.",
+    "origin": "정원 밖에서 그어진 선들이 투명한 여백을 품은 채 한 몸으로 일어나 이곳에 도착했다.",
+    "traits": [
+      {
+        "id": "updraft_body",
+        "label": "상승기류를 타는 몸",
+        "description": "긴 세로와 대각선 흐름을 따라 몸의 무게를 위로 옮긴다.",
+        "visibleEvidence": "그림의 긴 방향이 위쪽으로 뻗어 있어 날개나 연처럼 열린다.",
+        "behavioralEffect": "움직임을 시작할 때 뛰기보다 천천히 떠올라 곡선으로 접근한다.",
+        "confidence": 0.88
+      },
+      {
+        "id": "single_tone_focus",
+        "label": "한 색의 집중",
+        "description": "하나의 기분을 오래 놓치지 않고 따라간다.",
+        "visibleEvidence": "주된 색이 선 전체의 방향을 단단히 묶는다.",
+        "behavioralEffect": "다른 주민이 산만해지면 한 박자의 몸짓으로 중심을 되찾게 돕는다.",
+        "confidence": 0.84
+      },
+      {
+        "id": "open_ending",
+        "label": "열린 끝",
+        "description": "끝나지 않은 선을 다음 존재가 이어 줄 초대로 받아들인다.",
+        "visibleEvidence": "선끝들이 닫히지 않고 여러 방향을 향한다.",
+        "behavioralEffect": "완성된 답을 말하기보다 상대가 이어 할 작은 행동을 남긴다.",
+        "confidence": 0.8
+      }
+    ],
+    "drives": [
+      "흐트러진 움직임에 하나의 방향 건네기"
+    ],
+    "needs": [
+      "자기 모양을 고치려 들지 않고 그대로 읽어 주는 첫 만남"
+    ],
+    "boundaries": [
+      "선끝이나 빈 공간을 허락 없이 메우는 행동을 불편해한다."
+    ],
+    "abilities": [
+      "짧은 바람을 타고 천천히 활공한다."
+    ],
+    "visibleSignals": [
+      "주된 선이 곧게 펴지면 무언가를 오래 지켜보는 중이다.",
+      "열린 선끝이 상대를 향하면 다음 행동을 기다리는 중이다."
+    ],
+    "voice": {
+      "rhythm": "짧고 분명한 한 문장 뒤 긴 기다림",
+      "vocabulary": "여기, 이쪽, 아직, 따라와",
+      "sampleLine": "내 선은 여기서 멈췄어. 네가 이어도 좋아."
+    },
+    "motion": {
+      "idle": "긴 획들이 바람을 기다리듯 위아래로 조금 늘어난다.",
+      "approach": "한 번 떠올라 넓은 곡선으로 천천히 내려온다.",
+      "delight": "몸 전체가 한 번 또렷하게 밝아진다.",
+      "discomfort": "교차점 가까이 선을 모으고 열린 끝을 안쪽으로 숨긴다."
+    },
+    "mood": "낯선 정원을 읽는 설렘",
+    "currentGoal": "자기 선을 처음 알아봐 주는 주민과 예상하지 못한 몸짓 하나를 함께 만들고 싶다.",
+    "homePosition": {
+      "x": 0.5,
+      "y": 0.52
+    },
+    "design": {
+      "silhouette": "위로 갈라진 두 긴 선과 가운데 교차점을 가진 자유 낙서",
+      "palette": [
+        "#8d72ad",
+        "#f5e6c8"
+      ],
+      "body": {
+        "kind": "polygon",
+        "fill": "#8d72ad",
+        "stroke": "#34443c",
+        "strokeWidth": 3,
+        "opacity": 0.88,
+        "points": [
+          {
+            "x": 10,
+            "y": 78
+          },
+          {
+            "x": 42,
+            "y": 12
+          },
+          {
+            "x": 52,
+            "y": 54
+          },
+          {
+            "x": 88,
+            "y": 9
+          },
+          {
+            "x": 73,
+            "y": 83
+          },
+          {
+            "x": 49,
+            "y": 68
+          }
+        ]
+      },
+      "parts": [
+        {
+          "id": "signal_tip",
+          "shape": {
+            "kind": "ellipse",
+            "fill": "#f4bd4f",
+            "stroke": "#34443c",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "cx": 87,
+            "cy": 11,
+            "rx": 7,
+            "ry": 7
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "open_line",
+          "shape": {
+            "kind": "line",
+            "fill": "#8d72ad",
+            "stroke": "#8d72ad",
+            "strokeWidth": 6,
+            "opacity": 0.9,
+            "x1": 48,
+            "y1": 55,
+            "x2": 50,
+            "y2": 4,
+            "linecap": "round"
+          },
+          "zIndex": 1
+        }
+      ],
+      "faceAnchors": {
+        "leftEye": {
+          "x": 42,
+          "y": 48
+        },
+        "rightEye": {
+          "x": 57,
+          "y": 46
+        },
+        "mouth": {
+          "x": 50,
+          "y": 58
+        }
+      },
+      "expressivePartIds": [
+        "signal_tip",
+        "open_line"
+      ],
+      "idleMotions": [
+        {
+          "targetPartId": "signal_tip",
+          "property": "translateY",
+          "from": -3,
+          "to": 3,
+          "durationMs": 1900,
+          "delayMs": 0
+        },
+        {
+          "targetPartId": "open_line",
+          "property": "rotate",
+          "from": -4,
+          "to": 4,
+          "durationMs": 2800,
+          "delayMs": 350
+        }
+      ]
+    }
+  },
+  "evidenceSummary": "상승기류를 타는 몸: 그림의 긴 방향이 위쪽으로 뻗어 있어 날개나 연처럼 열린다. · 한 색의 집중: 주된 색이 선 전체의 방향을 단단히 묶는다. · 열린 끝: 선끝들이 닫히지 않고 여러 방향을 향한다.",
+  "uncertainties": [],
+  "trace": {
+    "mode": "off",
+    "calls": [],
+    "usage": {
+      "inputTokens": 0,
+      "cachedInputTokens": 0,
+      "outputTokens": 0,
+      "reasoningTokens": 0,
+      "totalTokens": 0
+    },
+    "totalLatencyMs": 0,
+    "wallClockMs": 1
+  }
+}

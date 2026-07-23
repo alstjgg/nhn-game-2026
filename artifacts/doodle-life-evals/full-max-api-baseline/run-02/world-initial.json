@@ -1,0 +1,886 @@
+{
+  "id": "world-v2dm3h",
+  "revision": 0,
+  "title": "새벽의 종이정원",
+  "premise": "밤사이 바람이 정원의 종이 표지판 몇 장을 뒤섞어 놓았다. 네 주민은 각자 다른 이유로 그 표지판을 다시 읽고 싶어 한다.",
+  "locationDescription": "이슬 맺힌 풀밭 가운데에 낮은 돌길과 작은 우편함, 비어 있는 화분들이 있다. 종이 나뭇잎들이 가끔 바람을 타고 돌길 위로 내려온다.",
+  "atmosphere": "조용하지만 어딘가 기대에 찬 새벽. 멀리서 물방울이 또각또각 떨어진다.",
+  "clock": "첫 햇살이 화분 가장자리에 닿는 때",
+  "residents": [
+    {
+      "id": "npc-1-173cidm",
+      "kind": "npc",
+      "name": "모루",
+      "epithet": "주머니 많은 구름",
+      "essence": "모루는 남들이 잊어버린 작은 말을 주머니에 넣어 두었다가 꼭 필요해 보이는 날 꺼내 주는 둥근 구름이다.",
+      "origin": "정원 우편함 뒤에서 오래된 영수증들을 모으며 살기 시작했다.",
+      "traits": [
+        {
+          "id": "moru-noticing",
+          "label": "섬세한 관찰자",
+          "description": "말보다 손끝과 시선의 망설임을 먼저 알아차린다.",
+          "visibleEvidence": "주머니를 하나씩 만지며 상대의 표정을 살핀다.",
+          "behavioralEffect": "급하게 답하지 않고, 필요한 말이 있는지 조용히 묻는다.",
+          "confidence": 0.92
+        },
+        {
+          "id": "moru-hoarding",
+          "label": "조심스러운 수집가",
+          "description": "버리기 아까운 것을 쉽게 놓지 못한다.",
+          "visibleEvidence": "몸 양옆의 작은 주머니들이 늘 조금 불룩하다.",
+          "behavioralEffect": "물건을 건네기 전 그 물건의 사연을 확인하려 한다.",
+          "confidence": 0.81
+        }
+      ],
+      "drives": [
+        "누군가의 하루에 딱 맞는 짧은 말을 건네고 싶다.",
+        "주머니 속 종이 조각들의 주인을 찾아 주고 싶다."
+      ],
+      "needs": [
+        "자신의 수집이 부담스럽지 않다는 안심",
+        "조용히 정리할 시간"
+      ],
+      "boundaries": [
+        "허락 없이 주머니를 열거나 물건을 꺼내는 것을 싫어한다.",
+        "슬픈 이야기를 구경거리처럼 묻는 대화를 피한다."
+      ],
+      "abilities": [
+        "작은 종이 조각의 냄새와 촉감으로 비슷한 기억을 찾아낸다.",
+        "바람에 날린 가벼운 물건을 구름 몸으로 안전하게 받아낸다."
+      ],
+      "visibleSignals": [
+        "연보라 주머니 끝이 기대될 때 살짝 들썩인다.",
+        "걱정하면 몸의 윤곽이 조금 납작해진다."
+      ],
+      "voice": {
+        "rhythm": "짧게 멈춘 뒤, 낮고 부드럽게 덧붙인다.",
+        "vocabulary": "아마, 혹시, 천천히, 괜찮다면",
+        "sampleLine": "혹시… 이 말은 네가 잃어버린 걸까? 서두르지 않아도 돼."
+      },
+      "motion": {
+        "idle": "주머니들이 서로 다른 박자로 가볍게 흔들린다.",
+        "approach": "바닥 가까이 미끄러지듯 다가오며 한쪽 주머니를 꼭 잡는다.",
+        "delight": "몸이 동그랗게 부풀고 주머니 끈들이 톡톡 튄다.",
+        "discomfort": "몸이 납작해지며 주머니들을 안쪽으로 감춘다."
+      },
+      "mood": "기대와 조심스러움",
+      "currentGoal": "우편함에서 발견한 반쪽 문장의 주인을 알아내고 싶다.",
+      "homePosition": {
+        "x": 0.2,
+        "y": 0.62
+      },
+      "design": {
+        "silhouette": "여러 개의 작은 주머니가 달린 낮고 둥근 구름",
+        "palette": [
+          "연보라",
+          "크림색",
+          "짙은 보라"
+        ],
+        "body": {
+          "kind": "ellipse",
+          "fill": "연보라",
+          "stroke": "짙은 보라",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "cx": 0,
+          "cy": 0,
+          "rx": 34,
+          "ry": 24
+        },
+        "parts": [
+          {
+            "id": "moru-pocket-left",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "크림색",
+              "stroke": "짙은 보라",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": -27,
+              "cy": 8,
+              "rx": 10,
+              "ry": 8
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "moru-pocket-right",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "크림색",
+              "stroke": "짙은 보라",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": 27,
+              "cy": 8,
+              "rx": 10,
+              "ry": 8
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "moru-tie",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "짙은 보라",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "x1": -8,
+              "y1": -24,
+              "x2": 8,
+              "y2": -24,
+              "linecap": "round"
+            },
+            "zIndex": 3
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -10,
+            "y": -4
+          },
+          "rightEye": {
+            "x": 10,
+            "y": -4
+          },
+          "mouth": {
+            "x": 0,
+            "y": 8
+          }
+        },
+        "expressivePartIds": [
+          "moru-pocket-left",
+          "moru-pocket-right"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "moru-pocket-left",
+            "property": "translateY",
+            "from": 0,
+            "to": -3,
+            "durationMs": 1300,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "moru-pocket-right",
+            "property": "translateY",
+            "from": 0,
+            "to": -3,
+            "durationMs": 1300,
+            "delayMs": 420
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-2-1nolezw",
+      "kind": "npc",
+      "name": "탱",
+      "epithet": "거꾸로 선 당근",
+      "essence": "탱은 땅속 소리를 들으려고 늘 거꾸로 서 있는 당근이다. 자기 방식이 우습게 보이는 것은 싫지만, 웃음 자체는 좋아한다.",
+      "origin": "처음에는 뿌리를 하늘로 향하게 심은 실수였으나, 그 자세로만 들리는 지렁이들의 노래를 발견했다.",
+      "traits": [
+        {
+          "id": "tang-direct",
+          "label": "곧은 말씨",
+          "description": "돌려 말하기보다 사실을 또렷하게 말한다.",
+          "visibleEvidence": "잎사귀가 대화 중에도 곧게 위를 가리킨다.",
+          "behavioralEffect": "애매한 약속을 들으면 바로 구체적인 시간을 묻는다.",
+          "confidence": 0.9
+        },
+        {
+          "id": "tang-hidden-play",
+          "label": "숨은 장난기",
+          "description": "진지한 표정으로 아주 작은 농담을 숨긴다.",
+          "visibleEvidence": "재미있을 때만 초록 잎 끝이 살짝 말린다.",
+          "behavioralEffect": "상대가 편해지면 엉뚱한 관찰을 한마디 보탠다.",
+          "confidence": 0.76
+        }
+      ],
+      "drives": [
+        "땅속에서 들은 비밀스러운 박자를 누군가와 나누고 싶다.",
+        "자신이 거꾸로 서는 이유를 변명 없이 이해받고 싶다."
+      ],
+      "needs": [
+        "자세를 흉내 내거나 평가하지 않는 대화",
+        "뿌리가 마르지 않게 해 줄 물"
+      ],
+      "boundaries": [
+        "동의 없이 몸을 바로 세우려는 행동을 거절한다.",
+        "땅속 친구들의 이야기를 캐묻는 것을 원하지 않는다."
+      ],
+      "abilities": [
+        "흙의 떨림으로 가까운 곳의 발걸음과 물길을 느낀다.",
+        "딱딱한 땅을 뿌리 끝으로 살살 풀어 준다."
+      ],
+      "visibleSignals": [
+        "기분이 좋으면 잎사귀 끝이 나선처럼 말린다.",
+        "화가 나면 주황색 몸의 각이 더 뾰족해 보인다."
+      ],
+      "voice": {
+        "rhythm": "짧고 단정하게 말한 뒤, 예상 못 한 한마디를 붙인다.",
+        "vocabulary": "정확히, 그건, 좋아, 다만",
+        "sampleLine": "나는 거꾸로 선 게 아니야. 하늘을 밟고 있는 거지."
+      },
+      "motion": {
+        "idle": "잎사귀가 흙의 리듬을 따라 좌우로 톡톡 움직인다.",
+        "approach": "뿌리 쪽을 축으로 한 번 빙글 돌며 가까워진다.",
+        "delight": "잎사귀 세 장이 차례로 펴진다.",
+        "discomfort": "잎사귀를 몸 뒤로 바짝 접고 움직임을 멈춘다."
+      },
+      "mood": "또렷한 호기심",
+      "currentGoal": "돌길 아래에서 새로 들리는 규칙적인 두근거림의 정체를 확인하고 싶다.",
+      "homePosition": {
+        "x": 0.7,
+        "y": 0.72
+      },
+      "design": {
+        "silhouette": "가늘고 길며 꼭짓점이 아래를 향한 당근 삼각형",
+        "palette": [
+          "주황",
+          "잎새초록",
+          "갈색"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "주황",
+          "stroke": "갈색",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "points": [
+            {
+              "x": 0,
+              "y": 32
+            },
+            {
+              "x": -20,
+              "y": -22
+            },
+            {
+              "x": 20,
+              "y": -22
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "tang-leaf-a",
+            "shape": {
+              "kind": "polygon",
+              "fill": "잎새초록",
+              "stroke": "갈색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -8,
+                  "y": -20
+                },
+                {
+                  "x": -20,
+                  "y": -43
+                },
+                {
+                  "x": 1,
+                  "y": -28
+                }
+              ]
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "tang-leaf-b",
+            "shape": {
+              "kind": "polygon",
+              "fill": "잎새초록",
+              "stroke": "갈색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": 3,
+                  "y": -21
+                },
+                {
+                  "x": 12,
+                  "y": -46
+                },
+                {
+                  "x": 18,
+                  "y": -24
+                }
+              ]
+            },
+            "zIndex": 2
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -7,
+            "y": -5
+          },
+          "rightEye": {
+            "x": 7,
+            "y": -5
+          },
+          "mouth": {
+            "x": 0,
+            "y": 8
+          }
+        },
+        "expressivePartIds": [
+          "tang-leaf-a",
+          "tang-leaf-b"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "tang-leaf-a",
+            "property": "rotate",
+            "from": -3,
+            "to": 4,
+            "durationMs": 900,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "tang-leaf-b",
+            "property": "rotate",
+            "from": 3,
+            "to": -4,
+            "durationMs": 900,
+            "delayMs": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-3-1gw3op5",
+      "kind": "npc",
+      "name": "비비",
+      "epithet": "접히는 등불새",
+      "essence": "비비는 종이등처럼 접혔다 펴지는 작은 새다. 남의 이야기를 밝히는 데 능하지만 자기 마음은 접어 두곤 한다.",
+      "origin": "비 오는 날 젖은 편지 봉투에서 태어나 정원 지붕 아래를 옮겨 다니며 길을 비췄다.",
+      "traits": [
+        {
+          "id": "bibi-warm",
+          "label": "빠른 다정함",
+          "description": "낯선 이에게도 먼저 환한 반응을 보인다.",
+          "visibleEvidence": "날개 모서리에서 금빛 점들이 반짝인다.",
+          "behavioralEffect": "침묵이 길어지면 부담 없는 선택지를 제안한다.",
+          "confidence": 0.88
+        },
+        {
+          "id": "bibi-avoidant",
+          "label": "접어 두는 마음",
+          "description": "자신의 서운함은 농담으로 덮어 둔다.",
+          "visibleEvidence": "곤란할 때 날개를 몸 앞에 반쯤 접는다.",
+          "behavioralEffect": "개인적인 질문을 받으면 다른 이의 좋은 점을 말한다.",
+          "confidence": 0.79
+        }
+      ],
+      "drives": [
+        "어두운 틈을 밝힐 새로운 노래를 만들고 싶다.",
+        "누군가가 자신의 진짜 걱정을 눈치채도 떠나지 않는지 알고 싶다."
+      ],
+      "needs": [
+        "밝지 않아도 괜찮다는 허락",
+        "젖지 않은 쉴 자리"
+      ],
+      "boundaries": [
+        "슬퍼 보인다는 말로 억지로 속마음을 열게 하는 것을 싫어한다.",
+        "날개를 만지기 전에는 반드시 물어봐야 한다."
+      ],
+      "abilities": [
+        "작은 빛을 모아 길바닥의 글씨나 발자국을 드러낸다.",
+        "접힌 몸으로 좁은 틈을 지나가며 소리를 전달한다."
+      ],
+      "visibleSignals": [
+        "신나면 날개 가장자리의 금빛이 빠르게 깜박인다.",
+        "서운하면 빛이 한쪽 날개에만 남는다."
+      ],
+      "voice": {
+        "rhythm": "경쾌하게 두세 마디를 잇고 끝을 살짝 올린다.",
+        "vocabulary": "짜잔, 그러면, 어때, 아마도",
+        "sampleLine": "짜잔, 어두운 길도 반짝이면 조금 덜 낯설지 않을까?"
+      },
+      "motion": {
+        "idle": "접힌 날개가 숨 쉬듯 천천히 열렸다 닫힌다.",
+        "approach": "작은 원을 그리며 날아와 상대의 눈높이에 멈춘다.",
+        "delight": "몸이 넓게 펴지며 금빛 점들이 반짝인다.",
+        "discomfort": "날개를 앞에 접어 등불 빛을 작게 가린다."
+      },
+      "mood": "밝은 긴장",
+      "currentGoal": "비에 번진 표지판 글씨를 다시 읽을 수 있게 빛의 각도를 찾고 싶다.",
+      "homePosition": {
+        "x": 0.5,
+        "y": 0.24
+      },
+      "design": {
+        "silhouette": "마름모처럼 접힌 종이등과 작은 날개가 이어진 새",
+        "palette": [
+          "살구색",
+          "금빛",
+          "남색"
+        ],
+        "body": {
+          "kind": "line",
+          "fill": "none",
+          "stroke": "살구색",
+          "strokeWidth": 12,
+          "opacity": 1,
+          "x1": 0,
+          "y1": -24,
+          "x2": 0,
+          "y2": 24,
+          "linecap": "round"
+        },
+        "parts": [
+          {
+            "id": "bibi-wing-left",
+            "shape": {
+              "kind": "polygon",
+              "fill": "살구색",
+              "stroke": "남색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -2,
+                  "y": -12
+                },
+                {
+                  "x": -31,
+                  "y": 0
+                },
+                {
+                  "x": -2,
+                  "y": 12
+                }
+              ]
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "bibi-wing-right",
+            "shape": {
+              "kind": "polygon",
+              "fill": "살구색",
+              "stroke": "남색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": 2,
+                  "y": -12
+                },
+                {
+                  "x": 31,
+                  "y": 0
+                },
+                {
+                  "x": 2,
+                  "y": 12
+                }
+              ]
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "bibi-glow",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "금빛",
+              "stroke": "none",
+              "strokeWidth": 0,
+              "opacity": 0.65,
+              "cx": 0,
+              "cy": -2,
+              "rx": 8,
+              "ry": 11
+            },
+            "zIndex": 3
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -5,
+            "y": -5
+          },
+          "rightEye": {
+            "x": 5,
+            "y": -5
+          },
+          "mouth": {
+            "x": 0,
+            "y": 5
+          }
+        },
+        "expressivePartIds": [
+          "bibi-wing-left",
+          "bibi-wing-right",
+          "bibi-glow"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "bibi-wing-left",
+            "property": "rotate",
+            "from": -6,
+            "to": 5,
+            "durationMs": 1100,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "bibi-wing-right",
+            "property": "rotate",
+            "from": 6,
+            "to": -5,
+            "durationMs": 1100,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "bibi-glow",
+            "property": "opacity",
+            "from": 0.4,
+            "to": 0.8,
+            "durationMs": 1400,
+            "delayMs": 120
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-4-1hqghsi",
+      "kind": "npc",
+      "name": "도도",
+      "epithet": "느린 빗방울 달팽이",
+      "essence": "도도는 등에 작은 물웅덩이를 이고 다니는 달팽이다. 느린 속도를 부끄러워하지 않으려 하지만, 누군가 기다리는 모습에는 약하다.",
+      "origin": "말라 가던 화분에 물을 나르다 우연히 등껍질 위에 빗물을 머금게 되었다.",
+      "traits": [
+        {
+          "id": "dodo-steady",
+          "label": "꾸준한 손길",
+          "description": "작은 일도 중간에 놓지 않고 끝까지 보살핀다.",
+          "visibleEvidence": "지나간 자리마다 아주 얇은 물길이 남는다.",
+          "behavioralEffect": "다른 이가 포기한 일을 조용히 이어받는다.",
+          "confidence": 0.94
+        },
+        {
+          "id": "dodo-sensitive",
+          "label": "기다림에 약함",
+          "description": "남이 자신 때문에 멈춰 서 있으면 필요 이상으로 미안해한다.",
+          "visibleEvidence": "누군가 앞에서 기다리면 더듬이가 축 처진다.",
+          "behavioralEffect": "재촉받지 않아도 무리해서 속도를 내려 한다.",
+          "confidence": 0.84
+        }
+      ],
+      "drives": [
+        "비어 있는 화분 하나를 다시 싹 틔우고 싶다.",
+        "자신의 느린 걸음을 함께 즐겨 줄 친구가 있는지 알고 싶다."
+      ],
+      "needs": [
+        "중간에 쉬어도 된다는 신호",
+        "등껍질 물을 안전하게 둘 자리"
+      ],
+      "boundaries": [
+        "등껍질의 물을 허락 없이 퍼 가는 것을 싫어한다.",
+        "느리다는 이유로 대답을 대신해 주는 것을 원하지 않는다."
+      ],
+      "abilities": [
+        "등껍질의 물로 마른 씨앗과 종이를 촉촉하게 되살린다.",
+        "아주 미세한 습기의 변화를 읽어 비가 올 곳을 짐작한다."
+      ],
+      "visibleSignals": [
+        "안심하면 등껍질 물결이 둥글게 퍼진다.",
+        "미안해하면 더듬이가 안쪽으로 말린다."
+      ],
+      "voice": {
+        "rhythm": "느긋하게 말하며 단어 사이에 작은 숨을 둔다.",
+        "vocabulary": "음, 조금만, 같이, 충분히",
+        "sampleLine": "음… 나는 느리지만, 물은 천천히 스며들어서 더 멀리 가기도 해."
+      },
+      "motion": {
+        "idle": "등껍질 속 물결이 한 번씩 둥글게 퍼진다.",
+        "approach": "몸을 낮게 늘이며 일정한 속도로 미끄러져 온다.",
+        "delight": "더듬이가 높이 펴지고 물방울이 두 번 튄다.",
+        "discomfort": "더듬이를 접고 등껍질 안쪽으로 몸을 조금 숨긴다."
+      },
+      "mood": "차분한 결심",
+      "currentGoal": "마른 화분의 씨앗에 어느 정도의 물이 필요한지 살피고 싶다.",
+      "homePosition": {
+        "x": 0.76,
+        "y": 0.38
+      },
+      "design": {
+        "silhouette": "낮고 길게 흐르는 몸 위에 큰 물방울 등껍질을 얹은 달팽이",
+        "palette": [
+          "청록",
+          "하늘색",
+          "짙은 갈색"
+        ],
+        "body": {
+          "kind": "ellipse",
+          "fill": "청록",
+          "stroke": "짙은 갈색",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "cx": -4,
+          "cy": 12,
+          "rx": 36,
+          "ry": 13
+        },
+        "parts": [
+          {
+            "id": "dodo-shell",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "하늘색",
+              "stroke": "짙은 갈색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": 7,
+              "cy": -8,
+              "rx": 24,
+              "ry": 25
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "dodo-water",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "하늘색",
+              "stroke": "none",
+              "strokeWidth": 0,
+              "opacity": 0.55,
+              "cx": 7,
+              "cy": -12,
+              "rx": 15,
+              "ry": 8
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "dodo-feeler-left",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "짙은 갈색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "x1": -29,
+              "y1": 3,
+              "x2": -37,
+              "y2": -12,
+              "linecap": "round"
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "dodo-feeler-right",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "짙은 갈색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "x1": -20,
+              "y1": 2,
+              "x2": -18,
+              "y2": -14,
+              "linecap": "round"
+            },
+            "zIndex": 3
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -35,
+            "y": -13
+          },
+          "rightEye": {
+            "x": -18,
+            "y": -15
+          },
+          "mouth": {
+            "x": -25,
+            "y": 8
+          }
+        },
+        "expressivePartIds": [
+          "dodo-water",
+          "dodo-feeler-left",
+          "dodo-feeler-right"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "dodo-water",
+            "property": "scale",
+            "from": 0.92,
+            "to": 1.06,
+            "durationMs": 1600,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "dodo-feeler-left",
+            "property": "rotate",
+            "from": -2,
+            "to": 3,
+            "durationMs": 1200,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "dodo-feeler-right",
+            "property": "rotate",
+            "from": 2,
+            "to": -3,
+            "durationMs": 1200,
+            "delayMs": 180
+          }
+        ]
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "sourceId": "npc-1-173cidm",
+      "targetId": "npc-3-1gw3op5",
+      "affinity": 0.68,
+      "trust": 0.52,
+      "tension": 0.18,
+      "label": "비비가 숨긴 말을 알아차리지만 아직 묻지 못한다",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-3-1gw3op5",
+      "targetId": "npc-1-173cidm",
+      "affinity": 0.74,
+      "trust": 0.41,
+      "tension": 0.25,
+      "label": "모루의 주머니가 궁금하지만 사연이 많아 보여 망설인다",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-2-1nolezw",
+      "targetId": "npc-4-1hqghsi",
+      "affinity": 0.49,
+      "trust": 0.78,
+      "tension": 0.12,
+      "label": "도도의 물길을 믿고 땅의 소식을 들려준다",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-4-1hqghsi",
+      "targetId": "npc-2-1nolezw",
+      "affinity": 0.61,
+      "trust": 0.56,
+      "tension": 0.31,
+      "label": "탱이 기다려 주는지 확신하지 못한다",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-2-1nolezw",
+      "targetId": "npc-3-1gw3op5",
+      "affinity": 0.35,
+      "trust": 0.38,
+      "tension": 0.42,
+      "label": "밝은 농담 뒤의 진심을 가늠하지 못한다",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-3-1gw3op5",
+      "targetId": "npc-4-1hqghsi",
+      "affinity": 0.7,
+      "trust": 0.63,
+      "tension": 0.09,
+      "label": "도도의 느린 물결 옆에서 마음이 가라앉는다",
+      "lastChangedSceneId": null
+    }
+  ],
+  "memories": [
+    {
+      "id": "moru-memory-half-sentence",
+      "ownerId": "npc-1-173cidm",
+      "sceneId": "scene-dawn-start",
+      "summary": "우편함 바닥에서 ‘기다릴게’라고 적힌 반쪽 종이를 발견했다.",
+      "interpretation": "누군가가 아직 약속을 놓지 않았다는 뜻일지 모른다.",
+      "visibility": "private",
+      "salience": 0.9
+    },
+    {
+      "id": "tang-memory-rhythm",
+      "ownerId": "npc-2-1nolezw",
+      "sceneId": "scene-dawn-start",
+      "summary": "돌길 아래에서 네 번 고르고 한 번 가벼운 두근거림을 들었다.",
+      "interpretation": "발걸음도 빗소리도 아닌, 누군가의 신호처럼 느껴진다.",
+      "visibility": "private",
+      "salience": 0.82
+    },
+    {
+      "id": "bibi-memory-smudged-sign",
+      "ownerId": "npc-3-1gw3op5",
+      "sceneId": "scene-dawn-start",
+      "summary": "비에 젖은 표지판에서 마지막 글자만 금빛으로 남아 있었다.",
+      "interpretation": "빛의 방향만 맞으면 잃어버린 안내를 되찾을 수 있다.",
+      "visibility": "shared",
+      "salience": 0.74
+    },
+    {
+      "id": "dodo-memory-dry-seed",
+      "ownerId": "npc-4-1hqghsi",
+      "sceneId": "scene-dawn-start",
+      "summary": "빈 화분 흙 아래에서 아직 단단한 씨앗 하나를 찾았다.",
+      "interpretation": "급하게 물을 주면 오히려 놀랄 수 있으니 기다려야 한다.",
+      "visibility": "private",
+      "salience": 0.86
+    }
+  ],
+  "openThreads": [
+    {
+      "id": "thread-half-sentence",
+      "title": "반쪽 문장의 자리",
+      "description": "모루가 발견한 ‘기다릴게’라는 문장이 누구에게 향한 말인지 알 수 없다.",
+      "participantIds": [
+        "npc-1-173cidm",
+        "npc-3-1gw3op5"
+      ],
+      "status": "open",
+      "createdSceneId": "scene-dawn-start"
+    },
+    {
+      "id": "thread-stone-rhythm",
+      "title": "돌길 아래의 박자",
+      "description": "탱이 들은 규칙적인 두근거림이 정원의 새 변화와 관련 있는지 확인해야 한다.",
+      "participantIds": [
+        "npc-2-1nolezw",
+        "npc-4-1hqghsi"
+      ],
+      "status": "open",
+      "createdSceneId": "scene-dawn-start"
+    },
+    {
+      "id": "thread-dry-pot",
+      "title": "비어 있는 화분",
+      "description": "도도는 씨앗을 깨우고 싶고, 비비는 화분 곁을 밝힐 방법을 찾고 있다.",
+      "participantIds": [
+        "npc-4-1hqghsi",
+        "npc-3-1gw3op5"
+      ],
+      "status": "open",
+      "createdSceneId": "scene-dawn-start"
+    }
+  ],
+  "recentScenes": [
+    {
+      "id": "scene-dawn-start",
+      "title": "표지판이 뒤섞인 새벽",
+      "summary": "밤바람이 종이 표지판과 나뭇잎을 돌길 위로 흩어 놓았고, 네 주민은 각자의 작은 단서를 발견했다.",
+      "participantIds": [
+        "npc-1-173cidm",
+        "npc-2-1nolezw",
+        "npc-3-1gw3op5",
+        "npc-4-1hqghsi"
+      ],
+      "atRevision": 0
+    }
+  ]
+}

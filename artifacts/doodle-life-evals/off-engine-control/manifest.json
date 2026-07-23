@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "doodle-life-evaluation.v1",
+  "createdAt": "2026-07-23T08:30:35.771Z",
+  "scenario": {
+    "id": "eval-doodle-life-off-v1",
+    "locale": "ko-KR",
+    "flow": "newcomer",
+    "actionOrder": [
+      "bootstrap",
+      "doodle-birth",
+      "add-player-to-world",
+      "newcomer-arrived"
+    ],
+    "doodle": {
+      "file": "soso-glide-empathy-guide.png",
+      "sha256": "90ee27b07b40df091b621ccbbb3e1e9858b273f5654c1da2e50ad6232ceccfe8",
+      "mimeType": "image/png",
+      "width": 720,
+      "height": 480,
+      "drawingMetrics": null
+    },
+    "signal": {
+      "kind": "newcomer-arrived",
+      "detailTemplate": "{name}이(가) 사용자가 그린 모습 그대로 처음 정원에 나타났다. 주민들은 각자의 관점으로 이 낯선 존재를 처음 본다."
+    }
+  },
+  "condition": {
+    "provider": "openai",
+    "modelCallsEnabled": true,
+    "autonomy": "off",
+    "requestedRuns": 3,
+    "serverProcessState": "warm-existing-process",
+    "evaluationConfig": { "modelCalls": 0 },
+    "coldWarmRule": "The first request against the continuously running server is labeled cold; later requests are labeled warm."
+  },
+  "privacy": {
+    "omitted": [
+      "OPENAI_API_KEY",
+      "Authorization",
+      "image.dataUrl",
+      "base64 source"
+    ]
+  }
+}

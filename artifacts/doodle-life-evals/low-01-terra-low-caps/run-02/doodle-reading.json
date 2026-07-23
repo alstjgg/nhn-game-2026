@@ -1,0 +1,260 @@
+{
+  "requestId": "eval-doodle-life-low-01-v1-birth",
+  "expectedRevision": 0,
+  "character": {
+    "id": "player-1a3bfdc8-9c35-4567-86ac-a239e02dfee5",
+    "kind": "player",
+    "name": "프리즘",
+    "epithet": "색줄 사이의 작은 길잡이",
+    "essence": "보랏빛 마름모 둥지 안에서 여러 색의 줄을 조심스럽게 엮어 내는, 조용하고 호기심 많은 새 주민.",
+    "origin": "겹친 선들이 서로 비켜 서면서도 한곳에 모인 낙서에서 태어났다.",
+    "traits": [
+      {
+        "id": "trait-pattern-seeker",
+        "label": "무늬 탐험가",
+        "description": "엇갈린 선과 반복되는 모양에서 새로운 길을 발견한다.",
+        "visibleEvidence": "보랏빛 마름모와 그 위를 가로지르는 네 색의 세로 줄",
+        "behavioralEffect": "정원에서 울타리, 발자국, 잎맥의 규칙을 살피며 친구들에게 발견을 알려 준다.",
+        "confidence": 0.9
+      },
+      {
+        "id": "trait-gentle-organizer",
+        "label": "살뜰한 정리꾼",
+        "description": "서로 다른 것들이 부딪히지 않고 나란히 있을 방법을 찾는다.",
+        "visibleEvidence": "색줄들이 각각의 간격을 지키며 마름모 중앙을 지난 모습",
+        "behavioralEffect": "흩어진 작은 물건을 색이나 모양별로 모으고, 다툼이 나면 차례를 제안한다.",
+        "confidence": 0.78
+      },
+      {
+        "id": "trait-quiet-curious",
+        "label": "조용한 호기심",
+        "description": "먼저 오래 바라본 뒤, 마음이 놓이면 가까이 다가간다.",
+        "visibleEvidence": "간결한 선들로 이루어진 단정하고 열린 구도",
+        "behavioralEffect": "낯선 주민에게 급히 질문하기보다 작은 인사와 관찰로 대화를 시작한다.",
+        "confidence": 0.67
+      }
+    ],
+    "drives": [
+      "서로 다른 색과 마음이 잘 어울리는 조합을 찾고 싶다.",
+      "정원 곳곳의 숨은 반복무늬와 지름길을 발견하고 싶다.",
+      "친구들이 자기 자리를 찾도록 돕고 싶다."
+    ],
+    "needs": [
+      "서두르지 않고 관찰할 수 있는 조용한 시간",
+      "자신이 모아 둔 색과 모양을 펼쳐 볼 작은 빈터",
+      "발견을 함께 기뻐해 줄 다정한 친구"
+    ],
+    "boundaries": [
+      "한꺼번에 많은 부탁을 받으면 색줄이 엉킬 수 있어, 하나씩 부탁받기를 바란다.",
+      "소중하게 정리한 물건을 허락 없이 흐트러뜨리는 것은 싫어한다.",
+      "큰 소리와 성급한 재촉을 만나면 잠시 마름모 둥지 안에서 쉬어야 한다."
+    ],
+    "abilities": [
+      "색과 모양이 비슷한 물건들을 빠르게 짝지을 수 있다.",
+      "얽힌 리본이나 덩굴에서 안전한 통로를 찾아낼 수 있다.",
+      "네 가지 색줄을 흔들어 친구에게 방향이나 순서를 조용히 알릴 수 있다."
+    ],
+    "visibleSignals": [
+      "기분이 좋으면 빨강·노랑·초록·파랑 줄이 차례로 살랑인다.",
+      "생각할 때 보랏빛 마름모가 아주 조금 기울어진다.",
+      "부담스러우면 색줄들이 몸 가까이 모여 조용해진다."
+    ],
+    "voice": {
+      "rhythm": "짧게 살피고, 한 박자 쉬었다가 부드럽게 말한다.",
+      "vocabulary": "색, 사이, 차례, 길, 어울림 같은 쉬운 말을 즐겨 쓴다.",
+      "sampleLine": "음, 이 둘 사이에 작은 길이 하나 더 있을 것 같아."
+    },
+    "motion": {
+      "idle": "색줄이 서로 다른 박자로 아주 작게 흔들리고, 마름모 몸은 천천히 숨 쉬듯 기울어진다.",
+      "approach": "가장 바깥의 색줄 하나를 먼저 흔들어 인사한 뒤, 지그재그로 가까이 온다.",
+      "delight": "네 색줄이 순서대로 위로 튀며 마름모가 가볍게 한 바퀴 가까이 기운다.",
+      "discomfort": "색줄을 안쪽으로 모으고 마름모가 뒤로 살짝 물러난다."
+    },
+    "mood": "조심스레 들뜸",
+    "currentGoal": "정원에서 색이 서로 닮았지만 쓰임이 다른 물건 세 가지를 찾아, 어울리는 자리를 만들어 주기.",
+    "homePosition": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "design": {
+      "silhouette": "중앙의 보랏빛 마름모 틀과 그 앞을 나란히 지나는 네 개의 알록달록한 지그재그 줄",
+      "palette": [
+        "보라색",
+        "산호색",
+        "노란색",
+        "풀빛",
+        "하늘색"
+      ],
+      "body": {
+        "kind": "polygon",
+        "fill": "none",
+        "stroke": "#8B6BAE",
+        "strokeWidth": 10,
+        "opacity": 1,
+        "points": [
+          {
+            "x": -42,
+            "y": 0
+          },
+          {
+            "x": 0,
+            "y": -46
+          },
+          {
+            "x": 42,
+            "y": 0
+          },
+          {
+            "x": 0,
+            "y": 46
+          }
+        ]
+      },
+      "parts": [
+        {
+          "id": "coral-strand",
+          "shape": {
+            "kind": "path",
+            "fill": "none",
+            "stroke": "#EF6A5B",
+            "strokeWidth": 10,
+            "opacity": 1,
+            "d": "M -32 -34 L -25 0 L -32 34"
+          },
+          "zIndex": 3
+        },
+        {
+          "id": "gold-strand",
+          "shape": {
+            "kind": "path",
+            "fill": "none",
+            "stroke": "#F3B63F",
+            "strokeWidth": 10,
+            "opacity": 1,
+            "d": "M -12 -34 L -5 0 L -12 34"
+          },
+          "zIndex": 3
+        },
+        {
+          "id": "leaf-strand",
+          "shape": {
+            "kind": "path",
+            "fill": "none",
+            "stroke": "#73A65D",
+            "strokeWidth": 10,
+            "opacity": 1,
+            "d": "M 12 -34 L 19 0 L 12 34"
+          },
+          "zIndex": 3
+        },
+        {
+          "id": "sky-strand",
+          "shape": {
+            "kind": "path",
+            "fill": "none",
+            "stroke": "#5B97BE",
+            "strokeWidth": 10,
+            "opacity": 1,
+            "d": "M 32 -34 L 39 0 L 32 34"
+          },
+          "zIndex": 3
+        }
+      ],
+      "faceAnchors": {
+        "leftEye": {
+          "x": -10,
+          "y": -4
+        },
+        "rightEye": {
+          "x": 10,
+          "y": -4
+        },
+        "mouth": {
+          "x": 0,
+          "y": 13
+        }
+      },
+      "expressivePartIds": [
+        "coral-strand",
+        "gold-strand",
+        "leaf-strand",
+        "sky-strand"
+      ],
+      "idleMotions": [
+        {
+          "targetPartId": "coral-strand",
+          "property": "rotate",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1300,
+          "delayMs": 0
+        },
+        {
+          "targetPartId": "gold-strand",
+          "property": "translateY",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1100,
+          "delayMs": 150
+        },
+        {
+          "targetPartId": "leaf-strand",
+          "property": "translateY",
+          "from": 2,
+          "to": -2,
+          "durationMs": 1200,
+          "delayMs": 280
+        },
+        {
+          "targetPartId": "sky-strand",
+          "property": "rotate",
+          "from": 2,
+          "to": -2,
+          "durationMs": 1400,
+          "delayMs": 80
+        },
+        {
+          "targetPartId": null,
+          "property": "rotate",
+          "from": -1,
+          "to": 1,
+          "durationMs": 2200,
+          "delayMs": 0
+        }
+      ]
+    }
+  },
+  "evidenceSummary": "무늬 탐험가: 보랏빛 마름모와 그 위를 가로지르는 네 색의 세로 줄 · 살뜰한 정리꾼: 색줄들이 각각의 간격을 지키며 마름모 중앙을 지난 모습",
+  "uncertainties": [
+    "조용한 호기심은 장면 속 행동을 보며 더 선명해질 수 있어요."
+  ],
+  "trace": {
+    "mode": "dialogue-only",
+    "calls": [
+      {
+        "id": "resp_00355f7c1a761e34016a61d20e6028819997c06c748f53795d",
+        "role": "doodle-vision",
+        "provider": "openai",
+        "model": "gpt-5.6-terra",
+        "startedAt": "2026-07-23T08:34:21.842Z",
+        "latencyMs": 17758,
+        "usage": {
+          "inputTokens": 1904,
+          "cachedInputTokens": 1832,
+          "outputTokens": 1574,
+          "reasoningTokens": 0,
+          "totalTokens": 3478
+        }
+      }
+    ],
+    "usage": {
+      "inputTokens": 1904,
+      "cachedInputTokens": 1832,
+      "outputTokens": 1574,
+      "reasoningTokens": 0,
+      "totalTokens": 3478
+    },
+    "totalLatencyMs": 17758,
+    "wallClockMs": 17759
+  }
+}

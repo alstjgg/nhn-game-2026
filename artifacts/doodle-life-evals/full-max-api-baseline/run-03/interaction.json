@@ -1,0 +1,781 @@
+{
+  "signal": {
+    "kind": "newcomer-arrived",
+    "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+    "detail": "고리비이(가) 사용자가 그린 모습 그대로 처음 정원에 나타났다. 주민들은 각자의 관점으로 이 낯선 존재를 처음 본다."
+  },
+  "intents": [
+    {
+      "npcId": "npc-1-173cidm",
+      "notices": "고리비의 보랏빛 테두리가 천천히 펴지고, 색색의 선이 서로 다른 박자로 흔들리는 모습을 본다.",
+      "emotion": "조심스러운 호기심",
+      "wantsNow": "고리비가 놀라지 않도록 물그릇 가장자리에서 바람의 잔물결을 함께 살펴보고 싶다.",
+      "avoidsNow": "갑자기 가까이 다가가거나 큰 소리로 재촉하는 일",
+      "intendedLine": "저기, 물결이 바람 지나간 길을 알려 줘. 천천히 같이 볼래?",
+      "intendedAction": "물그릇 곁에서 고리비를 향해 반걸음씩 다가가 충분한 거리를 두고 멈춘다.",
+      "targetActorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+      "traitGrounding": [
+        "moru-observant",
+        "moru-hesitant"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "npcId": "npc-2-1n841g2",
+      "notices": "뜰 한가운데에 보랏빛 테두리와 네 색 선이 서로 다른 박자로 조용히 흔들리는 낯선 주민이 나타났다.",
+      "emotion": "조심스러운 호기심과 반가움",
+      "wantsNow": "새 주민이 머물기 편한 자리를 먼저 마련하고, 서두르지 않는 인사를 건네고 싶다.",
+      "avoidsNow": "낯선 주민에게 가까이 붙거나 대답을 재촉하는 일",
+      "intendedLine": "첫째, 여기 바람이 덜 드는 자리가 있어. 잠깐 쉬어도 괜찮아.",
+      "intendedAction": "접어 둔 작은 의자 곁에 천 조각을 반듯하게 펴 놓고, 한 걸음 거리를 두고 멈춘다.",
+      "targetActorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+      "traitGrounding": [
+        "dara-orderly",
+        "dara-warm"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "npcId": "npc-3-1swtgwl",
+      "notices": "보랏빛 고리 안의 네 색 선이 서로 다른 박자로 살짝 흔들리는 낯선 새 주민을 본다.",
+      "emotion": "반짝이는 호기심과 반가움",
+      "wantsNow": "새 주민에게 가까이 가서 색 선의 흔들림에 재미있는 이름을 붙여 보자고 제안하고 싶다.",
+      "avoidsNow": "너무 가까이 날아들거나 대답을 재촉하는 것",
+      "intendedLine": "짠, 네 색 바람이네! 제일 먼저 흔들린 박자에 이름을 붙여 볼래?",
+      "intendedAction": "작은 반원을 그리며 다가가 충분한 거리를 두고 한 발로 서서 기다린다.",
+      "targetActorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+      "traitGrounding": [
+        "pipi-playful",
+        "pipi-restless"
+      ],
+      "confidence": 0.91
+    },
+    {
+      "npcId": "npc-4-1x8kvbm",
+      "notices": "보랏빛 테두리 안의 여러 색 선이 서로 다른 박자로 조심스레 흔들리는 새 주민을 본다.",
+      "emotion": "졸린 걱정 사이로 잔잔한 호기심이 든다.",
+      "wantsNow": "새 주민이 부담 없이 쉴 수 있도록 바람종이 아래의 따뜻한 자리를 함께 나누고 싶다.",
+      "avoidsNow": "처음 온 주민에게 가까이 다가가거나 대답을 재촉하는 일",
+      "intendedLine": "여긴 따뜻해. 잠깐 앉아 있어도 괜찮아.",
+      "intendedAction": "소리 없이 두 걸음 다가간 뒤, 충분한 거리를 두고 햇볕 드는 자리를 앞발로 가리킨다.",
+      "targetActorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+      "traitGrounding": [
+        "nabi-calm",
+        "nabi-guarded"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "proposedScene": {
+    "id": "scene-sai-wind-greeting",
+    "title": "세 번 흔들린 사이바람",
+    "summary": "모루가 잔물결로 느린 인사를 건네자 고리비는 바람의 박자를 세 번 따라 했다. 피피는 서로 다른 떨림이 함께 만든 순간을 ‘사이바람’이라 불렀고, 마지막 흔들림에 조용하던 바람종이가 한 번 울렸다.",
+    "participantIds": [
+      "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+      "npc-1-173cidm",
+      "npc-3-1swtgwl"
+    ],
+    "beats": [
+      {
+        "id": "beat-gentle-ripple",
+        "startMs": 0,
+        "durationMs": 2800,
+        "statusText": "모루가 잔물결 곁에서 충분한 거리를 남긴다.",
+        "actions": [
+          {
+            "kind": "move",
+            "actorId": "npc-1-173cidm",
+            "to": {
+              "x": 0.32,
+              "y": 0.58
+            },
+            "rotate": null,
+            "scale": null
+          },
+          {
+            "kind": "prop_create",
+            "propId": "prop-sai-ripple",
+            "label": "가느다란 잔물결",
+            "symbol": "≋",
+            "color": "#7DB7D7",
+            "position": {
+              "x": 0.38,
+              "y": 0.55
+            },
+            "actorId": "npc-1-173cidm"
+          },
+          {
+            "kind": "look",
+            "actorId": "npc-1-173cidm",
+            "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879"
+          },
+          {
+            "kind": "speak",
+            "actorId": "npc-1-173cidm",
+            "text": "물결이 바람의 길을 알려 줘. 천천히 같이 볼래?"
+          }
+        ]
+      },
+      {
+        "id": "beat-first-follow",
+        "startMs": 3000,
+        "durationMs": 2800,
+        "statusText": "고리비가 첫 번째 바람을 조심스럽게 따라 한다.",
+        "actions": [
+          {
+            "kind": "look",
+            "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "targetId": "npc-1-173cidm"
+          },
+          {
+            "kind": "move",
+            "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "to": {
+              "x": 0.48,
+              "y": 0.42
+            },
+            "rotate": null,
+            "scale": null
+          },
+          {
+            "kind": "gesture",
+            "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "gesture": "shiver",
+            "status": "네 색 선이 차례를 지켜 한 번씩 흔들린다."
+          },
+          {
+            "kind": "prop_transform",
+            "propId": "prop-sai-ripple",
+            "scale": 1.15,
+            "rotate": null,
+            "opacity": 0.9
+          },
+          {
+            "kind": "effect",
+            "effect": "ripple",
+            "targetId": "prop-sai-ripple",
+            "color": "#4F8DB8",
+            "intensity": 0.45
+          }
+        ]
+      },
+      {
+        "id": "beat-name-between",
+        "startMs": 6000,
+        "durationMs": 3000,
+        "statusText": "피피가 서두르지 않고 한 발로 고리비의 박자를 듣는다.",
+        "actions": [
+          {
+            "kind": "move",
+            "actorId": "npc-3-1swtgwl",
+            "to": {
+              "x": 0.61,
+              "y": 0.31
+            },
+            "rotate": null,
+            "scale": null
+          },
+          {
+            "kind": "look",
+            "actorId": "npc-3-1swtgwl",
+            "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879"
+          },
+          {
+            "kind": "gesture",
+            "actorId": "npc-3-1swtgwl",
+            "gesture": "bounce",
+            "status": "작은 반원을 그린 뒤 한 발로 멈춘다."
+          },
+          {
+            "kind": "speak",
+            "actorId": "npc-3-1swtgwl",
+            "text": "짠, 서로 다른데 같이 흔들려! ‘사이바람’ 어때?"
+          },
+          {
+            "kind": "pause",
+            "durationMs": 700
+          }
+        ]
+      },
+      {
+        "id": "beat-third-chime",
+        "startMs": 9300,
+        "durationMs": 3500,
+        "statusText": "고리비의 세 번째 흔들림이 뜰의 조용한 소리와 만난다.",
+        "actions": [
+          {
+            "kind": "gesture",
+            "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "gesture": "bounce",
+            "status": "노랑, 초록, 파랑 선이 세 박자로 차례차례 들썩인다."
+          },
+          {
+            "kind": "effect",
+            "effect": "wind",
+            "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "color": "#EAF7FA",
+            "intensity": 0.55
+          },
+          {
+            "kind": "prop_transform",
+            "propId": "prop-sai-ripple",
+            "scale": 1.35,
+            "rotate": null,
+            "opacity": 0.7
+          },
+          {
+            "kind": "effect",
+            "effect": "music",
+            "targetId": null,
+            "color": "#F5B942",
+            "intensity": 0.35
+          },
+          {
+            "kind": "gesture",
+            "actorId": "npc-1-173cidm",
+            "gesture": "nod",
+            "status": "바람종이의 한 번 울린 소리를 확인하고 꼬리로 반원을 그린다."
+          },
+          {
+            "kind": "speak",
+            "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "text": "사이바람... 좋아. 같이, 천천히."
+          },
+          {
+            "kind": "gesture",
+            "actorId": "npc-3-1swtgwl",
+            "gesture": "spin",
+            "status": "소리를 놀라게 하지 않을 만큼 작게 한 바퀴 돈다."
+          }
+        ]
+      }
+    ],
+    "mutations": [
+      {
+        "kind": "relationship",
+        "actorId": "npc-1-173cidm",
+        "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "affinityDelta": 0.12,
+        "trustDelta": 0.1,
+        "tensionDelta": -0.03,
+        "label": "잔물결로 인사한 사이",
+        "reason": "고리비가 모루의 느린 초대를 존중하며 바람의 박자를 따라 했다."
+      },
+      {
+        "kind": "relationship",
+        "actorId": "npc-3-1swtgwl",
+        "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "affinityDelta": 0.11,
+        "trustDelta": 0.06,
+        "tensionDelta": -0.02,
+        "label": "사이바람의 이름 친구",
+        "reason": "피피가 제안한 이름을 고리비가 자신의 말로 받아들였다."
+      },
+      {
+        "kind": "memory",
+        "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "visibility": "shared",
+        "summary": "모루의 잔물결을 따라 세 번 흔들었고, 피피와 그 박자를 ‘사이바람’이라 불렀다.",
+        "interpretation": "이 뜰에서는 서로 다른 박자를 그대로 둔 채 함께 흔들려도 괜찮다.",
+        "salience": 0.86
+      },
+      {
+        "kind": "mood",
+        "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "mood": "조심스러움 속에 자리를 찾은 설렘",
+        "reason": "첫 인사가 재촉 없이 이어졌고 자신의 여러 색 박자가 하나의 이름으로 환영받았다."
+      }
+    ],
+    "observationTitle": "새 주민의 세 번째 박자",
+    "observationBody": "고리비가 바람을 세 번 따라 하자 잔물결이 넓어지고, 덜 울렸던 바람종이가 마침내 한 번 맑게 울렸다. 모루와 피피는 그 우연을 붙잡기보다 고리비가 남겨 둔 여백 곁에서 함께 흔들렸다."
+  },
+  "critic": {
+    "approved": false,
+    "issues": [
+      "고리비가 바람의 박자를 세 번 따라 했다고 요약과 마지막 장면에서 말하지만, 실제 행동으로는 두 번만 흔들려 장면의 인과가 어긋납니다.",
+      "처음 만남에서 관계 친밀도와 신뢰도의 변화가 다소 커서, 짧고 조심스러운 인사에 맞게 완화하는 편이 자연스럽습니다."
+    ],
+    "correctedScene": {
+      "id": "scene-sai-wind-greeting",
+      "title": "세 번 흔들린 사이바람",
+      "summary": "모루가 잔물결로 느린 인사를 건네자 고리비는 바람의 박자를 세 번 나누어 따라 했다. 피피는 서로 다른 떨림이 함께 만든 순간을 ‘사이바람’이라 불렀고, 마지막 흔들림에 조용하던 바람종이가 한 번 울렸다.",
+      "participantIds": [
+        "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "npc-1-173cidm",
+        "npc-3-1swtgwl"
+      ],
+      "beats": [
+        {
+          "id": "beat-gentle-ripple",
+          "startMs": 0,
+          "durationMs": 2500,
+          "statusText": "모루가 잔물결 곁에서 충분한 거리를 남긴다.",
+          "actions": [
+            {
+              "kind": "move",
+              "actorId": "npc-1-173cidm",
+              "to": {
+                "x": 0.32,
+                "y": 0.58
+              },
+              "rotate": null,
+              "scale": null
+            },
+            {
+              "kind": "prop_create",
+              "propId": "prop-sai-ripple",
+              "label": "가느다란 잔물결",
+              "symbol": "≋",
+              "color": "#7DB7D7",
+              "position": {
+                "x": 0.38,
+                "y": 0.55
+              },
+              "actorId": "npc-1-173cidm"
+            },
+            {
+              "kind": "look",
+              "actorId": "npc-1-173cidm",
+              "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879"
+            },
+            {
+              "kind": "speak",
+              "actorId": "npc-1-173cidm",
+              "text": "물결이 바람의 길을 알려 줘. 천천히 같이 볼래?"
+            }
+          ]
+        },
+        {
+          "id": "beat-first-follow",
+          "startMs": 2700,
+          "durationMs": 1800,
+          "statusText": "고리비가 첫 번째 바람을 조심스럽게 따라 한다.",
+          "actions": [
+            {
+              "kind": "look",
+              "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+              "targetId": "npc-1-173cidm"
+            },
+            {
+              "kind": "move",
+              "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+              "to": {
+                "x": 0.48,
+                "y": 0.42
+              },
+              "rotate": null,
+              "scale": null
+            },
+            {
+              "kind": "gesture",
+              "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+              "gesture": "bounce",
+              "status": "노란 선이 가볍게 들썩이며 첫 박자를 따라 한다."
+            },
+            {
+              "kind": "prop_transform",
+              "propId": "prop-sai-ripple",
+              "scale": 1.1,
+              "rotate": null,
+              "opacity": 0.9
+            }
+          ]
+        },
+        {
+          "id": "beat-second-follow",
+          "startMs": 4700,
+          "durationMs": 1800,
+          "statusText": "고리비가 물결의 다음 박자도 천천히 받아들인다.",
+          "actions": [
+            {
+              "kind": "gesture",
+              "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+              "gesture": "bounce",
+              "status": "초록 선이 한 박자 늦게 들썩이며 두 번째 흔들림을 보탠다."
+            },
+            {
+              "kind": "effect",
+              "effect": "ripple",
+              "targetId": "prop-sai-ripple",
+              "color": "#4F8DB8",
+              "intensity": 0.35
+            },
+            {
+              "kind": "pause",
+              "durationMs": 500
+            }
+          ]
+        },
+        {
+          "id": "beat-name-between",
+          "startMs": 6700,
+          "durationMs": 2500,
+          "statusText": "피피가 서두르지 않고 한 발로 고리비의 박자를 듣는다.",
+          "actions": [
+            {
+              "kind": "move",
+              "actorId": "npc-3-1swtgwl",
+              "to": {
+                "x": 0.61,
+                "y": 0.31
+              },
+              "rotate": null,
+              "scale": null
+            },
+            {
+              "kind": "look",
+              "actorId": "npc-3-1swtgwl",
+              "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879"
+            },
+            {
+              "kind": "gesture",
+              "actorId": "npc-3-1swtgwl",
+              "gesture": "bounce",
+              "status": "작은 반원을 그린 뒤 한 발로 멈춘다."
+            },
+            {
+              "kind": "speak",
+              "actorId": "npc-3-1swtgwl",
+              "text": "짠, 서로 다른데 같이 흔들려! ‘사이바람’ 어때?"
+            },
+            {
+              "kind": "pause",
+              "durationMs": 600
+            }
+          ]
+        },
+        {
+          "id": "beat-third-chime",
+          "startMs": 9400,
+          "durationMs": 3100,
+          "statusText": "고리비의 세 번째 흔들림이 뜰의 조용한 소리와 만난다.",
+          "actions": [
+            {
+              "kind": "gesture",
+              "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+              "gesture": "bounce",
+              "status": "파란 선이 천천히 낮아졌다가 올라오며 세 번째 박자를 완성한다."
+            },
+            {
+              "kind": "effect",
+              "effect": "wind",
+              "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+              "color": "#EAF7FA",
+              "intensity": 0.5
+            },
+            {
+              "kind": "prop_transform",
+              "propId": "prop-sai-ripple",
+              "scale": 1.3,
+              "rotate": null,
+              "opacity": 0.7
+            },
+            {
+              "kind": "effect",
+              "effect": "music",
+              "targetId": null,
+              "color": "#F5B942",
+              "intensity": 0.3
+            },
+            {
+              "kind": "gesture",
+              "actorId": "npc-1-173cidm",
+              "gesture": "nod",
+              "status": "모루가 바람종이의 한 번 울린 소리를 듣고 꼬리로 작은 반원을 그린다."
+            },
+            {
+              "kind": "speak",
+              "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+              "text": "사이바람... 좋아. 같이, 천천히."
+            },
+            {
+              "kind": "gesture",
+              "actorId": "npc-3-1swtgwl",
+              "gesture": "spin",
+              "status": "피피가 소리를 놀라게 하지 않을 만큼 작게 한 바퀴 돈다."
+            }
+          ]
+        }
+      ],
+      "mutations": [
+        {
+          "kind": "relationship",
+          "actorId": "npc-1-173cidm",
+          "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+          "affinityDelta": 0.07,
+          "trustDelta": 0.05,
+          "tensionDelta": -0.02,
+          "label": "잔물결로 인사한 사이",
+          "reason": "고리비가 모루의 느린 초대를 받아들이고 바람의 박자를 함께 살폈다."
+        },
+        {
+          "kind": "relationship",
+          "actorId": "npc-3-1swtgwl",
+          "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+          "affinityDelta": 0.07,
+          "trustDelta": 0.03,
+          "tensionDelta": -0.01,
+          "label": "사이바람의 이름 친구",
+          "reason": "피피가 제안한 이름을 고리비가 자신의 말로 받아들였다."
+        },
+        {
+          "kind": "memory",
+          "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+          "visibility": "shared",
+          "summary": "모루의 잔물결을 따라 세 번 흔들었고, 피피와 그 박자를 ‘사이바람’이라 불렀다.",
+          "interpretation": "이 뜰에서는 서로 다른 박자를 그대로 둔 채 함께 흔들려도 괜찮다.",
+          "salience": 0.8
+        },
+        {
+          "kind": "mood",
+          "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+          "mood": "조심스러움 속에 자리를 찾은 설렘",
+          "reason": "첫 인사가 재촉 없이 이어졌고 자신의 여러 색 박자가 따뜻하게 받아들여졌다."
+        }
+      ],
+      "observationTitle": "새 주민의 세 번째 박자",
+      "observationBody": "고리비가 바람을 세 번 따라 하자 잔물결이 조금 넓어지고, 덜 울렸던 바람종이가 마침내 한 번 맑게 울렸다. 모루와 피피는 그 소리 곁에서 고리비가 남겨 둔 여백을 지키며 함께 흔들렸다."
+    }
+  },
+  "finalScene": {
+    "id": "scene-sai-wind-greeting",
+    "title": "세 번 흔들린 사이바람",
+    "summary": "모루가 잔물결로 느린 인사를 건네자 고리비는 바람의 박자를 세 번 나누어 따라 했다. 피피는 서로 다른 떨림이 함께 만든 순간을 ‘사이바람’이라 불렀고, 마지막 흔들림에 조용하던 바람종이가 한 번 울렸다.",
+    "participantIds": [
+      "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+      "npc-1-173cidm",
+      "npc-3-1swtgwl"
+    ],
+    "beats": [
+      {
+        "id": "beat-gentle-ripple",
+        "startMs": 0,
+        "durationMs": 2500,
+        "statusText": "모루가 잔물결 곁에서 충분한 거리를 남긴다.",
+        "actions": [
+          {
+            "kind": "move",
+            "actorId": "npc-1-173cidm",
+            "to": {
+              "x": 0.32,
+              "y": 0.58
+            },
+            "rotate": null,
+            "scale": null
+          },
+          {
+            "kind": "prop_create",
+            "propId": "prop-sai-ripple",
+            "label": "가느다란 잔물결",
+            "symbol": "≋",
+            "color": "#7DB7D7",
+            "position": {
+              "x": 0.38,
+              "y": 0.55
+            },
+            "actorId": "npc-1-173cidm"
+          },
+          {
+            "kind": "look",
+            "actorId": "npc-1-173cidm",
+            "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879"
+          },
+          {
+            "kind": "speak",
+            "actorId": "npc-1-173cidm",
+            "text": "물결이 바람의 길을 알려 줘. 천천히 같이 볼래?"
+          }
+        ]
+      },
+      {
+        "id": "beat-first-follow",
+        "startMs": 2700,
+        "durationMs": 1800,
+        "statusText": "고리비가 첫 번째 바람을 조심스럽게 따라 한다.",
+        "actions": [
+          {
+            "kind": "look",
+            "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "targetId": "npc-1-173cidm"
+          },
+          {
+            "kind": "move",
+            "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "to": {
+              "x": 0.48,
+              "y": 0.42
+            },
+            "rotate": null,
+            "scale": null
+          },
+          {
+            "kind": "gesture",
+            "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "gesture": "bounce",
+            "status": "노란 선이 가볍게 들썩이며 첫 박자를 따라 한다."
+          },
+          {
+            "kind": "prop_transform",
+            "propId": "prop-sai-ripple",
+            "scale": 1.1,
+            "rotate": null,
+            "opacity": 0.9
+          }
+        ]
+      },
+      {
+        "id": "beat-second-follow",
+        "startMs": 4700,
+        "durationMs": 1800,
+        "statusText": "고리비가 물결의 다음 박자도 천천히 받아들인다.",
+        "actions": [
+          {
+            "kind": "gesture",
+            "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "gesture": "bounce",
+            "status": "초록 선이 한 박자 늦게 들썩이며 두 번째 흔들림을 보탠다."
+          },
+          {
+            "kind": "effect",
+            "effect": "ripple",
+            "targetId": "prop-sai-ripple",
+            "color": "#4F8DB8",
+            "intensity": 0.35
+          },
+          {
+            "kind": "pause",
+            "durationMs": 500
+          }
+        ]
+      },
+      {
+        "id": "beat-name-between",
+        "startMs": 6700,
+        "durationMs": 2500,
+        "statusText": "피피가 서두르지 않고 한 발로 고리비의 박자를 듣는다.",
+        "actions": [
+          {
+            "kind": "move",
+            "actorId": "npc-3-1swtgwl",
+            "to": {
+              "x": 0.61,
+              "y": 0.31
+            },
+            "rotate": null,
+            "scale": null
+          },
+          {
+            "kind": "look",
+            "actorId": "npc-3-1swtgwl",
+            "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879"
+          },
+          {
+            "kind": "gesture",
+            "actorId": "npc-3-1swtgwl",
+            "gesture": "bounce",
+            "status": "작은 반원을 그린 뒤 한 발로 멈춘다."
+          },
+          {
+            "kind": "speak",
+            "actorId": "npc-3-1swtgwl",
+            "text": "짠, 서로 다른데 같이 흔들려! ‘사이바람’ 어때?"
+          },
+          {
+            "kind": "pause",
+            "durationMs": 600
+          }
+        ]
+      },
+      {
+        "id": "beat-third-chime",
+        "startMs": 9400,
+        "durationMs": 3100,
+        "statusText": "고리비의 세 번째 흔들림이 뜰의 조용한 소리와 만난다.",
+        "actions": [
+          {
+            "kind": "gesture",
+            "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "gesture": "bounce",
+            "status": "파란 선이 천천히 낮아졌다가 올라오며 세 번째 박자를 완성한다."
+          },
+          {
+            "kind": "effect",
+            "effect": "wind",
+            "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "color": "#EAF7FA",
+            "intensity": 0.5
+          },
+          {
+            "kind": "prop_transform",
+            "propId": "prop-sai-ripple",
+            "scale": 1.3,
+            "rotate": null,
+            "opacity": 0.7
+          },
+          {
+            "kind": "effect",
+            "effect": "music",
+            "targetId": null,
+            "color": "#F5B942",
+            "intensity": 0.3
+          },
+          {
+            "kind": "gesture",
+            "actorId": "npc-1-173cidm",
+            "gesture": "nod",
+            "status": "모루가 바람종이의 한 번 울린 소리를 듣고 꼬리로 작은 반원을 그린다."
+          },
+          {
+            "kind": "speak",
+            "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+            "text": "사이바람... 좋아. 같이, 천천히."
+          },
+          {
+            "kind": "gesture",
+            "actorId": "npc-3-1swtgwl",
+            "gesture": "spin",
+            "status": "피피가 소리를 놀라게 하지 않을 만큼 작게 한 바퀴 돈다."
+          }
+        ]
+      }
+    ],
+    "mutations": [
+      {
+        "kind": "relationship",
+        "actorId": "npc-1-173cidm",
+        "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "affinityDelta": 0.07,
+        "trustDelta": 0.05,
+        "tensionDelta": -0.02,
+        "label": "잔물결로 인사한 사이",
+        "reason": "고리비가 모루의 느린 초대를 받아들이고 바람의 박자를 함께 살폈다."
+      },
+      {
+        "kind": "relationship",
+        "actorId": "npc-3-1swtgwl",
+        "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "affinityDelta": 0.07,
+        "trustDelta": 0.03,
+        "tensionDelta": -0.01,
+        "label": "사이바람의 이름 친구",
+        "reason": "피피가 제안한 이름을 고리비가 자신의 말로 받아들였다."
+      },
+      {
+        "kind": "memory",
+        "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "visibility": "shared",
+        "summary": "모루의 잔물결을 따라 세 번 흔들었고, 피피와 그 박자를 ‘사이바람’이라 불렀다.",
+        "interpretation": "이 뜰에서는 서로 다른 박자를 그대로 둔 채 함께 흔들려도 괜찮다.",
+        "salience": 0.8
+      },
+      {
+        "kind": "mood",
+        "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "mood": "조심스러움 속에 자리를 찾은 설렘",
+        "reason": "첫 인사가 재촉 없이 이어졌고 자신의 여러 색 박자가 따뜻하게 받아들여졌다."
+      }
+    ],
+    "observationTitle": "새 주민의 세 번째 박자",
+    "observationBody": "고리비가 바람을 세 번 따라 하자 잔물결이 조금 넓어지고, 덜 울렸던 바람종이가 마침내 한 번 맑게 울렸다. 모루와 피피는 그 소리 곁에서 고리비가 남겨 둔 여백을 지키며 함께 흔들렸다."
+  }
+}

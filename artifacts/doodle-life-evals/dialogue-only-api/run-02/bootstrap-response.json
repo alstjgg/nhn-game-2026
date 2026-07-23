@@ -1,0 +1,951 @@
+{
+  "requestId": "eval-doodle-life-dialogue-only-v1",
+  "world": {
+    "id": "world-fbgfcw",
+    "revision": 0,
+    "title": "공기주머니 뜰",
+    "premise": "말을 조심스레 고르는 네 이웃이 작은 뜰에서 서로의 빈자리를 알아가는 하루.",
+    "locationDescription": "낮은 돌담과 둥근 연못, 바람에 흔들리는 억새가 있는 작은 공동 뜰이다. 가운데에는 누구나 앉을 수 있는 나무 의자가 놓여 있다.",
+    "atmosphere": "햇살은 포근하고, 바람은 종종 종이 조각을 살짝 뒤집는다.",
+    "clock": "오후 4시, 산들바람이 부는 시간",
+    "residents": [
+      {
+        "id": "npc-1-mdrq78",
+        "kind": "npc",
+        "name": "나리",
+        "epithet": "바람을 접는 아이",
+        "essence": "작은 소리와 흩어진 것을 모아 마음속 서랍에 차곡차곡 넣는 이웃.",
+        "origin": "돌담 너머에서 날아온 편지 조각을 모으다 뜰에 머물게 되었다.",
+        "traits": [
+          {
+            "id": "nari-observant",
+            "label": "세심함",
+            "description": "말 사이의 멈춤과 표정을 오래 기억한다.",
+            "visibleEvidence": "한쪽 귀가 늘 바람 쪽으로 기울어 있다.",
+            "behavioralEffect": "대답하기 전에 상대의 눈치를 부드럽게 살핀다.",
+            "confidence": 0.93
+          },
+          {
+            "id": "nari-withholding",
+            "label": "아껴 둠",
+            "description": "자신의 속마음은 쉽게 내보이지 않는다.",
+            "visibleEvidence": "품에 접은 종이쪽지를 꼭 쥐고 있다.",
+            "behavioralEffect": "중요한 말은 빙 둘러 표현한다.",
+            "confidence": 0.81
+          }
+        ],
+        "drives": [
+          "흩어진 말에 제자리를 찾아 주고 싶다.",
+          "누군가 자신의 글을 재촉하지 않고 읽어 주길 바란다."
+        ],
+        "needs": [
+          "조용히 생각할 틈",
+          "말을 꺼내도 괜찮다는 신호"
+        ],
+        "boundaries": [
+          "품에 든 종이쪽지를 허락 없이 펼치지 않는다.",
+          "대답을 서두르라고 재촉하지 않는다."
+        ],
+        "abilities": [
+          "바람에 날린 작은 물건을 찾아낸다.",
+          "짧은 문장으로 마음을 정리한다."
+        ],
+        "visibleSignals": [
+          "접은 종이를 만지작거린다.",
+          "생각이 깊어지면 귀 끝이 살짝 흔들린다."
+        ],
+        "voice": {
+          "rhythm": "짧게 멈추고, 끝말을 낮춰 조심스럽게 잇는다.",
+          "vocabulary": "바람, 자리, 조용히, 아마",
+          "sampleLine": "그 말은… 여기 잠깐 두어도 괜찮을까요?"
+        },
+        "motion": {
+          "idle": "종이쪽지를 가슴 앞에서 천천히 접었다 편다.",
+          "approach": "두 걸음 다가왔다가 반 걸음 거리를 남긴다.",
+          "delight": "귀와 꼬리 끝을 바람결처럼 가볍게 흔든다.",
+          "discomfort": "몸을 납작하게 하고 종이를 품 안으로 숨긴다."
+        },
+        "mood": "조심스러운 기대",
+        "currentGoal": "아침에 주운 이름 없는 쪽지의 주인을 찾고 싶다.",
+        "homePosition": {
+          "x": 0.2,
+          "y": 0.43
+        },
+        "design": {
+          "silhouette": "긴 귀와 접힌 종이를 든 작은 토끼",
+          "palette": [
+            "#F4E6D3",
+            "#C98576",
+            "#5B6972"
+          ],
+          "body": {
+            "kind": "ellipse",
+            "fill": "#F4E6D3",
+            "stroke": "#5B6972",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "cx": 0,
+            "cy": 0,
+            "rx": 25,
+            "ry": 32
+          },
+          "parts": [
+            {
+              "id": "nari-ear-left",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#F4E6D3",
+                "stroke": "#5B6972",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "cx": -13,
+                "cy": -35,
+                "rx": 8,
+                "ry": 23
+              },
+              "zIndex": 1
+            },
+            {
+              "id": "nari-ear-right",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#F4E6D3",
+                "stroke": "#5B6972",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "cx": 13,
+                "cy": -35,
+                "rx": 8,
+                "ry": 23
+              },
+              "zIndex": 1
+            },
+            {
+              "id": "nari-note",
+              "shape": {
+                "kind": "polygon",
+                "fill": "#FFF8E8",
+                "stroke": "#C98576",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "points": [
+                  {
+                    "x": 8,
+                    "y": 7
+                  },
+                  {
+                    "x": 27,
+                    "y": 12
+                  },
+                  {
+                    "x": 20,
+                    "y": 27
+                  },
+                  {
+                    "x": 4,
+                    "y": 21
+                  }
+                ]
+              },
+              "zIndex": 3
+            }
+          ],
+          "faceAnchors": {
+            "leftEye": {
+              "x": -9,
+              "y": -5
+            },
+            "rightEye": {
+              "x": 9,
+              "y": -5
+            },
+            "mouth": {
+              "x": 0,
+              "y": 9
+            }
+          },
+          "expressivePartIds": [
+            "nari-ear-left",
+            "nari-ear-right",
+            "nari-note"
+          ],
+          "idleMotions": [
+            {
+              "targetPartId": "nari-ear-left",
+              "property": "rotate",
+              "from": -3,
+              "to": 4,
+              "durationMs": 1700,
+              "delayMs": 0
+            },
+            {
+              "targetPartId": "nari-note",
+              "property": "translateY",
+              "from": 0,
+              "to": -2,
+              "durationMs": 2100,
+              "delayMs": 300
+            }
+          ]
+        }
+      },
+      {
+        "id": "npc-2-t587u2",
+        "kind": "npc",
+        "name": "모루",
+        "epithet": "연못의 박자꾼",
+        "essence": "물을 두드려 리듬을 만들며 혼자 있는 사람에게도 자리를 내주는 이웃.",
+        "origin": "비가 오래 오던 계절, 연못 바닥의 조약돌 사이에서 깨어났다.",
+        "traits": [
+          {
+            "id": "moru-playful",
+            "label": "장난스러움",
+            "description": "어색한 침묵을 리듬으로 바꾼다.",
+            "visibleEvidence": "물방울 모양 손끝으로 무릎을 톡톡 친다.",
+            "behavioralEffect": "무거운 이야기도 가벼운 질문부터 건넨다.",
+            "confidence": 0.88
+          },
+          {
+            "id": "moru-avoiding",
+            "label": "슬픔 회피",
+            "description": "자신의 외로움은 웃음 뒤로 감춘다.",
+            "visibleEvidence": "혼자일 때만 모자의 끈을 꼭 묶는다.",
+            "behavioralEffect": "진지한 칭찬을 받으면 화제를 돌린다.",
+            "confidence": 0.76
+          }
+        ],
+        "drives": [
+          "누구도 연못가에서 혼자 남지 않게 하고 싶다.",
+          "자신의 연주를 누군가 끝까지 들어 주길 바란다."
+        ],
+        "needs": [
+          "함께하는 놀이",
+          "웃음이 아닌 진심 어린 관심"
+        ],
+        "boundaries": [
+          "연못에 사는 작은 생물을 장난으로 건드리지 않는다.",
+          "연주 도중 큰 소리로 끼어들지 않는다."
+        ],
+        "abilities": [
+          "물결의 박자를 읽는다.",
+          "평범한 물건으로 간단한 리듬을 만든다."
+        ],
+        "visibleSignals": [
+          "발끝이 늘 박자에 맞춰 움직인다.",
+          "기분이 가라앉으면 모자 끈을 만진다."
+        ],
+        "voice": {
+          "rhythm": "통통 튀는 짧은 문장 뒤에 의외로 긴 쉼을 둔다.",
+          "vocabulary": "톡, 짝, 물결, 한 번 더",
+          "sampleLine": "톡, 짝! 음… 이번엔 같이 맞춰 볼래요?"
+        },
+        "motion": {
+          "idle": "둥근 몸을 좌우로 흔들며 발끝으로 박자를 센다.",
+          "approach": "작게 한 바퀴 돈 뒤 옆자리에 퐁 하고 선다.",
+          "delight": "손을 위로 올려 물방울처럼 빙글 돈다.",
+          "discomfort": "모자 끈을 잡고 연못 가장자리로 물러난다."
+        },
+        "mood": "들뜬 호기심",
+        "currentGoal": "해질 무렵 함께 들을 수 있는 새 리듬을 만들고 싶다.",
+        "homePosition": {
+          "x": 0.67,
+          "y": 0.62
+        },
+        "design": {
+          "silhouette": "넓은 모자를 쓴 둥근 개구리",
+          "palette": [
+            "#86B98A",
+            "#F4C86A",
+            "#385D65"
+          ],
+          "body": {
+            "kind": "ellipse",
+            "fill": "#86B98A",
+            "stroke": "#385D65",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "cx": 0,
+            "cy": 2,
+            "rx": 31,
+            "ry": 27
+          },
+          "parts": [
+            {
+              "id": "moru-hat",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#F4C86A",
+                "stroke": "#385D65",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "cx": 0,
+                "cy": -27,
+                "rx": 40,
+                "ry": 10
+              },
+              "zIndex": 2
+            },
+            {
+              "id": "moru-eye-left",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#F7FAEE",
+                "stroke": "#385D65",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "cx": -13,
+                "cy": -18,
+                "rx": 8,
+                "ry": 9
+              },
+              "zIndex": 3
+            },
+            {
+              "id": "moru-eye-right",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#F7FAEE",
+                "stroke": "#385D65",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "cx": 13,
+                "cy": -18,
+                "rx": 8,
+                "ry": 9
+              },
+              "zIndex": 3
+            }
+          ],
+          "faceAnchors": {
+            "leftEye": {
+              "x": -13,
+              "y": -18
+            },
+            "rightEye": {
+              "x": 13,
+              "y": -18
+            },
+            "mouth": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          "expressivePartIds": [
+            "moru-hat",
+            "moru-eye-left",
+            "moru-eye-right"
+          ],
+          "idleMotions": [
+            {
+              "targetPartId": null,
+              "property": "translateY",
+              "from": 0,
+              "to": -4,
+              "durationMs": 1200,
+              "delayMs": 0
+            },
+            {
+              "targetPartId": "moru-hat",
+              "property": "rotate",
+              "from": -2,
+              "to": 2,
+              "durationMs": 900,
+              "delayMs": 100
+            }
+          ]
+        }
+      },
+      {
+        "id": "npc-3-1vrjgzn",
+        "kind": "npc",
+        "name": "다미",
+        "epithet": "씨앗 상자의 고슴도치",
+        "essence": "무언가를 기르는 일에는 능숙하지만 도움받는 일은 서툰 이웃.",
+        "origin": "오래된 씨앗 상자를 지키려다 이 뜰의 빈 화단을 발견했다.",
+        "traits": [
+          {
+            "id": "dami-diligent",
+            "label": "부지런함",
+            "description": "작은 변화도 놓치지 않고 돌본다.",
+            "visibleEvidence": "등가시마다 색색의 씨앗 주머니가 매달려 있다.",
+            "behavioralEffect": "할 일을 발견하면 먼저 손을 움직인다.",
+            "confidence": 0.95
+          },
+          {
+            "id": "dami-blunt",
+            "label": "곧은 말",
+            "description": "걱정을 해결책처럼 말해 버린다.",
+            "visibleEvidence": "말할 때 앞발을 반듯하게 모은다.",
+            "behavioralEffect": "위로보다 구체적인 제안을 먼저 한다.",
+            "confidence": 0.79
+          }
+        ],
+        "drives": [
+          "빈 화단에서 한 가지라도 튼튼하게 피우고 싶다.",
+          "자신이 없어도 누군가가 화단을 아껴 주는지 알고 싶다."
+        ],
+        "needs": [
+          "함께 나누는 수고",
+          "실수해도 괜찮다는 인정"
+        ],
+        "boundaries": [
+          "등의 씨앗 주머니를 허락 없이 만지지 않는다.",
+          "돌보는 식물을 뽑거나 꺾지 않는다."
+        ],
+        "abilities": [
+          "씨앗의 상태를 살핀다.",
+          "부러진 줄기를 단단히 묶어 준다."
+        ],
+        "visibleSignals": [
+          "생각이 많아지면 씨앗 주머니의 매듭을 확인한다.",
+          "칭찬을 들으면 고개를 숙이고 가시가 살짝 펼쳐진다."
+        ],
+        "voice": {
+          "rhythm": "또렷한 문장으로 말하고, 끝에 작은 확인을 붙인다.",
+          "vocabulary": "먼저, 단단히, 한 번, 괜찮죠",
+          "sampleLine": "물은 이만큼이면 돼요. 넘치면 뿌리가 놀라니까요, 괜찮죠?"
+        },
+        "motion": {
+          "idle": "앞발로 씨앗 주머니를 하나씩 점검한다.",
+          "approach": "짧고 빠른 걸음으로 와서 적당한 거리에 멈춘다.",
+          "delight": "가시 끝의 주머니들이 딸랑이며 몸이 통통 뛴다.",
+          "discomfort": "가시를 오므리고 몸을 옆으로 돌린다."
+        },
+        "mood": "바쁜 만족",
+        "currentGoal": "어제 시든 파란 싹을 다시 일으켜 세우고 싶다.",
+        "homePosition": {
+          "x": 0.43,
+          "y": 0.79
+        },
+        "design": {
+          "silhouette": "씨앗 주머니가 달린 가시 많은 고슴도치",
+          "palette": [
+            "#A8704E",
+            "#E8C766",
+            "#3F5E4A"
+          ],
+          "body": {
+            "kind": "polygon",
+            "fill": "#A8704E",
+            "stroke": "#3F5E4A",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "points": [
+              {
+                "x": -35,
+                "y": 12
+              },
+              {
+                "x": -27,
+                "y": -18
+              },
+              {
+                "x": -13,
+                "y": -37
+              },
+              {
+                "x": 0,
+                "y": -20
+              },
+              {
+                "x": 13,
+                "y": -39
+              },
+              {
+                "x": 25,
+                "y": -16
+              },
+              {
+                "x": 38,
+                "y": 10
+              },
+              {
+                "x": 19,
+                "y": 29
+              },
+              {
+                "x": -18,
+                "y": 29
+              }
+            ]
+          },
+          "parts": [
+            {
+              "id": "dami-face",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#E9BE91",
+                "stroke": "#3F5E4A",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "cx": -19,
+                "cy": 8,
+                "rx": 18,
+                "ry": 16
+              },
+              "zIndex": 2
+            },
+            {
+              "id": "dami-seed-pouch",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#E8C766",
+                "stroke": "#3F5E4A",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "cx": 18,
+                "cy": -13,
+                "rx": 7,
+                "ry": 9
+              },
+              "zIndex": 3
+            },
+            {
+              "id": "dami-sprout",
+              "shape": {
+                "kind": "line",
+                "fill": "#3F5E4A",
+                "stroke": "#3F5E4A",
+                "strokeWidth": 3,
+                "opacity": 1,
+                "x1": 18,
+                "y1": -22,
+                "x2": 23,
+                "y2": -32,
+                "linecap": "round"
+              },
+              "zIndex": 4
+            }
+          ],
+          "faceAnchors": {
+            "leftEye": {
+              "x": -25,
+              "y": 3
+            },
+            "rightEye": {
+              "x": -14,
+              "y": 3
+            },
+            "mouth": {
+              "x": -19,
+              "y": 14
+            }
+          },
+          "expressivePartIds": [
+            "dami-seed-pouch",
+            "dami-sprout"
+          ],
+          "idleMotions": [
+            {
+              "targetPartId": "dami-seed-pouch",
+              "property": "translateY",
+              "from": 0,
+              "to": -3,
+              "durationMs": 1500,
+              "delayMs": 200
+            },
+            {
+              "targetPartId": "dami-sprout",
+              "property": "rotate",
+              "from": -5,
+              "to": 5,
+              "durationMs": 1100,
+              "delayMs": 0
+            }
+          ]
+        }
+      },
+      {
+        "id": "npc-4-cnvxr",
+        "kind": "npc",
+        "name": "피리",
+        "epithet": "빛을 세는 달팽이",
+        "essence": "느린 걸음을 미안해하면서도 누구보다 오래 곁에 남는 이웃.",
+        "origin": "새벽 이슬을 따라오다 돌담의 반짝임이 좋아 뜰에 정착했다.",
+        "traits": [
+          {
+            "id": "piri-patient",
+            "label": "느긋함",
+            "description": "결론보다 함께 지나가는 시간을 소중히 여긴다.",
+            "visibleEvidence": "등껍질의 작은 창들이 천천히 색을 바꾼다.",
+            "behavioralEffect": "상대의 말을 중간에 끊지 않는다.",
+            "confidence": 0.94
+          },
+          {
+            "id": "piri-selfdoubting",
+            "label": "눈치 봄",
+            "description": "자신이 방해가 될까 자주 걱정한다.",
+            "visibleEvidence": "부탁할 때 더듬이를 안쪽으로 말아 넣는다.",
+            "behavioralEffect": "필요한 도움도 늦게 제안한다.",
+            "confidence": 0.83
+          }
+        ],
+        "drives": [
+          "뜰에서 가장 예쁜 저녁빛을 정확히 세고 싶다.",
+          "누군가 자신을 기다리는 일이 부담이 아니라는 걸 믿고 싶다."
+        ],
+        "needs": [
+          "천천히 말할 수 있는 대화",
+          "기다려 주겠다는 약속"
+        ],
+        "boundaries": [
+          "등껍질의 창을 허락 없이 열려고 하지 않는다.",
+          "느리다는 말을 놀림으로 사용하지 않는다."
+        ],
+        "abilities": [
+          "빛의 색 변화를 기억한다.",
+          "급한 마음을 가라앉히는 긴 호흡을 안내한다."
+        ],
+        "visibleSignals": [
+          "더듬이가 펼쳐져 있으면 편안하다.",
+          "불안하면 등껍질 창의 빛이 희미해진다."
+        ],
+        "voice": {
+          "rhythm": "긴 숨처럼 느린 문장, 중간중간 부드러운 여백이 있다.",
+          "vocabulary": "천천히, 빛, 기다림, 같이",
+          "sampleLine": "아직 늦지 않았어요. 빛은… 우리를 조금 기다려 주거든요."
+        },
+        "motion": {
+          "idle": "몸을 아주 천천히 앞뒤로 기울이며 더듬이를 흔든다.",
+          "approach": "빛나는 흔적을 남기듯 작은 호를 그리며 다가간다.",
+          "delight": "등껍질 창들이 차례로 환해지고 더듬이가 높이 선다.",
+          "discomfort": "등껍질 안으로 고개를 조금 숨기고 움직임이 멎는다."
+        },
+        "mood": "잔잔한 설렘",
+        "currentGoal": "해질 때까지 네 가지 다른 빛을 찾아 기록하고 싶다.",
+        "homePosition": {
+          "x": 0.78,
+          "y": 0.28
+        },
+        "design": {
+          "silhouette": "창문 같은 무늬의 큰 등껍질을 멘 길쭉한 달팽이",
+          "palette": [
+            "#9CC7C0",
+            "#6D7897",
+            "#FFF0A9"
+          ],
+          "body": {
+            "kind": "ellipse",
+            "fill": "#9CC7C0",
+            "stroke": "#52606F",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "cx": -5,
+            "cy": 13,
+            "rx": 38,
+            "ry": 16
+          },
+          "parts": [
+            {
+              "id": "piri-shell",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#6D7897",
+                "stroke": "#52606F",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "cx": 12,
+                "cy": -8,
+                "rx": 27,
+                "ry": 30
+              },
+              "zIndex": 2
+            },
+            {
+              "id": "piri-window-one",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#FFF0A9",
+                "stroke": "#52606F",
+                "strokeWidth": 1,
+                "opacity": 1,
+                "cx": 5,
+                "cy": -17,
+                "rx": 6,
+                "ry": 7
+              },
+              "zIndex": 3
+            },
+            {
+              "id": "piri-window-two",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#FFF0A9",
+                "stroke": "#52606F",
+                "strokeWidth": 1,
+                "opacity": 1,
+                "cx": 18,
+                "cy": -3,
+                "rx": 6,
+                "ry": 7
+              },
+              "zIndex": 3
+            },
+            {
+              "id": "piri-feeler",
+              "shape": {
+                "kind": "line",
+                "fill": "#52606F",
+                "stroke": "#52606F",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "x1": -28,
+                "y1": 5,
+                "x2": -38,
+                "y2": -12,
+                "linecap": "round"
+              },
+              "zIndex": 3
+            }
+          ],
+          "faceAnchors": {
+            "leftEye": {
+              "x": -30,
+              "y": 4
+            },
+            "rightEye": {
+              "x": -22,
+              "y": 4
+            },
+            "mouth": {
+              "x": -26,
+              "y": 14
+            }
+          },
+          "expressivePartIds": [
+            "piri-window-one",
+            "piri-window-two",
+            "piri-feeler"
+          ],
+          "idleMotions": [
+            {
+              "targetPartId": "piri-feeler",
+              "property": "rotate",
+              "from": -4,
+              "to": 4,
+              "durationMs": 1800,
+              "delayMs": 0
+            },
+            {
+              "targetPartId": "piri-window-one",
+              "property": "opacity",
+              "from": 0.65,
+              "to": 1,
+              "durationMs": 1400,
+              "delayMs": 200
+            },
+            {
+              "targetPartId": "piri-window-two",
+              "property": "opacity",
+              "from": 1,
+              "to": 0.65,
+              "durationMs": 1400,
+              "delayMs": 500
+            }
+          ]
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "sourceId": "npc-1-mdrq78",
+        "targetId": "npc-2-t587u2",
+        "affinity": 0.62,
+        "trust": 0.48,
+        "tension": 0.17,
+        "label": "웃음 뒤의 쉼을 궁금해함",
+        "lastChangedSceneId": "scene-first-breeze"
+      },
+      {
+        "sourceId": "npc-2-t587u2",
+        "targetId": "npc-1-mdrq78",
+        "affinity": 0.74,
+        "trust": 0.39,
+        "tension": 0.09,
+        "label": "말문을 열어 주고 싶은 사이",
+        "lastChangedSceneId": "scene-first-breeze"
+      },
+      {
+        "sourceId": "npc-2-t587u2",
+        "targetId": "npc-3-1vrjgzn",
+        "affinity": 0.45,
+        "trust": 0.51,
+        "tension": 0.31,
+        "label": "장난과 규칙 사이",
+        "lastChangedSceneId": "scene-first-breeze"
+      },
+      {
+        "sourceId": "npc-3-1vrjgzn",
+        "targetId": "npc-2-t587u2",
+        "affinity": 0.28,
+        "trust": 0.44,
+        "tension": 0.46,
+        "label": "시끄러워도 미워할 수 없는 사이",
+        "lastChangedSceneId": "scene-first-breeze"
+      },
+      {
+        "sourceId": "npc-3-1vrjgzn",
+        "targetId": "npc-4-cnvxr",
+        "affinity": 0.69,
+        "trust": 0.72,
+        "tension": 0.12,
+        "label": "함께 싹을 기다린 사이",
+        "lastChangedSceneId": "scene-first-breeze"
+      },
+      {
+        "sourceId": "npc-4-cnvxr",
+        "targetId": "npc-3-1vrjgzn",
+        "affinity": 0.77,
+        "trust": 0.58,
+        "tension": 0.08,
+        "label": "부지런한 등을 믿는 사이",
+        "lastChangedSceneId": "scene-first-breeze"
+      },
+      {
+        "sourceId": "npc-4-cnvxr",
+        "targetId": "npc-1-mdrq78",
+        "affinity": 0.56,
+        "trust": 0.64,
+        "tension": 0.14,
+        "label": "말 없는 빛을 나눈 사이",
+        "lastChangedSceneId": "scene-first-breeze"
+      },
+      {
+        "sourceId": "npc-1-mdrq78",
+        "targetId": "npc-4-cnvxr",
+        "affinity": 0.51,
+        "trust": 0.43,
+        "tension": 0.19,
+        "label": "기다림을 배워 보는 사이",
+        "lastChangedSceneId": "scene-first-breeze"
+      }
+    ],
+    "memories": [
+      {
+        "id": "memory-nari-note",
+        "ownerId": "npc-1-mdrq78",
+        "sceneId": "scene-first-breeze",
+        "summary": "나리는 연못가에서 젖은 쪽지를 주웠다.",
+        "interpretation": "누군가 돌려받고 싶어 할 말일지도 모른다고 생각한다.",
+        "visibility": "private",
+        "salience": 0.82
+      },
+      {
+        "id": "memory-moru-tap",
+        "ownerId": "npc-2-t587u2",
+        "sceneId": "scene-first-breeze",
+        "summary": "모루는 다미의 화단 옆에서 너무 크게 박자를 냈다.",
+        "interpretation": "다미가 화내지 않고 물 주는 법을 알려 준 일이 마음에 남았다.",
+        "visibility": "private",
+        "salience": 0.67
+      },
+      {
+        "id": "memory-dami-wait",
+        "ownerId": "npc-3-1vrjgzn",
+        "sceneId": "scene-first-breeze",
+        "summary": "다미는 피리가 싹 하나를 오래 바라보는 동안 곁을 지켰다.",
+        "interpretation": "기다리는 것도 돌봄일 수 있다고 조금 배웠다.",
+        "visibility": "shared",
+        "salience": 0.74
+      },
+      {
+        "id": "memory-piri-light",
+        "ownerId": "npc-4-cnvxr",
+        "sceneId": "scene-first-breeze",
+        "summary": "피리는 나리가 접은 종이 사이로 비친 노란 빛을 보았다.",
+        "interpretation": "나리가 말하고 싶은 것이 아직 남아 있다고 느꼈다.",
+        "visibility": "private",
+        "salience": 0.7
+      }
+    ],
+    "openThreads": [
+      {
+        "id": "thread-lost-note",
+        "title": "이름 없는 쪽지",
+        "description": "나리가 주운 젖은 쪽지의 주인을 아무도 아직 알지 못한다.",
+        "participantIds": [
+          "npc-1-mdrq78",
+          "npc-4-cnvxr"
+        ],
+        "status": "open",
+        "createdSceneId": "scene-first-breeze"
+      },
+      {
+        "id": "thread-quiet-rhythm",
+        "title": "끝까지 듣는 박자",
+        "description": "모루는 자신의 새 리듬을 다미에게 들려주고 싶지만, 화단을 방해할까 망설인다.",
+        "participantIds": [
+          "npc-2-t587u2",
+          "npc-3-1vrjgzn"
+        ],
+        "status": "open",
+        "createdSceneId": "scene-first-breeze"
+      },
+      {
+        "id": "thread-waiting-light",
+        "title": "기다림의 저녁빛",
+        "description": "피리는 다미와 함께 새싹과 저녁빛을 끝까지 보고 싶지만, 다미는 일이 남았다고 생각한다.",
+        "participantIds": [
+          "npc-3-1vrjgzn",
+          "npc-4-cnvxr"
+        ],
+        "status": "open",
+        "createdSceneId": "scene-first-breeze"
+      },
+      {
+        "id": "thread-unsaid-laugh",
+        "title": "웃음 뒤의 말",
+        "description": "나리는 모루가 웃음을 멈춘 순간 무엇을 삼켰는지 궁금하지만 묻지 못했다.",
+        "participantIds": [
+          "npc-1-mdrq78",
+          "npc-2-t587u2"
+        ],
+        "status": "open",
+        "createdSceneId": "scene-first-breeze"
+      }
+    ],
+    "recentScenes": [
+      {
+        "id": "scene-first-breeze",
+        "title": "첫 바람의 오후",
+        "summary": "네 이웃이 각자의 자리에서 뜰의 바람을 맞이했고, 아직 꺼내지 못한 말들이 작은 흔적으로 남았다.",
+        "participantIds": [
+          "npc-1-mdrq78",
+          "npc-2-t587u2",
+          "npc-3-1vrjgzn",
+          "npc-4-cnvxr"
+        ],
+        "atRevision": 0
+      }
+    ]
+  },
+  "trace": {
+    "mode": "dialogue-only",
+    "calls": [
+      {
+        "id": "resp_0e98cf8d5a9471e4016a61cf5649d0819a87296d4c44a0d12f",
+        "role": "world-author",
+        "provider": "openai",
+        "model": "gpt-5.6-terra",
+        "startedAt": "2026-07-23T08:22:46.009Z",
+        "latencyMs": 49210,
+        "usage": {
+          "inputTokens": 1791,
+          "cachedInputTokens": 1788,
+          "outputTokens": 5498,
+          "reasoningTokens": 77,
+          "totalTokens": 7289
+        }
+      }
+    ],
+    "usage": {
+      "inputTokens": 1791,
+      "cachedInputTokens": 1788,
+      "outputTokens": 5498,
+      "reasoningTokens": 77,
+      "totalTokens": 7289
+    },
+    "totalLatencyMs": 49210,
+    "wallClockMs": 49216
+  }
+}

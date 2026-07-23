@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "doodle-life-request-first-evaluation.v2",
+  "createdAt": "2026-07-23T15:44:33.151Z",
+  "condition": {
+    "provider": "openai",
+    "requestedRuns": 3,
+    "enforcedRuns": 3,
+    "worldSource": "fixed-validated-tutorial-garden",
+    "worldModelCallsPerRun": 0,
+    "liveModelRolesPerRun": [
+      "doodle-reader",
+      "quest-owner-reaction",
+      "quest-observer-reaction"
+    ],
+    "selectedQuestId": "quest_soso_last_note",
+    "selectedQuestHash": "23debe4d145117c5973394523656228625a8706bd7b1a2ff8d24b630eaba5904",
+    "evaluationConfig": {
+      "roles": {
+        "doodle-reader": {
+          "model": "gpt-5.6-sol",
+          "reasoning": "low",
+          "maxOutputTokens": 2400
+        },
+        "quest-owner-reaction": {
+          "model": "gpt-5.6-terra",
+          "reasoning": "low",
+          "maxOutputTokens": 900
+        },
+        "quest-observer-reaction": {
+          "model": "gpt-5.6-terra",
+          "reasoning": "low",
+          "maxOutputTokens": 900
+        }
+      },
+      "aiTimeoutMs": 180000,
+      "reactionTimeoutMs": 45000
+    }
+  },
+  "scenario": {
+    "id": "eval-request-first-v2",
+    "locale": "ko-KR",
+    "actionOrder": [
+      "seed-fixed-session",
+      "select-locked-soso-quest",
+      "quest-blind-doodle-reading",
+      "local-deterministic-resolution",
+      "parallel-owner-observer-reactions",
+      "local-encounter-resolver"
+    ],
+    "image": {
+      "file": "soso-last-note-full.jpg",
+      "sha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680",
+      "mimeType": "image/jpeg",
+      "width": 904,
+      "height": 396,
+      "drawingMetrics": null
+    }
+  },
+  "privacy": {
+    "omitted": [
+      "OPENAI_API_KEY",
+      "Authorization",
+      "image.dataUrl",
+      "input_image.image_url",
+      "base64 image source"
+    ]
+  },
+  "interpretation": {
+    "timing": {
+      "criticalPathWallMs": "run start through resolved encounter or terminal local error",
+      "aggregateModelLatencyMs": "sum of individual model call latency; parallel reactions overlap",
+      "reactionStageWallMs": "actual outer wall time of the parallel reaction stage"
+    }
+  }
+}

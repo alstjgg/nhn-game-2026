@@ -1,0 +1,39 @@
+{
+  "revision": {
+    "before": 0,
+    "after": 1
+  },
+  "propStatesChanged": [
+    {
+      "id": "ribbon_chime",
+      "before": "세 번 울림",
+      "after": "새 생명체가 가까이 닿음"
+    }
+  ],
+  "gardenStatesAdded": [],
+  "creaturesAdded": [
+    {
+      "id": "doodle_89d06ff323eb80303fed",
+      "name": "살랑마루",
+      "essence": "가로로 길게 펼쳐진 굵은 각진 선 위에 중앙의 솟은 고리들과 오른쪽의 겹친 마름모가 이어진 모습입니다.",
+      "imageSha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680",
+      "questId": "quest_soso_last_note",
+      "verdict": "partial",
+      "homePosition": {
+        "x": 52,
+        "y": 68
+      }
+    }
+  ],
+  "relationshipRecordsAdded": [
+    {
+      "id": "record_quest_soso_last_note_doodle_89d06ff323eb80303fed",
+      "questId": "quest_soso_last_note",
+      "ownerNpcId": "npc_soso",
+      "creatureId": "doodle_89d06ff323eb80303fed",
+      "title": "높은 곳까지 온 첫 시도",
+      "summary": "소소는 어느 구간까지 이어졌는지 몸짓으로 다시 보여 주었다.",
+      "verdict": "partial"
+    }
+  ]
+}

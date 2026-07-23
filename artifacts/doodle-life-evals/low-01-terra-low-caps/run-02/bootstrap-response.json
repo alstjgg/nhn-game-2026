@@ -1,0 +1,936 @@
+{
+  "requestId": "eval-doodle-life-low-01-v1",
+  "world": {
+    "id": "world-1mnh80d",
+    "revision": 0,
+    "title": "이슬이 멈춰 선 정원",
+    "premise": "작은 정원 한가운데의 빈 물그릇에, 누구도 주인을 모르는 새벽 이슬이 매일 고인다.",
+    "locationDescription": "둥근 디딤돌과 낮은 풀숲, 비어 있는 물그릇 하나가 있는 조용한 정원이다.",
+    "atmosphere": "풀잎이 서로 비비는 소리와 은은한 흙냄새가 감돈다.",
+    "clock": "이른 아침",
+    "residents": [
+      {
+        "id": "npc-1-3ttb7e",
+        "kind": "npc",
+        "name": "모루",
+        "epithet": "물방울을 세는 달팽이",
+        "essence": "느리고 꼼꼼하게 정원의 작은 변화를 기록하는 달팽이.",
+        "origin": "비가 오래 내리던 날, 깨진 화분 아래에서 깨어났다.",
+        "traits": [
+          {
+            "id": "moru-careful",
+            "label": "꼼꼼함",
+            "description": "눈에 잘 띄지 않는 차이도 오래 들여다본다.",
+            "visibleEvidence": "등껍질에 작은 이슬 점들이 줄지어 붙어 있다.",
+            "behavioralEffect": "말을 하기 전에 주변을 한 번 살핀다.",
+            "confidence": 0.92
+          },
+          {
+            "id": "moru-shy",
+            "label": "수줍음",
+            "description": "마음을 드러내는 일을 어려워한다.",
+            "visibleEvidence": "낯선 시선이 닿으면 더듬이를 살짝 접는다.",
+            "behavioralEffect": "친절한 말에도 바로 답하지 않고 뜸을 들인다.",
+            "confidence": 0.81
+          }
+        ],
+        "drives": [
+          "오늘 고인 이슬의 개수를 정확히 세고 싶다.",
+          "누군가 자신의 기록을 귀찮아하지 않았으면 한다."
+        ],
+        "needs": [
+          "안전하게 머물 조용한 자리",
+          "재촉하지 않는 대화"
+        ],
+        "boundaries": [
+          "등껍질의 기록을 허락 없이 들춰보는 것을 싫어한다.",
+          "빠른 대답을 강요받으면 숨고 싶어진다."
+        ],
+        "abilities": [
+          "이슬 자국을 따라 밤사이의 움직임을 알아낸다.",
+          "작은 물건을 등껍질 위에 안전하게 나른다."
+        ],
+        "visibleSignals": [
+          "투명한 이슬병을 등에 묶고 다닌다.",
+          "기분이 좋으면 더듬이가 동그랗게 말린다."
+        ],
+        "voice": {
+          "rhythm": "짧은 말 사이에 긴 쉼이 있다.",
+          "vocabulary": "숫자, 흔적, 조심스럽게 같은 말을 즐겨 쓴다.",
+          "sampleLine": "음… 오늘은 스물셋. 어제보다 하나가 많아요."
+        },
+        "motion": {
+          "idle": "더듬이를 번갈아 기울이며 이슬병을 살핀다.",
+          "approach": "반원을 그리듯 천천히 가까이 온다.",
+          "delight": "등껍질을 살짝 들어 올리고 더듬이를 펼친다.",
+          "discomfort": "몸을 등껍질 안쪽으로 반쯤 숨긴다."
+        },
+        "mood": "조심스러운 기대",
+        "currentGoal": "빈 물그릇 가장자리의 이슬을 세고 있다.",
+        "homePosition": {
+          "x": 0.22,
+          "y": 0.68
+        },
+        "design": {
+          "silhouette": "낮고 둥근 등껍질과 길게 뻗은 더듬이",
+          "palette": [
+            "#8FAE83",
+            "#F3F7E8",
+            "#6D7E68"
+          ],
+          "body": {
+            "kind": "ellipse",
+            "fill": "#8FAE83",
+            "stroke": "#6D7E68",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "cx": 0,
+            "cy": 8,
+            "rx": 24,
+            "ry": 13
+          },
+          "parts": [
+            {
+              "id": "moru-shell",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#F3F7E8",
+                "stroke": "#6D7E68",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "cx": -5,
+                "cy": -5,
+                "rx": 19,
+                "ry": 20
+              },
+              "zIndex": 2
+            },
+            {
+              "id": "moru-left-antenna",
+              "shape": {
+                "kind": "line",
+                "fill": "none",
+                "stroke": "#6D7E68",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "x1": 13,
+                "y1": 0,
+                "x2": 22,
+                "y2": -18,
+                "linecap": "round"
+              },
+              "zIndex": 3
+            },
+            {
+              "id": "moru-right-antenna",
+              "shape": {
+                "kind": "line",
+                "fill": "none",
+                "stroke": "#6D7E68",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "x1": 19,
+                "y1": 2,
+                "x2": 30,
+                "y2": -13,
+                "linecap": "round"
+              },
+              "zIndex": 3
+            }
+          ],
+          "faceAnchors": {
+            "leftEye": {
+              "x": 15,
+              "y": 2
+            },
+            "rightEye": {
+              "x": 23,
+              "y": 2
+            },
+            "mouth": {
+              "x": 20,
+              "y": 10
+            }
+          },
+          "expressivePartIds": [
+            "moru-left-antenna",
+            "moru-right-antenna"
+          ],
+          "idleMotions": [
+            {
+              "targetPartId": "moru-left-antenna",
+              "property": "rotate",
+              "from": -4,
+              "to": 5,
+              "durationMs": 1700,
+              "delayMs": 0
+            },
+            {
+              "targetPartId": "moru-right-antenna",
+              "property": "rotate",
+              "from": 5,
+              "to": -4,
+              "durationMs": 1700,
+              "delayMs": 300
+            }
+          ]
+        }
+      },
+      {
+        "id": "npc-2-1cfkdsg",
+        "kind": "npc",
+        "name": "피피",
+        "epithet": "씨앗 주머니의 참새",
+        "essence": "생각보다 먼저 날아가지만, 약속한 일은 꼭 되돌아와 마치는 참새.",
+        "origin": "정원 울타리 밖 시장의 곡물 자루에서 태어난 듯한 이야기를 한다.",
+        "traits": [
+          {
+            "id": "pippi-bright",
+            "label": "반짝이는 호기심",
+            "description": "새로운 소리와 물건을 그냥 지나치지 못한다.",
+            "visibleEvidence": "목에 맨 씨앗 주머니가 늘 조금씩 흔들린다.",
+            "behavioralEffect": "대화 중에도 발견한 것을 즉시 가리킨다.",
+            "confidence": 0.9
+          },
+          {
+            "id": "pippi-loyal",
+            "label": "되돌아오는 마음",
+            "description": "한 번 한 약속은 잊지 않으려 애쓴다.",
+            "visibleEvidence": "발목에 작은 매듭 끈을 묶고 있다.",
+            "behavioralEffect": "떠난 뒤에도 중요한 말에는 답을 가져온다.",
+            "confidence": 0.84
+          }
+        ],
+        "drives": [
+          "정원에 처음 보는 씨앗을 심고 싶다.",
+          "모루가 자신을 성급하다고만 보지 않게 하고 싶다."
+        ],
+        "needs": [
+          "잠깐이라도 날개를 쉴 높은 자리",
+          "실수해도 다시 이야기할 기회"
+        ],
+        "boundaries": [
+          "날개를 붙잡거나 비행을 막는 것을 견디지 못한다.",
+          "비밀로 맡긴 씨앗의 출처는 캐묻지 말아야 한다."
+        ],
+        "abilities": [
+          "멀리서 들리는 소리를 흉내 낸다.",
+          "틈새에 떨어진 씨앗을 찾아낸다."
+        ],
+        "visibleSignals": [
+          "노란 씨앗 주머니를 가슴에 멘다.",
+          "흥분하면 꼬리가 재빠르게 튄다."
+        ],
+        "voice": {
+          "rhythm": "한 문장에 느낌표가 많고 끝이 가볍게 올라간다.",
+          "vocabulary": "어머, 봐봐, 금방 다녀올게를 자주 쓴다.",
+          "sampleLine": "봐봐! 이 씨앗, 어제는 없었어! 신기하지!"
+        },
+        "motion": {
+          "idle": "발을 번갈아 들며 꼬리를 짧게 흔든다.",
+          "approach": "작은 호를 그리며 두어 번 깡충 뛰어온다.",
+          "delight": "양 날개를 크게 펴고 제자리에서 돈다.",
+          "discomfort": "한 걸음 물러나 날개를 몸에 바싹 붙인다."
+        },
+        "mood": "들뜬 궁금증",
+        "currentGoal": "물그릇 옆에서 낯선 은빛 씨앗을 보여 줄 상대를 찾고 있다.",
+        "homePosition": {
+          "x": 0.72,
+          "y": 0.27
+        },
+        "design": {
+          "silhouette": "뾰족한 부리와 삼각 꼬리가 돋보이는 작은 새",
+          "palette": [
+            "#E8B94F",
+            "#FFF2C9",
+            "#71563A"
+          ],
+          "body": {
+            "kind": "ellipse",
+            "fill": "#E8B94F",
+            "stroke": "#71563A",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "cx": 0,
+            "cy": 0,
+            "rx": 20,
+            "ry": 25
+          },
+          "parts": [
+            {
+              "id": "pippi-beak",
+              "shape": {
+                "kind": "polygon",
+                "fill": "#FFF2C9",
+                "stroke": "#71563A",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "points": [
+                  {
+                    "x": 18,
+                    "y": -4
+                  },
+                  {
+                    "x": 35,
+                    "y": 2
+                  },
+                  {
+                    "x": 18,
+                    "y": 8
+                  }
+                ]
+              },
+              "zIndex": 3
+            },
+            {
+              "id": "pippi-tail",
+              "shape": {
+                "kind": "polygon",
+                "fill": "#E8B94F",
+                "stroke": "#71563A",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "points": [
+                  {
+                    "x": -17,
+                    "y": 10
+                  },
+                  {
+                    "x": -39,
+                    "y": 24
+                  },
+                  {
+                    "x": -19,
+                    "y": -2
+                  }
+                ]
+              },
+              "zIndex": 1
+            },
+            {
+              "id": "pippi-pouch",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#FFF2C9",
+                "stroke": "#71563A",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "cx": 5,
+                "cy": 18,
+                "rx": 8,
+                "ry": 10
+              },
+              "zIndex": 4
+            }
+          ],
+          "faceAnchors": {
+            "leftEye": {
+              "x": 6,
+              "y": -8
+            },
+            "rightEye": {
+              "x": 12,
+              "y": -8
+            },
+            "mouth": {
+              "x": 19,
+              "y": 3
+            }
+          },
+          "expressivePartIds": [
+            "pippi-tail",
+            "pippi-pouch"
+          ],
+          "idleMotions": [
+            {
+              "targetPartId": "pippi-tail",
+              "property": "rotate",
+              "from": -8,
+              "to": 9,
+              "durationMs": 600,
+              "delayMs": 0
+            },
+            {
+              "targetPartId": null,
+              "property": "translateY",
+              "from": 0,
+              "to": -3,
+              "durationMs": 800,
+              "delayMs": 150
+            }
+          ]
+        }
+      },
+      {
+        "id": "npc-3-108hrd5",
+        "kind": "npc",
+        "name": "토리",
+        "epithet": "종이배를 접는 두더지",
+        "essence": "땅속 소문을 듣지만, 남의 비밀을 가볍게 옮기지 않는 두더지.",
+        "origin": "오래된 빗물길 아래의 부드러운 흙방에서 살기 시작했다.",
+        "traits": [
+          {
+            "id": "tori-grounded",
+            "label": "묵직한 배려",
+            "description": "누군가 곤란해하면 먼저 발밑을 단단하게 해 준다.",
+            "visibleEvidence": "앞발에 흙을 털어 낸 흔적이 늘 남아 있다.",
+            "behavioralEffect": "조언보다 필요한 자리를 먼저 마련한다.",
+            "confidence": 0.91
+          },
+          {
+            "id": "tori-secretive",
+            "label": "말의 무게",
+            "description": "들은 이야기를 쉽게 꺼내지 않는다.",
+            "visibleEvidence": "말하기 전 코끝을 한 번 문지른다.",
+            "behavioralEffect": "질문이 깊어지면 다른 이야기를 고를 수 있다.",
+            "confidence": 0.77
+          }
+        ],
+        "drives": [
+          "빗물길이 무너지기 전에 조용히 보수하고 싶다.",
+          "해솔에게 미안하다는 말을 건넬 용기를 찾고 싶다."
+        ],
+        "needs": [
+          "흙냄새 나는 조용한 공간",
+          "사적인 이야기를 멈출 수 있는 선택권"
+        ],
+        "boundaries": [
+          "땅속 통로의 위치를 함부로 알려 주지 않는다.",
+          "아픈 기억을 농담으로 다루면 대화를 끝낸다."
+        ],
+        "abilities": [
+          "느슨해진 흙과 숨은 빈틈을 감지한다.",
+          "넓은 잎으로 작은 종이배를 단단히 접는다."
+        ],
+        "visibleSignals": [
+          "앞발에 접다 만 초록 종이배를 들고 있다.",
+          "생각이 깊어지면 코끝이 바쁘게 움직인다."
+        ],
+        "voice": {
+          "rhythm": "낮고 천천히, 필요한 말만 고른다.",
+          "vocabulary": "괜찮다면, 여기까지만, 단단하게를 자주 쓴다.",
+          "sampleLine": "괜찮다면… 물은 이쪽으로 보내는 편이 단단하겠어."
+        },
+        "motion": {
+          "idle": "코끝을 움찔이며 앞발로 종이배의 모서리를 누른다.",
+          "approach": "낮게 몸을 기울이고 곧은 길로 다가온다.",
+          "delight": "종이배를 들어 보이고 어깨를 작게 들썩인다.",
+          "discomfort": "앞발을 가슴 앞으로 모으고 시선을 흙으로 내린다."
+        },
+        "mood": "숨긴 미안함",
+        "currentGoal": "해솔이 오기 전에 빗물길 입구에 종이배 표식을 남길지 고민하고 있다.",
+        "homePosition": {
+          "x": 0.38,
+          "y": 0.82
+        },
+        "design": {
+          "silhouette": "넓은 앞발과 낮은 주둥이가 만드는 땅딸막한 형태",
+          "palette": [
+            "#6F5960",
+            "#B89A83",
+            "#3F3437"
+          ],
+          "body": {
+            "kind": "polygon",
+            "fill": "#6F5960",
+            "stroke": "#3F3437",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "points": [
+              {
+                "x": -27,
+                "y": 11
+              },
+              {
+                "x": -19,
+                "y": -17
+              },
+              {
+                "x": 5,
+                "y": -28
+              },
+              {
+                "x": 28,
+                "y": -10
+              },
+              {
+                "x": 24,
+                "y": 18
+              },
+              {
+                "x": -8,
+                "y": 27
+              }
+            ]
+          },
+          "parts": [
+            {
+              "id": "tori-snout",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#B89A83",
+                "stroke": "#3F3437",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "cx": 24,
+                "cy": 3,
+                "rx": 13,
+                "ry": 10
+              },
+              "zIndex": 3
+            },
+            {
+              "id": "tori-left-paw",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#B89A83",
+                "stroke": "#3F3437",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "cx": -13,
+                "cy": 22,
+                "rx": 14,
+                "ry": 8
+              },
+              "zIndex": 3
+            },
+            {
+              "id": "tori-boat",
+              "shape": {
+                "kind": "polygon",
+                "fill": "#B8C98E",
+                "stroke": "#3F3437",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "points": [
+                  {
+                    "x": -7,
+                    "y": 3
+                  },
+                  {
+                    "x": 7,
+                    "y": 3
+                  },
+                  {
+                    "x": 0,
+                    "y": 14
+                  }
+                ]
+              },
+              "zIndex": 4
+            }
+          ],
+          "faceAnchors": {
+            "leftEye": {
+              "x": 5,
+              "y": -9
+            },
+            "rightEye": {
+              "x": 13,
+              "y": -7
+            },
+            "mouth": {
+              "x": 25,
+              "y": 8
+            }
+          },
+          "expressivePartIds": [
+            "tori-left-paw",
+            "tori-boat"
+          ],
+          "idleMotions": [
+            {
+              "targetPartId": "tori-boat",
+              "property": "rotate",
+              "from": -3,
+              "to": 3,
+              "durationMs": 1900,
+              "delayMs": 0
+            },
+            {
+              "targetPartId": "tori-left-paw",
+              "property": "translateY",
+              "from": 0,
+              "to": 2,
+              "durationMs": 1200,
+              "delayMs": 250
+            }
+          ]
+        }
+      },
+      {
+        "id": "npc-4-1q29k3q",
+        "kind": "npc",
+        "name": "해솔",
+        "epithet": "빛을 고르는 여우",
+        "essence": "아침빛의 색을 작은 유리 조각에 모으는 여우.",
+        "origin": "안개가 걷힌 언덕 너머에서 유리 조각 상자를 들고 왔다.",
+        "traits": [
+          {
+            "id": "haesol-observant",
+            "label": "예민한 관찰",
+            "description": "표정의 작은 흔들림도 놓치지 않는다.",
+            "visibleEvidence": "귀가 소리마다 다른 방향으로 움직인다.",
+            "behavioralEffect": "상대의 말보다 망설임에 먼저 반응한다.",
+            "confidence": 0.88
+          },
+          {
+            "id": "haesol-proud",
+            "label": "고집스러운 자존심",
+            "description": "도움을 원해도 혼자 해내려는 척한다.",
+            "visibleEvidence": "유리 조각 상자를 꼭 끌어안는다.",
+            "behavioralEffect": "섭섭하면 농담처럼 말을 돌린다.",
+            "confidence": 0.8
+          }
+        ],
+        "drives": [
+          "깨진 유리 조각 하나와 꼭 맞는 아침빛을 찾고 싶다.",
+          "토리가 왜 갑자기 빗물길을 막았는지 듣고 싶다."
+        ],
+        "needs": [
+          "자신의 속도를 존중받는 협력",
+          "진심 어린 사과 또는 명확한 설명"
+        ],
+        "boundaries": [
+          "상자 속 유리 조각을 허락 없이 만지지 말아야 한다.",
+          "애매한 위로로 중요한 질문을 덮는 것을 싫어한다."
+        ],
+        "abilities": [
+          "빛의 색 차이를 기억하고 분류한다.",
+          "풀잎에 맺힌 반사를 멀리서 찾아낸다."
+        ],
+        "visibleSignals": [
+          "꼬리 끝에 푸른 유리 조각 하나가 매달려 있다.",
+          "기분이 상하면 귀가 뒤로 기울어진다."
+        ],
+        "voice": {
+          "rhythm": "부드럽게 시작해도 끝은 또렷하게 맺는다.",
+          "vocabulary": "글쎄, 정확히, 나중 말고 지금을 자주 쓴다.",
+          "sampleLine": "글쎄, 예쁜 빛이라고 다 맞는 빛은 아니야."
+        },
+        "motion": {
+          "idle": "꼬리 끝의 유리 조각을 살짝 흔들어 빛을 확인한다.",
+          "approach": "두 걸음 다가왔다가 고개를 기울인다.",
+          "delight": "귀를 세우고 꼬리를 크게 한 번 휘두른다.",
+          "discomfort": "유리 조각 상자를 품에 붙이고 옆으로 비킨다."
+        },
+        "mood": "차분한 서운함",
+        "currentGoal": "물그릇에 비친 빛이 잃어버린 유리 조각과 닮았는지 확인하고 있다.",
+        "homePosition": {
+          "x": 0.76,
+          "y": 0.66
+        },
+        "design": {
+          "silhouette": "큰 삼각 귀와 길고 풍성한 꼬리가 선명한 여우",
+          "palette": [
+            "#D97B58",
+            "#FFF0D5",
+            "#486A82"
+          ],
+          "body": {
+            "kind": "ellipse",
+            "fill": "#D97B58",
+            "stroke": "#6C443B",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "cx": 0,
+            "cy": 0,
+            "rx": 23,
+            "ry": 28
+          },
+          "parts": [
+            {
+              "id": "haesol-left-ear",
+              "shape": {
+                "kind": "polygon",
+                "fill": "#D97B58",
+                "stroke": "#6C443B",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "points": [
+                  {
+                    "x": -16,
+                    "y": -18
+                  },
+                  {
+                    "x": -22,
+                    "y": -47
+                  },
+                  {
+                    "x": -2,
+                    "y": -25
+                  }
+                ]
+              },
+              "zIndex": 2
+            },
+            {
+              "id": "haesol-right-ear",
+              "shape": {
+                "kind": "polygon",
+                "fill": "#D97B58",
+                "stroke": "#6C443B",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "points": [
+                  {
+                    "x": 5,
+                    "y": -25
+                  },
+                  {
+                    "x": 17,
+                    "y": -48
+                  },
+                  {
+                    "x": 23,
+                    "y": -16
+                  }
+                ]
+              },
+              "zIndex": 2
+            },
+            {
+              "id": "haesol-tail",
+              "shape": {
+                "kind": "polygon",
+                "fill": "#FFF0D5",
+                "stroke": "#6C443B",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "points": [
+                  {
+                    "x": -17,
+                    "y": 10
+                  },
+                  {
+                    "x": -50,
+                    "y": 30
+                  },
+                  {
+                    "x": -44,
+                    "y": 50
+                  },
+                  {
+                    "x": -12,
+                    "y": 31
+                  }
+                ]
+              },
+              "zIndex": 1
+            },
+            {
+              "id": "haesol-glass",
+              "shape": {
+                "kind": "polygon",
+                "fill": "#486A82",
+                "stroke": "#6C443B",
+                "strokeWidth": 2,
+                "opacity": 1,
+                "points": [
+                  {
+                    "x": -38,
+                    "y": 35
+                  },
+                  {
+                    "x": -31,
+                    "y": 28
+                  },
+                  {
+                    "x": -24,
+                    "y": 36
+                  },
+                  {
+                    "x": -31,
+                    "y": 44
+                  }
+                ]
+              },
+              "zIndex": 3
+            }
+          ],
+          "faceAnchors": {
+            "leftEye": {
+              "x": -7,
+              "y": -6
+            },
+            "rightEye": {
+              "x": 8,
+              "y": -6
+            },
+            "mouth": {
+              "x": 2,
+              "y": 9
+            }
+          },
+          "expressivePartIds": [
+            "haesol-left-ear",
+            "haesol-right-ear",
+            "haesol-tail",
+            "haesol-glass"
+          ],
+          "idleMotions": [
+            {
+              "targetPartId": "haesol-tail",
+              "property": "rotate",
+              "from": -5,
+              "to": 6,
+              "durationMs": 1500,
+              "delayMs": 0
+            },
+            {
+              "targetPartId": "haesol-glass",
+              "property": "opacity",
+              "from": 0.65,
+              "to": 1,
+              "durationMs": 1100,
+              "delayMs": 200
+            }
+          ]
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "sourceId": "npc-1-3ttb7e",
+        "targetId": "npc-2-1cfkdsg",
+        "affinity": 0.42,
+        "trust": 0.38,
+        "tension": 0.24,
+        "label": "느린 기록과 빠른 소식",
+        "lastChangedSceneId": "first-morning"
+      },
+      {
+        "sourceId": "npc-2-1cfkdsg",
+        "targetId": "npc-1-3ttb7e",
+        "affinity": 0.71,
+        "trust": 0.55,
+        "tension": 0.12,
+        "label": "기다려 주고 싶은 친구",
+        "lastChangedSceneId": "first-morning"
+      },
+      {
+        "sourceId": "npc-3-108hrd5",
+        "targetId": "npc-4-1q29k3q",
+        "affinity": 0.48,
+        "trust": 0.29,
+        "tension": 0.51,
+        "label": "말하지 못한 빗물길",
+        "lastChangedSceneId": "first-morning"
+      },
+      {
+        "sourceId": "npc-4-1q29k3q",
+        "targetId": "npc-3-108hrd5",
+        "affinity": 0.34,
+        "trust": 0.18,
+        "tension": 0.64,
+        "label": "설명을 기다리는 사이",
+        "lastChangedSceneId": "first-morning"
+      },
+      {
+        "sourceId": "npc-2-1cfkdsg",
+        "targetId": "npc-4-1q29k3q",
+        "affinity": 0.59,
+        "trust": 0.46,
+        "tension": 0.17,
+        "label": "빛나는 것을 함께 찾음",
+        "lastChangedSceneId": "first-morning"
+      }
+    ],
+    "memories": [
+      {
+        "id": "moru-first-dew",
+        "ownerId": "npc-1-3ttb7e",
+        "sceneId": "first-morning",
+        "summary": "피피가 이슬 하나를 날개로 날려 버린 뒤 미안하다며 새 이슬을 찾아왔다.",
+        "interpretation": "피피는 시끄럽지만 일부러 망치지는 않는다.",
+        "visibility": "private",
+        "salience": 0.66
+      },
+      {
+        "id": "tori-closed-channel",
+        "ownerId": "npc-3-108hrd5",
+        "sceneId": "first-morning",
+        "summary": "토리는 무너질 뻔한 빗물길을 막았고, 해솔의 유리 조각이 물길 건너에 남았다.",
+        "interpretation": "안전을 택했지만 해솔에게 설명하지 못했다.",
+        "visibility": "private",
+        "salience": 0.9
+      },
+      {
+        "id": "haesol-missing-glass",
+        "ownerId": "npc-4-1q29k3q",
+        "sceneId": "first-morning",
+        "summary": "해솔은 빗물길이 막힌 뒤 가장 푸른 유리 조각을 찾지 못했다.",
+        "interpretation": "토리가 이유를 숨기고 있다고 느낀다.",
+        "visibility": "private",
+        "salience": 0.91
+      }
+    ],
+    "openThreads": [
+      {
+        "id": "thread-silver-seed",
+        "title": "은빛 씨앗의 자리",
+        "description": "피피가 가져온 은빛 씨앗을 어디에 심을지, 그리고 그것이 무엇을 좋아하는지 아직 아무도 모른다.",
+        "participantIds": [
+          "npc-2-1cfkdsg",
+          "npc-1-3ttb7e"
+        ],
+        "status": "open",
+        "createdSceneId": "first-morning"
+      },
+      {
+        "id": "thread-rain-channel",
+        "title": "막힌 빗물길의 말",
+        "description": "토리는 빗물길을 막은 까닭을 해솔에게 아직 설명하지 못했다.",
+        "participantIds": [
+          "npc-3-108hrd5",
+          "npc-4-1q29k3q"
+        ],
+        "status": "open",
+        "createdSceneId": "first-morning"
+      }
+    ],
+    "recentScenes": [
+      {
+        "id": "first-morning",
+        "title": "물그릇의 첫 반짝임",
+        "summary": "이른 아침, 주민들은 빈 물그릇에 고인 이슬과 낯선 반짝임을 각자의 방식으로 발견했다.",
+        "participantIds": [
+          "npc-1-3ttb7e",
+          "npc-2-1cfkdsg",
+          "npc-3-108hrd5",
+          "npc-4-1q29k3q"
+        ],
+        "atRevision": 0
+      }
+    ]
+  },
+  "trace": {
+    "mode": "dialogue-only",
+    "calls": [
+      {
+        "id": "resp_0295b257b75a7285016a61d1e04d94819887454d0da9e3fbc6",
+        "role": "world-author",
+        "provider": "openai",
+        "model": "gpt-5.6-terra",
+        "startedAt": "2026-07-23T08:33:36.133Z",
+        "latencyMs": 45701,
+        "usage": {
+          "inputTokens": 1791,
+          "cachedInputTokens": 1788,
+          "outputTokens": 5221,
+          "reasoningTokens": 72,
+          "totalTokens": 7012
+        }
+      }
+    ],
+    "usage": {
+      "inputTokens": 1791,
+      "cachedInputTokens": 1788,
+      "outputTokens": 5221,
+      "reasoningTokens": 72,
+      "totalTokens": 7012
+    },
+    "totalLatencyMs": 45701,
+    "wallClockMs": 45703
+  }
+}

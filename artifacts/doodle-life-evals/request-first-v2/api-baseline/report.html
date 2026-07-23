@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Doodle Life request-first v2 · API baseline</title>
+  <style>
+    :root {
+      color: #352d29;
+      background: #f3eddd;
+      font-family: Inter, Pretendard, system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      width: 1280px;
+      min-height: 900px;
+      margin: 0;
+      padding: 30px 34px;
+      background:
+        radial-gradient(circle at 86% 12%, #efbd69 0 70px, transparent 72px),
+        linear-gradient(155deg, #fff9e9 0 36%, #dcebd6 100%);
+    }
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #45382f55;
+    }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: 35px; letter-spacing: -.04em; }
+    header p, .note { color: #6c5d54; }
+    .eyebrow {
+      margin-bottom: 6px;
+      color: #7b5443;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .14em;
+    }
+    .lock {
+      padding: 10px 15px;
+      font-size: 12px;
+      font-weight: 850;
+      background: #fffaf0c9;
+      border: 1px solid #57463a88;
+      border-radius: 999px;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: 1.1fr 2fr;
+      gap: 20px;
+      margin-top: 22px;
+    }
+    .fixture, .metrics, .run {
+      background: #fffdf5e8;
+      border: 2px solid #4f4035a8;
+      box-shadow: 5px 6px #48372c16;
+    }
+    .fixture {
+      padding: 17px;
+      border-radius: 18px 25px 16px 21px;
+    }
+    .fixture img {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      background: #fff;
+      border: 1px solid #57493e72;
+      border-radius: 12px;
+    }
+    .fixture small { color: #75675e; }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      padding: 17px;
+      border-radius: 23px 16px 25px 17px;
+    }
+    .metric {
+      display: grid;
+      align-content: center;
+      min-height: 112px;
+      padding: 14px;
+      background: #eef2df;
+      border: 1px solid #4c5e4e61;
+      border-radius: 14px 18px 13px 16px;
+    }
+    .metric strong { font-size: 27px; line-height: 1; }
+    .metric span {
+      margin-top: 8px;
+      color: #6d665a;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .runs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 20px;
+    }
+    .run {
+      min-height: 420px;
+      padding: 19px;
+      border-radius: 17px 22px 15px 24px;
+    }
+    .run:nth-child(2) { transform: rotate(.15deg); }
+    .run:nth-child(3) { transform: rotate(-.12deg); }
+    .run-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .run h2 { font-size: 23px; }
+    .verdict {
+      padding: 5px 9px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+      background: #6d5a95;
+      border-radius: 999px;
+    }
+    .partial .verdict { background: #b06d45; }
+    .success .verdict { background: #3e7560; }
+    .features {
+      min-height: 118px;
+      margin: 17px 0;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.55;
+      background: #f1eddf;
+      border-left: 4px solid #8d796b;
+      border-radius: 6px 13px 13px 6px;
+    }
+    blockquote {
+      min-height: 76px;
+      margin: 10px 0;
+      padding: 11px 13px;
+      font-size: 14px;
+      font-weight: 750;
+      line-height: 1.55;
+      background: #fff8e3;
+      border: 1px solid #8e744e69;
+      border-radius: 12px 16px 13px 14px;
+    }
+    .run-meta {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+    .run-meta span {
+      padding: 5px 8px;
+      color: #61584f;
+      font-size: 11px;
+      font-weight: 800;
+      background: #e5ecdf;
+      border-radius: 999px;
+    }
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+      margin-top: 18px;
+      padding: 14px 17px;
+      color: #645950;
+      font-size: 12px;
+      line-height: 1.5;
+      background: #fffaf0ad;
+      border: 1px dashed #5e50458f;
+      border-radius: 12px;
+    }
+    footer strong { color: #3f362f; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <p class="eyebrow">RECORDED OPENAI OUTPUT · 2026-07-24</p>
+      <h1>Doodle Life · request-first v2</h1>
+      <p>같은 잠긴 부탁과 같은 그림을 세 번 읽은 실제 API 결과</p>
+    </div>
+    <div class="lock">Quest hash unchanged · 3 / 3 runs</div>
+  </header>
+
+  <section class="summary">
+    <article class="fixture">
+      <p class="eyebrow">FIXED PLAYER DRAWING</p>
+      <small>904×396 JPEG · 세 회차에서 바뀌지 않음</small>
+      <img src="../../../../demos/doodle-lab/fixtures/soso-last-note-full.jpg" alt="세 회차에 공통으로 사용한 그림">
+    </article>
+    <article class="metrics">
+      <div class="metric"><strong>3 / 3</strong><span>관계 기록까지 완주</span></div>
+      <div class="metric"><strong>25.7s</strong><span>평균 critical path</span></div>
+      <div class="metric"><strong>20.5s</strong><span>평균 VLM 대기</span></div>
+      <div class="metric"><strong>5,563</strong><span>평균 tokens</span></div>
+      <div class="metric"><strong>0</strong><span>fallback · 폐기 명령</span></div>
+    </article>
+  </section>
+
+  <section class="runs">
+    <article class="run full">
+      <div class="run-head">
+        <div><p class="eyebrow">RUN 01</p><h2>잔물결 매듭</h2></div>
+        <span class="verdict">FULL</span>
+      </div>
+      <p class="features">
+        긴 윤곽 → stretch · glide<br>
+        가운데 봉우리 → rhythm · signal<br>
+        교차 마름모 → connect
+      </p>
+      <blockquote>소소 · “긴 쉼… 세 번. 세 번 모두, 마지막 박자까지 건넜어.”</blockquote>
+      <blockquote>다리 · “하나, 둘, 셋. 마지막 자리까지 닿았네.”</blockquote>
+      <div class="run-meta"><span>27.657s</span><span>5,678 tok</span><span>7 commands</span></div>
+    </article>
+
+    <article class="run partial">
+      <div class="run-head">
+        <div><p class="eyebrow">RUN 02</p><h2>살랑마루</h2></div>
+        <span class="verdict">PARTIAL</span>
+      </div>
+      <p class="features">
+        넓은 외곽 → stretch · glide · bridge<br>
+        가운데 갈래 → grip · climb<br>
+        겹친 마름모 → connect · grip
+      </p>
+      <blockquote>소소 · “긴 쉼… 세 번은 닿았어. 마지막 한 번이, 저 마름모 너머에서 멈췄네.”</blockquote>
+      <blockquote>다리 · “한 칸 닿고, 다음 칸은 아직 비었어.”</blockquote>
+      <div class="run-meta"><span>23.860s</span><span>5,415 tok</span><span>8 commands</span></div>
+    </article>
+
+    <article class="run success">
+      <div class="run-head">
+        <div><p class="eyebrow">RUN 03</p><h2>마름날개</h2></div>
+        <span class="verdict">SUCCESS</span>
+      </div>
+      <p class="features">
+        좌우 날개 → glide · stretch<br>
+        가운데 고리 → grip<br>
+        겹마름모 → connect · signal
+      </p>
+      <blockquote>소소 · “마름날개가 길을 폈어… 세 번째 박자, 또렷이 도착했어.”</blockquote>
+      <blockquote>다리 · “하나, 둘, 셋. 마지막도 건넜다.”</blockquote>
+      <div class="run-meta"><span>25.659s</span><span>5,597 tok</span><span>7 commands</span></div>
+    </article>
+  </section>
+
+  <footer>
+    <span><strong>동일 그림, 다른 판독:</strong> local judge가 흔들린 것이 아니라 VLM의 가시 기능 해석이 달라 `full → partial → success`가 됐다.</span>
+    <span><strong>조건:</strong> 정원은 반복 조건을 같게 만들기 위해 고정했다. 신규 World 생성 시간은 이 수치에 포함되지 않는다.</span>
+  </footer>
+</body>
+</html>

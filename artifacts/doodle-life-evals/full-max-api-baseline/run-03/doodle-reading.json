@@ -1,0 +1,430 @@
+{
+  "requestId": "eval-doodle-life-full-max-v1-birth",
+  "expectedRevision": 0,
+  "character": {
+    "id": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+    "kind": "player",
+    "name": "고리비",
+    "epithet": "바람을 모으는 작은 울타리",
+    "essence": "보랏빛 고리 안에서 네 가지 색의 떨림을 모아 조용한 리듬으로 바꾸는 갓 태어난 주민",
+    "origin": "정원의 빈자리에서 서로 다른 색의 선들이 한 번씩 기대자, 가운데 작은 쉼터가 생기며 깨어났다.",
+    "traits": [
+      {
+        "id": "trait-open-center",
+        "label": "마음을 비워 두는 아이",
+        "description": "가운데 여백처럼 새로운 만남과 생각이 들어올 자리를 남겨 둔다.",
+        "visibleEvidence": "보랏빛 외곽선과 색색의 선 사이에 넉넉한 빈 공간이 보인다.",
+        "behavioralEffect": "낯선 존재를 곧바로 판단하지 않고 잠시 바라본 뒤 반응한다.",
+        "confidence": 0.91
+      },
+      {
+        "id": "trait-many-rhythms",
+        "label": "여럿의 박자를 듣는 아이",
+        "description": "서로 다른 기분이 함께 있어도 하나씩 구별해 받아들인다.",
+        "visibleEvidence": "빨강, 노랑, 초록, 파랑의 세로선이 서로 다른 굴곡으로 나란히 서 있다.",
+        "behavioralEffect": "모임에서 말이 적은 친구의 움직임도 알아차리며 차례를 고르게 나눈다.",
+        "confidence": 0.93
+      },
+      {
+        "id": "trait-flexible-boundary",
+        "label": "부드러운 경계지기",
+        "description": "자기 자리를 지키면서도 필요한 곳에는 문처럼 틈을 내어 준다.",
+        "visibleEvidence": "각진 보라색 테두리가 내부의 선들을 감싸지만 완전히 빽빽하게 막지는 않는다.",
+        "behavioralEffect": "친절하게 다가가되 상대가 원치 않으면 한 걸음 물러난다.",
+        "confidence": 0.88
+      },
+      {
+        "id": "trait-gentle-wobble",
+        "label": "살짝 흔들리는 용기",
+        "description": "처음에는 떨려도 제자리에서 작은 시도를 이어 간다.",
+        "visibleEvidence": "모든 세로선이 곧기보다 중간에서 부드럽게 꺾여 있다.",
+        "behavioralEffect": "어려운 일 앞에서 잠깐 흔들린 뒤 작은 단계부터 다시 시작한다.",
+        "confidence": 0.9
+      }
+    ],
+    "drives": [
+      "서로 다른 친구들의 리듬을 모아 조화로운 순간 만들기",
+      "정원 곳곳에 편안히 머물 수 있는 작은 여백 찾기",
+      "바람과 발걸음의 박자를 흉내 내며 새로운 움직임 배우기"
+    ],
+    "needs": [
+      "갑작스럽지 않은 인사와 적응할 시간",
+      "혼자 조용히 흔들릴 수 있는 작은 자리",
+      "색과 기분을 자유롭게 표현해도 괜찮다는 확인",
+      "너무 빠른 움직임 뒤에는 짧은 휴식"
+    ],
+    "boundaries": [
+      "몸의 보랏빛 테두리를 허락 없이 잡아당기지 않기",
+      "색색의 선을 억지로 같은 모양이나 같은 박자로 맞추지 않기",
+      "큰 소리로 재촉하거나 빈 공간을 함부로 채우지 않기"
+    ],
+    "abilities": [
+      "가까운 움직임의 박자를 따라 부드럽게 흔들기",
+      "여러 친구가 내는 서로 다른 리듬을 차례대로 기억하기",
+      "몸 안쪽의 빈 공간으로 작은 존재에게 잠시 그늘 같은 안도감 주기",
+      "네 가지 색의 떨림으로 기쁨, 호기심, 평온, 망설임을 보여 주기"
+    ],
+    "visibleSignals": [
+      "보라색 테두리가 넓어지듯 느리게 펴지면 환영한다는 뜻이다.",
+      "노란 선이 가볍게 들썩이면 새로운 것을 궁금해한다는 뜻이다.",
+      "초록 선의 흔들림이 잦아지면 편안하고 즐겁다는 뜻이다.",
+      "빨간 선이 몸 안쪽으로 기울면 조심스럽거나 잠깐 쉬고 싶다는 뜻이다.",
+      "파란 선이 천천히 낮아지면 차분히 듣고 있다는 뜻이다."
+    ],
+    "voice": {
+      "rhythm": "짧은 말을 한 박자씩 띄우고, 생각할 때는 조용한 쉼을 둔다.",
+      "vocabulary": "바람, 박자, 사이, 같이, 천천히처럼 부드럽고 감각적인 낱말을 즐겨 쓴다.",
+      "sampleLine": "우리, 서로 다른 박자로 천천히 같이 흔들려 볼래?"
+    },
+    "motion": {
+      "idle": "네 색의 선이 서로 다른 때에 아주 조금씩 좌우로 흔들리고, 보랏빛 테두리는 느리게 숨 쉬듯 커졌다 돌아온다.",
+      "approach": "몸 전체를 살짝 기울인 채 두 번 짧게 흔들고 상대 앞에 충분한 거리를 남겨 멈춘다.",
+      "delight": "노란 선과 초록 선이 번갈아 위로 통통 뛰고 보랏빛 테두리가 한 번 둥글게 펴진다.",
+      "discomfort": "빨간 선과 파란 선이 가운데로 가까워지고 전체 흔들림이 작아지며 조용히 뒤로 물러난다."
+    },
+    "mood": "조심스럽지만 새 정원의 박자를 듣고 싶어 설레는 상태",
+    "currentGoal": "가장 먼저 다가오는 부드러운 바람의 박자를 세 번 따라 해 보기",
+    "homePosition": {
+      "x": 0.5,
+      "y": 0.36
+    },
+    "design": {
+      "silhouette": "각진 보랏빛 고리 안에 굴곡진 빨강, 노랑, 초록, 파랑 선이 세로로 나란히 선 가볍고 열린 모습",
+      "palette": [
+        "#8E73B5",
+        "#F06455",
+        "#F5B942",
+        "#72AA62",
+        "#4F8DB8"
+      ],
+      "body": {
+        "kind": "polygon",
+        "fill": "none",
+        "stroke": "#8E73B5",
+        "strokeWidth": 11,
+        "opacity": 1,
+        "points": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 89,
+            "y": -91
+          },
+          {
+            "x": 178,
+            "y": 0
+          },
+          {
+            "x": 132,
+            "y": 59
+          },
+          {
+            "x": 89,
+            "y": 37
+          },
+          {
+            "x": 43,
+            "y": 59
+          }
+        ]
+      },
+      "parts": [
+        {
+          "id": "red-upper",
+          "shape": {
+            "kind": "line",
+            "fill": "none",
+            "stroke": "#F06455",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 4,
+            "y1": -67,
+            "x2": 14,
+            "y2": -13,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "red-middle",
+          "shape": {
+            "kind": "line",
+            "fill": "none",
+            "stroke": "#F06455",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 14,
+            "y1": -13,
+            "x2": 4,
+            "y2": 33,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "red-lower",
+          "shape": {
+            "kind": "line",
+            "fill": "none",
+            "stroke": "#F06455",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 4,
+            "y1": 33,
+            "x2": 14,
+            "y2": 79,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "yellow-upper",
+          "shape": {
+            "kind": "line",
+            "fill": "none",
+            "stroke": "#F5B942",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 54,
+            "y1": -67,
+            "x2": 64,
+            "y2": -18,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "yellow-middle",
+          "shape": {
+            "kind": "line",
+            "fill": "none",
+            "stroke": "#F5B942",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 64,
+            "y1": -18,
+            "x2": 54,
+            "y2": 34,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "yellow-lower",
+          "shape": {
+            "kind": "line",
+            "fill": "none",
+            "stroke": "#F5B942",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 54,
+            "y1": 34,
+            "x2": 64,
+            "y2": 79,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "green-upper",
+          "shape": {
+            "kind": "line",
+            "fill": "none",
+            "stroke": "#72AA62",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 104,
+            "y1": -67,
+            "x2": 114,
+            "y2": -18,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "green-middle",
+          "shape": {
+            "kind": "line",
+            "fill": "none",
+            "stroke": "#72AA62",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 114,
+            "y1": -18,
+            "x2": 104,
+            "y2": 34,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "green-lower",
+          "shape": {
+            "kind": "line",
+            "fill": "none",
+            "stroke": "#72AA62",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 104,
+            "y1": 34,
+            "x2": 114,
+            "y2": 79,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "blue-upper",
+          "shape": {
+            "kind": "line",
+            "fill": "none",
+            "stroke": "#4F8DB8",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 154,
+            "y1": -67,
+            "x2": 164,
+            "y2": -13,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "blue-middle",
+          "shape": {
+            "kind": "line",
+            "fill": "none",
+            "stroke": "#4F8DB8",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 164,
+            "y1": -13,
+            "x2": 154,
+            "y2": 34,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "blue-lower",
+          "shape": {
+            "kind": "line",
+            "fill": "none",
+            "stroke": "#4F8DB8",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 154,
+            "y1": 34,
+            "x2": 164,
+            "y2": 79,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        }
+      ],
+      "faceAnchors": {
+        "leftEye": {
+          "x": 72,
+          "y": 4
+        },
+        "rightEye": {
+          "x": 106,
+          "y": 4
+        },
+        "mouth": {
+          "x": 89,
+          "y": 25
+        }
+      },
+      "expressivePartIds": [
+        "red-upper",
+        "red-middle",
+        "red-lower",
+        "yellow-upper",
+        "yellow-middle",
+        "yellow-lower",
+        "green-upper",
+        "green-middle",
+        "green-lower",
+        "blue-upper",
+        "blue-middle",
+        "blue-lower"
+      ],
+      "idleMotions": [
+        {
+          "targetPartId": null,
+          "property": "scale",
+          "from": 0.98,
+          "to": 1.02,
+          "durationMs": 2400,
+          "delayMs": 0
+        },
+        {
+          "targetPartId": "red-middle",
+          "property": "translateX",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1700,
+          "delayMs": 200
+        },
+        {
+          "targetPartId": "yellow-middle",
+          "property": "translateY",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1500,
+          "delayMs": 500
+        },
+        {
+          "targetPartId": "green-middle",
+          "property": "translateX",
+          "from": 2,
+          "to": -2,
+          "durationMs": 1900,
+          "delayMs": 800
+        },
+        {
+          "targetPartId": "blue-middle",
+          "property": "translateY",
+          "from": 2,
+          "to": -2,
+          "durationMs": 2100,
+          "delayMs": 1100
+        }
+      ]
+    }
+  },
+  "evidenceSummary": "마음을 비워 두는 아이: 보랏빛 외곽선과 색색의 선 사이에 넉넉한 빈 공간이 보인다. · 여럿의 박자를 듣는 아이: 빨강, 노랑, 초록, 파랑의 세로선이 서로 다른 굴곡으로 나란히 서 있다. · 부드러운 경계지기: 각진 보라색 테두리가 내부의 선들을 감싸지만 완전히 빽빽하게 막지는 않는다.",
+  "uncertainties": [],
+  "trace": {
+    "mode": "full-max",
+    "calls": [
+      {
+        "id": "resp_03145a87d0c52877016a61ce2118a0819a9918a4bd70dcc396",
+        "role": "doodle-vision",
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "startedAt": "2026-07-23T08:17:36.834Z",
+        "latencyMs": 45324,
+        "usage": {
+          "inputTokens": 1903,
+          "cachedInputTokens": 1831,
+          "outputTokens": 2668,
+          "reasoningTokens": 282,
+          "totalTokens": 4571
+        }
+      }
+    ],
+    "usage": {
+      "inputTokens": 1903,
+      "cachedInputTokens": 1831,
+      "outputTokens": 2668,
+      "reasoningTokens": 282,
+      "totalTokens": 4571
+    },
+    "totalLatencyMs": 45324,
+    "wallClockMs": 45326
+  }
+}

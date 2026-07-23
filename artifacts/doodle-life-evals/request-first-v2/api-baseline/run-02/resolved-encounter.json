@@ -1,0 +1,103 @@
+{
+  "requestId": "eval-request-first-v2-r02-react",
+  "worldRevision": 1,
+  "encounter": {
+    "sceneId": "scene_quest_soso_last_note_1",
+    "title": "부분 해결 · 한 가지가 더 필요해요",
+    "statusText": "긴 쉼… 세 번은 닿았어. 마지막 한 번이, 저 마름모 너머에서 멈췄네.",
+    "participantIds": [
+      "npc_soso",
+      "npc_dari",
+      "doodle_89d06ff323eb80303fed"
+    ],
+    "commands": [
+      {
+        "kind": "look",
+        "actorId": "npc_soso",
+        "targetId": "doodle_89d06ff323eb80303fed"
+      },
+      {
+        "kind": "gesture",
+        "actorId": "npc_soso",
+        "gesture": "stretch"
+      },
+      {
+        "kind": "speak",
+        "actorId": "npc_soso",
+        "text": "긴 쉼… 세 번은 닿았어. 마지막 한 번이, 저 마름모 너머에서 멈췄네."
+      },
+      {
+        "kind": "prop-motion",
+        "actorId": "npc_soso",
+        "targetId": "ribbon_chime",
+        "motion": "sway"
+      },
+      {
+        "kind": "look",
+        "actorId": "npc_dari",
+        "targetId": "npc_soso"
+      },
+      {
+        "kind": "look",
+        "actorId": "npc_dari",
+        "targetId": "doodle_89d06ff323eb80303fed"
+      },
+      {
+        "kind": "gesture",
+        "actorId": "npc_dari",
+        "gesture": "listen"
+      },
+      {
+        "kind": "speak",
+        "actorId": "npc_dari",
+        "text": "한 칸 닿고, 다음 칸은 아직 비었어."
+      }
+    ],
+    "discardedCommandCount": 0,
+    "fallbackActorIds": []
+  },
+  "trace": {
+    "mode": "staged",
+    "calls": [
+      {
+        "id": "resp_0dbd6e8da3698ae6016a62370ff4b0819aa2cbf9603d2be48a",
+        "role": "quest-owner-reaction",
+        "provider": "openai",
+        "model": "gpt-5.6-terra",
+        "startedAt": "2026-07-23T15:45:19.756Z",
+        "latencyMs": 2584,
+        "usage": {
+          "inputTokens": 1499,
+          "cachedInputTokens": 0,
+          "outputTokens": 187,
+          "reasoningTokens": 0,
+          "totalTokens": 1686
+        }
+      },
+      {
+        "id": "resp_0a6e58d342f6fe5e016a6237127e1c819898b363ae3e9ab455",
+        "role": "quest-observer-reaction",
+        "provider": "openai",
+        "model": "gpt-5.6-terra",
+        "startedAt": "2026-07-23T15:45:19.757Z",
+        "latencyMs": 5039,
+        "usage": {
+          "inputTokens": 1473,
+          "cachedInputTokens": 0,
+          "outputTokens": 222,
+          "reasoningTokens": 68,
+          "totalTokens": 1695
+        }
+      }
+    ],
+    "usage": {
+      "inputTokens": 2972,
+      "cachedInputTokens": 0,
+      "outputTokens": 409,
+      "reasoningTokens": 68,
+      "totalTokens": 3381
+    },
+    "totalLatencyMs": 7623,
+    "wallClockMs": 5042
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "run": 2,
+  "sessionId": "eval-request-first-v2-r02",
+  "startedAt": "2026-07-23T15:45:00.937Z",
+  "endedAt": "2026-07-23T15:45:24.797Z",
+  "roundCompleted": true,
+  "timeline": [
+    {
+      "stage": "fixed-session-bootstrap",
+      "startedAt": "2026-07-23T15:45:00.940Z",
+      "endedAt": "2026-07-23T15:45:00.941Z",
+      "wallClockMs": 0,
+      "ok": true
+    },
+    {
+      "stage": "select-locked-soso-quest",
+      "startedAt": "2026-07-23T15:45:00.941Z",
+      "endedAt": "2026-07-23T15:45:00.941Z",
+      "wallClockMs": 0,
+      "ok": true
+    },
+    {
+      "stage": "quest-blind-doodle-reading",
+      "startedAt": "2026-07-23T15:45:00.941Z",
+      "endedAt": "2026-07-23T15:45:19.753Z",
+      "wallClockMs": 18812,
+      "ok": true
+    },
+    {
+      "stage": "local-deterministic-resolution",
+      "startedAt": "2026-07-23T15:45:19.753Z",
+      "endedAt": "2026-07-23T15:45:19.755Z",
+      "wallClockMs": 3,
+      "ok": true
+    },
+    {
+      "stage": "parallel-reactions-and-local-resolver",
+      "startedAt": "2026-07-23T15:45:19.755Z",
+      "endedAt": "2026-07-23T15:45:24.797Z",
+      "wallClockMs": 5042,
+      "ok": true
+    }
+  ],
+  "contractHashBefore": "23debe4d145117c5973394523656228625a8706bd7b1a2ff8d24b630eaba5904",
+  "contractHashAfter": "23debe4d145117c5973394523656228625a8706bd7b1a2ff8d24b630eaba5904",
+  "fallbacks": {
+    "doodleReading": null,
+    "reactionActorIds": [],
+    "failedModelRoles": []
+  },
+  "trace": {
+    "calls": 3,
+    "usage": {
+      "inputTokens": 4101,
+      "cachedInputTokens": 1051,
+      "outputTokens": 1314,
+      "reasoningTokens": 216,
+      "totalTokens": 5415
+    },
+    "aggregateModelLatencyMs": 26434,
+    "roles": {
+      "doodle-reader": {
+        "calls": 1,
+        "tokens": 2034,
+        "latencyMs": 18811
+      },
+      "quest-owner-reaction": {
+        "calls": 1,
+        "tokens": 1686,
+        "latencyMs": 2584
+      },
+      "quest-observer-reaction": {
+        "calls": 1,
+        "tokens": 1695,
+        "latencyMs": 5039
+      }
+    }
+  },
+  "criticalPathWallMs": 23860
+}

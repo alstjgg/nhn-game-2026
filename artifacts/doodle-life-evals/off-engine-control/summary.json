@@ -1,0 +1,293 @@
+{
+  "schemaVersion": "doodle-life-evaluation-summary.v1",
+  "label": "off-engine-control",
+  "provider": "openai",
+  "autonomy": "off",
+  "flow": "newcomer",
+  "completedRuns": 3,
+  "failedRuns": 0,
+  "runs": [
+    {
+      "run": 1,
+      "temperature": "cold",
+      "startedAt": "2026-07-23T08:30:35.773Z",
+      "endedAt": "2026-07-23T08:30:35.805Z",
+      "ok": true,
+      "timeline": [
+        {
+          "stage": "bootstrap",
+          "startedAt": "2026-07-23T08:30:35.773Z",
+          "endedAt": "2026-07-23T08:30:35.783Z",
+          "wallClockMs": 10,
+          "ok": true
+        },
+        {
+          "stage": "doodle-birth",
+          "startedAt": "2026-07-23T08:30:35.784Z",
+          "endedAt": "2026-07-23T08:30:35.788Z",
+          "wallClockMs": 4,
+          "ok": true
+        },
+        {
+          "stage": "newcomer-arrived",
+          "startedAt": "2026-07-23T08:30:35.796Z",
+          "endedAt": "2026-07-23T08:30:35.804Z",
+          "wallClockMs": 7,
+          "ok": true
+        }
+      ],
+      "trace": {
+        "operations": [
+          {
+            "mode": "off",
+            "calls": [],
+            "usage": {
+              "inputTokens": 0,
+              "cachedInputTokens": 0,
+              "outputTokens": 0,
+              "reasoningTokens": 0,
+              "totalTokens": 0
+            },
+            "totalLatencyMs": 0,
+            "wallClockMs": 4
+          },
+          {
+            "mode": "off",
+            "calls": [],
+            "usage": {
+              "inputTokens": 0,
+              "cachedInputTokens": 0,
+              "outputTokens": 0,
+              "reasoningTokens": 0,
+              "totalTokens": 0
+            },
+            "totalLatencyMs": 0,
+            "wallClockMs": 1
+          },
+          {
+            "mode": "off",
+            "calls": [],
+            "usage": {
+              "inputTokens": 0,
+              "cachedInputTokens": 0,
+              "outputTokens": 0,
+              "reasoningTokens": 0,
+              "totalTokens": 0
+            },
+            "totalLatencyMs": 0,
+            "wallClockMs": 3
+          }
+        ],
+        "totals": {
+          "calls": 0,
+          "usage": {
+            "inputTokens": 0,
+            "cachedInputTokens": 0,
+            "outputTokens": 0,
+            "reasoningTokens": 0,
+            "totalTokens": 0
+          },
+          "totalLatencyMs": 0,
+          "wallClockMs": 8,
+          "roles": {}
+        }
+      }
+    },
+    {
+      "run": 2,
+      "temperature": "warm",
+      "startedAt": "2026-07-23T08:30:35.806Z",
+      "endedAt": "2026-07-23T08:30:35.838Z",
+      "ok": true,
+      "timeline": [
+        {
+          "stage": "bootstrap",
+          "startedAt": "2026-07-23T08:30:35.806Z",
+          "endedAt": "2026-07-23T08:30:35.817Z",
+          "wallClockMs": 11,
+          "ok": true
+        },
+        {
+          "stage": "doodle-birth",
+          "startedAt": "2026-07-23T08:30:35.821Z",
+          "endedAt": "2026-07-23T08:30:35.827Z",
+          "wallClockMs": 6,
+          "ok": true
+        },
+        {
+          "stage": "newcomer-arrived",
+          "startedAt": "2026-07-23T08:30:35.830Z",
+          "endedAt": "2026-07-23T08:30:35.836Z",
+          "wallClockMs": 6,
+          "ok": true
+        }
+      ],
+      "trace": {
+        "operations": [
+          {
+            "mode": "off",
+            "calls": [],
+            "usage": {
+              "inputTokens": 0,
+              "cachedInputTokens": 0,
+              "outputTokens": 0,
+              "reasoningTokens": 0,
+              "totalTokens": 0
+            },
+            "totalLatencyMs": 0,
+            "wallClockMs": 3
+          },
+          {
+            "mode": "off",
+            "calls": [],
+            "usage": {
+              "inputTokens": 0,
+              "cachedInputTokens": 0,
+              "outputTokens": 0,
+              "reasoningTokens": 0,
+              "totalTokens": 0
+            },
+            "totalLatencyMs": 0,
+            "wallClockMs": 1
+          },
+          {
+            "mode": "off",
+            "calls": [],
+            "usage": {
+              "inputTokens": 0,
+              "cachedInputTokens": 0,
+              "outputTokens": 0,
+              "reasoningTokens": 0,
+              "totalTokens": 0
+            },
+            "totalLatencyMs": 0,
+            "wallClockMs": 2
+          }
+        ],
+        "totals": {
+          "calls": 0,
+          "usage": {
+            "inputTokens": 0,
+            "cachedInputTokens": 0,
+            "outputTokens": 0,
+            "reasoningTokens": 0,
+            "totalTokens": 0
+          },
+          "totalLatencyMs": 0,
+          "wallClockMs": 6,
+          "roles": {}
+        }
+      }
+    },
+    {
+      "run": 3,
+      "temperature": "warm",
+      "startedAt": "2026-07-23T08:30:35.839Z",
+      "endedAt": "2026-07-23T08:30:35.869Z",
+      "ok": true,
+      "timeline": [
+        {
+          "stage": "bootstrap",
+          "startedAt": "2026-07-23T08:30:35.839Z",
+          "endedAt": "2026-07-23T08:30:35.844Z",
+          "wallClockMs": 5,
+          "ok": true
+        },
+        {
+          "stage": "doodle-birth",
+          "startedAt": "2026-07-23T08:30:35.845Z",
+          "endedAt": "2026-07-23T08:30:35.850Z",
+          "wallClockMs": 4,
+          "ok": true
+        },
+        {
+          "stage": "newcomer-arrived",
+          "startedAt": "2026-07-23T08:30:35.853Z",
+          "endedAt": "2026-07-23T08:30:35.867Z",
+          "wallClockMs": 14,
+          "ok": true
+        }
+      ],
+      "trace": {
+        "operations": [
+          {
+            "mode": "off",
+            "calls": [],
+            "usage": {
+              "inputTokens": 0,
+              "cachedInputTokens": 0,
+              "outputTokens": 0,
+              "reasoningTokens": 0,
+              "totalTokens": 0
+            },
+            "totalLatencyMs": 0,
+            "wallClockMs": 2
+          },
+          {
+            "mode": "off",
+            "calls": [],
+            "usage": {
+              "inputTokens": 0,
+              "cachedInputTokens": 0,
+              "outputTokens": 0,
+              "reasoningTokens": 0,
+              "totalTokens": 0
+            },
+            "totalLatencyMs": 0,
+            "wallClockMs": 1
+          },
+          {
+            "mode": "off",
+            "calls": [],
+            "usage": {
+              "inputTokens": 0,
+              "cachedInputTokens": 0,
+              "outputTokens": 0,
+              "reasoningTokens": 0,
+              "totalTokens": 0
+            },
+            "totalLatencyMs": 0,
+            "wallClockMs": 9
+          }
+        ],
+        "totals": {
+          "calls": 0,
+          "usage": {
+            "inputTokens": 0,
+            "cachedInputTokens": 0,
+            "outputTokens": 0,
+            "reasoningTokens": 0,
+            "totalTokens": 0
+          },
+          "totalLatencyMs": 0,
+          "wallClockMs": 12,
+          "roles": {}
+        }
+      }
+    }
+  ],
+  "observed": {
+    "wallClockMs": {
+      "values": [
+        8,
+        6,
+        12
+      ],
+      "min": 6,
+      "max": 12,
+      "mean": 9
+    },
+    "totalTokens": {
+      "values": [
+        0,
+        0,
+        0
+      ],
+      "min": 0,
+      "max": 0,
+      "mean": 0
+    },
+    "structuredOutputSuccesses": 3,
+    "failures": 0
+  }
+}

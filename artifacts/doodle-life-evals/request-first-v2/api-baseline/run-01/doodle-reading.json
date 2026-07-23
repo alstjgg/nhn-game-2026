@@ -1,0 +1,397 @@
+{
+  "response": {
+    "requestId": "eval-request-first-v2-r01-read",
+    "readIndex": 0,
+    "canReread": true,
+    "usedFallback": false,
+    "fallbackReason": null,
+    "reading": {
+      "name": "잔물결 매듭",
+      "essence": "가로로 길게 펼쳐진 굵은 지그재그 윤곽 위에 뾰족한 고리들이 솟고, 오른쪽 끝에는 선이 교차하는 작은 마름모 구조가 붙어 있다.",
+      "visibleFeatures": [
+        {
+          "id": "long_zigzag",
+          "label": "길게 펼쳐진 지그재그 윤곽",
+          "description": "좌우로 넓게 이어지며 위아래 가장자리가 각진 굴곡을 이루는 열린 선 구조다.",
+          "evidence": "짙은 선이 왼쪽 꼭짓점에서 중앙의 굴곡들을 지나 오른쪽으로 이어지고, 아래쪽 선도 여러 꼭짓점을 거쳐 되돌아온다.",
+          "region": {
+            "x": 0.117,
+            "y": 0.365,
+            "width": 0.666,
+            "height": 0.401
+          },
+          "confidence": 0.97
+        },
+        {
+          "id": "central_peaks",
+          "label": "가운데의 세로 고리와 봉우리",
+          "description": "중앙 위쪽에 세 개의 뾰족한 봉우리처럼 보이는 선들이 나란히 솟아 있다.",
+          "evidence": "약 x 0.33~0.48 구간에서 선이 위로 올라가 각진 꼭대기를 만들고, 여러 세로선이 아래 윤곽 쪽으로 내려온다.",
+          "region": {
+            "x": 0.324,
+            "y": 0.277,
+            "width": 0.163,
+            "height": 0.251
+          },
+          "confidence": 0.93
+        },
+        {
+          "id": "right_crossing",
+          "label": "오른쪽의 교차 마름모",
+          "description": "오른쪽 끝 가까이에 작은 마름모 두 개가 겹친 듯한 교차선 구조가 있다.",
+          "evidence": "네 방향으로 기울어진 선들이 중앙에서 교차하며 여러 개의 작은 삼각형과 마름모꼴 빈칸을 만든다.",
+          "region": {
+            "x": 0.643,
+            "y": 0.501,
+            "width": 0.141,
+            "height": 0.158
+          },
+          "confidence": 0.96
+        }
+      ],
+      "motionHints": [
+        {
+          "featureId": "long_zigzag",
+          "motion": "bend",
+          "anchor": {
+            "x": 0.408,
+            "y": 0.755
+          },
+          "description": "아래쪽 중앙의 깊은 꼭짓점을 축으로 긴 윤곽이 위아래로 접히듯 굽을 수 있다."
+        },
+        {
+          "featureId": "central_peaks",
+          "motion": "pulse",
+          "anchor": {
+            "x": 0.407,
+            "y": 0.337
+          },
+          "description": "반복되는 세로 봉우리들이 차례로 높아졌다 낮아지는 박동을 암시한다."
+        },
+        {
+          "featureId": "right_crossing",
+          "motion": "rotate",
+          "anchor": {
+            "x": 0.713,
+            "y": 0.579
+          },
+          "description": "교차선의 중심을 기준으로 작은 마름모 구조가 회전하는 움직임을 붙일 수 있다."
+        }
+      ],
+      "uncertainties": [
+        {
+          "region": {
+            "x": 0.324,
+            "y": 0.277,
+            "width": 0.163,
+            "height": 0.251
+          },
+          "reason": "봉우리와 세로선의 정확한 용도는 드러나지 않아, 고리인지 돌기인지 확정하기 어렵다."
+        },
+        {
+          "region": {
+            "x": 0.643,
+            "y": 0.501,
+            "width": 0.141,
+            "height": 0.158
+          },
+          "reason": "교차 구조는 분명하지만 매듭, 장식, 끝부분 중 무엇을 나타내는지는 시각적으로 확정되지 않는다."
+        }
+      ]
+    },
+    "trace": {
+      "mode": "staged",
+      "calls": [
+        {
+          "id": "resp_01621b289bc9b974016a6236e32358819b94cc072905e88733",
+          "role": "doodle-reader",
+          "provider": "openai",
+          "model": "gpt-5.6-sol",
+          "startedAt": "2026-07-23T15:44:33.286Z",
+          "latencyMs": 22556,
+          "usage": {
+            "inputTokens": 1129,
+            "cachedInputTokens": 0,
+            "outputTokens": 1138,
+            "reasoningTokens": 364,
+            "totalTokens": 2267
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 1129,
+        "cachedInputTokens": 0,
+        "outputTokens": 1138,
+        "reasoningTokens": 364,
+        "totalTokens": 2267
+      },
+      "totalLatencyMs": 22556,
+      "wallClockMs": 22568
+    }
+  },
+  "rawProviderOutput": {
+    "name": "잔물결 매듭",
+    "essence": "가로로 길게 펼쳐진 굵은 지그재그 윤곽 위에 뾰족한 고리들이 솟고, 오른쪽 끝에는 선이 교차하는 작은 마름모 구조가 붙어 있다.",
+    "visibleFeatures": [
+      {
+        "id": "long_zigzag",
+        "label": "길게 펼쳐진 지그재그 윤곽",
+        "description": "좌우로 넓게 이어지며 위아래 가장자리가 각진 굴곡을 이루는 열린 선 구조다.",
+        "evidence": "짙은 선이 왼쪽 꼭짓점에서 중앙의 굴곡들을 지나 오른쪽으로 이어지고, 아래쪽 선도 여러 꼭짓점을 거쳐 되돌아온다.",
+        "region": {
+          "x": 0.117,
+          "y": 0.365,
+          "width": 0.666,
+          "height": 0.401
+        },
+        "confidence": 0.97,
+        "affordances": [
+          "stretch",
+          "glide"
+        ]
+      },
+      {
+        "id": "central_peaks",
+        "label": "가운데의 세로 고리와 봉우리",
+        "description": "중앙 위쪽에 세 개의 뾰족한 봉우리처럼 보이는 선들이 나란히 솟아 있다.",
+        "evidence": "약 x 0.33~0.48 구간에서 선이 위로 올라가 각진 꼭대기를 만들고, 여러 세로선이 아래 윤곽 쪽으로 내려온다.",
+        "region": {
+          "x": 0.324,
+          "y": 0.277,
+          "width": 0.163,
+          "height": 0.251
+        },
+        "confidence": 0.93,
+        "affordances": [
+          "rhythm",
+          "signal"
+        ]
+      },
+      {
+        "id": "right_crossing",
+        "label": "오른쪽의 교차 마름모",
+        "description": "오른쪽 끝 가까이에 작은 마름모 두 개가 겹친 듯한 교차선 구조가 있다.",
+        "evidence": "네 방향으로 기울어진 선들이 중앙에서 교차하며 여러 개의 작은 삼각형과 마름모꼴 빈칸을 만든다.",
+        "region": {
+          "x": 0.643,
+          "y": 0.501,
+          "width": 0.141,
+          "height": 0.158
+        },
+        "confidence": 0.96,
+        "affordances": [
+          "connect"
+        ]
+      }
+    ],
+    "motionHints": [
+      {
+        "featureId": "long_zigzag",
+        "motion": "bend",
+        "anchor": {
+          "x": 0.408,
+          "y": 0.755
+        },
+        "description": "아래쪽 중앙의 깊은 꼭짓점을 축으로 긴 윤곽이 위아래로 접히듯 굽을 수 있다."
+      },
+      {
+        "featureId": "central_peaks",
+        "motion": "pulse",
+        "anchor": {
+          "x": 0.407,
+          "y": 0.337
+        },
+        "description": "반복되는 세로 봉우리들이 차례로 높아졌다 낮아지는 박동을 암시한다."
+      },
+      {
+        "featureId": "right_crossing",
+        "motion": "rotate",
+        "anchor": {
+          "x": 0.713,
+          "y": 0.579
+        },
+        "description": "교차선의 중심을 기준으로 작은 마름모 구조가 회전하는 움직임을 붙일 수 있다."
+      }
+    ],
+    "uncertainties": [
+      {
+        "region": {
+          "x": 0.324,
+          "y": 0.277,
+          "width": 0.163,
+          "height": 0.251
+        },
+        "reason": "봉우리와 세로선의 정확한 용도는 드러나지 않아, 고리인지 돌기인지 확정하기 어렵다."
+      },
+      {
+        "region": {
+          "x": 0.643,
+          "y": 0.501,
+          "width": 0.141,
+          "height": 0.158
+        },
+        "reason": "교차 구조는 분명하지만 매듭, 장식, 끝부분 중 무엇을 나타내는지는 시각적으로 확정되지 않는다."
+      }
+    ]
+  },
+  "providerCall": {
+    "role": "doodle-reader",
+    "schemaName": "doodle_life_doodle_reading",
+    "reasoning": "low",
+    "maxOutputTokens": 2400,
+    "inputMetadata": [
+      {
+        "type": "input_text",
+        "json": {
+          "image": {
+            "mimeType": "image/jpeg",
+            "width": 904,
+            "height": 396,
+            "sha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680"
+          },
+          "drawingMetrics": null,
+          "coordinateConvention": "normalized bounding rectangles relative to the attached cropped image"
+        }
+      },
+      {
+        "type": "input_image",
+        "attached": true,
+        "detail": "high",
+        "dataUrlOmitted": true,
+        "image": {
+          "file": "soso-last-note-full.jpg",
+          "sha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680",
+          "mimeType": "image/jpeg",
+          "width": 904,
+          "height": 396,
+          "drawingMetrics": null
+        }
+      }
+    ],
+    "startedAt": "2026-07-23T15:44:33.284Z",
+    "endedAt": "2026-07-23T15:44:55.846Z",
+    "wallClockMs": 22563,
+    "status": "completed",
+    "output": {
+      "name": "잔물결 매듭",
+      "essence": "가로로 길게 펼쳐진 굵은 지그재그 윤곽 위에 뾰족한 고리들이 솟고, 오른쪽 끝에는 선이 교차하는 작은 마름모 구조가 붙어 있다.",
+      "visibleFeatures": [
+        {
+          "id": "long_zigzag",
+          "label": "길게 펼쳐진 지그재그 윤곽",
+          "description": "좌우로 넓게 이어지며 위아래 가장자리가 각진 굴곡을 이루는 열린 선 구조다.",
+          "evidence": "짙은 선이 왼쪽 꼭짓점에서 중앙의 굴곡들을 지나 오른쪽으로 이어지고, 아래쪽 선도 여러 꼭짓점을 거쳐 되돌아온다.",
+          "region": {
+            "x": 0.117,
+            "y": 0.365,
+            "width": 0.666,
+            "height": 0.401
+          },
+          "confidence": 0.97,
+          "affordances": [
+            "stretch",
+            "glide"
+          ]
+        },
+        {
+          "id": "central_peaks",
+          "label": "가운데의 세로 고리와 봉우리",
+          "description": "중앙 위쪽에 세 개의 뾰족한 봉우리처럼 보이는 선들이 나란히 솟아 있다.",
+          "evidence": "약 x 0.33~0.48 구간에서 선이 위로 올라가 각진 꼭대기를 만들고, 여러 세로선이 아래 윤곽 쪽으로 내려온다.",
+          "region": {
+            "x": 0.324,
+            "y": 0.277,
+            "width": 0.163,
+            "height": 0.251
+          },
+          "confidence": 0.93,
+          "affordances": [
+            "rhythm",
+            "signal"
+          ]
+        },
+        {
+          "id": "right_crossing",
+          "label": "오른쪽의 교차 마름모",
+          "description": "오른쪽 끝 가까이에 작은 마름모 두 개가 겹친 듯한 교차선 구조가 있다.",
+          "evidence": "네 방향으로 기울어진 선들이 중앙에서 교차하며 여러 개의 작은 삼각형과 마름모꼴 빈칸을 만든다.",
+          "region": {
+            "x": 0.643,
+            "y": 0.501,
+            "width": 0.141,
+            "height": 0.158
+          },
+          "confidence": 0.96,
+          "affordances": [
+            "connect"
+          ]
+        }
+      ],
+      "motionHints": [
+        {
+          "featureId": "long_zigzag",
+          "motion": "bend",
+          "anchor": {
+            "x": 0.408,
+            "y": 0.755
+          },
+          "description": "아래쪽 중앙의 깊은 꼭짓점을 축으로 긴 윤곽이 위아래로 접히듯 굽을 수 있다."
+        },
+        {
+          "featureId": "central_peaks",
+          "motion": "pulse",
+          "anchor": {
+            "x": 0.407,
+            "y": 0.337
+          },
+          "description": "반복되는 세로 봉우리들이 차례로 높아졌다 낮아지는 박동을 암시한다."
+        },
+        {
+          "featureId": "right_crossing",
+          "motion": "rotate",
+          "anchor": {
+            "x": 0.713,
+            "y": 0.579
+          },
+          "description": "교차선의 중심을 기준으로 작은 마름모 구조가 회전하는 움직임을 붙일 수 있다."
+        }
+      ],
+      "uncertainties": [
+        {
+          "region": {
+            "x": 0.324,
+            "y": 0.277,
+            "width": 0.163,
+            "height": 0.251
+          },
+          "reason": "봉우리와 세로선의 정확한 용도는 드러나지 않아, 고리인지 돌기인지 확정하기 어렵다."
+        },
+        {
+          "region": {
+            "x": 0.643,
+            "y": 0.501,
+            "width": 0.141,
+            "height": 0.158
+          },
+          "reason": "교차 구조는 분명하지만 매듭, 장식, 끝부분 중 무엇을 나타내는지는 시각적으로 확정되지 않는다."
+        }
+      ]
+    },
+    "trace": {
+      "id": "resp_01621b289bc9b974016a6236e32358819b94cc072905e88733",
+      "role": "doodle-reader",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "startedAt": "2026-07-23T15:44:33.286Z",
+      "latencyMs": 22556,
+      "usage": {
+        "inputTokens": 1129,
+        "cachedInputTokens": 0,
+        "outputTokens": 1138,
+        "reasoningTokens": 364,
+        "totalTokens": 2267
+      }
+    },
+    "error": null
+  }
+}

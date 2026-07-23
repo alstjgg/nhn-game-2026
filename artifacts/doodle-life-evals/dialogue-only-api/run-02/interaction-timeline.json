@@ -1,0 +1,127 @@
+[
+  {
+    "beat": 1,
+    "durationMs": 720,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "move",
+        "actorId": "player-39aaad46-679c-4d89-a68e-1831b6fdf726",
+        "to": {
+          "x": 28.999999999999996,
+          "y": 38.5
+        },
+        "rotate": null,
+        "scale": 1.04
+      }
+    ]
+  },
+  {
+    "beat": 2,
+    "durationMs": 520,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "look",
+        "actorId": "npc-1-mdrq78",
+        "targetId": "player-39aaad46-679c-4d89-a68e-1831b6fdf726"
+      }
+    ]
+  },
+  {
+    "beat": 3,
+    "durationMs": 1800,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "speak",
+        "actorId": "player-39aaad46-679c-4d89-a68e-1831b6fdf726",
+        "text": "바람이 이쪽으로 불어요. 우리 말도 천천히 나란히 놓아 볼래?"
+      },
+      {
+        "order": 2,
+        "kind": "prop_create",
+        "propId": "scene_2_irgi6f_wind_note",
+        "label": "둘 사이에서 접힌 바람 조각",
+        "symbol": "⌁",
+        "color": "보라",
+        "position": {
+          "x": 35,
+          "y": 30.5
+        },
+        "actorId": "player-39aaad46-679c-4d89-a68e-1831b6fdf726"
+      }
+    ]
+  },
+  {
+    "beat": 4,
+    "durationMs": 880,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "gesture",
+        "actorId": "npc-1-mdrq78",
+        "gesture": "bounce",
+        "status": "귀와 꼬리 끝을 바람결처럼 가볍게 흔든다."
+      },
+      {
+        "order": 2,
+        "kind": "prop_transform",
+        "propId": "scene_2_irgi6f_wind_note",
+        "scale": 1.18,
+        "rotate": 12,
+        "opacity": 0.92
+      }
+    ]
+  },
+  {
+    "beat": 5,
+    "durationMs": 1900,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "speak",
+        "actorId": "npc-1-mdrq78",
+        "text": "그럼… 이 접힌 바람 곁에, 제 대답도 조용히 두고 싶어요."
+      }
+    ]
+  },
+  {
+    "beat": 6,
+    "durationMs": 980,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "effect",
+        "effect": "sparkle",
+        "targetId": null,
+        "color": "#C98576",
+        "intensity": 0.58
+      },
+      {
+        "order": 2,
+        "kind": "prop_transform",
+        "propId": "scene_2_irgi6f_wind_note",
+        "scale": 0.82,
+        "rotate": -8,
+        "opacity": 0.48
+      }
+    ]
+  },
+  {
+    "beat": 7,
+    "durationMs": 460,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "pause",
+        "durationMs": 460
+      },
+      {
+        "order": 2,
+        "kind": "prop_remove",
+        "propId": "scene_2_irgi6f_wind_note"
+      }
+    ]
+  }
+]

@@ -1,0 +1,206 @@
+[
+  {
+    "beat": 1,
+    "durationMs": 2500,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "move",
+        "actorId": "npc-1-173cidm",
+        "to": {
+          "x": 0.32,
+          "y": 0.58
+        },
+        "rotate": null,
+        "scale": null
+      },
+      {
+        "order": 2,
+        "kind": "prop_create",
+        "propId": "prop-sai-ripple",
+        "label": "가느다란 잔물결",
+        "symbol": "≋",
+        "color": "#7DB7D7",
+        "position": {
+          "x": 0.38,
+          "y": 0.55
+        },
+        "actorId": "npc-1-173cidm"
+      },
+      {
+        "order": 3,
+        "kind": "look",
+        "actorId": "npc-1-173cidm",
+        "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879"
+      },
+      {
+        "order": 4,
+        "kind": "speak",
+        "actorId": "npc-1-173cidm",
+        "text": "물결이 바람의 길을 알려 줘. 천천히 같이 볼래?"
+      }
+    ]
+  },
+  {
+    "beat": 2,
+    "durationMs": 1800,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "look",
+        "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "targetId": "npc-1-173cidm"
+      },
+      {
+        "order": 2,
+        "kind": "move",
+        "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "to": {
+          "x": 0.48,
+          "y": 0.42
+        },
+        "rotate": null,
+        "scale": null
+      },
+      {
+        "order": 3,
+        "kind": "gesture",
+        "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "gesture": "bounce",
+        "status": "노란 선이 가볍게 들썩이며 첫 박자를 따라 한다."
+      },
+      {
+        "order": 4,
+        "kind": "prop_transform",
+        "propId": "prop-sai-ripple",
+        "scale": 1.1,
+        "rotate": null,
+        "opacity": 0.9
+      }
+    ]
+  },
+  {
+    "beat": 3,
+    "durationMs": 1800,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "gesture",
+        "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "gesture": "bounce",
+        "status": "초록 선이 한 박자 늦게 들썩이며 두 번째 흔들림을 보탠다."
+      },
+      {
+        "order": 2,
+        "kind": "effect",
+        "effect": "ripple",
+        "targetId": "prop-sai-ripple",
+        "color": "#4F8DB8",
+        "intensity": 0.35
+      },
+      {
+        "order": 3,
+        "kind": "pause",
+        "durationMs": 500
+      }
+    ]
+  },
+  {
+    "beat": 4,
+    "durationMs": 2500,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "move",
+        "actorId": "npc-3-1swtgwl",
+        "to": {
+          "x": 0.61,
+          "y": 0.31
+        },
+        "rotate": null,
+        "scale": null
+      },
+      {
+        "order": 2,
+        "kind": "look",
+        "actorId": "npc-3-1swtgwl",
+        "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879"
+      },
+      {
+        "order": 3,
+        "kind": "gesture",
+        "actorId": "npc-3-1swtgwl",
+        "gesture": "bounce",
+        "status": "작은 반원을 그린 뒤 한 발로 멈춘다."
+      },
+      {
+        "order": 4,
+        "kind": "speak",
+        "actorId": "npc-3-1swtgwl",
+        "text": "짠, 서로 다른데 같이 흔들려! ‘사이바람’ 어때?"
+      },
+      {
+        "order": 5,
+        "kind": "pause",
+        "durationMs": 600
+      }
+    ]
+  },
+  {
+    "beat": 5,
+    "durationMs": 3100,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "gesture",
+        "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "gesture": "bounce",
+        "status": "파란 선이 천천히 낮아졌다가 올라오며 세 번째 박자를 완성한다."
+      },
+      {
+        "order": 2,
+        "kind": "effect",
+        "effect": "wind",
+        "targetId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "color": "#EAF7FA",
+        "intensity": 0.5
+      },
+      {
+        "order": 3,
+        "kind": "prop_transform",
+        "propId": "prop-sai-ripple",
+        "scale": 1.3,
+        "rotate": null,
+        "opacity": 0.7
+      },
+      {
+        "order": 4,
+        "kind": "effect",
+        "effect": "music",
+        "targetId": null,
+        "color": "#F5B942",
+        "intensity": 0.3
+      },
+      {
+        "order": 5,
+        "kind": "gesture",
+        "actorId": "npc-1-173cidm",
+        "gesture": "nod",
+        "status": "모루가 바람종이의 한 번 울린 소리를 듣고 꼬리로 작은 반원을 그린다."
+      },
+      {
+        "order": 6,
+        "kind": "speak",
+        "actorId": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+        "text": "사이바람... 좋아. 같이, 천천히."
+      },
+      {
+        "order": 7,
+        "kind": "gesture",
+        "actorId": "npc-3-1swtgwl",
+        "gesture": "spin",
+        "status": "피피가 소리를 놀라게 하지 않을 만큼 작게 한 바퀴 돈다."
+      }
+    ]
+  }
+]

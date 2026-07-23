@@ -1,0 +1,260 @@
+{
+  "requestId": "eval-doodle-life-low-01-v1-birth",
+  "expectedRevision": 0,
+  "character": {
+    "id": "player-674fd7d4-9cad-4a92-aaf7-3a65a8a4492e",
+    "kind": "player",
+    "name": "무지개 결",
+    "epithet": "빛 사이를 잇는 작은 엮음꾼",
+    "essence": "보랏빛 테두리 속에 다섯 색의 흔들리는 선을 품은, 서로 다른 마음의 간격을 부드럽게 이어 주는 새 주민입니다.",
+    "origin": "정원의 바람이 여러 색 실오라기를 한곳에 모으자, 마름모 모양의 포근한 틀 안에서 눈을 떴습니다.",
+    "traits": [
+      {
+        "id": "color-listener",
+        "label": "색의 귀",
+        "description": "말보다 분위기의 색조와 리듬을 먼저 알아차립니다.",
+        "visibleEvidence": "보랏빛 윤곽 안에 붉은색, 노란색, 초록색, 파란색 선이 나란히 있습니다.",
+        "behavioralEffect": "누군가 말하기 어려워하면 조용히 곁에서 기다리며, 작은 기분 변화를 다정하게 짚어 봅니다.",
+        "confidence": 0.9
+      },
+      {
+        "id": "gentle-weaver",
+        "label": "느슨한 엮음",
+        "description": "다른 점들을 억지로 맞추기보다 각자의 모양을 살린 채 연결하려 합니다.",
+        "visibleEvidence": "각 색 선은 굽은 모양이 다르지만 하나의 테두리 안에 함께 놓여 있습니다.",
+        "behavioralEffect": "다툼이 생기면 누가 옳은지 급히 정하기보다 모두가 한 걸음 쉬어 갈 틈을 만듭니다.",
+        "confidence": 0.86
+      },
+      {
+        "id": "quiet-curious",
+        "label": "조용한 호기심",
+        "description": "낯선 것을 가까이서 살피되 성급하게 손대지 않습니다.",
+        "visibleEvidence": "단순한 선과 빈 공간이 넉넉하게 남아 있어, 관찰할 여백을 품고 있습니다.",
+        "behavioralEffect": "새로운 물건이나 주민을 만나면 작은 질문 하나를 건네고 답을 기다립니다.",
+        "confidence": 0.72
+      }
+    ],
+    "drives": [
+      "서로 다른 기분이 함께 있어도 안전한 자리를 만들기",
+      "정원의 숨은 색과 작은 변화를 발견하기",
+      "외로운 주민에게 부담 없는 첫인사가 되어 주기"
+    ],
+    "needs": [
+      "서두르지 않고 생각을 정리할 수 있는 조용한 시간",
+      "자신의 여러 색깔을 있는 그대로 받아 주는 친구",
+      "바람이 드는 탁 트인 자리와 가끔의 산책"
+    ],
+    "boundaries": [
+      "큰 소리로 재촉하거나 한꺼번에 많은 부탁을 하면 잠시 뒤로 물러납니다.",
+      "누군가의 마음을 대신 정해 주거나 비밀을 함부로 퍼뜨리지 않습니다.",
+      "색 선을 억지로 한 방향으로 잡아당기는 장난은 싫어합니다."
+    ],
+    "abilities": [
+      "어색한 만남에 알맞은 작은 인사말을 골라 건넬 수 있습니다.",
+      "서로 다른 의견에서 함께 할 수 있는 한 가지를 찾아냅니다.",
+      "주변의 분위기를 색띠처럼 느끼고, 휴식이 필요한 때를 알아차립니다."
+    ],
+    "visibleSignals": [
+      "기분이 좋으면 다섯 색 선이 살짝 넓어지며 차례로 흔들립니다.",
+      "궁금하면 보랏빛 테두리가 아주 조금 기울어집니다.",
+      "부담스러우면 색 선들이 가운데로 모이고 움직임이 느려집니다."
+    ],
+    "voice": {
+      "rhythm": "짧게 숨을 고르고, 조심스러운 문장 뒤에 따뜻한 여백을 둡니다.",
+      "vocabulary": "색, 결, 바람, 틈, 함께 같은 부드러운 낱말을 즐겨 씁니다.",
+      "sampleLine": "우리, 꼭 같은 색일 필요는 없지? 나란히 있으면 예쁠 것 같아."
+    },
+    "motion": {
+      "idle": "색 선들이 서로 다른 박자로 아주 작게 좌우로 물결치고, 테두리는 천천히 숨 쉬듯 기웁니다.",
+      "approach": "몸을 살짝 앞으로 기울인 뒤, 가장 바깥 색 선부터 조심스럽게 인사하듯 흔듭니다.",
+      "delight": "다섯 색 선이 바깥으로 활짝 퍼졌다가 차례로 통통 튑니다.",
+      "discomfort": "색 선이 중앙으로 가까워지고 보랏빛 테두리가 작게 흔들린 뒤, 조용한 쪽으로 반 걸음 물러납니다."
+    },
+    "mood": "조심스럽지만 반가움이 가득합니다.",
+    "currentGoal": "정원에서 혼자 있는 주민에게 부담 없는 색인사를 건네기",
+    "homePosition": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "design": {
+      "silhouette": "기울어진 보랏빛 마름모 테두리 안에 다섯 개의 세로 물결선이 놓인 가벼운 실타래 형태",
+      "palette": [
+        "#8E70B5",
+        "#EE6A5B",
+        "#F2B544",
+        "#72A864",
+        "#5A97BC"
+      ],
+      "body": {
+        "kind": "polygon",
+        "fill": "#FFFDF7",
+        "stroke": "#8E70B5",
+        "strokeWidth": 8,
+        "opacity": 1,
+        "points": [
+          {
+            "x": -84,
+            "y": 0
+          },
+          {
+            "x": 0,
+            "y": -92
+          },
+          {
+            "x": 84,
+            "y": 0
+          },
+          {
+            "x": 42,
+            "y": 42
+          },
+          {
+            "x": 0,
+            "y": 26
+          },
+          {
+            "x": -42,
+            "y": 42
+          }
+        ]
+      },
+      "parts": [
+        {
+          "id": "red-strand",
+          "shape": {
+            "kind": "path",
+            "fill": "none",
+            "stroke": "#EE6A5B",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "d": "M -56 -66 L -48 -18 L -58 32 L -46 78"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "yellow-strand",
+          "shape": {
+            "kind": "path",
+            "fill": "none",
+            "stroke": "#F2B544",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "d": "M -20 -66 L -10 -18 L -22 32 L -10 78"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "green-strand",
+          "shape": {
+            "kind": "path",
+            "fill": "none",
+            "stroke": "#72A864",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "d": "M 24 -66 L 34 -18 L 22 32 L 34 78"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "blue-strand",
+          "shape": {
+            "kind": "path",
+            "fill": "none",
+            "stroke": "#5A97BC",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "d": "M 62 -66 L 72 -18 L 60 32 L 72 78"
+          },
+          "zIndex": 2
+        }
+      ],
+      "faceAnchors": {
+        "leftEye": {
+          "x": -15,
+          "y": -2
+        },
+        "rightEye": {
+          "x": 15,
+          "y": -2
+        },
+        "mouth": {
+          "x": 0,
+          "y": 17
+        }
+      },
+      "expressivePartIds": [
+        "red-strand",
+        "yellow-strand",
+        "green-strand",
+        "blue-strand"
+      ],
+      "idleMotions": [
+        {
+          "targetPartId": "red-strand",
+          "property": "rotate",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1600,
+          "delayMs": 0
+        },
+        {
+          "targetPartId": "yellow-strand",
+          "property": "translateX",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1850,
+          "delayMs": 180
+        },
+        {
+          "targetPartId": "green-strand",
+          "property": "translateX",
+          "from": 2,
+          "to": -2,
+          "durationMs": 1750,
+          "delayMs": 360
+        },
+        {
+          "targetPartId": "blue-strand",
+          "property": "rotate",
+          "from": 2,
+          "to": -2,
+          "durationMs": 1650,
+          "delayMs": 540
+        }
+      ]
+    }
+  },
+  "evidenceSummary": "색의 귀: 보랏빛 윤곽 안에 붉은색, 노란색, 초록색, 파란색 선이 나란히 있습니다. · 느슨한 엮음: 각 색 선은 굽은 모양이 다르지만 하나의 테두리 안에 함께 놓여 있습니다.",
+  "uncertainties": [
+    "조용한 호기심은 장면 속 행동을 보며 더 선명해질 수 있어요."
+  ],
+  "trace": {
+    "mode": "dialogue-only",
+    "calls": [
+      {
+        "id": "resp_0169554d131139ed016a61d1cbed64819ab133eee1e16a21ed",
+        "role": "doodle-vision",
+        "provider": "openai",
+        "model": "gpt-5.6-terra",
+        "startedAt": "2026-07-23T08:33:15.729Z",
+        "latencyMs": 18157,
+        "usage": {
+          "inputTokens": 1904,
+          "cachedInputTokens": 0,
+          "outputTokens": 1633,
+          "reasoningTokens": 0,
+          "totalTokens": 3537
+        }
+      }
+    ],
+    "usage": {
+      "inputTokens": 1904,
+      "cachedInputTokens": 0,
+      "outputTokens": 1633,
+      "reasoningTokens": 0,
+      "totalTokens": 3537
+    },
+    "totalLatencyMs": 18157,
+    "wallClockMs": 18159
+  }
+}

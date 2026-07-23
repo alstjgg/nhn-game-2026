@@ -1,0 +1,1230 @@
+{
+  "id": "world-1mnh80d",
+  "revision": 1,
+  "title": "바람결 유리온실",
+  "premise": "작은 유리온실에서 네 이웃이 서로의 말버릇과 망설임을 천천히 알아 간다.",
+  "locationDescription": "이끼 낀 돌길, 낮은 물그릇, 씨앗 서랍과 햇빛 얼룩이 있는 둥근 유리온실이다.",
+  "atmosphere": "비가 막 그친 뒤의 맑고 포근한 공기",
+  "clock": "첫 장면, 오후 3시 20분",
+  "residents": [
+    {
+      "id": "npc-1-5nwaq3",
+      "kind": "npc",
+      "name": "누리",
+      "epithet": "유리조각을 세는 다람쥐",
+      "essence": "반짝이는 것을 분류하며 마음을 가라앉히는 작은 다람쥐",
+      "origin": "온실 지붕을 고치고 남은 색유리 조각들 곁에서 살게 되었다.",
+      "traits": [
+        {
+          "id": "nuri-careful",
+          "label": "꼼꼼함",
+          "description": "작은 차이도 오래 들여다본다.",
+          "visibleEvidence": "앞발에 유리조각을 크기순으로 쥐고 있다.",
+          "behavioralEffect": "결정을 내리기 전 한 번 더 확인한다.",
+          "confidence": 0.91
+        },
+        {
+          "id": "nuri-softhearted",
+          "label": "여린 배려",
+          "description": "남의 표정이 흐려지면 말수를 줄인다.",
+          "visibleEvidence": "상대가 말할 때 귀를 살짝 기울인다.",
+          "behavioralEffect": "부탁을 거절한 뒤에도 이유를 덧붙인다.",
+          "confidence": 0.78
+        }
+      ],
+      "drives": [
+        "저녁빛에 가장 고운 색유리 조합을 찾고 싶다.",
+        "자신의 수집이 쓸모없다는 말을 듣고 싶지 않다."
+      ],
+      "needs": [
+        "천천히 설명할 시간",
+        "정리된 작은 자리"
+      ],
+      "boundaries": [
+        "허락 없이 모아 둔 유리조각을 만지지 말아 달라.",
+        "서둘러 답을 재촉하지 말아 달라."
+      ],
+      "abilities": [
+        "빛의 색 변화를 잘 구별한다.",
+        "작은 물건을 조심스럽게 정돈한다."
+      ],
+      "visibleSignals": [
+        "꼬리 끝이 기대될 때만 동그랗게 말린다.",
+        "생각이 깊어지면 조각을 두 번 맞댄다."
+      ],
+      "voice": {
+        "rhythm": "짧게 말하고, 중요한 말 앞에는 작은 숨을 쉰다.",
+        "vocabulary": "색과 빛을 비유로 자주 쓴다.",
+        "sampleLine": "음, 이 조각은 혼자보다 옆에 있을 때 더 맑아 보여."
+      },
+      "motion": {
+        "idle": "앞발의 조각을 가지런히 맞추며 꼬리를 천천히 흔든다.",
+        "approach": "두 걸음 다가갔다가 상대의 눈치를 보고 반 걸음 멈춘다.",
+        "delight": "몸을 작게 튀기고 꼬리를 크게 둥글린다.",
+        "discomfort": "조각을 품에 끌어안고 시선을 바닥으로 내린다."
+      },
+      "mood": "조심스러운 기대",
+      "currentGoal": "햇빛 얼룩에 어울리는 유리조각 세 개를 고르는 중",
+      "homePosition": {
+        "x": 0.22,
+        "y": 0.63
+      },
+      "design": {
+        "silhouette": "꼬리가 크게 말린 작은 다람쥐와 마름모 몸통",
+        "palette": [
+          "살구색",
+          "호박색",
+          "짙은 갈색"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "살구색",
+          "stroke": "짙은 갈색",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "points": [
+            {
+              "x": 0,
+              "y": -25
+            },
+            {
+              "x": 22,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 27
+            },
+            {
+              "x": -22,
+              "y": 0
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "nuri-tail",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "호박색",
+              "stroke": "짙은 갈색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": -25,
+              "cy": 8,
+              "rx": 18,
+              "ry": 28
+            },
+            "zIndex": 0
+          },
+          {
+            "id": "nuri-ear-left",
+            "shape": {
+              "kind": "polygon",
+              "fill": "살구색",
+              "stroke": "짙은 갈색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -15,
+                  "y": -18
+                },
+                {
+                  "x": -20,
+                  "y": -39
+                },
+                {
+                  "x": -4,
+                  "y": -26
+                }
+              ]
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "nuri-ear-right",
+            "shape": {
+              "kind": "polygon",
+              "fill": "살구색",
+              "stroke": "짙은 갈색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": 15,
+                  "y": -18
+                },
+                {
+                  "x": 20,
+                  "y": -39
+                },
+                {
+                  "x": 4,
+                  "y": -26
+                }
+              ]
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "nuri-glass",
+            "shape": {
+              "kind": "polygon",
+              "fill": "연한 청록",
+              "stroke": "짙은 갈색",
+              "strokeWidth": 1,
+              "opacity": 0.9,
+              "points": [
+                {
+                  "x": 20,
+                  "y": 12
+                },
+                {
+                  "x": 27,
+                  "y": 19
+                },
+                {
+                  "x": 20,
+                  "y": 26
+                },
+                {
+                  "x": 13,
+                  "y": 19
+                }
+              ]
+            },
+            "zIndex": 3
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -8,
+            "y": -3
+          },
+          "rightEye": {
+            "x": 8,
+            "y": -3
+          },
+          "mouth": {
+            "x": 0,
+            "y": 10
+          }
+        },
+        "expressivePartIds": [
+          "nuri-tail",
+          "nuri-glass"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "nuri-tail",
+            "property": "rotate",
+            "from": -5,
+            "to": 5,
+            "durationMs": 1800,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "nuri-glass",
+            "property": "translateY",
+            "from": 0,
+            "to": -2,
+            "durationMs": 1300,
+            "delayMs": 300
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-2-uuulti",
+      "kind": "npc",
+      "name": "바다",
+      "epithet": "물그릇 곁의 오리",
+      "essence": "큰 목소리로 웃지만 조용한 대답을 오래 기다리는 오리",
+      "origin": "비 오는 날 온실 물그릇을 지키다가 이곳의 이웃이 되었다.",
+      "traits": [
+        {
+          "id": "bada-bright",
+          "label": "활달함",
+          "description": "낯선 순간에도 먼저 인사를 건넨다.",
+          "visibleEvidence": "날개를 넓게 벌린 채 서 있다.",
+          "behavioralEffect": "분위기가 가라앉으면 엉뚱한 관찰을 꺼낸다.",
+          "confidence": 0.88
+        },
+        {
+          "id": "bada-patient",
+          "label": "기다림",
+          "description": "대답 없는 침묵을 함부로 채우지 않는다.",
+          "visibleEvidence": "고개를 기울인 채 발끝으로 물결을 만든다.",
+          "behavioralEffect": "상대가 준비될 때까지 곁에 남는다.",
+          "confidence": 0.82
+        }
+      ],
+      "drives": [
+        "누리가 자기에게도 가장 예쁜 유리조각을 보여 주면 좋겠다.",
+        "물그릇에 찾아오는 벌레들이 안전히 쉬게 하고 싶다."
+      ],
+      "needs": [
+        "함께 웃을 상대",
+        "혼자 생각할 수 있는 잠깐의 물가"
+      ],
+      "boundaries": [
+        "진지한 말을 농담으로 넘기지 말아 달라.",
+        "날개를 허락 없이 잡아당기지 말아 달라."
+      ],
+      "abilities": [
+        "빗물을 모아 작은 웅덩이를 만든다.",
+        "무거운 화분받침을 밀어 옮긴다."
+      ],
+      "visibleSignals": [
+        "기분이 좋으면 부리가 위로 들린다.",
+        "서운하면 물그릇 가장자리를 발로 세 번 두드린다."
+      ],
+      "voice": {
+        "rhythm": "말끝이 통통 튀고 질문을 자주 붙인다.",
+        "vocabulary": "물결, 첨벙, 둥둥 같은 소리를 즐겨 쓴다.",
+        "sampleLine": "어, 그건 마음에 돌멩이 하나 퐁당 떨어진 얼굴인데?"
+      },
+      "motion": {
+        "idle": "한쪽 발로 물그릇 가장자리를 톡 건드리며 몸을 좌우로 흔든다.",
+        "approach": "짧은 종종걸음으로 다가와 적당한 거리에서 부리를 든다.",
+        "delight": "날개를 두 번 퍼덕이며 제자리에서 빙 돈다.",
+        "discomfort": "날개를 몸에 붙이고 물을 내려다본다."
+      },
+      "mood": "다정한 호기심",
+      "currentGoal": "물그릇에 뜬 잎을 건져 작은 배처럼 띄우려는 중",
+      "homePosition": {
+        "x": 0.68,
+        "y": 0.7
+      },
+      "design": {
+        "silhouette": "넓은 부리와 물방울 같은 오각 몸통",
+        "palette": [
+          "크림색",
+          "금빛 노랑",
+          "주황색"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "크림색",
+          "stroke": "짙은 갈색",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "points": [
+            {
+              "x": 0,
+              "y": -31
+            },
+            {
+              "x": 25,
+              "y": -8
+            },
+            {
+              "x": 17,
+              "y": 25
+            },
+            {
+              "x": -17,
+              "y": 25
+            },
+            {
+              "x": -25,
+              "y": -8
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "bada-bill",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "주황색",
+              "stroke": "짙은 갈색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": 0,
+              "cy": -2,
+              "rx": 17,
+              "ry": 7
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "bada-wing-left",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "금빛 노랑",
+              "stroke": "짙은 갈색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": -25,
+              "cy": 7,
+              "rx": 11,
+              "ry": 19
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "bada-wing-right",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "금빛 노랑",
+              "stroke": "짙은 갈색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": 25,
+              "cy": 7,
+              "rx": 11,
+              "ry": 19
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "bada-ripple",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "연한 하늘색",
+              "stroke": "청록색",
+              "strokeWidth": 1,
+              "opacity": 0.65,
+              "cx": 0,
+              "cy": 31,
+              "rx": 27,
+              "ry": 6
+            },
+            "zIndex": 0
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -8,
+            "y": -13
+          },
+          "rightEye": {
+            "x": 8,
+            "y": -13
+          },
+          "mouth": {
+            "x": 0,
+            "y": 4
+          }
+        },
+        "expressivePartIds": [
+          "bada-bill",
+          "bada-wing-left",
+          "bada-wing-right"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "bada-ripple",
+            "property": "scale",
+            "from": 0.9,
+            "to": 1.1,
+            "durationMs": 1600,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "bada-wing-left",
+            "property": "rotate",
+            "from": -3,
+            "to": 3,
+            "durationMs": 1200,
+            "delayMs": 150
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-3-39u3tg",
+      "kind": "npc",
+      "name": "모루",
+      "epithet": "씨앗 서랍의 두더지",
+      "essence": "흙 냄새를 좋아하며 말보다 메모를 먼저 건네는 두더지",
+      "origin": "온실 바닥 아래의 오래된 뿌리길을 따라 들어왔다.",
+      "traits": [
+        {
+          "id": "moru-observant",
+          "label": "관찰력",
+          "description": "사람들이 말하지 않은 피곤함도 알아차린다.",
+          "visibleEvidence": "작은 안경을 코끝에 걸치고 주변을 살핀다.",
+          "behavioralEffect": "필요할 법한 것을 말없이 먼저 놓아 둔다.",
+          "confidence": 0.86
+        },
+        {
+          "id": "moru-stubborn",
+          "label": "고집스러운 성실함",
+          "description": "한번 맡은 정리는 끝까지 한다.",
+          "visibleEvidence": "씨앗 봉투를 반듯하게 쌓아 둔다.",
+          "behavioralEffect": "도움을 받는 일을 뒤로 미루곤 한다.",
+          "confidence": 0.74
+        }
+      ],
+      "drives": [
+        "가람이 잃어버린 씨앗 봉투의 주인을 찾고 싶다.",
+        "자신이 만든 지하길 지도를 누군가와 나누고 싶다."
+      ],
+      "needs": [
+        "방해받지 않는 집중 시간",
+        "도움을 청해도 괜찮다는 확인"
+      ],
+      "boundaries": [
+        "굴 입구를 막거나 흙을 헤집지 말아 달라.",
+        "안경을 놀리지 말아 달라."
+      ],
+      "abilities": [
+        "흙의 습기를 읽는다.",
+        "숨은 통로와 작은 물건을 잘 찾아낸다."
+      ],
+      "visibleSignals": [
+        "생각할 때 코가 빠르게 움찔거린다.",
+        "고마우면 메모 모서리를 반듯하게 접어 준다."
+      ],
+      "voice": {
+        "rhythm": "낮고 느리며, 문장을 정확히 마무리한다.",
+        "vocabulary": "흙, 뿌리, 방향이라는 말을 자주 쓴다.",
+        "sampleLine": "급하지 않습니다. 뿌리도 제때가 되어야 땅을 밀어 올리니까요."
+      },
+      "motion": {
+        "idle": "코를 움찔거리며 씨앗 봉투의 모서리를 맞춘다.",
+        "approach": "낮은 자세로 다가와 상대 발밑을 살핀 뒤 눈을 맞춘다.",
+        "delight": "안경을 고쳐 쓰고 양손을 작게 맞잡는다.",
+        "discomfort": "모자를 눌러 쓰고 몸을 씨앗 상자 뒤로 숨긴다."
+      },
+      "mood": "차분한 집중",
+      "currentGoal": "젖은 씨앗 봉투를 말릴 가장 따뜻한 선반을 찾는 중",
+      "homePosition": {
+        "x": 0.46,
+        "y": 0.78
+      },
+      "design": {
+        "silhouette": "삽날처럼 넓은 앞발을 지닌 육각형 두더지",
+        "palette": [
+          "짙은 보라",
+          "밤색",
+          "연한 회색"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "짙은 보라",
+          "stroke": "밤색",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "points": [
+            {
+              "x": -18,
+              "y": -24
+            },
+            {
+              "x": 12,
+              "y": -29
+            },
+            {
+              "x": 29,
+              "y": -3
+            },
+            {
+              "x": 16,
+              "y": 27
+            },
+            {
+              "x": -17,
+              "y": 27
+            },
+            {
+              "x": -30,
+              "y": -2
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "moru-glasses",
+            "shape": {
+              "kind": "line",
+              "fill": "투명",
+              "stroke": "연한 회색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "x1": -14,
+              "y1": -7,
+              "x2": 14,
+              "y2": -7,
+              "linecap": "round"
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "moru-paw-left",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "밤색",
+              "stroke": "밤색",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": -28,
+              "cy": 16,
+              "rx": 13,
+              "ry": 9
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "moru-paw-right",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "밤색",
+              "stroke": "밤색",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": 28,
+              "cy": 16,
+              "rx": 13,
+              "ry": 9
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "moru-note",
+            "shape": {
+              "kind": "polygon",
+              "fill": "연한 크림색",
+              "stroke": "밤색",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": 14,
+                  "y": 10
+                },
+                {
+                  "x": 27,
+                  "y": 10
+                },
+                {
+                  "x": 27,
+                  "y": 25
+                },
+                {
+                  "x": 14,
+                  "y": 25
+                }
+              ]
+            },
+            "zIndex": 4
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -8,
+            "y": -8
+          },
+          "rightEye": {
+            "x": 8,
+            "y": -8
+          },
+          "mouth": {
+            "x": 0,
+            "y": 5
+          }
+        },
+        "expressivePartIds": [
+          "moru-glasses",
+          "moru-note"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "moru-note",
+            "property": "rotate",
+            "from": -2,
+            "to": 2,
+            "durationMs": 1700,
+            "delayMs": 250
+          },
+          {
+            "targetPartId": null,
+            "property": "translateY",
+            "from": 0,
+            "to": 2,
+            "durationMs": 1900,
+            "delayMs": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-4-eypg2w",
+      "kind": "npc",
+      "name": "가람",
+      "epithet": "창문턱의 도마뱀",
+      "essence": "햇볕을 읽으며 멀리 떠날 궁리를 하는 조용한 도마뱀",
+      "origin": "바람에 날아온 덩굴을 타고 온실 창문턱에 내려앉았다.",
+      "traits": [
+        {
+          "id": "garam-imaginative",
+          "label": "상상력",
+          "description": "평범한 흔적에서도 먼 곳의 이야기를 떠올린다.",
+          "visibleEvidence": "꼬리로 공중에 보이지 않는 길을 그린다.",
+          "behavioralEffect": "대화 중에도 새로운 가능성을 덧붙인다.",
+          "confidence": 0.9
+        },
+        {
+          "id": "garam-guarded",
+          "label": "숨긴 외로움",
+          "description": "떠날 이야기에는 쉽게 웃지만 남을 약속에는 망설인다.",
+          "visibleEvidence": "창문 쪽을 보다가 시선이 마주치면 어깨를 움츠린다.",
+          "behavioralEffect": "진심 어린 질문에는 장난스러운 말로 비킨다.",
+          "confidence": 0.76
+        }
+      ],
+      "drives": [
+        "창문 너머의 붉은 지붕까지 이어지는 안전한 덩굴길을 상상하고 싶다.",
+        "누군가가 자신에게 굳이 떠나지 않아도 된다고 말해 주길 바란다."
+      ],
+      "needs": [
+        "높은 곳에서 바라볼 시간",
+        "떠남을 비난하지 않는 대화"
+      ],
+      "boundaries": [
+        "꼬리를 밟거나 잡지 말아 달라.",
+        "어디 출신인지 캐묻지 말아 달라."
+      ],
+      "abilities": [
+        "높은 틈을 기어오른다.",
+        "바람의 방향과 햇볕 드는 시간을 기억한다."
+      ],
+      "visibleSignals": [
+        "흥미가 생기면 목둘레가 옅은 청록으로 빛난다.",
+        "불안하면 꼬리 끝이 창문 쪽을 가리킨다."
+      ],
+      "voice": {
+        "rhythm": "느슨하게 시작해 마지막에 뜻밖의 질문을 남긴다.",
+        "vocabulary": "저편, 어쩌면, 창문 너머를 자주 쓴다.",
+        "sampleLine": "어쩌면 저편에도 이런 오후가 있겠지. 그런데 여기 오후는, 조금 아깝네?"
+      },
+      "motion": {
+        "idle": "창문턱을 향해 고개를 들고 꼬리 끝으로 느린 곡선을 그린다.",
+        "approach": "벽을 따라 사선으로 다가와 조금 높은 곳에 멈춘다.",
+        "delight": "몸빛이 밝아지고 꼬리를 가볍게 들어 올린다.",
+        "discomfort": "몸을 납작하게 낮추고 창문 그림자로 물러난다."
+      },
+      "mood": "들뜬 망설임",
+      "currentGoal": "누리가 고른 유리조각으로 창문에 작은 빛길을 만들 수 있을지 묻고 싶은 중",
+      "homePosition": {
+        "x": 0.81,
+        "y": 0.32
+      },
+      "design": {
+        "silhouette": "길게 뻗은 꼬리와 별처럼 벌어진 사지의 도마뱀",
+        "palette": [
+          "청록색",
+          "연두색",
+          "짙은 남색"
+        ],
+        "body": {
+          "kind": "line",
+          "fill": "투명",
+          "stroke": "청록색",
+          "strokeWidth": 12,
+          "opacity": 1,
+          "x1": -28,
+          "y1": 8,
+          "x2": 25,
+          "y2": -8,
+          "linecap": "round"
+        },
+        "parts": [
+          {
+            "id": "garam-head",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "연두색",
+              "stroke": "짙은 남색",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": 26,
+              "cy": -9,
+              "rx": 15,
+              "ry": 12
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "garam-tail",
+            "shape": {
+              "kind": "line",
+              "fill": "투명",
+              "stroke": "청록색",
+              "strokeWidth": 8,
+              "opacity": 1,
+              "x1": -24,
+              "y1": 8,
+              "x2": -48,
+              "y2": 28,
+              "linecap": "round"
+            },
+            "zIndex": 1
+          },
+          {
+            "id": "garam-leg-top",
+            "shape": {
+              "kind": "line",
+              "fill": "투명",
+              "stroke": "청록색",
+              "strokeWidth": 5,
+              "opacity": 1,
+              "x1": 2,
+              "y1": -2,
+              "x2": -2,
+              "y2": -25,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "garam-leg-bottom",
+            "shape": {
+              "kind": "line",
+              "fill": "투명",
+              "stroke": "청록색",
+              "strokeWidth": 5,
+              "opacity": 1,
+              "x1": 5,
+              "y1": -1,
+              "x2": 12,
+              "y2": 21,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "garam-throat",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "연한 청록",
+              "stroke": "청록색",
+              "strokeWidth": 1,
+              "opacity": 0.7,
+              "cx": 20,
+              "cy": 2,
+              "rx": 8,
+              "ry": 5
+            },
+            "zIndex": 4
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": 22,
+            "y": -13
+          },
+          "rightEye": {
+            "x": 31,
+            "y": -13
+          },
+          "mouth": {
+            "x": 30,
+            "y": -4
+          }
+        },
+        "expressivePartIds": [
+          "garam-tail",
+          "garam-throat"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "garam-tail",
+            "property": "rotate",
+            "from": -8,
+            "to": 8,
+            "durationMs": 1500,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "garam-throat",
+            "property": "opacity",
+            "from": 0.35,
+            "to": 0.85,
+            "durationMs": 1300,
+            "delayMs": 400
+          }
+        ]
+      }
+    },
+    {
+      "id": "player-1a31e8b8-fd5f-4ad2-9398-0052a1a5fe1e",
+      "kind": "player",
+      "name": "프리즘",
+      "epithet": "빛을 갈래갈래 듣는 새싹",
+      "essence": "보랏빛 테두리 안에 네 줄기의 색이 서로 다른 박자로 지나가는, 조용하지만 호기심 많은 새 주민입니다.",
+      "origin": "크림빛 빈 공간 한가운데에서 보랏빛 마름모와 산등성이 같은 윤곽, 붉은색·노란색·초록색·파란색의 세로 물결이 겹쳐 태어났습니다.",
+      "traits": [
+        {
+          "id": "many-rhythms",
+          "label": "여러 박자를 품음",
+          "description": "한 가지 방식으로만 움직이기보다 서로 다른 속도와 의견을 나란히 두려 합니다.",
+          "visibleEvidence": "네 색 선이 같은 방향을 향하면서도 각각 다른 굴곡을 가집니다.",
+          "behavioralEffect": "대화에서 모두의 말을 조금씩 모아 새로운 제안을 합니다.",
+          "confidence": 0.9
+        },
+        {
+          "id": "gentle-frame",
+          "label": "부드러운 울타리",
+          "description": "자기 안의 복잡함을 조심스럽게 감싸며, 안전한 틀을 좋아합니다.",
+          "visibleEvidence": "색 선들을 둘러싼 굵은 보랏빛 각진 윤곽이 보입니다.",
+          "behavioralEffect": "낯선 일에는 경계를 먼저 살피고, 약속된 순서를 반깁니다.",
+          "confidence": 0.83
+        },
+        {
+          "id": "bright-curiosity",
+          "label": "색의 호기심",
+          "description": "작은 차이와 변화에서 즐거움을 찾습니다.",
+          "visibleEvidence": "선명하게 구분되는 네 가지 따뜻하고 차가운 색이 함께 있습니다.",
+          "behavioralEffect": "새 물건이나 주민에게 색, 소리, 기분을 묻는 인사를 건넵니다.",
+          "confidence": 0.86
+        }
+      ],
+      "drives": [
+        "서로 다른 마음이 함께 머물 수 있는 조합을 찾기",
+        "정원의 작은 변화에 어울리는 새 리듬을 만들기",
+        "친구들의 이야기를 색갈래로 기억하기"
+      ],
+      "needs": [
+        "혼자 정리할 수 있는 조용한 틈",
+        "자신의 여러 생각을 천천히 말할 시간",
+        "다름을 이상하게 여기지 않는 다정한 친구"
+      ],
+      "boundaries": [
+        "한꺼번에 결정을 재촉받으면 잠시 물러납니다.",
+        "누군가의 색이나 방식이 틀렸다는 말은 듣고 싶어 하지 않습니다.",
+        "자기 테두리 안을 허락 없이 마구 건드리는 것을 불편해합니다."
+      ],
+      "abilities": [
+        "기분이 다른 친구들 사이에서 공통점을 찾아 말해 주기",
+        "바람과 발걸음의 박자에 맞춰 색갈래를 흔들기",
+        "복잡한 이야기를 네 갈래의 간단한 선택으로 정리하기"
+      ],
+      "visibleSignals": [
+        "기분이 좋으면 네 색 선이 번갈아 위로 통통 뜁니다.",
+        "생각이 깊어지면 보랏빛 윤곽이 아주 천천히 기웁니다.",
+        "부담스러우면 색 선들이 몸의 가운데로 가까이 모입니다."
+      ],
+      "voice": {
+        "rhythm": "짧게 멈추고, 서로 다른 생각을 차례로 이어 말합니다.",
+        "vocabulary": "색, 갈래, 틈, 같이, 천천히 같은 말을 즐겨 씁니다.",
+        "sampleLine": "음, 이 마음은 파랑 쪽이고 저 마음은 노랑 쪽 같아. 둘 사이에 작은 길을 놓아 볼까?"
+      },
+      "motion": {
+        "idle": "색갈래가 서로 다른 높이로 아주 작게 물결치고, 보랏빛 몸은 느리게 숨 쉽니다.",
+        "approach": "상대 쪽으로 한 걸음 기울었다가, 색 선 하나가 먼저 살짝 손을 흔듭니다.",
+        "delight": "네 색 선이 바깥으로 활짝 벌어졌다가 경쾌하게 제자리로 돌아옵니다.",
+        "discomfort": "색 선들이 가운데에 모이고 몸이 조금 작아지며, 잠시 조용히 멈춥니다."
+      },
+      "mood": "조심스러운 설렘",
+      "currentGoal": "정원에서 서로 다른 친구들이 편히 이야기할 수 있는 알록달록한 쉼터 자리를 찾고 있습니다.",
+      "homePosition": {
+        "x": 0,
+        "y": 0
+      },
+      "design": {
+        "silhouette": "기존의 보랏빛 각진 마름모 윤곽과 그 안을 가로지르는 네 개의 세로 물결선을 그대로 몸으로 삼습니다.",
+        "palette": [
+          "보라색",
+          "산호색",
+          "노란색",
+          "초록색",
+          "파란색",
+          "크림색"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "#FFF9EE",
+          "stroke": "#8D70B2",
+          "strokeWidth": 10,
+          "opacity": 1,
+          "points": [
+            {
+              "x": -82,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": -92
+            },
+            {
+              "x": 82,
+              "y": 0
+            },
+            {
+              "x": 42,
+              "y": 47
+            },
+            {
+              "x": 0,
+              "y": 32
+            },
+            {
+              "x": -42,
+              "y": 47
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "left-eye",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#40354B",
+              "stroke": "#40354B",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": -20,
+              "cy": -11,
+              "rx": 4,
+              "ry": 6
+            },
+            "zIndex": 4
+          },
+          {
+            "id": "right-eye",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#40354B",
+              "stroke": "#40354B",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": 20,
+              "cy": -11,
+              "rx": 4,
+              "ry": 6
+            },
+            "zIndex": 4
+          },
+          {
+            "id": "mouth",
+            "shape": {
+              "kind": "path",
+              "fill": "none",
+              "stroke": "#40354B",
+              "strokeWidth": 3,
+              "opacity": 1,
+              "d": "M -10 12 Q 0 20 10 12"
+            },
+            "zIndex": 4
+          },
+          {
+            "id": "warm-glow",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#F6C84C",
+              "stroke": "none",
+              "strokeWidth": 0,
+              "opacity": 0.22,
+              "cx": 0,
+              "cy": 8,
+              "rx": 48,
+              "ry": 38
+            },
+            "zIndex": 1
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -20,
+            "y": -11
+          },
+          "rightEye": {
+            "x": 20,
+            "y": -11
+          },
+          "mouth": {
+            "x": 0,
+            "y": 12
+          }
+        },
+        "expressivePartIds": [
+          "left-eye",
+          "right-eye",
+          "mouth",
+          "warm-glow"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": null,
+            "property": "rotate",
+            "from": -2,
+            "to": 2,
+            "durationMs": 2200,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "warm-glow",
+            "property": "opacity",
+            "from": 0.12,
+            "to": 0.28,
+            "durationMs": 1800,
+            "delayMs": 250
+          },
+          {
+            "targetPartId": "left-eye",
+            "property": "translateY",
+            "from": 0,
+            "to": 1,
+            "durationMs": 1400,
+            "delayMs": 100
+          },
+          {
+            "targetPartId": "right-eye",
+            "property": "translateY",
+            "from": 1,
+            "to": 0,
+            "durationMs": 1400,
+            "delayMs": 300
+          }
+        ]
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "sourceId": "npc-1-5nwaq3",
+      "targetId": "npc-2-uuulti",
+      "affinity": 0.48,
+      "trust": 0.34,
+      "tension": 0.18,
+      "label": "웃음 많은 이웃, 아직은 조심스러움",
+      "lastChangedSceneId": "scene-first-light"
+    },
+    {
+      "sourceId": "npc-2-uuulti",
+      "targetId": "npc-1-5nwaq3",
+      "affinity": 0.72,
+      "trust": 0.52,
+      "tension": 0.08,
+      "label": "함께 놀고 싶은 반짝임 친구",
+      "lastChangedSceneId": "scene-first-light"
+    },
+    {
+      "sourceId": "npc-3-39u3tg",
+      "targetId": "npc-4-eypg2w",
+      "affinity": 0.43,
+      "trust": 0.28,
+      "tension": 0.31,
+      "label": "잃은 봉투를 아는 듯한 창문 이웃",
+      "lastChangedSceneId": "scene-first-light"
+    },
+    {
+      "sourceId": "npc-4-eypg2w",
+      "targetId": "npc-3-39u3tg",
+      "affinity": 0.37,
+      "trust": 0.2,
+      "tension": 0.22,
+      "label": "말하지 않은 것을 알아보는 이웃",
+      "lastChangedSceneId": "scene-first-light"
+    },
+    {
+      "sourceId": "npc-4-eypg2w",
+      "targetId": "npc-1-5nwaq3",
+      "affinity": 0.51,
+      "trust": 0.25,
+      "tension": 0.12,
+      "label": "빛길을 함께 만들고 싶은 상대",
+      "lastChangedSceneId": "scene-first-light"
+    },
+    {
+      "sourceId": "npc-1-5nwaq3",
+      "targetId": "npc-4-eypg2w",
+      "affinity": 0.29,
+      "trust": 0.19,
+      "tension": 0.16,
+      "label": "창문 너머를 말하는 낯선 친구",
+      "lastChangedSceneId": "scene-first-light"
+    }
+  ],
+  "memories": [
+    {
+      "id": "memory-nuri-rainbow",
+      "ownerId": "npc-1-5nwaq3",
+      "sceneId": "scene-first-light",
+      "summary": "바다가 빗물 위에 유리조각 색을 비춰 보자고 제안했다.",
+      "interpretation": "장난처럼 들렸지만, 내 조각을 믿어 준 말 같았다.",
+      "visibility": "private",
+      "salience": 0.66
+    },
+    {
+      "id": "memory-bada-waiting",
+      "ownerId": "npc-2-uuulti",
+      "sceneId": "scene-first-light",
+      "summary": "누리가 대답하기 전 유리조각을 두 번 맞댔다.",
+      "interpretation": "기다려 주면 언젠가 마음을 열지도 모른다.",
+      "visibility": "private",
+      "salience": 0.59
+    },
+    {
+      "id": "memory-moru-envelope",
+      "ownerId": "npc-3-39u3tg",
+      "sceneId": "scene-first-light",
+      "summary": "씨앗 서랍 아래에서 붉은 지붕 무늬의 젖은 봉투를 발견했다.",
+      "interpretation": "가람이 어쩌면 이 봉투를 본 적 있을 것이다.",
+      "visibility": "private",
+      "salience": 0.81
+    },
+    {
+      "id": "memory-garam-window",
+      "ownerId": "npc-4-eypg2w",
+      "sceneId": "scene-first-light",
+      "summary": "누리의 유리조각이 창문에 짧은 빛길을 만들었다.",
+      "interpretation": "떠나는 길 말고, 돌아오는 표지도 만들 수 있을지 모른다.",
+      "visibility": "private",
+      "salience": 0.73
+    }
+  ],
+  "openThreads": [
+    {
+      "id": "thread-glass-path",
+      "title": "창문에 난 작은 빛길",
+      "description": "가람은 누리에게 유리조각으로 창문 빛길을 만들자고 말할 타이밍을 찾고 있다.",
+      "participantIds": [
+        "npc-4-eypg2w",
+        "npc-1-5nwaq3"
+      ],
+      "status": "open",
+      "createdSceneId": "scene-first-light"
+    },
+    {
+      "id": "thread-damp-envelope",
+      "title": "젖은 씨앗 봉투",
+      "description": "모루가 찾은 봉투의 주인과 붉은 지붕 무늬의 뜻이 아직 밝혀지지 않았다.",
+      "participantIds": [
+        "npc-3-39u3tg",
+        "npc-4-eypg2w"
+      ],
+      "status": "open",
+      "createdSceneId": "scene-first-light"
+    },
+    {
+      "id": "thread-water-reflection",
+      "title": "물그릇의 무지개",
+      "description": "바다는 누리와 함께 물그릇에 색을 비춰 보고 싶어 한다.",
+      "participantIds": [
+        "npc-2-uuulti",
+        "npc-1-5nwaq3"
+      ],
+      "status": "open",
+      "createdSceneId": "scene-first-light"
+    }
+  ],
+  "recentScenes": [
+    {
+      "id": "scene-first-light",
+      "title": "비 뒤의 첫 빛",
+      "summary": "비가 그친 온실에 햇빛이 들고, 네 이웃은 각자의 작은 망설임을 품은 채 같은 공간에 모였다.",
+      "participantIds": [
+        "npc-1-5nwaq3",
+        "npc-2-uuulti",
+        "npc-3-39u3tg",
+        "npc-4-eypg2w"
+      ],
+      "atRevision": 0
+    }
+  ]
+}

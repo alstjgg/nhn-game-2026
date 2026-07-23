@@ -1,0 +1,469 @@
+{
+  "requestId": "eval-doodle-life-dialogue-only-v1-birth",
+  "expectedRevision": 0,
+  "character": {
+    "id": "player-39aaad46-679c-4d89-a68e-1831b6fdf726",
+    "kind": "player",
+    "name": "오색이",
+    "epithet": "바람을 모으는 작은 울타리",
+    "essence": "서로 다른 빛깔의 선을 품고, 사이로 지나가는 바람과 이야기를 모으는 갓 태어난 주민.",
+    "origin": "보랏빛 테두리 안에 산호색, 노란색, 초록색, 파란색 선이 나란히 깨어나며 정원의 한가운데에서 첫 숨을 쉬었다.",
+    "traits": [
+      {
+        "id": "trait_color_harmony",
+        "label": "다름을 잇는 마음",
+        "description": "서로 다른 빛깔과 성격이 곁에 머물 수 있도록 자연스럽게 자리를 내준다.",
+        "visibleEvidence": "보랏빛 윤곽 안팎에 네 가지 색의 선이 나란히 놓여 있다.",
+        "behavioralEffect": "의견이 다른 친구들 사이에서 공통점을 찾아 차분히 이어 준다.",
+        "confidence": 0.94
+      },
+      {
+        "id": "trait_springy",
+        "label": "말랑한 회복력",
+        "description": "조금 눌리거나 흔들려도 본래의 리듬을 되찾는다.",
+        "visibleEvidence": "윤곽과 세로선이 곧게 굳지 않고 부드럽게 꺾여 있다.",
+        "behavioralEffect": "실수한 뒤 잠시 흔들리지만 작은 격려를 받으면 다시 시도한다.",
+        "confidence": 0.88
+      },
+      {
+        "id": "trait_listening_gaps",
+        "label": "틈새 귀",
+        "description": "말보다 말 사이의 망설임과 기분을 먼저 알아차린다.",
+        "visibleEvidence": "색선 사이마다 고른 여백이 있어 바람이 통하는 모습이다.",
+        "behavioralEffect": "대화를 재촉하지 않고 상대가 말을 고를 시간을 준다.",
+        "confidence": 0.82
+      },
+      {
+        "id": "trait_orderly_play",
+        "label": "가지런한 장난기",
+        "description": "정돈된 모양을 좋아하지만 가끔 선을 좌우로 흔들며 익살을 부린다.",
+        "visibleEvidence": "여러 선이 비슷한 방향으로 서 있으면서도 각기 다른 굴곡을 지닌다.",
+        "behavioralEffect": "물건을 색깔순으로 놓고, 마지막 하나는 엉뚱한 자리에 두며 웃는다.",
+        "confidence": 0.86
+      }
+    ],
+    "drives": [
+      "정원의 서로 다른 목소리를 모아 하나의 리듬 만들기",
+      "바람이 잘 통하는 포근한 모임 자리 찾기",
+      "새로운 색과 소리를 만나 자기만의 조합 늘리기"
+    ],
+    "needs": [
+      "혼자 조용히 흔들림을 가라앉힐 짧은 시간",
+      "누군가의 말을 끝까지 들을 수 있는 안전한 자리",
+      "있는 모습 그대로 반겨 주는 다정한 인사"
+    ],
+    "boundaries": [
+      "몸의 색선을 허락 없이 잡아당기면 뒤로 물러난다.",
+      "여러 친구가 한꺼번에 큰 소리로 말하면 대화를 잠시 멈춘다.",
+      "서로의 색이나 생김새를 놀리는 장난에는 단호히 고개를 젓는다."
+    ],
+    "abilities": [
+      "몸 사이로 부는 바람의 세기를 작은 흔들림으로 알려 준다.",
+      "서로 다른 박자를 듣고 따라 하기 쉬운 네 박자 리듬으로 정리한다.",
+      "가까운 친구가 말할 때 해당 방향의 색선을 살짝 기울여 집중을 표현한다.",
+      "좁은 틈을 만들거나 넓히며 작은 씨앗이 쉴 그늘을 마련한다."
+    ],
+    "visibleSignals": [
+      "편안하면 네 색선이 차례로 아주 작게 좌우로 흔들린다.",
+      "호기심이 생기면 보랏빛 윗부분이 살짝 위로 솟는다.",
+      "부담스러우면 색선들이 가운데로 모이고 움직임이 줄어든다.",
+      "기쁘면 바깥쪽 산호색과 파란색 선이 동시에 바깥으로 열린다."
+    ],
+    "voice": {
+      "rhythm": "한 박자 듣고 한 박자 답하는 느긋한 네 박자 말투.",
+      "vocabulary": "바람, 틈, 나란히, 천천히 같은 부드럽고 짧은 말을 즐겨 쓴다.",
+      "sampleLine": "우리, 조금씩 말해 볼래? 내가 색깔마다 잘 담아 둘게."
+    },
+    "motion": {
+      "idle": "네 색선이 서로 다른 순서로 가볍게 흔들리고 보랏빛 윤곽이 천천히 숨 쉬듯 넓어졌다 좁아진다.",
+      "approach": "몸을 약간 낮춘 뒤 좌우로 두 번 통통 옮겨 다가가며 열린 쪽을 상대에게 향한다.",
+      "delight": "산호색부터 파란색까지 색선이 차례로 튀어 오르고 윤곽이 별처럼 잠깐 넓어진다.",
+      "discomfort": "색선들을 중심으로 모으고 전체 몸을 작게 웅크린 채 천천히 뒤로 한 걸음 물러난다."
+    },
+    "mood": "낯선 정원이 궁금하면서도 첫 인사를 조심스럽게 기다리는 중.",
+    "currentGoal": "가장 먼저 불어오는 바람의 방향을 알아내고 가까운 주민 한 명에게 다정하게 인사하기.",
+    "homePosition": {
+      "x": 0.5,
+      "y": 0.34
+    },
+    "design": {
+      "silhouette": "뾰족한 꼭대기와 벌어진 옆면을 가진 보랏빛 울타리 안에 네 개의 굽은 색선이 나란히 선 모습.",
+      "palette": [
+        "보라",
+        "산호색",
+        "황금빛 노랑",
+        "풀잎 초록",
+        "맑은 파랑"
+      ],
+      "body": {
+        "kind": "polygon",
+        "fill": "투명",
+        "stroke": "보라",
+        "strokeWidth": 10,
+        "opacity": 1,
+        "points": [
+          {
+            "x": 0,
+            "y": -80
+          },
+          {
+            "x": 90,
+            "y": 12
+          },
+          {
+            "x": 42,
+            "y": 72
+          },
+          {
+            "x": 0,
+            "y": 48
+          },
+          {
+            "x": -42,
+            "y": 72
+          },
+          {
+            "x": -90,
+            "y": 12
+          }
+        ]
+      },
+      "parts": [
+        {
+          "id": "coral_bar",
+          "shape": {
+            "kind": "line",
+            "fill": "산호색",
+            "stroke": "산호색",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": -85,
+            "y1": -55,
+            "x2": -75,
+            "y2": -5,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "coral_bar_lower",
+          "shape": {
+            "kind": "line",
+            "fill": "산호색",
+            "stroke": "산호색",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": -75,
+            "y1": -5,
+            "x2": -86,
+            "y2": 45,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "coral_bar_end",
+          "shape": {
+            "kind": "line",
+            "fill": "산호색",
+            "stroke": "산호색",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": -86,
+            "y1": 45,
+            "x2": -75,
+            "y2": 90,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "yellow_bar",
+          "shape": {
+            "kind": "line",
+            "fill": "황금빛 노랑",
+            "stroke": "황금빛 노랑",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": -35,
+            "y1": -55,
+            "x2": -25,
+            "y2": -5,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "yellow_bar_lower",
+          "shape": {
+            "kind": "line",
+            "fill": "황금빛 노랑",
+            "stroke": "황금빛 노랑",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": -25,
+            "y1": -5,
+            "x2": -35,
+            "y2": 45,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "yellow_bar_end",
+          "shape": {
+            "kind": "line",
+            "fill": "황금빛 노랑",
+            "stroke": "황금빛 노랑",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": -35,
+            "y1": 45,
+            "x2": -25,
+            "y2": 90,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "green_bar",
+          "shape": {
+            "kind": "line",
+            "fill": "풀잎 초록",
+            "stroke": "풀잎 초록",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 15,
+            "y1": -55,
+            "x2": 25,
+            "y2": -5,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "green_bar_lower",
+          "shape": {
+            "kind": "line",
+            "fill": "풀잎 초록",
+            "stroke": "풀잎 초록",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 25,
+            "y1": -5,
+            "x2": 15,
+            "y2": 45,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "green_bar_end",
+          "shape": {
+            "kind": "line",
+            "fill": "풀잎 초록",
+            "stroke": "풀잎 초록",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 15,
+            "y1": 45,
+            "x2": 25,
+            "y2": 90,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "blue_bar",
+          "shape": {
+            "kind": "line",
+            "fill": "맑은 파랑",
+            "stroke": "맑은 파랑",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 65,
+            "y1": -55,
+            "x2": 75,
+            "y2": -5,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "blue_bar_lower",
+          "shape": {
+            "kind": "line",
+            "fill": "맑은 파랑",
+            "stroke": "맑은 파랑",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 75,
+            "y1": -5,
+            "x2": 65,
+            "y2": 45,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "blue_bar_end",
+          "shape": {
+            "kind": "line",
+            "fill": "맑은 파랑",
+            "stroke": "맑은 파랑",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 65,
+            "y1": 45,
+            "x2": 75,
+            "y2": 90,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "left_eye_anchor",
+          "shape": {
+            "kind": "ellipse",
+            "fill": "짙은 보라",
+            "stroke": "짙은 보라",
+            "strokeWidth": 1,
+            "opacity": 0.8,
+            "cx": -13,
+            "cy": 2,
+            "rx": 3,
+            "ry": 4
+          },
+          "zIndex": 3
+        },
+        {
+          "id": "right_eye_anchor",
+          "shape": {
+            "kind": "ellipse",
+            "fill": "짙은 보라",
+            "stroke": "짙은 보라",
+            "strokeWidth": 1,
+            "opacity": 0.8,
+            "cx": 13,
+            "cy": 2,
+            "rx": 3,
+            "ry": 4
+          },
+          "zIndex": 3
+        },
+        {
+          "id": "mouth_anchor",
+          "shape": {
+            "kind": "line",
+            "fill": "투명",
+            "stroke": "짙은 보라",
+            "strokeWidth": 2,
+            "opacity": 0.8,
+            "x1": -5,
+            "y1": 18,
+            "x2": 5,
+            "y2": 18,
+            "linecap": "round"
+          },
+          "zIndex": 3
+        }
+      ],
+      "faceAnchors": {
+        "leftEye": {
+          "x": -13,
+          "y": 2
+        },
+        "rightEye": {
+          "x": 13,
+          "y": 2
+        },
+        "mouth": {
+          "x": 0,
+          "y": 18
+        }
+      },
+      "expressivePartIds": [
+        "coral_bar",
+        "yellow_bar",
+        "green_bar",
+        "blue_bar",
+        "left_eye_anchor",
+        "right_eye_anchor",
+        "mouth_anchor"
+      ],
+      "idleMotions": [
+        {
+          "targetPartId": null,
+          "property": "scale",
+          "from": 0.98,
+          "to": 1.02,
+          "durationMs": 2400,
+          "delayMs": 0
+        },
+        {
+          "targetPartId": "coral_bar",
+          "property": "rotate",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1800,
+          "delayMs": 0
+        },
+        {
+          "targetPartId": "yellow_bar",
+          "property": "translateY",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1700,
+          "delayMs": 180
+        },
+        {
+          "targetPartId": "green_bar",
+          "property": "translateY",
+          "from": 2,
+          "to": -2,
+          "durationMs": 1900,
+          "delayMs": 360
+        },
+        {
+          "targetPartId": "blue_bar",
+          "property": "rotate",
+          "from": 2,
+          "to": -2,
+          "durationMs": 1800,
+          "delayMs": 540
+        }
+      ]
+    }
+  },
+  "evidenceSummary": "다름을 잇는 마음: 보랏빛 윤곽 안팎에 네 가지 색의 선이 나란히 놓여 있다. · 말랑한 회복력: 윤곽과 세로선이 곧게 굳지 않고 부드럽게 꺾여 있다. · 틈새 귀: 색선 사이마다 고른 여백이 있어 바람이 통하는 모습이다.",
+  "uncertainties": [],
+  "trace": {
+    "mode": "dialogue-only",
+    "calls": [
+      {
+        "id": "resp_0704fbe32318e546016a61cf876d208199807bc4706e2aead9",
+        "role": "doodle-vision",
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "startedAt": "2026-07-23T08:23:35.234Z",
+        "latencyMs": 51350,
+        "usage": {
+          "inputTokens": 1904,
+          "cachedInputTokens": 1832,
+          "outputTokens": 2862,
+          "reasoningTokens": 286,
+          "totalTokens": 4766
+        }
+      }
+    ],
+    "usage": {
+      "inputTokens": 1904,
+      "cachedInputTokens": 1832,
+      "outputTokens": 2862,
+      "reasoningTokens": 286,
+      "totalTokens": 4766
+    },
+    "totalLatencyMs": 51350,
+    "wallClockMs": 51352
+  }
+}

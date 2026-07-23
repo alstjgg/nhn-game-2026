@@ -1,0 +1,41 @@
+{
+  "revision": {
+    "before": 0,
+    "after": 1
+  },
+  "propStatesChanged": [
+    {
+      "id": "far_bell",
+      "before": "두 번만 울림",
+      "after": "세 번째 소리까지 도착"
+    }
+  ],
+  "gardenStatesAdded": [
+    "sound-restored"
+  ],
+  "creaturesAdded": [
+    {
+      "id": "doodle_89d06ff323eb80303fed",
+      "name": "마름날개",
+      "essence": "좌우로 길게 펼쳐진 각진 윤곽 위에 중앙의 세로 고리들과 오른쪽의 겹마름모가 이어진 검은 선 그림입니다.",
+      "imageSha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680",
+      "questId": "quest_soso_last_note",
+      "verdict": "success",
+      "homePosition": {
+        "x": 52,
+        "y": 68
+      }
+    }
+  ],
+  "relationshipRecordsAdded": [
+    {
+      "id": "record_quest_soso_last_note_doodle_89d06ff323eb80303fed",
+      "questId": "quest_soso_last_note",
+      "ownerNpcId": "npc_soso",
+      "creatureId": "doodle_89d06ff323eb80303fed",
+      "title": "끊긴 소리를 이어 준 몸",
+      "summary": "소소는 새 생명체가 만든 소리의 길을 기억한다.",
+      "verdict": "success"
+    }
+  ]
+}

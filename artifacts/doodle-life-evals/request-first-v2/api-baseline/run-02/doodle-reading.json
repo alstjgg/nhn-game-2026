@@ -1,0 +1,401 @@
+{
+  "response": {
+    "requestId": "eval-request-first-v2-r02-read",
+    "readIndex": 0,
+    "canReread": true,
+    "usedFallback": false,
+    "fallbackReason": null,
+    "reading": {
+      "name": "살랑마루",
+      "essence": "가로로 길게 펼쳐진 굵은 각진 선 위에 중앙의 솟은 고리들과 오른쪽의 겹친 마름모가 이어진 모습입니다.",
+      "visibleFeatures": [
+        {
+          "id": "wide_zigzag_body",
+          "label": "넓게 펼쳐진 각진 외곽선",
+          "description": "좌우로 길게 뻗으며 여러 번 꺾이는 굵은 검은 선이 넓은 빈 공간을 둘러쌉니다.",
+          "evidence": "왼쪽 끝에서 위아래로 갈라진 선이 중앙의 오목한 부분을 지나 오른쪽 끝으로 이어집니다.",
+          "region": {
+            "x": 0.116,
+            "y": 0.367,
+            "width": 0.665,
+            "height": 0.397
+          },
+          "confidence": 0.97
+        },
+        {
+          "id": "central_peaks",
+          "label": "가운데 솟은 세 갈래",
+          "description": "중앙 위쪽에 뾰족한 두 봉우리와 작은 중앙 봉우리가 나란히 솟아 있습니다.",
+          "evidence": "세 갈래의 꺾인 선이 아래쪽의 긴 외곽선과 맞닿아 있으며, 사이에 좁은 빈 공간이 보입니다.",
+          "region": {
+            "x": 0.323,
+            "y": 0.276,
+            "width": 0.162,
+            "height": 0.251
+          },
+          "confidence": 0.95
+        },
+        {
+          "id": "crossed_diamonds",
+          "label": "오른쪽의 겹친 마름모",
+          "description": "두 개의 각진 고리 모양이 서로 겹쳐 작은 교차 무늬를 만듭니다.",
+          "evidence": "오른쪽 끝 가까이에 대각선들이 교차하고, 내부에 작은 마름모꼴 빈 공간이 남아 있습니다.",
+          "region": {
+            "x": 0.643,
+            "y": 0.493,
+            "width": 0.138,
+            "height": 0.158
+          },
+          "confidence": 0.94
+        }
+      ],
+      "motionHints": [
+        {
+          "featureId": "wide_zigzag_body",
+          "motion": "bend",
+          "anchor": {
+            "x": 0.405,
+            "y": 0.758
+          },
+          "description": "아래 중앙의 깊은 꺾임을 축으로 긴 외곽선이 접히듯 움직일 수 있습니다."
+        },
+        {
+          "featureId": "central_peaks",
+          "motion": "flutter",
+          "anchor": {
+            "x": 0.405,
+            "y": 0.334
+          },
+          "description": "가늘고 높게 솟은 갈래들이 좌우로 조금 흔들리는 움직임이 어울립니다."
+        },
+        {
+          "featureId": "crossed_diamonds",
+          "motion": "rotate",
+          "anchor": {
+            "x": 0.707,
+            "y": 0.576
+          },
+          "description": "교차한 마름모의 중심을 기준으로 작은 장식이 도는 움직임을 암시합니다."
+        }
+      ],
+      "uncertainties": [
+        {
+          "region": {
+            "x": 0.116,
+            "y": 0.276,
+            "width": 0.665,
+            "height": 0.488
+          },
+          "reason": "전체 윤곽이 생물, 도구, 장식 중 무엇을 나타내는지는 내부 표식이나 색 구분이 없어 확정하기 어렵습니다."
+        },
+        {
+          "region": {
+            "x": 0.643,
+            "y": 0.493,
+            "width": 0.138,
+            "height": 0.158
+          },
+          "reason": "겹친 마름모가 연결 장식인지 독립된 물체인지는 선의 겹침만으로 분명하지 않습니다."
+        }
+      ]
+    },
+    "trace": {
+      "mode": "staged",
+      "calls": [
+        {
+          "id": "resp_04213adf52b3702e016a6236fd2240819b9b3cf26e41686d35",
+          "role": "doodle-reader",
+          "provider": "openai",
+          "model": "gpt-5.6-sol",
+          "startedAt": "2026-07-23T15:45:00.941Z",
+          "latencyMs": 18811,
+          "usage": {
+            "inputTokens": 1129,
+            "cachedInputTokens": 1051,
+            "outputTokens": 905,
+            "reasoningTokens": 148,
+            "totalTokens": 2034
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 1129,
+        "cachedInputTokens": 1051,
+        "outputTokens": 905,
+        "reasoningTokens": 148,
+        "totalTokens": 2034
+      },
+      "totalLatencyMs": 18811,
+      "wallClockMs": 18812
+    }
+  },
+  "rawProviderOutput": {
+    "name": "살랑마루",
+    "essence": "가로로 길게 펼쳐진 굵은 각진 선 위에 중앙의 솟은 고리들과 오른쪽의 겹친 마름모가 이어진 모습입니다.",
+    "visibleFeatures": [
+      {
+        "id": "wide_zigzag_body",
+        "label": "넓게 펼쳐진 각진 외곽선",
+        "description": "좌우로 길게 뻗으며 여러 번 꺾이는 굵은 검은 선이 넓은 빈 공간을 둘러쌉니다.",
+        "evidence": "왼쪽 끝에서 위아래로 갈라진 선이 중앙의 오목한 부분을 지나 오른쪽 끝으로 이어집니다.",
+        "region": {
+          "x": 0.116,
+          "y": 0.367,
+          "width": 0.665,
+          "height": 0.397
+        },
+        "confidence": 0.97,
+        "affordances": [
+          "stretch",
+          "glide",
+          "bridge"
+        ]
+      },
+      {
+        "id": "central_peaks",
+        "label": "가운데 솟은 세 갈래",
+        "description": "중앙 위쪽에 뾰족한 두 봉우리와 작은 중앙 봉우리가 나란히 솟아 있습니다.",
+        "evidence": "세 갈래의 꺾인 선이 아래쪽의 긴 외곽선과 맞닿아 있으며, 사이에 좁은 빈 공간이 보입니다.",
+        "region": {
+          "x": 0.323,
+          "y": 0.276,
+          "width": 0.162,
+          "height": 0.251
+        },
+        "confidence": 0.95,
+        "affordances": [
+          "grip",
+          "climb"
+        ]
+      },
+      {
+        "id": "crossed_diamonds",
+        "label": "오른쪽의 겹친 마름모",
+        "description": "두 개의 각진 고리 모양이 서로 겹쳐 작은 교차 무늬를 만듭니다.",
+        "evidence": "오른쪽 끝 가까이에 대각선들이 교차하고, 내부에 작은 마름모꼴 빈 공간이 남아 있습니다.",
+        "region": {
+          "x": 0.643,
+          "y": 0.493,
+          "width": 0.138,
+          "height": 0.158
+        },
+        "confidence": 0.94,
+        "affordances": [
+          "connect",
+          "grip"
+        ]
+      }
+    ],
+    "motionHints": [
+      {
+        "featureId": "wide_zigzag_body",
+        "motion": "bend",
+        "anchor": {
+          "x": 0.405,
+          "y": 0.758
+        },
+        "description": "아래 중앙의 깊은 꺾임을 축으로 긴 외곽선이 접히듯 움직일 수 있습니다."
+      },
+      {
+        "featureId": "central_peaks",
+        "motion": "flutter",
+        "anchor": {
+          "x": 0.405,
+          "y": 0.334
+        },
+        "description": "가늘고 높게 솟은 갈래들이 좌우로 조금 흔들리는 움직임이 어울립니다."
+      },
+      {
+        "featureId": "crossed_diamonds",
+        "motion": "rotate",
+        "anchor": {
+          "x": 0.707,
+          "y": 0.576
+        },
+        "description": "교차한 마름모의 중심을 기준으로 작은 장식이 도는 움직임을 암시합니다."
+      }
+    ],
+    "uncertainties": [
+      {
+        "region": {
+          "x": 0.116,
+          "y": 0.276,
+          "width": 0.665,
+          "height": 0.488
+        },
+        "reason": "전체 윤곽이 생물, 도구, 장식 중 무엇을 나타내는지는 내부 표식이나 색 구분이 없어 확정하기 어렵습니다."
+      },
+      {
+        "region": {
+          "x": 0.643,
+          "y": 0.493,
+          "width": 0.138,
+          "height": 0.158
+        },
+        "reason": "겹친 마름모가 연결 장식인지 독립된 물체인지는 선의 겹침만으로 분명하지 않습니다."
+      }
+    ]
+  },
+  "providerCall": {
+    "role": "doodle-reader",
+    "schemaName": "doodle_life_doodle_reading",
+    "reasoning": "low",
+    "maxOutputTokens": 2400,
+    "inputMetadata": [
+      {
+        "type": "input_text",
+        "json": {
+          "image": {
+            "mimeType": "image/jpeg",
+            "width": 904,
+            "height": 396,
+            "sha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680"
+          },
+          "drawingMetrics": null,
+          "coordinateConvention": "normalized bounding rectangles relative to the attached cropped image"
+        }
+      },
+      {
+        "type": "input_image",
+        "attached": true,
+        "detail": "high",
+        "dataUrlOmitted": true,
+        "image": {
+          "file": "soso-last-note-full.jpg",
+          "sha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680",
+          "mimeType": "image/jpeg",
+          "width": 904,
+          "height": 396,
+          "drawingMetrics": null
+        }
+      }
+    ],
+    "startedAt": "2026-07-23T15:45:00.941Z",
+    "endedAt": "2026-07-23T15:45:19.752Z",
+    "wallClockMs": 18812,
+    "status": "completed",
+    "output": {
+      "name": "살랑마루",
+      "essence": "가로로 길게 펼쳐진 굵은 각진 선 위에 중앙의 솟은 고리들과 오른쪽의 겹친 마름모가 이어진 모습입니다.",
+      "visibleFeatures": [
+        {
+          "id": "wide_zigzag_body",
+          "label": "넓게 펼쳐진 각진 외곽선",
+          "description": "좌우로 길게 뻗으며 여러 번 꺾이는 굵은 검은 선이 넓은 빈 공간을 둘러쌉니다.",
+          "evidence": "왼쪽 끝에서 위아래로 갈라진 선이 중앙의 오목한 부분을 지나 오른쪽 끝으로 이어집니다.",
+          "region": {
+            "x": 0.116,
+            "y": 0.367,
+            "width": 0.665,
+            "height": 0.397
+          },
+          "confidence": 0.97,
+          "affordances": [
+            "stretch",
+            "glide",
+            "bridge"
+          ]
+        },
+        {
+          "id": "central_peaks",
+          "label": "가운데 솟은 세 갈래",
+          "description": "중앙 위쪽에 뾰족한 두 봉우리와 작은 중앙 봉우리가 나란히 솟아 있습니다.",
+          "evidence": "세 갈래의 꺾인 선이 아래쪽의 긴 외곽선과 맞닿아 있으며, 사이에 좁은 빈 공간이 보입니다.",
+          "region": {
+            "x": 0.323,
+            "y": 0.276,
+            "width": 0.162,
+            "height": 0.251
+          },
+          "confidence": 0.95,
+          "affordances": [
+            "grip",
+            "climb"
+          ]
+        },
+        {
+          "id": "crossed_diamonds",
+          "label": "오른쪽의 겹친 마름모",
+          "description": "두 개의 각진 고리 모양이 서로 겹쳐 작은 교차 무늬를 만듭니다.",
+          "evidence": "오른쪽 끝 가까이에 대각선들이 교차하고, 내부에 작은 마름모꼴 빈 공간이 남아 있습니다.",
+          "region": {
+            "x": 0.643,
+            "y": 0.493,
+            "width": 0.138,
+            "height": 0.158
+          },
+          "confidence": 0.94,
+          "affordances": [
+            "connect",
+            "grip"
+          ]
+        }
+      ],
+      "motionHints": [
+        {
+          "featureId": "wide_zigzag_body",
+          "motion": "bend",
+          "anchor": {
+            "x": 0.405,
+            "y": 0.758
+          },
+          "description": "아래 중앙의 깊은 꺾임을 축으로 긴 외곽선이 접히듯 움직일 수 있습니다."
+        },
+        {
+          "featureId": "central_peaks",
+          "motion": "flutter",
+          "anchor": {
+            "x": 0.405,
+            "y": 0.334
+          },
+          "description": "가늘고 높게 솟은 갈래들이 좌우로 조금 흔들리는 움직임이 어울립니다."
+        },
+        {
+          "featureId": "crossed_diamonds",
+          "motion": "rotate",
+          "anchor": {
+            "x": 0.707,
+            "y": 0.576
+          },
+          "description": "교차한 마름모의 중심을 기준으로 작은 장식이 도는 움직임을 암시합니다."
+        }
+      ],
+      "uncertainties": [
+        {
+          "region": {
+            "x": 0.116,
+            "y": 0.276,
+            "width": 0.665,
+            "height": 0.488
+          },
+          "reason": "전체 윤곽이 생물, 도구, 장식 중 무엇을 나타내는지는 내부 표식이나 색 구분이 없어 확정하기 어렵습니다."
+        },
+        {
+          "region": {
+            "x": 0.643,
+            "y": 0.493,
+            "width": 0.138,
+            "height": 0.158
+          },
+          "reason": "겹친 마름모가 연결 장식인지 독립된 물체인지는 선의 겹침만으로 분명하지 않습니다."
+        }
+      ]
+    },
+    "trace": {
+      "id": "resp_04213adf52b3702e016a6236fd2240819b9b3cf26e41686d35",
+      "role": "doodle-reader",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "startedAt": "2026-07-23T15:45:00.941Z",
+      "latencyMs": 18811,
+      "usage": {
+        "inputTokens": 1129,
+        "cachedInputTokens": 1051,
+        "outputTokens": 905,
+        "reasoningTokens": 148,
+        "totalTokens": 2034
+      }
+    },
+    "error": null
+  }
+}

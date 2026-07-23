@@ -1,0 +1,127 @@
+[
+  {
+    "beat": 1,
+    "durationMs": 720,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "move",
+        "actorId": "player-d0cfdbd7-26d0-4ae7-b612-26986a97d16c",
+        "to": {
+          "x": 30.5,
+          "y": 57.00000000000001
+        },
+        "rotate": null,
+        "scale": 1.04
+      }
+    ]
+  },
+  {
+    "beat": 2,
+    "durationMs": 520,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "look",
+        "actorId": "npc-1-iuj69t",
+        "targetId": "player-d0cfdbd7-26d0-4ae7-b612-26986a97d16c"
+      }
+    ]
+  },
+  {
+    "beat": 3,
+    "durationMs": 1800,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "speak",
+        "actorId": "player-d0cfdbd7-26d0-4ae7-b612-26986a97d16c",
+        "text": "내 선은 여기서 멈췄어. 네가 이어도 좋아."
+      },
+      {
+        "order": 2,
+        "kind": "prop_create",
+        "propId": "scene_2_7qzcj3_wind_note",
+        "symbol": "⌁",
+        "label": "둘 사이에서 접힌 바람 조각",
+        "color": "#8d72ad",
+        "actorId": "player-d0cfdbd7-26d0-4ae7-b612-26986a97d16c",
+        "position": {
+          "x": 36.5,
+          "y": 49.00000000000001
+        }
+      }
+    ]
+  },
+  {
+    "beat": 4,
+    "durationMs": 880,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "gesture",
+        "actorId": "npc-1-iuj69t",
+        "gesture": "stretch",
+        "status": "주머니 속 점들이 작은 원을 그린다."
+      },
+      {
+        "order": 2,
+        "kind": "prop_transform",
+        "propId": "scene_2_7qzcj3_wind_note",
+        "scale": 1.18,
+        "rotate": 12,
+        "opacity": 0.92
+      }
+    ]
+  },
+  {
+    "beat": 5,
+    "durationMs": 1900,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "speak",
+        "actorId": "npc-1-iuj69t",
+        "text": "아직 말하지 않아도 돼. 빈자리도 같이 들을게."
+      }
+    ]
+  },
+  {
+    "beat": 6,
+    "durationMs": 980,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "effect",
+        "effect": "surprise",
+        "targetId": null,
+        "color": "#d9f2ef",
+        "intensity": 0.58
+      },
+      {
+        "order": 2,
+        "kind": "prop_transform",
+        "propId": "scene_2_7qzcj3_wind_note",
+        "scale": 0.82,
+        "rotate": -8,
+        "opacity": 0.48
+      }
+    ]
+  },
+  {
+    "beat": 7,
+    "durationMs": 460,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "pause",
+        "durationMs": 460
+      },
+      {
+        "order": 2,
+        "kind": "prop_remove",
+        "propId": "scene_2_7qzcj3_wind_note"
+      }
+    ]
+  }
+]

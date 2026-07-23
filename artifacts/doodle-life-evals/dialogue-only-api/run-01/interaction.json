@@ -1,0 +1,387 @@
+{
+  "signal": {
+    "kind": "newcomer-arrived",
+    "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+    "detail": "무지느러미이(가) 사용자가 그린 모습 그대로 처음 정원에 나타났다. 주민들은 각자의 관점으로 이 낯선 존재를 처음 본다."
+  },
+  "intents": [],
+  "proposedScene": {
+    "id": "scene_2_nfm2me",
+    "title": "무지느러미의 선끝에 모루가 대답한 방식",
+    "summary": "무지느러미가 자기 몸짓을 먼저 보여 주고 모루가 전혀 다른 버릇으로 받아, 둘 사이에 없던 리듬이 생겼다.",
+    "participantIds": [
+      "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+      "npc-1-tf7tj1"
+    ],
+    "beats": [
+      {
+        "id": "scene_2_nfm2me_move",
+        "startMs": 0,
+        "durationMs": 720,
+        "statusText": "무지느러미가 자기만의 움직임으로 빈자리 쪽에 다가가요.",
+        "actions": [
+          {
+            "kind": "move",
+            "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+            "to": {
+              "x": 30,
+              "y": 52
+            },
+            "rotate": null,
+            "scale": 1.04
+          }
+        ]
+      },
+      {
+        "id": "scene_2_nfm2me_look",
+        "startMs": 720,
+        "durationMs": 520,
+        "statusText": "모루가 하던 일을 멈추고 무지느러미를 바라봐요.",
+        "actions": [
+          {
+            "kind": "look",
+            "actorId": "npc-1-tf7tj1",
+            "targetId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e"
+          }
+        ]
+      },
+      {
+        "id": "scene_2_nfm2me_line_a",
+        "startMs": 1240,
+        "durationMs": 1800,
+        "statusText": "무지느러미가 먼저 작은 말을 건네요.",
+        "actions": [
+          {
+            "kind": "speak",
+            "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+            "text": "안녕. 나는 무지느러미야… 좋아하는 색이 있니?"
+          },
+          {
+            "kind": "prop_create",
+            "propId": "scene_2_nfm2me_wind_note",
+            "label": "둘 사이에서 접힌 바람 조각",
+            "symbol": "⌁",
+            "color": "보라",
+            "position": {
+              "x": 36,
+              "y": 44
+            },
+            "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e"
+          }
+        ]
+      },
+      {
+        "id": "scene_2_nfm2me_gesture_b",
+        "startMs": 3040,
+        "durationMs": 880,
+        "statusText": "모루가 익숙한 버릇으로 대답해요.",
+        "actions": [
+          {
+            "kind": "gesture",
+            "actorId": "npc-1-tf7tj1",
+            "gesture": "wave",
+            "status": "꼬리를 둥글게 말고 작게 제자리 돈다."
+          },
+          {
+            "kind": "prop_transform",
+            "propId": "scene_2_nfm2me_wind_note",
+            "scale": 1.18,
+            "rotate": 12,
+            "opacity": 0.92
+          }
+        ]
+      },
+      {
+        "id": "scene_2_nfm2me_line_b",
+        "startMs": 3920,
+        "durationMs": 1900,
+        "statusText": "모루의 대답이 처음과는 다른 방향을 만들어요.",
+        "actions": [
+          {
+            "kind": "speak",
+            "actorId": "npc-1-tf7tj1",
+            "text": "파란색이요. 이 돌처럼, 천천히 맑아지는 색이에요."
+          }
+        ]
+      },
+      {
+        "id": "scene_2_nfm2me_effect",
+        "startMs": 5820,
+        "durationMs": 980,
+        "statusText": "서로 다른 몸짓이 겹친 자리에 작은 흔적이 남아요.",
+        "actions": [
+          {
+            "kind": "effect",
+            "effect": "music",
+            "targetId": null,
+            "color": "#E9D7BD",
+            "intensity": 0.58
+          },
+          {
+            "kind": "prop_transform",
+            "propId": "scene_2_nfm2me_wind_note",
+            "scale": 0.82,
+            "rotate": -8,
+            "opacity": 0.48
+          }
+        ]
+      },
+      {
+        "id": "scene_2_nfm2me_pause",
+        "startMs": 6800,
+        "durationMs": 460,
+        "statusText": "둘은 새로 생긴 리듬을 잠시 함께 들어요.",
+        "actions": [
+          {
+            "kind": "pause",
+            "durationMs": 460
+          },
+          {
+            "kind": "prop_remove",
+            "propId": "scene_2_nfm2me_wind_note"
+          }
+        ]
+      }
+    ],
+    "mutations": [
+      {
+        "kind": "memory",
+        "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+        "visibility": "private",
+        "summary": "무지느러미가 모루와 처음으로 서로 다른 몸짓을 이어 보았다.",
+        "interpretation": "모루은 내 속도와 달랐지만 기다릴 수 있는 빈자리를 남겨 주었다.",
+        "salience": 0.82
+      },
+      {
+        "kind": "mood",
+        "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+        "mood": "낯선 리듬을 하나 얻은 기쁨",
+        "reason": "자기 특성이 다른 존재의 반응을 실제로 바꾸는 것을 보았기 때문이다."
+      },
+      {
+        "kind": "relationship",
+        "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+        "targetId": "npc-1-tf7tj1",
+        "affinityDelta": 0.1,
+        "trustDelta": 0.07,
+        "tensionDelta": 0.03,
+        "label": "서로 다른 박자를 한 번 이어 본 사이",
+        "reason": "두 주민이 각자의 버릇을 지우지 않고 한 장면 안에서 주고받았다."
+      },
+      {
+        "kind": "memory",
+        "actorId": "npc-1-tf7tj1",
+        "visibility": "shared",
+        "summary": "모루가 무지느러미의 낯선 신호에 자기 방식으로 대답했다.",
+        "interpretation": "무지느러미의 모양은 고쳐야 할 것이 아니라 함께 움직일 새로운 규칙일 수 있다.",
+        "salience": 0.76
+      },
+      {
+        "kind": "thread",
+        "threadId": "thread_2_nfm2me",
+        "operation": "open",
+        "title": "둘만 들은 다음 박자",
+        "description": "무지느러미와 모루가 만든 첫 리듬에는 아직 이어지지 않은 한 박자가 남았다.",
+        "participantIds": [
+          "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+          "npc-1-tf7tj1"
+        ],
+        "reason": "장면 끝에 두 주민 모두 다음 움직임을 기다리는 몸짓을 남겼다."
+      }
+    ],
+    "observationTitle": "같아져서가 아니라, 달라서 이어진 순간",
+    "observationBody": "무지느러미의 색깔 호기심과 모루의 신중함이 서로를 바꾸지 않은 채 새로운 행동을 만들었다."
+  },
+  "critic": {
+    "approved": true,
+    "issues": [],
+    "correctedScene": null
+  },
+  "finalScene": {
+    "id": "scene_2_nfm2me",
+    "title": "무지느러미의 선끝에 모루가 대답한 방식",
+    "summary": "무지느러미가 자기 몸짓을 먼저 보여 주고 모루가 전혀 다른 버릇으로 받아, 둘 사이에 없던 리듬이 생겼다.",
+    "participantIds": [
+      "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+      "npc-1-tf7tj1"
+    ],
+    "beats": [
+      {
+        "id": "scene_2_nfm2me_move",
+        "startMs": 0,
+        "durationMs": 720,
+        "statusText": "무지느러미가 자기만의 움직임으로 빈자리 쪽에 다가가요.",
+        "actions": [
+          {
+            "kind": "move",
+            "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+            "to": {
+              "x": 30,
+              "y": 52
+            },
+            "rotate": null,
+            "scale": 1.04
+          }
+        ]
+      },
+      {
+        "id": "scene_2_nfm2me_look",
+        "startMs": 720,
+        "durationMs": 520,
+        "statusText": "모루가 하던 일을 멈추고 무지느러미를 바라봐요.",
+        "actions": [
+          {
+            "kind": "look",
+            "actorId": "npc-1-tf7tj1",
+            "targetId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e"
+          }
+        ]
+      },
+      {
+        "id": "scene_2_nfm2me_line_a",
+        "startMs": 1240,
+        "durationMs": 1800,
+        "statusText": "무지느러미가 먼저 작은 말을 건네요.",
+        "actions": [
+          {
+            "kind": "speak",
+            "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+            "text": "안녕. 나는 무지느러미야… 좋아하는 색이 있니?"
+          },
+          {
+            "kind": "prop_create",
+            "propId": "scene_2_nfm2me_wind_note",
+            "label": "둘 사이에서 접힌 바람 조각",
+            "symbol": "⌁",
+            "color": "보라",
+            "position": {
+              "x": 36,
+              "y": 44
+            },
+            "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e"
+          }
+        ]
+      },
+      {
+        "id": "scene_2_nfm2me_gesture_b",
+        "startMs": 3040,
+        "durationMs": 880,
+        "statusText": "모루가 익숙한 버릇으로 대답해요.",
+        "actions": [
+          {
+            "kind": "gesture",
+            "actorId": "npc-1-tf7tj1",
+            "gesture": "wave",
+            "status": "꼬리를 둥글게 말고 작게 제자리 돈다."
+          },
+          {
+            "kind": "prop_transform",
+            "propId": "scene_2_nfm2me_wind_note",
+            "scale": 1.18,
+            "rotate": 12,
+            "opacity": 0.92
+          }
+        ]
+      },
+      {
+        "id": "scene_2_nfm2me_line_b",
+        "startMs": 3920,
+        "durationMs": 1900,
+        "statusText": "모루의 대답이 처음과는 다른 방향을 만들어요.",
+        "actions": [
+          {
+            "kind": "speak",
+            "actorId": "npc-1-tf7tj1",
+            "text": "파란색이요. 이 돌처럼, 천천히 맑아지는 색이에요."
+          }
+        ]
+      },
+      {
+        "id": "scene_2_nfm2me_effect",
+        "startMs": 5820,
+        "durationMs": 980,
+        "statusText": "서로 다른 몸짓이 겹친 자리에 작은 흔적이 남아요.",
+        "actions": [
+          {
+            "kind": "effect",
+            "effect": "music",
+            "targetId": null,
+            "color": "#E9D7BD",
+            "intensity": 0.58
+          },
+          {
+            "kind": "prop_transform",
+            "propId": "scene_2_nfm2me_wind_note",
+            "scale": 0.82,
+            "rotate": -8,
+            "opacity": 0.48
+          }
+        ]
+      },
+      {
+        "id": "scene_2_nfm2me_pause",
+        "startMs": 6800,
+        "durationMs": 460,
+        "statusText": "둘은 새로 생긴 리듬을 잠시 함께 들어요.",
+        "actions": [
+          {
+            "kind": "pause",
+            "durationMs": 460
+          },
+          {
+            "kind": "prop_remove",
+            "propId": "scene_2_nfm2me_wind_note"
+          }
+        ]
+      }
+    ],
+    "mutations": [
+      {
+        "kind": "memory",
+        "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+        "visibility": "private",
+        "summary": "무지느러미가 모루와 처음으로 서로 다른 몸짓을 이어 보았다.",
+        "interpretation": "모루은 내 속도와 달랐지만 기다릴 수 있는 빈자리를 남겨 주었다.",
+        "salience": 0.82
+      },
+      {
+        "kind": "mood",
+        "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+        "mood": "낯선 리듬을 하나 얻은 기쁨",
+        "reason": "자기 특성이 다른 존재의 반응을 실제로 바꾸는 것을 보았기 때문이다."
+      },
+      {
+        "kind": "relationship",
+        "actorId": "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+        "targetId": "npc-1-tf7tj1",
+        "affinityDelta": 0.1,
+        "trustDelta": 0.07,
+        "tensionDelta": 0.03,
+        "label": "서로 다른 박자를 한 번 이어 본 사이",
+        "reason": "두 주민이 각자의 버릇을 지우지 않고 한 장면 안에서 주고받았다."
+      },
+      {
+        "kind": "memory",
+        "actorId": "npc-1-tf7tj1",
+        "visibility": "shared",
+        "summary": "모루가 무지느러미의 낯선 신호에 자기 방식으로 대답했다.",
+        "interpretation": "무지느러미의 모양은 고쳐야 할 것이 아니라 함께 움직일 새로운 규칙일 수 있다.",
+        "salience": 0.76
+      },
+      {
+        "kind": "thread",
+        "threadId": "thread_2_nfm2me",
+        "operation": "open",
+        "title": "둘만 들은 다음 박자",
+        "description": "무지느러미와 모루가 만든 첫 리듬에는 아직 이어지지 않은 한 박자가 남았다.",
+        "participantIds": [
+          "player-e5bdb3d5-66bf-4b1c-b5a4-1e54c40d321e",
+          "npc-1-tf7tj1"
+        ],
+        "reason": "장면 끝에 두 주민 모두 다음 움직임을 기다리는 몸짓을 남겼다."
+      }
+    ],
+    "observationTitle": "같아져서가 아니라, 달라서 이어진 순간",
+    "observationBody": "무지느러미의 색깔 호기심과 모루의 신중함이 서로를 바꾸지 않은 채 새로운 행동을 만들었다."
+  }
+}

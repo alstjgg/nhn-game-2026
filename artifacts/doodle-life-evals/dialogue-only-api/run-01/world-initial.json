@@ -1,0 +1,1076 @@
+{
+  "id": "world-fbgfcw",
+  "revision": 0,
+  "title": "바람이 메모를 넘기는 뜰",
+  "premise": "작은 뜰의 주민들은 서로에게 건네지 못한 말을 저마다 다른 방식으로 품고 있다.",
+  "locationDescription": "낮은 돌담, 둥근 연못, 종이꽃 화단과 오래된 벤치가 있는 조용한 동네 뜰이다. 바람이 불면 화단의 메모 조각들이 살짝 뒤집힌다.",
+  "atmosphere": "포근하고 조금은 망설이는 오후",
+  "clock": "오후 4시 10분",
+  "residents": [
+    {
+      "id": "npc-1-tf7tj1",
+      "kind": "npc",
+      "name": "모루",
+      "epithet": "연못가의 조약돌 수집가",
+      "essence": "반들반들한 것을 모아 마음의 순서를 정하는 작은 수달",
+      "origin": "비가 그친 뒤 연못 돌틈에서 처음 발견되었다.",
+      "traits": [
+        {
+          "id": "moru-careful",
+          "label": "신중함",
+          "description": "말을 하기 전에 손에 든 돌을 한 번 굴려 본다.",
+          "visibleEvidence": "앞발 사이에 늘 작은 조약돌이 있다.",
+          "behavioralEffect": "성급한 약속 대신 확인하는 질문을 한다.",
+          "confidence": 0.93
+        },
+        {
+          "id": "moru-warm",
+          "label": "숨은 다정함",
+          "description": "직접 칭찬하기보다 필요한 물건을 조용히 챙겨 준다.",
+          "visibleEvidence": "누군가 앉을 자리의 먼지를 꼬리로 쓸어 둔다.",
+          "behavioralEffect": "상대가 곤란해하면 먼저 작은 도움을 제안한다.",
+          "confidence": 0.86
+        }
+      ],
+      "drives": [
+        "연못 바닥에서 소리가 나는 파란 돌의 주인을 찾고 싶다.",
+        "친구들이 함께 있는 순간을 오래 기억하고 싶다."
+      ],
+      "needs": [
+        "천천히 대답할 시간",
+        "수집품을 함부로 만지지 않는 존중"
+      ],
+      "boundaries": [
+        "허락 없이 조약돌 주머니를 열면 대화를 멈춘다.",
+        "큰 목소리로 재촉받는 것을 힘들어한다."
+      ],
+      "abilities": [
+        "물가의 아주 작은 흔적을 찾는다.",
+        "돌을 두드려 맑은 음을 낸다."
+      ],
+      "visibleSignals": [
+        "파란 돌을 만지면 수염이 살짝 떨린다.",
+        "기분이 좋으면 꼬리가 물결처럼 흔들린다."
+      ],
+      "voice": {
+        "rhythm": "짧게 말하고, 끝에 작은 쉼을 둔다.",
+        "vocabulary": "돌, 물결, 천천히 같은 말을 즐겨 쓴다.",
+        "sampleLine": "이 돌은요, 아직 누구의 손을 기다리는 것 같아요."
+      },
+      "motion": {
+        "idle": "배를 살짝 들썩이며 돌을 앞발로 굴린다.",
+        "approach": "두 걸음 걷고 연못 쪽을 한 번 돌아본다.",
+        "delight": "꼬리를 둥글게 말고 작게 제자리 돈다.",
+        "discomfort": "조약돌을 품에 감추고 어깨를 움츠린다."
+      },
+      "mood": "조용히 기대하는 마음",
+      "currentGoal": "파란 돌의 소리가 왜 오늘 더 또렷한지 알아내고 싶다.",
+      "homePosition": {
+        "x": 0.22,
+        "y": 0.68
+      },
+      "design": {
+        "silhouette": "둥근 수달 몸과 넓은 납작꼬리",
+        "palette": [
+          "#8A6A55",
+          "#E9D7BD",
+          "#4E93B8"
+        ],
+        "body": {
+          "kind": "ellipse",
+          "fill": "#8A6A55",
+          "stroke": "#4D3B32",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "cx": 0,
+          "cy": 4,
+          "rx": 25,
+          "ry": 19
+        },
+        "parts": [
+          {
+            "id": "moru-belly",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#E9D7BD",
+              "stroke": "#4D3B32",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": 0,
+              "cy": 8,
+              "rx": 13,
+              "ry": 10
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "moru-tail",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#8A6A55",
+              "stroke": "#4D3B32",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": 20,
+                  "y": 10
+                },
+                {
+                  "x": 40,
+                  "y": 18
+                },
+                {
+                  "x": 25,
+                  "y": 27
+                },
+                {
+                  "x": 12,
+                  "y": 17
+                }
+              ]
+            },
+            "zIndex": 0
+          },
+          {
+            "id": "moru-stone",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#4E93B8",
+              "stroke": "#315B70",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": -13,
+              "cy": 18,
+              "rx": 6,
+              "ry": 4
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "moru-whisker-left",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#4D3B32",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "x1": -17,
+              "y1": 2,
+              "x2": -30,
+              "y2": 0,
+              "linecap": "round"
+            },
+            "zIndex": 4
+          },
+          {
+            "id": "moru-whisker-right",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#4D3B32",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "x1": 17,
+              "y1": 2,
+              "x2": 30,
+              "y2": 0,
+              "linecap": "round"
+            },
+            "zIndex": 4
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -8,
+            "y": -2
+          },
+          "rightEye": {
+            "x": 8,
+            "y": -2
+          },
+          "mouth": {
+            "x": 0,
+            "y": 7
+          }
+        },
+        "expressivePartIds": [
+          "moru-tail",
+          "moru-stone"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "moru-stone",
+            "property": "translateY",
+            "from": 0,
+            "to": -3,
+            "durationMs": 1200,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "moru-tail",
+            "property": "rotate",
+            "from": -3,
+            "to": 4,
+            "durationMs": 1800,
+            "delayMs": 250
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-2-1w1j2om",
+      "kind": "npc",
+      "name": "다미",
+      "epithet": "종이꽃 사이의 산들바람",
+      "essence": "접힌 종이와 새 소식을 좋아하는 작은 나방",
+      "origin": "봄 축제의 종이등에서 날아와 화단에 머물렀다.",
+      "traits": [
+        {
+          "id": "dami-curious",
+          "label": "호기심",
+          "description": "낯선 소리가 나면 날개를 반쯤 펼친다.",
+          "visibleEvidence": "화단의 메모 조각을 읽다가도 주변을 두리번거린다.",
+          "behavioralEffect": "대화에 뜻밖의 질문을 보탠다.",
+          "confidence": 0.95
+        },
+        {
+          "id": "dami-sensitive",
+          "label": "눈치 빠름",
+          "description": "누군가 말끝을 흐리면 먼저 목소리를 낮춘다.",
+          "visibleEvidence": "상대의 표정을 보고 더 가까이 또는 멀리 난다.",
+          "behavioralEffect": "불편한 분위기에서는 가벼운 화제를 꺼낸다.",
+          "confidence": 0.82
+        }
+      ],
+      "drives": [
+        "누가 화단에 남긴 접힌 메모의 답장을 전하고 싶다.",
+        "자신의 날개 무늬를 아름답다고 말해 줄 사람을 만나고 싶다."
+      ],
+      "needs": [
+        "솔직한 반응",
+        "날개를 쉴 수 있는 조용한 자리"
+      ],
+      "boundaries": [
+        "날개 무늬를 놀리면 웃으며 자리를 피한다.",
+        "남의 비밀 메모를 소리 내 읽는 일은 하지 않는다."
+      ],
+      "abilities": [
+        "바람의 방향을 읽어 가벼운 종이를 안전하게 옮긴다.",
+        "종이꽃의 접힌 자국을 원래대로 펴 준다."
+      ],
+      "visibleSignals": [
+        "궁금하면 더듬이가 앞으로 쏠린다.",
+        "설레면 날개 가장자리의 점무늬가 흔들린다."
+      ],
+      "voice": {
+        "rhythm": "빠르게 두세 문장을 잇고, 마지막은 속삭인다.",
+        "vocabulary": "혹시, 그러면, 반짝 같은 말을 자주 쓴다.",
+        "sampleLine": "혹시 말이에요, 메모도 기다리다가 조금 졸릴까요?"
+      },
+      "motion": {
+        "idle": "날개를 서로 다른 박자로 가볍게 접었다 편다.",
+        "approach": "작은 원을 그리며 상대의 눈높이로 내려온다.",
+        "delight": "날개를 크게 펼쳐 꽃가루처럼 빙글 돈다.",
+        "discomfort": "화단 뒤로 반 걸음 숨고 더듬이를 내린다."
+      },
+      "mood": "들뜬 호기심",
+      "currentGoal": "접힌 메모가 누구를 향한 것인지, 억지로 열지 않고 알아보고 싶다.",
+      "homePosition": {
+        "x": 0.67,
+        "y": 0.32
+      },
+      "design": {
+        "silhouette": "삼각 날개가 크게 퍼진 나방",
+        "palette": [
+          "#F4B6C7",
+          "#FFF1C9",
+          "#70516D"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "#F4B6C7",
+          "stroke": "#70516D",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "points": [
+            {
+              "x": 0,
+              "y": -28
+            },
+            {
+              "x": 25,
+              "y": -4
+            },
+            {
+              "x": 18,
+              "y": 26
+            },
+            {
+              "x": 0,
+              "y": 17
+            },
+            {
+              "x": -18,
+              "y": 26
+            },
+            {
+              "x": -25,
+              "y": -4
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "dami-body",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#70516D",
+              "stroke": "#4D374B",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": 0,
+              "cy": 2,
+              "rx": 7,
+              "ry": 19
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "dami-wing-dot-left",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#FFF1C9",
+              "stroke": "#70516D",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": -14,
+              "cy": -5,
+              "rx": 5,
+              "ry": 5
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "dami-wing-dot-right",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#FFF1C9",
+              "stroke": "#70516D",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": 14,
+              "cy": -5,
+              "rx": 5,
+              "ry": 5
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "dami-antenna-left",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#4D374B",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "x1": -3,
+              "y1": -14,
+              "x2": -10,
+              "y2": -27,
+              "linecap": "round"
+            },
+            "zIndex": 4
+          },
+          {
+            "id": "dami-antenna-right",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#4D374B",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "x1": 3,
+              "y1": -14,
+              "x2": 10,
+              "y2": -27,
+              "linecap": "round"
+            },
+            "zIndex": 4
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -3,
+            "y": -5
+          },
+          "rightEye": {
+            "x": 3,
+            "y": -5
+          },
+          "mouth": {
+            "x": 0,
+            "y": 2
+          }
+        },
+        "expressivePartIds": [
+          "dami-wing-dot-left",
+          "dami-wing-dot-right",
+          "dami-antenna-left",
+          "dami-antenna-right"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": null,
+            "property": "translateY",
+            "from": 0,
+            "to": -5,
+            "durationMs": 1500,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "dami-wing-dot-left",
+            "property": "scale",
+            "from": 1,
+            "to": 1.12,
+            "durationMs": 700,
+            "delayMs": 150
+          },
+          {
+            "targetPartId": "dami-wing-dot-right",
+            "property": "scale",
+            "from": 1.12,
+            "to": 1,
+            "durationMs": 700,
+            "delayMs": 300
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-3-1yenwgm",
+      "kind": "npc",
+      "name": "포도",
+      "epithet": "벤치 아래의 찻잔 게",
+      "essence": "따뜻한 향을 나누며 제 속도를 지키는 작은 소라게",
+      "origin": "누군가 두고 간 금 간 찻잔을 집으로 삼아 벤치 아래에 자리 잡았다.",
+      "traits": [
+        {
+          "id": "podo-steady",
+          "label": "느긋한 책임감",
+          "description": "해야 할 일은 미루지 않지만 서두르지도 않는다.",
+          "visibleEvidence": "찻잔 손잡이에 작은 끈을 묶어 단단히 메고 다닌다.",
+          "behavioralEffect": "모두의 말이 끝난 뒤 차분한 결론을 제안한다.",
+          "confidence": 0.9
+        },
+        {
+          "id": "podo-guarded",
+          "label": "조심스러운 속마음",
+          "description": "자기 이야기가 나오면 찻잔 안으로 살짝 숨는다.",
+          "visibleEvidence": "갑자기 칭찬을 받으면 집의 방향을 돌린다.",
+          "behavioralEffect": "감정을 직접 말하기보다 차를 권한다.",
+          "confidence": 0.88
+        }
+      ],
+      "drives": [
+        "금 간 찻잔을 고쳐 준 이에게 감사 인사를 하고 싶다.",
+        "혼자 마시던 저녁 차에 누군가를 초대할 용기를 내고 싶다."
+      ],
+      "needs": [
+        "예고된 만남",
+        "자신의 침묵을 기다려 주는 상대"
+      ],
+      "boundaries": [
+        "찻잔 집을 장난으로 두드리는 것을 싫어한다.",
+        "바로 대답하라고 다그치면 집 안으로 숨는다."
+      ],
+      "abilities": [
+        "허브 잎을 골라 편안한 향의 차를 만든다.",
+        "작은 금을 실로 감아 임시로 단단하게 고친다."
+      ],
+      "visibleSignals": [
+        "기분이 편하면 집에서 김이 가늘게 난다.",
+        "걱정하면 집게발로 찻잔 손잡이를 꼭 잡는다."
+      ],
+      "voice": {
+        "rhythm": "낮고 느린 문장 사이에 향을 떠올리는 쉼이 있다.",
+        "vocabulary": "한 모금, 천천히, 괜찮다면을 즐겨 쓴다.",
+        "sampleLine": "괜찮다면, 대답은 차가 조금 식은 뒤에 들을까요."
+      },
+      "motion": {
+        "idle": "옆걸음으로 한 칸 움직인 뒤 찻잔을 바로 세운다.",
+        "approach": "집게발을 들어 인사하고 천천히 다가간다.",
+        "delight": "찻잔을 살짝 기울여 향을 퍼뜨린다.",
+        "discomfort": "몸을 찻잔 안으로 넣고 눈만 내민다."
+      },
+      "mood": "차분한 망설임",
+      "currentGoal": "오늘 저녁에 빈 찻잔 하나를 더 꺼낼지 결정하고 싶다.",
+      "homePosition": {
+        "x": 0.46,
+        "y": 0.79
+      },
+      "design": {
+        "silhouette": "한쪽으로 기운 찻잔 집을 멘 소라게",
+        "palette": [
+          "#C96F52",
+          "#F0D6A6",
+          "#5C8B79"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "#F0D6A6",
+          "stroke": "#70493B",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "points": [
+            {
+              "x": -23,
+              "y": -18
+            },
+            {
+              "x": 10,
+              "y": -20
+            },
+            {
+              "x": 22,
+              "y": -5
+            },
+            {
+              "x": 17,
+              "y": 22
+            },
+            {
+              "x": -18,
+              "y": 21
+            },
+            {
+              "x": -26,
+              "y": 4
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "podo-shell",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#5C8B79",
+              "stroke": "#365849",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": -2,
+              "cy": -4,
+              "rx": 19,
+              "ry": 16
+            },
+            "zIndex": 1
+          },
+          {
+            "id": "podo-claw-left",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#C96F52",
+              "stroke": "#70493B",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -15,
+                  "y": 12
+                },
+                {
+                  "x": -32,
+                  "y": 18
+                },
+                {
+                  "x": -29,
+                  "y": 27
+                },
+                {
+                  "x": -12,
+                  "y": 21
+                }
+              ]
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "podo-claw-right",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#C96F52",
+              "stroke": "#70493B",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": 15,
+                  "y": 12
+                },
+                {
+                  "x": 31,
+                  "y": 8
+                },
+                {
+                  "x": 33,
+                  "y": 18
+                },
+                {
+                  "x": 15,
+                  "y": 21
+                }
+              ]
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "podo-steam",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#F0D6A6",
+              "strokeWidth": 2,
+              "opacity": 0.8,
+              "x1": 0,
+              "y1": -23,
+              "x2": 4,
+              "y2": -34,
+              "linecap": "round"
+            },
+            "zIndex": 4
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -8,
+            "y": 11
+          },
+          "rightEye": {
+            "x": 8,
+            "y": 11
+          },
+          "mouth": {
+            "x": 0,
+            "y": 17
+          }
+        },
+        "expressivePartIds": [
+          "podo-claw-left",
+          "podo-claw-right",
+          "podo-steam"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "podo-steam",
+            "property": "translateY",
+            "from": 0,
+            "to": -5,
+            "durationMs": 1300,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "podo-claw-right",
+            "property": "rotate",
+            "from": 0,
+            "to": 7,
+            "durationMs": 1600,
+            "delayMs": 300
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-4-t9klnx",
+      "kind": "npc",
+      "name": "나비",
+      "epithet": "돌담 위의 빗자루 새",
+      "essence": "잃어버린 것들을 제자리로 돌려놓으려는 작은 까치",
+      "origin": "돌담 틈의 반짝이는 단추들을 모으며 이 뜰을 자기 동네라 부르게 되었다.",
+      "traits": [
+        {
+          "id": "nabi-direct",
+          "label": "반듯한 솔직함",
+          "description": "생각난 것을 빙 돌리지 않고 말한다.",
+          "visibleEvidence": "말할 때 부리를 상대 쪽으로 똑바로 향한다.",
+          "behavioralEffect": "모호한 약속을 들으면 구체적인 때를 묻는다.",
+          "confidence": 0.91
+        },
+        {
+          "id": "nabi-restless",
+          "label": "분주한 마음",
+          "description": "가만히 있을 때도 발끝으로 돌담을 톡톡 두드린다.",
+          "visibleEvidence": "부리 끝에 작은 실밥이나 단추가 자주 걸려 있다.",
+          "behavioralEffect": "불안하면 주변을 정리하며 마음을 달랜다.",
+          "confidence": 0.84
+        }
+      ],
+      "drives": [
+        "모루가 찾는 파란 돌이 어디서 왔는지 알려 주고 싶다.",
+        "다미에게 예전에 못 한 사과를 제대로 전하고 싶다."
+      ],
+      "needs": [
+        "분명한 말",
+        "실수해도 다시 해 볼 기회"
+      ],
+      "boundaries": [
+        "거짓말을 재미로 넘기는 태도를 싫어한다.",
+        "누군가의 물건을 숨기는 장난에는 참여하지 않는다."
+      ],
+      "abilities": [
+        "높은 곳에서 떨어진 물건을 찾아낸다.",
+        "실과 단추로 작은 장식을 단단히 묶는다."
+      ],
+      "visibleSignals": [
+        "생각이 복잡하면 발톱으로 바닥을 세 번 두드린다.",
+        "미안하면 부리 끝의 단추를 등 뒤로 숨긴다."
+      ],
+      "voice": {
+        "rhythm": "또렷한 짧은 문장 뒤에 꼭 확인 질문을 붙인다.",
+        "vocabulary": "정확히, 지금, 약속이라는 말을 자주 쓴다.",
+        "sampleLine": "그건 내 실수였어. 지금 말해도 괜찮겠지?"
+      },
+      "motion": {
+        "idle": "고개를 좌우로 빠르게 기울이고 발끝을 톡톡 친다.",
+        "approach": "짧게 뛰어와 한 발 앞에서 멈춘다.",
+        "delight": "날개를 옆으로 펼치고 돌담을 한 바퀴 걷는다.",
+        "discomfort": "등을 돌려 깃털을 정리하는 척한다."
+      },
+      "mood": "결심했지만 긴장한 마음",
+      "currentGoal": "다미에게 사과할 알맞은 첫 문장을 찾고 있다.",
+      "homePosition": {
+        "x": 0.81,
+        "y": 0.57
+      },
+      "design": {
+        "silhouette": "각진 꼬리와 길게 뻗은 부리를 가진 까치",
+        "palette": [
+          "#303A55",
+          "#F5F0DF",
+          "#E7A94C"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "#303A55",
+          "stroke": "#20283B",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "points": [
+            {
+              "x": -16,
+              "y": -18
+            },
+            {
+              "x": 12,
+              "y": -16
+            },
+            {
+              "x": 23,
+              "y": 1
+            },
+            {
+              "x": 12,
+              "y": 19
+            },
+            {
+              "x": -13,
+              "y": 19
+            },
+            {
+              "x": -22,
+              "y": 3
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "nabi-belly",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#F5F0DF",
+              "stroke": "#20283B",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -7,
+                  "y": -7
+                },
+                {
+                  "x": 10,
+                  "y": -5
+                },
+                {
+                  "x": 8,
+                  "y": 14
+                },
+                {
+                  "x": -8,
+                  "y": 13
+                }
+              ]
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "nabi-beak",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#E7A94C",
+              "stroke": "#8D6020",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": 18,
+                  "y": -3
+                },
+                {
+                  "x": 38,
+                  "y": 3
+                },
+                {
+                  "x": 18,
+                  "y": 8
+                }
+              ]
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "nabi-tail",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#303A55",
+              "stroke": "#20283B",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -17,
+                  "y": 8
+                },
+                {
+                  "x": -42,
+                  "y": 25
+                },
+                {
+                  "x": -21,
+                  "y": -1
+                }
+              ]
+            },
+            "zIndex": 0
+          },
+          {
+            "id": "nabi-button",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#E7A94C",
+              "stroke": "#8D6020",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": -12,
+              "cy": -13,
+              "rx": 4,
+              "ry": 4
+            },
+            "zIndex": 4
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": 5,
+            "y": -5
+          },
+          "rightEye": {
+            "x": 12,
+            "y": -3
+          },
+          "mouth": {
+            "x": 19,
+            "y": 4
+          }
+        },
+        "expressivePartIds": [
+          "nabi-beak",
+          "nabi-tail",
+          "nabi-button"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "nabi-tail",
+            "property": "rotate",
+            "from": -4,
+            "to": 5,
+            "durationMs": 900,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "nabi-button",
+            "property": "translateY",
+            "from": 0,
+            "to": 2,
+            "durationMs": 600,
+            "delayMs": 100
+          },
+          {
+            "targetPartId": null,
+            "property": "translateY",
+            "from": 0,
+            "to": -2,
+            "durationMs": 1000,
+            "delayMs": 250
+          }
+        ]
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "sourceId": "npc-1-tf7tj1",
+      "targetId": "npc-4-t9klnx",
+      "affinity": 0.72,
+      "trust": 0.58,
+      "tension": 0.21,
+      "label": "고마우나 파란 돌 이야기를 망설임",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-4-t9klnx",
+      "targetId": "npc-1-tf7tj1",
+      "affinity": 0.63,
+      "trust": 0.78,
+      "tension": 0.34,
+      "label": "도와주고 싶지만 숨기는 것이 답답함",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-2-1w1j2om",
+      "targetId": "npc-4-t9klnx",
+      "affinity": 0.48,
+      "trust": 0.35,
+      "tension": 0.42,
+      "label": "예전의 사라진 메모 때문에 조심스러움",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-4-t9klnx",
+      "targetId": "npc-2-1w1j2om",
+      "affinity": 0.66,
+      "trust": 0.44,
+      "tension": 0.51,
+      "label": "사과를 준비하는 오래된 친구",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-3-1yenwgm",
+      "targetId": "npc-1-tf7tj1",
+      "affinity": 0.74,
+      "trust": 0.81,
+      "tension": 0.09,
+      "label": "말없이 차를 나누는 이웃",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-1-tf7tj1",
+      "targetId": "npc-3-1yenwgm",
+      "affinity": 0.69,
+      "trust": 0.67,
+      "tension": 0.12,
+      "label": "찻잔의 금을 걱정하는 친구",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-2-1w1j2om",
+      "targetId": "npc-3-1yenwgm",
+      "affinity": 0.57,
+      "trust": 0.53,
+      "tension": 0.16,
+      "label": "답장을 맡기고 싶은 조용한 어른",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-3-1yenwgm",
+      "targetId": "npc-2-1w1j2om",
+      "affinity": 0.51,
+      "trust": 0.6,
+      "tension": 0.18,
+      "label": "들뜬 이야기를 차분히 들어 주는 사이",
+      "lastChangedSceneId": null
+    }
+  ],
+  "memories": [
+    {
+      "id": "memory-moru-blue-stone",
+      "ownerId": "npc-1-tf7tj1",
+      "sceneId": "moru",
+      "summary": "비 온 뒤 돌담 아래에서 파란 돌을 주웠다.",
+      "interpretation": "누군가 잃어버린 소중한 물건일지 모른다.",
+      "visibility": "private",
+      "salience": 0.87
+    },
+    {
+      "id": "memory-dami-folded-note",
+      "ownerId": "npc-2-1w1j2om",
+      "sceneId": "dami",
+      "summary": "종이꽃 사이에서 이름 없는 접힌 메모를 발견했다.",
+      "interpretation": "열지 않는 편이 메모를 쓴 이를 배려하는 길이라고 생각한다.",
+      "visibility": "private",
+      "salience": 0.8
+    },
+    {
+      "id": "memory-podo-empty-cup",
+      "ownerId": "npc-3-1yenwgm",
+      "sceneId": "podo",
+      "summary": "어제 저녁 찻잔 하나를 더 꺼냈다가 다시 넣었다.",
+      "interpretation": "누군가를 기다린다는 사실이 들킬까 부끄러웠다.",
+      "visibility": "private",
+      "salience": 0.73
+    },
+    {
+      "id": "memory-nabi-lost-note",
+      "ownerId": "npc-4-t9klnx",
+      "sceneId": "nabi",
+      "summary": "예전에 다미의 메모를 바람에 날려 보냈다.",
+      "interpretation": "숨기려 했던 것이 더 큰 서운함이 되었다.",
+      "visibility": "private",
+      "salience": 0.94
+    }
+  ],
+  "openThreads": [
+    {
+      "id": "thread-blue-stone",
+      "title": "파란 돌의 낮은 소리",
+      "description": "모루가 주운 파란 돌은 나비가 돌담에서 본 물건과 닮아 있다.",
+      "participantIds": [
+        "npc-1-tf7tj1",
+        "npc-4-t9klnx"
+      ],
+      "status": "open",
+      "createdSceneId": null
+    },
+    {
+      "id": "thread-folded-message",
+      "title": "펼치지 않은 메모",
+      "description": "다미는 메모의 주인을 찾고 싶고, 포도는 답장을 전할 방법을 알고 싶어 한다.",
+      "participantIds": [
+        "npc-2-1w1j2om",
+        "npc-3-1yenwgm"
+      ],
+      "status": "open",
+      "createdSceneId": null
+    },
+    {
+      "id": "thread-apology-on-the-wall",
+      "title": "돌담 위의 사과",
+      "description": "나비는 다미에게 잃어버린 메모 이야기를 꺼내려 하지만 아직 시작하지 못했다.",
+      "participantIds": [
+        "npc-4-t9klnx",
+        "npc-2-1w1j2om"
+      ],
+      "status": "open",
+      "createdSceneId": null
+    }
+  ],
+  "recentScenes": []
+}

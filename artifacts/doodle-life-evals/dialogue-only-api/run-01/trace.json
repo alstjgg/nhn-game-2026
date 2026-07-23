@@ -1,0 +1,120 @@
+{
+  "operations": [
+    {
+      "mode": "dialogue-only",
+      "calls": [
+        {
+          "id": "resp_0a561070229d91ac016a61cef5da3481998ec11cd6d9a1553e",
+          "role": "world-author",
+          "provider": "openai",
+          "model": "gpt-5.6-terra",
+          "startedAt": "2026-07-23T08:21:09.358Z",
+          "latencyMs": 53863,
+          "usage": {
+            "inputTokens": 1791,
+            "cachedInputTokens": 0,
+            "outputTokens": 6056,
+            "reasoningTokens": 234,
+            "totalTokens": 7847
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 1791,
+        "cachedInputTokens": 0,
+        "outputTokens": 6056,
+        "reasoningTokens": 234,
+        "totalTokens": 7847
+      },
+      "totalLatencyMs": 53863,
+      "wallClockMs": 53869
+    },
+    {
+      "mode": "dialogue-only",
+      "calls": [
+        {
+          "id": "resp_00c953fae491b50f016a61cf2b74608198893e95e9674a7d32",
+          "role": "doodle-vision",
+          "provider": "openai",
+          "model": "gpt-5.6-sol",
+          "startedAt": "2026-07-23T08:22:03.239Z",
+          "latencyMs": 40786,
+          "usage": {
+            "inputTokens": 1904,
+            "cachedInputTokens": 0,
+            "outputTokens": 2181,
+            "reasoningTokens": 324,
+            "totalTokens": 4085
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 1904,
+        "cachedInputTokens": 0,
+        "outputTokens": 2181,
+        "reasoningTokens": 324,
+        "totalTokens": 4085
+      },
+      "totalLatencyMs": 40786,
+      "wallClockMs": 40788
+    },
+    {
+      "mode": "dialogue-only",
+      "calls": [
+        {
+          "id": "resp_06f6622f35c570b3016a61cf542d4c819899d8fa9596394752",
+          "role": "dialogue-writer",
+          "provider": "openai",
+          "model": "gpt-5.6-terra",
+          "startedAt": "2026-07-23T08:22:44.046Z",
+          "latencyMs": 1931,
+          "usage": {
+            "inputTokens": 6297,
+            "cachedInputTokens": 0,
+            "outputTokens": 144,
+            "reasoningTokens": 0,
+            "totalTokens": 6441
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 6297,
+        "cachedInputTokens": 0,
+        "outputTokens": 144,
+        "reasoningTokens": 0,
+        "totalTokens": 6441
+      },
+      "totalLatencyMs": 1931,
+      "wallClockMs": 1941
+    }
+  ],
+  "totals": {
+    "calls": 3,
+    "usage": {
+      "inputTokens": 9992,
+      "cachedInputTokens": 0,
+      "outputTokens": 8381,
+      "reasoningTokens": 558,
+      "totalTokens": 18373
+    },
+    "totalLatencyMs": 96580,
+    "wallClockMs": 96598,
+    "roles": {
+      "world-author": {
+        "calls": 1,
+        "tokens": 7847,
+        "latencyMs": 53863
+      },
+      "doodle-vision": {
+        "calls": 1,
+        "tokens": 4085,
+        "latencyMs": 40786
+      },
+      "dialogue-writer": {
+        "calls": 1,
+        "tokens": 6441,
+        "latencyMs": 1931
+      }
+    }
+  }
+}

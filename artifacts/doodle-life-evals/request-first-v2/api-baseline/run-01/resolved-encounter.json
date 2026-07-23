@@ -1,0 +1,98 @@
+{
+  "requestId": "eval-request-first-v2-r01-react",
+  "worldRevision": 1,
+  "encounter": {
+    "sceneId": "scene_quest_soso_last_note_1",
+    "title": "완전 해결 · 마지막 박자까지",
+    "statusText": "긴 쉼… 세 번. 세 번 모두, 마지막 박자까지 건넜어.",
+    "participantIds": [
+      "npc_soso",
+      "npc_dari",
+      "doodle_89d06ff323eb80303fed"
+    ],
+    "commands": [
+      {
+        "kind": "look",
+        "actorId": "npc_soso",
+        "targetId": "doodle_89d06ff323eb80303fed"
+      },
+      {
+        "kind": "gesture",
+        "actorId": "npc_soso",
+        "gesture": "stretch"
+      },
+      {
+        "kind": "prop-motion",
+        "actorId": "npc_soso",
+        "targetId": "far_bell",
+        "motion": "ring"
+      },
+      {
+        "kind": "speak",
+        "actorId": "npc_soso",
+        "text": "긴 쉼… 세 번. 세 번 모두, 마지막 박자까지 건넜어."
+      },
+      {
+        "kind": "look",
+        "actorId": "npc_dari",
+        "targetId": "doodle_89d06ff323eb80303fed"
+      },
+      {
+        "kind": "gesture",
+        "actorId": "npc_dari",
+        "gesture": "nod"
+      },
+      {
+        "kind": "speak",
+        "actorId": "npc_dari",
+        "text": "하나, 둘, 셋. 마지막 자리까지 닿았네."
+      }
+    ],
+    "discardedCommandCount": 0,
+    "fallbackActorIds": []
+  },
+  "trace": {
+    "mode": "staged",
+    "calls": [
+      {
+        "id": "resp_0c5f3f601ba6a234016a6236f80fd4819bb1766dec9f1fc67b",
+        "role": "quest-owner-reaction",
+        "provider": "openai",
+        "model": "gpt-5.6-terra",
+        "startedAt": "2026-07-23T15:44:55.864Z",
+        "latencyMs": 2585,
+        "usage": {
+          "inputTokens": 1561,
+          "cachedInputTokens": 0,
+          "outputTokens": 170,
+          "reasoningTokens": 0,
+          "totalTokens": 1731
+        }
+      },
+      {
+        "id": "resp_0298928823c3dc29016a6236fac458819a9c533ae47f759f64",
+        "role": "quest-observer-reaction",
+        "provider": "openai",
+        "model": "gpt-5.6-terra",
+        "startedAt": "2026-07-23T15:44:55.872Z",
+        "latencyMs": 5057,
+        "usage": {
+          "inputTokens": 1535,
+          "cachedInputTokens": 0,
+          "outputTokens": 145,
+          "reasoningTokens": 0,
+          "totalTokens": 1680
+        }
+      }
+    ],
+    "usage": {
+      "inputTokens": 3096,
+      "cachedInputTokens": 0,
+      "outputTokens": 315,
+      "reasoningTokens": 0,
+      "totalTokens": 3411
+    },
+    "totalLatencyMs": 7642,
+    "wallClockMs": 5073
+  }
+}

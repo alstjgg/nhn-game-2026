@@ -1,0 +1,804 @@
+{
+  "requestId": "eval-doodle-life-off-v1",
+  "world": {
+    "id": "world-1uwtonu",
+    "revision": 0,
+    "title": "바람 자국 정원",
+    "premise": "말보다 몸짓이 먼저 도착하고, 서로의 버릇이 매번 새로운 작은 사건을 만드는 정원.",
+    "locationDescription": "기울어진 온실과 얕은 물길, 높은 풍향 리본, 단추가 굴러다니는 공방 마당이 이어져 있다.",
+    "atmosphere": "낮은 바람과 유리 종 소리",
+    "clock": "첫째 날 · 늦은 오후",
+    "residents": [
+      {
+        "id": "npc-1-iuj69t",
+        "kind": "npc",
+        "name": "모아",
+        "epithet": "빈 소리를 주워 담는 물방울",
+        "essence": "대화 중 생긴 침묵을 버려진 물건처럼 발견하고 조심스럽게 간직한다.",
+        "origin": "새벽마다 온실 천장에서 떨어지던 네 번째 물방울이 어느 날 바닥에 닿지 않고 눈을 떴다.",
+        "traits": [
+          {
+            "id": "quiet_collector",
+            "label": "침묵 수집가",
+            "description": "말 사이에 생긴 빈 시간을 소중한 것으로 여긴다.",
+            "visibleEvidence": "옆구리의 투명 주머니가 조용할수록 부푼다.",
+            "behavioralEffect": "누군가 머뭇거리면 재촉하지 않고 그 침묵 곁에 선다.",
+            "confidence": 0.96
+          },
+          {
+            "id": "borrowed_courage",
+            "label": "빌린 용기",
+            "description": "혼자서는 뒤로 물러나지만 누군가의 작은 신호를 받으면 오래 버틴다.",
+            "visibleEvidence": "한쪽 발만 먼저 길게 내민 뒤 상대를 확인한다.",
+            "behavioralEffect": "믿는 상대가 곁에 있으면 낯선 소리에도 다가간다.",
+            "confidence": 0.9
+          },
+          {
+            "id": "echo_memory",
+            "label": "메아리 기억",
+            "description": "한 번 들은 짧은 리듬을 몸 안에서 되풀이할 수 있다.",
+            "visibleEvidence": "몸속 작은 점들이 들은 박자대로 떠오른다.",
+            "behavioralEffect": "말보다 리듬을 통해 상대를 기억한다.",
+            "confidence": 0.88
+          }
+        ],
+        "drives": [
+          "버려진 소리와 침묵에 자리를 찾아 주기"
+        ],
+        "needs": [
+          "대답을 강요하지 않는 동행"
+        ],
+        "boundaries": [
+          "큰 소리로 갑자기 둘러싸이면 몸을 납작하게 접는다."
+        ],
+        "abilities": [
+          "짧은 소리를 투명한 방울 안에 잠시 보관한다."
+        ],
+        "visibleSignals": [
+          "주머니가 부풀면 누군가의 말을 더 듣고 싶다는 뜻이다.",
+          "발끝이 흐려지면 물러날 시간이 필요하다."
+        ],
+        "voice": {
+          "rhythm": "긴 쉼 뒤에 짧은 한 문장",
+          "vocabulary": "빈자리, 아직, 천천히, 들렸어",
+          "sampleLine": "아직 말하지 않아도 돼. 빈자리도 같이 들을게."
+        },
+        "motion": {
+          "idle": "몸속 점들이 느린 박자로 위아래를 오간다.",
+          "approach": "한쪽 발을 길게 내밀고 나머지 몸이 따라간다.",
+          "delight": "주머니 속 점들이 작은 원을 그린다.",
+          "discomfort": "몸을 얇은 물방울 모양으로 접는다."
+        },
+        "mood": "조심스러운 호기심",
+        "currentGoal": "유리 종에서 비어 있는 한 음이 누구를 기다리는지 알아내고 싶다.",
+        "homePosition": {
+          "x": 0.23,
+          "y": 0.62
+        },
+        "design": {
+          "silhouette": "아래는 넓고 위는 길게 휘어진 비대칭 물방울",
+          "palette": [
+            "#79a9bd",
+            "#d9f2ef",
+            "#415d69"
+          ],
+          "body": {
+            "kind": "path",
+            "fill": "#79a9bd",
+            "stroke": "#415d69",
+            "strokeWidth": 3,
+            "opacity": 1,
+            "d": "M50 5 C74 30 88 54 78 78 C68 101 29 104 17 79 C6 56 26 30 50 5 Z"
+          },
+          "parts": [
+            {
+              "id": "pocket",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#d9f2ef",
+                "stroke": "#415d69",
+                "strokeWidth": 2,
+                "opacity": 0.72,
+                "cx": 56,
+                "cy": 67,
+                "rx": 17,
+                "ry": 20
+              },
+              "zIndex": 2
+            },
+            {
+              "id": "long_foot",
+              "shape": {
+                "kind": "line",
+                "fill": "#415d69",
+                "stroke": "#415d69",
+                "strokeWidth": 6,
+                "opacity": 1,
+                "x1": 34,
+                "y1": 88,
+                "x2": 20,
+                "y2": 104,
+                "linecap": "round"
+              },
+              "zIndex": 0
+            }
+          ],
+          "faceAnchors": {
+            "leftEye": {
+              "x": 38,
+              "y": 48
+            },
+            "rightEye": {
+              "x": 55,
+              "y": 45
+            },
+            "mouth": {
+              "x": 48,
+              "y": 57
+            }
+          },
+          "expressivePartIds": [
+            "pocket",
+            "long_foot"
+          ],
+          "idleMotions": [
+            {
+              "targetPartId": "pocket",
+              "property": "scale",
+              "from": 0.96,
+              "to": 1.04,
+              "durationMs": 2800,
+              "delayMs": 0
+            },
+            {
+              "targetPartId": null,
+              "property": "translateY",
+              "from": -2,
+              "to": 2,
+              "durationMs": 3400,
+              "delayMs": 300
+            }
+          ]
+        }
+      },
+      {
+        "id": "npc-2-18xtyii",
+        "kind": "npc",
+        "name": "고리",
+        "epithet": "매듭을 풀지 않고 이해하는 등짐꾼",
+        "essence": "복잡한 것을 없애기보다 어느 고리가 어디로 이어지는지 몸으로 익힌다.",
+        "origin": "공방 바닥의 실패한 매듭들이 밤새 서로 기대어 세운 작은 몸에서 태어났다.",
+        "traits": [
+          {
+            "id": "knot_reader",
+            "label": "매듭 읽기",
+            "description": "얽힌 관계와 물건의 힘이 향하는 방향을 알아챈다.",
+            "visibleEvidence": "등의 세 고리가 서로 다른 각도로 기울어 있다.",
+            "behavioralEffect": "갈등을 바로 풀기보다 각자의 당김을 먼저 확인한다.",
+            "confidence": 0.94
+          },
+          {
+            "id": "sideways_help",
+            "label": "옆으로 돕기",
+            "description": "도움을 드러내면 상대가 부담스러울까 봐 옆을 보며 거든다.",
+            "visibleEvidence": "손이 몸의 정면이 아니라 양옆에서 길게 나온다.",
+            "behavioralEffect": "칭찬받으면 다른 물건을 만지는 척한다.",
+            "confidence": 0.91
+          },
+          {
+            "id": "weight_hum",
+            "label": "무게의 콧노래",
+            "description": "든 물건의 무게에 따라 낮은 음을 낸다.",
+            "visibleEvidence": "무거울수록 몸의 삼각 면이 넓어진다.",
+            "behavioralEffect": "함께 드는 상대와 자연스럽게 박자가 맞는다.",
+            "confidence": 0.87
+          }
+        ],
+        "drives": [
+          "서로 다른 힘이 끊어지지 않고 이어질 방법 찾기"
+        ],
+        "needs": [
+          "도움을 받는 것도 일의 일부라는 확인"
+        ],
+        "boundaries": [
+          "등의 가장 작은 고리를 허락 없이 당기는 것을 싫어한다."
+        ],
+        "abilities": [
+          "끊어진 끈의 장력을 보고 원래 연결을 짐작한다."
+        ],
+        "visibleSignals": [
+          "옆손이 먼저 움직이면 돕고 싶다는 뜻이다.",
+          "등 고리가 모두 서면 경계하고 있다."
+        ],
+        "voice": {
+          "rhythm": "낮은 콧소리와 짧은 작업어",
+          "vocabulary": "이쪽, 당김, 잠깐 받쳐, 됐어",
+          "sampleLine": "풀지 마. 네 쪽 당김도 모양의 일부야."
+        },
+        "motion": {
+          "idle": "세모난 몸이 좌우로 아주 조금 무게를 옮긴다.",
+          "approach": "옆걸음으로 반원을 그리며 다가간다.",
+          "delight": "등 고리들이 차례로 통통 튄다.",
+          "discomfort": "양옆 손을 몸 뒤로 감춘다."
+        },
+        "mood": "할 일을 찾는 평온함",
+        "currentGoal": "끊어진 풍향 리본을 아무것도 버리지 않고 다시 잇고 싶다.",
+        "homePosition": {
+          "x": 0.72,
+          "y": 0.7
+        },
+        "design": {
+          "silhouette": "낮고 넓은 사다리꼴 몸 위에 크기가 다른 고리 세 개",
+          "palette": [
+            "#c68b59",
+            "#f5cf88",
+            "#684b42"
+          ],
+          "body": {
+            "kind": "polygon",
+            "fill": "#c68b59",
+            "stroke": "#684b42",
+            "strokeWidth": 3,
+            "opacity": 1,
+            "points": [
+              {
+                "x": 17,
+                "y": 88
+              },
+              {
+                "x": 30,
+                "y": 35
+              },
+              {
+                "x": 73,
+                "y": 30
+              },
+              {
+                "x": 91,
+                "y": 88
+              }
+            ]
+          },
+          "parts": [
+            {
+              "id": "back_loop_left",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#f5cf88",
+                "stroke": "#684b42",
+                "strokeWidth": 4,
+                "opacity": 1,
+                "cx": 38,
+                "cy": 29,
+                "rx": 14,
+                "ry": 20
+              },
+              "zIndex": -1
+            },
+            {
+              "id": "back_loop_right",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#f5cf88",
+                "stroke": "#684b42",
+                "strokeWidth": 4,
+                "opacity": 1,
+                "cx": 68,
+                "cy": 24,
+                "rx": 18,
+                "ry": 13
+              },
+              "zIndex": -1
+            },
+            {
+              "id": "side_arm",
+              "shape": {
+                "kind": "line",
+                "fill": "#684b42",
+                "stroke": "#684b42",
+                "strokeWidth": 7,
+                "opacity": 1,
+                "x1": 24,
+                "y1": 60,
+                "x2": 4,
+                "y2": 70,
+                "linecap": "round"
+              },
+              "zIndex": 1
+            }
+          ],
+          "faceAnchors": {
+            "leftEye": {
+              "x": 42,
+              "y": 57
+            },
+            "rightEye": {
+              "x": 62,
+              "y": 55
+            },
+            "mouth": {
+              "x": 52,
+              "y": 68
+            }
+          },
+          "expressivePartIds": [
+            "back_loop_left",
+            "back_loop_right",
+            "side_arm"
+          ],
+          "idleMotions": [
+            {
+              "targetPartId": "back_loop_right",
+              "property": "rotate",
+              "from": -3,
+              "to": 4,
+              "durationMs": 3100,
+              "delayMs": 500
+            }
+          ]
+        }
+      },
+      {
+        "id": "npc-3-13faj83",
+        "kind": "npc",
+        "name": "푸르륵",
+        "epithet": "바람보다 반 박자 먼저 웃는 리본새",
+        "essence": "무엇이 시작되기 직전의 기척을 좋아해 늘 사건보다 조금 앞서 몸을 던진다.",
+        "origin": "풍향 리본의 찢어진 끝이 돌풍에 엉켜 새 모양으로 매듭지어졌다.",
+        "traits": [
+          {
+            "id": "before_wind",
+            "label": "바람 선행",
+            "description": "움직임이 생기기 직전의 공기 변화를 알아챈다.",
+            "visibleEvidence": "좌우 날개 길이가 달라 항상 한쪽이 먼저 들린다.",
+            "behavioralEffect": "다른 주민이 결심하기 전에 출발했다가 되돌아온다.",
+            "confidence": 0.95
+          },
+          {
+            "id": "loud_welcome",
+            "label": "요란한 환영",
+            "description": "반가움을 숨기지 못해 몸 전체로 크게 표현한다.",
+            "visibleEvidence": "꼬리 리본의 색이 감정에 따라 벌어진다.",
+            "behavioralEffect": "낯선 존재에게 질문 세 개를 한꺼번에 건넨다.",
+            "confidence": 0.93
+          },
+          {
+            "id": "landing_shy",
+            "label": "착지 수줍음",
+            "description": "날아갈 때는 대담하지만 멈추면 눈을 마주치지 못한다.",
+            "visibleEvidence": "발이 땅에 닿으면 긴 날개로 얼굴을 가린다.",
+            "behavioralEffect": "상대가 기다려 주면 날개 틈으로 작은 인사를 한다.",
+            "confidence": 0.9
+          }
+        ],
+        "drives": [
+          "아직 이름 없는 움직임을 누구보다 먼저 경험하기"
+        ],
+        "needs": [
+          "요란한 첫인사 뒤에도 기다려 주는 친구"
+        ],
+        "boundaries": [
+          "날지 못하는 주민을 느리다고 놀리는 말에는 즉시 등을 돌린다."
+        ],
+        "abilities": [
+          "가벼운 물체 주위에 짧은 상승 바람을 만든다."
+        ],
+        "visibleSignals": [
+          "긴 날개가 높이 서면 곧 달려 나갈 것이다.",
+          "날개로 얼굴을 가리면 머물고 싶다는 뜻이다."
+        ],
+        "voice": {
+          "rhythm": "빠른 세 문장 뒤 작은 속삭임",
+          "vocabulary": "봤어, 먼저, 같이, 어라",
+          "sampleLine": "봤어? 바람 오기 전이야! 같이—어라, 너무 가까웠나."
+        },
+        "motion": {
+          "idle": "긴 날개 끝이 서로 다른 박자로 흔들린다.",
+          "approach": "큰 곡선을 그려 목표보다 조금 지나쳤다가 돌아온다.",
+          "delight": "꼬리 리본을 부채처럼 펼친다.",
+          "discomfort": "날개를 세워 얼굴만 가린다."
+        },
+        "mood": "출발 직전의 들뜸",
+        "currentGoal": "비어 있는 유리 종의 한 음을 바람으로 찾아내고 싶다.",
+        "homePosition": {
+          "x": 0.53,
+          "y": 0.28
+        },
+        "design": {
+          "silhouette": "한쪽은 길고 한쪽은 짧은 갈라진 리본 날개",
+          "palette": [
+            "#7867b1",
+            "#e8b4d5",
+            "#f4d45d",
+            "#433b73"
+          ],
+          "body": {
+            "kind": "polygon",
+            "fill": "#7867b1",
+            "stroke": "#433b73",
+            "strokeWidth": 3,
+            "opacity": 1,
+            "points": [
+              {
+                "x": 49,
+                "y": 38
+              },
+              {
+                "x": 86,
+                "y": 10
+              },
+              {
+                "x": 73,
+                "y": 54
+              },
+              {
+                "x": 95,
+                "y": 77
+              },
+              {
+                "x": 57,
+                "y": 67
+              },
+              {
+                "x": 31,
+                "y": 99
+              },
+              {
+                "x": 33,
+                "y": 63
+              },
+              {
+                "x": 5,
+                "y": 45
+              }
+            ]
+          },
+          "parts": [
+            {
+              "id": "tail_pink",
+              "shape": {
+                "kind": "line",
+                "fill": "#e8b4d5",
+                "stroke": "#e8b4d5",
+                "strokeWidth": 7,
+                "opacity": 1,
+                "x1": 47,
+                "y1": 67,
+                "x2": 58,
+                "y2": 108,
+                "linecap": "round"
+              },
+              "zIndex": -1
+            },
+            {
+              "id": "tail_yellow",
+              "shape": {
+                "kind": "line",
+                "fill": "#f4d45d",
+                "stroke": "#f4d45d",
+                "strokeWidth": 6,
+                "opacity": 1,
+                "x1": 57,
+                "y1": 64,
+                "x2": 80,
+                "y2": 96,
+                "linecap": "round"
+              },
+              "zIndex": -1
+            },
+            {
+              "id": "long_wing",
+              "shape": {
+                "kind": "line",
+                "fill": "#433b73",
+                "stroke": "#433b73",
+                "strokeWidth": 5,
+                "opacity": 0.9,
+                "x1": 48,
+                "y1": 45,
+                "x2": 88,
+                "y2": 12,
+                "linecap": "round"
+              },
+              "zIndex": 1
+            }
+          ],
+          "faceAnchors": {
+            "leftEye": {
+              "x": 43,
+              "y": 49
+            },
+            "rightEye": {
+              "x": 57,
+              "y": 47
+            },
+            "mouth": {
+              "x": 52,
+              "y": 57
+            }
+          },
+          "expressivePartIds": [
+            "tail_pink",
+            "tail_yellow",
+            "long_wing"
+          ],
+          "idleMotions": [
+            {
+              "targetPartId": "long_wing",
+              "property": "rotate",
+              "from": -5,
+              "to": 6,
+              "durationMs": 1700,
+              "delayMs": 0
+            },
+            {
+              "targetPartId": "tail_pink",
+              "property": "translateX",
+              "from": -3,
+              "to": 4,
+              "durationMs": 2300,
+              "delayMs": 400
+            }
+          ]
+        }
+      },
+      {
+        "id": "npc-4-1k5rj90",
+        "kind": "npc",
+        "name": "밤톨",
+        "epithet": "빛을 네모나게 접어 두는 그늘 정원사",
+        "essence": "넘치는 감정을 작은 칸으로 접어 안전해질 때까지 보관한다.",
+        "origin": "오래 닫힌 씨앗 서랍 안에서 햇빛 한 조각이 네 번 접힌 채 싹을 틔웠다.",
+        "traits": [
+          {
+            "id": "folded_light",
+            "label": "접은 빛",
+            "description": "밝은 감정을 바로 내보이지 않고 모서리 안에 접어 둔다.",
+            "visibleEvidence": "네모난 몸의 네 모서리가 차례로 은은하게 빛난다.",
+            "behavioralEffect": "안심하면 접어 둔 빛 한 칸을 상대에게 펼쳐 보인다.",
+            "confidence": 0.97
+          },
+          {
+            "id": "measured_care",
+            "label": "칸을 재는 돌봄",
+            "description": "누군가 편히 머물 정확한 크기의 자리를 마련한다.",
+            "visibleEvidence": "작은 자를 등에 꽂고 빈 땅을 네 걸음씩 잰다.",
+            "behavioralEffect": "상대의 경계를 물어본 뒤 화분과 의자의 간격을 바꾼다.",
+            "confidence": 0.94
+          },
+          {
+            "id": "surprise_sprout",
+            "label": "늦은 새싹",
+            "description": "오래 망설인 뒤 예상 밖의 순간에 행동한다.",
+            "visibleEvidence": "머리의 작은 싹은 결심한 뒤에만 갑자기 펴진다.",
+            "behavioralEffect": "침묵하던 장면 끝에 가장 구체적인 도움을 건넨다.",
+            "confidence": 0.89
+          }
+        ],
+        "drives": [
+          "누구에게나 자기 크기에 맞는 그늘 한 칸 만들기"
+        ],
+        "needs": [
+          "망설임을 무관심으로 오해하지 않는 시간"
+        ],
+        "boundaries": [
+          "몸의 빛 칸을 억지로 열려 하면 흙 속으로 숨는다."
+        ],
+        "abilities": [
+          "햇빛을 작은 사각형으로 접어 어두운 곳에 옮긴다."
+        ],
+        "visibleSignals": [
+          "모서리가 하나씩 켜지면 신뢰가 자라는 중이다.",
+          "머리 싹이 펴지면 이미 결심을 마쳤다."
+        ],
+        "voice": {
+          "rhythm": "생각하는 쉼, 정확한 수치, 뜻밖의 다정한 결론",
+          "vocabulary": "한 칸, 네 걸음, 여기쯤, 괜찮다면",
+          "sampleLine": "네 걸음은 너무 멀고, 두 걸음은 가까워. 괜찮다면 세 걸음에 있을게."
+        },
+        "motion": {
+          "idle": "네 모서리가 시계 방향으로 한 번씩 빛난다.",
+          "approach": "직각으로 두 번 방향을 바꾸며 다가간다.",
+          "delight": "머리 싹이 갑자기 두 갈래로 펴진다.",
+          "discomfort": "몸이 얇은 사각형으로 접혀 흙 가까이 내려간다."
+        },
+        "mood": "천천히 열리는 편안함",
+        "currentGoal": "새로 올 누군가에게 맞는 빈 그늘의 크기를 정하고 싶다.",
+        "homePosition": {
+          "x": 0.82,
+          "y": 0.42
+        },
+        "design": {
+          "silhouette": "모서리가 둥글지 않은 낮은 네모 몸과 한쪽으로 난 두 갈래 싹",
+          "palette": [
+            "#698c62",
+            "#c7d881",
+            "#f0cf69",
+            "#3d5842"
+          ],
+          "body": {
+            "kind": "polygon",
+            "fill": "#698c62",
+            "stroke": "#3d5842",
+            "strokeWidth": 3,
+            "opacity": 1,
+            "points": [
+              {
+                "x": 15,
+                "y": 39
+              },
+              {
+                "x": 77,
+                "y": 31
+              },
+              {
+                "x": 91,
+                "y": 85
+              },
+              {
+                "x": 23,
+                "y": 94
+              }
+            ]
+          },
+          "parts": [
+            {
+              "id": "sprout_left",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#c7d881",
+                "stroke": "#3d5842",
+                "strokeWidth": 3,
+                "opacity": 1,
+                "cx": 47,
+                "cy": 22,
+                "rx": 10,
+                "ry": 21
+              },
+              "zIndex": -1
+            },
+            {
+              "id": "sprout_right",
+              "shape": {
+                "kind": "ellipse",
+                "fill": "#c7d881",
+                "stroke": "#3d5842",
+                "strokeWidth": 3,
+                "opacity": 1,
+                "cx": 66,
+                "cy": 18,
+                "rx": 17,
+                "ry": 8
+              },
+              "zIndex": -1
+            },
+            {
+              "id": "light_corner",
+              "shape": {
+                "kind": "polygon",
+                "fill": "#f0cf69",
+                "stroke": "#3d5842",
+                "strokeWidth": 2,
+                "opacity": 0.82,
+                "points": [
+                  {
+                    "x": 68,
+                    "y": 65
+                  },
+                  {
+                    "x": 86,
+                    "y": 61
+                  },
+                  {
+                    "x": 89,
+                    "y": 82
+                  },
+                  {
+                    "x": 70,
+                    "y": 84
+                  }
+                ]
+              },
+              "zIndex": 2
+            }
+          ],
+          "faceAnchors": {
+            "leftEye": {
+              "x": 39,
+              "y": 57
+            },
+            "rightEye": {
+              "x": 58,
+              "y": 54
+            },
+            "mouth": {
+              "x": 50,
+              "y": 69
+            }
+          },
+          "expressivePartIds": [
+            "sprout_left",
+            "sprout_right",
+            "light_corner"
+          ],
+          "idleMotions": [
+            {
+              "targetPartId": "light_corner",
+              "property": "opacity",
+              "from": 0.45,
+              "to": 0.95,
+              "durationMs": 4200,
+              "delayMs": 600
+            }
+          ]
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "sourceId": "npc-1-iuj69t",
+        "targetId": "npc-2-18xtyii",
+        "affinity": 0.26,
+        "trust": 0.42,
+        "tension": 0.08,
+        "label": "말없이 물건을 건네는 사이",
+        "lastChangedSceneId": null
+      },
+      {
+        "sourceId": "npc-2-18xtyii",
+        "targetId": "npc-1-iuj69t",
+        "affinity": 0.12,
+        "trust": 0.31,
+        "tension": 0.18,
+        "label": "도움을 받으면 조금 당황하는 사이",
+        "lastChangedSceneId": null
+      },
+      {
+        "sourceId": "npc-3-13faj83",
+        "targetId": "npc-4-1k5rj90",
+        "affinity": 0.18,
+        "trust": 0.24,
+        "tension": 0.32,
+        "label": "빛을 꺼내 보고 싶어 하는 사이",
+        "lastChangedSceneId": null
+      },
+      {
+        "sourceId": "npc-4-1k5rj90",
+        "targetId": "npc-3-13faj83",
+        "affinity": 0.08,
+        "trust": 0.38,
+        "tension": 0.22,
+        "label": "시끄럽지만 기다려 보는 사이",
+        "lastChangedSceneId": null
+      }
+    ],
+    "memories": [],
+    "openThreads": [
+      {
+        "id": "thread_empty_chime",
+        "title": "아무도 울리지 않은 종",
+        "description": "정원 중앙의 유리 종은 바람이 불어도 한쪽 음만 비워 둔다.",
+        "participantIds": [
+          "npc-1-iuj69t",
+          "npc-3-13faj83"
+        ],
+        "status": "open",
+        "createdSceneId": null
+      }
+    ],
+    "recentScenes": []
+  },
+  "trace": {
+    "mode": "off",
+    "calls": [],
+    "usage": {
+      "inputTokens": 0,
+      "cachedInputTokens": 0,
+      "outputTokens": 0,
+      "reasoningTokens": 0,
+      "totalTokens": 0
+    },
+    "totalLatencyMs": 0,
+    "wallClockMs": 3
+  }
+}

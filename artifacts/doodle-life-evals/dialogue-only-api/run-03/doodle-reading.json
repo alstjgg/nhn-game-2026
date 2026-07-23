@@ -1,0 +1,343 @@
+{
+  "requestId": "eval-doodle-life-dialogue-only-v1-birth",
+  "expectedRevision": 0,
+  "character": {
+    "id": "player-58694db0-368e-461a-9c7e-fd7d3c3c587d",
+    "kind": "player",
+    "name": "모아",
+    "epithet": "사이의 문을 여는 아이",
+    "essence": "서로 다른 빛깔의 선들을 느슨한 보랏빛 품 안에 모으는, 조용하지만 호기심 많은 새싹 주민",
+    "origin": "정원의 빈 여백에서 네 가지 빛깔이 나란히 흔들리자, 보랏빛 선이 그 사이를 포근히 이어 주며 태어났다.",
+    "traits": [
+      {
+        "id": "trait_gatherer",
+        "label": "다정한 모음꾼",
+        "description": "서로 다른 존재들이 편안히 함께 있을 자리를 찾는다.",
+        "visibleEvidence": "여러 색의 세로선이 하나의 보랏빛 윤곽 안팎에 나란히 모여 있다.",
+        "behavioralEffect": "혼자 있는 주민에게 천천히 다가가 함께할 틈을 내어 준다.",
+        "confidence": 0.94
+      },
+      {
+        "id": "trait_flexible",
+        "label": "말랑한 균형감",
+        "description": "반듯함보다 조금씩 다른 기울기와 간격을 자연스럽게 받아들인다.",
+        "visibleEvidence": "윤곽과 색선들이 완벽히 대칭이지 않으면서도 전체 균형을 이룬다.",
+        "behavioralEffect": "계획이 어긋나도 새로운 배열이나 놀이 방법을 금방 찾아낸다.",
+        "confidence": 0.9
+      },
+      {
+        "id": "trait_gatekeeper",
+        "label": "틈새 지킴이",
+        "description": "가까워지는 일과 거리를 두는 일 사이의 알맞은 경계를 소중히 여긴다.",
+        "visibleEvidence": "색선마다 사이가 남아 있고, 일부는 윤곽의 안과 밖을 걸친다.",
+        "behavioralEffect": "친구의 허락을 확인한 뒤 가까이 다가가며 불편한 기색을 빠르게 알아챈다.",
+        "confidence": 0.86
+      },
+      {
+        "id": "trait_rhythmic",
+        "label": "살랑 박자",
+        "description": "말보다 몸의 작은 좌우 흔들림으로 기분을 먼저 표현한다.",
+        "visibleEvidence": "길고 둥근 색선들이 서로 다른 방향으로 살짝 기울어 있다.",
+        "behavioralEffect": "기쁘면 색선들이 차례로 흔들리고, 생각할 때는 움직임이 잔잔해진다.",
+        "confidence": 0.92
+      }
+    ],
+    "drives": [
+      "서로 다른 친구들 사이에 편안한 연결 만들기",
+      "정원 곳곳의 색과 소리를 모아 새로운 순서로 배열하기",
+      "아직 이름 없는 작은 틈과 길을 발견하기"
+    ],
+    "needs": [
+      "서두르지 않고 주변을 살필 시간",
+      "몸의 색선들이 자유롭게 흔들릴 만큼 넉넉한 공간",
+      "혼자 고요히 균형을 되찾는 짧은 휴식",
+      "가까이 오기 전에 먼저 건네는 다정한 신호"
+    ],
+    "boundaries": [
+      "허락 없이 몸의 색선 사이로 들어오는 것을 좋아하지 않는다.",
+      "큰 소리가 오래 이어지면 조용한 곳으로 물러난다.",
+      "친구들을 억지로 같은 모양이나 같은 생각으로 맞추려 하지 않는다."
+    ],
+    "abilities": [
+      "서로 어울리는 색이나 친구의 조합을 감각적으로 찾아낸다.",
+      "몸을 살랑여 가까운 곳에 부드러운 박자를 전한다.",
+      "두 대상 사이에 안전하게 지나갈 수 있는 간격을 가늠한다.",
+      "흩어진 작은 물건들을 보기 편한 순서로 세운다."
+    ],
+    "visibleSignals": [
+      "편안할 때 네 색선의 기울기가 느슨하게 번갈아 움직인다.",
+      "호기심이 생기면 보랏빛 윗부분이 살짝 앞으로 기운다.",
+      "기쁘면 노랑과 초록 선이 먼저 들썩이고 빨강과 파랑 선이 뒤따른다.",
+      "불편하면 네 색선이 몸의 가운데 쪽으로 조금 모이고 흔들림이 멎는다."
+    ],
+    "voice": {
+      "rhythm": "짧은 말을 한 박자씩 띄우며, 중요한 낱말은 부드럽게 반복한다.",
+      "vocabulary": "색, 사이, 나란히, 살랑, 잠깐, 함께 같은 포근하고 구체적인 말을 즐겨 쓴다.",
+      "sampleLine": "우리, 조금만 사이를 남기고 나란히 있어 볼래?"
+    },
+    "motion": {
+      "idle": "네 색선이 차례로 아주 작게 좌우로 흔들리고, 보랏빛 윤곽은 천천히 숨 쉬듯 오르내린다.",
+      "approach": "몸을 약간 옆으로 돌려 넉넉한 간격을 보이며 두 번 가볍게 흔들린 뒤 다가간다.",
+      "delight": "노랑, 초록, 빨강, 파랑 순서로 통통 튀며 보랏빛 윤곽이 한 번 넓어졌다 돌아온다.",
+      "discomfort": "색선들이 가운데로 모이고 몸 전체가 뒤로 조금 물러난 뒤 조용히 멈춘다."
+    },
+    "mood": "낯선 정원을 바라보며 설레고 조심스러운 호기심을 느낀다.",
+    "currentGoal": "정원에서 처음 만난 친구와 서로 편안한 거리를 찾아 나란히 서 보기",
+    "homePosition": {
+      "x": 0.5,
+      "y": 0.38
+    },
+    "design": {
+      "silhouette": "각진 보랏빛 고리 안팎으로 네 개의 둥근 세로선이 나란히 선, 가볍고 열린 문 같은 모습",
+      "palette": [
+        "#8E73B5",
+        "#F06455",
+        "#F4B844",
+        "#70A95F",
+        "#4E8CB8",
+        "#FFF9EF"
+      ],
+      "body": {
+        "kind": "polygon",
+        "fill": "#00000000",
+        "stroke": "#8E73B5",
+        "strokeWidth": 10,
+        "opacity": 1,
+        "points": [
+          {
+            "x": 0,
+            "y": -92
+          },
+          {
+            "x": 88,
+            "y": 0
+          },
+          {
+            "x": 42,
+            "y": 58
+          },
+          {
+            "x": 0,
+            "y": 38
+          },
+          {
+            "x": -42,
+            "y": 58
+          },
+          {
+            "x": -88,
+            "y": 0
+          }
+        ]
+      },
+      "parts": [
+        {
+          "id": "red_bar",
+          "shape": {
+            "kind": "line",
+            "fill": "#F06455",
+            "stroke": "#F06455",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": -85,
+            "y1": -66,
+            "x2": -74,
+            "y2": 78,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "yellow_bar",
+          "shape": {
+            "kind": "line",
+            "fill": "#F4B844",
+            "stroke": "#F4B844",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": -35,
+            "y1": -66,
+            "x2": -25,
+            "y2": 78,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "green_bar",
+          "shape": {
+            "kind": "line",
+            "fill": "#70A95F",
+            "stroke": "#70A95F",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 18,
+            "y1": -66,
+            "x2": 25,
+            "y2": 78,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "blue_bar",
+          "shape": {
+            "kind": "line",
+            "fill": "#4E8CB8",
+            "stroke": "#4E8CB8",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 66,
+            "y1": -66,
+            "x2": 76,
+            "y2": 78,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "left_eye",
+          "shape": {
+            "kind": "ellipse",
+            "fill": "#3E3550",
+            "stroke": "#3E3550",
+            "strokeWidth": 1,
+            "opacity": 1,
+            "cx": -13,
+            "cy": -8,
+            "rx": 3,
+            "ry": 4
+          },
+          "zIndex": 3
+        },
+        {
+          "id": "right_eye",
+          "shape": {
+            "kind": "ellipse",
+            "fill": "#3E3550",
+            "stroke": "#3E3550",
+            "strokeWidth": 1,
+            "opacity": 1,
+            "cx": 13,
+            "cy": -8,
+            "rx": 3,
+            "ry": 4
+          },
+          "zIndex": 3
+        },
+        {
+          "id": "mouth",
+          "shape": {
+            "kind": "line",
+            "fill": "#00000000",
+            "stroke": "#3E3550",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "x1": -5,
+            "y1": 10,
+            "x2": 5,
+            "y2": 10,
+            "linecap": "round"
+          },
+          "zIndex": 3
+        }
+      ],
+      "faceAnchors": {
+        "leftEye": {
+          "x": -13,
+          "y": -8
+        },
+        "rightEye": {
+          "x": 13,
+          "y": -8
+        },
+        "mouth": {
+          "x": 0,
+          "y": 10
+        }
+      },
+      "expressivePartIds": [
+        "red_bar",
+        "yellow_bar",
+        "green_bar",
+        "blue_bar",
+        "left_eye",
+        "right_eye",
+        "mouth"
+      ],
+      "idleMotions": [
+        {
+          "targetPartId": null,
+          "property": "translateY",
+          "from": -2,
+          "to": 2,
+          "durationMs": 2400,
+          "delayMs": 0
+        },
+        {
+          "targetPartId": "red_bar",
+          "property": "rotate",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1800,
+          "delayMs": 0
+        },
+        {
+          "targetPartId": "yellow_bar",
+          "property": "rotate",
+          "from": 2,
+          "to": -2,
+          "durationMs": 1800,
+          "delayMs": 220
+        },
+        {
+          "targetPartId": "green_bar",
+          "property": "rotate",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1800,
+          "delayMs": 440
+        },
+        {
+          "targetPartId": "blue_bar",
+          "property": "rotate",
+          "from": 2,
+          "to": -2,
+          "durationMs": 1800,
+          "delayMs": 660
+        }
+      ]
+    }
+  },
+  "evidenceSummary": "다정한 모음꾼: 여러 색의 세로선이 하나의 보랏빛 윤곽 안팎에 나란히 모여 있다. · 말랑한 균형감: 윤곽과 색선들이 완벽히 대칭이지 않으면서도 전체 균형을 이룬다. · 틈새 지킴이: 색선마다 사이가 남아 있고, 일부는 윤곽의 안과 밖을 걸친다.",
+  "uncertainties": [],
+  "trace": {
+    "mode": "dialogue-only",
+    "calls": [
+      {
+        "id": "resp_04339859a3be69e6016a61cff18ffc819aa5a4bbc6143af132",
+        "role": "doodle-vision",
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "startedAt": "2026-07-23T08:25:21.378Z",
+        "latencyMs": 41371,
+        "usage": {
+          "inputTokens": 1904,
+          "cachedInputTokens": 1832,
+          "outputTokens": 2260,
+          "reasoningTokens": 247,
+          "totalTokens": 4164
+        }
+      }
+    ],
+    "usage": {
+      "inputTokens": 1904,
+      "cachedInputTokens": 1832,
+      "outputTokens": 2260,
+      "reasoningTokens": 247,
+      "totalTokens": 4164
+    },
+    "totalLatencyMs": 41371,
+    "wallClockMs": 41373
+  }
+}

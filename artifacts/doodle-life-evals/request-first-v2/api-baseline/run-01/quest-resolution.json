@@ -1,0 +1,680 @@
+{
+  "engineResolution": {
+    "questId": "quest_soso_last_note",
+    "creatureId": "doodle_89d06ff323eb80303fed",
+    "verdict": "full",
+    "matchedAffordances": [
+      "connect",
+      "glide",
+      "rhythm",
+      "signal",
+      "stretch"
+    ],
+    "matchedPrimarySolution": 0,
+    "matchedPrimaryGroups": 2,
+    "bonusMatched": true,
+    "effects": [
+      {
+        "kind": "prop-state",
+        "targetId": "far_bell",
+        "state": "세 번 모두 울림",
+        "description": "받은 울림이 건너편 종까지 세 번 모두 도착한다."
+      },
+      {
+        "kind": "garden-state",
+        "targetId": "far_bell",
+        "state": "sound-restored",
+        "description": "두 소품 사이에 세 박자의 바람 소리가 남는다."
+      },
+      {
+        "kind": "relationship-record",
+        "title": "소소가 기다리던 마지막 박자",
+        "summary": "새 생명체가 높은 울림을 받고 소소와 같은 박자로 건너편에 전했다.",
+        "affinityDelta": 0.2
+      }
+    ],
+    "questResolved": true
+  },
+  "publicResponse": {
+    "requestId": "eval-request-first-v2-r01-resolve",
+    "baseRevision": 0,
+    "nextWorld": {
+      "id": "garden_wind_notes",
+      "revision": 1,
+      "title": "바람 음표 정원",
+      "premise": "몸짓과 소리의 빈칸을 관찰하고, 그 사이를 살아 움직이는 그림으로 잇는 정원.",
+      "locationDescription": "높은 리본 풍경과 건너편 작은 종, 얕은 물길과 씨앗 등이 놓인 종이 정원이다.",
+      "atmosphere": "세 번째 박자를 기다리는 낮은 바람",
+      "residents": [
+        {
+          "id": "npc_soso",
+          "name": "소소",
+          "epithet": "마지막 박자를 기다리는 긴잎",
+          "essence": "도착하지 않은 마지막 소리를 위해 늘 자기 옆 한 자리를 비워 둔다.",
+          "voiceStyle": "긴 쉼 뒤에 문제의 반복 횟수를 또렷하게 말한다.",
+          "repeatedBehavior": "몸을 수평으로 길게 펴 높은 리본 풍경을 향하지만 끝내 닿지 못하고, 건너편 종의 마지막 박자를 기다린다.",
+          "silhouetteFamily": "elongated",
+          "aspectRatio": "wide",
+          "supportMode": "two-point",
+          "homePosition": {
+            "x": 43,
+            "y": 58
+          },
+          "design": {
+            "silhouette": "긴 잎 두 장이 수평으로 포개지고 한쪽 끝만 위로 뻗은 몸",
+            "palette": [
+              "#8f78ae",
+              "#d9c5e8",
+              "#4c4038"
+            ],
+            "body": {
+              "kind": "path",
+              "fill": "#8f78ae",
+              "stroke": "#4c4038",
+              "strokeWidth": 3,
+              "opacity": 1,
+              "d": "M 6 55 C 19 29 47 28 72 39 C 88 46 101 35 112 15 C 115 42 105 69 80 76 C 51 84 22 77 6 55 Z"
+            },
+            "parts": [
+              {
+                "id": "lower_leaf",
+                "shape": {
+                  "kind": "path",
+                  "fill": "#d9c5e8",
+                  "stroke": "#4c4038",
+                  "strokeWidth": 2,
+                  "opacity": 1,
+                  "d": "M 15 63 C 38 88 79 91 102 65 C 76 74 45 73 15 63 Z"
+                },
+                "zIndex": -1
+              },
+              {
+                "id": "ribbon_tip",
+                "shape": {
+                  "kind": "line",
+                  "fill": "#d9c5e8",
+                  "stroke": "#d9c5e8",
+                  "strokeWidth": 7,
+                  "opacity": 1,
+                  "x1": 108,
+                  "y1": 21,
+                  "x2": 119,
+                  "y2": 4,
+                  "linecap": "round"
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "front_foot",
+                "shape": {
+                  "kind": "line",
+                  "fill": "#4c4038",
+                  "stroke": "#4c4038",
+                  "strokeWidth": 5,
+                  "opacity": 1,
+                  "x1": 34,
+                  "y1": 75,
+                  "x2": 27,
+                  "y2": 96,
+                  "linecap": "round"
+                },
+                "zIndex": -1
+              },
+              {
+                "id": "back_foot",
+                "shape": {
+                  "kind": "line",
+                  "fill": "#4c4038",
+                  "stroke": "#4c4038",
+                  "strokeWidth": 5,
+                  "opacity": 1,
+                  "x1": 75,
+                  "y1": 76,
+                  "x2": 82,
+                  "y2": 95,
+                  "linecap": "round"
+                },
+                "zIndex": -1
+              }
+            ],
+            "faceAnchors": {
+              "leftEye": {
+                "x": 47,
+                "y": 52
+              },
+              "rightEye": {
+                "x": 62,
+                "y": 50
+              },
+              "mouth": {
+                "x": 55,
+                "y": 61
+              }
+            },
+            "expressivePartIds": [
+              "lower_leaf",
+              "ribbon_tip"
+            ],
+            "idleMotions": [
+              {
+                "targetPartId": "ribbon_tip",
+                "property": "rotate",
+                "from": -5,
+                "to": 7,
+                "durationMs": 2200,
+                "delayMs": 0
+              },
+              {
+                "targetPartId": null,
+                "property": "scale",
+                "from": 0.98,
+                "to": 1.02,
+                "durationMs": 3400,
+                "delayMs": 200
+              }
+            ]
+          }
+        },
+        {
+          "id": "npc_dari",
+          "name": "다리",
+          "epithet": "세 발로 물길의 틈을 재는 씨앗",
+          "essence": "한 발이 닿을 때마다 다른 두 발이 안전한 다음 자리를 계산한다.",
+          "voiceStyle": "짧은 거리와 순서를 세어 말한다.",
+          "repeatedBehavior": "세 갈래 다리를 번갈아 내밀어 얕은 물길을 건너려다 끊긴 디딤 자국 앞에서 멈춘다.",
+          "silhouetteFamily": "multi-leg",
+          "aspectRatio": "tall",
+          "supportMode": "multi-point",
+          "homePosition": {
+            "x": 18,
+            "y": 72
+          },
+          "design": {
+            "silhouette": "작은 삼각 몸에서 길이가 다른 세 다리가 갈라진 몸",
+            "palette": [
+              "#d8895c",
+              "#f1c875",
+              "#4c4038"
+            ],
+            "body": {
+              "kind": "polygon",
+              "fill": "#d8895c",
+              "stroke": "#4c4038",
+              "strokeWidth": 3,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": 48,
+                  "y": 18
+                },
+                {
+                  "x": 76,
+                  "y": 53
+                },
+                {
+                  "x": 50,
+                  "y": 67
+                },
+                {
+                  "x": 22,
+                  "y": 52
+                }
+              ]
+            },
+            "parts": [
+              {
+                "id": "leg_left",
+                "shape": {
+                  "kind": "line",
+                  "fill": "#4c4038",
+                  "stroke": "#4c4038",
+                  "strokeWidth": 7,
+                  "opacity": 1,
+                  "x1": 35,
+                  "y1": 58,
+                  "x2": 13,
+                  "y2": 101,
+                  "linecap": "round"
+                },
+                "zIndex": -1
+              },
+              {
+                "id": "leg_mid",
+                "shape": {
+                  "kind": "line",
+                  "fill": "#4c4038",
+                  "stroke": "#4c4038",
+                  "strokeWidth": 7,
+                  "opacity": 1,
+                  "x1": 50,
+                  "y1": 64,
+                  "x2": 49,
+                  "y2": 110,
+                  "linecap": "round"
+                },
+                "zIndex": -1
+              },
+              {
+                "id": "leg_right",
+                "shape": {
+                  "kind": "line",
+                  "fill": "#4c4038",
+                  "stroke": "#4c4038",
+                  "strokeWidth": 7,
+                  "opacity": 1,
+                  "x1": 65,
+                  "y1": 58,
+                  "x2": 86,
+                  "y2": 98,
+                  "linecap": "round"
+                },
+                "zIndex": -1
+              },
+              {
+                "id": "seed_cap",
+                "shape": {
+                  "kind": "ellipse",
+                  "fill": "#f1c875",
+                  "stroke": "#4c4038",
+                  "strokeWidth": 2,
+                  "opacity": 1,
+                  "cx": 48,
+                  "cy": 20,
+                  "rx": 13,
+                  "ry": 7
+                },
+                "zIndex": 1
+              }
+            ],
+            "faceAnchors": {
+              "leftEye": {
+                "x": 40,
+                "y": 43
+              },
+              "rightEye": {
+                "x": 56,
+                "y": 43
+              },
+              "mouth": {
+                "x": 48,
+                "y": 53
+              }
+            },
+            "expressivePartIds": [
+              "leg_left",
+              "leg_mid",
+              "leg_right"
+            ],
+            "idleMotions": [
+              {
+                "targetPartId": "leg_left",
+                "property": "rotate",
+                "from": -3,
+                "to": 4,
+                "durationMs": 1700,
+                "delayMs": 0
+              },
+              {
+                "targetPartId": "leg_right",
+                "property": "rotate",
+                "from": 3,
+                "to": -4,
+                "durationMs": 1700,
+                "delayMs": 400
+              }
+            ]
+          }
+        },
+        {
+          "id": "npc_muru",
+          "name": "무루",
+          "epithet": "가운데로 날씨를 통과시키는 고리",
+          "essence": "자기 몸의 빈 공간에 빛과 빗소리를 잠시 머물게 한다.",
+          "voiceStyle": "둥글게 되풀이하다 마지막 단어만 작게 놓는다.",
+          "repeatedBehavior": "고리 몸을 굴려 씨앗 등불 앞을 맴돌며, 빗방울이 닿을 때마다 빈 가운데를 기울여 가린다.",
+          "silhouetteFamily": "hollow-ring",
+          "aspectRatio": "balanced",
+          "supportMode": "rolling",
+          "homePosition": {
+            "x": 78,
+            "y": 68
+          },
+          "design": {
+            "silhouette": "가운데가 완전히 빈 굵은 고리와 바깥쪽 작은 빗받이 판",
+            "palette": [
+              "#67a595",
+              "#bde0c8",
+              "#4c4038"
+            ],
+            "body": {
+              "kind": "ellipse",
+              "fill": "none",
+              "stroke": "#67a595",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "cx": 50,
+              "cy": 50,
+              "rx": 38,
+              "ry": 38
+            },
+            "parts": [
+              {
+                "id": "inner_rim",
+                "shape": {
+                  "kind": "ellipse",
+                  "fill": "none",
+                  "stroke": "#bde0c8",
+                  "strokeWidth": 6,
+                  "opacity": 1,
+                  "cx": 50,
+                  "cy": 50,
+                  "rx": 21,
+                  "ry": 21
+                },
+                "zIndex": 2
+              },
+              {
+                "id": "rain_plate",
+                "shape": {
+                  "kind": "polygon",
+                  "fill": "#bde0c8",
+                  "stroke": "#4c4038",
+                  "strokeWidth": 3,
+                  "opacity": 1,
+                  "points": [
+                    {
+                      "x": 73,
+                      "y": 18
+                    },
+                    {
+                      "x": 107,
+                      "y": 29
+                    },
+                    {
+                      "x": 83,
+                      "y": 42
+                    }
+                  ]
+                },
+                "zIndex": 1
+              }
+            ],
+            "faceAnchors": {
+              "leftEye": {
+                "x": 30,
+                "y": 50
+              },
+              "rightEye": {
+                "x": 70,
+                "y": 50
+              },
+              "mouth": {
+                "x": 50,
+                "y": 79
+              }
+            },
+            "expressivePartIds": [
+              "inner_rim",
+              "rain_plate"
+            ],
+            "idleMotions": [
+              {
+                "targetPartId": "rain_plate",
+                "property": "rotate",
+                "from": -4,
+                "to": 5,
+                "durationMs": 2900,
+                "delayMs": 300
+              },
+              {
+                "targetPartId": null,
+                "property": "rotate",
+                "from": -1,
+                "to": 1,
+                "durationMs": 4200,
+                "delayMs": 0
+              }
+            ]
+          }
+        }
+      ],
+      "props": [
+        {
+          "id": "ribbon_chime",
+          "label": "높은 리본 풍경",
+          "kind": "chime",
+          "position": {
+            "x": 58,
+            "y": 18
+          },
+          "state": "세 번 울림",
+          "visibleClue": "소소의 몸보다 훨씬 높은 곳에서 리본이 세 차례 흔들린다."
+        },
+        {
+          "id": "far_bell",
+          "label": "건너편 작은 종",
+          "kind": "bell",
+          "position": {
+            "x": 88,
+            "y": 45
+          },
+          "state": "세 번 모두 울림",
+          "visibleClue": "리본 풍경이 세 번 흔들려도 이 종에는 두 개의 파문만 남는다."
+        },
+        {
+          "id": "broken_steps",
+          "label": "끊긴 디딤 자국",
+          "kind": "bridge",
+          "position": {
+            "x": 29,
+            "y": 78
+          },
+          "state": "가운데 한 칸 비어 있음",
+          "visibleClue": "다리의 세 번째 발이 닿을 곳만 물 위에서 비어 있다."
+        },
+        {
+          "id": "seed_lamp",
+          "label": "씨앗 등불",
+          "kind": "lamp",
+          "position": {
+            "x": 72,
+            "y": 81
+          },
+          "state": "비가 올 때마다 희미해짐",
+          "visibleClue": "빗방울이 닿은 면부터 빛이 접히고, 마른 쪽에는 작은 빛점이 남는다."
+        }
+      ],
+      "relationships": [
+        {
+          "sourceNpcId": "npc_soso",
+          "targetNpcId": "npc_dari",
+          "label": "서로 다른 박자를 기다려 주는 사이"
+        },
+        {
+          "sourceNpcId": "npc_dari",
+          "targetNpcId": "npc_muru",
+          "label": "빈 곳의 크기를 함께 재는 사이"
+        },
+        {
+          "sourceNpcId": "npc_muru",
+          "targetNpcId": "npc_soso",
+          "label": "들어온 소리를 오래 품어 주는 사이"
+        }
+      ],
+      "gardenStates": [
+        "sound-restored"
+      ],
+      "creatures": [
+        {
+          "id": "doodle_89d06ff323eb80303fed",
+          "name": "잔물결 매듭",
+          "essence": "가로로 길게 펼쳐진 굵은 지그재그 윤곽 위에 뾰족한 고리들이 솟고, 오른쪽 끝에는 선이 교차하는 작은 마름모 구조가 붙어 있다.",
+          "imageSha256": "89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680",
+          "questId": "quest_soso_last_note",
+          "verdict": "full",
+          "homePosition": {
+            "x": 52,
+            "y": 68
+          }
+        }
+      ],
+      "records": [
+        {
+          "id": "record_quest_soso_last_note_doodle_89d06ff323eb80303fed",
+          "questId": "quest_soso_last_note",
+          "ownerNpcId": "npc_soso",
+          "creatureId": "doodle_89d06ff323eb80303fed",
+          "title": "소소가 기다리던 마지막 박자",
+          "summary": "새 생명체가 높은 울림을 받고 소소와 같은 박자로 건너편에 전했다.",
+          "verdict": "full"
+        }
+      ]
+    },
+    "result": {
+      "questId": "quest_soso_last_note",
+      "creatureId": "doodle_89d06ff323eb80303fed",
+      "verdict": "full",
+      "title": "완전 해결 · 마지막 박자까지",
+      "summary": "받은 울림이 건너편 종까지 세 번 모두 도착한다. 두 소품 사이에 세 박자의 바람 소리가 남는다. 새 생명체가 높은 울림을 받고 소소와 같은 박자로 건너편에 전했다.",
+      "nextHint": null,
+      "appliedEffects": [
+        {
+          "kind": "prop-state",
+          "targetId": "far_bell",
+          "state": "세 번 모두 울림",
+          "description": "받은 울림이 건너편 종까지 세 번 모두 도착한다."
+        },
+        {
+          "kind": "garden-state",
+          "targetId": "far_bell",
+          "state": "sound-restored",
+          "description": "두 소품 사이에 세 박자의 바람 소리가 남는다."
+        },
+        {
+          "kind": "relationship-record",
+          "title": "소소가 기다리던 마지막 박자",
+          "summary": "새 생명체가 높은 울림을 받고 소소와 같은 박자로 건너편에 전했다.",
+          "affinityDelta": 0.2
+        }
+      ],
+      "relationshipRecord": {
+        "id": "record_quest_soso_last_note_doodle_89d06ff323eb80303fed",
+        "questId": "quest_soso_last_note",
+        "ownerNpcId": "npc_soso",
+        "creatureId": "doodle_89d06ff323eb80303fed",
+        "title": "소소가 기다리던 마지막 박자",
+        "summary": "새 생명체가 높은 울림을 받고 소소와 같은 박자로 건너편에 전했다.",
+        "verdict": "full"
+      },
+      "questResolved": true
+    },
+    "reading": {
+      "name": "잔물결 매듭",
+      "essence": "가로로 길게 펼쳐진 굵은 지그재그 윤곽 위에 뾰족한 고리들이 솟고, 오른쪽 끝에는 선이 교차하는 작은 마름모 구조가 붙어 있다.",
+      "visibleFeatures": [
+        {
+          "id": "long_zigzag",
+          "label": "길게 펼쳐진 지그재그 윤곽",
+          "description": "좌우로 넓게 이어지며 위아래 가장자리가 각진 굴곡을 이루는 열린 선 구조다.",
+          "evidence": "짙은 선이 왼쪽 꼭짓점에서 중앙의 굴곡들을 지나 오른쪽으로 이어지고, 아래쪽 선도 여러 꼭짓점을 거쳐 되돌아온다.",
+          "region": {
+            "x": 0.117,
+            "y": 0.365,
+            "width": 0.666,
+            "height": 0.401
+          },
+          "confidence": 0.97
+        },
+        {
+          "id": "central_peaks",
+          "label": "가운데의 세로 고리와 봉우리",
+          "description": "중앙 위쪽에 세 개의 뾰족한 봉우리처럼 보이는 선들이 나란히 솟아 있다.",
+          "evidence": "약 x 0.33~0.48 구간에서 선이 위로 올라가 각진 꼭대기를 만들고, 여러 세로선이 아래 윤곽 쪽으로 내려온다.",
+          "region": {
+            "x": 0.324,
+            "y": 0.277,
+            "width": 0.163,
+            "height": 0.251
+          },
+          "confidence": 0.93
+        },
+        {
+          "id": "right_crossing",
+          "label": "오른쪽의 교차 마름모",
+          "description": "오른쪽 끝 가까이에 작은 마름모 두 개가 겹친 듯한 교차선 구조가 있다.",
+          "evidence": "네 방향으로 기울어진 선들이 중앙에서 교차하며 여러 개의 작은 삼각형과 마름모꼴 빈칸을 만든다.",
+          "region": {
+            "x": 0.643,
+            "y": 0.501,
+            "width": 0.141,
+            "height": 0.158
+          },
+          "confidence": 0.96
+        }
+      ],
+      "motionHints": [
+        {
+          "featureId": "long_zigzag",
+          "motion": "bend",
+          "anchor": {
+            "x": 0.408,
+            "y": 0.755
+          },
+          "description": "아래쪽 중앙의 깊은 꼭짓점을 축으로 긴 윤곽이 위아래로 접히듯 굽을 수 있다."
+        },
+        {
+          "featureId": "central_peaks",
+          "motion": "pulse",
+          "anchor": {
+            "x": 0.407,
+            "y": 0.337
+          },
+          "description": "반복되는 세로 봉우리들이 차례로 높아졌다 낮아지는 박동을 암시한다."
+        },
+        {
+          "featureId": "right_crossing",
+          "motion": "rotate",
+          "anchor": {
+            "x": 0.713,
+            "y": 0.579
+          },
+          "description": "교차선의 중심을 기준으로 작은 마름모 구조가 회전하는 움직임을 붙일 수 있다."
+        }
+      ],
+      "uncertainties": [
+        {
+          "region": {
+            "x": 0.324,
+            "y": 0.277,
+            "width": 0.163,
+            "height": 0.251
+          },
+          "reason": "봉우리와 세로선의 정확한 용도는 드러나지 않아, 고리인지 돌기인지 확정하기 어렵다."
+        },
+        {
+          "region": {
+            "x": 0.643,
+            "y": 0.501,
+            "width": 0.141,
+            "height": 0.158
+          },
+          "reason": "교차 구조는 분명하지만 매듭, 장식, 끝부분 중 무엇을 나타내는지는 시각적으로 확정되지 않는다."
+        }
+      ]
+    },
+    "trace": {
+      "mode": "staged",
+      "calls": [],
+      "usage": {
+        "inputTokens": 0,
+        "cachedInputTokens": 0,
+        "outputTokens": 0,
+        "reasoningTokens": 0,
+        "totalTokens": 0
+      },
+      "totalLatencyMs": 0,
+      "wallClockMs": 5
+    }
+  },
+  "providerCalls": 0
+}

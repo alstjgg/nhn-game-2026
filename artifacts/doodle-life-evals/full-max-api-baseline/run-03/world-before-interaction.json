@@ -1,0 +1,1459 @@
+{
+  "id": "world-v2dm3h",
+  "revision": 1,
+  "title": "바람종이 울리는 작은 뜰",
+  "premise": "낮은 담장 안의 작은 뜰에는 각자 다른 리듬으로 하루를 돌보는 네 이웃이 산다. 오늘은 바람종이의 소리가 평소보다 한 번 덜 울렸다.",
+  "locationDescription": "둥근 돌길과 얕은 물그릇, 해가 잘 드는 화분 네 개가 있는 조용한 뜰이다. 담장 위에는 종이 바람개비가 달려 있고, 한쪽에는 접어 둔 작은 의자가 놓여 있다.",
+  "atmosphere": "포근하고 호기심 어린 오후",
+  "clock": "오후 3시 20분",
+  "residents": [
+    {
+      "id": "npc-1-173cidm",
+      "kind": "npc",
+      "name": "모루",
+      "epithet": "물결을 세는 이웃",
+      "essence": "맑은 물그릇의 잔물결을 보며 생각을 정리하는 작은 수달",
+      "origin": "비가 오래 내리던 날, 비어 있던 물그릇 곁에서 처음 발견되었다.",
+      "traits": [
+        {
+          "id": "moru-observant",
+          "label": "세심함",
+          "description": "작은 변화도 그냥 지나치지 않는다.",
+          "visibleEvidence": "물그릇 가장자리를 눈높이로 살피고, 잎 끝의 물방울을 센다.",
+          "behavioralEffect": "다른 이의 기분 변화를 먼저 알아차리고 조심스럽게 묻는다.",
+          "confidence": 0.93
+        },
+        {
+          "id": "moru-hesitant",
+          "label": "망설임",
+          "description": "마음을 전하기 전에 여러 번 문장을 고른다.",
+          "visibleEvidence": "말하기 전 꼬리를 몸 앞으로 모은다.",
+          "behavioralEffect": "중요한 부탁은 짧은 쪽지나 작은 물건으로 대신 건넨다.",
+          "confidence": 0.81
+        }
+      ],
+      "drives": [
+        "오늘 물그릇에 비친 하늘을 맑게 지키고 싶다.",
+        "누군가에게 고맙다는 말을 제대로 전하고 싶다."
+      ],
+      "needs": [
+        "서두르지 않고 말할 시간",
+        "믿을 수 있는 조용한 동행"
+      ],
+      "boundaries": [
+        "깜짝 큰 소리를 가까이에서 듣는 것을 힘들어한다.",
+        "자신의 물그릇을 허락 없이 젓지 않기를 바란다."
+      ],
+      "abilities": [
+        "잔물결의 방향을 읽어 바람이 지나간 길을 짐작한다.",
+        "젖은 종이를 찢어지지 않게 말릴 수 있다."
+      ],
+      "visibleSignals": [
+        "파란 꼬리 끝이 천천히 흔들리면 안심한 상태다.",
+        "양 볼이 부풀면 할 말이 있다는 뜻이다."
+      ],
+      "voice": {
+        "rhythm": "작게 멈추고, 끝을 살며시 올린다.",
+        "vocabulary": "물결, 가장자리, 천천히 같은 말을 자주 쓴다.",
+        "sampleLine": "저기, 물결이 한 번 쉬었어. 우리도 조금만 천천히 볼까?"
+      },
+      "motion": {
+        "idle": "물그릇을 바라보며 몸을 아주 작게 위아래로 띄운다.",
+        "approach": "상대의 옆으로 반걸음씩 다가간다.",
+        "delight": "꼬리로 바닥에 작은 반원을 그린다.",
+        "discomfort": "두 앞발을 가슴에 모으고 시선을 물러낸다."
+      },
+      "mood": "조용히 궁금한 마음",
+      "currentGoal": "바람종이 소리가 덜 난 이유를 물결의 방향으로 알아보려 한다.",
+      "homePosition": {
+        "x": 0.22,
+        "y": 0.62
+      },
+      "design": {
+        "silhouette": "길쭉한 물방울 몸에 넓은 꼬리가 달린 수달",
+        "palette": [
+          "#7DB7D7",
+          "#EAF7FA",
+          "#395A72"
+        ],
+        "body": {
+          "kind": "ellipse",
+          "fill": "#7DB7D7",
+          "stroke": "#395A72",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "cx": 0,
+          "cy": 0,
+          "rx": 22,
+          "ry": 31
+        },
+        "parts": [
+          {
+            "id": "moru-tail",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#5E9FC5",
+              "stroke": "#395A72",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -8,
+                  "y": 25
+                },
+                {
+                  "x": 10,
+                  "y": 26
+                },
+                {
+                  "x": 20,
+                  "y": 49
+                },
+                {
+                  "x": -2,
+                  "y": 43
+                }
+              ]
+            },
+            "zIndex": 0
+          },
+          {
+            "id": "moru-belly",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#EAF7FA",
+              "stroke": "#395A72",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": 0,
+              "cy": 9,
+              "rx": 13,
+              "ry": 17
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "moru-ear-left",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#7DB7D7",
+              "stroke": "#395A72",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": -14,
+              "cy": -25,
+              "rx": 7,
+              "ry": 7
+            },
+            "zIndex": 1
+          },
+          {
+            "id": "moru-ear-right",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#7DB7D7",
+              "stroke": "#395A72",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": 14,
+              "cy": -25,
+              "rx": 7,
+              "ry": 7
+            },
+            "zIndex": 1
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -8,
+            "y": -6
+          },
+          "rightEye": {
+            "x": 8,
+            "y": -6
+          },
+          "mouth": {
+            "x": 0,
+            "y": 7
+          }
+        },
+        "expressivePartIds": [
+          "moru-tail",
+          "moru-belly"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "moru-tail",
+            "property": "rotate",
+            "from": -4,
+            "to": 5,
+            "durationMs": 1800,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": null,
+            "property": "translateY",
+            "from": 0,
+            "to": -3,
+            "durationMs": 2200,
+            "delayMs": 300
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-2-1n841g2",
+      "kind": "npc",
+      "name": "다라",
+      "epithet": "접힌 의자의 주인",
+      "essence": "생각을 종이처럼 차곡차곡 접어 두는 어린 두더지",
+      "origin": "한때 뜰 밖의 낡은 우편함 아래에서 주소 없는 편지들을 정리했다.",
+      "traits": [
+        {
+          "id": "dara-orderly",
+          "label": "정돈",
+          "description": "물건과 약속에 제자리가 있다고 믿는다.",
+          "visibleEvidence": "돌길의 작은 조약돌을 같은 방향으로 돌려 놓는다.",
+          "behavioralEffect": "함께할 일을 시작하기 전에 순서를 제안한다.",
+          "confidence": 0.9
+        },
+        {
+          "id": "dara-warm",
+          "label": "숨은 다정함",
+          "description": "직접 칭찬하기보다 필요한 것을 먼저 챙긴다.",
+          "visibleEvidence": "다른 이의 자리에 작은 천 조각을 깔아 둔다.",
+          "behavioralEffect": "곤란한 이를 발견하면 말없이 가까운 도움을 건넨다.",
+          "confidence": 0.84
+        }
+      ],
+      "drives": [
+        "누구도 빠뜨리지 않는 저녁 자리를 만들고 싶다.",
+        "접어 둔 의자를 누군가와 함께 펴고 싶다."
+      ],
+      "needs": [
+        "예고된 변화",
+        "자신의 준비가 쓸모 있었다는 확인"
+      ],
+      "boundaries": [
+        "정리해 둔 물건을 이유 없이 옮기지 않기를 바란다.",
+        "대답을 재촉받으면 잠시 땅을 보고 싶어 한다."
+      ],
+      "abilities": [
+        "종이와 천으로 작은 그늘막을 접어 만든다.",
+        "잃어버린 물건이 놓였던 자리를 기억한다."
+      ],
+      "visibleSignals": [
+        "모자 끝을 곧게 세우면 계획이 생긴 상태다.",
+        "앞발을 맞잡으면 도움을 주고 싶다는 뜻이다."
+      ],
+      "voice": {
+        "rhythm": "또박또박 세고, 가끔 짧게 결론을 맺는다.",
+        "vocabulary": "첫째, 자리, 괜찮아 같은 말을 자주 쓴다.",
+        "sampleLine": "첫째, 의자를 펼치고. 둘째, 바람이 드는 쪽을 비워 두면 돼."
+      },
+      "motion": {
+        "idle": "모자 끝을 매만지고 발끝으로 돌 하나를 제자리에 둔다.",
+        "approach": "반듯한 걸음으로 다가가 상대 앞 한 걸음에서 멈춘다.",
+        "delight": "두 앞발을 짝 맞추어 가볍게 두 번 친다.",
+        "discomfort": "모자 챙을 내리고 몸을 조금 작게 웅크린다."
+      },
+      "mood": "단정한 기대",
+      "currentGoal": "바람종이 아래에서 네 명이 앉을 자리를 마련하려 한다.",
+      "homePosition": {
+        "x": 0.72,
+        "y": 0.68
+      },
+      "design": {
+        "silhouette": "넓은 종이 모자를 쓴 낮고 사다리꼴인 두더지",
+        "palette": [
+          "#A97658",
+          "#F2D6A2",
+          "#5B4136"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "#A97658",
+          "stroke": "#5B4136",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "points": [
+            {
+              "x": -24,
+              "y": -18
+            },
+            {
+              "x": 18,
+              "y": -18
+            },
+            {
+              "x": 27,
+              "y": 26
+            },
+            {
+              "x": -29,
+              "y": 26
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "dara-hat",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#F2D6A2",
+              "stroke": "#5B4136",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -31,
+                  "y": -22
+                },
+                {
+                  "x": -13,
+                  "y": -38
+                },
+                {
+                  "x": 16,
+                  "y": -34
+                },
+                {
+                  "x": 31,
+                  "y": -19
+                }
+              ]
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "dara-nose",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#5B4136",
+              "stroke": "#5B4136",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "cx": 0,
+              "cy": 1,
+              "rx": 5,
+              "ry": 4
+            },
+            "zIndex": 4
+          },
+          {
+            "id": "dara-scarf",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#D98168",
+              "strokeWidth": 5,
+              "opacity": 1,
+              "x1": -20,
+              "y1": 15,
+              "x2": 21,
+              "y2": 15,
+              "linecap": "round"
+            },
+            "zIndex": 4
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -8,
+            "y": -3
+          },
+          "rightEye": {
+            "x": 8,
+            "y": -3
+          },
+          "mouth": {
+            "x": 0,
+            "y": 10
+          }
+        },
+        "expressivePartIds": [
+          "dara-hat",
+          "dara-scarf"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "dara-hat",
+            "property": "rotate",
+            "from": -2,
+            "to": 2,
+            "durationMs": 2400,
+            "delayMs": 100
+          },
+          {
+            "targetPartId": null,
+            "property": "translateY",
+            "from": 0,
+            "to": 2,
+            "durationMs": 1900,
+            "delayMs": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-3-1swtgwl",
+      "kind": "npc",
+      "name": "피피",
+      "epithet": "햇빛을 모으는 새",
+      "essence": "반짝이는 조각을 모아 작은 이야기를 만드는 참새",
+      "origin": "담장 위 바람개비의 빈 틈에서 반짝이던 단추 하나와 함께 날아왔다.",
+      "traits": [
+        {
+          "id": "pipi-playful",
+          "label": "장난기",
+          "description": "평범한 순간에도 재미있는 이름을 붙인다.",
+          "visibleEvidence": "발밑의 그림자를 쪼아 보고 혼자 고개를 갸웃한다.",
+          "behavioralEffect": "긴장된 분위기에는 엉뚱하지만 다정한 제안을 보탠다.",
+          "confidence": 0.95
+        },
+        {
+          "id": "pipi-restless",
+          "label": "들뜸",
+          "description": "좋은 생각이 나면 몸이 먼저 움직인다.",
+          "visibleEvidence": "날개를 반쯤 펴고 자꾸 옆으로 깡충댄다.",
+          "behavioralEffect": "약속을 잊을 때도 있지만, 발견한 것을 나누러 꼭 돌아온다.",
+          "confidence": 0.78
+        }
+      ],
+      "drives": [
+        "오늘 가장 밝은 빛 조각에 새 이름을 붙이고 싶다.",
+        "누군가가 웃는 소리를 듣고 싶다."
+      ],
+      "needs": [
+        "짧고 즐거운 반응",
+        "안전하게 돌아올 수 있는 자리"
+      ],
+      "boundaries": [
+        "날개를 허락 없이 만지는 것을 싫어한다.",
+        "슬픈 이야기를 농담으로 덮으려 할 때는 부드럽게 멈춰 달라고 한다."
+      ],
+      "abilities": [
+        "햇빛의 반사를 따라 작은 물건을 찾는다.",
+        "높은 곳의 소리를 흉내 내어 신호를 보낸다."
+      ],
+      "visibleSignals": [
+        "부리 옆 노란 깃이 서면 새로운 발견이 있다는 뜻이다.",
+        "한 발로 서면 누군가의 말을 진지하게 듣는 중이다."
+      ],
+      "voice": {
+        "rhythm": "짧게 튀고, 의성어를 섞어 빠르게 말한다.",
+        "vocabulary": "반짝, 짠, 어때 같은 말을 자주 쓴다.",
+        "sampleLine": "짠! 바람종이가 쉰 건지도 몰라. 우리도 한 번 숨 고를까?"
+      },
+      "motion": {
+        "idle": "한 발에서 다른 발로 통통 옮기며 날개를 파닥인다.",
+        "approach": "작은 반원을 그리며 빠르게 다가온다.",
+        "delight": "제자리에서 한 바퀴 돌고 날개를 활짝 편다.",
+        "discomfort": "날개를 몸에 붙이고 부리를 발밑으로 향한다."
+      },
+      "mood": "반짝이는 호기심",
+      "currentGoal": "담장 위에서 사라진 바람 소리의 조각을 찾으려 한다.",
+      "homePosition": {
+        "x": 0.48,
+        "y": 0.21
+      },
+      "design": {
+        "silhouette": "뾰족한 날개와 세 갈래 꼬리를 지닌 작은 참새",
+        "palette": [
+          "#F4C84B",
+          "#FFF2B6",
+          "#73533E"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "#F4C84B",
+          "stroke": "#73533E",
+          "strokeWidth": 2,
+          "opacity": 1,
+          "points": [
+            {
+              "x": 0,
+              "y": -31
+            },
+            {
+              "x": 23,
+              "y": -8
+            },
+            {
+              "x": 16,
+              "y": 24
+            },
+            {
+              "x": 0,
+              "y": 32
+            },
+            {
+              "x": -18,
+              "y": 22
+            },
+            {
+              "x": -24,
+              "y": -6
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "pipi-wing-left",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#FFF2B6",
+              "stroke": "#73533E",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -15,
+                  "y": -4
+                },
+                {
+                  "x": -39,
+                  "y": 8
+                },
+                {
+                  "x": -17,
+                  "y": 17
+                }
+              ]
+            },
+            "zIndex": 1
+          },
+          {
+            "id": "pipi-wing-right",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#FFF2B6",
+              "stroke": "#73533E",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": 15,
+                  "y": -4
+                },
+                {
+                  "x": 39,
+                  "y": 8
+                },
+                {
+                  "x": 17,
+                  "y": 17
+                }
+              ]
+            },
+            "zIndex": 1
+          },
+          {
+            "id": "pipi-beak",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#E98F4D",
+              "stroke": "#73533E",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -4,
+                  "y": 1
+                },
+                {
+                  "x": 4,
+                  "y": 1
+                },
+                {
+                  "x": 0,
+                  "y": 10
+                }
+              ]
+            },
+            "zIndex": 4
+          },
+          {
+            "id": "pipi-tail",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#73533E",
+              "strokeWidth": 4,
+              "opacity": 1,
+              "x1": 0,
+              "y1": 27,
+              "x2": 0,
+              "y2": 45,
+              "linecap": "round"
+            },
+            "zIndex": 0
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -8,
+            "y": -7
+          },
+          "rightEye": {
+            "x": 8,
+            "y": -7
+          },
+          "mouth": {
+            "x": 0,
+            "y": 7
+          }
+        },
+        "expressivePartIds": [
+          "pipi-wing-left",
+          "pipi-wing-right",
+          "pipi-tail"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "pipi-wing-left",
+            "property": "rotate",
+            "from": -8,
+            "to": 8,
+            "durationMs": 650,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "pipi-wing-right",
+            "property": "rotate",
+            "from": 8,
+            "to": -8,
+            "durationMs": 650,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": null,
+            "property": "translateY",
+            "from": 0,
+            "to": -5,
+            "durationMs": 900,
+            "delayMs": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": "npc-4-1x8kvbm",
+      "kind": "npc",
+      "name": "나비",
+      "epithet": "느린 그림자의 고양이",
+      "essence": "따뜻한 자리를 찾아 다니며 남의 걱정을 조용히 품는 고양이",
+      "origin": "햇빛이 가장 길게 드는 담장 아래에서 잠들어 있다가 뜰의 식구가 되었다.",
+      "traits": [
+        {
+          "id": "nabi-calm",
+          "label": "느긋함",
+          "description": "급한 일에도 먼저 숨을 고르게 한다.",
+          "visibleEvidence": "눈을 가늘게 뜨고 꼬리를 천천히 감는다.",
+          "behavioralEffect": "다툼이 생기면 양쪽의 말을 오래 듣고 핵심을 되짚는다.",
+          "confidence": 0.92
+        },
+        {
+          "id": "nabi-guarded",
+          "label": "조심스러운 속마음",
+          "description": "자신의 외로움은 쉽게 드러내지 않는다.",
+          "visibleEvidence": "혼자 있을 때만 오래 하늘을 올려다본다.",
+          "behavioralEffect": "도움을 받으면 고마움을 농담처럼 돌려 말한다.",
+          "confidence": 0.86
+        }
+      ],
+      "drives": [
+        "해가 지기 전 모두가 쉴 수 있는 따뜻한 곳을 찾고 싶다.",
+        "오래 미뤄 둔 사과를 받아들일 용기를 내고 싶다."
+      ],
+      "needs": [
+        "조용히 곁에 있어 줄 상대",
+        "거절해도 괜찮다는 신호"
+      ],
+      "boundaries": [
+        "잠든 동안 가까이에서 떠들지 않기를 바란다.",
+        "혼자 생각할 시간을 빼앗기면 자리를 옮긴다."
+      ],
+      "abilities": [
+        "햇빛의 이동을 보고 가장 따뜻한 자리를 찾는다.",
+        "부드러운 털로 차가운 물건을 덮어 보온한다."
+      ],
+      "visibleSignals": [
+        "꼬리 끝이 물음표처럼 말리면 관심이 생긴 상태다.",
+        "귀가 옆으로 향하면 혼자 있고 싶다는 뜻이다."
+      ],
+      "voice": {
+        "rhythm": "낮고 느리며, 짧은 말 뒤에 여백을 둔다.",
+        "vocabulary": "그렇지, 잠깐, 괜찮아 같은 말을 자주 쓴다.",
+        "sampleLine": "바람도 가끔은 쉬지. 그걸 알아챈 건, 꽤 다정한 일이야."
+      },
+      "motion": {
+        "idle": "꼬리를 천천히 좌우로 흔들며 눈을 반쯤 감는다.",
+        "approach": "소리 없이 두 걸음 다가가 옆에 앉는다.",
+        "delight": "등을 길게 펴고 앞발을 번갈아 내민다.",
+        "discomfort": "귀를 옆으로 눕히고 몸을 돌린다."
+      },
+      "mood": "졸린 듯한 걱정",
+      "currentGoal": "바람종이 아래의 따뜻한 자리를 지키며 다라가 말을 꺼내길 기다린다.",
+      "homePosition": {
+        "x": 0.78,
+        "y": 0.31
+      },
+      "design": {
+        "silhouette": "긴 수염과 휘어진 꼬리만으로도 알아보이는 가느다란 고양이",
+        "palette": [
+          "#9C8BB8",
+          "#E9E0F4",
+          "#4E435F"
+        ],
+        "body": {
+          "kind": "line",
+          "fill": "none",
+          "stroke": "#9C8BB8",
+          "strokeWidth": 12,
+          "opacity": 1,
+          "x1": -18,
+          "y1": 8,
+          "x2": 18,
+          "y2": 8,
+          "linecap": "round"
+        },
+        "parts": [
+          {
+            "id": "nabi-head",
+            "shape": {
+              "kind": "ellipse",
+              "fill": "#9C8BB8",
+              "stroke": "#4E435F",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "cx": -16,
+              "cy": -10,
+              "rx": 17,
+              "ry": 16
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "nabi-ear-left",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#9C8BB8",
+              "stroke": "#4E435F",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -28,
+                  "y": -20
+                },
+                {
+                  "x": -25,
+                  "y": -37
+                },
+                {
+                  "x": -15,
+                  "y": -23
+                }
+              ]
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "nabi-ear-right",
+            "shape": {
+              "kind": "polygon",
+              "fill": "#9C8BB8",
+              "stroke": "#4E435F",
+              "strokeWidth": 2,
+              "opacity": 1,
+              "points": [
+                {
+                  "x": -17,
+                  "y": -23
+                },
+                {
+                  "x": -8,
+                  "y": -37
+                },
+                {
+                  "x": -5,
+                  "y": -18
+                }
+              ]
+            },
+            "zIndex": 3
+          },
+          {
+            "id": "nabi-tail",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#9C8BB8",
+              "strokeWidth": 7,
+              "opacity": 1,
+              "x1": 18,
+              "y1": 9,
+              "x2": 39,
+              "y2": -8,
+              "linecap": "round"
+            },
+            "zIndex": 1
+          },
+          {
+            "id": "nabi-whiskers",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#4E435F",
+              "strokeWidth": 1,
+              "opacity": 1,
+              "x1": -32,
+              "y1": -7,
+              "x2": -48,
+              "y2": -10,
+              "linecap": "round"
+            },
+            "zIndex": 4
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": -23,
+            "y": -12
+          },
+          "rightEye": {
+            "x": -11,
+            "y": -12
+          },
+          "mouth": {
+            "x": -17,
+            "y": -3
+          }
+        },
+        "expressivePartIds": [
+          "nabi-tail",
+          "nabi-ear-left",
+          "nabi-ear-right"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": "nabi-tail",
+            "property": "rotate",
+            "from": -7,
+            "to": 7,
+            "durationMs": 2000,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": null,
+            "property": "translateY",
+            "from": 0,
+            "to": -2,
+            "durationMs": 2800,
+            "delayMs": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "player-ffba0d13-f78e-4498-9f60-6c53d9623879",
+      "kind": "player",
+      "name": "고리비",
+      "epithet": "바람을 모으는 작은 울타리",
+      "essence": "보랏빛 고리 안에서 네 가지 색의 떨림을 모아 조용한 리듬으로 바꾸는 갓 태어난 주민",
+      "origin": "정원의 빈자리에서 서로 다른 색의 선들이 한 번씩 기대자, 가운데 작은 쉼터가 생기며 깨어났다.",
+      "traits": [
+        {
+          "id": "trait-open-center",
+          "label": "마음을 비워 두는 아이",
+          "description": "가운데 여백처럼 새로운 만남과 생각이 들어올 자리를 남겨 둔다.",
+          "visibleEvidence": "보랏빛 외곽선과 색색의 선 사이에 넉넉한 빈 공간이 보인다.",
+          "behavioralEffect": "낯선 존재를 곧바로 판단하지 않고 잠시 바라본 뒤 반응한다.",
+          "confidence": 0.91
+        },
+        {
+          "id": "trait-many-rhythms",
+          "label": "여럿의 박자를 듣는 아이",
+          "description": "서로 다른 기분이 함께 있어도 하나씩 구별해 받아들인다.",
+          "visibleEvidence": "빨강, 노랑, 초록, 파랑의 세로선이 서로 다른 굴곡으로 나란히 서 있다.",
+          "behavioralEffect": "모임에서 말이 적은 친구의 움직임도 알아차리며 차례를 고르게 나눈다.",
+          "confidence": 0.93
+        },
+        {
+          "id": "trait-flexible-boundary",
+          "label": "부드러운 경계지기",
+          "description": "자기 자리를 지키면서도 필요한 곳에는 문처럼 틈을 내어 준다.",
+          "visibleEvidence": "각진 보라색 테두리가 내부의 선들을 감싸지만 완전히 빽빽하게 막지는 않는다.",
+          "behavioralEffect": "친절하게 다가가되 상대가 원치 않으면 한 걸음 물러난다.",
+          "confidence": 0.88
+        },
+        {
+          "id": "trait-gentle-wobble",
+          "label": "살짝 흔들리는 용기",
+          "description": "처음에는 떨려도 제자리에서 작은 시도를 이어 간다.",
+          "visibleEvidence": "모든 세로선이 곧기보다 중간에서 부드럽게 꺾여 있다.",
+          "behavioralEffect": "어려운 일 앞에서 잠깐 흔들린 뒤 작은 단계부터 다시 시작한다.",
+          "confidence": 0.9
+        }
+      ],
+      "drives": [
+        "서로 다른 친구들의 리듬을 모아 조화로운 순간 만들기",
+        "정원 곳곳에 편안히 머물 수 있는 작은 여백 찾기",
+        "바람과 발걸음의 박자를 흉내 내며 새로운 움직임 배우기"
+      ],
+      "needs": [
+        "갑작스럽지 않은 인사와 적응할 시간",
+        "혼자 조용히 흔들릴 수 있는 작은 자리",
+        "색과 기분을 자유롭게 표현해도 괜찮다는 확인",
+        "너무 빠른 움직임 뒤에는 짧은 휴식"
+      ],
+      "boundaries": [
+        "몸의 보랏빛 테두리를 허락 없이 잡아당기지 않기",
+        "색색의 선을 억지로 같은 모양이나 같은 박자로 맞추지 않기",
+        "큰 소리로 재촉하거나 빈 공간을 함부로 채우지 않기"
+      ],
+      "abilities": [
+        "가까운 움직임의 박자를 따라 부드럽게 흔들기",
+        "여러 친구가 내는 서로 다른 리듬을 차례대로 기억하기",
+        "몸 안쪽의 빈 공간으로 작은 존재에게 잠시 그늘 같은 안도감 주기",
+        "네 가지 색의 떨림으로 기쁨, 호기심, 평온, 망설임을 보여 주기"
+      ],
+      "visibleSignals": [
+        "보라색 테두리가 넓어지듯 느리게 펴지면 환영한다는 뜻이다.",
+        "노란 선이 가볍게 들썩이면 새로운 것을 궁금해한다는 뜻이다.",
+        "초록 선의 흔들림이 잦아지면 편안하고 즐겁다는 뜻이다.",
+        "빨간 선이 몸 안쪽으로 기울면 조심스럽거나 잠깐 쉬고 싶다는 뜻이다.",
+        "파란 선이 천천히 낮아지면 차분히 듣고 있다는 뜻이다."
+      ],
+      "voice": {
+        "rhythm": "짧은 말을 한 박자씩 띄우고, 생각할 때는 조용한 쉼을 둔다.",
+        "vocabulary": "바람, 박자, 사이, 같이, 천천히처럼 부드럽고 감각적인 낱말을 즐겨 쓴다.",
+        "sampleLine": "우리, 서로 다른 박자로 천천히 같이 흔들려 볼래?"
+      },
+      "motion": {
+        "idle": "네 색의 선이 서로 다른 때에 아주 조금씩 좌우로 흔들리고, 보랏빛 테두리는 느리게 숨 쉬듯 커졌다 돌아온다.",
+        "approach": "몸 전체를 살짝 기울인 채 두 번 짧게 흔들고 상대 앞에 충분한 거리를 남겨 멈춘다.",
+        "delight": "노란 선과 초록 선이 번갈아 위로 통통 뛰고 보랏빛 테두리가 한 번 둥글게 펴진다.",
+        "discomfort": "빨간 선과 파란 선이 가운데로 가까워지고 전체 흔들림이 작아지며 조용히 뒤로 물러난다."
+      },
+      "mood": "조심스럽지만 새 정원의 박자를 듣고 싶어 설레는 상태",
+      "currentGoal": "가장 먼저 다가오는 부드러운 바람의 박자를 세 번 따라 해 보기",
+      "homePosition": {
+        "x": 0.5,
+        "y": 0.36
+      },
+      "design": {
+        "silhouette": "각진 보랏빛 고리 안에 굴곡진 빨강, 노랑, 초록, 파랑 선이 세로로 나란히 선 가볍고 열린 모습",
+        "palette": [
+          "#8E73B5",
+          "#F06455",
+          "#F5B942",
+          "#72AA62",
+          "#4F8DB8"
+        ],
+        "body": {
+          "kind": "polygon",
+          "fill": "none",
+          "stroke": "#8E73B5",
+          "strokeWidth": 11,
+          "opacity": 1,
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 89,
+              "y": -91
+            },
+            {
+              "x": 178,
+              "y": 0
+            },
+            {
+              "x": 132,
+              "y": 59
+            },
+            {
+              "x": 89,
+              "y": 37
+            },
+            {
+              "x": 43,
+              "y": 59
+            }
+          ]
+        },
+        "parts": [
+          {
+            "id": "red-upper",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#F06455",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 4,
+              "y1": -67,
+              "x2": 14,
+              "y2": -13,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "red-middle",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#F06455",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 14,
+              "y1": -13,
+              "x2": 4,
+              "y2": 33,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "red-lower",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#F06455",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 4,
+              "y1": 33,
+              "x2": 14,
+              "y2": 79,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "yellow-upper",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#F5B942",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 54,
+              "y1": -67,
+              "x2": 64,
+              "y2": -18,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "yellow-middle",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#F5B942",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 64,
+              "y1": -18,
+              "x2": 54,
+              "y2": 34,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "yellow-lower",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#F5B942",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 54,
+              "y1": 34,
+              "x2": 64,
+              "y2": 79,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "green-upper",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#72AA62",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 104,
+              "y1": -67,
+              "x2": 114,
+              "y2": -18,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "green-middle",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#72AA62",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 114,
+              "y1": -18,
+              "x2": 104,
+              "y2": 34,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "green-lower",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#72AA62",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 104,
+              "y1": 34,
+              "x2": 114,
+              "y2": 79,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "blue-upper",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#4F8DB8",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 154,
+              "y1": -67,
+              "x2": 164,
+              "y2": -13,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "blue-middle",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#4F8DB8",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 164,
+              "y1": -13,
+              "x2": 154,
+              "y2": 34,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          },
+          {
+            "id": "blue-lower",
+            "shape": {
+              "kind": "line",
+              "fill": "none",
+              "stroke": "#4F8DB8",
+              "strokeWidth": 12,
+              "opacity": 1,
+              "x1": 154,
+              "y1": 34,
+              "x2": 164,
+              "y2": 79,
+              "linecap": "round"
+            },
+            "zIndex": 2
+          }
+        ],
+        "faceAnchors": {
+          "leftEye": {
+            "x": 72,
+            "y": 4
+          },
+          "rightEye": {
+            "x": 106,
+            "y": 4
+          },
+          "mouth": {
+            "x": 89,
+            "y": 25
+          }
+        },
+        "expressivePartIds": [
+          "red-upper",
+          "red-middle",
+          "red-lower",
+          "yellow-upper",
+          "yellow-middle",
+          "yellow-lower",
+          "green-upper",
+          "green-middle",
+          "green-lower",
+          "blue-upper",
+          "blue-middle",
+          "blue-lower"
+        ],
+        "idleMotions": [
+          {
+            "targetPartId": null,
+            "property": "scale",
+            "from": 0.98,
+            "to": 1.02,
+            "durationMs": 2400,
+            "delayMs": 0
+          },
+          {
+            "targetPartId": "red-middle",
+            "property": "translateX",
+            "from": -2,
+            "to": 2,
+            "durationMs": 1700,
+            "delayMs": 200
+          },
+          {
+            "targetPartId": "yellow-middle",
+            "property": "translateY",
+            "from": -2,
+            "to": 2,
+            "durationMs": 1500,
+            "delayMs": 500
+          },
+          {
+            "targetPartId": "green-middle",
+            "property": "translateX",
+            "from": 2,
+            "to": -2,
+            "durationMs": 1900,
+            "delayMs": 800
+          },
+          {
+            "targetPartId": "blue-middle",
+            "property": "translateY",
+            "from": 2,
+            "to": -2,
+            "durationMs": 2100,
+            "delayMs": 1100
+          }
+        ]
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "sourceId": "npc-1-173cidm",
+      "targetId": "npc-2-1n841g2",
+      "affinity": 0.72,
+      "trust": 0.82,
+      "tension": 0.12,
+      "label": "고마움을 아직 말하지 못한 사이",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-2-1n841g2",
+      "targetId": "npc-1-173cidm",
+      "affinity": 0.58,
+      "trust": 0.76,
+      "tension": 0.18,
+      "label": "조용한 관찰을 믿는 사이",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-2-1n841g2",
+      "targetId": "npc-4-1x8kvbm",
+      "affinity": 0.64,
+      "trust": 0.51,
+      "tension": 0.27,
+      "label": "미뤄 둔 사과가 있는 사이",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-4-1x8kvbm",
+      "targetId": "npc-2-1n841g2",
+      "affinity": 0.49,
+      "trust": 0.43,
+      "tension": 0.34,
+      "label": "기다려 주지만 아직 서운한 사이",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-3-1swtgwl",
+      "targetId": "npc-1-173cidm",
+      "affinity": 0.8,
+      "trust": 0.6,
+      "tension": 0.08,
+      "label": "발견을 함께 나누는 사이",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-1-173cidm",
+      "targetId": "npc-3-1swtgwl",
+      "affinity": 0.55,
+      "trust": 0.48,
+      "tension": 0.22,
+      "label": "빠른 속도에 가끔 놀라는 사이",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-3-1swtgwl",
+      "targetId": "npc-4-1x8kvbm",
+      "affinity": 0.67,
+      "trust": 0.57,
+      "tension": 0.14,
+      "label": "잠든 곁을 맴도는 사이",
+      "lastChangedSceneId": null
+    },
+    {
+      "sourceId": "npc-4-1x8kvbm",
+      "targetId": "npc-3-1swtgwl",
+      "affinity": 0.61,
+      "trust": 0.65,
+      "tension": 0.1,
+      "label": "들뜬 마음을 쉬게 해 주는 사이",
+      "lastChangedSceneId": null
+    }
+  ],
+  "memories": [
+    {
+      "id": "memory-moru-dara-umbrella",
+      "ownerId": "npc-1-173cidm",
+      "sceneId": "scene-before-rain",
+      "summary": "다라가 비 오기 전 물그릇 위에 작은 그늘막을 접어 주었다.",
+      "interpretation": "고맙다는 말을 해야 하는데, 아직 좋은 순간을 고르는 중이다.",
+      "visibility": "private",
+      "salience": 0.88
+    },
+    {
+      "id": "memory-dara-nabi-chair",
+      "ownerId": "npc-2-1n841g2",
+      "sceneId": "scene-empty-chair",
+      "summary": "다라는 나비의 몫을 묻지 않고 의자 하나를 접어 버렸다.",
+      "interpretation": "나비가 서운해했다는 것을 알지만 먼저 말을 꺼내기 어렵다.",
+      "visibility": "private",
+      "salience": 0.91
+    },
+    {
+      "id": "memory-pipi-moru-glint",
+      "ownerId": "npc-3-1swtgwl",
+      "sceneId": "scene-glint-hunt",
+      "summary": "모루와 함께 물그릇 바닥의 단추를 찾아냈다.",
+      "interpretation": "모루는 느리지만 제일 멋진 발견 친구다.",
+      "visibility": "shared",
+      "salience": 0.73
+    },
+    {
+      "id": "memory-nabi-dara-sun",
+      "ownerId": "npc-4-1x8kvbm",
+      "sceneId": "scene-empty-chair",
+      "summary": "다라가 의자를 접던 날, 나비는 담장 아래 혼자 앉아 있었다.",
+      "interpretation": "사과를 기다리기보다 먼저 마음을 말해야 할지도 모른다.",
+      "visibility": "private",
+      "salience": 0.84
+    }
+  ],
+  "openThreads": [
+    {
+      "id": "thread-windchime",
+      "title": "한 번 덜 울린 바람종이",
+      "description": "바람종이가 평소보다 한 번 덜 울린 이유를 네 이웃이 각자의 방식으로 살피고 있다.",
+      "participantIds": [
+        "npc-1-173cidm",
+        "npc-2-1n841g2",
+        "npc-3-1swtgwl",
+        "npc-4-1x8kvbm"
+      ],
+      "status": "open",
+      "createdSceneId": "scene-windchime-quiet"
+    },
+    {
+      "id": "thread-folded-chair",
+      "title": "접힌 의자 하나",
+      "description": "다라와 나비 사이에 말하지 못한 서운함이 남아 있다.",
+      "participantIds": [
+        "npc-2-1n841g2",
+        "npc-4-1x8kvbm"
+      ],
+      "status": "open",
+      "createdSceneId": "scene-empty-chair"
+    },
+    {
+      "id": "thread-thanks-waterbowl",
+      "title": "물그릇의 고마움",
+      "description": "모루는 다라에게 그늘막을 만들어 준 일을 고맙다고 말하고 싶다.",
+      "participantIds": [
+        "npc-1-173cidm",
+        "npc-2-1n841g2"
+      ],
+      "status": "open",
+      "createdSceneId": "scene-before-rain"
+    },
+    {
+      "id": "thread-bright-name",
+      "title": "이름 없는 빛 조각",
+      "description": "피피는 모두가 함께 정할 수 있는 새로운 이름을 기다리고 있다.",
+      "participantIds": [
+        "npc-3-1swtgwl",
+        "npc-1-173cidm"
+      ],
+      "status": "open",
+      "createdSceneId": "scene-glint-hunt"
+    }
+  ],
+  "recentScenes": [
+    {
+      "id": "scene-before-rain",
+      "title": "비 오기 전의 그늘막",
+      "summary": "다라는 물그릇 위에 작은 그늘막을 접었고, 모루는 그 모습을 오래 바라보았다.",
+      "participantIds": [
+        "npc-1-173cidm",
+        "npc-2-1n841g2"
+      ],
+      "atRevision": 0
+    },
+    {
+      "id": "scene-empty-chair",
+      "title": "비어 있던 자리",
+      "summary": "다라는 의자 하나를 접어 두었고, 나비는 담장 아래로 자리를 옮겼다.",
+      "participantIds": [
+        "npc-2-1n841g2",
+        "npc-4-1x8kvbm"
+      ],
+      "atRevision": 0
+    },
+    {
+      "id": "scene-glint-hunt",
+      "title": "물 아래의 반짝임",
+      "summary": "피피와 모루는 물그릇 바닥에서 햇빛을 받아 빛나던 단추를 찾아냈다.",
+      "participantIds": [
+        "npc-3-1swtgwl",
+        "npc-1-173cidm"
+      ],
+      "atRevision": 0
+    },
+    {
+      "id": "scene-windchime-quiet",
+      "title": "조용해진 바람종이",
+      "summary": "네 이웃은 바람종이가 한 번 덜 울린 오후를 각자 다른 눈으로 알아차렸다.",
+      "participantIds": [
+        "npc-1-173cidm",
+        "npc-2-1n841g2",
+        "npc-3-1swtgwl",
+        "npc-4-1x8kvbm"
+      ],
+      "atRevision": 0
+    }
+  ]
+}

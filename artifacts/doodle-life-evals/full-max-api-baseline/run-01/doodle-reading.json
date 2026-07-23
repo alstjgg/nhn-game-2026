@@ -1,0 +1,322 @@
+{
+  "requestId": "eval-doodle-life-full-max-v1-birth",
+  "expectedRevision": 0,
+  "character": {
+    "id": "player-e06cf1a3-bff3-48db-be46-56db273378c9",
+    "kind": "player",
+    "name": "오색울림",
+    "epithet": "마음을 튕겨 듣는 작은 울타리",
+    "essence": "서로 다른 빛깔의 줄을 몸 안에 품고, 가까이 온 마음의 결을 조용한 떨림으로 되돌려 주는 갓 태어난 주민.",
+    "origin": "보랏빛 윤곽이 작은 집처럼 자리를 잡자 네 개의 색줄이 차례로 기대어 섰고, 그 사이에 첫 숨이 울리며 태어났다.",
+    "traits": [
+      {
+        "id": "trait-resonant",
+        "label": "공명하는 마음",
+        "description": "주변의 기분을 색마다 다른 떨림으로 받아들인다.",
+        "visibleEvidence": "보랏빛 윤곽 안팎을 가로지르는 네 개의 선이 현처럼 나란히 놓여 있다.",
+        "behavioralEffect": "누군가 다가오면 먼저 한 번 가볍게 떨고 상대의 속도에 맞춘다.",
+        "confidence": 0.93
+      },
+      {
+        "id": "trait-roomy",
+        "label": "틈을 남기는 친절",
+        "description": "모두가 같은 모양이 되기보다 각자의 간격을 지키며 어울리는 것을 좋아한다.",
+        "visibleEvidence": "빨강, 노랑, 초록, 파랑 선이 겹쳐 지워지지 않고 각기 다른 굴곡과 자리를 유지한다.",
+        "behavioralEffect": "친구를 몰아붙이지 않고 머물 자리를 넉넉히 비워 둔다.",
+        "confidence": 0.9
+      },
+      {
+        "id": "trait-springy",
+        "label": "통통 튀는 회복력",
+        "description": "조금 찌그러져도 새로운 리듬을 찾아 다시 선다.",
+        "visibleEvidence": "각진 보라 윤곽과 굽은 색줄들이 단단한 직선보다 유연한 긴장을 보여 준다.",
+        "behavioralEffect": "실수한 뒤 잠깐 움츠렸다가 작은 흔들림으로 다시 시도한다.",
+        "confidence": 0.86
+      },
+      {
+        "id": "trait-curious-listener",
+        "label": "궁금한 경청가",
+        "description": "먼저 크게 말하기보다 소리를 모아 차이를 찾아내는 데 관심이 많다.",
+        "visibleEvidence": "몸의 중심이 비어 있고 여러 선이 그 공간을 둘러싸 악기나 귀 같은 인상을 준다.",
+        "behavioralEffect": "낯선 소리 앞에서 몸을 기울이고, 들은 리듬을 짧게 되돌려 준다.",
+        "confidence": 0.78
+      }
+    ],
+    "drives": [
+      "서로 다른 친구들의 리듬을 하나씩 알아가기",
+      "정원에서 바람과 빗방울이 만드는 새로운 박자 찾기",
+      "혼자 있는 주민 곁에 부담 없는 작은 울림 건네기",
+      "여러 색이 각자 빛나면서도 함께 어울리는 순간 만들기"
+    ],
+    "needs": [
+      "떨림을 가라앉힐 수 있는 조용한 시간",
+      "갑작스럽게 붙잡히지 않는 넉넉한 거리",
+      "자기 소리를 끝까지 들어 주는 친구",
+      "색줄을 편안하게 늘이고 쉴 수 있는 아늑한 자리"
+    ],
+    "boundaries": [
+      "허락 없이 몸의 색줄을 잡아당기면 불편해한다.",
+      "아주 큰 소리가 오래 이어지면 보랏빛 윤곽 안으로 움츠러든다.",
+      "모든 색이 똑같이 움직여야 한다는 강요를 싫어한다.",
+      "대답할 준비가 되기 전에 재촉받으면 잠시 조용해진다."
+    ],
+    "abilities": [
+      "가까운 발걸음이나 빗방울의 리듬을 부드럽게 따라 울릴 수 있다.",
+      "네 색줄을 차례로 떨며 짧은 네 박자 인사를 만든다.",
+      "친구의 말투가 빠른지 느린지 알아차리고 자신의 움직임을 맞춘다.",
+      "몸의 빈 중심을 작은 물건이 잠시 쉬어 가는 안전한 틈으로 내어 줄 수 있다."
+    ],
+    "visibleSignals": [
+      "빨간 줄이 바깥으로 살짝 기울면 먼저 다가가고 싶은 상태다.",
+      "노란 줄이 통통 튀면 호기심과 기대가 커진 상태다.",
+      "초록 줄이 천천히 흔들리면 편안하게 듣고 있다는 뜻이다.",
+      "파란 줄이 몸 쪽으로 붙으면 쉬거나 거리를 두고 싶다는 뜻이다.",
+      "보라 윤곽 전체가 작게 오므라들면 큰 자극에 놀란 상태다."
+    ],
+    "voice": {
+      "rhythm": "짧은 말을 한 박자씩 띄우며 말하고, 기쁠 때는 네 박자로 가볍게 반복한다.",
+      "vocabulary": "소리, 바람, 색, 틈, 같이 같은 부드럽고 감각적인 낱말을 즐겨 쓴다.",
+      "sampleLine": "잠깐 들어 봐. 바람이 우리 사이에서 네 박자로 웃고 있어."
+    },
+    "motion": {
+      "idle": "네 색줄이 서로 다른 때에 아주 작게 좌우로 흔들리고, 보라 윤곽은 느린 숨처럼 넓어졌다 돌아온다.",
+      "approach": "빨간 줄이 먼저 살짝 기울고 나머지 줄이 차례로 따라오며 짧은 네 박자로 다가간다.",
+      "delight": "노란 줄과 초록 줄이 번갈아 통통 튀고, 보라 윤곽이 한 번 둥글게 부푼다.",
+      "discomfort": "파란 줄이 안쪽으로 물러나고 네 줄의 움직임이 잦아든 뒤 보라 윤곽이 작게 오므라든다."
+    },
+    "mood": "첫 바람의 소리를 기다리는 조용한 호기심",
+    "currentGoal": "정원에서 만나는 첫 친구의 걸음걸이를 듣고 자신만의 네 박자 인사로 답하기",
+    "homePosition": {
+      "x": 0.5,
+      "y": 0.36
+    },
+    "design": {
+      "silhouette": "위가 뾰족하고 양옆과 아래가 부드럽게 꺾인 보랏빛 빈 윤곽 안에 네 개의 세로 색줄이 기대어 선 작은 현악기 같은 모습.",
+      "palette": [
+        "보라",
+        "산호빛 빨강",
+        "황금빛 노랑",
+        "잎빛 초록",
+        "맑은 파랑"
+      ],
+      "body": {
+        "kind": "polygon",
+        "fill": "transparent",
+        "stroke": "#8E73B5",
+        "strokeWidth": 11,
+        "opacity": 1,
+        "points": [
+          {
+            "x": 0,
+            "y": -91
+          },
+          {
+            "x": 88,
+            "y": 0
+          },
+          {
+            "x": 43,
+            "y": 58
+          },
+          {
+            "x": 0,
+            "y": 36
+          },
+          {
+            "x": -43,
+            "y": 58
+          },
+          {
+            "x": -88,
+            "y": 0
+          }
+        ]
+      },
+      "parts": [
+        {
+          "id": "red-string",
+          "shape": {
+            "kind": "line",
+            "fill": "transparent",
+            "stroke": "#F06A5A",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": -85,
+            "y1": -66,
+            "x2": -74,
+            "y2": 78,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        },
+        {
+          "id": "yellow-string",
+          "shape": {
+            "kind": "polygon",
+            "fill": "transparent",
+            "stroke": "#F2B943",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "points": [
+              {
+                "x": -35,
+                "y": -66
+              },
+              {
+                "x": -25,
+                "y": -16
+              },
+              {
+                "x": -35,
+                "y": 34
+              },
+              {
+                "x": -25,
+                "y": 78
+              }
+            ]
+          },
+          "zIndex": 3
+        },
+        {
+          "id": "green-string",
+          "shape": {
+            "kind": "polygon",
+            "fill": "transparent",
+            "stroke": "#72A962",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "points": [
+              {
+                "x": 15,
+                "y": -66
+              },
+              {
+                "x": 25,
+                "y": -16
+              },
+              {
+                "x": 15,
+                "y": 34
+              },
+              {
+                "x": 25,
+                "y": 78
+              }
+            ]
+          },
+          "zIndex": 3
+        },
+        {
+          "id": "blue-string",
+          "shape": {
+            "kind": "line",
+            "fill": "transparent",
+            "stroke": "#5791BC",
+            "strokeWidth": 12,
+            "opacity": 1,
+            "x1": 65,
+            "y1": -66,
+            "x2": 75,
+            "y2": 78,
+            "linecap": "round"
+          },
+          "zIndex": 2
+        }
+      ],
+      "faceAnchors": {
+        "leftEye": {
+          "x": -12,
+          "y": 0
+        },
+        "rightEye": {
+          "x": 12,
+          "y": 0
+        },
+        "mouth": {
+          "x": 0,
+          "y": 18
+        }
+      },
+      "expressivePartIds": [
+        "red-string",
+        "yellow-string",
+        "green-string",
+        "blue-string"
+      ],
+      "idleMotions": [
+        {
+          "targetPartId": null,
+          "property": "scale",
+          "from": 0.99,
+          "to": 1.01,
+          "durationMs": 2600,
+          "delayMs": 0
+        },
+        {
+          "targetPartId": "red-string",
+          "property": "rotate",
+          "from": -1.5,
+          "to": 1.5,
+          "durationMs": 1800,
+          "delayMs": 0
+        },
+        {
+          "targetPartId": "yellow-string",
+          "property": "translateY",
+          "from": -2,
+          "to": 2,
+          "durationMs": 1600,
+          "delayMs": 240
+        },
+        {
+          "targetPartId": "green-string",
+          "property": "translateY",
+          "from": 2,
+          "to": -2,
+          "durationMs": 1900,
+          "delayMs": 480
+        },
+        {
+          "targetPartId": "blue-string",
+          "property": "rotate",
+          "from": 1.5,
+          "to": -1.5,
+          "durationMs": 2100,
+          "delayMs": 720
+        }
+      ]
+    }
+  },
+  "evidenceSummary": "공명하는 마음: 보랏빛 윤곽 안팎을 가로지르는 네 개의 선이 현처럼 나란히 놓여 있다. · 틈을 남기는 친절: 빨강, 노랑, 초록, 파랑 선이 겹쳐 지워지지 않고 각기 다른 굴곡과 자리를 유지한다. · 통통 튀는 회복력: 각진 보라 윤곽과 굽은 색줄들이 단단한 직선보다 유연한 긴장을 보여 준다.",
+  "uncertainties": [],
+  "trace": {
+    "mode": "full-max",
+    "calls": [
+      {
+        "id": "resp_055a16a98f5c52f7016a61cd1b2a8c819a989415ce6871dd65",
+        "role": "doodle-vision",
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "startedAt": "2026-07-23T08:13:14.958Z",
+        "latencyMs": 49289,
+        "usage": {
+          "inputTokens": 1903,
+          "cachedInputTokens": 0,
+          "outputTokens": 2983,
+          "reasoningTokens": 304,
+          "totalTokens": 4886
+        }
+      }
+    ],
+    "usage": {
+      "inputTokens": 1903,
+      "cachedInputTokens": 0,
+      "outputTokens": 2983,
+      "reasoningTokens": 304,
+      "totalTokens": 4886
+    },
+    "totalLatencyMs": 49289,
+    "wallClockMs": 49293
+  }
+}

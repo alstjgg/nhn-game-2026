@@ -1,0 +1,26 @@
+{
+  "requestId": "c3bc7715-bb48-4040-ad9a-a9eb3e1b232f",
+  "worldRevision": 0,
+  "quest": {
+    "questId": "quest_soso_last_note",
+    "ownerNpcId": "npc_soso",
+    "title": "기다리던 마지막 박자",
+    "problemState": "높은 리본 풍경은 세 번 울리지만 건너편 작은 종에는 마지막 소리가 도착하지 않는다.",
+    "primaryPurpose": "소리의 근원에 접근하고 받은 신호를 건너편까지 전한다.",
+    "clues": {
+      "dialogue": [
+        "높은 리본 풍경이 세 번 울면, 건너편 작은 종은 늘 마지막 소리를 놓쳐."
+      ],
+      "behavior": [
+        "몸을 길게 펴 위를 향하지만 닿지 못한 뒤, 옆자리를 비운 채 마지막 박자를 기다린다."
+      ],
+      "environment": [
+        "높은 리본은 세 번 흔들리지만 건너편 종 주위에는 파문이 두 개만 남는다."
+      ],
+      "observationFocus": "높은 곳 · 끊긴 마지막 소리",
+      "visibleTarget": "높은 리본 풍경과 건너편 작은 종",
+      "visibleTiming": "리본 풍경이 세 번째 울릴 때"
+    },
+    "status": "active"
+  }
+}

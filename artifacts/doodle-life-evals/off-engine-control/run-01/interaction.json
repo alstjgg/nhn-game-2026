@@ -1,0 +1,387 @@
+{
+  "signal": {
+    "kind": "newcomer-arrived",
+    "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+    "detail": "포롱이(가) 사용자가 그린 모습 그대로 처음 정원에 나타났다. 주민들은 각자의 관점으로 이 낯선 존재를 처음 본다."
+  },
+  "intents": [],
+  "proposedScene": {
+    "id": "scene_2_7qzcj3",
+    "title": "포롱의 선끝에 모아가 대답한 방식",
+    "summary": "포롱이 자기 몸짓을 먼저 보여 주고 모아가 전혀 다른 버릇으로 받아, 둘 사이에 없던 리듬이 생겼다.",
+    "participantIds": [
+      "player-82d11066-2060-496d-9d56-3277d4e29736",
+      "npc-1-iuj69t"
+    ],
+    "beats": [
+      {
+        "id": "scene_2_7qzcj3_move",
+        "startMs": 0,
+        "durationMs": 720,
+        "statusText": "포롱이 자기만의 움직임으로 빈자리 쪽에 다가가요.",
+        "actions": [
+          {
+            "kind": "move",
+            "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+            "to": {
+              "x": 30.5,
+              "y": 57.00000000000001
+            },
+            "rotate": null,
+            "scale": 1.04
+          }
+        ]
+      },
+      {
+        "id": "scene_2_7qzcj3_look",
+        "startMs": 720,
+        "durationMs": 520,
+        "statusText": "모아가 하던 일을 멈추고 포롱을 바라봐요.",
+        "actions": [
+          {
+            "kind": "look",
+            "actorId": "npc-1-iuj69t",
+            "targetId": "player-82d11066-2060-496d-9d56-3277d4e29736"
+          }
+        ]
+      },
+      {
+        "id": "scene_2_7qzcj3_line_a",
+        "startMs": 1240,
+        "durationMs": 1800,
+        "statusText": "포롱이 먼저 작은 말을 건네요.",
+        "actions": [
+          {
+            "kind": "speak",
+            "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+            "text": "내 선은 여기서 멈췄어. 네가 이어도 좋아."
+          },
+          {
+            "kind": "prop_create",
+            "propId": "scene_2_7qzcj3_wind_note",
+            "symbol": "⌁",
+            "label": "둘 사이에서 접힌 바람 조각",
+            "color": "#8d72ad",
+            "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+            "position": {
+              "x": 36.5,
+              "y": 49.00000000000001
+            }
+          }
+        ]
+      },
+      {
+        "id": "scene_2_7qzcj3_gesture_b",
+        "startMs": 3040,
+        "durationMs": 880,
+        "statusText": "모아가 익숙한 버릇으로 대답해요.",
+        "actions": [
+          {
+            "kind": "gesture",
+            "actorId": "npc-1-iuj69t",
+            "gesture": "stretch",
+            "status": "주머니 속 점들이 작은 원을 그린다."
+          },
+          {
+            "kind": "prop_transform",
+            "propId": "scene_2_7qzcj3_wind_note",
+            "scale": 1.18,
+            "rotate": 12,
+            "opacity": 0.92
+          }
+        ]
+      },
+      {
+        "id": "scene_2_7qzcj3_line_b",
+        "startMs": 3920,
+        "durationMs": 1900,
+        "statusText": "모아의 대답이 처음과는 다른 방향을 만들어요.",
+        "actions": [
+          {
+            "kind": "speak",
+            "actorId": "npc-1-iuj69t",
+            "text": "아직 말하지 않아도 돼. 빈자리도 같이 들을게."
+          }
+        ]
+      },
+      {
+        "id": "scene_2_7qzcj3_effect",
+        "startMs": 5820,
+        "durationMs": 980,
+        "statusText": "서로 다른 몸짓이 겹친 자리에 작은 흔적이 남아요.",
+        "actions": [
+          {
+            "kind": "effect",
+            "effect": "glow",
+            "targetId": null,
+            "color": "#d9f2ef",
+            "intensity": 0.58
+          },
+          {
+            "kind": "prop_transform",
+            "propId": "scene_2_7qzcj3_wind_note",
+            "scale": 0.82,
+            "rotate": -8,
+            "opacity": 0.48
+          }
+        ]
+      },
+      {
+        "id": "scene_2_7qzcj3_pause",
+        "startMs": 6800,
+        "durationMs": 460,
+        "statusText": "둘은 새로 생긴 리듬을 잠시 함께 들어요.",
+        "actions": [
+          {
+            "kind": "pause",
+            "durationMs": 460
+          },
+          {
+            "kind": "prop_remove",
+            "propId": "scene_2_7qzcj3_wind_note"
+          }
+        ]
+      }
+    ],
+    "mutations": [
+      {
+        "kind": "memory",
+        "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+        "visibility": "private",
+        "summary": "포롱이 모아와 처음으로 서로 다른 몸짓을 이어 보았다.",
+        "interpretation": "모아은 내 속도와 달랐지만 기다릴 수 있는 빈자리를 남겨 주었다.",
+        "salience": 0.82
+      },
+      {
+        "kind": "mood",
+        "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+        "mood": "낯선 리듬을 하나 얻은 기쁨",
+        "reason": "자기 특성이 다른 존재의 반응을 실제로 바꾸는 것을 보았기 때문이다."
+      },
+      {
+        "kind": "relationship",
+        "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+        "targetId": "npc-1-iuj69t",
+        "affinityDelta": 0.1,
+        "trustDelta": 0.07,
+        "tensionDelta": 0.03,
+        "label": "서로 다른 박자를 한 번 이어 본 사이",
+        "reason": "두 주민이 각자의 버릇을 지우지 않고 한 장면 안에서 주고받았다."
+      },
+      {
+        "kind": "memory",
+        "actorId": "npc-1-iuj69t",
+        "visibility": "shared",
+        "summary": "모아가 포롱의 낯선 신호에 자기 방식으로 대답했다.",
+        "interpretation": "포롱의 모양은 고쳐야 할 것이 아니라 함께 움직일 새로운 규칙일 수 있다.",
+        "salience": 0.76
+      },
+      {
+        "kind": "thread",
+        "threadId": "thread_2_7qzcj3",
+        "operation": "open",
+        "title": "둘만 들은 다음 박자",
+        "description": "포롱과 모아가 만든 첫 리듬에는 아직 이어지지 않은 한 박자가 남았다.",
+        "participantIds": [
+          "player-82d11066-2060-496d-9d56-3277d4e29736",
+          "npc-1-iuj69t"
+        ],
+        "reason": "장면 끝에 두 주민 모두 다음 움직임을 기다리는 몸짓을 남겼다."
+      }
+    ],
+    "observationTitle": "같아져서가 아니라, 달라서 이어진 순간",
+    "observationBody": "포롱의 상승기류를 타는 몸과 모아의 침묵 수집가이 서로를 바꾸지 않은 채 새로운 행동을 만들었다."
+  },
+  "critic": {
+    "approved": true,
+    "issues": [],
+    "correctedScene": null
+  },
+  "finalScene": {
+    "id": "scene_2_7qzcj3",
+    "title": "포롱의 선끝에 모아가 대답한 방식",
+    "summary": "포롱이 자기 몸짓을 먼저 보여 주고 모아가 전혀 다른 버릇으로 받아, 둘 사이에 없던 리듬이 생겼다.",
+    "participantIds": [
+      "player-82d11066-2060-496d-9d56-3277d4e29736",
+      "npc-1-iuj69t"
+    ],
+    "beats": [
+      {
+        "id": "scene_2_7qzcj3_move",
+        "startMs": 0,
+        "durationMs": 720,
+        "statusText": "포롱이 자기만의 움직임으로 빈자리 쪽에 다가가요.",
+        "actions": [
+          {
+            "kind": "move",
+            "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+            "to": {
+              "x": 30.5,
+              "y": 57.00000000000001
+            },
+            "rotate": null,
+            "scale": 1.04
+          }
+        ]
+      },
+      {
+        "id": "scene_2_7qzcj3_look",
+        "startMs": 720,
+        "durationMs": 520,
+        "statusText": "모아가 하던 일을 멈추고 포롱을 바라봐요.",
+        "actions": [
+          {
+            "kind": "look",
+            "actorId": "npc-1-iuj69t",
+            "targetId": "player-82d11066-2060-496d-9d56-3277d4e29736"
+          }
+        ]
+      },
+      {
+        "id": "scene_2_7qzcj3_line_a",
+        "startMs": 1240,
+        "durationMs": 1800,
+        "statusText": "포롱이 먼저 작은 말을 건네요.",
+        "actions": [
+          {
+            "kind": "speak",
+            "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+            "text": "내 선은 여기서 멈췄어. 네가 이어도 좋아."
+          },
+          {
+            "kind": "prop_create",
+            "propId": "scene_2_7qzcj3_wind_note",
+            "symbol": "⌁",
+            "label": "둘 사이에서 접힌 바람 조각",
+            "color": "#8d72ad",
+            "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+            "position": {
+              "x": 36.5,
+              "y": 49.00000000000001
+            }
+          }
+        ]
+      },
+      {
+        "id": "scene_2_7qzcj3_gesture_b",
+        "startMs": 3040,
+        "durationMs": 880,
+        "statusText": "모아가 익숙한 버릇으로 대답해요.",
+        "actions": [
+          {
+            "kind": "gesture",
+            "actorId": "npc-1-iuj69t",
+            "gesture": "stretch",
+            "status": "주머니 속 점들이 작은 원을 그린다."
+          },
+          {
+            "kind": "prop_transform",
+            "propId": "scene_2_7qzcj3_wind_note",
+            "scale": 1.18,
+            "rotate": 12,
+            "opacity": 0.92
+          }
+        ]
+      },
+      {
+        "id": "scene_2_7qzcj3_line_b",
+        "startMs": 3920,
+        "durationMs": 1900,
+        "statusText": "모아의 대답이 처음과는 다른 방향을 만들어요.",
+        "actions": [
+          {
+            "kind": "speak",
+            "actorId": "npc-1-iuj69t",
+            "text": "아직 말하지 않아도 돼. 빈자리도 같이 들을게."
+          }
+        ]
+      },
+      {
+        "id": "scene_2_7qzcj3_effect",
+        "startMs": 5820,
+        "durationMs": 980,
+        "statusText": "서로 다른 몸짓이 겹친 자리에 작은 흔적이 남아요.",
+        "actions": [
+          {
+            "kind": "effect",
+            "effect": "glow",
+            "targetId": null,
+            "color": "#d9f2ef",
+            "intensity": 0.58
+          },
+          {
+            "kind": "prop_transform",
+            "propId": "scene_2_7qzcj3_wind_note",
+            "scale": 0.82,
+            "rotate": -8,
+            "opacity": 0.48
+          }
+        ]
+      },
+      {
+        "id": "scene_2_7qzcj3_pause",
+        "startMs": 6800,
+        "durationMs": 460,
+        "statusText": "둘은 새로 생긴 리듬을 잠시 함께 들어요.",
+        "actions": [
+          {
+            "kind": "pause",
+            "durationMs": 460
+          },
+          {
+            "kind": "prop_remove",
+            "propId": "scene_2_7qzcj3_wind_note"
+          }
+        ]
+      }
+    ],
+    "mutations": [
+      {
+        "kind": "memory",
+        "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+        "visibility": "private",
+        "summary": "포롱이 모아와 처음으로 서로 다른 몸짓을 이어 보았다.",
+        "interpretation": "모아은 내 속도와 달랐지만 기다릴 수 있는 빈자리를 남겨 주었다.",
+        "salience": 0.82
+      },
+      {
+        "kind": "mood",
+        "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+        "mood": "낯선 리듬을 하나 얻은 기쁨",
+        "reason": "자기 특성이 다른 존재의 반응을 실제로 바꾸는 것을 보았기 때문이다."
+      },
+      {
+        "kind": "relationship",
+        "actorId": "player-82d11066-2060-496d-9d56-3277d4e29736",
+        "targetId": "npc-1-iuj69t",
+        "affinityDelta": 0.1,
+        "trustDelta": 0.07,
+        "tensionDelta": 0.03,
+        "label": "서로 다른 박자를 한 번 이어 본 사이",
+        "reason": "두 주민이 각자의 버릇을 지우지 않고 한 장면 안에서 주고받았다."
+      },
+      {
+        "kind": "memory",
+        "actorId": "npc-1-iuj69t",
+        "visibility": "shared",
+        "summary": "모아가 포롱의 낯선 신호에 자기 방식으로 대답했다.",
+        "interpretation": "포롱의 모양은 고쳐야 할 것이 아니라 함께 움직일 새로운 규칙일 수 있다.",
+        "salience": 0.76
+      },
+      {
+        "kind": "thread",
+        "threadId": "thread_2_7qzcj3",
+        "operation": "open",
+        "title": "둘만 들은 다음 박자",
+        "description": "포롱과 모아가 만든 첫 리듬에는 아직 이어지지 않은 한 박자가 남았다.",
+        "participantIds": [
+          "player-82d11066-2060-496d-9d56-3277d4e29736",
+          "npc-1-iuj69t"
+        ],
+        "reason": "장면 끝에 두 주민 모두 다음 움직임을 기다리는 몸짓을 남겼다."
+      }
+    ],
+    "observationTitle": "같아져서가 아니라, 달라서 이어진 순간",
+    "observationBody": "포롱의 상승기류를 타는 몸과 모아의 침묵 수집가이 서로를 바꾸지 않은 채 새로운 행동을 만들었다."
+  }
+}

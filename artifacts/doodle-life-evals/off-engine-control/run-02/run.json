@@ -1,0 +1,86 @@
+{
+  "run": 2,
+  "temperature": "warm",
+  "startedAt": "2026-07-23T08:30:35.806Z",
+  "endedAt": "2026-07-23T08:30:35.838Z",
+  "ok": true,
+  "timeline": [
+    {
+      "stage": "bootstrap",
+      "startedAt": "2026-07-23T08:30:35.806Z",
+      "endedAt": "2026-07-23T08:30:35.817Z",
+      "wallClockMs": 11,
+      "ok": true
+    },
+    {
+      "stage": "doodle-birth",
+      "startedAt": "2026-07-23T08:30:35.821Z",
+      "endedAt": "2026-07-23T08:30:35.827Z",
+      "wallClockMs": 6,
+      "ok": true
+    },
+    {
+      "stage": "newcomer-arrived",
+      "startedAt": "2026-07-23T08:30:35.830Z",
+      "endedAt": "2026-07-23T08:30:35.836Z",
+      "wallClockMs": 6,
+      "ok": true
+    }
+  ],
+  "trace": {
+    "operations": [
+      {
+        "mode": "off",
+        "calls": [],
+        "usage": {
+          "inputTokens": 0,
+          "cachedInputTokens": 0,
+          "outputTokens": 0,
+          "reasoningTokens": 0,
+          "totalTokens": 0
+        },
+        "totalLatencyMs": 0,
+        "wallClockMs": 3
+      },
+      {
+        "mode": "off",
+        "calls": [],
+        "usage": {
+          "inputTokens": 0,
+          "cachedInputTokens": 0,
+          "outputTokens": 0,
+          "reasoningTokens": 0,
+          "totalTokens": 0
+        },
+        "totalLatencyMs": 0,
+        "wallClockMs": 1
+      },
+      {
+        "mode": "off",
+        "calls": [],
+        "usage": {
+          "inputTokens": 0,
+          "cachedInputTokens": 0,
+          "outputTokens": 0,
+          "reasoningTokens": 0,
+          "totalTokens": 0
+        },
+        "totalLatencyMs": 0,
+        "wallClockMs": 2
+      }
+    ],
+    "totals": {
+      "calls": 0,
+      "usage": {
+        "inputTokens": 0,
+        "cachedInputTokens": 0,
+        "outputTokens": 0,
+        "reasoningTokens": 0,
+        "totalTokens": 0
+      },
+      "totalLatencyMs": 0,
+      "wallClockMs": 6,
+      "roles": {}
+    }
+  }
+}

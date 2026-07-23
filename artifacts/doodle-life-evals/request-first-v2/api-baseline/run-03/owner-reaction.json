@@ -1,0 +1,217 @@
+{
+  "role": "quest-owner-reaction",
+  "schemaName": "doodle_life_npc_reaction",
+  "reasoning": "low",
+  "maxOutputTokens": 900,
+  "inputMetadata": [
+    {
+      "type": "input_text",
+      "json": {
+        "actor": {
+          "id": "npc_soso",
+          "name": "소소",
+          "epithet": "마지막 박자를 기다리는 긴잎",
+          "essence": "도착하지 않은 마지막 소리를 위해 늘 자기 옆 한 자리를 비워 둔다.",
+          "voiceStyle": "긴 쉼 뒤에 문제의 반복 횟수를 또렷하게 말한다.",
+          "repeatedBehavior": "몸을 수평으로 길게 펴 높은 리본 풍경을 향하지만 끝내 닿지 못하고, 건너편 종의 마지막 박자를 기다린다."
+        },
+        "participants": [
+          {
+            "id": "npc_soso",
+            "name": "소소",
+            "role": "request-owner"
+          },
+          {
+            "id": "npc_dari",
+            "name": "다리",
+            "role": "observer"
+          },
+          {
+            "id": "doodle_89d06ff323eb80303fed",
+            "name": "마름날개",
+            "role": "new-doodle-creature"
+          }
+        ],
+        "publicProblem": {
+          "title": "기다리던 마지막 박자",
+          "problemState": "높은 리본 풍경은 세 번 울리지만 건너편 작은 종에는 마지막 소리가 도착하지 않는다.",
+          "observationFocus": "높은 곳 · 끊긴 마지막 소리"
+        },
+        "doodle": {
+          "name": "마름날개",
+          "essence": "좌우로 길게 펼쳐진 각진 윤곽 위에 중앙의 세로 고리들과 오른쪽의 겹마름모가 이어진 검은 선 그림입니다.",
+          "visibleFeatures": [
+            {
+              "id": "left-wing",
+              "label": "왼쪽 각진 날개",
+              "description": "왼쪽 끝에서 중앙으로 넓게 펼쳐지며 위아래가 꺾이는 빈 윤곽입니다.",
+              "evidence": "굵은 검은 선이 왼쪽 꼭짓점과 위·아래 모서리를 지나 중앙의 좁은 부분으로 이어집니다.",
+              "region": {
+                "x": 0.115,
+                "y": 0.369,
+                "width": 0.265,
+                "height": 0.375
+              },
+              "confidence": 0.97
+            },
+            {
+              "id": "center-loops",
+              "label": "가운데 솟은 고리선",
+              "description": "몸체 중앙 위로 세 개의 뾰족한 봉우리처럼 보이는 선 구조가 솟아 있습니다.",
+              "evidence": "세로로 올라간 선들이 꼭짓점과 사선으로 연결되고, 아래쪽 끝은 본체 안에서 끊겨 있습니다.",
+              "region": {
+                "x": 0.321,
+                "y": 0.273,
+                "width": 0.167,
+                "height": 0.258
+              },
+              "confidence": 0.91
+            },
+            {
+              "id": "right-wing",
+              "label": "오른쪽 각진 날개",
+              "description": "중앙에서 오른쪽으로 벌어졌다가 다시 좁아지는 대칭에 가까운 빈 윤곽입니다.",
+              "evidence": "위쪽과 아래쪽의 긴 사선이 바깥 모서리를 만들며 오른쪽 끝의 선 구조로 모입니다.",
+              "region": {
+                "x": 0.432,
+                "y": 0.36,
+                "width": 0.312,
+                "height": 0.397
+              },
+              "confidence": 0.96
+            },
+            {
+              "id": "right-diamonds",
+              "label": "오른쪽 겹마름모",
+              "description": "오른쪽 끝에 작은 마름모 두 개가 겹쳐 교차선을 만듭니다.",
+              "evidence": "네 방향의 사선들이 중앙에서 교차하고 바깥쪽에 뾰족한 끝을 형성합니다.",
+              "region": {
+                "x": 0.641,
+                "y": 0.501,
+                "width": 0.142,
+                "height": 0.149
+              },
+              "confidence": 0.94
+            }
+          ],
+          "motionHints": [
+            {
+              "featureId": "left-wing",
+              "motion": "bend",
+              "anchor": {
+                "x": 0.31,
+                "y": 0.515
+              },
+              "description": "중앙 가까운 좁은 연결점을 기준으로 넓은 왼쪽 윤곽이 위아래로 굽힐 수 있는 형태입니다."
+            },
+            {
+              "featureId": "right-wing",
+              "motion": "bend",
+              "anchor": {
+                "x": 0.49,
+                "y": 0.52
+              },
+              "description": "중앙 연결부를 축으로 오른쪽의 긴 각진 윤곽이 굽혀지는 움직임이 어울립니다."
+            },
+            {
+              "featureId": "right-diamonds",
+              "motion": "rotate",
+              "anchor": {
+                "x": 0.704,
+                "y": 0.575
+              },
+              "description": "교차점이 뚜렷해 겹마름모가 그 중심 둘레로 도는 움직임을 떠올릴 수 있습니다."
+            }
+          ],
+          "uncertainties": [
+            {
+              "region": {
+                "x": 0.321,
+                "y": 0.273,
+                "width": 0.167,
+                "height": 0.258
+              },
+              "reason": "가운데 선들이 고리, 돌기, 다리 중 무엇을 나타내는지는 선만으로 확정하기 어렵습니다."
+            },
+            {
+              "region": {
+                "x": 0.641,
+                "y": 0.501,
+                "width": 0.142,
+                "height": 0.149
+              },
+              "reason": "겹마름모의 구체적인 기능이나 앞뒤 방향은 시각적으로 충분히 표시되지 않았습니다."
+            }
+          ]
+        },
+        "fixedResult": {
+          "verdict": "success",
+          "summary": "끊기던 마지막 소리가 건너편 종에 닿는다. 정원에 세 번째 종소리가 돌아온다. 소소는 새 생명체가 만든 소리의 길을 기억한다.",
+          "questResolved": true,
+          "appliedEffectDescriptions": [
+            "끊기던 마지막 소리가 건너편 종에 닿는다.",
+            "정원에 세 번째 종소리가 돌아온다.",
+            "소소는 새 생명체가 만든 소리의 길을 기억한다."
+          ]
+        },
+        "allowedPropIds": [
+          "far_bell",
+          "far_bell"
+        ],
+        "allowedParticipantIds": [
+          "npc_soso",
+          "npc_dari",
+          "doodle_89d06ff323eb80303fed"
+        ]
+      }
+    }
+  ],
+  "startedAt": "2026-07-23T15:45:45.053Z",
+  "endedAt": "2026-07-23T15:45:47.581Z",
+  "wallClockMs": 2528,
+  "status": "completed",
+  "output": {
+    "actorId": "npc_soso",
+    "emotion": "delighted",
+    "grounding": "마름날개의 좌우 각진 날개와 오른쪽 겹마름모가 소리의 길을 이어, 끊겼던 세 번째 종소리가 건너편 종에 닿았다.",
+    "commands": [
+      {
+        "kind": "look",
+        "actorId": "npc_soso",
+        "targetId": "doodle_89d06ff323eb80303fed"
+      },
+      {
+        "kind": "gesture",
+        "actorId": "npc_soso",
+        "gesture": "stretch"
+      },
+      {
+        "kind": "prop-motion",
+        "actorId": "npc_soso",
+        "targetId": "far_bell",
+        "motion": "ring"
+      },
+      {
+        "kind": "speak",
+        "actorId": "npc_soso",
+        "text": "마름날개가 길을 폈어… 세 번째 박자, 또렷이 도착했어."
+      }
+    ]
+  },
+  "trace": {
+    "id": "resp_0077ec25a43a65b0016a62372945848198ab10f220ad9c3ce8",
+    "role": "quest-owner-reaction",
+    "provider": "openai",
+    "model": "gpt-5.6-terra",
+    "startedAt": "2026-07-23T15:45:45.053Z",
+    "latencyMs": 2528,
+    "usage": {
+      "inputTokens": 1596,
+      "cachedInputTokens": 0,
+      "outputTokens": 183,
+      "reasoningTokens": 0,
+      "totalTokens": 1779
+    }
+  },
+  "error": null
+}

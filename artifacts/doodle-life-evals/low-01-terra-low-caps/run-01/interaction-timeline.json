@@ -1,0 +1,127 @@
+[
+  {
+    "beat": 1,
+    "durationMs": 720,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "move",
+        "actorId": "player-674fd7d4-9cad-4a92-aaf7-3a65a8a4492e",
+        "to": {
+          "x": 30,
+          "y": 56.00000000000001
+        },
+        "rotate": null,
+        "scale": 1.04
+      }
+    ]
+  },
+  {
+    "beat": 2,
+    "durationMs": 520,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "look",
+        "actorId": "npc-1-19b9hdk",
+        "targetId": "player-674fd7d4-9cad-4a92-aaf7-3a65a8a4492e"
+      }
+    ]
+  },
+  {
+    "beat": 3,
+    "durationMs": 1800,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "speak",
+        "actorId": "player-674fd7d4-9cad-4a92-aaf7-3a65a8a4492e",
+        "text": "안녕, 모루. 이슬빛과 내 색 선이 나란하면 어떤 결일지 궁금해."
+      },
+      {
+        "order": 2,
+        "kind": "prop_create",
+        "propId": "scene_2_1j1qkxd_wind_note",
+        "label": "둘 사이에서 접힌 바람 조각",
+        "symbol": "⌁",
+        "color": "#8E70B5",
+        "position": {
+          "x": 36,
+          "y": 48.00000000000001
+        },
+        "actorId": "player-674fd7d4-9cad-4a92-aaf7-3a65a8a4492e"
+      }
+    ]
+  },
+  {
+    "beat": 4,
+    "durationMs": 880,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "gesture",
+        "actorId": "npc-1-19b9hdk",
+        "gesture": "shiver",
+        "status": "수첩을 꼭 안고 둥글게 한 번 돈다."
+      },
+      {
+        "order": 2,
+        "kind": "prop_transform",
+        "propId": "scene_2_1j1qkxd_wind_note",
+        "scale": 1.18,
+        "rotate": 12,
+        "opacity": 0.92
+      }
+    ]
+  },
+  {
+    "beat": 5,
+    "durationMs": 1900,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "speak",
+        "actorId": "npc-1-19b9hdk",
+        "text": "음… 이슬은 하나씩 달라요. 그래서, 나란히 적어도 괜찮을 것 같아요."
+      }
+    ]
+  },
+  {
+    "beat": 6,
+    "durationMs": 980,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "effect",
+        "effect": "wind",
+        "targetId": null,
+        "color": "이슬빛 하늘색",
+        "intensity": 0.58
+      },
+      {
+        "order": 2,
+        "kind": "prop_transform",
+        "propId": "scene_2_1j1qkxd_wind_note",
+        "scale": 0.82,
+        "rotate": -8,
+        "opacity": 0.48
+      }
+    ]
+  },
+  {
+    "beat": 7,
+    "durationMs": 460,
+    "actions": [
+      {
+        "order": 1,
+        "kind": "pause",
+        "durationMs": 460
+      },
+      {
+        "order": 2,
+        "kind": "prop_remove",
+        "propId": "scene_2_1j1qkxd_wind_note"
+      }
+    ]
+  }
+]

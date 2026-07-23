@@ -1,0 +1,56 @@
+{
+  "operations": [
+    {
+      "mode": "off",
+      "calls": [],
+      "usage": {
+        "inputTokens": 0,
+        "cachedInputTokens": 0,
+        "outputTokens": 0,
+        "reasoningTokens": 0,
+        "totalTokens": 0
+      },
+      "totalLatencyMs": 0,
+      "wallClockMs": 3
+    },
+    {
+      "mode": "off",
+      "calls": [],
+      "usage": {
+        "inputTokens": 0,
+        "cachedInputTokens": 0,
+        "outputTokens": 0,
+        "reasoningTokens": 0,
+        "totalTokens": 0
+      },
+      "totalLatencyMs": 0,
+      "wallClockMs": 1
+    },
+    {
+      "mode": "off",
+      "calls": [],
+      "usage": {
+        "inputTokens": 0,
+        "cachedInputTokens": 0,
+        "outputTokens": 0,
+        "reasoningTokens": 0,
+        "totalTokens": 0
+      },
+      "totalLatencyMs": 0,
+      "wallClockMs": 2
+    }
+  ],
+  "totals": {
+    "calls": 0,
+    "usage": {
+      "inputTokens": 0,
+      "cachedInputTokens": 0,
+      "outputTokens": 0,
+      "reasoningTokens": 0,
+      "totalTokens": 0
+    },
+    "totalLatencyMs": 0,
+    "wallClockMs": 6,
+    "roles": {}
+  }
+}

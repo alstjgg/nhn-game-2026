@@ -1,0 +1,86 @@
+{
+  "operations": [
+    {
+      "mode": "full-max",
+      "calls": [
+        {
+          "id": "resp_0948997102202f1c016a61cd7ff05481989ff70cac5ec3f7ee",
+          "role": "world-author",
+          "provider": "openai",
+          "model": "gpt-5.6-terra",
+          "startedAt": "2026-07-23T08:14:55.762Z",
+          "latencyMs": 54746,
+          "usage": {
+            "inputTokens": 1789,
+            "cachedInputTokens": 1786,
+            "outputTokens": 5936,
+            "reasoningTokens": 354,
+            "totalTokens": 7725
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 1789,
+        "cachedInputTokens": 1786,
+        "outputTokens": 5936,
+        "reasoningTokens": 354,
+        "totalTokens": 7725
+      },
+      "totalLatencyMs": 54746,
+      "wallClockMs": 54759
+    },
+    {
+      "mode": "full-max",
+      "calls": [
+        {
+          "id": "resp_089620590718675c016a61cdb6c568819a9efb6704c0893654",
+          "role": "doodle-vision",
+          "provider": "openai",
+          "model": "gpt-5.6-sol",
+          "startedAt": "2026-07-23T08:15:50.523Z",
+          "latencyMs": 48815,
+          "usage": {
+            "inputTokens": 1903,
+            "cachedInputTokens": 1831,
+            "outputTokens": 2896,
+            "reasoningTokens": 296,
+            "totalTokens": 4799
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 1903,
+        "cachedInputTokens": 1831,
+        "outputTokens": 2896,
+        "reasoningTokens": 296,
+        "totalTokens": 4799
+      },
+      "totalLatencyMs": 48815,
+      "wallClockMs": 48822
+    }
+  ],
+  "totals": {
+    "calls": 2,
+    "usage": {
+      "inputTokens": 3692,
+      "cachedInputTokens": 3617,
+      "outputTokens": 8832,
+      "reasoningTokens": 650,
+      "totalTokens": 12524
+    },
+    "totalLatencyMs": 103561,
+    "wallClockMs": 103581,
+    "roles": {
+      "world-author": {
+        "calls": 1,
+        "tokens": 7725,
+        "latencyMs": 54746
+      },
+      "doodle-vision": {
+        "calls": 1,
+        "tokens": 4799,
+        "latencyMs": 48815
+      }
+    }
+  }
+}

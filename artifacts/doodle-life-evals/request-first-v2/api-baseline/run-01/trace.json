@@ -1,0 +1,169 @@
+{
+  "operations": {
+    "fixedSession": {
+      "mode": "staged",
+      "calls": [],
+      "usage": {
+        "inputTokens": 0,
+        "cachedInputTokens": 0,
+        "outputTokens": 0,
+        "reasoningTokens": 0,
+        "totalTokens": 0
+      },
+      "totalLatencyMs": 0,
+      "wallClockMs": 0
+    },
+    "doodleReading": {
+      "mode": "staged",
+      "calls": [
+        {
+          "id": "resp_01621b289bc9b974016a6236e32358819b94cc072905e88733",
+          "role": "doodle-reader",
+          "provider": "openai",
+          "model": "gpt-5.6-sol",
+          "startedAt": "2026-07-23T15:44:33.286Z",
+          "latencyMs": 22556,
+          "usage": {
+            "inputTokens": 1129,
+            "cachedInputTokens": 0,
+            "outputTokens": 1138,
+            "reasoningTokens": 364,
+            "totalTokens": 2267
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 1129,
+        "cachedInputTokens": 0,
+        "outputTokens": 1138,
+        "reasoningTokens": 364,
+        "totalTokens": 2267
+      },
+      "totalLatencyMs": 22556,
+      "wallClockMs": 22568
+    },
+    "localResolution": {
+      "mode": "staged",
+      "calls": [],
+      "usage": {
+        "inputTokens": 0,
+        "cachedInputTokens": 0,
+        "outputTokens": 0,
+        "reasoningTokens": 0,
+        "totalTokens": 0
+      },
+      "totalLatencyMs": 0,
+      "wallClockMs": 5
+    },
+    "parallelReactions": {
+      "mode": "staged",
+      "calls": [
+        {
+          "id": "resp_0c5f3f601ba6a234016a6236f80fd4819bb1766dec9f1fc67b",
+          "role": "quest-owner-reaction",
+          "provider": "openai",
+          "model": "gpt-5.6-terra",
+          "startedAt": "2026-07-23T15:44:55.864Z",
+          "latencyMs": 2585,
+          "usage": {
+            "inputTokens": 1561,
+            "cachedInputTokens": 0,
+            "outputTokens": 170,
+            "reasoningTokens": 0,
+            "totalTokens": 1731
+          }
+        },
+        {
+          "id": "resp_0298928823c3dc29016a6236fac458819a9c533ae47f759f64",
+          "role": "quest-observer-reaction",
+          "provider": "openai",
+          "model": "gpt-5.6-terra",
+          "startedAt": "2026-07-23T15:44:55.872Z",
+          "latencyMs": 5057,
+          "usage": {
+            "inputTokens": 1535,
+            "cachedInputTokens": 0,
+            "outputTokens": 145,
+            "reasoningTokens": 0,
+            "totalTokens": 1680
+          }
+        }
+      ],
+      "usage": {
+        "inputTokens": 3096,
+        "cachedInputTokens": 0,
+        "outputTokens": 315,
+        "reasoningTokens": 0,
+        "totalTokens": 3411
+      },
+      "totalLatencyMs": 7642,
+      "wallClockMs": 5073
+    }
+  },
+  "totals": {
+    "calls": 3,
+    "usage": {
+      "inputTokens": 4225,
+      "cachedInputTokens": 0,
+      "outputTokens": 1453,
+      "reasoningTokens": 364,
+      "totalTokens": 5678
+    },
+    "aggregateModelLatencyMs": 30198,
+    "roles": {
+      "doodle-reader": {
+        "calls": 1,
+        "tokens": 2267,
+        "latencyMs": 22556
+      },
+      "quest-owner-reaction": {
+        "calls": 1,
+        "tokens": 1731,
+        "latencyMs": 2585
+      },
+      "quest-observer-reaction": {
+        "calls": 1,
+        "tokens": 1680,
+        "latencyMs": 5057
+      }
+    }
+  },
+  "timeline": [
+    {
+      "stage": "fixed-session-bootstrap",
+      "startedAt": "2026-07-23T15:44:33.280Z",
+      "endedAt": "2026-07-23T15:44:33.281Z",
+      "wallClockMs": 1,
+      "ok": true
+    },
+    {
+      "stage": "select-locked-soso-quest",
+      "startedAt": "2026-07-23T15:44:33.282Z",
+      "endedAt": "2026-07-23T15:44:33.282Z",
+      "wallClockMs": 0,
+      "ok": true
+    },
+    {
+      "stage": "quest-blind-doodle-reading",
+      "startedAt": "2026-07-23T15:44:33.282Z",
+      "endedAt": "2026-07-23T15:44:55.851Z",
+      "wallClockMs": 22569,
+      "ok": true
+    },
+    {
+      "stage": "local-deterministic-resolution",
+      "startedAt": "2026-07-23T15:44:55.851Z",
+      "endedAt": "2026-07-23T15:44:55.856Z",
+      "wallClockMs": 5,
+      "ok": true
+    },
+    {
+      "stage": "parallel-reactions-and-local-resolver",
+      "startedAt": "2026-07-23T15:44:55.856Z",
+      "endedAt": "2026-07-23T15:45:00.930Z",
+      "wallClockMs": 5073,
+      "ok": true
+    }
+  ],
+  "criticalPathWallMs": 27657
+}

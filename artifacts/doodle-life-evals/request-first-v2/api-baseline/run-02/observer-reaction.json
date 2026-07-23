@@ -1,0 +1,201 @@
+{
+  "role": "quest-observer-reaction",
+  "schemaName": "doodle_life_npc_reaction",
+  "reasoning": "low",
+  "maxOutputTokens": 900,
+  "inputMetadata": [
+    {
+      "type": "input_text",
+      "json": {
+        "actor": {
+          "id": "npc_dari",
+          "name": "다리",
+          "epithet": "세 발로 물길의 틈을 재는 씨앗",
+          "essence": "한 발이 닿을 때마다 다른 두 발이 안전한 다음 자리를 계산한다.",
+          "voiceStyle": "짧은 거리와 순서를 세어 말한다.",
+          "repeatedBehavior": "세 갈래 다리를 번갈아 내밀어 얕은 물길을 건너려다 끊긴 디딤 자국 앞에서 멈춘다."
+        },
+        "participants": [
+          {
+            "id": "npc_soso",
+            "name": "소소",
+            "role": "request-owner"
+          },
+          {
+            "id": "npc_dari",
+            "name": "다리",
+            "role": "observer"
+          },
+          {
+            "id": "doodle_89d06ff323eb80303fed",
+            "name": "살랑마루",
+            "role": "new-doodle-creature"
+          }
+        ],
+        "publicProblem": {
+          "title": "기다리던 마지막 박자",
+          "problemState": "높은 리본 풍경은 세 번 울리지만 건너편 작은 종에는 마지막 소리가 도착하지 않는다.",
+          "observationFocus": "높은 곳 · 끊긴 마지막 소리"
+        },
+        "doodle": {
+          "name": "살랑마루",
+          "essence": "가로로 길게 펼쳐진 굵은 각진 선 위에 중앙의 솟은 고리들과 오른쪽의 겹친 마름모가 이어진 모습입니다.",
+          "visibleFeatures": [
+            {
+              "id": "wide_zigzag_body",
+              "label": "넓게 펼쳐진 각진 외곽선",
+              "description": "좌우로 길게 뻗으며 여러 번 꺾이는 굵은 검은 선이 넓은 빈 공간을 둘러쌉니다.",
+              "evidence": "왼쪽 끝에서 위아래로 갈라진 선이 중앙의 오목한 부분을 지나 오른쪽 끝으로 이어집니다.",
+              "region": {
+                "x": 0.116,
+                "y": 0.367,
+                "width": 0.665,
+                "height": 0.397
+              },
+              "confidence": 0.97
+            },
+            {
+              "id": "central_peaks",
+              "label": "가운데 솟은 세 갈래",
+              "description": "중앙 위쪽에 뾰족한 두 봉우리와 작은 중앙 봉우리가 나란히 솟아 있습니다.",
+              "evidence": "세 갈래의 꺾인 선이 아래쪽의 긴 외곽선과 맞닿아 있으며, 사이에 좁은 빈 공간이 보입니다.",
+              "region": {
+                "x": 0.323,
+                "y": 0.276,
+                "width": 0.162,
+                "height": 0.251
+              },
+              "confidence": 0.95
+            },
+            {
+              "id": "crossed_diamonds",
+              "label": "오른쪽의 겹친 마름모",
+              "description": "두 개의 각진 고리 모양이 서로 겹쳐 작은 교차 무늬를 만듭니다.",
+              "evidence": "오른쪽 끝 가까이에 대각선들이 교차하고, 내부에 작은 마름모꼴 빈 공간이 남아 있습니다.",
+              "region": {
+                "x": 0.643,
+                "y": 0.493,
+                "width": 0.138,
+                "height": 0.158
+              },
+              "confidence": 0.94
+            }
+          ],
+          "motionHints": [
+            {
+              "featureId": "wide_zigzag_body",
+              "motion": "bend",
+              "anchor": {
+                "x": 0.405,
+                "y": 0.758
+              },
+              "description": "아래 중앙의 깊은 꺾임을 축으로 긴 외곽선이 접히듯 움직일 수 있습니다."
+            },
+            {
+              "featureId": "central_peaks",
+              "motion": "flutter",
+              "anchor": {
+                "x": 0.405,
+                "y": 0.334
+              },
+              "description": "가늘고 높게 솟은 갈래들이 좌우로 조금 흔들리는 움직임이 어울립니다."
+            },
+            {
+              "featureId": "crossed_diamonds",
+              "motion": "rotate",
+              "anchor": {
+                "x": 0.707,
+                "y": 0.576
+              },
+              "description": "교차한 마름모의 중심을 기준으로 작은 장식이 도는 움직임을 암시합니다."
+            }
+          ],
+          "uncertainties": [
+            {
+              "region": {
+                "x": 0.116,
+                "y": 0.276,
+                "width": 0.665,
+                "height": 0.488
+              },
+              "reason": "전체 윤곽이 생물, 도구, 장식 중 무엇을 나타내는지는 내부 표식이나 색 구분이 없어 확정하기 어렵습니다."
+            },
+            {
+              "region": {
+                "x": 0.643,
+                "y": 0.493,
+                "width": 0.138,
+                "height": 0.158
+              },
+              "reason": "겹친 마름모가 연결 장식인지 독립된 물체인지는 선의 겹침만으로 분명하지 않습니다."
+            }
+          ]
+        },
+        "fixedResult": {
+          "verdict": "partial",
+          "summary": "높은 울림에는 닿았지만 건너편까지 전해지지는 않는다. 소소는 어느 구간까지 이어졌는지 몸짓으로 다시 보여 주었다.",
+          "questResolved": false,
+          "appliedEffectDescriptions": [
+            "높은 울림에는 닿았지만 건너편까지 전해지지는 않는다.",
+            "소소는 어느 구간까지 이어졌는지 몸짓으로 다시 보여 주었다."
+          ]
+        },
+        "allowedPropIds": [
+          "ribbon_chime"
+        ],
+        "allowedParticipantIds": [
+          "npc_soso",
+          "npc_dari",
+          "doodle_89d06ff323eb80303fed"
+        ]
+      }
+    }
+  ],
+  "startedAt": "2026-07-23T15:45:19.757Z",
+  "endedAt": "2026-07-23T15:45:24.796Z",
+  "wallClockMs": 5040,
+  "status": "completed",
+  "output": {
+    "actorId": "npc_dari",
+    "emotion": "thoughtful",
+    "grounding": "다리는 소소의 몸짓과 살랑마루의 긴 꺾인 선을 번갈아 살핀다.",
+    "commands": [
+      {
+        "kind": "look",
+        "actorId": "npc_dari",
+        "targetId": "npc_soso"
+      },
+      {
+        "kind": "look",
+        "actorId": "npc_dari",
+        "targetId": "doodle_89d06ff323eb80303fed"
+      },
+      {
+        "kind": "gesture",
+        "actorId": "npc_dari",
+        "gesture": "listen"
+      },
+      {
+        "kind": "speak",
+        "actorId": "npc_dari",
+        "text": "한 칸 닿고, 다음 칸은 아직 비었어."
+      }
+    ]
+  },
+  "trace": {
+    "id": "resp_0a6e58d342f6fe5e016a6237127e1c819898b363ae3e9ab455",
+    "role": "quest-observer-reaction",
+    "provider": "openai",
+    "model": "gpt-5.6-terra",
+    "startedAt": "2026-07-23T15:45:19.757Z",
+    "latencyMs": 5039,
+    "usage": {
+      "inputTokens": 1473,
+      "cachedInputTokens": 0,
+      "outputTokens": 222,
+      "reasoningTokens": 68,
+      "totalTokens": 1695
+    }
+  },
+  "error": null
+}
