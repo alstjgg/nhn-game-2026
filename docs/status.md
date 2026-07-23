@@ -19,8 +19,8 @@ change here.
 | Track | Demo location | Merged from | Demo state |
 |---|---|---|---|
 | Agent arena — build an LLM agent from structured items, pit it in auto-battles | `demos/agent-arena/` | [agent-roguelike](./game-concept-agent-roguelike.md) + [autobattler](./game-concept-autobattler.md), combined | not started |
-| Apothecary — read what customers *actually* ail from and prescribe | `demos/apothecary/` | [apothecary](./game-concept-apothecary.md), absorbed [blacksmith](./game-concept-blacksmith.md) (2026-07-22) | not started |
-| Doodle lab — AI reads the player's doodles as living creatures | `demos/doodle-lab/` | [doodle-lab](./game-concept-doodle-lab.md), absorbing [placement](./game-concept-placement.md) | not started |
+| Apothecary — read what customers *actually* ail from and prescribe | `demos/apothecary/` | [apothecary](./game-concept-apothecary.md), absorbing [blacksmith](./game-concept-blacksmith.md) | not started |
+| Doodle Life — read residents' requests and draw living solutions | `demos/doodle-life/` | [doodle-life](./game-concept-doodle-life.md), absorbing [placement](./game-concept-placement.md) | playable full-AI prototype evaluated; redesigning around three bounded generation stages and clue-driven NPC puzzles |
 
 ## Next steps (priority order)
 
