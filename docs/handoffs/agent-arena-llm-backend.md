@@ -102,22 +102,12 @@ References:
 | Live remote MCP | Passed — completed `calculate` trace + result marker on both providers |
 | Live hosted Skill | Passed — completed hosted trace + instruction marker on both providers |
 
-The final gated live run supplied both model targets as server-side command
-overrides without changing `.env.local`. No-tool, two-turn continuity, function
-tool, compact, post-compact continuity, and clear/fresh-context scenarios passed
-for both providers. Final successful turn usage was 2,136 OpenAI tokens and 4,806
-Claude tokens; the combined standard-rate estimate for those turn calls is
-$0.009348. Compact usage is not exposed by the shared compact contract. See
-`docs/agent-arena-api-live-test-2026-07-24.md`.
-
-A separate capability-only run then passed real remote MCP and hosted Skill
-execution on both providers. Its final provider-reported usage was 2,369 OpenAI
-tokens and 9,343 Claude tokens; the combined model-token estimate was $0.013150.
-Provider-hosted execution charges or free-tier allowances are separate. Skill
-IDs, immutable versions, and credentials remain server-owned and redacted.
-A final MCP-only hardening run hid the expected numeric result from both models
-and passed with completed traces plus `MCP_RESULT_20`; it added an estimated
-$0.004244 in model-token usage.
+All live scenarios (core matrix, remote MCP, hosted Skill, MCP-only hardening)
+passed on both providers via server-side command overrides, `.env.local`
+unchanged. Full evidence, per-run usage, and cost breakdown (≈ $0.059 total
+recorded model tokens) live in
+[the live verification record](../agent-arena-api-live-test-2026-07-24.md) —
+that document is the single source for verification detail.
 
 ## Important behavior
 
