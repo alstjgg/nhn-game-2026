@@ -19,7 +19,7 @@ change here.
 | Track | Demo location | Merged from | Demo state |
 |---|---|---|---|
 | Agent arena — build an LLM agent from structured items, pit it in auto-battles | `demos/agent-arena/` | [agent-roguelike](./game-concept-agent-roguelike.md) + [autobattler](./game-concept-autobattler.md), combined | not started |
-| Apothecary — read what customers *actually* ail from and prescribe | `demos/apothecary/` | [apothecary](./game-concept-apothecary.md), absorbing [blacksmith](./game-concept-blacksmith.md) | not started |
+| Apothecary — read what customers *actually* ail from and prescribe | `demos/apothecary/` | [apothecary](./game-concept-apothecary.md), absorbed [blacksmith](./game-concept-blacksmith.md) (2026-07-22) | not started |
 | Doodle lab — AI reads the player's doodles as living creatures | `demos/doodle-lab/` | [doodle-lab](./game-concept-doodle-lab.md), absorbing [placement](./game-concept-placement.md) | not started |
 
 ## Next steps (priority order)
@@ -37,6 +37,9 @@ change here.
 
 ## Decision log
 
+- 2026-07-22 — Blacksmith absorption executed: apothecary doc gains 단골 아크 (§5.8),
+  [정석]/[실험] 조제 (§5.3), 연쇄 결과 (§5.5), 상태 원장 (§6); economy/능력 격차 and
+  world-channel expansion dropped (see apothecary 부록 A). Blacksmith doc marked archive.
 - 2026-07-22 — 6 concepts consolidated into 3 tracks: agent-roguelike + autobattler
   combined; apothecary absorbs blacksmith; doodle-lab absorbs placement.
 - 2026-07-22 — Final concept chosen via demo bake-off, not on paper. The 기획서 template
