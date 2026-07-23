@@ -1,7 +1,7 @@
 # Doodle Life LLM Evaluation Log
 
 기준일: 2026-07-23
-고정 입력 이미지: `demos/doodle-lab/soso-glide-empathy-guide.png`
+고정 입력 이미지: `demos/doodle-life/soso-glide-empathy-guide.png`
 
 이 문서는 품질 점수나 평가 척도를 만들지 않는다. 실제 화면, 생성 원문, 상태 변화,
 호출 수, 토큰과 시간을 보고 직접 판단할 수 있도록 실행 증거를 연결한다.
@@ -165,7 +165,7 @@ dialogue-only와 off는 이미 가동 중인 프로세스에서 실행했다. �
 먼저 API 모드 서버를 실행한다.
 
 ```bash
-cd demos/doodle-lab
+cd demos/doodle-life
 npm run dev -- --provider=api
 ```
 

@@ -28,7 +28,7 @@
 Node.js가 준비된 상태에서 이 디렉터리로 이동합니다.
 
 ```bash
-cd demos/doodle-lab
+cd demos/doodle-life
 npm install
 npm run dev -- --provider=mock
 ```
@@ -52,7 +52,7 @@ mock 모드는 외부 모델이나 API 키 없이 동일한 v2 계약과 완주 
 CLI의 `--provider`가 환경 파일의 `AI_PROVIDER`보다 우선합니다. `api`를 명시했는데 키가
 없으면 실제 결과를 mock으로 오인하지 않도록 시작 단계에서 실패합니다.
 
-서버는 먼저 `demos/doodle-lab/.env`를 읽고, 값이 없으면 저장소 루트의 `.env.local`을
+서버는 먼저 `demos/doodle-life/.env`를 읽고, 값이 없으면 저장소 루트의 `.env.local`을
 확인합니다. API 키는 브라우저 응답이나 클라이언트 번들로 전달하지 않습니다.
 
 ```dotenv

@@ -55,7 +55,7 @@ API 결과와 혼동하지 않도록 화면 파일은 `mock-browser`로 분리�
 | 정원 | 검증된 tutorial garden을 매 회 새 세션에 동일하게 주입 |
 | 부탁 | `quest_soso_last_note` |
 | 계약 SHA-256 | `23debe4d145117c5973394523656228625a8706bd7b1a2ff8d24b630eaba5904` |
-| 그림 | [`soso-last-note-full.jpg`](../demos/doodle-lab/fixtures/soso-last-note-full.jpg), 904×396 JPEG |
+| 그림 | [`soso-last-note-full.jpg`](../demos/doodle-life/fixtures/soso-last-note-full.jpg), 904×396 JPEG |
 | 그림 SHA-256 | `89d06ff323eb80303fed543ccdac3cdbbab13f8d4e35ff82fb3c5a690af69680` |
 | VLM | `gpt-5.6-sol`, low, 출력 상한 2,400 |
 | 각 NPC 반응 | `gpt-5.6-terra`, low, 출력 상한 900 |
@@ -67,7 +67,7 @@ API 결과와 혼동하지 않도록 화면 파일은 `mock-browser`로 분리�
 
 평가 입력 그림:
 
-![세 회차에 공통으로 사용한 그림](../demos/doodle-lab/fixtures/soso-last-note-full.jpg)
+![세 회차에 공통으로 사용한 그림](../demos/doodle-life/fixtures/soso-last-note-full.jpg)
 
 ## 세 번의 실제 결과
 
@@ -216,7 +216,7 @@ artifacts/doodle-life-evals/request-first-v2/
 새 label을 정한 뒤 아래처럼 실행한다.
 
 ```bash
-cd demos/doodle-lab
+cd demos/doodle-life
 npm run eval:request-first -- \
   --provider=openai \
   --runs=3 \
