@@ -18,15 +18,30 @@
 // (a data typo can never heal patience) is enforced in one place.
 import { createCard } from '../../ui/card.ts';
 import type { Choice, Customer } from '../../data/schema.ts';
-import { createMachine, reduce, type MachineState } from '../../state/index.ts';
+import { createMachine, reduce, type MachineState, type Phase } from '../../state/index.ts';
 import '../../styles/conversation.css';
+
+/** Host hooks for events the conversation screen itself has no authority over. */
+export interface ConversationCallbacks {
+  /**
+   * Fired the moment the machine's phase leaves `'conversation'` — today that
+   * is only the forced-crafting handoff (u2 F3: patience reaches zero). The
+   * screen has no crafting UI of its own, so once this fires the dialogue is
+   * frozen (choices already disabled) and the host owns what happens next.
+   */
+  onPhaseChange?: (phase: Phase) => void;
+}
 
 /**
  * Mount the conversation screen for one customer into `container`.
  * Portrait, patience meter, observe affordance and clue shelf are built once
  * and persist; only the NPC line and dialogue choices re-render per node.
  */
-export function mountConversation(container: HTMLElement, customer: Customer): void {
+export function mountConversation(
+  container: HTMLElement,
+  customer: Customer,
+  callbacks: ConversationCallbacks = {},
+): void {
   const clueTextById = new Map(customer.observationClues.map((c) => [c.id, c.text]));
   const revealedClueIds = new Set<string>();
   // Enter the conversation phase up front: the u2 reducer only spends patience
@@ -105,16 +120,30 @@ export function mountConversation(container: HTMLElement, customer: Customer): v
     const cards = node.choices
       .filter((choice) => choice.patienceCost > 0)
       .map((choice) => {
+        // A dialogue choice is a one-shot commit action, not a toggle: `.card`'s
+        // native primitive toggles selected on/off per click, but re-clicking an
+        // already-committed choice must never re-commit. On a non-terminal node
+        // `renderNode()` replaces these cards outright when advancing, so this
+        // only bites on the conversation's last node — guard it directly instead
+        // of leaning on that replacement as an accidental safety net.
         const card = createCard({
           label: choice.label,
           onToggle: (selected) => {
-            if (selected) commitChoice(choice);
+            if (!selected) return;
+            commitChoice(choice);
           },
         });
         card.dataset.testid = 'choice-card';
         return card;
       });
     choicesHost.replaceChildren(...cards);
+  }
+
+  /** Disable every current choice card so a commit can never fire twice. */
+  function disableChoices(): void {
+    for (const card of choicesHost.querySelectorAll('button')) {
+      card.disabled = true;
+    }
   }
 
   /** Add clue ids to the revealed set and repaint the shelf if anything is new. */
@@ -154,6 +183,21 @@ export function mountConversation(container: HTMLElement, customer: Customer): v
     state = reduce(state, { type: 'chooseDialogue', cost: choice.patienceCost });
     updateMeter();
     reveal(choice.clueReveals);
+    // Freeze the just-committed node's cards immediately: on a non-terminal
+    // node `renderNode()` below replaces them anyway, but on the terminal node
+    // nothing else would stop a second click on the same (or another) card
+    // from committing again.
+    disableChoices();
+
+    if (state.phase !== 'conversation') {
+      // u2's reducer forces crafting the instant patience hits zero (F3). This
+      // screen owns dialogue only — it has no crafting UI — so it stops
+      // advancing and hands the phase change to the host rather than going
+      // dead-ended with a frozen, zeroed-out meter.
+      callbacks.onPhaseChange?.(state.phase);
+      return;
+    }
+
     if (cursor + 1 < customer.dialogueNodes.length) {
       cursor += 1;
       renderNode();

@@ -188,6 +188,41 @@ test.describe('conversation screen (u6)', () => {
       .not.toBe(firstLine);
   });
 
+  // Regression (PR #26 review): a dialogue choice is a one-shot commit action,
+  // never a toggle. `renderNode()` masks a re-entrant `commitChoice` on every
+  // non-terminal node by replacing the cards outright, but the *last* node's
+  // cards persist — without an explicit disable-after-commit guard, clicking
+  // the same card again re-fires `onToggle(true)` and double-spends patience.
+  test('terminal-node choice card cannot double-commit on repeated clicks', async ({ page }) => {
+    await page.goto(HARNESS);
+    const fill = page.getByTestId('patience-fill');
+    const line = page.getByTestId('npc-line');
+
+    const firstLine = (await line.textContent())?.trim() ?? '';
+    await page.getByTestId('choice-card').first().click(); // commit node 0 → advance
+    await expect
+      .poll(async () => (await line.textContent())?.trim() ?? '', { timeout: 3000 })
+      .not.toBe(firstLine);
+
+    const card = page.getByTestId('choice-card').first();
+    await card.click(); // commit the terminal node's only cost>0 choice
+    await expect(card).toBeDisabled();
+    // Let the meter's CSS transition (design D4) settle before sampling —
+    // otherwise "afterFirstCommit" is a mid-transition value, not the spend.
+    await page.waitForTimeout(500);
+    const afterFirstCommit = await scaleX(fill);
+
+    // A native <button disabled> never dispatches click — the HTML spec's
+    // click() activation behavior returns early when "actually disabled" —
+    // so even a programmatic re-click here must be a strict no-op.
+    await card.evaluate((el) => (el as HTMLButtonElement).click());
+    await page.waitForTimeout(300);
+    expect(
+      await scaleX(fill),
+      're-clicking a committed terminal-node choice spent patience again',
+    ).toBeCloseTo(afterFirstCommit, 2);
+  });
+
   // AC8 — portrait asset: CSS placeholder OR a manifested raster under public/portraits.
   test('AC8 any raster portrait under public/portraits is recorded in the manifest', () => {
     if (!existsSync(PORTRAITS_DIR)) return; // CSS placeholder path — nothing to manifest.
