@@ -47,6 +47,14 @@ generated customer · mentor/codex/reputation.
   `POST /ai/dialogue`, `POST /ai/portrait`, `GET /ai/health`. It reads
   `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` from **`process.env` server-side**. Keys never
   appear in the bundle, the repo, or `import.meta.env`.
+- **The proxy and contract are PROVIDED INPUTS** (like the asset pack):
+  `server/ai-proxy.mjs` (middleware, prompt composition, vendor calls),
+  `src/ai/contract.ts` (shared stub/live schema + validator), `src/ai/adapter.ts`
+  (`AIAdapter` interface, `probeHealth`, live impl), `data/generation.json` (style
+  bible, verb costs, tier tones, trait table). They are live-smoke-verified before
+  the run via `tools/ai-smoke/` — agents **integrate against them and may extend
+  the contract, but do not rewrite the vendor-call code** (it's the one path they
+  can't test). Unit v1 builds the stub adapter + boot wiring on this seam.
 - Client `AIAdapter` interface with two impls: **live** (fetch `/ai/*`) and **stub**
   (v1 canned JSON + configurable simulated latency). Boot: probe `/ai/health` (800ms
   timeout) → live if ok, else stub. **The production build has no middleware, so the
@@ -162,7 +170,7 @@ untouched. New in v2:
 
 | id | title | deps | complexity | own-slice gate |
 |---|---|---|---|---|
-| v1 | AI adapter (live/stub) + Vite dev-middleware proxy + health probe + no-secrets check | — | high | `vitest run tests/ai/` + `npm run build` + dist grep clean |
+| v1 | AI adapter integration on the provided seam (§2.1): stub adapter (canned data + simulated latency), boot wiring (health probe → live/stub), adapter tests, no-secrets check | — | standard | `vitest run tests/ai/` + `npm run build` + dist grep clean |
 | v2 | Multi-verb beat schema + live dialogue engine + stub data extension (§2.5 rewrite) | v1 | high | `vitest run tests/data/` + `playwright test e2e/conversation.spec.ts` |
 | v3 | Diegetic patience rework (meter removal, tiers, portrait variants, tone hints) | v2 | standard | `playwright test e2e/patience.spec.ts` |
 | v4 | Async pipeline: prefetch orchestration, silhouette entry, waiting beat, 25s fallback | v1 | high | `vitest run tests/pipeline/` (fake timers) + `playwright test e2e/generation.spec.ts` (scripted delays) |

@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
+import { aiProxy } from './server/ai-proxy.mjs';
 
 // base: './' — dist must work under a Pages subpath (…/demos/apothecary/) and
 // for the nested e2e harness pages, so every emitted asset URL stays relative.
@@ -14,6 +15,10 @@ const input = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
 export default defineConfig({
   base: './',
+  // Dev-only AI proxy (PRD §2.1): /ai/health, /ai/dialogue, /ai/portrait.
+  // `apply: 'serve'` inside the plugin keeps it out of builds and preview,
+  // so the deployed demo is stub-mode by construction — no secrets anywhere.
+  plugins: [aiProxy()],
   build: {
     rollupOptions: {
       input: {
