@@ -99,6 +99,15 @@ describe('AC2 — loadIngredients fails loudly, naming the offending field', () 
       expect(messageWhenThrows(() => loadIngredients(arr))).toContain(field);
     });
   }
+
+  // Element-level check: the array shell can be valid while a leaf element is not
+  // (e.g. `propertyTags: [42]`). This must also throw, naming 'propertyTags', instead
+  // of silently casting the bad element through as if it were a string.
+  it("throws naming 'propertyTags' when an element is not a string", () => {
+    const arr = validIngredients() as unknown as Rec[];
+    arr[0].propertyTags = [42];
+    expect(messageWhenThrows(() => loadIngredients(arr))).toContain('propertyTags');
+  });
 });
 
 describe('AC2 — loadOutcomes fails loudly on malformed table / outcome fields', () => {
