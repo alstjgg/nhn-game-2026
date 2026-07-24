@@ -337,3 +337,21 @@ accepted and fixed (no rebuttals):
   passing on real violations and breaking on harmless refactors. Replaced
   with a fake-timers test asserting exactly one real timer per call (and that
   it resolves), and a many-trials/cross-instance determinism test.
+
+## u3 contract correction — `PixelContext.drawImage(source: never)` → `source: unknown`
+
+The u3 spec §2 declared the injected-context method as
+`drawImage(source: never, dx, dy, dw, dh): void`. A parameter typed `never` accepts no
+argument at all, so `pixelate`'s own single call site cannot compile:
+
+```
+error TS2345: Argument of type 'T' is not assignable to parameter of type 'never'.
+  Type 'PixelSource' is not assignable to type 'never'.
+```
+
+`src/ui/pixelate.ts` therefore declares `drawImage(source: unknown, …)`. This is a pure
+widening of a brand-new interface (no consumer existed yet), and method-shorthand
+bivariance keeps real `CanvasRenderingContext2D` / `OffscreenCanvasRenderingContext2D`
+structurally assignable, so the default factory needs no cast. All load-bearing names
+(`pixelate`, `PIXEL_FACTOR`, `SHEET_COLUMNS`, `SHEET_ROWS`, `downscaledSize`,
+`sheetCellSize`, `PixelateOptions.createCanvas`) are unchanged.
