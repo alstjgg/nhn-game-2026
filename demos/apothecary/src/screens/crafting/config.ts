@@ -48,12 +48,22 @@ function requireNumber(v: unknown, field: string): number {
   return v;
 }
 
-function loadConfig(input: unknown): CraftingConfig {
+/**
+ * Exported for direct invariant testing (Lead review, PR #27): callers should use
+ * the frozen CRAFTING_CONFIG singleton below, not call this directly at runtime.
+ */
+export function loadConfig(input: unknown): CraftingConfig {
   const methods = requireStringArray((input as { methods: unknown }).methods, 'methods');
+  if (methods.length === 0) {
+    throw new Error('crafting-config: methods must be a non-empty array');
+  }
   const declarations = requireStringArray(
     (input as { declarations: unknown }).declarations,
     'declarations',
   );
+  if (declarations.length === 0) {
+    throw new Error('crafting-config: declarations must be a non-empty array');
+  }
   const defaultDeclaration = requireString(
     (input as { defaultDeclaration: unknown }).defaultDeclaration,
     'defaultDeclaration',
@@ -71,6 +81,14 @@ function loadConfig(input: unknown): CraftingConfig {
     (input as { maxIngredients: unknown }).maxIngredients,
     'maxIngredients',
   );
+  if (minIngredients < 1) {
+    throw new Error(`crafting-config: minIngredients must be >= 1 (got ${minIngredients})`);
+  }
+  if (minIngredients > maxIngredients) {
+    throw new Error(
+      `crafting-config: minIngredients (${minIngredients}) must be <= maxIngredients (${maxIngredients})`,
+    );
+  }
   return Object.freeze({
     methods: Object.freeze([...methods]),
     declarations: Object.freeze([...declarations]),

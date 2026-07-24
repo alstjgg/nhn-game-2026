@@ -32,12 +32,29 @@ export function toggleIngredient(m: SelectionModel, id: string, max: number): Se
   return { ...m, ingredientIds: [...m.ingredientIds, id] };
 }
 
-/** Single-select replace of the method (F3). */
+/**
+ * Single-select replace of the method (F3).
+ *
+ * Controlled-by-caller: this model does not re-validate `method` against
+ * CRAFTING_CONFIG.methods. The only call site (index.ts) wires listeners
+ * exclusively to cards rendered from CRAFTING_CONFIG.methods, so an
+ * off-config verb cannot reach here today. Any future caller (app-shell
+ * routing, save/restore, deep links, …) that can pass an arbitrary string
+ * MUST validate membership itself before calling — an unrecognized verb
+ * here does not throw, and later silently resolves to the `default`
+ * outcome via resolveOutcome's canonicalKey mismatch (hard to debug).
+ */
 export function setMethod(m: SelectionModel, method: string): SelectionModel {
   return { ...m, method };
 }
 
-/** Two-state replace of the declaration (F4). */
+/**
+ * Two-state replace of the declaration (F4).
+ *
+ * Controlled-by-caller: same contract as setMethod above — callers must
+ * pass a value from CRAFTING_CONFIG.declarations; this function does not
+ * verify membership.
+ */
 export function setDeclaration(m: SelectionModel, declaration: string): SelectionModel {
   return { ...m, declaration };
 }
