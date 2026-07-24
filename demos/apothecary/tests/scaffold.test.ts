@@ -137,7 +137,11 @@ describe('src/main.ts: minimal single-page entry', () => {
   });
 
   it('writes into the DOM (renders something, not an empty entry)', () => {
-    expect(main()).toMatch(/innerHTML|appendChild|textContent|insertAdjacentHTML|createElement/);
+    // Post-u8 main.ts delegates the render to the app shell (mountApp) instead of
+    // inlining DOM writes; a mount-delegation call still proves it renders.
+    expect(main()).toMatch(
+      /innerHTML|appendChild|textContent|insertAdjacentHTML|createElement|mount[A-Z]\w*\(/,
+    );
   });
 });
 

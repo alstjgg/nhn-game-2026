@@ -10,7 +10,15 @@
 //   - hovering a card changes its computed appearance (hover CSS wired)
 //   - cards carry a CSS transition (state changes animate — no instant flips)
 //   - zero native form controls anywhere (membrane / cards-never-forms)
+//
+// NOTE (u8): `/` is now the live game shell (an animated entrance screen with no
+// bare `.card`s), which replaced the u5 placeholder card showcase. The shared
+// card-feel contract is now validated against the stable domain-card surface —
+// the crafting harness renders the real `.card` primitives (ingredient grid) with
+// the same hover / selected / transition vocabulary and zero form controls.
 import { expect, test, type Page } from '@playwright/test';
+
+const HARNESS = '/e2e/harness/crafting/';
 
 async function firstCardStyle(page: Page, prop: string): Promise<string> {
   return page.locator('.card').first().evaluate(
@@ -28,7 +36,7 @@ test.describe('card primitives (u5)', () => {
     });
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
-    const response = await page.goto('/');
+    const response = await page.goto(HARNESS);
     expect(response, 'no navigation response').toBeTruthy();
     expect(response!.ok(), `bad status ${response!.status()}`).toBeTruthy();
 
@@ -41,14 +49,14 @@ test.describe('card primitives (u5)', () => {
   });
 
   test('exposes no native form controls anywhere (membrane / cards-never-forms)', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(HARNESS);
     await expect(page.locator('.card').first()).toBeVisible();
     const controls = await page.locator('select, input, textarea').count();
     expect(controls, 'native <select>/<input>/<textarea> present').toBe(0);
   });
 
   test('a card is an interactive control, not a bare element', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(HARNESS);
     const card = page.locator('.card').first();
     await expect(card).toBeVisible();
     const isInteractive = await card.evaluate(
@@ -58,7 +66,7 @@ test.describe('card primitives (u5)', () => {
   });
 
   test('clicking a card toggles the selected state', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(HARNESS);
     const card = page.locator('.card').first();
     await expect(card).toBeVisible();
     await expect(card).not.toHaveClass(/card--selected\b/);
@@ -67,7 +75,7 @@ test.describe('card primitives (u5)', () => {
   });
 
   test('hovering a card changes its appearance (hover-state CSS is wired)', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(HARNESS);
     await expect(page.locator('.card').first()).toBeVisible();
 
     const props = ['box-shadow', 'transform', 'border-color', 'background-color', 'filter'];
@@ -82,7 +90,7 @@ test.describe('card primitives (u5)', () => {
   });
 
   test('cards animate state changes via a CSS transition (no instant flips)', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(HARNESS);
     await expect(page.locator('.card').first()).toBeVisible();
     const duration = await firstCardStyle(page, 'transition-duration');
     // e.g. "0.15s" or "150ms, 150ms" — anything non-empty and not all-zero counts.

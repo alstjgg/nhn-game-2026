@@ -30,6 +30,13 @@ export interface ConversationCallbacks {
    * frozen (choices already disabled) and the host owns what happens next.
    */
   onPhaseChange?: (phase: Phase) => void;
+  /**
+   * Fired when the dialogue reaches its natural end — the last node's choice has
+   * been committed with patience to spare (the non-forced path). The screen has
+   * no crafting UI of its own, so it surfaces a proceed affordance and hands the
+   * decision to advance to crafting back to the host (u8 app shell).
+   */
+  onComplete?: () => void;
 }
 
 /**
@@ -94,7 +101,19 @@ export function mountConversation(
   clueShelf.className = 'clue-shelf card-shelf';
   clueShelf.dataset.testid = 'clue-shelf';
 
-  screen.append(portrait, meter, lineHost, choicesHost, observeBtn, clueShelf);
+  // Proceed affordance — hidden until the dialogue reaches its natural end. It
+  // is a plain <button> (never a native form control / free-text field: the
+  // membrane §4.1 / cards-never-forms §4.5 still hold), and hands the
+  // conversation→crafting decision back to the host via onComplete.
+  const proceedBtn = document.createElement('button');
+  proceedBtn.type = 'button';
+  proceedBtn.className = 'proceed-btn anim-portrait-enter';
+  proceedBtn.dataset.testid = 'conversation-proceed';
+  proceedBtn.textContent = '[처방을 지으러 간다]';
+  proceedBtn.hidden = true;
+  proceedBtn.addEventListener('click', () => callbacks.onComplete?.());
+
+  screen.append(portrait, meter, lineHost, choicesHost, observeBtn, clueShelf, proceedBtn);
   container.replaceChildren(screen);
 
   updateMeter();
@@ -201,6 +220,10 @@ export function mountConversation(
     if (cursor + 1 < customer.dialogueNodes.length) {
       cursor += 1;
       renderNode();
+    } else {
+      // Terminal node committed with patience to spare — the dialogue is done.
+      // Reveal the proceed affordance so the host can advance to crafting.
+      proceedBtn.hidden = false;
     }
   }
 }
