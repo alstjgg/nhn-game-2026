@@ -80,6 +80,56 @@ describe('AC2 — loadCustomers fails loudly, naming the offending field', () =>
   }
 });
 
+// Element-level checks mirroring the propertyTags case above: the array shell can
+// be valid while a nested element is not (e.g. a clue with a numeric `id`, a choice
+// with a non-numeric `patienceCost`). These must throw too, instead of silently
+// casting the bad element through as if it were well-typed.
+describe('AC2 — loadCustomers fails loudly on malformed nested elements', () => {
+  it("throws naming 'id' when an observationClues element has a non-string id", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].observationClues as Rec[])[0].id = 42;
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('id');
+  });
+
+  it("throws naming 'text' when an observationClues element has a non-string text", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].observationClues as Rec[])[0].text = 42;
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('text');
+  });
+
+  it("throws naming 'observationClues' when an element is not an object", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    arr[0].observationClues = [42];
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('observationClues');
+  });
+
+  it("throws naming 'npcLine' when a dialogueNodes element has a non-string npcLine", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].npcLine = 42;
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('npcLine');
+  });
+
+  it("throws naming 'choices' when a dialogueNodes element's choices is not an array", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].choices = {};
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('choices');
+  });
+
+  it("throws naming 'patienceCost' when a choice has a non-numeric patienceCost", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].choices = [{ label: 'x', patienceCost: 'nope' }];
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('patienceCost');
+  });
+
+  it("throws naming 'clueReveals' when a choice's clueReveals element is not a string", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].choices = [
+      { label: 'x', patienceCost: 1, clueReveals: [42] },
+    ];
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('clueReveals');
+  });
+});
+
 const ingredientFields: Array<[string, unknown]> = [
   ['id', 42],
   ['name', 42],
