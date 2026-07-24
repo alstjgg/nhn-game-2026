@@ -44,6 +44,15 @@ function requireArrayOf<T>(v: unknown, ctx: string, field: string): T[] {
   return v as T[];
 }
 
+// Leaf string[] fields (e.g. propertyTags) must have every element validated —
+// requireArrayOf only checks the array shell, so a bad element (e.g. `[42]`) would
+// otherwise be cast through as `string[]` uninspected. Mirrors the entry-ingredient
+// per-element check in validateEntry (below).
+function requireArrayOfStrings(v: unknown, ctx: string, field: string): string[] {
+  const arr = requireArrayOf<unknown>(v, ctx, field);
+  return arr.map((item, i) => requireString(item, ctx, `${field}[${i}]`));
+}
+
 // ── Customers ────────────────────────────────────────────────────────────────
 export function loadCustomers(input: unknown): Customer[] {
   if (!Array.isArray(input)) {
@@ -75,7 +84,7 @@ export function loadIngredients(input: unknown): Ingredient[] {
     return {
       id: requireString(raw.id, ctx, 'id'),
       name: requireString(raw.name, ctx, 'name'),
-      propertyTags: requireArrayOf<string>(raw.propertyTags, ctx, 'propertyTags'),
+      propertyTags: requireArrayOfStrings(raw.propertyTags, ctx, 'propertyTags'),
     };
   });
 }
