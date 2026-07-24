@@ -37,6 +37,10 @@ change here.
 
 ## Decision log
 
+- 2026-07-25 — Darkest Context: solo-tile 담당 (1:1 duel, jailbreak) is not player-assigned;
+  the party elects one member via the shared council engine at walk-start (volunteer/nominate
+  → deterministic engine tally; fallback = highest aptitude stat), then the elected unit's
+  first tile judgment pre-fires — two wall-clock calls hidden behind the walk animation.
 - 2026-07-25 — Track C renamed **Darkest Context** (slug `darkest-context`); consolidated
   concept spec at `docs/game-concept-darkest-context.md` (merges brief + example spec +
   PR #28 review). Decisions: combat/travel view fixed to DD-style side-scroll; cards
