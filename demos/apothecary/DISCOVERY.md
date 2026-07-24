@@ -141,3 +141,122 @@ real u1–u3 contract. Recorded here (design §6 checklist):
 - `data/crafting-config.json` (new balance data) + `tests/screens/crafting/selection.test.ts`
   (TEST-agent-authored vitest slice) sit outside the crafting `src`/`e2e` globs but are
   consistent with the repo's balance-as-data + `demos/apothecary/tests/` conventions.
+
+---
+
+# u8/u9 — App shell + closing pass: the three deliverable lenses (PRD §7)
+
+The per-unit notes above are the running log. This closing section synthesizes the
+build across the required three lenses. It draws on friction that was actually hit
+while wiring the two-customer shell (u8) and doing the juice/verification/ship pass
+(u9) — not hypotheticals.
+
+## 1. Spec gaps (ambiguities / underspecs)
+
+- **No `design.md`/`spec.md` for low-complexity units.** u2 (state machine) and u5
+  (shared primitives) shipped with the acceptance contract *inferred from the PRD and
+  pinned by tests*, never written down as spec. Event names, the identity-no-op
+  convention, CSS keyframe/token names, and the card-factory shape are all
+  test-defined. That worked, but it means the tests ARE the spec — a reader can't
+  distinguish "PRD requires this" from "an earlier agent chose this".
+- **"handover" is a phase with no screen.** The §1.1 five-phase FSM
+  (entrance/conversation/crafting/handover/outcome) reads like five screens, but
+  `handover` is a transient machine beat between the crafting commit and outcome
+  delivery — it renders nothing of its own. u9's "screenshot every phase" task had to
+  *decide what that even means*; resolved by capturing the weighted `[건네기]`
+  ready-to-commit beat as the handover frame. The spec never said handover has no UI.
+- **Overlap trigger + notification lifecycle underspecified.** §1.4 says C1's outcome
+  arrives "when C2's conversation begins" but not: level- vs edge-triggered (u2 chose
+  level-triggered `>=`), nor whether the 재방문 card dismisses or persists. The demo
+  *persists* it — visible in `06-door-note.png`, where C1's 재방문 card still floats
+  beside C2's ending. Deliberate (both channels coexisting reads well), but a call the
+  implementer made, not the spec.
+- **Which outcome rows the demo drives toward is unspecified.** The e2e specs steer
+  toward `entries[0]` of each table so the asserted/visible text is a *known* data
+  value, not the fall-through `default`. Nothing in the PRD says the demo's canonical
+  play-through should hit a specific row; picked for deterministic verification.
+- **"dist must work under a Pages subpath" had no verification story.** It's a stated
+  invariant (why `vite base:'./'` exists), but the obvious tool to check it —
+  `vite preview` / `npm run preview`, which the e2e webServer already runs — only ever
+  serves dist at the *root* `/`. The invariant that matters for the real deploy was, by
+  construction, untestable with the in-repo tooling until u9 added a bespoke server.
+
+## 2. UI-verification friction (green-but-unplayable risk)
+
+- **The whole suite was green while every screenshot was unusable.** First screenshot
+  pass fired `page.screenshot()` the instant each phase turned "visible". Every shot
+  caught a mid-cross-fade frame: the outgoing phase still overlaid at partial opacity,
+  staggered children half-faded, the 재방문 card barely materialized. 259 vitest +
+  32 e2e assertions were all GREEN; the images were garbage. *No functional assertion
+  can catch this* — it's a property of the rendered frame, not the DOM. Only opening
+  the PNGs revealed it; the fix was a settle-wait before capture.
+- **Playwright's "visible" ≠ a human's "visible".** Playwright treats `opacity:0`
+  elements as visible and clickable (visibility keys off bounding box +
+  `visibility`/`display`, not opacity). Convenient — staggered-entrance and mid-fade
+  buttons never block `.click()`, so the juice pass didn't introduce flake — but it is
+  *exactly why green ≠ seen*: the tool's notion of visible admits frames a human would
+  call blank.
+- **Screenshots were the single highest-leverage verification artifact.** They caught
+  the cross-fade bug, confirmed the signature overlap actually *reads* (`05-overlap-
+  revisit.png`: C1's 재방문 card floating over C2's live conversation — the mechanic,
+  legible in one glance), and confirmed the Korean content renders with usable
+  contrast. The e2e assertions proved DOM+state; only the image proved the thing was
+  playable. For a UI demo, "capture every phase" belongs in the gate, not as polish.
+- **What stills still miss: motion quality.** The juice (type-on, patience-drain
+  colour shift, arrival-pop, commit-beat) is the point of §1.3 and is *invisible in a
+  still frame*. A screenshot gate confirms layout + content + contrast; it says nothing
+  about timing/easing/choreography. Judging feel needs live play or GIF/video capture —
+  a gap the game-mod's GIF requirement targets.
+
+## 3. Pipeline gaps (what the harness lacked for a UI demo)
+
+- **The loop-until-green gate is blind.** It gates on build/test/typecheck/e2e *exit
+  codes* — all binary, none visual. A unit reaches GREEN and can still ship an
+  unreadable or half-rendered screen (see lens 2). The game-mod P0 "screenshots/GIFs on
+  unit PRs" is confirmed necessary, not nice-to-have; screenshots should be captured
+  **and attached to the PR automatically** (ideally snapshot-diffed), so a reviewer sees
+  the frame the gate can't judge.
+- **No subpath / deploy-verify step.** The e2e webServer runs `preview` at root, so the
+  relative-asset invariant that governs the *actual* Pages deployment
+  (`…/nhn-game-2026/demos/apothecary/`) was structurally unverified. u9 had to hand-roll
+  an in-test static server that serves `dist/` under a deep prefix (`e2e/subpath.spec.ts`).
+  The game-mod's deploy-verify step should serve dist under the *real* Pages base path,
+  not root — otherwise base-path regressions ship green.
+- **`file_globs` don't model a single-entry SPA.** Recurring across u5/u7/u8: every UI
+  unit had to touch a shared entry surface (`src/main.ts`, `index.html`,
+  `vite.config.ts`, `tsconfig.json`) that sat *outside its file_globs*, because a Vite
+  SPA has one physical entry and a screen is only verifiable-at-`/` once wired into the
+  shell. The decompose phase drew screen boundaries as if screens mounted independently;
+  they don't. The harness had no way to express "this unit owns a screen AND its wiring
+  into the shell", so each unit crossed the boundary ad hoc and flagged it for the
+  integrator. Decompose should either grant screen units their shell-wiring seam, or
+  make shell integration its own explicit unit.
+- **No playtest / composition beat until the last unit.** Per-screen green arrived long
+  before anything confirmed the screens *compose into a playable minute*. The honest
+  end-to-end gate (`e2e/full-loop.spec.ts` — both customers, the overlap, the ending,
+  zero console errors) had to be authored by hand as the closing unit. The game-mod's
+  playtest agent should own this composition check continuously, not defer it to whoever
+  builds last.
+
+## Preview under a Pages subpath — verified command
+
+`vite preview` alone serves dist at `/`. To reproduce the real Pages nesting manually
+and confirm relative assets resolve (the `e2e/subpath.spec.ts` invariant):
+
+```bash
+npm run build
+npx vite preview --outDir dist --base /nhn-game-2026/demos/apothecary/ --port 4173 --strictPort
+# open http://localhost:4173/nhn-game-2026/demos/apothecary/
+```
+
+Verified: root `/` 302-redirects to the base subpath; the subpath serves `200` with
+`#app` and boots with zero console errors. `e2e/subpath.spec.ts` automates the same
+check headlessly (its own in-test server under a deep prefix), so it runs in the gate.
+
+## Phase screenshots (u9)
+
+`e2e/full-loop.spec.ts` captures one frame per phase to `e2e/artifacts/` (committed,
+not gitignored) as it plays the real app at `/`:
+`01-entrance` · `02-conversation` · `03-crafting` · `04-handover` (the weighted
+`[건네기]` beat) · `05-overlap-revisit` (the §1.4 overlap: C1's 재방문 over C2's live
+talk) · `06-door-note` (the 문앞 쪽지 ending).

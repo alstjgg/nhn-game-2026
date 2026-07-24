@@ -43,12 +43,22 @@
 }
 
 .patience-fill {
+  /* --patience (0..1) is driven from the reducer's remaining patience in TS; the
+   * fill's colour is a live mix of accent → alarm so the bar warms toward red as
+   * it empties (u9 juice). Both the width (scaleX) and the colour ease via the
+   * shared motion tokens — never an instant flip (design D4). */
+  --patience: 1;
   width: 100%;
   height: 100%;
   transform: scaleX(1);
   transform-origin: left center;
-  background: var(--color-accent);
-  transition: transform var(--duration-slow) var(--ease-standard);
+  background: color-mix(
+    in srgb,
+    var(--color-accent) calc(var(--patience) * 100%),
+    var(--color-alarm)
+  );
+  transition: transform var(--duration-slow) var(--ease-standard),
+    background-color var(--duration-slow) var(--ease-standard);
 }
 
 .npc-line {

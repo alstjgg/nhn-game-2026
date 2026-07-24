@@ -124,6 +124,10 @@ export function mountConversation(
     const ratio =
       customer.patienceBudget > 0 ? state.patience / customer.patienceBudget : 0;
     fill.style.transform = `scaleX(${ratio})`;
+    // Feed the fill's colour interpolation (u9 juice): the bar shifts from accent
+    // toward --color-alarm as patience drains, so growing impatience is felt, not
+    // just measured. Pure presentation — the number is still the reducer's (D4).
+    fill.style.setProperty('--patience', String(ratio));
   }
 
   /** Re-render the NPC line (retriggering type-on) and the node's choice cards. */

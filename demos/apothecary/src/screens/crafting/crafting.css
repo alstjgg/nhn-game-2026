@@ -56,10 +56,20 @@
   transition: var(--transition-base);
 }
 
+/* Commit-ready glow (u9 juice): the instant the enable predicate is satisfied the
+ * [건네기] warms and lifts a resting accent halo, drawing the eye to the weighted
+ * commit. Rides the existing box-shadow/border transition (no keyframe, so it adds
+ * no animationstart noise to the commit beat), and eases back out if the player
+ * breaks the selection. */
+.crafting__commit:not(:disabled) {
+  border-color: var(--color-border-hover);
+  box-shadow: 0 0 0 1px rgba(201, 162, 95, 0.25), 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
 .crafting__commit:hover:not(:disabled) {
   border-color: var(--color-border-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 0 1px rgba(201, 162, 95, 0.35), 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
 .crafting__commit:disabled {
