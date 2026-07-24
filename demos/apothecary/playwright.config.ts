@@ -11,7 +11,10 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
   ],
   webServer: {
-    command: 'npm run preview -- --port 4173 --strictPort',
+    // Build first: `preview` only serves an existing dist/. A clean checkout
+    // (CI, or `rm -rf dist && npm run test:e2e`) has none, so the server
+    // would hang and the gate would time out (PR #18 review).
+    command: 'npm run build && npm run preview -- --port 4173 --strictPort',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

@@ -33,8 +33,15 @@ describe('scaffold: required files exist', () => {
   }
 });
 
+type PkgJson = {
+  type?: string;
+  scripts?: Record<string, string>;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+};
+
 describe('package.json: scripts, module type, deps', () => {
-  const pkg = () => JSON.parse(read('package.json')) as Record<string, any>;
+  const pkg = (): PkgJson => JSON.parse(read('package.json')) as PkgJson;
 
   it('is an ESM package (type: module)', () => {
     expect(pkg().type).toBe('module');
@@ -70,9 +77,11 @@ describe('package.json: scripts, module type, deps', () => {
   });
 });
 
+type TsConfig = { compilerOptions?: { strict?: boolean } };
+
 describe('tsconfig.json: strict mode', () => {
   it('sets compilerOptions.strict = true (PRD §2, frozen)', () => {
-    const cfg = JSON.parse(stripJsonComments(read('tsconfig.json'))) as any;
+    const cfg = JSON.parse(stripJsonComments(read('tsconfig.json'))) as TsConfig;
     expect(cfg.compilerOptions?.strict).toBe(true);
   });
 });
