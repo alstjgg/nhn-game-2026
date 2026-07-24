@@ -51,10 +51,11 @@ generated customer · mentor/codex/reputation.
   (v1 canned JSON + configurable simulated latency). Boot: probe `/ai/health` (800ms
   timeout) → live if ok, else stub. **The production build has no middleware, so the
   deployed Pages demo is automatically stub-mode** — still loads instantly, no secrets.
-- Models: dialogue → `claude-sonnet-5` · portraits → `gpt-image-1`, **one 1024×1024
-  2×2 expression sheet per NPC** (the 4 patience tiers of §2.2), sliced client-side via
-  CSS `background-position`; quality setting and style come from the frozen style bible
-  (§2.4). One image call per NPC, total. One retry
+- Models: dialogue → `claude-sonnet-5` · portraits → `gpt-image-1`, **one 1536×1024
+  4×2 expression sheet per NPC** — 4 columns = patience tiers (§2.2), 2 rows = eyes
+  open / eyes closed mid-blink — sliced client-side via CSS `background-position`;
+  quality setting and style come from the frozen style bible (§2.4). One image call per
+  NPC, total. One retry
   on schema-invalid LLM output, then per-beat stub fallback. Every live response is
   schema-validated with the same validators as stub data.
 
@@ -62,7 +63,7 @@ generated customer · mentor/codex/reputation.
 
 Internal patience (data-defined, per choice cost — unchanged logic) maps to 4 expression
 tiers: 평온 → 심드렁 → 짜증 → 한계. Tier change swaps to the matching expression-sheet
-quadrant (§2.1),
+column (§2.1),
 tightens the customer's written tone (live mode: tone hint in the prompt; stub mode:
 pre-written tier variants), and adds subtle ambient animation (finger-tapping at 짜증+).
 At 한계 the customer forces the crafting phase. The v1 meter element and its e2e
@@ -82,9 +83,13 @@ classes progress.
 - Customer roster: customers 1–2 seeded from `data/` (playable in stub mode), customer 3
   fully AI-generated in live mode (persona brief composed from a structured trait table
   in `data/generation.json` — membrane holds).
-- **Generated frames are for expressions only.** Idle motion (breathing bob, blink,
-  fidget) is CSS transforms/keyframes on the static quadrant — never generated animation
-  frames.
+- **Generated frames are for expressions + blink only.** Blink = swap to the closed-eye
+  row of the current column for 120–200ms at randomized 3–6s intervals. All other idle
+  motion (breathing bob, fidget) is CSS transforms/keyframes on the static cell — never
+  generated animation frames.
+- **Portraits render inside a framed card panel** over the background — no compositing,
+  no transparent-background generation. The sheet's flat backdrop is intentional;
+  silhouette entry (§ below) is `filter: brightness(0)` on the cell.
 - In tests, simulated latency is injected via adapter config (0ms in unit tests; scripted
   delays in e2e) — **never `setTimeout` sprinkled in game logic**; all timing flows
   through the adapter so tests stay deterministic.
@@ -92,8 +97,8 @@ classes progress.
 ### 2.4 Asset pack (provided input)
 
 `demos/apothecary/assets/`: shop background · card frame (nine-slice) · ingredient icon
-sheet (8 icons, 4×2 grid) · 2 fallback portrait **expression sheets** (same 2×2 format as
-runtime generation) · 쪽지 note texture (PNG). All generated with the **style bible** — a
+sheet (8 icons, 4×2 grid) · 2 fallback portrait **expression sheets** (same 4×2
+blink format as runtime generation) · 쪽지 note texture (PNG). All generated with the **style bible** — a
 fixed style-prompt prefix frozen in `data/generation.json` and prepended to every portrait
 call, chosen by a pre-run style test (see handoff). Provided before the run; every file
 already has an
