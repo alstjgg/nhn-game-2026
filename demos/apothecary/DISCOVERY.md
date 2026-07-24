@@ -89,3 +89,22 @@ is the only script tag), there was no way to satisfy the e2e gate's real-browser
 requirement without crossing into either `main.ts` or `index.html`; option (a) was the
 smaller, self-documenting, self-removing crossing of the two. Flagging explicitly rather
 than re-guessing so Lead/integrator can make the call the review asked for.
+
+## u6 — Conversation screen (IMPLEMENT agent, TDD-Green)
+
+### State anomaly (TEST agent, u6 — re-run seeding)
+On entry the u6 worktree was at `progress.phase="setup"` yet already contained a
+**complete, green** implementation from a prior attempt (conversation.ts, conversation.css,
+the standalone harness, and the vite/tsconfig build wiring), alongside the RED spec
+`e2e/conversation.spec.ts`. An incomplete reset left impl + tests coexisting.
+
+Verification performed (non-destructive): I confirmed the test suite is an **honest RED**
+by temporarily moving the implementation aside (impl files → /tmp, vite.config.ts +
+tsconfig.json reverted to HEAD) and re-running — result **8 failed, 1 passed** (AC8 is a
+vacuous asset-manifest guard, no raster portraits shipped), exactly matching tests.md.
+Then restored the worktree to its original state — re-run **9 passed**. No work destroyed,
+no implementation authored.
+
+Handoff note for the orchestrator: `phase` is set to `test` per the TEST role, but the
+IMPL(green) phase will find the feature already implemented and green — it should confirm,
+not rebuild.
