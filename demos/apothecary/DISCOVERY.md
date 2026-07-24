@@ -3,6 +3,25 @@
 Running log of spec gaps, UI-verification friction, and pipeline gaps
 (first-class deliverable feeding the super-pipeline game-mod — PRD §7).
 
+## u2 — Phase state machine (TEST agent, TDD-Red)
+
+### Spec gap: no design.md/spec.md for this unit
+`.claude/super/units/u2/` held no `design.md` or `spec.md` (low-complexity → DESIGN
+skipped). The acceptance contract was pinned from PRD §1.1 (5-phase shell), §1.4
+(overlap rhythm) and §2 (patience) and is expressed by the exported surface in
+`src/state/index.ts`. Event names (`advance` / `proceedToCrafting` / `commit` /
+`deliverOutcome` / `chooseDialogue`) and the identity-no-op convention for illegal
+transitions are test-defined, not spec-defined — see `.claude/super/units/u2/tests.md`.
+
+### Resumed-state note: suite is GREEN, not RED
+This worktree is a resumed pipeline: u2's implementation is already committed
+(`4db3a32 [u2] Add apothecary phase state machine (pure TS)`), so the pre-existing
+TDD-Red suite (`tests/state/{machine,patience,overlap}.test.ts`, 77 assertions)
+reports 77/77 passing. RED was not re-manufactured because that would require deleting
+committed implementation — out of the TEST agent's scope and against the
+no-history-destruction rule. The tests are non-vacuous (removing `src/state/index.ts`
+breaks all three imports), so the RED guarantee holds by construction.
+
 ## u5 — Shared UI primitives (TEST agent, TDD-Red)
 
 ### Spec gap: no design.md/spec.md for this unit
