@@ -132,4 +132,100 @@ describe('card component (src/ui): interactive control, never a native form fiel
       ).toBe(false);
     }
   });
+
+  it('never emits a contenteditable surface (free-text is forbidden, §4.1)', () => {
+    for (const { rel, src } of uiSources()) {
+      expect(/contenteditable/i.test(src), `${rel} references contenteditable`).toBe(false);
+    }
+  });
+});
+
+// AC1 — the frozen contract name (u3/u4 depend on `CardOptions`).
+describe('card component (src/ui): frozen contract surface (AC1)', () => {
+  it('exports the CardOptions interface', () => {
+    const hasType = uiSources().some(({ src }) => /export\s+interface\s+CardOptions\b/.test(src));
+    expect(hasType, 'no exported `CardOptions` interface found under src/ui/').toBe(true);
+  });
+
+  it('exports a `createCard` factory returning an HTMLButtonElement', () => {
+    const hasFactory = uiSources().some(({ src }) =>
+      /export\s+function\s+createCard\s*\(/.test(src) &&
+      /:\s*HTMLButtonElement\b/.test(src),
+    );
+    expect(hasFactory, 'no `createCard(...): HTMLButtonElement` export found').toBe(true);
+  });
+
+  it('imports the three CSS layers so consumers pull in tokens + states + motion for free', () => {
+    const importsAll = uiSources().some(({ src }) =>
+      /base\.css/.test(src) && /cards\.css/.test(src) && /animations\.css/.test(src),
+    );
+    expect(importsAll, 'card factory does not import base + cards + animations CSS').toBe(true);
+  });
+
+  it('makes no runtime network call (no fetch/XHR/WebSocket — §4.2)', () => {
+    for (const { rel, src } of uiSources()) {
+      expect(/\bfetch\s*\(|XMLHttpRequest|WebSocket/.test(src), `${rel} performs a network call`).toBe(false);
+    }
+  });
+});
+
+// AC8 — the exact motion-token names screens/consumers reference.
+describe('base.css: exact motion token vocabulary (AC8)', () => {
+  const css = () => read('src/styles/base.css');
+  for (const token of [
+    '--duration-fast',
+    '--duration-base',
+    '--duration-slow',
+    '--ease-standard',
+    '--ease-emphasized',
+    '--transition-base',
+  ]) {
+    it(`declares ${token}`, () => {
+      expect(css()).toMatch(new RegExp(`${token}\\s*:`));
+    });
+  }
+
+  it('scopes --transition-base to specific properties, not `all`', () => {
+    const m = css().match(/--transition-base\s*:\s*([^;]+);/);
+    expect(m, '--transition-base not declared').not.toBeNull();
+    expect(/\ball\b/.test(m![1]), '--transition-base uses `all` (should list properties)').toBe(false);
+    expect(/transform/.test(m![1]), '--transition-base omits transform').toBe(true);
+  });
+});
+
+// AC9 — the `.anim-*` utility classes that pair with the keyframes.
+describe('animations.css: .anim-* utility class vocabulary (AC9)', () => {
+  const css = () => read('src/styles/animations.css');
+  for (const cls of ['anim-portrait-enter', 'anim-portrait-exit', 'anim-type-on', 'anim-meter-drain']) {
+    it(`defines a .${cls} utility class`, () => {
+      expect(css()).toMatch(new RegExp(`\\.${cls}\\b`));
+    });
+  }
+});
+
+// AC10 — reduced-motion guard neutralizes motion globally.
+describe('animations.css: reduced-motion guard (AC10)', () => {
+  const css = () => read('src/styles/animations.css');
+
+  it('includes a @media (prefers-reduced-motion: reduce) block', () => {
+    expect(css()).toMatch(/@media[^{]*prefers-reduced-motion\s*:\s*reduce/);
+  });
+
+  it('neutralizes both animation and transition durations inside that block', () => {
+    const block = css().match(/@media[^{]*prefers-reduced-motion[^{]*\{([\s\S]*)\}\s*$/);
+    const body = block ? block[1] : css();
+    expect(/animation-duration\s*:/.test(body), 'no animation-duration override').toBe(true);
+    expect(/transition-duration\s*:/.test(body), 'no transition-duration override').toBe(true);
+  });
+});
+
+// AC12 — no remote resources anywhere in the shared style layer (§4.2).
+describe('CSS layer: no remote resources (AC12 / §4.2)', () => {
+  for (const f of ['src/styles/base.css', 'src/styles/cards.css', 'src/styles/animations.css']) {
+    it(`${f} has no url(http…) or remote @import`, () => {
+      const css = read(f);
+      expect(/url\(\s*['"]?https?:/i.test(css), `${f} references a remote url()`).toBe(false);
+      expect(/@import\s+(?:url\()?\s*['"]?https?:/i.test(css), `${f} has a remote @import`).toBe(false);
+    });
+  }
 });
