@@ -40,6 +40,20 @@ describe('AC4 — patience never goes negative (clamp to 0, no overshoot) (A5)',
   });
 });
 
+describe('reducer clamps a negative cost to 0 — a data typo must never heal patience', () => {
+  it('a negative cost never raises patience above its current value', () => {
+    const s = reduce(conv(3), { type: 'chooseDialogue', cost: -5 });
+    expect(s.patience).toBe(3);
+    expect(s.phase).toBe('conversation');
+  });
+
+  it('a negative cost behaves exactly like cost 0 (no deduction, no auto-advance)', () => {
+    const s = reduce(conv(0), { type: 'chooseDialogue', cost: -1 });
+    expect(s.patience).toBe(0);
+    expect(s.phase).toBe('conversation');
+  });
+});
+
 describe('AC5 — auto-advance conversation -> crafting exactly when patience reaches 0 (F3)', () => {
   it('a choice that brings patience to exactly 0 forces crafting in the same reduction', () => {
     const s = reduce(conv(2), { type: 'chooseDialogue', cost: 2 });

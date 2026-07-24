@@ -73,13 +73,12 @@ export function createMachine(patienceBudget: number): MachineState {
 export function reduce(state: MachineState, event: GameEvent): MachineState {
   switch (event.type) {
     case 'advance':
-      // `advance` is the generic step only where a bespoke event is absent:
-      // entrance -> conversation, and the delayed handover -> outcome.
+      // `advance` is the sole ambient step: entrance -> conversation (the
+      // greeting has no bespoke event). Every other transition has a named
+      // business event (proceedToCrafting / commit / deliverOutcome) that is
+      // the single canonical path — `advance` does NOT also carry those.
       if (state.phase === 'entrance') {
         return { phase: 'conversation', patience: state.patience };
-      }
-      if (state.phase === 'handover') {
-        return { phase: 'outcome', patience: state.patience };
       }
       return state;
 
@@ -93,18 +92,31 @@ export function reduce(state: MachineState, event: GameEvent): MachineState {
       return { phase: 'handover', patience: state.patience };
 
     case 'deliverOutcome':
+      // The single canonical handover -> outcome path (see `advance` above).
       if (state.phase !== 'handover') return state;
       return { phase: 'outcome', patience: state.patience };
 
     case 'chooseDialogue': {
       if (state.phase !== 'conversation') return state;
-      const patience = Math.max(0, state.patience - event.cost);
+      // Defend the reducer's own invariant even though costs originate from
+      // balance-as-data (customers.json): a negative cost must never *heal*
+      // patience. Clamp at the boundary so a data typo can't silently revive
+      // a customer's patience bar.
+      const cost = Math.max(0, event.cost);
+      const patience = Math.max(0, state.patience - cost);
       // A real deduction (cost > 0) that lands on zero forces crafting (F3).
       // A no-cost observe ([관찰]) never advances on its own — reaches-zero is
       // the trigger, not already-zero.
       const phase: Phase =
-        event.cost > 0 && patience === 0 ? 'crafting' : 'conversation';
+        cost > 0 && patience === 0 ? 'crafting' : 'conversation';
       return { phase, patience };
+    }
+
+    default: {
+      // Exhaustiveness guard: if GameEvent gains a new variant, this line
+      // fails to compile instead of silently no-op'ing at runtime.
+      const _exhaustive: never = event;
+      return _exhaustive;
     }
   }
 }

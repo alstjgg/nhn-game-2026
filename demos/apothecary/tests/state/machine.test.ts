@@ -104,10 +104,6 @@ describe('AC1 — legal event chain drives entrance -> ... -> outcome', () => {
     s = reduce(s, { type: 'deliverOutcome' }); // handover -> outcome
     expect(s.phase).toBe('outcome');
   });
-
-  it("'advance' also carries handover -> outcome (the delayed-outcome step)", () => {
-    expect(reduce(st('handover'), { type: 'advance' }).phase).toBe('outcome');
-  });
 });
 
 describe('F5 — commit / handover / deliver transitions', () => {
@@ -147,6 +143,7 @@ describe('AC2 — illegal events are rejected: phase unchanged AND same referenc
     [st('crafting'), { type: 'proceedToCrafting' }, 'proceed outside conversation'],
     [st('crafting'), { type: 'chooseDialogue', cost: 1 }, 'dialogue outside conversation'],
     [st('handover'), { type: 'commit' }, 'commit after crafting'],
+    [st('handover'), { type: 'advance' }, 'advance is not a generic handover step (deliverOutcome is canonical)'],
     [st('outcome'), { type: 'advance' }, 'advance from terminal' ],
     [st('outcome'), { type: 'commit' }, 'commit from terminal'],
     [st('outcome'), { type: 'deliverOutcome' }, 'deliver from terminal'],
