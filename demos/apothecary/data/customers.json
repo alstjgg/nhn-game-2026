@@ -45,14 +45,15 @@
         "npcLine": "특히 밤이 깊어지면 기침이 더 심해져서 잠을 설쳐요.",
         "choices": [
           { "label": "언제부터 그러셨나요?", "patienceCost": 1, "clueReveals": ["clue_night_cough"] },
-          { "label": "[관찰] 손님의 숨소리를 듣는다", "patienceCost": 0 }
+          { "label": "[관찰] 손님의 숨소리를 듣는다", "patienceCost": 0, "clueReveals": ["clue_shallow_breath"] }
         ]
       }
     ],
     "observationClues": [
       { "id": "clue_hoarse_voice", "text": "목소리가 갈라져 쉰 소리가 난다." },
       { "id": "clue_dry_throat", "text": "자꾸 마른침을 삼키며 목을 어루만진다." },
-      { "id": "clue_night_cough", "text": "밤이 되면 기침이 부쩍 심해진다고 한다." }
+      { "id": "clue_night_cough", "text": "밤이 되면 기침이 부쩍 심해진다고 한다." },
+      { "id": "clue_shallow_breath", "text": "숨소리가 거칠고 얕게 들린다." }
     ]
   }
 ]

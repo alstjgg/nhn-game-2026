@@ -211,6 +211,18 @@ describe('#9 [R1] every ingredient id in outcomes.json exists in ingredients.jso
   }
 });
 
+// ── Bonus [PRD §2] — crafting picks 1–3 ingredient cards per entry ─────────────
+describe('[PRD §2] every entry uses between 1 and 3 ingredients (pick 1–3 ingredient cards)', () => {
+  for (const cid of ['c1', 'c2']) {
+    it(`${cid} entries each have 1 to 3 ingredients`, () => {
+      for (const entry of tables[cid].entries) {
+        expect(entry.ingredients.length).toBeGreaterThanOrEqual(1);
+        expect(entry.ingredients.length).toBeLessThanOrEqual(3);
+      }
+    });
+  }
+});
+
 // ── #10 [C4] — method ∈ METHODS, declaration ∈ DECLARATIONS ────────────────────
 describe('#10 [C4] every entry uses a valid method and declaration', () => {
   for (const cid of ['c1', 'c2']) {
