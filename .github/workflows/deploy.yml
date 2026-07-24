@@ -27,6 +27,26 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+
+      # Each demo under demos/<slug>/ that has its own package.json is built and
+      # published at /<slug>/ (subpath-safe via each demo's `base: './'`).
+      # Auto-discovered: a new demo (e.g. darkest-context) deploys the moment it
+      # has a package.json — no edits here. A demo build failure fails the deploy
+      # on purpose (a deliverable that can't build should be loud); Pages keeps the
+      # last successful deploy, so the live root site never breaks meanwhile.
+      - name: Build demos into subpaths
+        run: |
+          shopt -s nullglob
+          for demo in demos/*/; do
+            [ -f "${demo}package.json" ] || continue
+            slug="$(basename "$demo")"
+            echo "::group::Build demo ${slug}"
+            (cd "$demo" && npm ci && npm run build)
+            mkdir -p "dist/${slug}"
+            cp -r "${demo}dist/." "dist/${slug}/"
+            echo "::endgroup::"
+          done
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
