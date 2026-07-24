@@ -108,3 +108,36 @@ no implementation authored.
 Handoff note for the orchestrator: `phase` is set to `test` per the TEST role, but the
 IMPL(green) phase will find the feature already implemented and green — it should confirm,
 not rebuild.
+
+## u7 — Crafting screen (IMPLEMENT agent, TDD-Green)
+
+Design §0 flagged four seam deltas vs. the greenfield spec; the build conformed to the
+real u1–u3 contract. Recorded here (design §6 checklist):
+
+- **D-1 · `data/crafting-config.json` authored here.** `data/ingredients.json` already
+  existed (8 cards incl. gamcho/daechu/gukhwa/bakha) and was reused via the existing
+  `loadIngredients()` — u7 authored none of it. The per-customer `OutcomeTable` is
+  **injected** into `mountCrafting` (owned by the future app shell); u7 owns no customer data.
+- **D-2 · Machine `commit` is payload-less.** `src/state/index.ts` is a pure
+  `{phase,patience}` reducer with no session store, so u7 raises an injected
+  `onCommit(result)` callback instead of calling a `commit(outcome,selection)` transition.
+  The e2e harness (`e2e/harness/crafting/main.ts`) stands in for the app shell: it persists
+  the result and flips a phase marker crafting → handover.
+- **D-3 · Canonical outcome-key literals.** The method verbs `우리기/달이기/빻기` and
+  declarations `정석/실험` u7 commits are matched **verbatim, case-sensitive** by the reused
+  `resolveOutcome`/`canonicalKey`. Any future outcome-table author must match them byte-for-byte.
+  They live in `data/crafting-config.json` (balance-as-data, N6), loaded + frozen by `config.ts`.
+- **D-4 · Controlled cards, `card.ts` untouched.** `createCard` self-toggles, which can't
+  express the ≤3-with-blocked-4th / single-select / two-state groups. u7 reuses the
+  `.card`/`.card--selected` **CSS** vocabulary but renders controlled buttons from `view.ts`;
+  `src/ui/card.ts` is left unmodified (OCP, no u5-test risk).
+
+### Scope additions (files outside u7 file_globs, kept minimal + additive)
+- `vite.config.ts` (u1-owned): added a second rollup input so `preview` serves the harness at
+  `/e2e/harness/crafting/` from dist. `main` input unchanged → `/` still builds; all u5/smoke
+  e2e stay green (19/19).
+- `tsconfig.json` (u1-owned): added `"resolveJsonModule": true` so `config.ts` and the harness
+  can statically import the balance JSON (no runtime fetch, N4). Additive, no behaviour change.
+- `data/crafting-config.json` (new balance data) + `tests/screens/crafting/selection.test.ts`
+  (TEST-agent-authored vitest slice) sit outside the crafting `src`/`e2e` globs but are
+  consistent with the repo's balance-as-data + `demos/apothecary/tests/` conventions.
