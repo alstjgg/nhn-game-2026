@@ -1,0 +1,38 @@
+// u3 — outcome resolver. Lookup key = SORTED ingredient ids + method + declaration
+// (PRD §2). Ingredient order must not matter (F5); method/declaration are matched
+// VERBATIM (case-sensitive, not sorted). Every lookup is total: an unlisted
+// selection resolves to the table's required `default` — never undefined, never a
+// throw (F3, no dead-ends).
+import type { CraftSelection, Outcome, OutcomeTable } from './schema';
+
+/**
+ * Canonicalize a craft into a comparable key. Ingredient ids are sorted (so the
+ * player may send them in any order), while method + declaration are kept
+ * verbatim — a differing multiset of ids, or a differing (case-sensitive)
+ * method/declaration, yields a different key.
+ */
+export function canonicalKey(
+  ingredientIds: readonly string[],
+  method: string,
+  declaration: string,
+): string {
+  const sortedIds = [...ingredientIds].sort();
+  // JSON-encode the id list (bracketed, quoted) then NUL-separate the verbatim
+  // method/declaration so no field boundary can collide with another's content.
+  return `${JSON.stringify(sortedIds)}\u0000${method}\u0000${declaration}`;
+}
+
+/**
+ * Resolve a committed craft against a customer's outcome table. Returns the exact
+ * matching entry's outcome, or the table's `default` for any unlisted combination.
+ * Total by construction: always returns an Outcome, never throws.
+ */
+export function resolveOutcome(table: OutcomeTable, selection: CraftSelection): Outcome {
+  const key = canonicalKey(selection.ingredientIds, selection.method, selection.declaration);
+  for (const entry of table.entries) {
+    if (canonicalKey(entry.ingredients, entry.method, entry.declaration) === key) {
+      return entry.outcome;
+    }
+  }
+  return table.default;
+}
