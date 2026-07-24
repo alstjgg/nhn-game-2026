@@ -3,6 +3,7 @@
 // (this is the seam a future LLM proxy plugs into). No silent coercion, no defaults
 // for missing structural fields.
 import type {
+  Choice,
   Customer,
   DialogueNode,
   Ingredient,
@@ -53,6 +54,38 @@ function requireArrayOfStrings(v: unknown, ctx: string, field: string): string[]
   return arr.map((item, i) => requireString(item, ctx, `${field}[${i}]`));
 }
 
+// Element validators for the nested customer fields: `requireArrayOf` only checks
+// the array shell, so each element must be inspected too (same reasoning as
+// `requireArrayOfStrings` above) — otherwise a malformed element (e.g. a clue with
+// a numeric `id`, or a choice with a non-numeric `patienceCost`) casts straight
+// through as if well-typed.
+function validateObservationClue(v: unknown, ctx: string): ObservationClue {
+  if (!isRecord(v)) throw new Error(`${ctx}: clue must be an object (got ${typeName(v)})`);
+  return {
+    id: requireString(v.id, ctx, 'id'),
+    text: requireString(v.text, ctx, 'text'),
+  };
+}
+
+function validateChoice(v: unknown, ctx: string): Choice {
+  if (!isRecord(v)) throw new Error(`${ctx}: choice must be an object (got ${typeName(v)})`);
+  const label = requireString(v.label, ctx, 'label');
+  const patienceCost = requireNumber(v.patienceCost, ctx, 'patienceCost');
+  const choice: Choice = { label, patienceCost };
+  if (v.clueReveals !== undefined) {
+    choice.clueReveals = requireArrayOfStrings(v.clueReveals, ctx, 'clueReveals');
+  }
+  return choice;
+}
+
+function validateDialogueNode(v: unknown, ctx: string): DialogueNode {
+  if (!isRecord(v)) throw new Error(`${ctx}: dialogue node must be an object (got ${typeName(v)})`);
+  const npcLine = requireString(v.npcLine, ctx, 'npcLine');
+  const rawChoices = requireArrayOf<unknown>(v.choices, ctx, 'choices');
+  const choices = rawChoices.map((c, i) => validateChoice(c, `${ctx}.choices[${i}]`));
+  return { npcLine, choices };
+}
+
 // ── Customers ────────────────────────────────────────────────────────────────
 export function loadCustomers(input: unknown): Customer[] {
   if (!Array.isArray(input)) {
@@ -61,14 +94,18 @@ export function loadCustomers(input: unknown): Customer[] {
   return input.map((raw, i): Customer => {
     const ctx = `customers[${i}]`;
     if (!isRecord(raw)) throw new Error(`${ctx}: must be an object (got ${typeName(raw)})`);
+    const rawDialogueNodes = requireArrayOf<unknown>(raw.dialogueNodes, ctx, 'dialogueNodes');
+    const rawObservationClues = requireArrayOf<unknown>(raw.observationClues, ctx, 'observationClues');
     return {
       id: requireString(raw.id, ctx, 'id'),
       name: requireString(raw.name, ctx, 'name'),
       portrait: requireString(raw.portrait, ctx, 'portrait'),
       problem: requireString(raw.problem, ctx, 'problem'),
       patienceBudget: requireNumber(raw.patienceBudget, ctx, 'patienceBudget'),
-      dialogueNodes: requireArrayOf<DialogueNode>(raw.dialogueNodes, ctx, 'dialogueNodes'),
-      observationClues: requireArrayOf<ObservationClue>(raw.observationClues, ctx, 'observationClues'),
+      dialogueNodes: rawDialogueNodes.map((n, i2) => validateDialogueNode(n, `${ctx}.dialogueNodes[${i2}]`)),
+      observationClues: rawObservationClues.map((c, i2) =>
+        validateObservationClue(c, `${ctx}.observationClues[${i2}]`),
+      ),
     };
   });
 }
