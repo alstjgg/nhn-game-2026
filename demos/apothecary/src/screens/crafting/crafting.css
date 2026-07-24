@@ -1,0 +1,124 @@
+/* crafting.css — screen-scoped layout + motion for the crafting phase (u7).
+ * Reuses base.css tokens and the .card vocabulary; adds only screen-scoped
+ * keyframes (crafting-enter, commit-beat) so it never edits the shared
+ * animations.css vocabulary (OCP). The global prefers-reduced-motion guard in
+ * animations.css collapses these to ~0ms while still firing animation events —
+ * the commit beat resolves on animationend either way. */
+
+.crafting {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+/* Customer portrait — the element the commit beat animates out (§1.3). */
+.crafting__portrait {
+  align-self: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface-hover);
+}
+
+.crafting__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.crafting__group-title {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-text-dim);
+  font-weight: 600;
+}
+
+.crafting__grid {
+  padding: 0;
+}
+
+/* The weighted [건네기] — a card-feel primary action. */
+.crafting__commit {
+  align-self: center;
+  min-width: 160px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+/* Commit-ready glow (u9 juice): the instant the enable predicate is satisfied the
+ * [건네기] warms and lifts a resting accent halo, drawing the eye to the weighted
+ * commit. Rides the existing box-shadow/border transition (no keyframe, so it adds
+ * no animationstart noise to the commit beat), and eases back out if the player
+ * breaks the selection. */
+.crafting__commit:not(:disabled) {
+  border-color: var(--color-border-hover);
+  box-shadow: 0 0 0 1px rgba(201, 162, 95, 0.25), 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.crafting__commit:hover:not(:disabled) {
+  border-color: var(--color-border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px rgba(201, 162, 95, 0.35), 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.crafting__commit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Enter — the screen fades/rises in (N3: no instant swap on entry). */
+@keyframes crafting-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.crafting--entering {
+  animation: crafting-enter var(--duration-slow) var(--ease-emphasized) both;
+}
+
+/* Commit beat — the customer's brew is handed over and they leave the counter.
+ * A weighted, non-instant motion (F7/AC8); animationend resolves the commit. */
+@keyframes commit-beat {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  40% {
+    transform: translateX(0) scale(1.06);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(28px) scale(0.94);
+  }
+}
+
+.crafting--committing .crafting__portrait {
+  animation: commit-beat var(--duration-slow) var(--ease-emphasized) both;
+}
+
+/* Committed lock (F7/AC10) — the selection is irreversible: freeze every card
+ * group so no post-commit click can mutate the model. */
+.crafting--committed .card {
+  pointer-events: none;
+}
+
+.crafting--committed .crafting__commit {
+  pointer-events: none;
+}

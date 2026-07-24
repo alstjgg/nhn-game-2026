@@ -1,0 +1,251 @@
+// u3 loader tests — AC1 (valid load), AC2 (loud throw naming entity+field),
+// AC3 (required `default` per customer). Pure logic, no DOM (PRD §5, N4).
+// TDD-Red: src/data/{schema,loader}.ts do not exist yet → these fail loudly on import.
+import { describe, it, expect } from 'vitest';
+import { loadCustomers, loadIngredients, loadOutcomes } from '../../src/data/loader';
+import { validCustomers, validIngredients, validOutcomes } from './fixtures/index';
+
+type Rec = Record<string, unknown>;
+
+// Runs `fn`, returns the thrown Error message. Fails the test if it does NOT throw —
+// so this single helper asserts both "throws loudly" and lets us inspect the message.
+function messageWhenThrows(fn: () => unknown): string {
+  try {
+    fn();
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e);
+  }
+  throw new Error('expected the loader to throw, but it returned normally');
+}
+
+// ── AC1 — well-formed fixtures load and return values typed per schema.ts ────
+describe('AC1 — valid fixtures load without throwing', () => {
+  it('loadCustomers returns the 2 typed customers', () => {
+    const customers = loadCustomers(validCustomers());
+    expect(Array.isArray(customers)).toBe(true);
+    expect(customers).toHaveLength(2);
+    expect(customers[0].id).toBe('c1');
+    expect(customers[1].id).toBe('c2');
+    expect(typeof customers[0].name).toBe('string');
+    expect(typeof customers[0].portrait).toBe('string');
+    expect(typeof customers[0].problem).toBe('string');
+    expect(typeof customers[0].patienceBudget).toBe('number');
+    expect(Array.isArray(customers[0].dialogueNodes)).toBe(true);
+    expect(Array.isArray(customers[0].observationClues)).toBe(true);
+  });
+
+  it('loadIngredients returns typed ingredients with string[] property tags', () => {
+    const ingredients = loadIngredients(validIngredients());
+    expect(Array.isArray(ingredients)).toBe(true);
+    expect(ingredients.length).toBeGreaterThan(0);
+    expect(ingredients[0].id).toBe('herb_a');
+    expect(typeof ingredients[0].name).toBe('string');
+    expect(Array.isArray(ingredients[0].propertyTags)).toBe(true);
+  });
+
+  it('loadOutcomes returns a per-customer table map with entries + default', () => {
+    const tables = loadOutcomes(validOutcomes());
+    expect(tables.c1).toBeDefined();
+    expect(tables.c2).toBeDefined();
+    expect(Array.isArray(tables.c1.entries)).toBe(true);
+    expect(tables.c1.default).toBeDefined();
+    expect(typeof tables.c1.default.channel).toBe('string');
+  });
+});
+
+// ── AC2 — omitting OR mistyping each frozen top-level field throws, naming it ─
+// String fields get a numeric wrong-value; number fields a string; array fields an object.
+const customerFields: Array<[string, unknown]> = [
+  ['id', 42],
+  ['name', 42],
+  ['portrait', 42],
+  ['problem', 42],
+  ['patienceBudget', 'not-a-number'],
+  ['dialogueNodes', {}],
+  ['observationClues', {}],
+];
+
+describe('AC2 — loadCustomers fails loudly, naming the offending field', () => {
+  for (const [field, wrong] of customerFields) {
+    it(`throws naming '${field}' when it is omitted`, () => {
+      const arr = validCustomers() as unknown as Rec[];
+      delete arr[0][field];
+      expect(messageWhenThrows(() => loadCustomers(arr))).toContain(field);
+    });
+    it(`throws naming '${field}' when it is mistyped`, () => {
+      const arr = validCustomers() as unknown as Rec[];
+      arr[0][field] = wrong;
+      expect(messageWhenThrows(() => loadCustomers(arr))).toContain(field);
+    });
+  }
+});
+
+// Element-level checks mirroring the propertyTags case above: the array shell can
+// be valid while a nested element is not (e.g. a clue with a numeric `id`, a choice
+// with a non-numeric `patienceCost`). These must throw too, instead of silently
+// casting the bad element through as if it were well-typed.
+describe('AC2 — loadCustomers fails loudly on malformed nested elements', () => {
+  it("throws naming 'id' when an observationClues element has a non-string id", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].observationClues as Rec[])[0].id = 42;
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('id');
+  });
+
+  it("throws naming 'text' when an observationClues element has a non-string text", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].observationClues as Rec[])[0].text = 42;
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('text');
+  });
+
+  it("throws naming 'observationClues' when an element is not an object", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    arr[0].observationClues = [42];
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('observationClues');
+  });
+
+  it("throws naming 'npcLine' when a dialogueNodes element has a non-string npcLine", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].npcLine = 42;
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('npcLine');
+  });
+
+  it("throws naming 'choices' when a dialogueNodes element's choices is not an array", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].choices = {};
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('choices');
+  });
+
+  it("throws naming 'patienceCost' when a choice has a non-numeric patienceCost", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].choices = [{ label: 'x', patienceCost: 'nope' }];
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('patienceCost');
+  });
+
+  it("throws naming 'clueReveals' when a choice's clueReveals element is not a string", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].choices = [
+      { label: 'x', patienceCost: 1, clueReveals: [42] },
+    ];
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('clueReveals');
+  });
+});
+
+const ingredientFields: Array<[string, unknown]> = [
+  ['id', 42],
+  ['name', 42],
+  ['propertyTags', {}],
+];
+
+describe('AC2 — loadIngredients fails loudly, naming the offending field', () => {
+  for (const [field, wrong] of ingredientFields) {
+    it(`throws naming '${field}' when it is omitted`, () => {
+      const arr = validIngredients() as unknown as Rec[];
+      delete arr[0][field];
+      expect(messageWhenThrows(() => loadIngredients(arr))).toContain(field);
+    });
+    it(`throws naming '${field}' when it is mistyped`, () => {
+      const arr = validIngredients() as unknown as Rec[];
+      arr[0][field] = wrong;
+      expect(messageWhenThrows(() => loadIngredients(arr))).toContain(field);
+    });
+  }
+
+  // Element-level check: the array shell can be valid while a leaf element is not
+  // (e.g. `propertyTags: [42]`). This must also throw, naming 'propertyTags', instead
+  // of silently casting the bad element through as if it were a string.
+  it("throws naming 'propertyTags' when an element is not a string", () => {
+    const arr = validIngredients() as unknown as Rec[];
+    arr[0].propertyTags = [42];
+    expect(messageWhenThrows(() => loadIngredients(arr))).toContain('propertyTags');
+  });
+});
+
+describe('AC2 — loadOutcomes fails loudly on malformed table / outcome fields', () => {
+  it("throws naming 'entries' when a customer's entries is not an array", () => {
+    const o = validOutcomes() as unknown as Record<string, Rec>;
+    o.c2.entries = {};
+    expect(messageWhenThrows(() => loadOutcomes(o))).toContain('entries');
+  });
+
+  for (const field of ['channel', 'text', 'arrivalTrigger']) {
+    it(`throws naming '${field}' when default.${field} is missing`, () => {
+      const o = validOutcomes() as unknown as Record<string, { default: Rec }>;
+      delete o.c2.default[field];
+      expect(messageWhenThrows(() => loadOutcomes(o))).toContain(field);
+    });
+  }
+});
+
+// ── AC2 — a malformed ENTRY outcome / entry field also throws, naming it ─────
+// F2/A3 freeze the entry-level fields (ingredients, method, declaration, outcome
+// {channel,text,arrivalTrigger}); a bad one inside entries[0] must fail loudly too,
+// not just the table `default`.
+describe('AC2 — loadOutcomes fails loudly on malformed entry fields', () => {
+  for (const field of ['channel', 'text', 'arrivalTrigger']) {
+    it(`throws naming '${field}' when entries[0].outcome.${field} is missing`, () => {
+      const o = validOutcomes() as unknown as Record<string, { entries: Array<{ outcome: Rec }> }>;
+      delete o.c1.entries[0].outcome[field];
+      expect(messageWhenThrows(() => loadOutcomes(o))).toContain(field);
+    });
+  }
+
+  it("throws naming 'method' when entries[0].method is mistyped", () => {
+    const o = validOutcomes() as unknown as Record<string, { entries: Rec[] }>;
+    o.c1.entries[0].method = 42;
+    expect(messageWhenThrows(() => loadOutcomes(o))).toContain('method');
+  });
+
+  it("throws naming 'declaration' when entries[0].declaration is mistyped", () => {
+    const o = validOutcomes() as unknown as Record<string, { entries: Rec[] }>;
+    o.c1.entries[0].declaration = 42;
+    expect(messageWhenThrows(() => loadOutcomes(o))).toContain('declaration');
+  });
+
+  it("throws naming 'ingredients' when entries[0].ingredients is not an array", () => {
+    const o = validOutcomes() as unknown as Record<string, { entries: Rec[] }>;
+    o.c1.entries[0].ingredients = {};
+    expect(messageWhenThrows(() => loadOutcomes(o))).toContain('ingredients');
+  });
+
+  it('throws when an entry ingredient id is not a string', () => {
+    const o = validOutcomes() as unknown as Record<string, { entries: Array<{ ingredients: unknown[] }> }>;
+    o.c1.entries[0].ingredients = [42];
+    expect(() => loadOutcomes(o as never)).toThrow();
+  });
+});
+
+// ── AC2 — a non-array / non-object TOP-LEVEL input throws (loud at the seam) ──
+describe('AC2 — malformed top-level input throws loudly', () => {
+  it('loadCustomers throws when the top level is not an array', () => {
+    expect(messageWhenThrows(() => loadCustomers({}))).toContain('customers');
+  });
+
+  it('loadCustomers throws when an element is not an object', () => {
+    expect(() => loadCustomers([42])).toThrow();
+  });
+
+  it('loadIngredients throws when the top level is not an array', () => {
+    expect(messageWhenThrows(() => loadIngredients('nope'))).toContain('ingredients');
+  });
+
+  it('loadOutcomes throws when the top level is not an object map', () => {
+    expect(messageWhenThrows(() => loadOutcomes([]))).toContain('outcomes');
+  });
+});
+
+// ── AC3 — every customer's table MUST define a `default` (no dead-ends, F3) ───
+describe('AC3 — missing required `default` throws loudly', () => {
+  it('throws naming the offending customer and `default` when a table omits it', () => {
+    const o = validOutcomes() as unknown as Record<string, Rec>;
+    delete o.c2.default;
+    const msg = messageWhenThrows(() => loadOutcomes(o));
+    expect(msg).toContain('default');
+    expect(msg).toContain('c2');
+  });
+
+  it('throws when `default` is present but not a well-formed outcome object', () => {
+    const o = validOutcomes() as unknown as Record<string, Rec>;
+    o.c2.default = 'not-an-outcome';
+    expect(messageWhenThrows(() => loadOutcomes(o))).toContain('default');
+  });
+});

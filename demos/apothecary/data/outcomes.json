@@ -1,0 +1,60 @@
+{
+  "c1": {
+    "entries": [
+      {
+        "ingredients": ["baekbokryeong", "daechu", "sanjoin"],
+        "method": "달이기",
+        "declaration": "정석",
+        "outcome": {
+          "channel": "재방문",
+          "text": "며칠 뒤 손님이 다시 찾아와, 오랜만에 푹 잤다며 환하게 웃는다.",
+          "arrivalTrigger": "revisit_slept_well"
+        }
+      },
+      {
+        "ingredients": ["gamcho", "sanjoin"],
+        "method": "우리기",
+        "declaration": "실험",
+        "outcome": {
+          "channel": "재방문",
+          "text": "선잠이라도 들었다며 손님이 재방문해 고맙다는 인사를 전한다.",
+          "arrivalTrigger": "revisit_light_sleep"
+        }
+      }
+    ],
+    "default": {
+      "channel": "재방문",
+      "text": "손님이 다시 들러, 이번에도 별 차도가 없었다고 조용히 말한다.",
+      "arrivalTrigger": "revisit_no_effect"
+    }
+  },
+  "c2": {
+    "entries": [
+      {
+        "ingredients": ["doraji", "gamcho"],
+        "method": "달이기",
+        "declaration": "정석",
+        "outcome": {
+          "channel": "문앞 쪽지",
+          "text": "문 앞에 쪽지가 놓였다. 기침이 한결 가라앉았다는 감사의 글이다.",
+          "arrivalTrigger": "note_cough_eased"
+        }
+      },
+      {
+        "ingredients": ["bakha", "doraji"],
+        "method": "빻기",
+        "declaration": "실험",
+        "outcome": {
+          "channel": "문앞 쪽지",
+          "text": "쪽지가 도착했다. 목은 시원해졌지만 조금 아리다고 적혀 있다.",
+          "arrivalTrigger": "note_throat_cool"
+        }
+      }
+    ],
+    "default": {
+      "channel": "문앞 쪽지",
+      "text": "문 앞 쪽지에는 별 효험이 없었다는 짧은 한마디만 남아 있다.",
+      "arrivalTrigger": "note_no_effect"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "methods": ["우리기", "달이기", "빻기"],
+  "declarations": ["정석", "실험"],
+  "defaultDeclaration": "정석",
+  "minIngredients": 1,
+  "maxIngredients": 3
+}

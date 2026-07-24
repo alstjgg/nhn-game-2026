@@ -1,0 +1,99 @@
+/* conversation.css — layout + placeholder art for the conversation screen (u6).
+ * Builds only on the shared tokens (base.css) and the u5 card/animation
+ * vocabulary; screen-specific pieces (portrait placeholder, patience meter,
+ * clue-card modifier, observe affordance) live here rather than mutating the
+ * stable u5 primitives. */
+.conversation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+/* Portrait — a warm CSS placeholder (no raster art shipped, design D9). */
+.portrait {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: linear-gradient(135deg, var(--color-surface-hover), var(--color-surface));
+}
+
+.portrait__name {
+  padding: var(--space-1);
+  color: var(--color-text-dim);
+  font-size: 0.8em;
+  text-align: center;
+}
+
+/* Patience meter — the fill's scaleX is driven from remaining patience and
+ * animates via a transform transition (compositor-only, no layout). */
+.patience-meter {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+.patience-fill {
+  /* --patience (0..1) is driven from the reducer's remaining patience in TS; the
+   * fill's colour is a live mix of accent → alarm so the bar warms toward red as
+   * it empties (u9 juice). Both the width (scaleX) and the colour ease via the
+   * shared motion tokens — never an instant flip (design D4). */
+  --patience: 1;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(1);
+  transform-origin: left center;
+  background: color-mix(
+    in srgb,
+    var(--color-accent) calc(var(--patience) * 100%),
+    var(--color-alarm)
+  );
+  transition: transform var(--duration-slow) var(--ease-standard),
+    background-color var(--duration-slow) var(--ease-standard);
+}
+
+.npc-line {
+  margin: 0;
+  font-size: 1.1em;
+  line-height: 1.5;
+}
+
+/* Clue card — a dashed, non-interactive variant of the u5 .card, kept visually
+ * distinct from the solid dialogue choice cards. */
+.card--clue {
+  border-style: dashed;
+  border-color: var(--color-border-hover);
+  cursor: default;
+}
+
+.card--clue:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--color-surface);
+}
+
+/* Persistent [관찰] affordance — a ghost button, never a dialogue choice card. */
+.observe-btn {
+  align-self: flex-start;
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed var(--color-border-hover);
+  border-radius: var(--radius-card);
+  background: transparent;
+  color: var(--color-accent);
+  font: inherit;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.observe-btn:hover {
+  background: var(--color-surface-hover);
+}

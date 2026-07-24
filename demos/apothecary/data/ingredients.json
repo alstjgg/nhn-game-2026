@@ -1,0 +1,10 @@
+[
+  { "id": "gamcho", "name": "감초", "propertyTags": ["따뜻함", "조화"] },
+  { "id": "daechu", "name": "대추", "propertyTags": ["따뜻함", "안정"] },
+  { "id": "saenggang", "name": "생강", "propertyTags": ["따뜻함", "발산"] },
+  { "id": "gukhwa", "name": "국화", "propertyTags": ["서늘함", "맑음"] },
+  { "id": "doraji", "name": "도라지", "propertyTags": ["시원함", "가래삭임"] },
+  { "id": "baekbokryeong", "name": "백복령", "propertyTags": ["담담함", "안정"] },
+  { "id": "sanjoin", "name": "산조인", "propertyTags": ["차분함", "안면"] },
+  { "id": "bakha", "name": "박하", "propertyTags": ["서늘함", "청량"] }
+]

@@ -1,0 +1,59 @@
+[
+  {
+    "id": "c1",
+    "name": "잠 못 드는 서생",
+    "portrait": "portraits/c1.png",
+    "problem": "며칠째 잠이 오지 않아요.",
+    "patienceBudget": 5,
+    "dialogueNodes": [
+      {
+        "npcLine": "며칠째 통 잠을 이루지 못했어요. 눈만 감으면 생각이 꼬리를 물어서요.",
+        "choices": [
+          { "label": "무엇이 잠을 방해하나요?", "patienceCost": 1, "clueReveals": ["clue_racing_mind"] },
+          { "label": "[관찰] 손님의 얼굴빛을 살핀다", "patienceCost": 0, "clueReveals": ["clue_dark_circles"] }
+        ]
+      },
+      {
+        "npcLine": "손발이 늘 차서 이불 속에서도 한참을 뒤척여요.",
+        "choices": [
+          { "label": "따뜻한 차를 즐기시나요?", "patienceCost": 1 },
+          { "label": "[관찰] 손님의 손끝을 본다", "patienceCost": 0, "clueReveals": ["clue_cold_hands"] }
+        ]
+      }
+    ],
+    "observationClues": [
+      { "id": "clue_dark_circles", "text": "눈 밑에 짙은 그늘이 드리워 있다." },
+      { "id": "clue_cold_hands", "text": "손끝이 차갑게 식어 있다." },
+      { "id": "clue_racing_mind", "text": "말끝마다 걱정이 배어 있어 마음이 분주해 보인다." }
+    ]
+  },
+  {
+    "id": "c2",
+    "name": "기침하는 아낙",
+    "portrait": "portraits/c2.png",
+    "problem": "기침이 좀처럼 멎지 않아요.",
+    "patienceBudget": 3,
+    "dialogueNodes": [
+      {
+        "npcLine": "며칠 전부터 기침이 멎질 않네요. 목도 칼칼하고요.",
+        "choices": [
+          { "label": "가래도 함께 나오나요?", "patienceCost": 1, "clueReveals": ["clue_dry_throat"] },
+          { "label": "[관찰] 손님의 목을 살핀다", "patienceCost": 0, "clueReveals": ["clue_hoarse_voice"] }
+        ]
+      },
+      {
+        "npcLine": "특히 밤이 깊어지면 기침이 더 심해져서 잠을 설쳐요.",
+        "choices": [
+          { "label": "언제부터 그러셨나요?", "patienceCost": 1, "clueReveals": ["clue_night_cough"] },
+          { "label": "[관찰] 손님의 숨소리를 듣는다", "patienceCost": 0, "clueReveals": ["clue_shallow_breath"] }
+        ]
+      }
+    ],
+    "observationClues": [
+      { "id": "clue_hoarse_voice", "text": "목소리가 갈라져 쉰 소리가 난다." },
+      { "id": "clue_dry_throat", "text": "자꾸 마른침을 삼키며 목을 어루만진다." },
+      { "id": "clue_night_cough", "text": "밤이 되면 기침이 부쩍 심해진다고 한다." },
+      { "id": "clue_shallow_breath", "text": "숨소리가 거칠고 얕게 들린다." }
+    ]
+  }
+]
