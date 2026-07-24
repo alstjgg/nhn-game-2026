@@ -1,7 +1,10 @@
 # Harness note — apothecary demo batch (2026-07-23)
 
 > Outcome from the harness-tweak session (`super-pipeline`, branch `harness/wave-gate`).
-> Status: **BUILT** (not cut). Installed to `~/.claude/` — live for the run session.
+> Status: **BUILT** (not cut). Installed to `~/.claude/` **and** `~/.claude-personal/` (2026-07-24) —
+> live for the run session under either profile. The installer and all path references now honor
+> `CLAUDE_CONFIG_DIR`, so future updates are `CLAUDE_CONFIG_DIR=<profile> bun run install:global`
+> per profile (note: a session's shell already has its own profile's value set).
 
 ## What was built
 
