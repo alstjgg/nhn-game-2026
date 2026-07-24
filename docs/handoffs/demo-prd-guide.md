@@ -58,7 +58,10 @@ below is how runs go wrong.
 
 - **Membrane**: no free-text input UI to anything, ever (structured verbs only —
   for doodle-life, drawing strokes are structured input and fine; a text box is not).
-- **No runtime network calls**; LLM fully stubbed from `data/` JSON.
+- **No runtime network calls in the deployed build.** ~~LLM fully stubbed~~ —
+  superseded after the v1 playtest: live AI is now expected in dev mode via the
+  dev-proxy seam, with stub as the deployed floor. See
+  `demo-playability-guide.md` (assets + live-AI patterns, lessons, checklist).
 - **No game engine/framework** unless the track explicitly chose one; root repo
   untouched (everything in `demos/<slug>/`; only `assets-manifest.json` at root
   may gain entries — mandatory for every generated asset).
