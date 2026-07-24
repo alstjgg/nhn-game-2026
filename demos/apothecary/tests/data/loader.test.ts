@@ -117,6 +117,63 @@ describe('AC2 — loadOutcomes fails loudly on malformed table / outcome fields'
   }
 });
 
+// ── AC2 — a malformed ENTRY outcome / entry field also throws, naming it ─────
+// F2/A3 freeze the entry-level fields (ingredients, method, declaration, outcome
+// {channel,text,arrivalTrigger}); a bad one inside entries[0] must fail loudly too,
+// not just the table `default`.
+describe('AC2 — loadOutcomes fails loudly on malformed entry fields', () => {
+  for (const field of ['channel', 'text', 'arrivalTrigger']) {
+    it(`throws naming '${field}' when entries[0].outcome.${field} is missing`, () => {
+      const o = validOutcomes() as unknown as Record<string, { entries: Array<{ outcome: Rec }> }>;
+      delete o.c1.entries[0].outcome[field];
+      expect(messageWhenThrows(() => loadOutcomes(o))).toContain(field);
+    });
+  }
+
+  it("throws naming 'method' when entries[0].method is mistyped", () => {
+    const o = validOutcomes() as unknown as Record<string, { entries: Rec[] }>;
+    o.c1.entries[0].method = 42;
+    expect(messageWhenThrows(() => loadOutcomes(o))).toContain('method');
+  });
+
+  it("throws naming 'declaration' when entries[0].declaration is mistyped", () => {
+    const o = validOutcomes() as unknown as Record<string, { entries: Rec[] }>;
+    o.c1.entries[0].declaration = 42;
+    expect(messageWhenThrows(() => loadOutcomes(o))).toContain('declaration');
+  });
+
+  it("throws naming 'ingredients' when entries[0].ingredients is not an array", () => {
+    const o = validOutcomes() as unknown as Record<string, { entries: Rec[] }>;
+    o.c1.entries[0].ingredients = {};
+    expect(messageWhenThrows(() => loadOutcomes(o))).toContain('ingredients');
+  });
+
+  it('throws when an entry ingredient id is not a string', () => {
+    const o = validOutcomes() as unknown as Record<string, { entries: Array<{ ingredients: unknown[] }> }>;
+    o.c1.entries[0].ingredients = [42];
+    expect(() => loadOutcomes(o as never)).toThrow();
+  });
+});
+
+// ── AC2 — a non-array / non-object TOP-LEVEL input throws (loud at the seam) ──
+describe('AC2 — malformed top-level input throws loudly', () => {
+  it('loadCustomers throws when the top level is not an array', () => {
+    expect(messageWhenThrows(() => loadCustomers({}))).toContain('customers');
+  });
+
+  it('loadCustomers throws when an element is not an object', () => {
+    expect(() => loadCustomers([42])).toThrow();
+  });
+
+  it('loadIngredients throws when the top level is not an array', () => {
+    expect(messageWhenThrows(() => loadIngredients('nope'))).toContain('ingredients');
+  });
+
+  it('loadOutcomes throws when the top level is not an object map', () => {
+    expect(messageWhenThrows(() => loadOutcomes([]))).toContain('outcomes');
+  });
+});
+
 // ── AC3 — every customer's table MUST define a `default` (no dead-ends, F3) ───
 describe('AC3 — missing required `default` throws loudly', () => {
   it('throws naming the offending customer and `default` when a table omits it', () => {
