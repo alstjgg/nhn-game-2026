@@ -1,0 +1,50 @@
+/* base.css — foundational design tokens for the apothecary demo (u5).
+ * The single :root token block every screen/primitive builds on: colours,
+ * spacing, radii, and the shared transition/easing/duration vocabulary
+ * (PRD §1.2 card-feel + §1.3 animation vocabulary). Balance/feel lives here
+ * as tokens, never inline per component. */
+:root {
+  /* palette — warm apothecary interior */
+  --color-bg: #1a1410;
+  --color-surface: #2a2018;
+  --color-surface-hover: #38291d;
+  --color-border: #5a4630;
+  --color-border-hover: #c9a25f;
+  --color-accent: #c9a25f;
+  --color-text: #f0e6d2;
+  --color-text-dim: #b7a488;
+
+  /* spacing + shape */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --radius-card: 10px;
+
+  /* shared motion vocabulary — reused by cards.css + animations.css */
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
+  /* Scoped to the properties cards actually change on hover/active/selected
+   * (transform, box-shadow, border-color, background-color) rather than
+   * `all`, so future/expensive property changes don't silently start
+   * animating and cost extra paint. */
+  --transition-base: transform var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard),
+    background-color var(--duration-base) var(--ease-standard);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, "Noto Sans KR", sans-serif;
+}

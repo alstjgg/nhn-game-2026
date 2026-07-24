@@ -1,0 +1,62 @@
+/* cards.css — the .card primitive and its interaction state vocabulary
+ * (PRD §1.2 card-feel). A card is an interactive control, never a native
+ * form field (membrane §4.1 / cards-never-forms §4.5) — see src/ui/card.ts.
+ * State changes animate through the shared --transition-base token so nothing
+ * flips instantly. */
+.card {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 120px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transform: translateY(0);
+  transition: var(--transition-base);
+}
+
+/* hover — lifts and warms the border (card-feel: responsive, tactile) */
+.card:hover {
+  border-color: var(--color-border-hover);
+  background: var(--color-surface-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+/* press — settles back down under the pointer */
+.card:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* selected — committed choice, ringed in accent gold */
+.card--selected {
+  border-color: var(--color-accent);
+  background: var(--color-surface-hover);
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--color-border-hover);
+  outline-offset: 2px;
+}
+
+.card__label {
+  font-weight: 600;
+}
+
+.card__detail {
+  color: var(--color-text-dim);
+  font-size: 0.85em;
+}
+
+.card-shelf {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
