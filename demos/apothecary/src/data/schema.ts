@@ -2,9 +2,17 @@
 // the implementer's call). Pure type declarations: `import type`-only from tests,
 // erased at runtime. Loader (loader.ts) validates these shapes and fails loudly.
 
+// u6 — the verb vocabulary is owned by the AI contract (contract.ts) and merely
+// re-exported here, so stub data and live-generated beats share ONE union
+// (invariant §3-2). Type-only re-export: erased at runtime, no import cycle.
+export type { ChoiceVerb } from '../ai/contract';
+import type { ChoiceVerb } from '../ai/contract';
+
 /** One selectable dialogue choice card (PRD §2: each carries a patience cost). */
 export interface Choice {
   label: string;
+  /** Which act this card performs (PRD §1-2). Costs live in data/generation.json. */
+  verb: ChoiceVerb;
   patienceCost: number;
   /** Ids of observation clues this choice reveals (optional; display-time). */
   clueReveals?: string[];
@@ -14,6 +22,8 @@ export interface Choice {
 export interface DialogueNode {
   npcLine: string;
   choices: Choice[];
+  /** Marks this line as the customer dodging a direct question (concept doc §5.1). */
+  evasive?: boolean;
 }
 
 /** A clue surfaced by the free [관찰] action. */
@@ -29,6 +39,8 @@ export interface Customer {
   /** Reference to portrait art (relative asset path). */
   portrait: string;
   problem: string;
+  /** The truth behind `problem`; never stated outright, only circled (PRD §2.5). */
+  hiddenCause: string;
   patienceBudget: number;
   dialogueNodes: DialogueNode[];
   observationClues: ObservationClue[];

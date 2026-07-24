@@ -8,9 +8,25 @@ import { describe, it, expect } from 'vitest';
 import customersData from '../../data/customers.json';
 import ingredientsData from '../../data/ingredients.json';
 import outcomesData from '../../data/outcomes.json';
+// u6 — verb costs are balance-as-data: generation.json is the SINGLE SOURCE. No
+// numeric literal for a verb cost may appear below except in #14/T17, which exists
+// precisely to pin that single source against drift.
+import generationData from '../../data/generation.json';
 import { loadCustomers, loadIngredients, loadOutcomes } from '../../src/data/loader';
 import { resolveOutcome } from '../../src/data/outcome';
-import type { Customer, Ingredient, Outcome, OutcomeTable } from '../../src/data/schema';
+// u6 §3-2 — the live contract. Imported (read-only) so the SHIPPED stub data is
+// proven to satisfy the very same schema the live adapter emits.
+import { isDialogueBeat } from '../../src/ai/contract';
+import type { BeatChoice, ChoiceVerb, DialogueBeat } from '../../src/ai/contract';
+import type {
+  Choice,
+  Customer,
+  DialogueNode,
+  Ingredient,
+  Outcome,
+  OutcomeTable,
+  ChoiceVerb as SchemaChoiceVerb,
+} from '../../src/data/schema';
 
 // ── Content vocabulary constants (C4). schema.ts exposes NO enum for
 // method/declaration (both are free `string`) — the Korean vocabulary is a content
@@ -32,6 +48,22 @@ const ingredientIds = new Set(ingredients.map((i) => i.id));
 /** All outcomes for a customer table = every entry outcome + the required default. */
 function allOutcomes(table: OutcomeTable): Outcome[] {
   return [...table.entries.map((e) => e.outcome), table.default];
+}
+
+// ── u6 multi-verb constants ────────────────────────────────────────────────────
+// The verb vocabulary itself lives in contract.ts (ChoiceVerb); this array is the
+// runtime mirror, pinned to the union by the `readonly ChoiceVerb[]` annotation —
+// a typo or a dropped member is a typecheck error, not a silent content bug.
+const ALL_VERBS: readonly ChoiceVerb[] = ['indirect', 'direct', 'observe', 'craft'];
+/** The three verbs every single node must offer (craft is positional — see #13). */
+const CORE_VERBS: readonly ChoiceVerb[] = ['indirect', 'direct', 'observe'];
+const CRAFT_LABEL_TOKEN = '조제';
+
+/** Every choice of every node of every customer, flat. */
+const allChoices: Choice[] = customers.flatMap((c) => c.dialogueNodes.flatMap((n) => n.choices));
+
+function choicesWithVerb(verb: ChoiceVerb): Choice[] {
+  return allChoices.filter((ch) => ch.verb === verb);
 }
 
 // ── #1 [F1] — exactly 2 customers, ids c1 & c2 ─────────────────────────────────
@@ -273,4 +305,288 @@ describe('[F4] every entry ingredient id list is authored already sorted', () =>
       }
     });
   }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// u6 — multi-verb schema + paper-test content quality (#12–#17).
+// Everything above this line is the v1 regression floor and is EXTENDED, never
+// deleted (AC#5). Below: the stub content must now stand up to the paper test —
+// three verbs per beat, indirection that actually opens clues, direct questions
+// that get dodged, and a single shared schema with the live adapter.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── #12 [F-verb] T13/T14 — every beat offers 3–4 cards across ≥3 verbs ────────
+describe('#12 [F-verb] every dialogueNode offers 3–4 choices spanning indirect/direct/observe', () => {
+  it('every customer has at least one dialogue node', () => {
+    for (const c of customers) {
+      expect(c.dialogueNodes.length).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('every dialogueNode has between 3 and 4 choices', () => {
+    for (const c of customers) {
+      c.dialogueNodes.forEach((node, i) => {
+        expect(
+          node.choices.length,
+          `${c.id}.dialogueNodes[${i}] has ${node.choices.length} choices`,
+        ).toBeGreaterThanOrEqual(3);
+        expect(node.choices.length).toBeLessThanOrEqual(4);
+      });
+    }
+  });
+
+  it('every choice carries a verb from the ChoiceVerb vocabulary', () => {
+    for (const ch of allChoices) {
+      expect(ALL_VERBS, `unknown verb on "${ch.label}"`).toContain(ch.verb);
+    }
+  });
+
+  it('every dialogueNode covers all three core verbs (indirect, direct, observe)', () => {
+    for (const c of customers) {
+      c.dialogueNodes.forEach((node, i) => {
+        const verbs = new Set(node.choices.map((ch) => ch.verb));
+        for (const required of CORE_VERBS) {
+          expect(
+            verbs.has(required),
+            `${c.id}.dialogueNodes[${i}] is missing a '${required}' choice`,
+          ).toBe(true);
+        }
+      });
+    }
+  });
+
+  it('no dialogueNode offers the same verb twice for the core verbs', () => {
+    for (const c of customers) {
+      for (const node of c.dialogueNodes) {
+        for (const required of CORE_VERBS) {
+          const n = node.choices.filter((ch) => ch.verb === required).length;
+          expect(n).toBe(1);
+        }
+      }
+    }
+  });
+
+  it('no two choices inside one node share a label (copy-paste detector)', () => {
+    for (const c of customers) {
+      for (const node of c.dialogueNodes) {
+        const labels = node.choices.map((ch) => ch.label);
+        expect(new Set(labels).size).toBe(labels.length);
+      }
+    }
+  });
+});
+
+// ── #13 [F-craft] T15 — [조제하러 가기] is reachable from the penultimate node ──
+describe('#13 [F-craft] a craft choice exists from the penultimate node onward', () => {
+  it('every node from dialogueNodes[N-2] to the last has exactly one craft choice', () => {
+    for (const c of customers) {
+      const n = c.dialogueNodes.length;
+      const from = Math.max(0, n - 2);
+      for (let i = from; i < n; i += 1) {
+        const crafts = c.dialogueNodes[i].choices.filter((ch) => ch.verb === 'craft');
+        expect(crafts.length, `${c.id}.dialogueNodes[${i}] craft choices`).toBe(1);
+      }
+    }
+  });
+
+  it("the last node always offers the craft exit (no conversational dead-end)", () => {
+    for (const c of customers) {
+      const last = c.dialogueNodes[c.dialogueNodes.length - 1];
+      expect(last.choices.some((ch) => ch.verb === 'craft')).toBe(true);
+    }
+  });
+
+  it('every craft choice is labelled with the 조제 token', () => {
+    const crafts = choicesWithVerb('craft');
+    expect(crafts.length).toBeGreaterThanOrEqual(2);
+    for (const ch of crafts) {
+      expect(ch.label).toContain(CRAFT_LABEL_TOKEN);
+    }
+  });
+});
+
+// ── #14 [B1] T16/T17 — patienceCost is generation.json/verbCosts, single source ─
+describe('#14 [B1] every patienceCost equals generation.json verbCosts[verb]', () => {
+  it('verbCosts covers the whole ChoiceVerb union (compile-time + runtime)', () => {
+    const costTable: Record<ChoiceVerb, number> = generationData.verbCosts;
+    expect(Object.keys(costTable).sort()).toEqual([...ALL_VERBS].sort());
+  });
+
+  it('the single source has not drifted: indirect 1 / direct 2 / observe 0 / craft 0', () => {
+    expect(generationData.verbCosts.indirect).toBe(1);
+    expect(generationData.verbCosts.direct).toBe(2);
+    expect(generationData.verbCosts.observe).toBe(0);
+    expect(generationData.verbCosts.craft).toBe(0);
+  });
+
+  it('every authored choice cost === verbCosts[its verb]', () => {
+    const costTable: Record<ChoiceVerb, number> = generationData.verbCosts;
+    for (const c of customers) {
+      c.dialogueNodes.forEach((node, i) => {
+        for (const ch of node.choices) {
+          expect(
+            ch.patienceCost,
+            `${c.id}.dialogueNodes[${i}] "${ch.label}" (${ch.verb})`,
+          ).toBe(costTable[ch.verb]);
+        }
+      });
+    }
+  });
+
+  it('the cheapest full run (indirect on every node) fits inside every patienceBudget', () => {
+    const costTable: Record<ChoiceVerb, number> = generationData.verbCosts;
+    for (const c of customers) {
+      const cheapest = c.dialogueNodes.length * costTable.indirect;
+      expect(cheapest, `${c.id} cannot reach the last node`).toBeLessThanOrEqual(c.patienceBudget);
+    }
+  });
+});
+
+// ── #15 [C-회피] T18–T22 — hidden cause, evasion, indirection opens clues ──────
+describe('#15 [C-회피] the hidden cause is real, hidden, and only reachable indirectly', () => {
+  it('every customer has a non-empty Korean hiddenCause', () => {
+    for (const c of customers) {
+      expect(typeof c.hiddenCause, `${c.id}.hiddenCause`).toBe('string');
+      expect(c.hiddenCause.trim().length).toBeGreaterThan(0);
+      expect(c.hiddenCause).toMatch(HANGUL);
+    }
+  });
+
+  it('no npcLine spells out its own hiddenCause verbatim', () => {
+    for (const c of customers) {
+      expect(typeof c.hiddenCause).toBe('string');
+      expect(c.hiddenCause.length).toBeGreaterThan(0);
+      for (const node of c.dialogueNodes) {
+        expect(
+          node.npcLine.includes(c.hiddenCause),
+          `${c.id} leaks its hiddenCause in an npcLine`,
+        ).toBe(false);
+      }
+    }
+  });
+
+  it('a direct question is followed by an evasive answer node', () => {
+    for (const c of customers) {
+      const dodges = c.dialogueNodes.some(
+        (node, i) =>
+          node.choices.some((ch) => ch.verb === 'direct') &&
+          c.dialogueNodes[i + 1]?.evasive === true,
+      );
+      expect(dodges, `${c.id} has no 직접질문 → 회피 pair`).toBe(true);
+    }
+  });
+
+  it('every customer marks at least one node evasive', () => {
+    for (const c of customers) {
+      expect(c.dialogueNodes.filter((n) => n.evasive === true).length).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('every indirect choice opens at least one clue (우회가 단서를 연다)', () => {
+    const indirects = choicesWithVerb('indirect');
+    expect(indirects.length).toBeGreaterThanOrEqual(2);
+    for (const ch of indirects) {
+      expect(ch.clueReveals ?? [], `indirect "${ch.label}" reveals nothing`).not.toHaveLength(0);
+    }
+  });
+
+  it('no direct choice opens a clue (직접 질문은 회피당한다)', () => {
+    const directs = choicesWithVerb('direct');
+    expect(directs.length).toBeGreaterThanOrEqual(2);
+    for (const ch of directs) {
+      expect(ch.clueReveals, `direct "${ch.label}" must not shortcut a clue`).toBeUndefined();
+    }
+  });
+});
+
+// ── #16 [C-관찰] T23–T25 — observation is free, always pays, never orphaned ────
+describe('#16 [C-관찰] observation carries clues and no clue is orphaned', () => {
+  it('every observe choice opens at least one clue', () => {
+    const observes = choicesWithVerb('observe');
+    expect(observes.length).toBeGreaterThanOrEqual(2);
+    for (const ch of observes) {
+      expect(ch.clueReveals ?? [], `observe "${ch.label}" reveals nothing`).not.toHaveLength(0);
+    }
+  });
+
+  it('every observe choice is labelled with the 관찰 token (renderer contract)', () => {
+    const observes = choicesWithVerb('observe');
+    expect(observes.length).toBeGreaterThanOrEqual(2);
+    for (const ch of observes) {
+      expect(ch.label).toContain('관찰');
+    }
+  });
+
+  it('no craft choice carries clueReveals', () => {
+    const crafts = choicesWithVerb('craft');
+    expect(crafts.length).toBeGreaterThanOrEqual(2);
+    for (const ch of crafts) {
+      expect(ch.clueReveals).toBeUndefined();
+    }
+  });
+
+  it('observationClues ids are unique per customer', () => {
+    for (const c of customers) {
+      const ids = c.observationClues.map((cl) => cl.id);
+      expect(new Set(ids).size, `${c.id} has duplicate clue ids`).toBe(ids.length);
+    }
+  });
+
+  it('every observationClue is actually revealed by some choice (no orphans)', () => {
+    for (const c of customers) {
+      const revealed = new Set(
+        c.dialogueNodes.flatMap((n) => n.choices.flatMap((ch) => ch.clueReveals ?? [])),
+      );
+      for (const clue of c.observationClues) {
+        expect(revealed.has(clue.id), `${c.id} clue '${clue.id}' is never revealed`).toBe(true);
+      }
+    }
+  });
+});
+
+// ── #17 [§3-2] T1–T4/T26/T27 — one schema for stub and live ───────────────────
+describe('#17 [§3-2] the shipped stub data satisfies the live AI contract', () => {
+  it('schema.ts re-exports the contract ChoiceVerb (same union, both directions)', () => {
+    const fromSchema: SchemaChoiceVerb = 'indirect';
+    const toContract: ChoiceVerb = fromSchema;
+    const backToSchema: SchemaChoiceVerb = toContract;
+    expect(backToSchema).toBe('indirect');
+    expect([...ALL_VERBS]).toEqual(['indirect', 'direct', 'observe', 'craft']);
+  });
+
+  it('a data Choice is assignable to a live BeatChoice and back', () => {
+    const stub: Choice = customers[0].dialogueNodes[0].choices[0];
+    const asBeat: BeatChoice = stub;
+    const backToChoice: Choice = asBeat;
+    expect(typeof asBeat.verb).toBe('string');
+    expect(ALL_VERBS).toContain(asBeat.verb);
+    expect(backToChoice.label).toBe(stub.label);
+  });
+
+  it('a data DialogueNode is assignable to a live DialogueBeat', () => {
+    const node: DialogueNode = customers[0].dialogueNodes[0];
+    const asBeat: DialogueBeat = node;
+    expect(asBeat.npcLine).toBe(node.npcLine);
+    expect(asBeat.choices).toHaveLength(node.choices.length);
+  });
+
+  it('every shipped dialogueNode passes isDialogueBeat (the live response gate)', () => {
+    for (const c of customers) {
+      c.dialogueNodes.forEach((node, i) => {
+        expect(isDialogueBeat(node), `${c.id}.dialogueNodes[${i}] fails isDialogueBeat`).toBe(true);
+      });
+    }
+  });
+
+  it('npcLines are all distinct within a customer (copy-paste detector)', () => {
+    for (const c of customers) {
+      const lines = c.dialogueNodes.map((n) => n.npcLine);
+      expect(new Set(lines).size, `${c.id} repeats an npcLine`).toBe(lines.length);
+    }
+  });
+
+  it('npcLines are distinct across customers too', () => {
+    const lines = customers.flatMap((c) => c.dialogueNodes.map((n) => n.npcLine));
+    expect(new Set(lines).size).toBe(lines.length);
+  });
 });

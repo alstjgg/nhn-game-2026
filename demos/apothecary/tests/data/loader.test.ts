@@ -63,6 +63,10 @@ const customerFields: Array<[string, unknown]> = [
   ['patienceBudget', 'not-a-number'],
   ['dialogueNodes', {}],
   ['observationClues', {}],
+  // u6/T9 — `hiddenCause` joins the frozen top-level customer fields (same name and
+  // meaning as contract.ts DialogueRequest.customer.hiddenCause). One table row buys
+  // both the omitted and the mistyped case.
+  ['hiddenCause', 42],
 ];
 
 describe('AC2 — loadCustomers fails loudly, naming the offending field', () => {
@@ -127,6 +131,137 @@ describe('AC2 — loadCustomers fails loudly on malformed nested elements', () =
       { label: 'x', patienceCost: 1, clueReveals: [42] },
     ];
     expect(messageWhenThrows(() => loadCustomers(arr))).toContain('clueReveals');
+  });
+});
+
+// ── u6 T5–T8 — `choice.verb` is a REQUIRED enum ──────────────────────────────
+// Multi-verb schema (PRD §1 must-prove 2): every choice card declares which act it
+// performs. The loader is the seam where a hand-authored or model-generated choice
+// with a missing / unknown verb must fail LOUDLY instead of silently degrading into
+// a verb-less card. Allowed set mirrors contract.ts ChoiceVerb.
+const VALID_VERBS = ['indirect', 'direct', 'observe', 'craft'] as const;
+
+/** c1 node[0] choices, as a mutable record array, for surgical pollution. */
+function firstChoices(arr: Rec[]): Rec[] {
+  return (arr[0].dialogueNodes as Rec[])[0].choices as Rec[];
+}
+
+describe('u6 AC1/T5–T8 — loadCustomers fails loudly on a bad choice `verb`', () => {
+  it("throws naming 'verb' when a choice omits it", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    delete firstChoices(arr)[0].verb;
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('verb');
+  });
+
+  it("throws naming 'verb' and echoing the offending value on an unknown verb", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    firstChoices(arr)[0].verb = 'shout';
+    const msg = messageWhenThrows(() => loadCustomers(arr));
+    expect(msg).toContain('verb');
+    expect(msg).toContain('shout');
+  });
+
+  it('names the allowed verb set in the message (self-describing failure)', () => {
+    const arr = validCustomers() as unknown as Rec[];
+    firstChoices(arr)[0].verb = 'shout';
+    const msg = messageWhenThrows(() => loadCustomers(arr));
+    for (const verb of VALID_VERBS) {
+      expect(msg).toContain(verb);
+    }
+  });
+
+  it("throws naming 'verb' when it is not a string", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    firstChoices(arr)[0].verb = 42;
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('verb');
+  });
+
+  it("throws naming 'verb' when it is null", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    firstChoices(arr)[0].verb = null;
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('verb');
+  });
+
+  it("throws naming 'verb' when it is the empty string", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    firstChoices(arr)[0].verb = '';
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('verb');
+  });
+
+  it('carries the full customer → node → choice index path in the message', () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].choices = [
+      { label: '오늘 하루는 어떠셨어요?', verb: 'indirect', patienceCost: 1 },
+      { label: '왜 그러신데요?', verb: 'shout', patienceCost: 2 },
+    ];
+    const msg = messageWhenThrows(() => loadCustomers(arr));
+    expect(msg).toContain('customers[0].dialogueNodes[0].choices[1]');
+  });
+});
+
+// ── u6 T10 — the four valid verbs round-trip (no false positives) ─────────────
+describe('u6 T10 — every ChoiceVerb loads and is preserved on the Choice', () => {
+  it('accepts indirect / direct / observe / craft and keeps them in order', () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].choices = [
+      { label: '자기 전에는 보통 무얼 하세요?', verb: 'indirect', patienceCost: 1 },
+      { label: '왜 못 주무시는데요?', verb: 'direct', patienceCost: 2 },
+      { label: '[관찰] 손끝을 본다', verb: 'observe', patienceCost: 0 },
+      { label: '[조제하러 가기]', verb: 'craft', patienceCost: 0 },
+    ];
+    const loaded = loadCustomers(arr);
+    expect(loaded[0].dialogueNodes[0].choices.map((c) => c.verb)).toEqual([
+      'indirect',
+      'direct',
+      'observe',
+      'craft',
+    ]);
+  });
+
+  for (const verb of VALID_VERBS) {
+    it(`accepts a lone '${verb}' choice`, () => {
+      const arr = validCustomers() as unknown as Rec[];
+      (arr[0].dialogueNodes as Rec[])[0].choices = [{ label: '무언가', verb, patienceCost: 0 }];
+      const loaded = loadCustomers(arr);
+      expect(loaded[0].dialogueNodes[0].choices[0].verb).toBe(verb);
+    });
+  }
+});
+
+// ── u6 T11 — `evasive` is an OPTIONAL boolean on a dialogue node ──────────────
+// Machine-checkable marker for "this npcLine is the customer dodging a direct
+// question" (concept doc §5.1). Optional, so DialogueNode stays assignable to
+// contract.ts DialogueBeat.
+describe('u6 T11 — dialogueNode.evasive is an optional boolean', () => {
+  it('loads fine when evasive is absent', () => {
+    const arr = validCustomers() as unknown as Rec[];
+    delete (arr[0].dialogueNodes as Rec[])[0].evasive;
+    expect(() => loadCustomers(arr)).not.toThrow();
+    expect(loadCustomers(arr)[0].dialogueNodes[0].evasive).toBeUndefined();
+  });
+
+  it('preserves evasive: true', () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].evasive = true;
+    expect(loadCustomers(arr)[0].dialogueNodes[0].evasive).toBe(true);
+  });
+
+  it('preserves evasive: false', () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].evasive = false;
+    expect(loadCustomers(arr)[0].dialogueNodes[0].evasive).toBe(false);
+  });
+
+  it("throws naming 'evasive' when it is a non-boolean truthy value", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].evasive = 'yes';
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('evasive');
+  });
+
+  it("throws naming 'evasive' when it is a number", () => {
+    const arr = validCustomers() as unknown as Rec[];
+    (arr[0].dialogueNodes as Rec[])[0].evasive = 1;
+    expect(messageWhenThrows(() => loadCustomers(arr))).toContain('evasive');
   });
 });
 
