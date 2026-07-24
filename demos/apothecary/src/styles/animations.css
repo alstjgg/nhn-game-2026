@@ -1,0 +1,65 @@
+/* animations.css — the shared animation vocabulary (PRD §1.3).
+ * Named keyframes the screen units reuse: customer portrait enter/exit,
+ * dialogue type-on reveal, and the draining patience meter. Motion tokens
+ * (durations/easings) come from base.css so timing stays balance-as-data. */
+
+/* customer portrait slides + fades in from the side of the counter */
+@keyframes portrait-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* ...and leaves the same way when the encounter ends */
+@keyframes portrait-exit {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(24px) scale(0.96);
+  }
+}
+
+/* dialogue reveal — width sweep gives the "typewriter" type-on feel */
+@keyframes type-on {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* patience meter draining toward zero */
+@keyframes meter-drain {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* reusable helpers screens can attach to elements */
+.anim-portrait-enter {
+  animation: portrait-enter var(--duration-slow) var(--ease-emphasized) both;
+}
+
+.anim-portrait-exit {
+  animation: portrait-exit var(--duration-slow) var(--ease-emphasized) both;
+}
+
+.anim-type-on {
+  animation: type-on var(--duration-slow) steps(30, end) both;
+}
+
+.anim-meter-drain {
+  animation: meter-drain var(--duration-slow) linear both;
+}

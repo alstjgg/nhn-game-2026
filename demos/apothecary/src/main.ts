@@ -1,5 +1,8 @@
 // Minimal single-page entry. Later units (phase shell, conversation, crafting,
 // outcome) mount into #app; for the scaffold we just prove the page renders.
+// u5 surfaces the shared card primitives here so the vocabulary is live at `/`.
+import { mountCardShowcase } from './ui/showcase.ts';
+
 const app = document.getElementById('app');
 
 if (app) {
@@ -9,4 +12,5 @@ if (app) {
       <p>Scaffold ready.</p>
     </main>
   `;
+  mountCardShowcase(app);
 }
