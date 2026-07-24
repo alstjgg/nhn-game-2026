@@ -19,6 +19,7 @@ export default defineConfig({
       input: {
         main: input('./index.html'),
         conversation: input('./e2e/harness/conversation/index.html'),
+        crafting: input('./e2e/harness/crafting/index.html'),
       },
     },
   },
