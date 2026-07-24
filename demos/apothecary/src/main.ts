@@ -12,5 +12,9 @@ if (app) {
       <p>Scaffold ready.</p>
     </main>
   `;
+  // TODO(u3/u4): remove this showcase mount once a real conversation/crafting
+  // screen renders domain cards at `/` — see DISCOVERY.md "Scope resolution".
+  // This is a placeholder render surface for the card primitives, not the
+  // intended demo home screen.
   mountCardShowcase(app);
 }

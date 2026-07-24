@@ -37,13 +37,17 @@
   }
 }
 
-/* patience meter draining toward zero */
+/* patience meter draining toward zero — animates `transform: scaleX()`
+ * (compositor-only) rather than `width`, so a continuously draining meter
+ * never triggers layout/paint. Requires `transform-origin: left` on the
+ * meter fill element (set on .anim-meter-drain below) so the scale shrinks
+ * from the left edge instead of the center. */
 @keyframes meter-drain {
   from {
-    width: 100%;
+    transform: scaleX(1);
   }
   to {
-    width: 0%;
+    transform: scaleX(0);
   }
 }
 
@@ -61,5 +65,18 @@
 }
 
 .anim-meter-drain {
+  transform-origin: left;
   animation: meter-drain var(--duration-slow) linear both;
+}
+
+/* Respect users who opt out of motion. Lives at the vocabulary layer so
+ * every screen built on these tokens/keyframes gets the guard for free. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

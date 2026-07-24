@@ -27,7 +27,14 @@
   --duration-slow: 320ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
-  --transition-base: all var(--duration-base) var(--ease-standard);
+  /* Scoped to the properties cards actually change on hover/active/selected
+   * (transform, box-shadow, border-color, background-color) rather than
+   * `all`, so future/expensive property changes don't silently start
+   * animating and cost extra paint. */
+  --transition-base: transform var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard),
+    background-color var(--duration-base) var(--ease-standard);
 }
 
 * {
