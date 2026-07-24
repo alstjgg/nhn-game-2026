@@ -152,7 +152,7 @@ runtime LLM chatter (design-time pool only).
   mask) · ≥70 **noise injection** — the snapshot handed to the adapter is corrupted (e.g.
   피오나 sees a phantom `spam_golem_2`; her bubble says so; execution still targets real
   entities — attacking a phantom renders as "허공을 벤다"). Gauge tier also selects the
-  hero sheet column (§2.8) · 100 judgment skipped, 직업 기본 행동 forced, fixed bubble.
+  hero 대기-포즈 cell (§2.8) · 100 judgment skipped, 직업 기본 행동 forced, fixed bubble.
 - Victory → reward card(s) + forced allocation (§2.3). Defeat (all heroes at 0 HP) →
   defeat screen → 재시작 (fresh run). Both screens reachable, e2e-asserted.
 - **Rewards baked:** T1 → fixed grant 「도발」. T2 훈련장 → 3택1 from
@@ -194,17 +194,19 @@ ever — variants live as grid sheets sliced via CSS `background-position`.
 | asset | layout | render |
 |---|---|---|
 | 던전 배경 | 1 image, horizontally tileable strip | walk-scroll background |
-| 영웅 3종 (가렛·피오나·셀레네) | 1 sheet each, 4×2 — 4 columns = gauge-tier pose/expression (평온→한계), 2 rows = blink | side-view standing sprite; column ← gauge tier (§2.5) |
-| 몬스터 2종 (스팸 골렘 · 환각 정령) | 1 sheet each: idle + 3 attack frames | attack = CSS `steps(3)` loop |
+| 영웅 3종 (가렛·피오나·셀레네) | 1 sheet each, **4×3** — row 1: 걷기 사이클 4프레임 (위치 고정) · row 2: 게이지 tier 대기 포즈 4종 (평온/불안/한계/폭주) · row 3: 액션 4종 (공격/방어/피격/쓰러짐) | side-view full-body sprite; walk = CSS `steps(4)` loop during scroll, 대기 포즈 cell ← gauge tier (§2.5), 액션 cell은 전투 연출 + 개별 HP 0 = 쓰러짐 |
+| 몬스터 2종 (스팸 골렘 · 환각 정령) | 1 sheet each, **2×3**: idle · 피격 · 사망(잔해) + 공격 3프레임 | attack = CSS `steps(3)` loop |
 | 말풍선 frame | 1 image | CSS `border-image` 9-slice |
-| 카드 frame | 1 image | CSS `border-image` 9-slice |
+| 카드 frame | 1 image | CSS `border-image` 9-slice; Prompt/Skill/MCP 구분은 CSS tint |
+| 카드 아이콘 | 1 sheet, 4×3 — 11종 카드 아이콘 + 카드 뒷면 1 | `background-position`, frame 안에 합성 |
 | 게이지 vial | 1 sheet, 4 states | `background-position` |
 
 Provided before the run; every file already has an `assets-manifest.json` entry at repo
 root (rule 5). **If a listed file is missing at build time, agents keep the CSS fallback
 for that slot and log it in DISCOVERY.md — never generate assets during the run.** All
-other idle motion (breathing bob, fidget, blink timing) is CSS transforms/keyframes on
-static cells.
+other motion (breathing bob, fidget, 고게이지 걷기 tint/흔들림 overlay) is CSS
+transforms/keyframes on static cells — 걷기 중 게이지 표현은 별도 프레임이 아니라 CSS
+overlay + vial HUD로 처리한다.
 
 ### 2.9 Stub quality floor
 
