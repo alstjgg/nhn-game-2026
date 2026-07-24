@@ -18,7 +18,7 @@ change here.
 
 | Track | Demo location | Merged from | Demo state |
 |---|---|---|---|
-| Agent arena — build an LLM agent from structured items, pit it in auto-battles | `demos/agent-arena/` | [agent-roguelike](./game-concept-agent-roguelike.md) + [autobattler](./game-concept-autobattler.md), combined | not started |
+| Darkest Context (구 agent arena) — build an LLM agent party from cards, watch it journey a tile map | `demos/darkest-context/` | [agent-roguelike](./game-concept-agent-roguelike.md) + [autobattler](./game-concept-autobattler.md) → [concept spec](./game-concept-darkest-context.md) | concept spec done; demo not started |
 | Apothecary — read what customers *actually* ail from and prescribe | `demos/apothecary/` | [apothecary](./game-concept-apothecary.md), absorbing [blacksmith](./game-concept-blacksmith.md) | not started |
 | Doodle Life — read residents' requests and draw living solutions | `demos/doodle-life/` | [doodle-life](./game-concept-doodle-life.md), absorbing [placement](./game-concept-placement.md) | playable full-AI prototype evaluated; redesigning around three bounded generation stages and clue-driven NPC puzzles |
 
@@ -36,6 +36,17 @@ change here.
 - Confirm final track slugs (current ones are provisional).
 
 ## Decision log
+
+- 2026-07-25 — Darkest Context: solo-tile 담당 (1:1 duel, jailbreak) is not player-assigned;
+  the party elects one member via the shared council engine at walk-start (volunteer/nominate
+  → deterministic engine tally; fallback = highest aptitude stat), then the elected unit's
+  first tile judgment pre-fires — two wall-clock calls hidden behind the walk animation.
+- 2026-07-25 — Track C renamed **Darkest Context** (slug `darkest-context`); consolidated
+  concept spec at `docs/game-concept-darkest-context.md` (merges brief + example spec +
+  PR #28 review). Decisions: combat/travel view fixed to DD-style side-scroll; cards
+  split 3-way Prompt/Skill/MCP (all implemented as sheet prompts, engine executes
+  effects); token stays pure currency (stamina idea rejected); jailbreak stays 담당 1기.
+  Next artifact: demo PRD.
 
 - 2026-07-22 — Blacksmith absorption executed: apothecary doc gains 단골 아크 (§5.8),
   [정석]/[실험] 조제 (§5.3), 연쇄 결과 (§5.5), 상태 원장 (§6); economy/능력 격차 and
