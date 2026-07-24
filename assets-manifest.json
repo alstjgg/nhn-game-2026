@@ -1,4 +1,71 @@
 {
   "$schema-note": "Tracks third-party assets and their licenses, separate from our MIT-licensed code. One entry per external asset. Required before shipping any asset we did not create.",
-  "assets": []
+  "assets": [
+    {
+      "file": "demos/apothecary/assets/bg-shop.png",
+      "tool": "gpt-image-1",
+      "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Wide interior scene: a small back-alley Korean apothecary shop seen from the shopkeeper's side, wooden counter along the bottom edge, shelves of labeled jars and bundles of dried herbs hanging above, entrance door centered in the back wall, warm lantern light, dusk visible through the window. No people, no text.",
+      "license": "generated for this project"
+    },
+    {
+      "file": "demos/apothecary/assets/ui-bubble.png",
+      "tool": "gpt-image-1",
+      "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. A single empty speech bubble for a retro game dialogue UI: rounded rectangle with a small tail pointing down-left, thick dark outline of even width on all sides (suitable for 9-slice scaling), plain parchment-colored fill. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
+      "license": "generated for this project"
+    },
+    {
+      "file": "demos/apothecary/assets/ui-shelf.png",
+      "tool": "gpt-image-1",
+      "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. A wooden apothecary shelf panel with two rows of empty slots and small drawers below, front view, warm dark wood with brass handles, designed as a UI backdrop panel for item slots. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
+      "license": "generated for this project"
+    },
+    {
+      "file": "demos/apothecary/assets/ingredients-1.png",
+      "tool": "gpt-image-1",
+      "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Item sprite sheet: a 4x3 grid of small glass apothecary jars. Each COLUMN is one herbal ingredient — column 1: sliced licorice root (감초, pale yellow slices); column 2: dried red jujube dates (대추); column 3: fresh ginger root pieces (생강); column 4: dried yellow chrysanthemum flowers (국화). Each ROW is a fill state — top row: jar full; middle row: jar half full; bottom row: jar nearly empty with only scraps. Identical jar shape, size and position in every cell. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
+      "license": "generated for this project"
+    },
+    {
+      "file": "demos/apothecary/assets/ingredients-2.png",
+      "tool": "gpt-image-1",
+      "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Item sprite sheet: a 4x3 grid of small glass apothecary jars. Each COLUMN is one herbal ingredient — column 1: dried white balloon-flower roots (도라지); column 2: chalky white poria mushroom chunks (백복령); column 3: small glossy brown jujube seeds (산조인); column 4: fresh green mint leaves (박하). Each ROW is a fill state — top row: jar full; middle row: jar half full; bottom row: jar nearly empty with only scraps. Identical jar shape, size and position in every cell. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
+      "license": "generated for this project"
+    },
+    {
+      "file": "demos/apothecary/assets/equip-teapot.png",
+      "tool": "gpt-image-1",
+      "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Sprite sheet: a 2x2 grid of the same small round clay teapot used for steeping herbal tea. Top-left: idle, lid closed, no steam. Top-right: steeping frame 1, a faint steam wisp. Bottom-left: steeping frame 2, two steam wisps rising. Bottom-right: steeping frame 3, strong curling steam and a soft warm glow. Identical teapot position and scale in all four cells. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
+      "license": "generated for this project"
+    },
+    {
+      "file": "demos/apothecary/assets/equip-pot.png",
+      "tool": "gpt-image-1",
+      "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Sprite sheet: a 2x2 grid of the same traditional dark earthenware medicine-brewing pot (약탕관) sitting over a small flame, used for decocting herbs. Top-left: idle, no flame, lid on. Top-right: decocting frame 1, small flame, first bubbles. Bottom-left: decocting frame 2, steady flame, bubbling liquid visible at the rim. Bottom-right: decocting frame 3, strong flame, rolling boil with steam. Identical pot position and scale in all four cells. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
+      "license": "generated for this project"
+    },
+    {
+      "file": "demos/apothecary/assets/equip-mortar.png",
+      "tool": "gpt-image-1",
+      "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Sprite sheet: a 2x2 grid of the same heavy stone mortar with a wooden pestle, used for grinding herbs. Top-left: idle, pestle resting inside the mortar. Top-right: grinding frame 1, pestle lifted high. Bottom-left: grinding frame 2, pestle striking down into the mortar. Bottom-right: grinding frame 3, pestle down with a small puff of herb powder rising. Identical mortar position and scale in all four cells. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
+      "license": "generated for this project"
+    },
+    {
+      "file": "demos/apothecary/assets/potions.png",
+      "tool": "gpt-image-1",
+      "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Item sprite sheet: a 3x2 grid of the same small corked glass medicine bottle. Top-left: empty bottle. Top-middle: filled with a calm pale-green remedy. Top-right: filled with a deep brown herbal decoction. Bottom-left: filled with a strange glowing violet experimental brew with tiny sparkles. Bottom-middle: filled with a murky grey-brown failed sludge. Bottom-right: the bottle wrapped in cloth and twine as a finished package. Identical bottle shape, size and position in every cell. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
+      "license": "generated for this project"
+    },
+    {
+      "file": "demos/apothecary/assets/fallback-portrait-1.png",
+      "tool": "gpt-image-1",
+      "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Character sheet: a 4x2 grid of eight bust portraits of the SAME person, identical framing, scale and head position in every cell, shoulders-up, facing the viewer. Four columns, one expression per column — column 1: calm and neutral; column 2: indifferent, losing interest; column 3: irritated, frowning; column 4: fed up, about to walk out. Two rows: the top row has eyes open; the bottom row repeats the exact same portrait as the cell above but with eyes closed mid-blink, everything else identical. Flat single-color background in all cells. No gridlines, no borders, no text, no labels. A stout middle-aged merchant man with a tired smile, short beard, worn travel coat and a shoulder bag.",
+      "license": "generated for this project"
+    },
+    {
+      "file": "demos/apothecary/assets/fallback-portrait-2.png",
+      "tool": "gpt-image-1",
+      "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Character sheet: a 4x2 grid of eight bust portraits of the SAME person, identical framing, scale and head position in every cell, shoulders-up, facing the viewer. Four columns, one expression per column — column 1: calm and neutral; column 2: indifferent, losing interest; column 3: irritated, frowning; column 4: fed up, about to walk out. Two rows: the top row has eyes open; the bottom row repeats the exact same portrait as the cell above but with eyes closed mid-blink, everything else identical. Flat single-color background in all cells. No gridlines, no borders, no text, no labels. An elderly woman with a kind wrinkled face, grey hair in a neat bun, dark shawl over a hanbok-style jacket.",
+      "license": "generated for this project"
+    }
+  ]
 }
