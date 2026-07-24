@@ -4,6 +4,19 @@
 > Audience: the next Claude session picking up this workstream. Not project-wide
 > state — that stays in `docs/status.md`.
 
+## Status (2026-07-24 — v2)
+
+- **v1 shipped and merged** (run 20260724-145432, PR #17): shell works, all gates green.
+- **Playtest verdict (민서): v1 doesn't demo the game** — single-rail choices (paper test
+  had many verbs), visible patience bar feels wrong, stubbed AI makes dialogue lifeless,
+  and the real engine risk (slow async AI generation of NPCs/portraits) went untested.
+- **v2 decisions (2026-07-24):** live LLM dialogue via a Vite dev-middleware proxy
+  (keys in `process.env` only; deployed build auto-falls back to stub) · **real image-gen
+  API** for NPC portraits with silhouette-entry/waiting-beat/25s-fallback design ·
+  diegetic patience (expression tiers, no gauge) · provided asset pack · brownfield run
+  on top of v1 (`demos/apothecary/PRD.md` is now the v2 spec).
+- Older context below is v1-era; still accurate as history.
+
 ## Status (2026-07-23)
 
 - Concept work is **closed**: blacksmith absorption merged to main (PR #12).
