@@ -63,3 +63,29 @@ scaffold shell + smoke invariants intact (`#app` non-empty, no external requests
 The style layer is imported from `src/ui/card.ts`, so any card consumer pulls in
 base tokens + card states + animation vocabulary. A later conversation/crafting
 screen can drop the showcase mount and render domain cards instead.
+
+### Review follow-up (PR #25, Lead) — main.ts touch flagged as a boundary concern
+Lead review confirmed the code itself (card factory, CSS, motion) is type-safe and
+GREEN across unit/e2e/build, but flagged the `src/main.ts` edit as crossing u5's
+`file_globs` into u1-owned territory, and asked for an explicit call between:
+(a) widening u5's `file_globs` to formally cover this edit, or (b) moving the render-surface
+wiring to the integration stage / a consuming screen unit (u3 conversation / u4 crafting).
+
+That decision is outside this unit's authority — `file_globs` are a decompose-phase
+artifact only Lead/PM can amend, and this PR's author cannot resolve review threads.
+Recorded here for the integrator to action explicitly, with the mitigating facts as of
+this PR:
+- the touch is 2 lines (one import, one call), additive, and already marked with a
+  `TODO(u3/u4)` for removal once a real screen renders domain cards at `/`;
+- u1's scaffold unit (#18) is already merged, so there is no live/concurrent edit to
+  `main.ts` to conflict with at this moment — the residual risk is only at the u3/u4
+  integration step, which will touch `main.ts` anyway to wire in real screens and can
+  delete the showcase mount in the same edit;
+- no index.html/vite.config.ts changes were made (those would have been a strictly
+  larger boundary crossing with no equivalent self-cleaning path).
+
+Given the physically single-entry nature of this Vite app (`index.html` → `src/main.ts`
+is the only script tag), there was no way to satisfy the e2e gate's real-browser render
+requirement without crossing into either `main.ts` or `index.html`; option (a) was the
+smaller, self-documenting, self-removing crossing of the two. Flagging explicitly rather
+than re-guessing so Lead/integrator can make the call the review asked for.
