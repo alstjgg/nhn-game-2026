@@ -87,6 +87,9 @@ classes progress.
   row of the current column for 120–200ms at randomized 3–6s intervals. All other idle
   motion (breathing bob, fidget) is CSS transforms/keyframes on the static cell — never
   generated animation frames.
+- **Client-side pixelation:** runtime sheets are pixelated on arrival (offscreen canvas,
+  shared downscale factor 4 → `image-rendering: pixelated`) so generated customers match
+  the asset pack's pixel density exactly (§2.4).
 - **Portraits render inside a framed card panel** over the background — no compositing,
   no transparent-background generation. The sheet's flat backdrop is intentional;
   silhouette entry (§ below) is `filter: brightness(0)` on the cell.
@@ -94,14 +97,32 @@ classes progress.
   delays in e2e) — **never `setTimeout` sprinkled in game logic**; all timing flows
   through the adapter so tests stay deterministic.
 
-### 2.4 Asset pack (provided input)
+### 2.4 Asset pack (provided input) + pixel pipeline
 
-`demos/apothecary/assets/`: shop background · card frame (nine-slice) · ingredient icon
-sheet (8 icons, 4×2 grid) · 2 fallback portrait **expression sheets** (same 4×2
-blink format as runtime generation) · 쪽지 note texture (PNG). All generated with the **style bible** — a
-fixed style-prompt prefix frozen in `data/generation.json` and prepended to every portrait
-call, chosen by a pre-run style test (see handoff). Provided before the run; every file
-already has an
+**Style bible (frozen — style-test winner; also stored in `data/generation.json`):**
+`"Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean
+readable silhouette."` — prepended to every image call, pack and runtime alike.
+
+**Pixel pipeline:** all images are generated at 1024/1536, then downscaled by the shared
+factor **4** (a true pixel grid emerges, generation artifacts vanish, files shrink); the
+browser upscales with `image-rendering: pixelated`. Pack assets ship pre-downscaled;
+runtime customer sheets get the same treatment client-side on arrival (§2.3).
+Sprite-type assets (bubble/ingredients/equipment/potions) are color-keyed to
+transparency offline; portraits are not (framed card panel, §2.1).
+
+`demos/apothecary/assets/` contents:
+
+| asset | layout | render |
+|---|---|---|
+| 배경 (shop interior) | 1 image | full-screen background |
+| 말풍선 frame | 1 image | CSS `border-image` 9-slice |
+| 재료 shelf panel | 1 image | crafting backdrop |
+| 재료 8종 × 수량 3상태 (가득/절반/바닥) | 2 sheets, 4×3 grid | `background-position`; quantity→state thresholds live in `data/` |
+| 장비 3종 (우리기 주전자 · 달이기 약탕관 · 빻기 절구) | 1 sheet each: idle + 3 in-use frames | in-use = CSS `steps(3)` loop |
+| 약 결과물 (빈 병 + 결과 5종) | 1 sheet, 3×2 | crafting/outcome display |
+| fallback 손님 ×2 | 4×2 blink sheets (runtime format) | §2.3 timeout fallback |
+
+Provided before the run; every file already has an
 `assets-manifest.json` entry at repo root (rule 5). If a listed file is missing at build
 time, agents keep v1's CSS fallback for that slot and log it in DISCOVERY.md — do not
 generate assets during the run.
