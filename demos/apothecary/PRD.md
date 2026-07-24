@@ -159,10 +159,12 @@ untouched. New in v2:
 
 - All automated gates run **stub mode** (deterministic). Per-unit gate = own slice only;
   the updated full-loop e2e gates only the final unit (unchanged v1 rule).
-- Live mode is gated by `e2e/live-smoke.md` — a **manual checklist** (env keys exported →
-  `npm run dev` → customer 3 generates; silhouette resolve observed; kill network →
-  silent stub fallback). Optional `@live`-tagged Playwright specs run only when keys are
-  present; CI/agents never require them.
+- Live mode is gated by `e2e/live-smoke.md` — a **manual checklist, provided input**
+  (env keys exported → `npm run dev` → customer 3 generates; silhouette resolve
+  observed; kill network → silent stub fallback). Units append items only when they
+  ship new live behavior. Optional `@live`-tagged Playwright specs are fenced out of
+  all gates by `playwright.config.ts` `grepInvert` and run only under `LIVE=1` by a
+  human with keys; CI/agents never require them.
 - The v1 suite is the regression floor: only the patience-meter specs may be deleted, and
   their replacements land in the same unit.
 
@@ -175,7 +177,7 @@ untouched. New in v2:
 | v3 | Diegetic patience rework (meter removal, tiers, portrait variants, tone hints) | v2 | standard | `playwright test e2e/patience.spec.ts` |
 | v4 | Async pipeline: prefetch orchestration, silhouette entry, waiting beat, 25s fallback | v1 | high | `vitest run tests/pipeline/` (fake timers) + `playwright test e2e/generation.spec.ts` (scripted delays) |
 | v5 | Asset pack integration (bg/frames/portraits/icons) across all screens | — | standard | `playwright test e2e/assets.spec.ts` + manifest check |
-| v6 | Juice/polish + updated full-loop e2e + live-smoke.md + DISCOVERY.md v2 | v2,v3,v4,v5 | standard | full stub-mode suite + build |
+| v6 | Juice/polish + updated full-loop e2e (keep ordered screenshots → `e2e/artifacts/`) + live-smoke.md 항목 보강 + DISCOVERY.md v2 | v2,v3,v4,v5 | standard | full stub-mode suite + build |
 
 ## 6. Definition of done
 
