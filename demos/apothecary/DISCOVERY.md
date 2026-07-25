@@ -408,3 +408,49 @@ RED, and restoring it byte-identically. See `.claude/super/units/u3/tests.md`.
 Scope gap worth flagging to the decomposer: the read-scope for a re-entered phase should
 say whether the unit already has an implementation, so the agent does not plan for a
 greenfield RED.
+
+## u9 — TEST phase: no contract file, and the timing seams were out of scope
+
+The read-scope pointed at `.claude/super/prd.md` and
+`.claude/super/units/u9/{design,spec}.md`. None of the three exist in this worktree
+(`.claude/super/` is gitignored — rule 4 — and only `progress.json` was seeded), so the
+PRD paragraphs were read from the tracked `demos/apothecary/PRD.md` (§2.1 sheet/model
+paragraph, §2.2 tier columns, §2.3 generated-frames / framed-panel / no-`setTimeout`
+paragraphs) instead. With no DESIGN output to follow, `tests/ui/portrait.test.ts` and
+`e2e/portrait.spec.ts` *are* the API contract for u9; it is written out in
+`.claude/super/units/u9/tests.md` so the BUILD agent has one place to read it.
+
+Two dependencies the read-scope omitted, both required by AC2's "injected clock/rng
+only, no `setTimeout` in the module": `src/pipeline/clock.ts` (`Clock` / `CancelTimer` /
+`createManualClock`, the existing §3-3 seam and the only file allowed to touch host
+timers) and `src/pipeline/persona.ts` (`Rng` / `createRng`, the seeded-determinism
+seam). The blink schedule has to be built on those two rather than on a new seam, or the
+codebase ends up with two timing conventions.
+
+Also worth flagging to the decomposer: this worktree had no `node_modules`, so the TEST
+phase ran `npm ci` in `demos/apothecary/` before either verification command could run.
+
+## u9 — BUILD phase: two things the contract implies but never states
+
+1. **`page.evaluate` cannot see the spec module's helpers.** `e2e/portrait.spec.ts`
+   drives the harness through a spec-side `const api = () => window.__portrait`, but a
+   function handed to `page.evaluate` is compiled *in the page*, so `api()` only resolves
+   if the PAGE defines that name. The harness therefore publishes the same handle twice:
+   `window.__portrait` (what the spec waits for after navigation) and a global `api()`
+   accessor (what it calls from inside `evaluate`). Worth writing into the harness pattern
+   (design D10) so the next screen unit does not rediscover it as 13 identical
+   `ReferenceError: api is not defined` failures.
+2. **The first blink cannot come from the rng.** `startBlinking`'s contract (no blink on
+   mount; `advance(BLINK_INTERVAL_MS[1])` then `advance(BLINK_DURATION_MS[0] - 1)` must
+   still be mid-blink under seed 99) is only satisfiable if the first close is booked at
+   the interval MAXIMUM instead of a drawn value — with a drawn first interval, seed 99
+   closes at 3781ms and has long reopened by 6000ms. That reads fine as design (an
+   arriving portrait holds a steady gaze for the full window before the randomized loop
+   starts) and every later blink is fully seed-driven, but it is a behavioural decision the
+   tests pin implicitly rather than state.
+3. **AC4b vs. a filter transition.** Reading the computed `filter` immediately after the
+   silhouette class is dropped returns the transition's *start* value, so a
+   `transition: filter` on the arrival direction can never satisfy "not still darkening".
+   The arrival is therefore carried by `@keyframes portrait-resolve` (animations outrank
+   transitions, and the keyframes re-state `brightness(1)` so the lighting releases at
+   once); the declared filter transition carries the reverse, dimming direction.
