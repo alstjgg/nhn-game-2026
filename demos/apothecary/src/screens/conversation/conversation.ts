@@ -39,8 +39,13 @@
 import { createCard } from '../../ui/card.ts';
 import { mountPortrait, type PortraitHandle } from '../../ui/portrait.ts';
 import type { AIAdapter } from '../../ai/adapter.ts';
-import type { BeatChoice, ChoiceVerb, DialogueBeat } from '../../ai/contract.ts';
+import type { BeatChoice, ChoiceVerb, DialogueBeat, PatienceTier } from '../../ai/contract.ts';
 import type { Customer } from '../../data/schema.ts';
+import {
+  selectTierLine,
+  shippedTierVariantIndex,
+  type TierVariantIndex,
+} from '../../data/tier-variants.ts';
 import { createMachine, reduce, type MachineState, type Phase } from '../../state/index.ts';
 import { tierFor } from '../../state/patience-tier.ts';
 import { createBeatSource, toBeat, type BeatSource } from './beats.ts';
@@ -87,6 +92,11 @@ export interface ConversationOptions {
   beatSource?: BeatSource;
   /** AI adapter driving the beats; absent ⇒ seeded beats only. */
   adapter?: AIAdapter;
+  /**
+   * Authored tier variants the line on screen is re-toned through when the tier
+   * moves; defaults to the shipped table (the same default the beat source uses).
+   */
+  tierVariants?: TierVariantIndex;
 }
 
 /**
@@ -95,6 +105,13 @@ export interface ConversationOptions {
  * it, whenever it lands — at mount, or mid-conversation.
  */
 export interface ConversationHandle {
+  /**
+   * The customer's CURRENT expression tier — the same value `data-tier` carries.
+   * The host reads it at the conversation→crafting handoff so the crafting screen
+   * can paint the face at the mood the conversation ended on (PR #33, R3): the
+   * screen owns its own patience machine, so this is the only way out.
+   */
+  readonly tier: PatienceTier;
   /**
    * Resolve the backlit silhouette into an already-pixelated sheet, IN PLACE:
    * u9's panel is CSS-sized, so this is a repaint of the cell the customer was
@@ -118,7 +135,16 @@ function buildPortrait(customer: Customer): { host: HTMLElement; handle: Portrai
   host.dataset.testid = 'portrait';
   host.setAttribute('role', 'img');
   host.setAttribute('aria-label', customer.name);
-  return { host, handle: mountPortrait(host) };
+  // The palette/mirror variant is the customer's own (`Customer.portraitVariant`):
+  // two customers may wear one bundled sheet, and this is what keeps them from
+  // reading as the same person (PR #33, R1/R3).
+  return {
+    host,
+    handle: mountPortrait(
+      host,
+      customer.portraitVariant === undefined ? {} : { variant: customer.portraitVariant },
+    ),
+  };
 }
 
 /**
@@ -132,6 +158,7 @@ export function mountConversation(
   callbacks: ConversationCallbacks = {},
   options: ConversationOptions = {},
 ): ConversationHandle {
+  const tierVariants: TierVariantIndex = options.tierVariants ?? shippedTierVariantIndex;
   const clueTextById = new Map(customer.observationClues.map((c) => [c.id, c.text]));
   const revealedClueIds = new Set<string>();
   // Enter the conversation phase up front: the u2 reducer only spends patience
@@ -168,6 +195,12 @@ export function mountConversation(
   // Ambient impatience — a decorative, out-of-flow tap the stylesheet starts at
   // 짜증 and never before (design D1/D6). Purely presentational: it carries no
   // information the portrait does not, so screen readers skip it.
+  //
+  // It lives INSIDE the portrait host (PR #33, R3): pinned to the dialogue
+  // column's far corner it was a 26x8 smudge ~600px from the face nobody reads as
+  // a hand, while the player's eye is on the panel. At the panel's bottom edge it
+  // is the customer's own hand on the counter — the position and the size are
+  // conversation.css's, this only chooses the parent.
   const fingerTap = document.createElement('div');
   fingerTap.className = 'finger-tap';
   fingerTap.dataset.testid = 'finger-tap';
@@ -205,7 +238,8 @@ export function mountConversation(
   proceedBtn.addEventListener('click', () => callbacks.onComplete?.());
 
   dialogue.append(lineHost, choicesHost, clueShelf, proceedBtn);
-  screen.append(portrait, dialogue, fingerTap);
+  portrait.append(fingerTap);
+  screen.append(portrait, dialogue);
   container.replaceChildren(screen);
 
   syncTier();
@@ -215,6 +249,9 @@ export function mountConversation(
   // The host's only handle on this screen. Everything below is a hoisted
   // function declaration, so the mount is complete at this point.
   return {
+    get tier(): PatienceTier {
+      return tierFor(state.patience, customer.patienceBudget);
+    },
     setPortraitSheet(url: string): void {
       portraitPanel.setSheet(url);
     },
@@ -233,6 +270,32 @@ export function mountConversation(
     if (screen.dataset.tier === next) return;
     screen.dataset.tier = next;
     portraitPanel.setTier(tier);
+    reinkLine(tier);
+  }
+
+  /**
+   * Re-tone the line ALREADY on screen to the new tier (PR #33, R3 on line 383).
+   *
+   * u12's toning used to be applied only when a NEW beat was painted, so the
+   * conversation's last question got no verbal reply at all: the face hardened,
+   * every card greyed out, and the customer repeated the previous sentence word
+   * for word — the clearest "this is broken" signal a dialogue game can send. The
+   * escalated lines (tier 2 "그만 물으시오.", tier 3 "약이나 지어 주시오.") were
+   * dead content for every 2-node deck. Driving the toning off the tier change
+   * makes the patience mechanic audible as well as visible.
+   *
+   * `selectTierLine` is TOTAL: a line the table does not know (a generated beat,
+   * the stub's own toned script) is returned unchanged, so this can only ever
+   * swap one authored variant for another of the same row. The text is written in
+   * place — no new element — so the type-on animation does not re-fire and a
+   * re-ink can never be mistaken for a new beat arriving.
+   */
+  function reinkLine(tier: PatienceTier): void {
+    const line = lineHost.querySelector<HTMLElement>('[data-testid="npc-line"]');
+    if (line === null) return;
+    const current = line.textContent ?? '';
+    const toned = selectTierLine(tierVariants, current, tier);
+    if (toned !== current) line.textContent = toned;
   }
 
   /**

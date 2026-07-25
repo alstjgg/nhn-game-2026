@@ -5,6 +5,8 @@
 // `createCard` self-toggles and cannot express "blocked". No event wiring here;
 // index.ts owns behaviour. render() is a pure model → class sync.
 import type { Ingredient } from '../../data/schema';
+import { cssUrl } from '../../ui/css-url';
+import { portraitCell } from '../../ui/portrait';
 import {
   applySprite,
   ingredientSprite,
@@ -14,6 +16,22 @@ import {
 } from '../../ui/sprite';
 import type { CraftingConfig } from './config';
 import type { SelectionModel } from './selection';
+
+/**
+ * The customer standing at the counter while the remedy is prepared (PR #33, R3).
+ * Crafting is the LONGEST phase and the one where the player most wants to glance
+ * over and check whether the customer is still willing to wait — it used to show
+ * an empty brown disc, which reads as a missing asset. So the same 4x2 sheet cell
+ * the conversation painted is painted here, at the tier the conversation ended on.
+ */
+export interface CraftingPortrait {
+  /** An already-pixelated sheet URL (the roster resolves it; §2.4). */
+  readonly sheetUrl: string;
+  /** Expression column: the customer's mood as the conversation left it. */
+  readonly tier: number;
+  /** Palette/mirror variant, so a shared sheet is still a distinct person. */
+  readonly variant?: string;
+}
 
 export interface CraftingView {
   readonly root: HTMLElement;
@@ -81,14 +99,28 @@ function makeGroup(labelText: string, className: string): HTMLElement {
 export function buildCraftingView(
   ingredients: readonly Ingredient[],
   config: CraftingConfig,
+  portrait?: CraftingPortrait,
 ): CraftingView {
   const root = document.createElement('div');
   root.className = 'crafting crafting--entering';
 
-  // Customer portrait placeholder — the element the commit beat animates out (§1.3).
+  // The customer at the counter — the element the commit beat animates out (§1.3).
+  // With a sheet it is their actual face at their actual tier; without one it
+  // degrades to the framed disc it always was (no sheet, no broken image).
   const beatElement = document.createElement('div');
   beatElement.className = 'crafting__portrait';
   beatElement.dataset.role = 'portrait';
+  if (portrait !== undefined) {
+    const cell = portraitCell(portrait.tier, false);
+    if (cell !== undefined) {
+      beatElement.classList.add('crafting__portrait--sheet');
+      beatElement.dataset.tier = String(portrait.tier);
+      if (portrait.variant !== undefined) beatElement.dataset.variant = portrait.variant;
+      beatElement.style.backgroundImage = cssUrl(portrait.sheetUrl);
+      beatElement.style.backgroundSize = cell.backgroundSize;
+      beatElement.style.backgroundPosition = cell.backgroundPosition;
+    }
+  }
   root.appendChild(beatElement);
 
   // The vessel the brew goes into — the potions sheet's empty-bottle cell (u7).
@@ -124,6 +156,12 @@ export function buildCraftingView(
   ingredientSection.appendChild(ingredientGrid);
   root.appendChild(ingredientSection);
 
+  // The three DECISIONS (method → 건넬 말 → 건네기) share one flow column, so a
+  // wide viewport can stand them beside the shelf and keep [건네기] on screen
+  // (crafting.css's two-column rule; PR #33, R3). Reading order is unchanged.
+  const decisions = document.createElement('div');
+  decisions.className = 'crafting__decisions';
+
   // Method group (single-select, F3/AC5).
   const methodSection = makeGroup('방식', 'crafting__methods');
   const methodShelf = document.createElement('div');
@@ -138,7 +176,7 @@ export function buildCraftingView(
     methodShelf.appendChild(card);
   }
   methodSection.appendChild(methodShelf);
-  root.appendChild(methodSection);
+  decisions.appendChild(methodSection);
 
   // Declaration toggle (two-state, F4/AC6).
   const declarationSection = makeGroup('건넬 말', 'crafting__declarations');
@@ -152,7 +190,7 @@ export function buildCraftingView(
     declarationShelf.appendChild(card);
   }
   declarationSection.appendChild(declarationShelf);
-  root.appendChild(declarationSection);
+  decisions.appendChild(declarationSection);
 
   // Commit control — the weighted [건네기] (F7/AC7).
   const commitButton = document.createElement('button');
@@ -161,7 +199,8 @@ export function buildCraftingView(
   commitButton.dataset.action = 'commit';
   commitButton.textContent = '[건네기]';
   commitButton.disabled = true;
-  root.appendChild(commitButton);
+  decisions.appendChild(commitButton);
+  root.appendChild(decisions);
 
   return { root, commitButton, ingredientButtons, methodButtons, declarationButtons, beatElement };
 }

@@ -77,7 +77,16 @@ describe('S8 — the mount signature is additive only', () => {
     const src = read(CONVO_REL);
     expect(/export interface ConversationOptions/.test(src)).toBe(true);
     const optionMembers = members(interfaceBody(src, 'ConversationOptions'));
-    expect(new Set(optionMembers)).toEqual(new Set(['beatSource', 'adapter']));
+    // `tierVariants` joined the set in the PR #33 review (R3): the screen re-tones
+    // the line on screen when the tier moves, and the table it tones through is
+    // injectable for the same reason the beat source's is.
+    expect(new Set(optionMembers)).toEqual(new Set(['beatSource', 'adapter', 'tierVariants']));
+    for (const member of optionMembers) {
+      expect(
+        new RegExp(`${member}\\s*\\?\\s*:`).test(interfaceBody(src, 'ConversationOptions')),
+        `${member} must stay optional so existing call sites compile`,
+      ).toBe(true);
+    }
     // `options` is the 4th parameter and it is optional / defaulted.
     expect(
       /options\s*(\?\s*)?:\s*ConversationOptions\s*(=\s*\{\s*\})?\s*,?\s*\)/.test(src),

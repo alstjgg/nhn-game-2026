@@ -14,6 +14,19 @@
   min-height: 100vh;
 }
 
+/* The shell's reading column is 680px, which is right for the text screens but is
+ * also what kept the crafting phase 1088px tall in a 1280x720 frame — [건네기]
+ * ended up 320px below the fold with ~300px of unused space on either side, so a
+ * judge could finish a diagnosis and find no way to hand the remedy over (PR #33,
+ * R3). On a landscape viewport the shell opens up so a screen that HAS a wide
+ * layout (crafting's two columns) can use it; every other screen keeps its own
+ * max-width and stays exactly where it was. */
+@media (min-width: 900px) {
+  .apothecary-app {
+    max-width: 1120px;
+  }
+}
+
 /* The stage holds exactly one live phase screen; screens cross-fade on swap. */
 .stage {
   position: relative;
@@ -66,6 +79,21 @@
 .entrance-screen {
   align-items: center;
   text-align: center;
+}
+
+/* The arriving customer: u9's framed panel (portrait.css owns its box), entering
+ * as the backlit silhouette and resolving into the sheet (PR #33, R3 — the
+ * entrance used to be three lines of centred text with nobody arriving). */
+.entrance-portrait {
+  align-self: center;
+}
+
+.entrance-screen__name {
+  margin: 0;
+  color: var(--color-accent);
+  font-weight: 600;
+  /* Same stagger as the problem line below, one beat earlier. */
+  animation: phase-enter var(--duration-slow) var(--ease-emphasized) 80ms both;
 }
 
 .entrance-screen__problem {
@@ -137,6 +165,7 @@
  * the conversation phase so it cannot outlive the wait: u9's arrival swaps
  * --silhouette out for --arrived, which drops this selector entirely and hands
  * the panel back to portrait-resolve. */
+.phase[data-phase='entrance'] .portrait-frame__cell--silhouette,
 .phase[data-phase='conversation'] .portrait-frame__cell--silhouette {
   animation: silhouette-breathe calc(var(--duration-slow) * 12) var(--ease-standard) infinite;
 }
@@ -271,6 +300,37 @@
   height: 56px;
 }
 
+/* With the returning customer's sheet cell painted (PR #33, R3) the box is a face
+ * at 3:4, not a 56px square holding their name as text. */
+.revisit-portrait--sheet {
+  width: 54px;
+  height: 72px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.revisit-portrait--sheet[data-variant='weathered-mirror'] {
+  filter: sepia(0.34) hue-rotate(-14deg) saturate(1.18) contrast(1.04);
+  transform: scaleX(-1);
+}
+
+/* The text column: the name on its own row, then the outcome line. */
+.revisit-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.revisit-name {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
 .revisit-text {
   margin: 0;
   color: var(--color-text);
@@ -310,4 +370,25 @@
   margin: 0;
   font-size: 1.15em;
   line-height: 1.6;
+}
+
+/* ── Closing beat (the day ends deliberately; PR #33, R3) ─────────────────── */
+.closing {
+  align-items: center;
+  gap: var(--space-4);
+  text-align: center;
+}
+
+.closing__line {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--color-text-dim);
+  font-size: 1.1em;
+  line-height: 1.6;
+  /* Revealed, never dropped in — same stagger vocabulary as the door note. */
+  animation: phase-enter var(--duration-slow) var(--ease-emphasized) 120ms both;
+}
+
+.closing .app-button {
+  animation: phase-enter var(--duration-slow) var(--ease-emphasized) 320ms both;
 }

@@ -19,7 +19,12 @@ import {
   toggleIngredient,
   type SelectionModel,
 } from './selection';
-import { buildCraftingView, render, type CraftingView } from './view';
+import {
+  buildCraftingView,
+  render,
+  type CraftingPortrait,
+  type CraftingView,
+} from './view';
 
 export interface CraftingDeps {
   /** Ingredient cards (validated via loadIngredients(data/ingredients.json)). */
@@ -28,6 +33,12 @@ export interface CraftingDeps {
   readonly customerId: string;
   /** That customer's outcome table (injected; design D-1/D-2). */
   readonly outcomeTable: OutcomeTable;
+  /**
+   * The customer's face at the counter (PR #33, R3): the sheet the conversation
+   * painted, at the tier it ended on. Omitted (harnesses, tests) ⇒ the framed
+   * placeholder disc, exactly as before.
+   */
+  readonly portrait?: CraftingPortrait;
   /** App persists the result + dispatches the payload-less machine 'commit' (D-2). */
   readonly onCommit: (result: CommitResult) => void;
 }
@@ -49,7 +60,7 @@ export interface CraftingHandle {
 const BEAT_FALLBACK_MS = 600;
 
 export function mountCrafting(container: HTMLElement, deps: CraftingDeps): CraftingHandle {
-  const view: CraftingView = buildCraftingView(deps.ingredients, CRAFTING_CONFIG);
+  const view: CraftingView = buildCraftingView(deps.ingredients, CRAFTING_CONFIG, deps.portrait);
 
   let model: SelectionModel = createSelection(CRAFTING_CONFIG.defaultDeclaration);
   let committed = false;

@@ -3,12 +3,16 @@
   "seededDeadlineMs": 1200,
   "stubDeadlineMs": 8000,
   "liveDeadlineMs": 25000,
+  "doorIdleHoldMs": 1800,
   "simulatedGenerationMs": {
     "dialogueMs": 30000,
     "portraitMs": 30000
   },
   "waitingLine": "손님이 올 시간인데…",
   "continueLabel": "[문을 열어 두고 다음 손님을 기다린다]",
+  "closingLabel": "[문을 닫는다]",
+  "closingLine": "등잔을 내리고 문을 닫는다. 오늘 지은 약은 저마다의 길로 갔다.",
+  "reopenLabel": "[다시 문을 연다]",
   "portraitPool": ["fallback-portrait-1.png", "fallback-portrait-2.png"],
   "portraitPoolIndex": 0,
   "portraitPoolPrompt": "번들 폴백 초상 시트 — 생성 프롬프트는 assets-manifest.json에 기록되어 있다",
@@ -16,6 +20,7 @@
     "id": "c3",
     "name": "속이 얹힌 장돌뱅이",
     "portrait": "fallback-portrait-1.png",
+    "portraitVariant": "weathered-mirror",
     "problem": "속이 더부룩하고 얹힌 것 같아요.",
     "hiddenCause": "잔칫집에서 상한 전을 먹었는데, 그 집과의 의리 때문에 잔치 이야기를 얼버무린다.",
     "patienceBudget": 4,
@@ -86,7 +91,7 @@
   "outcomeTable": {
     "entries": [
       {
-        "ingredients": ["saenggang", "gamcho"],
+        "ingredients": ["gamcho", "saenggang"],
         "method": "달이기",
         "declaration": "정석",
         "outcome": {
@@ -106,6 +111,11 @@
         }
       }
     ],
+    "nearMiss": {
+      "channel": "문앞 쪽지",
+      "text": "쪽지가 왔다. 약재는 짚었는데 내는 법이 어긋난 듯하다고 적혀 있다.",
+      "arrivalTrigger": "note_right_herbs_wrong_brew_c3"
+    },
     "default": {
       "channel": "문앞 쪽지",
       "text": "문 앞 쪽지에는 아직도 명치가 묵직하다는 한 줄만 남아 있다.",

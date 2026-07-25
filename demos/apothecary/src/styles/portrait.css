@@ -78,6 +78,25 @@
   }
 }
 
+/* ── Palette/mirror variants (PR #33, R1/R3) ────────────────────────────────
+ * The bundled pack ships two 4x2 sheets and the roster plays three customers, so
+ * one sheet is worn twice. A repeated face reads as an asset bug and contradicts
+ * what the demo is selling ("a new customer was generated while you played"), so
+ * the second wearer is re-paletted and mirrored: the classic pixel-art way to make
+ * one sheet two people, with no second asset and no extra request.
+ *
+ * The tint sits on the FRAME and the mirror on the CELL, so neither touches the
+ * cell's own `filter` — the silhouette (brightness(0)) and the arrival keyframes
+ * keep owning that property alone. `data-variant` is written by src/ui/portrait.ts
+ * from `Customer.portraitVariant` (a loader-validated lowercase token). */
+.portrait-frame[data-variant='weathered-mirror'] {
+  filter: sepia(0.34) hue-rotate(-14deg) saturate(1.18) contrast(1.04);
+}
+
+.portrait-frame[data-variant='weathered-mirror'] .portrait-frame__cell {
+  transform: scaleX(-1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Both directions stay single code paths, just imperceptible — no ramp at all
    * for viewers who asked for none. */

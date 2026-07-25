@@ -2,7 +2,7 @@
   {
     "id": "c1",
     "name": "잠 못 드는 서생",
-    "portrait": "portraits/c1.png",
+    "portrait": "fallback-portrait-1.png",
     "problem": "며칠째 잠이 오지 않아요.",
     "hiddenCause": "과거에 낙방한 아우에게 부칠 편지를 석 달째 쓰지 못하고 있다.",
     "patienceBudget": 5,
@@ -57,7 +57,7 @@
   {
     "id": "c2",
     "name": "기침하는 아낙",
-    "portrait": "portraits/c2.png",
+    "portrait": "fallback-portrait-2.png",
     "problem": "기침이 좀처럼 멎지 않아요.",
     "hiddenCause": "새벽마다 냉기 도는 광에서 삯바느질을 하느라 몸이 상했다.",
     "patienceBudget": 3,

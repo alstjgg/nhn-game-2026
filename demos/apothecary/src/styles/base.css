@@ -63,4 +63,13 @@ body {
   image-rendering: pixelated;
   color: var(--color-text);
   font-family: system-ui, -apple-system, "Noto Sans KR", sans-serif;
+  /* Korean wraps at WORD boundaries, never mid-어절 (PR #33, R3): the default
+   * `break-word` behaviour split 목도 칼칼하 / 고요. in the speech bubble and
+   * 잠 못 드 / 는 서생 in the 재방문 overlay — one dangling syllable under a
+   * pixel-art bubble reads as a layout bug. `keep-all` applies to every text
+   * surface at once (bubble, clue cards, notes) instead of per selector;
+   * `overflow-wrap: anywhere` is the safety net so an unbreakable run (a long
+   * URL/id) still cannot overflow its box. */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }

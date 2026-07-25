@@ -57,8 +57,22 @@ export interface ObservationClue {
 export interface Customer {
   id: string;
   name: string;
-  /** Reference to portrait art (relative asset path). */
+  /**
+   * Which bundled 4×2 expression sheet this customer wears, by FILE NAME (the
+   * key set of `BUNDLED_SHEETS` in src/app/roster.ts). Read on every render path
+   * — conversation, entrance and crafting all paint the sheet it names, and
+   * `tests/app/roster.test.ts` fails if it names no bundled file. (PR #33, R1:
+   * before that it was schema-required, resolved to nothing and was read by no
+   * code path at all.)
+   */
   portrait: string;
+  /**
+   * Optional palette/mirror variant applied to this customer's sheet cell, so two
+   * customers sharing one bundled sheet are still visibly two different people
+   * (the pool is smaller than the roster). A CSS-safe token; the look itself is
+   * `src/styles/portrait.css`'s (`.portrait-frame[data-variant]`).
+   */
+  portraitVariant?: string;
   problem: string;
   /** The truth behind `problem`; never stated outright, only circled (PRD §2.5). */
   hiddenCause: string;
@@ -92,10 +106,18 @@ export interface OutcomeEntry {
 /**
  * Per-customer outcome table. `default` is REQUIRED (PRD §2, F3): any unlisted
  * combination resolves to it, so no craft can dead-end.
+ *
+ * `nearMiss` is OPTIONAL and answers a wrong remedy IN PROPORTION to the work the
+ * player did (PR #33, R3): the ingredient list is the diagnosis, the method and
+ * the 건넬 말 are the preparation, so a craft that picked a winning row's exact
+ * ingredients but prepared them differently gets its own line — "the right herbs,
+ * the wrong hand" — instead of the flat "no effect" note that made the clue work
+ * invisible at the only moment it should pay off. Absent ⇒ `default`, unchanged.
  */
 export interface OutcomeTable {
   entries: OutcomeEntry[];
   default: Outcome;
+  nearMiss?: Outcome;
 }
 
 /** Map of customer id → that customer's outcome table. */

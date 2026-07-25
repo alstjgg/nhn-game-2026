@@ -14,6 +14,7 @@
 //          holdFor=<customerId>    whose prefetch the two above apply to
 //                                  (default: the last roster entry)
 //          deadline=<ms>           injected uniform per-slot deadline
+//          doorIdleHold=<ms>      staged door-beat hold (default 0 = off here)
 //   Globals: window.__testClock  = ManualClock { advance, now, pending, scheduled }
 //            window.__testScript = { held, calls, release('dialogue'|'portrait') }
 //
@@ -65,6 +66,12 @@ const roster: Customer[] = [...loadCustomers(customersData), ...loadCustomers([f
 const holdFor = params.get('holdFor') ?? roster[roster.length - 1]?.id ?? '';
 
 const clock: ManualClock = createManualClock();
+
+/** `?doorIdleHold=<ms>`: the staged door beat is off by default in the harness. */
+function doorIdleHoldMs(): number {
+  const raw = Number(params.get('doorIdleHold'));
+  return Number.isFinite(raw) && raw > 0 ? raw : 0;
+}
 const calls: { dialogue: number; portrait: number } = { dialogue: 0, portrait: 0 };
 const held: { dialogue: boolean; portrait: boolean } = { dialogue: false, portrait: false };
 const releasers: Record<Track, (() => void) | null> = { dialogue: null, portrait: null };
@@ -148,6 +155,10 @@ async function boot(container: HTMLElement): Promise<void> {
     adapter,
     clock,
     deadlineMs: Number.isFinite(deadlineMs) && deadlineMs > 0 ? deadlineMs : undefined,
+    // The staged door-idle hold (src/app/roster.ts DOOR_IDLE_HOLD_MS) is a FELT
+    // duration for the deployed build; here every beat is authored by the test, so
+    // it is zeroed unless a spec asks for it with ?doorIdleHold=<ms>.
+    doorIdleHoldMs: doorIdleHoldMs(),
   });
 }
 

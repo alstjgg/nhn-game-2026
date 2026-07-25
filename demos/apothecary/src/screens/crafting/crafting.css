@@ -19,6 +19,15 @@
   padding: var(--space-4);
 }
 
+/* The three DECISIONS share one flow column (view.ts builds the wrapper), so a
+ * wide viewport can stand them beside the shelf while the reading order — 방식 →
+ * 건넬 말 → 건네기 — is unchanged. */
+.crafting__decisions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 /* Customer portrait — the element the commit beat animates out (§1.3). */
 .crafting__portrait {
   align-self: center;
@@ -27,6 +36,25 @@
   border-radius: 50%;
   border: 2px solid var(--color-border);
   background: var(--color-surface-hover);
+}
+
+/* With a real sheet cell painted (PR #33, R3) the disc becomes a framed 3:4 face
+ * — the same crop and the same tier column the conversation showed, so the player
+ * can still read the customer's patience while choosing the remedy. The inline
+ * background-size/-position come from u9's `portraitCell`; only the frame is here. */
+.crafting__portrait--sheet {
+  width: 96px;
+  height: 128px;
+  border-radius: var(--radius-card);
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+/* Same palette/mirror variant vocabulary as portrait.css, so a customer sharing a
+ * bundled sheet is the same person here as in the conversation. */
+.crafting__portrait--sheet[data-variant='weathered-mirror'] {
+  filter: sepia(0.34) hue-rotate(-14deg) saturate(1.18) contrast(1.04);
+  transform: scaleX(-1);
 }
 
 .crafting__group {
@@ -184,5 +212,56 @@
 @media (prefers-reduced-motion: reduce) {
   .crafting .card--selected .card__sprite--equip {
     animation: none;
+  }
+}
+
+/* ── The commit must be REACHABLE (PR #33, R3) ──────────────────────────────
+ * Stacked in one column inside the shell's 680px reading column, 재료 → 방식 →
+ * 건넬 말 → 건네기 ran 1088px tall in a 1280x720 frame: the method cards were
+ * sliced by the fold and [건네기] sat 320px off-screen, with ~300px of unused
+ * space on either side. A judge could finish a diagnosis and find no way to hand
+ * the remedy over.
+ *
+ * From 900px wide the phase is two columns — the shelf on the left, the three
+ * decisions plus the commit on the right, the vessel tucked under them — so the
+ * whole crafting beat fits the judge's laptop and the 30-60s video frame (measured
+ * at 1280x720: everything inside y<720, nothing clipped). Narrower viewports keep
+ * the single column they had. Layout only: no card, sprite or animation rule
+ * changes, and this block sits LAST so it wins over the base widths above. */
+@media (min-width: 900px) {
+  .crafting {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'portrait decisions'
+      'ingredients decisions'
+      'ingredients vessel';
+    grid-template-rows: auto auto 1fr;
+    align-content: start;
+    column-gap: var(--space-4);
+    row-gap: var(--space-3);
+    max-width: 1120px;
+  }
+
+  .crafting__portrait {
+    grid-area: portrait;
+  }
+
+  .crafting__ingredients {
+    grid-area: ingredients;
+    align-self: start;
+  }
+
+  .crafting__vessel {
+    grid-area: vessel;
+    /* The bottle is decoration: at this width it must not push anything down. */
+    align-self: start;
+    width: 64px;
+    height: 64px;
+  }
+
+  .crafting__decisions {
+    grid-area: decisions;
+    align-self: start;
   }
 }

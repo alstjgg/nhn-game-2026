@@ -64,6 +64,9 @@
  * swap during that window would read as a reflow it is not (NF5). */
 .conversation__portrait {
   align-self: flex-start;
+  /* Anchor for the drumming hand below, which hangs off the panel's bottom edge.
+   * The panel's own box is portrait.css's; this adds no size of its own. */
+  position: relative;
   transform: none !important;
   border-radius: var(--radius-card);
   box-shadow: 0 0 calc(var(--tier-warmth) * 20px)
@@ -74,19 +77,37 @@
 /* Ambient impatience — the customer's fingers drumming on the counter. Purely
  * decorative and absolutely positioned, so it neither reflows the dialogue nor
  * needs a JS toggle: the tier gates it, and the global prefers-reduced-motion
- * guard in animations.css covers the keyframe for free. */
+ * guard in animations.css covers the keyframe for free.
+ *
+ * WHERE it sits is the point (PR #33, R3): a 26x8 pill in the dialogue column's
+ * top-right corner was 0.02% of the frame, ~600px from the face, and read as a
+ * dark smudge beside the bubble rather than as a hand. It now hangs off the
+ * portrait panel's bottom edge — the counter line, right under the face the
+ * player is already reading — as three drumming fingers (the bars are one
+ * gradient, so the extra channel costs no extra element). Percentage offsets
+ * only, so it still measures nothing off the panel's box. */
 .finger-tap {
   --tap-period: 900ms;
+  --tap-finger: 17px;
+  --tap-gap: 8px;
   position: absolute;
-  /* Pinned to the counter's far edge — never measured off the portrait panel,
-   * whose size is portrait.css's business alone. */
-  top: var(--space-4);
-  right: var(--space-4);
-  width: 26px;
-  height: 8px;
-  border-radius: 999px 999px var(--radius-card) var(--radius-card);
-  background: color-mix(in srgb, var(--color-alarm) 45%, var(--color-surface-hover));
-  transform-origin: right center;
+  left: 50%;
+  bottom: -9px;
+  width: calc(var(--tap-finger) * 3 + var(--tap-gap) * 2);
+  height: 17px;
+  margin-left: calc((var(--tap-finger) * 3 + var(--tap-gap) * 2) / -2);
+  border-radius: 999px 999px var(--space-1) var(--space-1);
+  /* Three fingers: an opaque bar, a gap, repeated. Warm skin-in-lantern-light
+   * rather than the alarm red, so it reads as a hand and not as a warning chip. */
+  background-image: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-alarm) 34%, var(--color-text-dim))
+      0 var(--tap-finger),
+    transparent var(--tap-finger) calc(var(--tap-finger) + var(--tap-gap))
+  );
+  /* The counter the fingers drum ON, so the motion has something to land against. */
+  box-shadow: 0 8px 0 -5px color-mix(in srgb, var(--color-border) 80%, transparent);
+  transform-origin: bottom center;
   opacity: 0;
   pointer-events: none;
   animation: none;

@@ -45,6 +45,28 @@ import { pixelateSheet, type CanvasFactory } from '../ui/pixelate.ts';
 export const WAITING_LINE: string = fallbackNpcs.waitingLine;
 /** Label of the explicit "next customer" affordance (FR-9). */
 export const CONTINUE_LABEL: string = fallbackNpcs.continueLabel;
+/**
+ * The day's CLOSING beat (PR #33, R3). The last frame used to be a door note with
+ * no affordance at all — the demo did not end, it stopped, and that was the taste
+ * left in a judge's mouth as they went to score the entry. All three strings are
+ * data, like every other line the shop speaks.
+ */
+export const CLOSING_LABEL: string = fallbackNpcs.closingLabel;
+export const CLOSING_LINE: string = fallbackNpcs.closingLine;
+export const REOPEN_LABEL: string = fallbackNpcs.reopenLabel;
+/**
+ * How long the door-idle beat is HELD when the next customer's generation has
+ * already handed over to the bundled pack (PR #33, R3).
+ *
+ * The deadline race alone never produced a felt beat at judge pace: every slot's
+ * fallback lands within 8s while a human takes 15-20s per customer, so on the
+ * deployed path a judge met three customers arriving instantly, one after another
+ * — and the PoC question this run exists to answer (does an async generation beat
+ * read as staging?) could not be shown on the play link or in a 30-60s video. A
+ * customer whose generation is READY still walks straight in (§2.3); this holds
+ * the shop's own beat only when there is nothing left to wait for.
+ */
+export const DOOR_IDLE_HOLD_MS: number = fallbackNpcs.doorIdleHoldMs;
 /** The generated slot's deadline in each mode; boot picks one (§2.3, G-4). */
 export const STUB_DEADLINE_MS: number = fallbackNpcs.stubDeadlineMs;
 export const LIVE_DEADLINE_MS: number = fallbackNpcs.liveDeadlineMs;
@@ -75,8 +97,21 @@ export interface RosterEntry {
   readonly request: PrefetchRequest;
   /** The bundled pack's answer for this customer — u5's `fallbackAdapter`. */
   readonly packAdapter: AIAdapter;
-  /** This slot's sheet from the bundled pool; the portrait of last resort. */
+  /** This customer's bundled sheet (`Customer.portrait`); the portrait of last resort. */
   readonly bundledPortraitUrl: string;
+  /**
+   * Palette/mirror variant for this slot's sheet cell, or `undefined` for the
+   * sheet as generated. Two customers may share one bundled sheet (the pack ships
+   * two for three slots), so this is what keeps them visibly two different people;
+   * `portraitFace` below is the identity the roster guarantees is unique.
+   */
+  readonly portraitVariant?: string;
+  /**
+   * What the player sees as "this customer's face": the sheet plus its variant.
+   * UNIQUE across the roster by construction — no two customers of one playthrough
+   * may look like the same person (PR #33, R1/R3), which `buildRoster` asserts.
+   */
+  readonly portraitFace: string;
   /** How long the shop may keep waiting for this slot's generation (§2.3). */
   readonly deadlineMs: number;
 }
@@ -102,13 +137,27 @@ function poolUrls(): readonly string[] {
 }
 
 /**
- * Which pool sheet a slot wears. `portraitPoolIndex` is the FIXED base index the
- * data pins for determinism; the slot offset keeps consecutive customers from
- * arriving with the same face while staying a pure function of the roster.
+ * Which pool sheet a slot wears when its customer names no bundled sheet of its
+ * own. `portraitPoolIndex` is the FIXED base index the data pins for determinism.
+ *
+ * This is a LAST RESORT, not the face assignment (PR #33, R1/R3): the pool holds
+ * two sheets and the roster is three slots long, so `(index + slot) % length`
+ * necessarily repeats — slot 0 and slot 2 collided, and the deployed demo showed
+ * the pedlar wearing the scholar's face. The face a customer wears now comes from
+ * its own `portrait` field (`bundledSheetFor`).
  */
 function poolSheetFor(slot: number): string {
   const urls = poolUrls();
   return urls[(fallbackNpcs.portraitPoolIndex + slot) % urls.length];
+}
+
+/**
+ * The bundled sheet this CUSTOMER wears: `Customer.portrait` names a file in the
+ * pack (schema.ts), so the authored field is what the render path reads. A name
+ * the pack does not ship degrades to the pool rather than leaving a slot faceless.
+ */
+function bundledSheetFor(customer: Customer, slot: number): string {
+  return BUNDLED_SHEETS[customer.portrait] ?? poolSheetFor(slot);
 }
 
 /**
@@ -167,6 +216,11 @@ function createSeedAdapter(seed: DialogueBeat): AIAdapter {
   };
 }
 
+/** The identity of a painted face: which sheet, under which palette variant. */
+function portraitFaceOf(url: string, variant: string | undefined): string {
+  return `${url}#${variant ?? 'as-generated'}`;
+}
+
 /** Build the three-slot roster. Pure and deterministic — call it once at mount. */
 export function buildRoster(options: RosterOptions = {}): RosterEntry[] {
   const seededCustomers = loadCustomers(customersData);
@@ -180,11 +234,11 @@ export function buildRoster(options: RosterOptions = {}): RosterEntry[] {
   const generatedDeadlineMs = options.generatedDeadlineMs ?? STUB_DEADLINE_MS;
   const rng = createRng(fallbackNpcs.seed);
 
-  return customers.map((customer, slot): RosterEntry => {
+  const entries = customers.map((customer, slot): RosterEntry => {
     const table = seededTables[customer.id] ?? packTables[customer.id];
     if (table === undefined) fail(`customer ${customer.id} has no outcome table`);
     const persona = personaFor(customer, rng);
-    const bundledPortraitUrl = poolSheetFor(slot);
+    const bundledPortraitUrl = bundledSheetFor(customer, slot);
     return {
       slot,
       customer,
@@ -195,11 +249,25 @@ export function buildRoster(options: RosterOptions = {}): RosterEntry[] {
       },
       packAdapter: createPackAdapter(customer, bundledPortraitUrl),
       bundledPortraitUrl,
+      ...(customer.portraitVariant === undefined
+        ? {}
+        : { portraitVariant: customer.portraitVariant }),
+      portraitFace: portraitFaceOf(bundledPortraitUrl, customer.portraitVariant),
       deadlineMs:
         options.deadlineMs ??
         (slot === generatedSlot ? generatedDeadlineMs : fallbackNpcs.seededDeadlineMs),
     };
   });
+
+  // A repeated face is a CONTENT bug the player meets 45 seconds in ("a new
+  // customer was generated" — wearing the first customer's face), so it fails
+  // loudly at boot instead of shipping: give the new customer its own sheet, or a
+  // variant of a shared one.
+  const faces = new Set(entries.map((entry) => entry.portraitFace));
+  if (faces.size !== entries.length) {
+    fail('two customers wear the same face (portrait + portraitVariant must be unique per slot)');
+  }
+  return entries;
 }
 
 /**

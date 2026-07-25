@@ -45,12 +45,17 @@ import { mountWaiting } from '../screens/waiting/waiting.ts';
 import { renderEntrance } from './entrance.ts';
 import { mountRevisitNotification } from '../screens/outcome/revisit.ts';
 import { renderDoorNote } from '../screens/outcome/note.ts';
+import { renderClosing } from '../screens/outcome/closing.ts';
 import { createCard } from '../ui/card.ts';
 import {
   buildRoster,
   conversationOptionsFor,
   portraitUrlFor,
+  CLOSING_LABEL,
+  CLOSING_LINE,
   CONTINUE_LABEL,
+  DOOR_IDLE_HOLD_MS,
+  REOPEN_LABEL,
   WAITING_LINE,
   type RosterEntry,
 } from './roster.ts';
@@ -76,6 +81,12 @@ export interface AppDeps {
   readonly deadlineMs?: number;
   /** The generated slot's deadline — boot picks the live or the stub value. */
   readonly generatedDeadlineMs?: number;
+  /**
+   * How long the door-idle beat is held when the next customer's generation has
+   * already fallen back to the bundled pack (default: the data value). The e2e
+   * harnesses set 0 so a scripted flow is never gated on a staged beat.
+   */
+  readonly doorIdleHoldMs?: number;
 }
 
 /** One started prefetch, as the test hook reports it. */
@@ -122,6 +133,14 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
   const machines: MachineState[] = roster.map((entry) => createMachine(entry.customer.patienceBudget));
   const outcomes: (Outcome | null)[] = roster.map(() => null);
   const prefetches: PrefetchRecord[] = [];
+  /**
+   * The sheet URL each slot's face was last painted with. The conversation is
+   * where a portrait resolves, and the crafting screen / the 재방문 overlay must
+   * show the SAME face (PR #33, R3) — they mount after the fact, so the shell
+   * remembers rather than re-deciding.
+   */
+  const paintedSheetUrls: (string | null)[] = roster.map(() => null);
+  const doorIdleHoldMs = deps.doorIdleHoldMs ?? DOOR_IDLE_HOLD_MS;
   let waitingNow = false;
 
   // ── DOM scaffold ─────────────────────────────────────────────────────────
@@ -271,11 +290,40 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
       startEntrance(slot);
       return;
     }
-    if (record.handle.getState().dialogue.status !== 'pending') {
-      startEntrance(slot);
+    const status = record.handle.getState().dialogue.status;
+    if (status === 'pending') {
+      playWaitingBeat(slot, record);
       return;
     }
-    playWaitingBeat(slot, record);
+    if (status === 'fallback' && doorIdleHoldMs > 0) {
+      // Nothing left to wait FOR — the generation already handed over to the
+      // bundled pack — but the shop's own beat is what makes the next arrival read
+      // as staging instead of an instant swap (PR #33, R3). Held for a fixed,
+      // felt duration on the INJECTED clock (§3-3), so this schedules no timer of
+      // its own and the e2e harnesses can zero or script it.
+      playStagedDoorBeat(slot);
+      return;
+    }
+    startEntrance(slot);
+  }
+
+  /**
+   * The door-idle beat as STAGING: same screen, same ambient line, no readout —
+   * only the end condition differs (a fixed hold instead of a track transition).
+   * A generation that is READY still walks straight in; this is the "the customer
+   * you are about to meet was already generated" case, which is every case on the
+   * deployed stub build.
+   */
+  function playStagedDoorBeat(slot: number): void {
+    const wrapper = swapStage();
+    wrapper.dataset.phase = 'waiting';
+    const beat = mountWaiting(wrapper, { line: WAITING_LINE });
+    waitingNow = true;
+    deps.clock.after(doorIdleHoldMs, () => {
+      waitingNow = false;
+      beat.settle();
+      startEntrance(slot);
+    });
   }
 
   /**
@@ -323,10 +371,13 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
    * swap plus two background properties), so a mid-conversation arrival is a
    * repaint and cannot reflow the screen.
    */
-  function applyPortrait(slot: number, conversation: ConversationHandle): void {
+  function applyPortrait(slot: number, paint: (url: string) => void): void {
     const entry = roster[slot];
     const record = prefetchFor(slot);
-    const paintUrl = (url: string): void => conversation.setPortraitSheet(url);
+    const paintUrl = (url: string): void => {
+      paintedSheetUrls[slot] = url;
+      paint(url);
+    };
     const paintFrom = (state: PrefetchState | null): void => {
       const sheet = state === null ? null : state.portrait.value;
       // Never rejects (portraitUrlFor degrades silently), so nothing here can
@@ -354,14 +405,22 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
   function startEntrance(slot: number): void {
     const entry = roster[slot];
     const wrapper = swapPhase(entry.customer.id, 'entrance');
-    renderEntrance(wrapper, entry.customer, () => {
+    const entrance = renderEntrance(wrapper, entry.customer, () => {
       machines[slot] = reduce(machines[slot], { type: 'advance' }); // entrance → conversation
       startConversation(slot);
     });
+    // The arrival has a subject: the framed panel enters as the silhouette and
+    // resolves into the same sheet the conversation will keep showing. A portrait
+    // still in flight simply stays unlit — which is the designed §2.3 beat.
+    applyPortrait(slot, (url) => entrance.setPortraitSheet(url));
   }
 
   function startConversation(slot: number): void {
     const entry = roster[slot];
+    // Read at the conversation→crafting handoff (below): the conversation screen
+    // owns its own patience machine, so its tier is the only place the mood the
+    // customer ends on can come from.
+    let liveConversation: ConversationHandle | null = null;
     const wrapper = swapPhase(entry.customer.id, 'conversation');
     let advanced = false;
     const toCrafting = (): void => {
@@ -371,7 +430,7 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
       // (patience→0) does too, since the conversation screen owns its OWN
       // machine. Either way the app advances via the canonical event.
       machines[slot] = reduce(machines[slot], { type: 'proceedToCrafting' });
-      startCrafting(slot);
+      startCrafting(slot, liveConversation?.tier ?? 0);
     };
     const conversation = mountConversation(
       wrapper,
@@ -379,7 +438,8 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
       { onComplete: toCrafting, onPhaseChange: toCrafting },
       conversationOptionsFor(seedFor(slot)),
     );
-    applyPortrait(slot, conversation);
+    liveConversation = conversation;
+    applyPortrait(slot, (url) => conversation.setPortraitSheet(url));
 
     // ── §2.3 PREFETCH TRIGGER ─────────────────────────────────────────────
     // The moment this conversation begins, the NEXT customer starts generating.
@@ -392,13 +452,20 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
     maybeDeliverDelayedOutcome(slot);
   }
 
-  function startCrafting(slot: number): void {
+  function startCrafting(slot: number, tier: number): void {
     const entry = roster[slot];
     const wrapper = swapPhase(entry.customer.id, 'crafting');
     mountCrafting(wrapper, {
       ingredients,
       customerId: entry.customer.id,
       outcomeTable: entry.outcomeTable,
+      // The customer is standing at the counter while the remedy is prepared, at
+      // the mood the conversation left them in (PR #33, R3).
+      portrait: {
+        sheetUrl: paintedSheetUrls[slot] ?? entry.bundledPortraitUrl,
+        tier,
+        ...(entry.portraitVariant === undefined ? {} : { variant: entry.portraitVariant }),
+      },
       onCommit: (result) => {
         outcomes[slot] = result.outcome;
         machines[slot] = reduce(machines[slot], { type: 'commit' }); // crafting → handover
@@ -426,9 +493,12 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
     if (!due || pending === null) return;
     machines[previous] = reduce(machines[previous], { type: 'deliverOutcome' });
     // 재방문 channel: the delayed result arrives over the live conversation.
+    const returning = roster[previous];
     mountRevisitNotification(overlayLayer, {
-      customer: roster[previous].customer,
+      customer: returning.customer,
       outcome: pending,
+      sheetUrl: paintedSheetUrls[previous] ?? returning.bundledPortraitUrl,
+      ...(returning.portraitVariant === undefined ? {} : { variant: returning.portraitVariant }),
     });
   }
 
@@ -452,7 +522,23 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
     wrapper.append(note);
     renderDoorNote(note, { customer: entry.customer, outcome });
     const next = slot + 1;
-    if (roster[next] === undefined) return;
+    if (roster[next] === undefined) {
+      // The LAST customer's note: the day gets a closing beat rather than ending
+      // on a frame with nothing to press (PR #33, R3). Same explicit-affordance
+      // rule as FR-9 — the shop never advances on a timer.
+      let closed = false;
+      const close = createCard({
+        label: CLOSING_LABEL,
+        onToggle: (selected) => {
+          if (!selected || closed) return;
+          closed = true;
+          startClosing();
+        },
+      });
+      close.dataset.testid = 'close-shop';
+      note.append(close);
+      return;
+    }
     let invited = false;
     const invite = createCard({
       label: CONTINUE_LABEL,
@@ -464,6 +550,25 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
     });
     invite.dataset.testid = 'continue-to-next';
     note.append(invite);
+  }
+
+  /**
+   * The day's last beat: the lamp comes down, the door closes, and the one
+   * affordance left starts the day again. The replay is a fresh mount of the same
+   * seeded run (§NFR-6), so it replays identically — deliberate, not a reset.
+   */
+  function startClosing(): void {
+    const wrapper = swapStage();
+    wrapper.dataset.phase = 'closing';
+    wrapper.dataset.testid = 'phase-closing';
+    const beat = document.createElement('div');
+    beat.className = 'phase';
+    wrapper.append(beat);
+    renderClosing(beat, {
+      line: CLOSING_LINE,
+      reopenLabel: REOPEN_LABEL,
+      onReopen: () => mountApp(container, deps),
+    });
   }
 
   // Kick off the sequence.
