@@ -3,6 +3,12 @@
   "styleBibleStatus": "provisional",
   "styleBibleRevisionPlanned": true,
   "styleBibleNote": "Candidate A is the current baseline from the initial human-reviewed style test, not the final style lock. Refine this sentence before full-pack generation.",
+  "keyedSpritePromptGuard": "The magenta background is a technical chroma-key layer, not part of the palette — never use magenta, pink, or purple on the subject itself.",
+  "keyingPipeline": {
+    "background": "#FF00FF",
+    "cornerValidation": "R>180, B>180, G<100",
+    "strategy": "edge-connected broad flood fill, then strict technical-magenta cleanup, at source resolution before 4x downscale"
+  },
   "styleTest": {
     "selectedCandidate": "A",
     "selectedOn": "2026-07-25"
