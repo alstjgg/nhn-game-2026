@@ -34,7 +34,10 @@ const walk = (dir: string): string[] => {
   for (const e of entries) {
     const full = join(dir, e.name);
     if (e.isDirectory()) out = out.concat(walk(full));
-    else if (/\.(ts|tsx|mts)$/.test(e.name)) out.push(full);
+    // Covers plain JS too: AC3 is "anywhere in src", and a .js/.mjs file dropped
+    // under src/ would otherwise slip past this guard. Matches the extension set
+    // the AC2b guard in tiebreak.test.ts walks.
+    else if (/\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$/.test(e.name)) out.push(full);
   }
   return out;
 };
