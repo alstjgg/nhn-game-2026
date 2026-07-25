@@ -1,0 +1,215 @@
+{
+  "latency": {
+    "dialogueMs": 900,
+    "portraitMs": 2400
+  },
+  "portraitPromptPrefix": "픽셀아트 4x2 표정 시트, 조선 한방 약방을 찾은 손님 — ",
+  "scripts": [
+    {
+      "problem": "며칠째 잠이 오지 않아요.",
+      "beats": [
+        {
+          "npcLine": "며칠째 통 잠을 이루지 못했어요. 눈만 감으면 생각이 꼬리를 물어서요.",
+          "tierLines": [
+            "며칠째 통 잠을 이루지 못했어요. 눈만 감으면 생각이 꼬리를 물어서요.",
+            "그냥… 며칠째 잠이 안 와요. 그뿐이에요.",
+            "잠이 안 온다고 했잖아요. 몇 번을 말해야 하나요.",
+            "잠 못 잔 사람 붙들고 말만 시키실 참이오? 약이나 좀 지어 주시오."
+          ],
+          "choices": [
+            {
+              "label": "요즘 마음 쓰이는 일이 있으신지요?",
+              "verb": "indirect",
+              "clueReveals": ["clue_racing_mind"]
+            },
+            { "label": "언제부터 못 주무셨습니까?", "verb": "direct" },
+            {
+              "label": "[관찰] 손님의 눈 밑을 살핀다",
+              "verb": "observe",
+              "clueReveals": ["clue_dark_circles"]
+            },
+            { "label": "[조제하러 가기]", "verb": "craft" }
+          ]
+        },
+        {
+          "npcLine": "손발이 늘 차서, 이불 속에서도 한참을 뒤척이다 밤을 새웁니다.",
+          "tierLines": [
+            "손발이 늘 차서, 이불 속에서도 한참을 뒤척이다 밤을 새웁니다.",
+            "손발이 차요. 이불을 덮어도 그렇고요.",
+            "손발이 차다니까요. 그게 그리 중한 이야기입니까?",
+            "손이야 차든 말든, 잠만 오게 해 주시면 됩니다."
+          ],
+          "choices": [
+            {
+              "label": "잠자리에 들기 전 따뜻한 차라도 드시는지요?",
+              "verb": "indirect",
+              "clueReveals": ["clue_cold_hands"]
+            },
+            {
+              "label": "밤중에 자주 깨십니까?",
+              "verb": "direct",
+              "clueReveals": ["clue_racing_mind"]
+            },
+            {
+              "label": "[관찰] 손님의 손끝을 살핀다",
+              "verb": "observe",
+              "clueReveals": ["clue_cold_hands"]
+            },
+            { "label": "[조제하러 가기]", "verb": "craft" }
+          ]
+        },
+        {
+          "npcLine": "…실은 눕기만 하면 가슴이 뜁니다. 문간에서 무슨 소리가 나는 것도 같고요.",
+          "tierLines": [
+            "…실은 눕기만 하면 가슴이 뜁니다. 문간에서 무슨 소리가 나는 것도 같고요.",
+            "…가슴이 좀 뛰어요. 별것 아닐 겁니다.",
+            "그건… 그건 여쭐 일이 아닌 것 같은데요.",
+            "그만 물으시지요. 더는 할 말이 없습니다."
+          ],
+          "choices": [
+            {
+              "label": "그 소리가 문 두드리는 소리처럼 들리시는지요?",
+              "verb": "indirect",
+              "clueReveals": ["clue_racing_mind"]
+            },
+            { "label": "누가 찾아오기로 되어 있습니까?", "verb": "direct" },
+            {
+              "label": "[관찰] 손님이 자꾸 문 쪽을 살피는 것을 본다",
+              "verb": "observe",
+              "clueReveals": ["clue_racing_mind"]
+            },
+            { "label": "[조제하러 가기]", "verb": "craft" }
+          ]
+        }
+      ]
+    },
+    {
+      "problem": "기침이 좀처럼 멎지 않아요.",
+      "beats": [
+        {
+          "npcLine": "며칠 전부터 기침이 멎질 않네요. 목도 칼칼하고요.",
+          "tierLines": [
+            "며칠 전부터 기침이 멎질 않네요. 목도 칼칼하고요.",
+            "기침이 안 멎어요. 목도 좀 그렇고요.",
+            "기침이라니까요. 보시면 모르시겠어요?",
+            "콜록— 됐고, 기침 멎는 약이나 얼른 주세요."
+          ],
+          "choices": [
+            {
+              "label": "요 며칠 찬 데서 지내신 일이 있으신지요?",
+              "verb": "indirect",
+              "clueReveals": ["clue_dry_throat"]
+            },
+            { "label": "가래도 함께 나옵니까?", "verb": "direct" },
+            {
+              "label": "[관찰] 손님의 목소리를 들어 본다",
+              "verb": "observe",
+              "clueReveals": ["clue_hoarse_voice"]
+            },
+            { "label": "[조제하러 가기]", "verb": "craft" }
+          ]
+        },
+        {
+          "npcLine": "밤이 깊어지면 기침이 더 심해져서, 잠을 아주 설칩니다.",
+          "tierLines": [
+            "밤이 깊어지면 기침이 더 심해져서, 잠을 아주 설칩니다.",
+            "밤에 더 심해요. 그래서 잠도 못 자고요.",
+            "밤마다 그런다고 몇 번을 말합니까.",
+            "밤이고 낮이고 기침입니다. 이제 됐지요?"
+          ],
+          "choices": [
+            {
+              "label": "밤에 바깥바람 쐬실 일이 있으셨는지요?",
+              "verb": "indirect",
+              "clueReveals": ["clue_night_cough"]
+            },
+            {
+              "label": "언제부터 밤 기침이 시작됐습니까?",
+              "verb": "direct",
+              "clueReveals": ["clue_night_cough"]
+            },
+            {
+              "label": "[관찰] 손님의 숨소리를 살핀다",
+              "verb": "observe",
+              "clueReveals": ["clue_shallow_breath"]
+            },
+            { "label": "[조제하러 가기]", "verb": "craft" }
+          ]
+        },
+        {
+          "npcLine": "…그날 밤에 옷이 좀 젖긴 했습니다. 별일은 아니고요.",
+          "tierLines": [
+            "…그날 밤에 옷이 좀 젖긴 했습니다. 별일은 아니고요.",
+            "…옷이 좀 젖었댔지요. 그뿐입니다.",
+            "그 얘긴 왜 자꾸 캐물으세요.",
+            "됐습니다. 그 밤 이야기는 그만두시지요."
+          ],
+          "choices": [
+            {
+              "label": "젖은 옷으로 오래 계셨겠습니다.",
+              "verb": "indirect",
+              "clueReveals": ["clue_shallow_breath"]
+            },
+            { "label": "한밤중에 물에 빠지신 겁니까?", "verb": "direct" },
+            {
+              "label": "[관찰] 소맷단에 남은 물자국을 본다",
+              "verb": "observe",
+              "clueReveals": ["clue_night_cough"]
+            },
+            { "label": "[조제하러 가기]", "verb": "craft" }
+          ]
+        }
+      ]
+    }
+  ],
+  "fallback": {
+    "problem": "",
+    "beats": [
+      {
+        "npcLine": "어디가 어떻게 불편하신지, 천천히 말씀해 보세요.",
+        "tierLines": [
+          "어디가 어떻게 불편하신지, 천천히 말씀해 보세요.",
+          "어디가 불편하냐고 물으시니… 딱히 뭐라 하기가 그렇네요.",
+          "그러니까 아파서 왔다니까요.",
+          "묻기만 하실 겁니까? 약을 지으러 온 겁니다."
+        ],
+        "choices": [
+          { "label": "언제부터 그러셨는지요?", "verb": "indirect" },
+          { "label": "정확히 어디가 불편하십니까?", "verb": "direct" },
+          { "label": "[관찰] 손님의 안색을 살핀다", "verb": "observe" },
+          { "label": "[조제하러 가기]", "verb": "craft" }
+        ]
+      },
+      {
+        "npcLine": "말로 하자니 어렵네요. 그저… 몸이 예전 같지가 않습니다.",
+        "tierLines": [
+          "말로 하자니 어렵네요. 그저… 몸이 예전 같지가 않습니다.",
+          "그냥 몸이 안 좋아요. 설명하기가 어렵네요.",
+          "말주변이 없어서 그렇지, 아픈 건 아픈 겁니다.",
+          "이만큼 말했으면 아실 만도 한데요."
+        ],
+        "choices": [
+          { "label": "요즘 잠자리는 편안하신지요?", "verb": "indirect" },
+          { "label": "다른 증상은 없으십니까?", "verb": "direct" },
+          { "label": "[관찰] 손님의 손끝과 낯빛을 견주어 본다", "verb": "observe" },
+          { "label": "[조제하러 가기]", "verb": "craft" }
+        ]
+      },
+      {
+        "npcLine": "이만하면 아실 만하지요? 뭐라도 좀 지어 주세요.",
+        "tierLines": [
+          "이만하면 아실 만하지요? 뭐라도 좀 지어 주세요.",
+          "이제 그만 물으시고, 뭐라도 지어 주세요.",
+          "여기서 더 무슨 말을 합니까.",
+          "약을 지으실 겁니까, 말 겁니까."
+        ],
+        "choices": [
+          { "label": "조금만 더 여쭙겠습니다.", "verb": "indirect" },
+          { "label": "한 가지만 더 확인하겠습니다.", "verb": "direct" },
+          { "label": "[관찰] 손님의 숨결을 살핀다", "verb": "observe" },
+          { "label": "[조제하러 가기]", "verb": "craft" }
+        ]
+      }
+    ]
+  }
+}
