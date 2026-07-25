@@ -841,6 +841,75 @@ describe('AC5 — cancel() stops in-flight work from ever touching state again',
     expect(handle.getState().dialogue.status).toBe('pending');
   });
 
+  // The two tests below cover the window the other AC5 cases cannot reach: once
+  // degrade() has already issued the pack request, the live-path `claimed` gate
+  // is behind us and the pack's own await is the only thing left in flight. If
+  // the customer leaves right there, the settle handler is the last guard.
+  it('AC5-a — cancel() during an in-flight fallback request discards the pack result', async () => {
+    const live = makeControlledAdapter();
+    const pack = makeControlledAdapter(); // fallback we can hold open by hand
+    const clock = createManualClock();
+    const handle = startPrefetch({
+      adapter: live.adapter,
+      fallbackAdapter: pack.adapter,
+      clock,
+      request: makeRequest(),
+    });
+    const sub = watch(handle);
+
+    // Deadline fires with the live tracks still silent -> the pack is requested
+    // but does not answer yet.
+    clock.advance(DEADLINE_MS);
+    await flush();
+    expect(pack.calls.dialogue).toBe(1);
+    expect(pack.calls.portrait).toBe(1);
+    expect(handle.getState().dialogue.status).toBe('pending');
+
+    handle.cancel();
+
+    pack.d.resolve(validBeat('너무 늦게 도착한 스텁'));
+    pack.p.resolve(validSheet('bGF0ZS1zdHVi'));
+    await flush();
+    await flush();
+
+    expect(sub.seen).toHaveLength(0);
+    expect(handle.getState().dialogue.status).toBe('pending');
+    expect(handle.getState().dialogue.value).toBeNull();
+    expect(handle.getState().portrait.status).toBe('pending');
+    expect(handle.getState().portrait.value).toBeNull();
+    expect(handle.getState().settled).toBe(false);
+    expect(handle.getState().cancelled).toBe(true);
+  });
+
+  it('AC5-a — cancel() during an in-flight fallback that then REJECTS stays silent too', async () => {
+    const pack = makeControlledAdapter();
+    const handle = startPrefetch({
+      adapter: makeRejectingAdapter('LIVE-DOWN-4471'),
+      fallbackAdapter: pack.adapter,
+      clock: createManualClock(),
+      request: makeRequest(),
+    });
+    const sub = watch(handle);
+
+    // Live rejection degrades immediately, so the pack request is in flight
+    // without the deadline having fired at all.
+    await flush();
+    expect(pack.calls.dialogue).toBe(1);
+
+    handle.cancel();
+
+    pack.d.reject(new AIUnavailableError('PACK-DOWN-4472'));
+    pack.p.reject(new AIUnavailableError('PACK-DOWN-4472'));
+    await flush();
+    await flush();
+
+    expect(sub.seen).toHaveLength(0);
+    expect(handle.getState().dialogue.status).toBe('pending');
+    expect(handle.getState().portrait.status).toBe('pending');
+    expect(handle.getState().cancelled).toBe(true);
+    expect(JSON.stringify(handle.getState())).not.toContain('PACK-DOWN-4472');
+  });
+
   it('AC5-b — cancel() releases the deadline timer; later time travel is inert', async () => {
     const live = makeControlledAdapter();
     const fallback = makeStubAdapter();
