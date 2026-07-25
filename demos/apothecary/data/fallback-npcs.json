@@ -1,0 +1,115 @@
+{
+  "seed": 20260725,
+  "seededDeadlineMs": 1200,
+  "stubDeadlineMs": 8000,
+  "liveDeadlineMs": 25000,
+  "simulatedGenerationMs": {
+    "dialogueMs": 30000,
+    "portraitMs": 30000
+  },
+  "waitingLine": "손님이 올 시간인데…",
+  "continueLabel": "[문을 열어 두고 다음 손님을 기다린다]",
+  "portraitPool": ["fallback-portrait-1.png", "fallback-portrait-2.png"],
+  "portraitPoolIndex": 0,
+  "portraitPoolPrompt": "번들 폴백 초상 시트 — 생성 프롬프트는 assets-manifest.json에 기록되어 있다",
+  "customer": {
+    "id": "c3",
+    "name": "속이 얹힌 장돌뱅이",
+    "portrait": "fallback-portrait-1.png",
+    "problem": "속이 더부룩하고 얹힌 것 같아요.",
+    "hiddenCause": "잔칫집에서 상한 전을 먹었는데, 그 집과의 의리 때문에 잔치 이야기를 얼버무린다.",
+    "patienceBudget": 4,
+    "dialogueNodes": [
+      {
+        "npcLine": "며칠째 속이 더부룩합니다. 명치 아래가 묵직하게 얹힌 것 같고요.",
+        "choices": [
+          {
+            "label": "요 며칠 상은 어떻게 받으셨습니까?",
+            "verb": "indirect",
+            "patienceCost": 1,
+            "clueReveals": ["clue_feast_leftovers"]
+          },
+          {
+            "label": "상한 것을 드신 겁니까?",
+            "verb": "direct",
+            "patienceCost": 2
+          },
+          {
+            "label": "[관찰] 옷깃에 굳은 기름때를 살핀다",
+            "verb": "observe",
+            "patienceCost": 0,
+            "clueReveals": ["clue_grease_stain"]
+          },
+          {
+            "label": "[조제하러 가기]",
+            "verb": "craft",
+            "patienceCost": 0
+          }
+        ]
+      },
+      {
+        "npcLine": "장길에 찬 바람을 맞아 그런 것이겠지요. 먹은 건 별것 없습니다.",
+        "evasive": true,
+        "choices": [
+          {
+            "label": "장을 돌기 전에는 어느 집에 머무셨습니까?",
+            "verb": "indirect",
+            "patienceCost": 1,
+            "clueReveals": ["clue_village_feast"]
+          },
+          {
+            "label": "그 집에서 무엇을 내어 주었습니까?",
+            "verb": "direct",
+            "patienceCost": 2
+          },
+          {
+            "label": "[관찰] 자꾸 트림을 삼키는 낯빛을 본다",
+            "verb": "observe",
+            "patienceCost": 0,
+            "clueReveals": ["clue_swallowed_burp"]
+          },
+          {
+            "label": "[조제하러 가기]",
+            "verb": "craft",
+            "patienceCost": 0
+          }
+        ]
+      }
+    ],
+    "observationClues": [
+      { "id": "clue_feast_leftovers", "text": "잔치 음식을 싸 온 보퉁이가 아직 손에 들려 있다" },
+      { "id": "clue_grease_stain", "text": "옷깃에 굳은 기름때가 여러 겹 묻어 있다" },
+      { "id": "clue_village_feast", "text": "사흘 전 옆 마을 잔칫집에 묵었다고 흘린다" },
+      { "id": "clue_swallowed_burp", "text": "말끝마다 트림을 삼키며 명치를 문지른다" }
+    ]
+  },
+  "outcomeTable": {
+    "entries": [
+      {
+        "ingredients": ["saenggang", "gamcho"],
+        "method": "달이기",
+        "declaration": "정석",
+        "outcome": {
+          "channel": "문앞 쪽지",
+          "text": "문 앞에 쪽지가 놓였다. 속이 풀려 이제야 국밥을 넘겼다는 인사다.",
+          "arrivalTrigger": "note_stomach_settled"
+        }
+      },
+      {
+        "ingredients": ["bakha", "gukhwa"],
+        "method": "우리기",
+        "declaration": "실험",
+        "outcome": {
+          "channel": "문앞 쪽지",
+          "text": "쪽지가 왔다. 속은 가라앉았지만 입안이 서늘해 밤새 뒤척였다고 적혀 있다.",
+          "arrivalTrigger": "note_stomach_cooled"
+        }
+      }
+    ],
+    "default": {
+      "channel": "문앞 쪽지",
+      "text": "문 앞 쪽지에는 아직도 명치가 묵직하다는 한 줄만 남아 있다.",
+      "arrivalTrigger": "note_no_effect"
+    }
+  }
+}

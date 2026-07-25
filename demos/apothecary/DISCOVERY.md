@@ -598,3 +598,104 @@ The general lesson for the harness: a screen-level oracle must be written agains
 budget the content ships (2 dialogue nodes ⇒ 2 paints), not against the tier ladder the
 patience arithmetic allows (up to 4 tiers). The two are independent, and only the smaller one
 bounds what the DOM can show.
+
+## u13 — App-shell async wiring (TEST agent, TDD-Red)
+
+### Scope gap: the FR-12 timer allowlist needs a second entry it cannot own
+FR-12/AC-8 fix the source-scan allowlist at exactly one item — `src/app/index.ts` ×
+`EXIT_FALLBACK_MS`. A scan of the shipped tree finds a **second** missed-`animationend`
+guard, `src/screens/crafting/index.ts:120` × `BEAT_FALLBACK_MS` (600ms, commit-beat
+cleanup, added by the crafting unit). It is the same class of timer the exception exists
+for — not a generation wait — and `src/screens/crafting/**` is outside u13's file globs,
+so u13 can neither remove nor relocate it. `e2e/generation.spec.ts`'s AC-8 allowlist is
+therefore a two-row `file × constant-name` table instead of one row. The scan still fails
+on any other `setTimeout|setInterval|requestIdleCallback` in `src/app/**`/`src/screens/**`,
+which is the invariant the criterion is actually protecting.
+
+### Scope gap (G-5, confirmed): the source scans live in the e2e spec
+The unit's stated verification command includes `npx vitest run tests/pipeline/`, but
+`tests/**` belongs to u5 and is outside u13's globs. FR-2/FR-12/NFR-5/NFR-6 are pinned in
+`e2e/generation.spec.ts` with `node:fs` instead (overlap.spec's `readFileSync` precedent).
+
+### Upstream signature corrections the RED spec was written against
+- u9 exposes `mountPortrait()` / `PortraitHandle.setSheet(url)` / `handle.silhouette`, not
+  the `createPortrait()` / `arrive(sheet)` / `setSilhouette()` names design §0 assumed. The
+  spec asserts on the DOM contract instead (`portrait-cell`, `--silhouette` class,
+  `filter: brightness(0)`), so it survives either naming.
+- Holding the injected adapter's `dialogue()` unconditionally would freeze the customer
+  ON STAGE too: `beats.ts` `next()` awaits the adapter before painting. The harness
+  contract in the spec header therefore scopes `?dialogue=hold&portrait=hold` to
+  **prefetch** calls (plus `?holdFor=<customerId>`), which is also what makes FR-6's
+  non-blocking assertion meaningful rather than vacuous.
+
+## u13 — App-shell async wiring (BUILD agent, TDD-Green)
+
+### Where the injected adapter is (and is not) used — the seam that makes FR-6 true
+The app calls the boot adapter **only from the prefetch pipeline**. A mounted conversation
+gets its own one-shot *replay* adapter (`roster.ts` `createSeedAdapter`) carrying the beat
+the prefetch already fetched, and plays the authored deck for every later beat through
+`beats.ts`'s documented per-beat degradation. So "a pending prefetch cannot block input"
+is a structural property, not a timing hope — the screen has nothing to await. This is also
+what lets the e2e harness script `hold` semantics per prefetch without freezing the
+customer on stage (the gap the TEST agent flagged above).
+
+### u5's portrait gate rejects the stub/pack sheet shape
+`pipeline/prefetch.ts` has its own `isPortraitSheet` that requires a **non-empty `b64`**,
+while `ai/contract.ts`'s validator (and `portraitSrc`) accept a `url`-only sheet — which is
+exactly what the stub adapter and the bundled pack return. Consequence: in stub mode the
+portrait track always settles as `fallback` with `value: null`. The shell therefore treats
+"decided but valueless" as "use this slot's bundled pool sheet" (`roster.ts`
+`portraitUrlFor`), which is the same image the pack was offering, so nothing is lost. If u5
+ever relaxes that gate to the contract's own validator, the pack's sheet flows through
+unchanged and this branch simply stops firing. `prefetch.ts` is outside u13's file globs.
+
+### Simulated generation latency is what makes the deployed demo show the pipeline
+Boot hands the canned adapter a simulated latency (`data/fallback-npcs.json`
+`simulatedGenerationMs`, 30s) that is deliberately longer than every deadline, so the
+deployed stub build plays the *real* async choreography instead of pretending generation is
+instant: seeded slots quietly fall back to their bundled content after a short grace
+(`seededDeadlineMs`, 1200ms — invisible, it elapses during the previous visit), and the
+generated third slot plays the door-idle beat until `stubDeadlineMs` (8000ms) hands over to
+the pack. Measured drive spans on this machine: customer 1 conversation→customer 2 entrance
+3.5s, customer 2 conversation→continue click 3.7s, leaving ~4.3s of door beat in the gate.
+NOTE for the reader: with an ≤8s cap (G-4) a *human* pace never reaches the door beat in
+stub mode — they finish customer 2 long after the pack has answered. The beat is a bounded
+wait, not a scripted cutscene; live mode is where a real generation actually fills it.
+
+### Deadlines are per slot, and the mode branch lives in boot (not in the shell)
+AC-11's scan forbids an adapter-mode comparison anywhere under `src/app/**`/`src/screens/**`,
+so `src/main.ts` (boot wiring, outside the scan) picks `liveDeadlineMs` vs `stubDeadlineMs`
+and injects it; `roster.ts` applies it to the generated slot only. The harness overrides
+every slot with `?deadline=<ms>`.
+
+### `renderDoorNote` claims the testid of whatever element it is handed
+`src/screens/outcome/note.ts` stamps `data-testid="door-note"` on its target, so mounting it
+straight onto the phase wrapper (v1's wiring) *erased* `phase-<id>-outcome`. u13 needs both
+hooks, so the note now renders into a child of the phase wrapper; the child carries the
+`.phase` class because door-note's own rules (centring, gap) are written against that
+layout box, and `src/app/app.css` is outside u13's globs.
+
+### Upstream hand-off guards u13 necessarily supersedes (3 unit assertions, tests/** is out of glob)
+All three are per-unit "I did not touch the file u13 owns" receipts, and each names u13 (or
+the harness count) as what retires it. u13 cannot edit them — `tests/**` is outside its file
+globs — and they are structurally unfixable from inside this unit:
+1. `tests/ai/boot.test.ts` › AC20 "main.ts does not import the boot factory **yet**" — u13's
+   whole job is that import. (Its sibling assertion about `app/index.ts` still passes: the
+   shell is handed a built adapter and never imports the factory.)
+2. `tests/ui/portrait.test.ts` › u9 AC5 "vite.config.ts … adds exactly one (4 total)" — the
+   generation harness page is a 5th build input, and it must be a build input to be served
+   from `dist/` at the path the spec navigates to.
+3. `tests/screens/conversation/callbacks.test.ts` › "leaves src/app/index.ts untouched (u13
+   owns the wiring)" — a `git status` assertion on the file this unit rewires. Its other
+   assertions in that file were kept green on purpose: `ConversationOptions` still declares
+   exactly `{beatSource, adapter}` (the portrait seam is the *return* handle, not a new
+   option), and `src/app/index.ts` still mentions no beat-source/adapter factory by name.
+
+### Not wired by u13 (follow-ups, deliberately out of scope)
+- **Idle blinking in the app.** `mountPortrait` runs the u9 blink loop only when handed a
+  clock + rng, and the conversation screen's option bag is frozen by the guard above, so the
+  deployed conversation portraits are still. The component and its e2e gate already cover
+  the behaviour; wiring it needs one more (additive) conversation option.
+- **Runtime pixelation is live-only in practice.** `roster.ts` sends a generated (`b64`)
+  sheet through `pixelateSheet` before it reaches the cell, per §2.4; bundled pool sheets
+  ship pre-downscaled and are used verbatim. In stub mode no sheet ever takes the first path.

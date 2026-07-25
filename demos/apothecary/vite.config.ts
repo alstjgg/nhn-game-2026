@@ -26,6 +26,7 @@ export default defineConfig({
         conversation: input('./e2e/harness/conversation/index.html'),
         crafting: input('./e2e/harness/crafting/index.html'),
         portrait: input('./e2e/harness/portrait/index.html'),
+        generation: input('./e2e/harness/generation/index.html'),
       },
     },
   },
