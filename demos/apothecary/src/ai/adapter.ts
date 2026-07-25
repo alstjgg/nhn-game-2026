@@ -23,6 +23,14 @@ export interface AIAdapter {
   portrait(req: PortraitRequest): Promise<PortraitSheet>;
 }
 
+/**
+ * Where the /ai/* endpoints live. Empty (default) means same-origin — the Vite
+ * dev-proxy. A Pages build that should use a hosted standalone server
+ * (server/standalone.mjs) sets VITE_AI_BASE_URL at build time, e.g.
+ * `VITE_AI_BASE_URL=https://ai.example.com npm run build`. No trailing slash.
+ */
+const AI_BASE_URL: string = (import.meta.env?.VITE_AI_BASE_URL ?? '').replace(/\/$/, '');
+
 /** Thrown when the live path fails; callers degrade to stub, never show errors. */
 export class AIUnavailableError extends Error {
   constructor(message: string) {
@@ -38,7 +46,7 @@ export class AIUnavailableError extends Error {
  */
 export async function probeHealth(timeoutMs = 800): Promise<AIHealth | null> {
   try {
-    const res = await fetch('/ai/health', { signal: AbortSignal.timeout(timeoutMs) });
+    const res = await fetch(`${AI_BASE_URL}/ai/health`, { signal: AbortSignal.timeout(timeoutMs) });
     if (!res.ok) return null;
     const health = (await res.json()) as AIHealth;
     return health.ok ? health : null;
@@ -52,7 +60,7 @@ export async function probeHealth(timeoutMs = 800): Promise<AIHealth | null> {
  * fallback. No keys here — they exist only in the proxy's process.env. */
 export function createLiveAdapter(): AIAdapter {
   async function postJson<T>(path: string, body: unknown, timeoutMs: number): Promise<T> {
-    const res = await fetch(path, {
+    const res = await fetch(`${AI_BASE_URL}${path}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),

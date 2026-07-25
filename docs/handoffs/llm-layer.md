@@ -173,6 +173,11 @@ Real integration work, not a config flip. The adapter's base-URL seam
   7 s / no retries / deterministic fallback (decision 6);
 - remove the runtime portrait path (decision 3);
 - wire live/stub adapter selection into the built app;
+- make the boot health probe cold-start-aware — today's 800 ms probe against
+  a cold Lambda would lock the session into stub mode (PR #46 review §5):
+  lengthen the probe timeout with backoff and/or allow per-call live retry
+  after a stub boot, on top of the decision-12 warm-up before benchmarks and
+  the judging window;
 - end-to-end verification from the GitHub Pages origin: real cross-origin
   calls and a fallback-under-failure play-through (research note §11.4
   checklist).
