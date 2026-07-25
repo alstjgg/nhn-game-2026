@@ -1319,4 +1319,3 @@ describe('plugin shape: /ai/health answers the boot probe only', () => {
     expect(res.statusCode).toBe(405);
   });
 });
->>>>>>> origin/super/u2/20260725-153055
