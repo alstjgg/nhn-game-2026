@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+# Playwright
+playwright-report
+test-results
+.cache
+
+# Throwaway harness dirs created by tests/scaffold.test.ts to prove the
+# vite rollup-input glob discovers pages it was never told about.
+e2e/harness/_probe-*
+
+.DS_Store
