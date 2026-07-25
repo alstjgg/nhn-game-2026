@@ -576,3 +576,25 @@ beats exist per customer ⇒ at most two paid commits ⇒ at most three of the f
 observable in one run, so the 0→3 ladder needs two runs with different budgets. The knob is a
 harness-boundary substitution (`{ ...customer, patienceBudget: n }`) with a byte-identical
 default, so it moves the ladder out of `data/customers.json` — a content file other specs pin.
+
+## u12 — Tier tone content (IMPLEMENT agent, TDD-Green)
+
+### RED-oracle correction: only ONE tier bump per run can repaint a line
+`e2e/patience.spec.ts`'s new AC12 ladder test drove **two** paid commits and required the
+`npc-line` text to change on each. The tier attribute does move twice (c1, budget 5: 0 → 1 → 2 —
+u11's tests pass on exactly that), but a *line* is only re-authored when a beat is painted, and
+`source.total === seeded.length === 2` for both shipped customers, so `conversation.ts:368`
+stops advancing after the second commit: the tier rises while the spent hand — and its line —
+freeze. The second iteration therefore polled forever on `line !== beforeLine`.
+
+Fixed in the test, not by weakening it: the first commit keeps every original assertion
+(non-empty, ≠ tier-0 line, ≠ previous line, present in the D-3b union index at the observed
+`data-tier`), and the terminal commit is now asserted as what it actually is — the tier rises,
+the frozen line stays byte-identical, is non-empty, and is still the authored variant for the
+tier it was *painted* at. spec §4 AC12's own bar ("≥ 2 distinct tiers observed in one
+play-through") is met by `[0, 1, 2]`.
+
+The general lesson for the harness: a screen-level oracle must be written against the beat
+budget the content ships (2 dialogue nodes ⇒ 2 paints), not against the tier ladder the
+patience arithmetic allows (up to 4 tiers). The two are independent, and only the smaller one
+bounds what the DOM can show.

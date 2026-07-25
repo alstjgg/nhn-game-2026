@@ -22,6 +22,11 @@ import {
   type PatienceTier,
 } from '../../ai/contract.ts';
 import type { Customer, DialogueNode, ObservationClue } from '../../data/schema.ts';
+import {
+  selectTierLine,
+  shippedTierVariantIndex,
+  type TierVariantIndex,
+} from '../../data/tier-variants.ts';
 
 /** One prior exchange: what the customer said, which card the player pressed. */
 export interface DialogueTurn {
@@ -68,6 +73,12 @@ export interface BeatSourceOptions {
   patienceTier?: () => PatienceTier;
   /** Clue ids already revealed; defaults to none. */
   revealed?: () => ReadonlySet<string>;
+  /**
+   * Which authored tier variants the SEEDED fallback line is toned through (u12);
+   * defaults to the shipped table. A generated beat is never re-toned — the model
+   * (or u1's stub script) already wrote its line for the tier it was asked about.
+   */
+  tierVariants?: TierVariantIndex;
 }
 
 const NOTHING_REVEALED: ReadonlySet<string> = new Set<string>();
@@ -170,6 +181,7 @@ export function createBeatSource(options: BeatSourceOptions): BeatSource {
     buildRequest = composeDialogueRequest,
     patienceTier = (): PatienceTier => 0,
     revealed = (): ReadonlySet<string> => NOTHING_REVEALED,
+    tierVariants = shippedTierVariantIndex,
   } = options;
   // A source with nothing to fall back to could not honour "never rejects" —
   // that is a wiring bug, so it fails loudly here rather than mid-conversation.
@@ -184,6 +196,17 @@ export function createBeatSource(options: BeatSourceOptions): BeatSource {
   /** Overdrawing the deck re-serves its last beat rather than failing. */
   function seededAt(index: number): DialogueBeat {
     return seeded[Math.min(index, seeded.length - 1)];
+  }
+
+  /**
+   * The seeded line rewritten to the tier the conversation is in (u12), read at
+   * production time so a tier that moved between pulls is honoured. A line the
+   * table does not know passes through untouched, so a seeded deck from outside
+   * data/customers.json keeps its own prose.
+   */
+  function toneSeeded(beat: DialogueBeat): DialogueBeat {
+    const line = selectTierLine(tierVariants, beat.npcLine, patienceTier());
+    return line === beat.npcLine ? beat : { npcLine: line, choices: beat.choices };
   }
 
   /** One adapter attempt. Resolves `undefined` for every unusable answer. */
@@ -234,7 +257,7 @@ export function createBeatSource(options: BeatSourceOptions): BeatSource {
           ? await pullLive(index, customer, adapter)
           : undefined;
       mode = generated === undefined ? 'stub' : 'live';
-      const chosen = generated ?? fallback;
+      const chosen = generated ?? toneSeeded(fallback);
       turn.npcLine = chosen.npcLine;
 
       if (customer === undefined) return chosen;
