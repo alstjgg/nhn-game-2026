@@ -57,6 +57,12 @@ Open the dev URL and play a run. Tick each box; record the result table below.
 
 Date run: ____________  ·  Runner: ____________  ·  Commit: ____________
 
+When something fails upstream, the proxy answers a bare
+`upstream rejected the call (<status>)` — it never forwards the vendor body,
+which can quote the key and the composed prose back (INV-2). The full detail,
+with the key redacted, is printed in the **dev server's own terminal**; read it
+there, not in DevTools.
+
 A FAIL on 5 or 7 is release-blocking (INV-1 / INV-7). A FAIL on 3 means the
 sheet-assembly rules in `data/prompting.json` are not reaching the model — start
 at `composeDecidePrompt` in `server/ai-proxy.mjs`.
