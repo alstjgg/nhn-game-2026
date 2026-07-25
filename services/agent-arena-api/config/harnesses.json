@@ -1,0 +1,24 @@
+[
+  {
+    "id": "starter-4000",
+    "displayName": "Starter Harness",
+    "maxInputTokens": 4000,
+    "maxOutputTokens": 192,
+    "maxToolCalls": 3,
+    "timeoutMs": 15000,
+    "fallbackActionId": "wait",
+    "contextSoftLimitRatio": 0.7,
+    "contextHardLimitRatio": 0.9
+  },
+  {
+    "id": "agentic-4000",
+    "displayName": "Agentic Tool Harness",
+    "maxInputTokens": 4000,
+    "maxOutputTokens": 512,
+    "maxToolCalls": 4,
+    "timeoutMs": 90000,
+    "fallbackActionId": "wait",
+    "contextSoftLimitRatio": 0.7,
+    "contextHardLimitRatio": 0.9
+  }
+]

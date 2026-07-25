@@ -1,0 +1,61 @@
+{
+  "promptCards": [
+    {
+      "id": "protect-weakest-v1",
+      "version": 1,
+      "displayName": "Protect the Weakest",
+      "instruction": "Prefer protecting the ally with the lowest current HP when that is a legal action."
+    },
+    {
+      "id": "answer-briefly-v1",
+      "version": 1,
+      "displayName": "Answer Briefly",
+      "instruction": "Use terse speech and avoid commentary unrelated to the selected action."
+    },
+    {
+      "id": "avoid-high-risk-v1",
+      "version": 1,
+      "displayName": "Avoid High Risk",
+      "instruction": "Prefer the lowest-risk legal action unless a higher-risk action clearly prevents defeat."
+    }
+  ],
+  "skillCards": [
+    {
+      "id": "risk-check-v1",
+      "version": 1,
+      "displayName": "Risk Check",
+      "kind": "function",
+      "instruction": "Use the arena_risk_check function when comparing actions with explicit risk values.",
+      "functionName": "arena_risk_check"
+    },
+    {
+      "id": "arena-tactics-v1",
+      "version": 1,
+      "displayName": "Arena Tactics",
+      "kind": "hosted",
+      "instruction": "Use the mounted arena-tactics Skill when it is relevant to the decision.",
+      "bindings": {
+        "openai": {
+          "skillIdEnv": "OPENAI_SKILL_ID",
+          "versionEnv": "OPENAI_SKILL_VERSION"
+        },
+        "anthropic": {
+          "skillIdEnv": "ANTHROPIC_SKILL_ID",
+          "versionEnv": "ANTHROPIC_SKILL_VERSION"
+        }
+      }
+    }
+  ],
+  "mcpCards": [
+    {
+      "id": "calculator-mcp-v1",
+      "version": 1,
+      "displayName": "Calculator MCP",
+      "serverLabel": "arena-calculator",
+      "urlEnv": "ARENA_CALCULATOR_MCP_URL",
+      "tokenEnv": "ARENA_CALCULATOR_MCP_TOKEN",
+      "allowedTools": ["calculate"],
+      "readOnly": true
+    }
+  ]
+}
