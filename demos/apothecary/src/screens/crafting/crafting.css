@@ -43,15 +43,18 @@
 }
 
 /* The ingredient shelf (u7 asset pack, PRD §2.4): the jar cards sit ON a real
- * shelf panel instead of floating on the page. Stretched to the panel box —
- * the plate is drawn to be stretched, and pixelated keeps the grid crisp. */
+ * shelf panel instead of floating on the page. `ui-shelf.png` is a square
+ * cabinet drawing (drawers + shelf structure) — it is scaled UNIFORMLY and
+ * cropped to fill the box (`cover`), never stretched non-uniformly, so its
+ * frame/drawer lines stay straight (a plain `100% 100%` stretch skews a
+ * ~1:1 image into a wide short box and reads as an unrecognisable smear). */
 .crafting__grid {
   padding: var(--space-3);
   border-radius: var(--radius-card);
   background-image: url('../../../assets/ui-shelf.png');
   background-repeat: no-repeat;
   background-position: center center;
-  background-size: 100% 100%;
+  background-size: cover;
   image-rendering: pixelated;
 }
 
@@ -168,7 +171,11 @@
 }
 
 /* step-end: each cell is HELD, never interpolated — interpolation would slide
- * two half-cells into view. Only the selected method's equipment is at work. */
+ * two half-cells into view. Only the selected method's equipment is at work.
+ * The `* 3` below MUST equal `equipFrames.inUse.length` (currently 3) — CSS
+ * cannot read that count from data/sprites.json, so
+ * tests/ui/sprite.test.ts asserts the two stay in sync (retiming/reframing that
+ * changes the frame count without touching this multiplier fails the build). */
 .crafting .card--selected .card__sprite--equip {
   animation: equip-inuse calc(var(--sprite-equip-frame) * 3) step-end infinite;
 }

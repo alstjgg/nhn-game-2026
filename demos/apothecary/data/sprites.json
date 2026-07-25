@@ -2,8 +2,36 @@
   "sheets": {
     "bg-shop": { "file": "bg-shop.png", "cols": 1, "rows": 1 },
     "ui-shelf": { "file": "ui-shelf.png", "cols": 1, "rows": 1 },
-    "ingredients-1": { "file": "ingredients-1.png", "cols": 4, "rows": 3 },
-    "ingredients-2": { "file": "ingredients-2.png", "cols": 4, "rows": 3 },
+    "ingredients-1": {
+      "file": "ingredients-1.png",
+      "cols": 4,
+      "rows": 3,
+      "contentRect": {
+        "imageW": 384,
+        "imageH": 256,
+        "cellW": 56,
+        "cellH": 72,
+        "originX": 52,
+        "originY": 19,
+        "pitchX": 74.6667,
+        "pitchY": 78
+      }
+    },
+    "ingredients-2": {
+      "file": "ingredients-2.png",
+      "cols": 4,
+      "rows": 3,
+      "contentRect": {
+        "imageW": 384,
+        "imageH": 256,
+        "cellW": 61,
+        "cellH": 82,
+        "originX": 54,
+        "originY": 15,
+        "pitchX": 72.6667,
+        "pitchY": 89.5
+      }
+    },
     "equip-teapot": { "file": "equip-teapot.png", "cols": 2, "rows": 2 },
     "equip-pot": { "file": "equip-pot.png", "cols": 2, "rows": 2 },
     "equip-mortar": { "file": "equip-mortar.png", "cols": 2, "rows": 2 },
@@ -47,10 +75,10 @@
   "potionCells": {
     "empty": [0, 0],
     "calm": [1, 0],
-    "clear": [2, 0],
-    "warm": [0, 1],
-    "bitter": [1, 1],
-    "murky": [2, 1]
+    "decoction": [2, 0],
+    "violet": [0, 1],
+    "murky": [1, 1],
+    "wrapped": [2, 1]
   },
   "defaultPotion": "empty"
 }

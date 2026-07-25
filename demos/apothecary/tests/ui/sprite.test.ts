@@ -21,6 +21,7 @@ import {
   SHEET_URLS,
   loadSpriteData,
   cellOffsets,
+  contentRectOffsets,
   spriteCell,
   stateForQuantity,
   ingredientSprite,
@@ -41,7 +42,17 @@ const CRAFTING_CSS = 'src/screens/crafting/crafting.css';
 const BASE_CSS = 'src/styles/base.css';
 const CARDS_CSS = 'src/styles/cards.css';
 
-interface RawSheet { file: string; cols: number; rows: number }
+interface RawContentRect {
+  imageW: number;
+  imageH: number;
+  cellW: number;
+  cellH: number;
+  originX: number;
+  originY: number;
+  pitchX: number;
+  pitchY: number;
+}
+interface RawSheet { file: string; cols: number; rows: number; contentRect?: RawContentRect }
 interface RawState { state: string; row: number; min: number }
 interface RawSprites {
   sheets: Record<string, RawSheet>;
@@ -142,6 +153,46 @@ describe('data/sprites.json: sheet metadata (AC1)', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// T1b — loadSpriteData() enforces the contract stateForQuantity() relies on
+// (PR #41 review, sprite.ts:335): `states.find((s) => quantity >= s.min)` is only
+// correct if `quantityStates` is strictly descending by `min`, the last band is a
+// `min: 0` catch-all, and every band's `row` exists on every sheet it can paint.
+// Previously only the *shipped data* happened to satisfy this; nothing enforced
+// it, so a well-meaning reorder would silently paint the wrong row.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('loadSpriteData(): quantityStates order/catch-all/row-range are enforced', () => {
+  it('rejects a quantityStates table that is not strictly descending by min', () => {
+    const broken = rawSprites() as unknown as RawSprites;
+    // Swap the two highest bands so `min` goes 3, 7, 0 instead of 7, 3, 0.
+    const [full, half, low] = broken.quantityStates;
+    broken.quantityStates = [half, full, low];
+    expect(() => loadSpriteData(broken)).toThrow(/sprites:.*quantityStates\[1\]\.min/);
+  });
+
+  it('rejects a quantityStates table whose lowest band is not min: 0', () => {
+    const broken = rawSprites() as unknown as RawSprites;
+    broken.quantityStates = broken.quantityStates.map((s, i) =>
+      i === broken.quantityStates.length - 1 ? { ...s, min: 1 } : s,
+    );
+    expect(() => loadSpriteData(broken)).toThrow(/sprites:.*min: 0.*catch-all/);
+  });
+
+  it('rejects a quantityStates row that is out of range for a sheet it actually paints', () => {
+    const broken = rawSprites() as unknown as RawSprites;
+    const sheetId = broken.ingredientCells[Object.keys(broken.ingredientCells)[0]].sheet;
+    const outOfRangeRow = broken.sheets[sheetId].rows; // one past the last valid row index
+    broken.quantityStates = broken.quantityStates.map((s, i) =>
+      i === 0 ? { ...s, row: outOfRangeRow } : s,
+    );
+    expect(() => loadSpriteData(broken)).toThrow(/sprites:.*quantityStates\[0\]\.row/);
+  });
+
+  it('still accepts the shipped data/sprites.json unchanged', () => {
+    expect(() => loadSpriteData(rawSprites())).not.toThrow();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // T2 — ingredient cell table is 1:1 with data/ingredients.json (order included)
 // ─────────────────────────────────────────────────────────────────────────────
 describe('data/sprites.json: ingredient cell table matches the ingredient data', () => {
@@ -230,12 +281,25 @@ describe('cellOffsets(): frozen percent-formula coordinate strings (AC1)', () =>
 });
 
 describe('spriteCell(): sheet id + cell → CSS style object (AC1)', () => {
-  it('resolves a real sheet to size/position/image/pixelated', () => {
-    const style = spriteCell('ingredients-1', 1, 1);
-    expect(style, 'spriteCell("ingredients-1",1,1) returned undefined').toBeDefined();
-    expect(style!.backgroundSize).toBe('400% 300%');
-    expect(style!.backgroundPosition).toBe('33.3333% 50%');
+  it('resolves a real sheet to size/position/image/pixelated (exact-grid sheet)', () => {
+    // equip-teapot has no `contentRect` — an exact 2×2 division — so this exercises
+    // spriteCell()'s plumbing independent of the ingredient sheets' measured geometry.
+    const style = spriteCell('equip-teapot', 1, 1);
+    expect(style, 'spriteCell("equip-teapot",1,1) returned undefined').toBeDefined();
+    expect(style!.backgroundSize).toBe('200% 200%');
+    expect(style!.backgroundPosition).toBe('100% 100%');
     // Bundled URL is hashed in dist and `/assets/…` in dev — only the stem is stable.
+    expect(style!.backgroundImage).toContain('equip-teapot');
+    expect(style!.imageRendering).toBe('pixelated');
+  });
+
+  it('resolves a `contentRect` sheet through contentRectOffsets(), not the plain grid division', () => {
+    const rect = rawSprites().sheets['ingredients-1'].contentRect;
+    expect(rect, "sheets['ingredients-1'].contentRect missing").toBeTruthy();
+    const style = spriteCell('ingredients-1', 1, 1);
+    const expected = contentRectOffsets(rect!, 1, 1)!;
+    expect(style!.backgroundSize).toBe(expected.backgroundSize);
+    expect(style!.backgroundPosition).toBe(expected.backgroundPosition);
     expect(style!.backgroundImage).toContain('ingredients-1');
     expect(style!.imageRendering).toBe('pixelated');
   });
@@ -261,12 +325,13 @@ describe('domain sprite helpers use the data tables (AC1)', () => {
       expect(style, `ingredientSprite('${ing.id}') returned undefined`).toBeDefined();
       const cell = ingredientCells[ing.id];
       const sheet = sheets[cell.sheet];
-      const expected = cellOffsets(
-        sheet.cols,
-        sheet.rows,
-        cell.col,
-        stateForQuantity(defaultQuantity).row,
-      )!;
+      const row = stateForQuantity(defaultQuantity).row;
+      // Every ingredient sheet ships a measured `contentRect` (T-content-rect below) —
+      // fall back to the plain division only for a sheet that doesn't declare one.
+      const expected =
+        sheet.contentRect !== undefined
+          ? contentRectOffsets(sheet.contentRect, cell.col, row)!
+          : cellOffsets(sheet.cols, sheet.rows, cell.col, row)!;
       expect(style!.backgroundPosition).toBe(expected.backgroundPosition);
       expect(style!.backgroundImage).toContain(cell.sheet);
     }
@@ -307,6 +372,96 @@ describe('domain sprite helpers use the data tables (AC1)', () => {
       const style = potionSprite(key);
       expect(style, `potionSprite('${key}') returned undefined`).toBeDefined();
       expect(style!.backgroundPosition).toBe(cellOffsets(3, 2, cell[0], cell[1])!.backgroundPosition);
+    }
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// T-content-rect — AC1/AC2: each ingredient cell's crop window actually contains
+// the whole jar, not a sliver of its neighbour (PR #41 review, sprite.ts:274).
+//
+// `background-image`/`background-size`/`background-position` are computed CSS
+// strings, not pixels — vitest runs `environment: 'node'` (no DOM, no canvas), so
+// this cannot re-derive the crop window by rendering. Instead it checks the crop
+// window *as pixels* (converting `contentRectOffsets()`'s percent formula back
+// with the sheet's own `imageW`/`imageH`) against the ingredients' actual alpha
+// bounding boxes, measured once, directly, off the shipped PNGs:
+//
+//   python3 -c "
+//   from PIL import Image; import numpy as np
+//   im = Image.open('assets/ingredients-1.png').convert('RGBA')
+//   a = np.array(im)[:, :, 3] > 0
+//   # column runs = np.where(a.any(axis=0))[0] contiguous runs; rows likewise.
+//   "
+//
+// giving column content ranges `[52,107) [127,182) [202,257) [276,331)` and row
+// content ranges `[19,90) [98,168) [175,244)` for ingredients-1.png, and column
+// `[54,114) [127,187) [200,260) [272,332)` / row `[15,96) [105,185) [194,249)`
+// for ingredients-2.png (both 384×256). If `data/sprites.json`'s `contentRect`
+// is ever retuned, this is what must still hold.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('ingredient sheets: measured content rect fully contains every jar (AC1/AC2)', () => {
+  interface Bbox { readonly x: [number, number]; readonly y: [number, number] }
+
+  // [start, end) pixel ranges of non-transparent content, per nominal column/row —
+  // measured directly off the alpha channel of the shipped PNGs (see module doc above).
+  const MEASURED: Record<string, { cols: Bbox['x'][]; rows: Bbox['y'][] }> = {
+    'ingredients-1': {
+      cols: [[52, 107], [127, 182], [202, 257], [276, 331]],
+      rows: [[19, 90], [98, 168], [175, 244]],
+    },
+    'ingredients-2': {
+      cols: [[54, 114], [127, 187], [200, 260], [272, 332]],
+      rows: [[15, 96], [105, 185], [194, 249]],
+    },
+  };
+
+  /** The crop window `contentRectOffsets()` actually produces, back in pixels. */
+  function cropWindow(
+    rect: RawContentRect,
+    col: number,
+    row: number,
+  ): { x: [number, number]; y: [number, number] } {
+    const offsets = contentRectOffsets(rect, col, row)!;
+    const [posXPct, posYPct] = offsets.backgroundPosition.split(' ').map((s) => parseFloat(s));
+    const spanX = rect.imageW - rect.cellW;
+    const spanY = rect.imageH - rect.cellH;
+    const startX = spanX > 0 ? (posXPct / 100) * spanX : 0;
+    const startY = spanY > 0 ? (posYPct / 100) * spanY : 0;
+    return { x: [startX, startX + rect.cellW], y: [startY, startY + rect.cellH] };
+  }
+
+  // `percent()` rounds to 4 decimals before the test parses the string back to a
+  // pixel offset, so a window that lands exactly on a content edge can round-trip
+  // ~0.0002px "short" — nowhere near a real clip (sub-pixel, invisible at any
+  // realistic display size), but enough to fail a bit-exact comparison. Tolerate it.
+  const EPSILON_PX = 0.01;
+
+  it.each(Object.keys(MEASURED))('%s: every (col, row) crop window ⊇ the measured jar bbox', (sheetId) => {
+    const sheet = rawSprites().sheets[sheetId];
+    const rect = sheet.contentRect;
+    expect(rect, `sheets['${sheetId}'].contentRect missing`).toBeTruthy();
+    const { cols, rows } = MEASURED[sheetId];
+
+    for (let row = 0; row < rows.length; row += 1) {
+      for (let col = 0; col < cols.length; col += 1) {
+        const window = cropWindow(rect!, col, row);
+        const [contentX0, contentX1] = cols[col];
+        const [contentY0, contentY1] = rows[row];
+        const label = `${sheetId}(col=${col},row=${row})`;
+        expect(window.x[0], `${label}: crop left ${window.x[0]} clips content left ${contentX0}`).toBeLessThanOrEqual(contentX0 + EPSILON_PX);
+        expect(window.x[1], `${label}: crop right ${window.x[1]} clips content right ${contentX1}`).toBeGreaterThanOrEqual(contentX1 - EPSILON_PX);
+        expect(window.y[0], `${label}: crop top ${window.y[0]} clips content top ${contentY0}`).toBeLessThanOrEqual(contentY0 + EPSILON_PX);
+        expect(window.y[1], `${label}: crop bottom ${window.y[1]} clips content bottom ${contentY1}`).toBeGreaterThanOrEqual(contentY1 - EPSILON_PX);
+      }
+    }
+  });
+
+  it('ingredientCells actually point at the measured sheets (no silent drift)', () => {
+    const { ingredientCells } = rawSprites();
+    const sheetIds = new Set(Object.values(ingredientCells).map((c) => c.sheet));
+    for (const sheetId of sheetIds) {
+      expect(Object.hasOwn(MEASURED, sheetId), `no measured bbox fixture for '${sheetId}'`).toBe(true);
     }
   });
 });
@@ -482,6 +637,18 @@ describe('crafting.css: equipment in-use loop is driven by the data frames (D4)'
     expect(Number(m![1])).toBe(rawSprites().equipFrameMs);
   });
 
+  it('the loop duration multiplier (`--sprite-equip-frame * N`) equals equipFrames.inUse.length', () => {
+    // PR #41 review (crafting.css:173): the `* 3` is really `inUse.length` — nothing
+    // ties it to the data, so a 4th in-use frame would paint correctly (previous test)
+    // but play back at the wrong speed with no red test. Guard the multiplier itself.
+    const css = read(CRAFTING_CSS);
+    const m = css.match(
+      /\.card--selected\s+\.card__sprite--equip\s*\{[^}]*animation:\s*equip-inuse\s+calc\(\s*var\(--sprite-equip-frame\)\s*\*\s*(\d+)\s*\)/,
+    );
+    expect(m, 'no `calc(var(--sprite-equip-frame) * <n>)` animation duration found').not.toBeNull();
+    expect(Number(m![1])).toBe(rawSprites().equipFrames.inUse.length);
+  });
+
   it('animates only the selected method card sprite', () => {
     const css = read(CRAFTING_CSS);
     expect(/\.card__sprite--equip\b/.test(css), 'no .card__sprite--equip rule').toBe(true);
@@ -522,6 +689,27 @@ describe('CSS skin: the asset pack is actually referenced (AC2 static half)', ()
       expect(/url\(\s*['"]?https?:/i.test(css), `${f} references a remote url()`).toBe(false);
       expect(/@import\s+(?:url\()?\s*['"]?https?:/i.test(css), `${f} has a remote @import`).toBe(false);
     }
+  });
+
+  // PR #41 review (data/sprites.json:3): `bg-shop`/`ui-shelf` are registered as
+  // `sheets` entries (so their file existing/getting bundled is still proven, see
+  // T9 in the fallback describe below) but base.css/crafting.css paint them via a
+  // hardcoded `url()`, not `spriteCell()`. That's two independent spellings of the
+  // same filename with no code path forcing them to agree — a rename in
+  // sprites.json alone would leave the CSS 404ing with nothing red. Pin the CSS
+  // filename to `sheets['<id>'].file` so the two can't silently drift apart.
+  it("base.css's bg-shop url matches sheets['bg-shop'].file (no CSS/data drift)", () => {
+    const { sheets } = rawSprites();
+    const m = read(BASE_CSS).match(/url\(\s*['"]?[^)'"]*\/(bg-shop\.png)['"]?\s*\)/);
+    expect(m, 'base.css has no bg-shop.png url()').not.toBeNull();
+    expect(m![1]).toBe(sheets['bg-shop'].file);
+  });
+
+  it("crafting.css's ui-shelf url matches sheets['ui-shelf'].file (no CSS/data drift)", () => {
+    const { sheets } = rawSprites();
+    const m = read(CRAFTING_CSS).match(/url\(\s*['"]?[^)'"]*\/(ui-shelf\.png)['"]?\s*\)/);
+    expect(m, 'crafting.css has no ui-shelf.png url()').not.toBeNull();
+    expect(m![1]).toBe(sheets['ui-shelf'].file);
   });
 });
 

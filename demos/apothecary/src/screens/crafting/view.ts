@@ -92,7 +92,11 @@ export function buildCraftingView(
   root.appendChild(beatElement);
 
   // The vessel the brew goes into — the potions sheet's empty-bottle cell (u7).
-  // Decorative: it mirrors the crafting state, it is never a control.
+  // Decorative and static: it is painted once at build time and never repainted
+  // as the outcome resolves (the `Outcome` schema's `channel`/`text` fields carry
+  // no vocabulary that maps to a `potionCells` key — that mapping is a data-model
+  // decision for whichever unit owns `data/outcomes.json`, not this one). It is
+  // never a control either way.
   const vesselStyle = potionSprite();
   if (vesselStyle !== undefined) {
     const vessel = document.createElement('div');

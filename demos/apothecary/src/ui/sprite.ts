@@ -23,11 +23,37 @@ import rawSpriteData from '../../data/sprites.json';
 /** A cell address inside a sheet: `[col, row]`. */
 export type Cell = readonly [number, number];
 
+/**
+ * A sheet's real content geometry, for sheets whose cells are NOT an exact
+ * `imageW/cols × imageH/rows` division (e.g. the ingredient jars, which were
+ * measured directly off the generated PNG's alpha channel — see
+ * `tests/ui/sprite.test.ts` "ingredient sheets: measured content rect" for the
+ * source bounding boxes). `col`/`row` still index the same grid as `cols`/`rows`;
+ * only the pixel math changes. Optional: a sheet without one keeps the plain
+ * `cellOffsets(cols, rows, col, row)` division (equip/potions/1×1 sheets).
+ */
+export interface ContentRect {
+  /** Full sheet pixel dimensions (not the nominal cell size). */
+  readonly imageW: number;
+  readonly imageH: number;
+  /** The crop window's fixed pixel size — big enough to hold every cell's content. */
+  readonly cellW: number;
+  readonly cellH: number;
+  /** Top-left pixel of cell (0, 0)'s crop window. */
+  readonly originX: number;
+  readonly originY: number;
+  /** Pixel distance between consecutive cells' crop windows on each axis. */
+  readonly pitchX: number;
+  readonly pitchY: number;
+}
+
 export interface SheetMeta {
   /** Basename of the file in `assets/` — the key into `SHEET_URLS`. */
   readonly file: string;
   readonly cols: number;
   readonly rows: number;
+  /** Measured crop geometry, when the sheet isn't an exact equal-division grid. */
+  readonly contentRect?: ContentRect;
 }
 
 export interface IngredientCell {
@@ -135,6 +161,42 @@ function requireKnownSheet(
   return id;
 }
 
+/** Positive pixel dimension: the geometry fields of a content rect are never 0. */
+function requirePixels(v: unknown, field: string): number {
+  if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
+    throw err(`field '${field}' must be a positive number (got ${String(v)})`);
+  }
+  return v;
+}
+
+/** Non-negative pixel offset: origins/pitches may legitimately be 0. */
+function requirePixelOffset(v: unknown, field: string): number {
+  if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) {
+    throw err(`field '${field}' must be a non-negative number (got ${String(v)})`);
+  }
+  return v;
+}
+
+function requireContentRect(v: unknown, field: string): ContentRect {
+  const r = requireRecord(v, field);
+  const imageW = requirePixels(r.imageW, `${field}.imageW`);
+  const imageH = requirePixels(r.imageH, `${field}.imageH`);
+  const cellW = requirePixels(r.cellW, `${field}.cellW`);
+  const cellH = requirePixels(r.cellH, `${field}.cellH`);
+  if (cellW > imageW) throw err(`field '${field}.cellW' (${cellW}) exceeds imageW (${imageW})`);
+  if (cellH > imageH) throw err(`field '${field}.cellH' (${cellH}) exceeds imageH (${imageH})`);
+  return {
+    imageW,
+    imageH,
+    cellW,
+    cellH,
+    originX: requirePixelOffset(r.originX, `${field}.originX`),
+    originY: requirePixelOffset(r.originY, `${field}.originY`),
+    pitchX: requirePixelOffset(r.pitchX, `${field}.pitchX`),
+    pitchY: requirePixelOffset(r.pitchY, `${field}.pitchY`),
+  };
+}
+
 /** Validate a raw `data/sprites.json` payload into the frozen sprite tables. */
 export function loadSpriteData(input: unknown): SpriteData {
   if (!isRecord(input)) throw err(`must be an object (got ${typeName(input)})`);
@@ -147,6 +209,9 @@ export function loadSpriteData(input: unknown): SpriteData {
       file: requireString(meta.file, `sheets['${id}'].file`),
       cols: requireCount(meta.cols, `sheets['${id}'].cols`),
       rows: requireCount(meta.rows, `sheets['${id}'].rows`),
+      ...(meta.contentRect !== undefined
+        ? { contentRect: requireContentRect(meta.contentRect, `sheets['${id}'].contentRect`) }
+        : {}),
     };
   }
   if (Object.keys(sheets).length < 1) throw err(`field 'sheets' declares no sheet`);
@@ -174,6 +239,42 @@ export function loadSpriteData(input: unknown): SpriteData {
       min: requireIndex(s.min, `quantityStates[${i}].min`),
     };
   });
+
+  // stateForQuantity() walks this table with `states.find((s) => quantity >= s.min)`,
+  // which is only correct if the bands are strictly descending by `min` and the last
+  // one is a `min: 0` catch-all — enforce the contract the comment only used to state.
+  quantityStates.forEach((s, i) => {
+    if (i === 0) return;
+    const prev = quantityStates[i - 1];
+    if (s.min >= prev.min) {
+      throw err(
+        `field 'quantityStates[${i}].min' (${s.min}) must be less than ` +
+          `quantityStates[${i - 1}].min (${prev.min}) — the table must be strictly ` +
+          `descending by 'min'`,
+      );
+    }
+  });
+  const lowestBand = quantityStates[quantityStates.length - 1];
+  if (lowestBand.min !== 0) {
+    throw err(
+      `field 'quantityStates' must end with a 'min: 0' catch-all band ` +
+        `(last band is '${lowestBand.state}' with min ${lowestBand.min})`,
+    );
+  }
+  // Every band's `row` must exist on every sheet a quantity band can actually paint —
+  // i.e. every sheet an ingredient cell points at.
+  const ingredientSheetIds = new Set(Object.values(ingredientCells).map((c) => c.sheet));
+  for (const sheetId of ingredientSheetIds) {
+    const sheet = sheets[sheetId];
+    quantityStates.forEach((s, i) => {
+      if (s.row >= sheet.rows) {
+        throw err(
+          `field 'quantityStates[${i}].row' (${s.row}) is out of range for sheet ` +
+            `'${sheetId}' (rows=${sheet.rows})`,
+        );
+      }
+    });
+  }
 
   const rawEquip = requireRecord(input.methodEquip, 'methodEquip');
   const methodEquip: Record<string, string> = {};
@@ -291,6 +392,38 @@ export function cellOffsets(
   };
 }
 
+/**
+ * The CSS background offsets for one cell of a sheet whose cells are a measured
+ * `ContentRect`, not an exact equal-division grid (AC1/AC2 fix — see review thread
+ * on `cellOffsets()`: the ingredient sheets' jars don't sit on `imageW/cols ×
+ * imageH/rows` boundaries).
+ *
+ * Same percentage-positioning technique as `cellOffsets()`, generalized: the crop
+ * window is `cellW × cellH` pixels starting at `(originX + col*pitchX, originY +
+ * row*pitchY)`. With `origin=0` and `pitch=cellW=imageW/cols` this reduces to
+ * exactly `cellOffsets()`'s formula, so `cellOffsets()` itself needn't change for
+ * the sheets that ARE an exact grid (equip/potions/1×1 backdrops).
+ */
+export function contentRectOffsets(
+  rect: ContentRect,
+  col: number,
+  row: number,
+): CellOffsets | undefined {
+  const spanX = rect.imageW - rect.cellW;
+  const spanY = rect.imageH - rect.cellH;
+  const offsetX = rect.originX + col * rect.pitchX;
+  const offsetY = rect.originY + row * rect.pitchY;
+  const posX = spanX > 0 ? (offsetX / spanX) * FULL_PERCENT : 0;
+  const posY = spanY > 0 ? (offsetY / spanY) * FULL_PERCENT : 0;
+
+  return {
+    backgroundSize: `${percent((rect.imageW / rect.cellW) * FULL_PERCENT)} ${percent(
+      (rect.imageH / rect.cellH) * FULL_PERCENT,
+    )}`,
+    backgroundPosition: `${percent(posX)} ${percent(posY)}`,
+  };
+}
+
 // ── Sheet-level resolution ───────────────────────────────────────────────────
 
 const PIXELATED = 'pixelated';
@@ -314,7 +447,15 @@ export function spriteCell(
   const url = urls[sheet.file];
   if (url === '') return undefined;
 
-  const offsets = cellOffsets(sheet.cols, sheet.rows, col, row);
+  // Range-check against the logical grid first — a ContentRect sheet still has
+  // `cols`/`rows` bounds even though its pixel math doesn't divide the sheet
+  // evenly, and out-of-range must still be a no-op (AC4), not an extrapolated crop.
+  if (!isCellIndex(col, sheet.cols) || !isCellIndex(row, sheet.rows)) return undefined;
+
+  const offsets =
+    sheet.contentRect !== undefined
+      ? contentRectOffsets(sheet.contentRect, col, row)
+      : cellOffsets(sheet.cols, sheet.rows, col, row);
   if (offsets === undefined) return undefined;
 
   return {
