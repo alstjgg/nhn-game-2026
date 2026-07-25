@@ -1,16 +1,50 @@
 # asset-gen — Darkest Context 데모 asset 도구
 
-`demos/darkest-context/assets/` 팩 생성의 1단계인 **스타일 테스트** 도구.
-시트 구성·픽셀 파이프라인은 [PRD §2.8](../../PRD.md)에 동결되어 있다.
+`demos/darkest-context/assets/` 팩 생성 도구: 스타일 테스트(`style-test.mjs`, 완료)와
+본 팩 생성기(`generate-pack.mjs`). 시트 구성·픽셀 파이프라인은
+[PRD §2.8](../../PRD.md)에 동결되어 있다.
 **파이프라인 런 중에 에이전트가 돌리는 물건이 아니다** — 런 전에 사람이 실행한다.
 
 ## 진행 순서 (playability guide §3)
 
-1. **스타일 테스트** (`style-test.mjs`, 이 문서) — 후보 4종 × 1시트 → 사람이 승자 선택
-2. 승자 문장을 `data/generation.json`의 `styleBible`에 기록
-   (`styleBibleStatus: "provisional"`이면 본 팩 생성 전 재검토)
-3. 본 팩 생성기(`generate-pack.mjs`, 스타일 확정 후 작성) — 10콜 → 검수 → `assets/` 복사 → manifest
+1. ~~**스타일 테스트** — 후보 4종 × 1시트 → 사람이 승자 선택~~ ✅ 2026-07-25, A 선정
+2. ~~승자 문장을 `data/generation.json`의 `styleBible`에 기록~~ ✅ frozen (A verbatim)
+3. **본 팩 생성기 실행** (`generate-pack.mjs`, 아래) — 10콜 → 검수 → `assets/` 복사 → manifest ← **지금 여기**
 4. proxy/adapter + `ai-smoke` PASS → 런 시작
+
+## 본 팩 생성 (generate-pack.mjs)
+
+PRD §2.8의 asset 10종을 생성한다. 스타일 문장과 keyed 프롬프트 가드는
+`data/generation.json`에서 읽고 (`styleBibleStatus: "frozen"`이 아니면 실행 거부),
+키잉은 `key-background.mjs` 파이프라인(코너 검증 → 경계 flood-fill → strict 정리 →
+÷4)을 그대로 쓴다. 비용: 10콜, `gpt-image-1` quality=low ≈ **총 $0.2 안팎**, 소요 3–7분.
+
+```bash
+cd demos/darkest-context/tools/asset-gen
+npm install
+OPENAI_API_KEY=sk-... node generate-pack.mjs
+OPENAI_API_KEY=... node generate-pack.mjs --only hero-fiona   # 재생성
+node generate-pack.mjs --reprocess                            # API 없이 raw 재키잉
+```
+
+id 목록: `bg-dungeon` · `hero-garrett` · `hero-fiona` · `hero-selene` ·
+`mob-spam-golem` · `mob-halluc-wisp` · `ui-bubble` · `ui-card-frame` ·
+`card-icons` · `ui-vial`
+
+### 생성 후 체크리스트
+
+1. `out-pack/*.png` 눈으로 검수:
+   - 영웅 시트: 걷기 행 4프레임 몸통 위치 고정 (`steps(4)` 전제 — 최우선) ·
+     게이지 행 4단이 순서대로 읽히는가 · 방어 포즈 구분 (must-prove #2) · 12칸 동일 인물
+   - 몬스터 시트: 공격 3프레임 위치 고정 (`steps(3)` 전제) · idle/피격/사망 구분
+   - `bg-dungeon`: 좌우 이어붙였을 때 이음새가 없는가
+   - `card-icons`: 12칸 순서가 코드 주석의 카드 순서와 일치하는가
+   - 컬러키: 가장자리 마젠타 잔티 (불량 → `--only`로 재생성)
+2. 통과분을 `demos/darkest-context/assets/`로 복사 (파일명 그대로, `out-pack/` 자체는 커밋 금지 — .gitignore가 막음).
+3. 리포 루트 `assets-manifest.json`에 파일마다 항목 추가 — `summary.md`의 프롬프트를
+   **verbatim**으로 `prompt` 필드에: `{file, tool: "gpt-image-1", prompt, license:
+   "generated for this project"}` (CLAUDE.md rule 5, 예외 없음).
+4. asset PR 생성 (raw 커밋 금지, 증적 이미지는 PR 코멘트 첨부).
 
 ## 스타일 테스트 요구사항
 
@@ -48,10 +82,11 @@ OPENAI_API_KEY=... node style-test.mjs --only C
 
 ## 현재 선택 상태
 
-- 2026-07-25: 후보 **A**를 첫 스타일 테스트의 현재 기준선으로 선택했다.
-- 이 선택은 최종 동결이 아니다. `data/generation.json`의
-  `styleBibleStatus: "provisional"` 및 `styleBibleRevisionPlanned: true`를 유지하고,
-  본 팩 생성기 작성·실행 전에 `styleBible` 문장을 개선한다.
+- 2026-07-25: 후보 **A**를 선택하고 **동결**했다 (`styleBibleStatus: "frozen"`).
+- A verbatim 유지 근거: 던전 무드는 팔레트 구속 문장이 아니라 소재 프롬프트(횃불·뼈·
+  고딕 소품)로 낸다 — 팔레트 구속형 후보(B–D)는 1라운드에서 기술용 마젠타 배경과
+  충돌했고, 10콜 전체의 톤 일관성 리스크도 크다. apothecary(Style E 동일 문장)와
+  bake-off에서 한 시리즈로 보이는 부수 효과도 있다.
 
 ## 판정 체크리스트
 
