@@ -8,6 +8,13 @@ import { describe, it, expect } from 'vitest';
 import customersData from '../../data/customers.json';
 import ingredientsData from '../../data/ingredients.json';
 import outcomesData from '../../data/outcomes.json';
+// PR #33 (R1 on this file, line 437): the third customer — a whole customer this
+// run ships as DATA — lives here, not in customers.json. Every invariant below
+// that is about the content the shell PLAYS therefore iterates the same list the
+// app builds (src/app/roster.ts): the two seeded customers plus this one. Proven
+// by mutation: c3's `direct` cost 2 -> 7 (budget 4) used to keep the whole gate
+// green while customer 3's second beat became unreachable in the browser.
+import fallbackNpcsData from '../../data/fallback-npcs.json';
 // u6 — verb costs are balance-as-data: generation.json is the SINGLE SOURCE. No
 // numeric literal for a verb cost may appear below except in #14/T17, which exists
 // precisely to pin that single source against drift.
@@ -33,7 +40,11 @@ import type {
 // constraint enforced here, not by the type system. See DISCOVERY.md. ──────────
 const METHODS = ['우리기', '달이기', '빻기'] as const;
 const DECLARATIONS = ['정석', '실험'] as const;
-const CHANNEL_BY_CUSTOMER: Record<string, string> = { c1: '재방문', c2: '문앞 쪽지' };
+const CHANNEL_BY_CUSTOMER: Record<string, string> = {
+  c1: '재방문',
+  c2: '문앞 쪽지',
+  c3: '문앞 쪽지',
+};
 const HANGUL = /[가-힣]/;
 const ID_RE = /^[a-z0-9_]+$/;
 
@@ -43,11 +54,30 @@ const customers: Customer[] = loadCustomers(customersData);
 const ingredients: Ingredient[] = loadIngredients(ingredientsData);
 const tables = loadOutcomes(outcomesData);
 
+// ── The roster the shell actually plays (src/app/roster.ts) ────────────────────
+// `customers` stays the customers.json slice (the #1 [F1] shape checks are about
+// that file). `playedCustomers` / `playedTables` / `playedIds` are what every
+// content invariant iterates, so the generated slot's bundled stand-in is covered
+// by the same gates as the seeded pair — through the same real loaders.
+const packCustomer: Customer = loadCustomers([fallbackNpcsData.customer])[0];
+const packTables = loadOutcomes({ [packCustomer.id]: fallbackNpcsData.outcomeTable });
+const playedCustomers: Customer[] = [...customers, packCustomer];
+const playedTables: Record<string, OutcomeTable> = { ...tables, ...packTables };
+const playedIds: readonly string[] = playedCustomers.map((c) => c.id);
+
 const ingredientIds = new Set(ingredients.map((i) => i.id));
 
-/** All outcomes for a customer table = every entry outcome + the required default. */
+/**
+ * Every outcome a customer table can produce: the entries, the required default,
+ * and (PR #33, R3) the optional `nearMiss` line — so the near-miss prose is held
+ * to the same channel / length / Hangul / trigger-shape rules as the rest.
+ */
 function allOutcomes(table: OutcomeTable): Outcome[] {
-  return [...table.entries.map((e) => e.outcome), table.default];
+  return [
+    ...table.entries.map((e) => e.outcome),
+    table.default,
+    ...(table.nearMiss === undefined ? [] : [table.nearMiss]),
+  ];
 }
 
 // ── u6 multi-verb constants ────────────────────────────────────────────────────
@@ -69,7 +99,7 @@ const CORE_VERBS: readonly ChoiceVerb[] = ['indirect', 'direct', 'observe'];
 const CRAFT_LABEL_TOKEN = '조제';
 
 /** Every choice of every node of every customer, flat. */
-const allChoices: Choice[] = customers.flatMap((c) => c.dialogueNodes.flatMap((n) => n.choices));
+const allChoices: Choice[] = playedCustomers.flatMap((c) => c.dialogueNodes.flatMap((n) => n.choices));
 
 function choicesWithVerb(verb: ChoiceVerb): Choice[] {
   return allChoices.filter((ch) => ch.verb === verb);
@@ -121,7 +151,7 @@ describe('#3 [F3] outcomes.json exposes c1 & c2 tables each with a default outco
 // ── #4 [F5] — numeric patienceCost on every choice; [관찰] resolves to cost 0 ──
 describe('#4 [F5] every choice has a numeric patienceCost; [관찰] observation is cost 0', () => {
   it('every dialogue choice has a numeric patienceCost', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       for (const node of c.dialogueNodes) {
         for (const choice of node.choices) {
           expect(typeof choice.patienceCost).toBe('number');
@@ -131,7 +161,7 @@ describe('#4 [F5] every choice has a numeric patienceCost; [관찰] observation 
     }
   });
   it('every [관찰] choice has patienceCost 0', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       for (const node of c.dialogueNodes) {
         for (const choice of node.choices) {
           if (choice.label.includes('관찰')) {
@@ -142,7 +172,7 @@ describe('#4 [F5] every choice has a numeric patienceCost; [관찰] observation 
     }
   });
   it('every customer has at least one [관찰] observation choice', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       const observeChoices = c.dialogueNodes
         .flatMap((n) => n.choices)
         .filter((ch) => ch.label.includes('관찰'));
@@ -153,9 +183,9 @@ describe('#4 [F5] every choice has a numeric patienceCost; [관찰] observation 
 
 // ── #5 [C2] — every outcome text ≤ 80 chars ────────────────────────────────────
 describe('#5 [C2] every outcome text (entries + defaults, both customers) is ≤ 80 chars', () => {
-  for (const cid of ['c1', 'c2']) {
+  for (const cid of playedIds) {
     it(`${cid} outcomes are all ≤ 80 chars`, () => {
-      for (const o of allOutcomes(tables[cid])) {
+      for (const o of allOutcomes(playedTables[cid])) {
         expect(o.text.length).toBeLessThanOrEqual(80);
       }
     });
@@ -164,9 +194,9 @@ describe('#5 [C2] every outcome text (entries + defaults, both customers) is ≤
 
 // ── #6 [C3] — per-customer channel: c1 재방문, c2 문앞 쪽지 ─────────────────────
 describe('#6 [C3] every outcome uses its customer channel (c1 재방문 / c2 문앞 쪽지)', () => {
-  for (const cid of ['c1', 'c2']) {
+  for (const cid of playedIds) {
     it(`every ${cid} outcome uses channel ${CHANNEL_BY_CUSTOMER[cid]}`, () => {
-      for (const o of allOutcomes(tables[cid])) {
+      for (const o of allOutcomes(playedTables[cid])) {
         expect(o.channel).toBe(CHANNEL_BY_CUSTOMER[cid]);
       }
     });
@@ -176,7 +206,7 @@ describe('#6 [C3] every outcome uses its customer channel (c1 재방문 / c2 문
 // ── #7 [C1] — Hangul in game-facing text; ids/triggers are ASCII English ───────
 describe('#7 [C1] game-facing text is Korean; ids & triggers are ASCII English', () => {
   it('customer name & problem, npc lines, choice labels, clue text contain Hangul', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       expect(c.name).toMatch(HANGUL);
       expect(c.problem).toMatch(HANGUL);
       for (const node of c.dialogueNodes) {
@@ -196,14 +226,14 @@ describe('#7 [C1] game-facing text is Korean; ids & triggers are ASCII English',
     }
   });
   it('every outcome text contains Hangul', () => {
-    for (const cid of ['c1', 'c2']) {
-      for (const o of allOutcomes(tables[cid])) {
+    for (const cid of playedIds) {
+      for (const o of allOutcomes(playedTables[cid])) {
         expect(o.text).toMatch(HANGUL);
       }
     }
   });
   it('customer, ingredient and clue ids are ASCII English (^[a-z0-9_]+$)', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       expect(c.id).toMatch(ID_RE);
       for (const clue of c.observationClues) {
         expect(clue.id).toMatch(ID_RE);
@@ -214,8 +244,8 @@ describe('#7 [C1] game-facing text is Korean; ids & triggers are ASCII English',
     }
   });
   it('every arrivalTrigger is an ASCII English machine token (^[a-z0-9_]+$)', () => {
-    for (const cid of ['c1', 'c2']) {
-      for (const o of allOutcomes(tables[cid])) {
+    for (const cid of playedIds) {
+      for (const o of allOutcomes(playedTables[cid])) {
         expect(o.arrivalTrigger).toMatch(ID_RE);
       }
     }
@@ -224,26 +254,26 @@ describe('#7 [C1] game-facing text is Korean; ids & triggers are ASCII English',
 
 // ── #8 [F4/R4] — ≥1 non-default entry per customer; unlisted combo → default ───
 describe('#8 [F4/R4] each customer has intended entries and no dead-ends', () => {
-  for (const cid of ['c1', 'c2']) {
+  for (const cid of playedIds) {
     it(`${cid} has at least one non-default lookup entry`, () => {
-      expect(tables[cid].entries.length).toBeGreaterThanOrEqual(1);
+      expect(playedTables[cid].entries.length).toBeGreaterThanOrEqual(1);
     });
     it(`${cid}: an unlisted combination resolves to default via the real resolver`, () => {
-      const bogus = resolveOutcome(tables[cid], {
+      const bogus = resolveOutcome(playedTables[cid], {
         ingredientIds: ['__no_such_ingredient__'],
         method: '우리기',
         declaration: '정석',
       });
-      expect(bogus).toBe(tables[cid].default);
+      expect(bogus).toBe(playedTables[cid].default);
     });
   }
 });
 
 // ── #9 [R1] — every referenced ingredient id exists in ingredients.json ────────
 describe('#9 [R1] every ingredient id in outcomes.json exists in ingredients.json', () => {
-  for (const cid of ['c1', 'c2']) {
+  for (const cid of playedIds) {
     it(`${cid} entry ingredient ids all resolve to a known ingredient`, () => {
-      for (const entry of tables[cid].entries) {
+      for (const entry of playedTables[cid].entries) {
         for (const id of entry.ingredients) {
           expect(ingredientIds.has(id)).toBe(true);
         }
@@ -254,9 +284,9 @@ describe('#9 [R1] every ingredient id in outcomes.json exists in ingredients.jso
 
 // ── Bonus [PRD §2] — crafting picks 1–3 ingredient cards per entry ─────────────
 describe('[PRD §2] every entry uses between 1 and 3 ingredients (pick 1–3 ingredient cards)', () => {
-  for (const cid of ['c1', 'c2']) {
+  for (const cid of playedIds) {
     it(`${cid} entries each have 1 to 3 ingredients`, () => {
-      for (const entry of tables[cid].entries) {
+      for (const entry of playedTables[cid].entries) {
         expect(entry.ingredients.length).toBeGreaterThanOrEqual(1);
         expect(entry.ingredients.length).toBeLessThanOrEqual(3);
       }
@@ -266,9 +296,9 @@ describe('[PRD §2] every entry uses between 1 and 3 ingredients (pick 1–3 ing
 
 // ── #10 [C4] — method ∈ METHODS, declaration ∈ DECLARATIONS ────────────────────
 describe('#10 [C4] every entry uses a valid method and declaration', () => {
-  for (const cid of ['c1', 'c2']) {
+  for (const cid of playedIds) {
     it(`${cid} entries use method ∈ METHODS and declaration ∈ DECLARATIONS`, () => {
-      for (const entry of tables[cid].entries) {
+      for (const entry of playedTables[cid].entries) {
         expect(METHODS).toContain(entry.method as (typeof METHODS)[number]);
         expect(DECLARATIONS).toContain(entry.declaration as (typeof DECLARATIONS)[number]);
       }
@@ -292,7 +322,7 @@ describe('#11 [C7] real loaders run against the shipped data files without throw
 // ── Bonus [R3] — every clueReveals id belongs to that customer's clue namespace ─
 describe('[R3] every clueReveals id exists in that customer observationClues set', () => {
   it('choice clueReveals ⊆ customer observationClues ids', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       const clueIds = new Set(c.observationClues.map((cl) => cl.id));
       for (const node of c.dialogueNodes) {
         for (const choice of node.choices) {
@@ -307,9 +337,9 @@ describe('[R3] every clueReveals id exists in that customer observationClues set
 
 // ── Bonus [F4 sorted] — authored ingredient id lists are pre-sorted ────────────
 describe('[F4] every entry ingredient id list is authored already sorted', () => {
-  for (const cid of ['c1', 'c2']) {
+  for (const cid of playedIds) {
     it(`${cid} entry ingredient lists equal their own sorted copy`, () => {
-      for (const entry of tables[cid].entries) {
+      for (const entry of playedTables[cid].entries) {
         expect(entry.ingredients).toEqual([...entry.ingredients].sort());
       }
     });
@@ -332,13 +362,13 @@ describe('#12 [F-verb] every dialogueNode offers 3–4 choices spanning indirect
   // "the only node", so #13 would silently stop checking the AC#2 position
   // requirement it exists for. Pinning n >= 2 here keeps that premise true.
   it('every customer has at least two dialogue nodes (so "penultimate onward" is meaningful)', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       expect(c.dialogueNodes.length).toBeGreaterThanOrEqual(2);
     }
   });
 
   it('every dialogueNode has between 3 and 4 choices', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       c.dialogueNodes.forEach((node, i) => {
         expect(
           node.choices.length,
@@ -356,7 +386,7 @@ describe('#12 [F-verb] every dialogueNode offers 3–4 choices spanning indirect
   });
 
   it('every dialogueNode covers all three core verbs (indirect, direct, observe)', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       c.dialogueNodes.forEach((node, i) => {
         const verbs = new Set(node.choices.map((ch) => ch.verb));
         for (const required of CORE_VERBS) {
@@ -370,7 +400,7 @@ describe('#12 [F-verb] every dialogueNode offers 3–4 choices spanning indirect
   });
 
   it('no dialogueNode offers the same verb twice for the core verbs', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       for (const node of c.dialogueNodes) {
         for (const required of CORE_VERBS) {
           const n = node.choices.filter((ch) => ch.verb === required).length;
@@ -381,7 +411,7 @@ describe('#12 [F-verb] every dialogueNode offers 3–4 choices spanning indirect
   });
 
   it('no two choices inside one node share a label (copy-paste detector)', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       for (const node of c.dialogueNodes) {
         const labels = node.choices.map((ch) => ch.label);
         expect(new Set(labels).size).toBe(labels.length);
@@ -393,7 +423,7 @@ describe('#12 [F-verb] every dialogueNode offers 3–4 choices spanning indirect
 // ── #13 [F-craft] T15 — [조제하러 가기] is reachable from the penultimate node ──
 describe('#13 [F-craft] a craft choice exists from the penultimate node onward', () => {
   it('every node from dialogueNodes[N-2] to the last has exactly one craft choice', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       const n = c.dialogueNodes.length;
       const from = Math.max(0, n - 2);
       for (let i = from; i < n; i += 1) {
@@ -404,7 +434,7 @@ describe('#13 [F-craft] a craft choice exists from the penultimate node onward',
   });
 
   it("the last node always offers the craft exit (no conversational dead-end)", () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       const last = c.dialogueNodes[c.dialogueNodes.length - 1];
       expect(last.choices.some((ch) => ch.verb === 'craft')).toBe(true);
     }
@@ -435,7 +465,7 @@ describe('#14 [B1] every patienceCost equals generation.json verbCosts[verb]', (
 
   it('every authored choice cost === verbCosts[its verb]', () => {
     const costTable: Record<ChoiceVerb, number> = generationData.verbCosts;
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       c.dialogueNodes.forEach((node, i) => {
         for (const ch of node.choices) {
           expect(
@@ -449,7 +479,7 @@ describe('#14 [B1] every patienceCost equals generation.json verbCosts[verb]', (
 
   it('the indirect-only run fits inside every patienceBudget', () => {
     const costTable: Record<ChoiceVerb, number> = generationData.verbCosts;
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       const indirectOnly = c.dialogueNodes.length * costTable.indirect;
       expect(
         indirectOnly,
@@ -464,7 +494,7 @@ describe('#14 [B1] every patienceCost equals generation.json verbCosts[verb]', (
   // guarantees, not the indirect-only figure above.
   it('taking the cheapest available choice at every node always fits the budget', () => {
     const costTable: Record<ChoiceVerb, number> = generationData.verbCosts;
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       const cheapestSum = c.dialogueNodes.reduce(
         (sum, node) => sum + Math.min(...node.choices.map((ch) => costTable[ch.verb])),
         0,
@@ -483,7 +513,7 @@ describe('#14 [B1] every patienceCost equals generation.json verbCosts[verb]', (
   // trivially completable via direct-only and nothing here would go red.
   it('a direct-only run exceeds the patienceBudget for at least one customer', () => {
     const costTable: Record<ChoiceVerb, number> = generationData.verbCosts;
-    const overBudget = customers.some(
+    const overBudget = playedCustomers.some(
       (c) => c.dialogueNodes.length * costTable.direct > c.patienceBudget,
     );
     expect(
@@ -496,7 +526,7 @@ describe('#14 [B1] every patienceCost equals generation.json verbCosts[verb]', (
 // ── #15 [C-회피] T18–T22 — hidden cause, evasion, indirection opens clues ──────
 describe('#15 [C-회피] the hidden cause is real, hidden, and only reachable indirectly', () => {
   it('every customer has a non-empty Korean hiddenCause', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       expect(typeof c.hiddenCause, `${c.id}.hiddenCause`).toBe('string');
       expect(c.hiddenCause.trim().length).toBeGreaterThan(0);
       expect(c.hiddenCause).toMatch(HANGUL);
@@ -512,10 +542,13 @@ describe('#15 [C-회피] the hidden cause is real, hidden, and only reachable in
   const HIDDEN_CAUSE_TOKENS: Record<string, readonly string[]> = {
     c1: ['아우', '편지'],
     c2: ['광', '삯바느질'],
+    // c3 (data/fallback-npcs.json): 잔칫집에서 상한 전을 먹었다 — the feast and the
+    // spoiled food are the two nouns that would give the diagnosis away.
+    c3: ['잔칫집', '상한'],
   };
 
   it('no npcLine names a decisive hiddenCause token (catches paraphrase leaks, not just verbatim copy)', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       const tokens = HIDDEN_CAUSE_TOKENS[c.id] ?? [];
       expect(tokens.length, `${c.id} has no HIDDEN_CAUSE_TOKENS entry`).toBeGreaterThan(0);
       for (const node of c.dialogueNodes) {
@@ -541,7 +574,7 @@ describe('#15 [C-회피] the hidden cause is real, hidden, and only reachable in
   // this unit's scope. AC#4's direct→evasive causality is therefore NOT fully
   // covered by this suite; tracked as a follow-up (see PR #39 description).
   it('some node is immediately followed by a node marked evasive (positional; not causal — see comment)', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       const hasEvasiveSuccessor = c.dialogueNodes.some(
         (_node, i) => c.dialogueNodes[i + 1]?.evasive === true,
       );
@@ -550,7 +583,7 @@ describe('#15 [C-회피] the hidden cause is real, hidden, and only reachable in
   });
 
   it('every customer marks at least one node evasive', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       expect(c.dialogueNodes.filter((n) => n.evasive === true).length).toBeGreaterThanOrEqual(1);
     }
   });
@@ -599,14 +632,14 @@ describe('#16 [C-관찰] observation carries clues and no clue is orphaned', () 
   });
 
   it('observationClues ids are unique per customer', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       const ids = c.observationClues.map((cl) => cl.id);
       expect(new Set(ids).size, `${c.id} has duplicate clue ids`).toBe(ids.length);
     }
   });
 
   it('every observationClue is actually revealed by some choice (no orphans)', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       const revealed = new Set(
         c.dialogueNodes.flatMap((n) => n.choices.flatMap((ch) => ch.clueReveals ?? [])),
       );
@@ -644,7 +677,7 @@ describe('#17 [§3-2] the shipped stub data satisfies the live AI contract', () 
   });
 
   it('every shipped dialogueNode passes isDialogueBeat (the live response gate)', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       c.dialogueNodes.forEach((node, i) => {
         expect(isDialogueBeat(node), `${c.id}.dialogueNodes[${i}] fails isDialogueBeat`).toBe(true);
       });
@@ -652,14 +685,68 @@ describe('#17 [§3-2] the shipped stub data satisfies the live AI contract', () 
   });
 
   it('npcLines are all distinct within a customer (copy-paste detector)', () => {
-    for (const c of customers) {
+    for (const c of playedCustomers) {
       const lines = c.dialogueNodes.map((n) => n.npcLine);
       expect(new Set(lines).size, `${c.id} repeats an npcLine`).toBe(lines.length);
     }
   });
 
   it('npcLines are distinct across customers too', () => {
-    const lines = customers.flatMap((c) => c.dialogueNodes.map((n) => n.npcLine));
+    const lines = playedCustomers.flatMap((c) => c.dialogueNodes.map((n) => n.npcLine));
     expect(new Set(lines).size).toBe(lines.length);
   });
+});
+
+// ── PR #33 (R3) — a wrong remedy answers in proportion to the clue work ───────
+// The ingredient list IS the diagnosis; method + 건넬 말 are the preparation. A
+// craft that got the herbs of an intended remedy right and the preparation wrong
+// therefore gets its own line instead of the flat "no effect" note that made the
+// player's clue work invisible at the only moment it should pay off.
+describe('[R3-nearMiss] every played customer answers a right-herbs/wrong-hand craft', () => {
+  for (const cid of playedIds) {
+    it(`${cid} authors a nearMiss outcome distinct from its default`, () => {
+      const table = playedTables[cid];
+      expect(table.nearMiss, `${cid} has no nearMiss line`).toBeDefined();
+      expect(table.nearMiss?.text).not.toBe(table.default.text);
+      expect(table.nearMiss?.arrivalTrigger).not.toBe(table.default.arrivalTrigger);
+    });
+
+    it(`${cid}: the right ingredients prepared the wrong way resolve to nearMiss`, () => {
+      const table = playedTables[cid];
+      const intended = table.entries[0];
+      const otherMethod = METHODS.find((m) => m !== intended.method);
+      const wrongPreparation = resolveOutcome(table, {
+        ingredientIds: [...intended.ingredients].reverse(), // order must not matter
+        method: otherMethod as string,
+        declaration: intended.declaration,
+      });
+      expect(wrongPreparation, `${cid} flattened a near miss into the default`).toBe(
+        table.nearMiss,
+      );
+    });
+
+    it(`${cid}: the intended combination still resolves EXACTLY, never to nearMiss`, () => {
+      const table = playedTables[cid];
+      for (const entry of table.entries) {
+        expect(
+          resolveOutcome(table, {
+            ingredientIds: [...entry.ingredients],
+            method: entry.method,
+            declaration: entry.declaration,
+          }),
+        ).toBe(entry.outcome);
+      }
+    });
+
+    it(`${cid}: wrong ingredients still resolve to the default (no free near miss)`, () => {
+      const table = playedTables[cid];
+      expect(
+        resolveOutcome(table, {
+          ingredientIds: ['__no_such_ingredient__'],
+          method: table.entries[0].method,
+          declaration: table.entries[0].declaration,
+        }),
+      ).toBe(table.default);
+    });
+  }
 });

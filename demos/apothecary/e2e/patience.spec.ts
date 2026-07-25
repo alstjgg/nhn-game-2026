@@ -372,6 +372,16 @@ test.describe('diegetic patience (u11)', () => {
       conversationSpec.includes('data-tier'),
       'conversation.spec.ts lost its patience assertions without a tier replacement',
     ).toBe(true);
+    // ...and the replacement must be SENSITIVE (PR #33, R1): `data-tier` is
+    // quantised, so at c1's default budget of 5 a 1-point spend stays inside tier
+    // 0 and "the tier never moved" detected nothing. The free-verb specs therefore
+    // drive the harness at `?budget=1`, where any spend ≥ 1 crosses a floor — and
+    // they assert that sensitivity in the browser rather than only asserting
+    // invariance (a presence check here cannot tell those two apart).
+    expect(
+      /budget=1/.test(conversationSpec),
+      'the free-verb specs no longer drive a budget where the tier can detect a 1-point spend',
+    ).toBe(true);
 
     const fullLoop = readFileSync(FULL_LOOP_SPEC, 'utf-8');
     expect(fullLoop.includes('patience-fill'), 'full-loop.spec.ts still asserts patience-fill').toBe(

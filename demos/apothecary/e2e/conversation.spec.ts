@@ -30,6 +30,20 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
 const HARNESS = '/e2e/harness/conversation/index.html';
+/**
+ * The same harness at `?budget=1` (PR #33, R1 on this file, line 180).
+ *
+ * `data-tier` is a QUANTISED readout: with c1's default budget of 5 and the
+ * thresholds [0.7, 0.4, 0.15], a 1-point spend leaves the ratio at 0.8 — still
+ * tier 0 — so "the tier never moved" could not detect that observing had started
+ * costing patience. Proven by mutation: `observe` secretly spending 1 kept the
+ * whole gate green, including two tests whose names assert "without spending
+ * patience" / "for free". At budget 1 ANY spend ≥ 1 crosses a floor, so the tier
+ * regains the detection power the deleted v1 gauge sampling had — and AC6 below
+ * pins the sensitivity itself, so an insensitive readout cannot pass as "nothing
+ * was spent" again.
+ */
+const HARNESS_SENSITIVE = `${HARNESS}?budget=1`;
 const SCREEN = 'section.conversation';
 
 // Playwright gate runs with cwd = demos/apothecary (`cd demos/apothecary && npx playwright test`).
@@ -153,7 +167,8 @@ test.describe('conversation screen (u6)', () => {
 
   // AC6 — the observe verb card costs 0 patience and reveals distinct, non-duplicating clue cards.
   test('AC6 [관찰] reveals distinct clue cards without spending patience', async ({ page }) => {
-    await page.goto(HARNESS);
+    // budget=1: the tier is a sensitive spend detector here (see HARNESS_SENSITIVE).
+    await page.goto(HARNESS_SENSITIVE);
     const observe = card(page, 'observe').first();
     const clueCards = page.getByTestId('clue-card');
     await expect(observe).toBeVisible();
@@ -184,6 +199,14 @@ test.describe('conversation screen (u6)', () => {
     await page.waitForTimeout(300);
     expect(await clueCards.count(), 're-observe duplicated clue cards').toBe(revealed);
     expect(await tierOf(page), 're-observing tightened the expression tier').toBe(tierBefore);
+
+    // The detector must be SENSITIVE, or both assertions above are vacuous: at
+    // this budget the cheapest PAID card (우회 질문, cost 1) does move the tier.
+    // Without this line a quantised readout could pass as "nothing was spent".
+    await card(page, 'indirect').first().click();
+    await expect
+      .poll(async () => tierOf(page), { timeout: 3000 })
+      .toBeGreaterThan(tierBefore);
   });
 
   // AC7 — content is data-driven: committing a choice advances to a different node's
@@ -425,7 +448,8 @@ test.describe('conversation screen — multiverb beats (u10)', () => {
   test('AC13 an observe card reveals real clue text for free without advancing', async ({
     page,
   }) => {
-    await page.goto(HARNESS);
+    // budget=1: any spend ≥ 1 crosses a tier floor, so "free" is actually testable.
+    await page.goto(HARNESS_SENSITIVE);
     await awaitBeat(page);
 
     const line = page.getByTestId('npc-line');
