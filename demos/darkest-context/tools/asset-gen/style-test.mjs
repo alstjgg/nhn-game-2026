@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 // Darkest Context demo — style test (asset pack phase 1)
 // Generates ONE candidate sheet per style string (A–D); a human compares and
-// picks the winner, which is then frozen as the style bible in data/generation.json.
+// picks the current baseline, which is recorded in data/generation.json and may
+// remain provisional until the full-pack generation gate.
 // Subject: 피오나's 4x3 hero sheet — the hardest format in the pack (walk-cycle
 // position pinning + 4-stage gauge poses + action cells + magenta keying).
 //
 // Setup:  npm install     (installs sharp, see package.json)
 // Run:    OPENAI_API_KEY=sk-...  node style-test.mjs
 // Re-run one candidate:  OPENAI_API_KEY=... node style-test.mjs --only C
+// Re-process saved raw files without an API call: node style-test.mjs --reprocess
 //
 // Outputs:
 //   out-style/raw/<X>.png   original 1536x1024 generation (kept for re-processing)
@@ -15,24 +17,32 @@
 //   out-style/preview.html  side-by-side pixelated comparison — open this to judge
 //   out-style/summary.md    timing log + full prompt per candidate
 
-import { writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
+import {
+  assertTechnicalMagenta,
+  clearIsolatedTechnicalMagenta,
+  floodFillTechnicalBackground,
+} from "./key-background.mjs";
+import { resolveRecordedPrompt } from "./result-provenance.mjs";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const OUT = join(ROOT, "out-style");
 const RAW = join(OUT, "raw");
+const RESULTS_JSON = join(OUT, "results.json");
+const REPROCESS = process.argv.includes("--reprocess");
 const KEY = process.env.OPENAI_API_KEY;
-if (!KEY) {
+if (!KEY && !REPROCESS) {
   console.error("OPENAI_API_KEY is not set.");
   process.exit(1);
 }
 
 const PIXEL_FACTOR = 4; // shared factor — same as apothecary and the future full pack
 
-// Candidate style bibles. The winner is frozen verbatim into data/generation.json
-// and prepended to every image call of the full pack.
+// Candidate style bibles. The selected baseline is recorded verbatim in
+// data/generation.json and prepended to every image call of the full pack.
 const CANDIDATES = {
   A: "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette.",
   B: "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Dark gothic dungeon palette, torchlit shadows, muted colors with a single warm accent.",
@@ -40,16 +50,29 @@ const CANDIDATES = {
   D: "1-bit inspired dark pixel art, strict pixel grid, four-color gothic palette, stark silhouettes, candlelight dithering.",
 };
 
+const TECHNICAL_KEY_RULE =
+  "The magenta background is a technical chroma-key layer, not part of the palette — never use magenta, pink, or purple on the subject itself. " +
+  "This technical rule overrides every artistic palette instruction.";
+
+const LAYOUT_RULE =
+  "MANDATORY LAYOUT: render exactly twelve separate full-body sprites as four columns by three rows, one sprite centered in each invisible cell. " +
+  "Reserve the top, middle, and bottom third of the canvas for one complete row each. Make the sprites small enough that all twelve fit with wide empty magenta gutters. Never omit or crop the third row.";
+
 const MAGENTA_BG =
-  "Flat solid magenta background (#FF00FF) in every cell, nothing touching the image edges. No gridlines, no borders, no text, no labels.";
+  "Fill every negative-space background pixel with one exact, flat, fully opaque color: #FF00FF. " +
+  "Draw no floor, ground shadow, platform, glow, texture, gradient, vignette, or lighting in the background. " +
+  "Leave exact #FF00FF directly beneath every character's feet; do not draw a colored base or contact shadow. " +
+  "Nothing touches the image edges. No gridlines, no borders, no text, no labels.";
 
 // Test subject: the hero-sheet format frozen in PRD §2.8 (4x3, walk / gauge poses / actions).
 const SUBJECT =
   "Sprite sheet: a 4x3 grid of twelve cells, the SAME character in every cell — a young pilgrim priestess in a hooded travel robe with a small mace and a wooden rosary charm, full body, side view facing right, identical scale and ground line in every cell. " +
-  "Top row: a 4-frame walking cycle, body position identical across the four cells, only limbs move. " +
-  "Middle row: four standing poses showing rising mental strain, one per cell — cell 1: calm idle; cell 2: uneasy, shoulders hunched; cell 3: at her limit, clutching her head; cell 4: broken, wild defensive crouch. " +
-  "Bottom row: four action poses — cell 1: striking with the mace; cell 2: guarding behind raised arms; cell 3: flinching from a hit; cell 4: collapsed on the ground. " +
+  "Top row: four unmistakably different phases of one walk cycle — contact, down, passing, up. Keep torso, pelvis, scale, ground line, and position pixel-perfect identical across all four cells; move only arms, legs, robe hem, mace, and rosary. Do not repeat an idle pose. " +
+  "Middle row: four exaggerated standing poses showing sharply rising mental strain, readable at tiny sprite size — cell 1: calm upright posture, healthy warm skin; cell 2: uneasy hunch, tense hands, noticeably pale skin; cell 3: at her limit, doubled over and clutching her head, ashen skin and deep shadowed eyes; cell 4: completely broken, wild defensive crouch, sickly grey skin, frantic eyes. Preserve the same face, clothes, and identity while changing posture and skin tone. " +
+  "Bottom row: four strongly distinct action silhouettes — cell 1: wide mace strike; cell 2: unmistakable guard with both raised arms forming a barrier; cell 3: recoiling backward from a hit; cell 4: fully collapsed on the ground. " +
   MAGENTA_BG;
+
+const buildPrompt = (style) => `${TECHNICAL_KEY_RULE} ${LAYOUT_RULE} ${style} ${SUBJECT}`;
 
 async function generate(style) {
   const t0 = Date.now();
@@ -58,9 +81,10 @@ async function generate(style) {
     headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "gpt-image-1",
-      prompt: `${style} ${SUBJECT}`,
+      prompt: buildPrompt(style),
       size: "1536x1024",
       quality: "low",
+      background: "opaque",
       n: 1,
     }),
   });
@@ -70,24 +94,21 @@ async function generate(style) {
   return { png: Buffer.from(json.data[0].b64_json, "base64"), seconds };
 }
 
-async function pixelate(buf) {
-  const meta = await sharp(buf).metadata();
-  const w = Math.round(meta.width / PIXEL_FACTOR);
-  const h = Math.round(meta.height / PIXEL_FACTOR);
-  const small = await sharp(buf).resize(w, h, { kernel: "lanczos3" }).ensureAlpha().raw()
-    .toBuffer({ resolveWithObject: true });
-  const { data, info } = small;
-  // key color = average of the four corner pixels (magenta, sampled to be safe)
-  const corners = [0, (info.width - 1) * 4, (info.height - 1) * info.width * 4, (info.height * info.width - 1) * 4];
-  const kc = [0, 1, 2].map((c) => Math.round(corners.reduce((s, o) => s + data[o + c], 0) / 4));
-  const TOL = 60;
-  for (let i = 0; i < data.length; i += 4) {
-    if (Math.abs(data[i] - kc[0]) <= TOL && Math.abs(data[i + 1] - kc[1]) <= TOL && Math.abs(data[i + 2] - kc[2]) <= TOL)
-      data[i + 3] = 0;
-  }
-  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+async function keyAndPixelate(buf) {
+  const full = await sharp(buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = full;
+  const key = assertTechnicalMagenta(data, info);
+  const edgeClearedPixels = floodFillTechnicalBackground(data, info, key);
+  const strictCleanupPixels = clearIsolatedTechnicalMagenta(data, info);
+  const w = Math.round(info.width / PIXEL_FACTOR);
+  const h = Math.round(info.height / PIXEL_FACTOR);
+  const final = await sharp(data, {
+    raw: { width: info.width, height: info.height, channels: 4 },
+  })
+    .resize(w, h, { kernel: "lanczos3" })
     .png()
     .toBuffer();
+  return { final, key, edgeClearedPixels, strictCleanupPixels };
 }
 
 await mkdir(RAW, { recursive: true });
@@ -95,22 +116,70 @@ const only = (() => {
   const i = process.argv.indexOf("--only");
   return i >= 0 ? process.argv[i + 1] : null;
 })();
+if (only && !CANDIDATES[only]) {
+  console.error(`Unknown candidate "${only}". Expected one of: ${Object.keys(CANDIDATES).join(", ")}`);
+  process.exit(1);
+}
 
-const results = [];
+let resultsById = {};
+if (only || REPROCESS) {
+  try {
+    resultsById = JSON.parse(await readFile(RESULTS_JSON, "utf8"));
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+}
+let failed = false;
 for (const [id, style] of Object.entries(CANDIDATES).filter(([id]) => !only || id === only)) {
   process.stdout.write(`candidate ${id} ... `);
+  const currentPrompt = buildPrompt(style);
+  const previous = resultsById[id] ?? {};
+  let recordedPrompt = REPROCESS ? previous.prompt : currentPrompt;
   try {
-    const { png, seconds } = await generate(style);
-    await writeFile(join(RAW, `${id}.png`), png);
-    const final = await pixelate(png);
+    recordedPrompt = resolveRecordedPrompt({
+      reprocess: REPROCESS,
+      previousPrompt: previous.prompt,
+      currentPrompt,
+    });
+    const generated = REPROCESS
+      ? { png: await readFile(join(RAW, `${id}.png`)), seconds: null }
+      : await generate(style);
+    const { png, seconds } = generated;
+    if (!REPROCESS) await writeFile(join(RAW, `${id}.png`), png);
+    const { final, key, edgeClearedPixels, strictCleanupPixels } = await keyAndPixelate(png);
     await writeFile(join(OUT, `${id}.png`), final);
-    results.push({ id, style, seconds, kb: Math.round(final.length / 1024) });
-    console.log(`ok — ${seconds}s, final ${Math.round(final.length / 1024)}KB`);
+    resultsById[id] = {
+      id,
+      source: REPROCESS ? "raw-reprocess" : "api",
+      generationSeconds: REPROCESS
+        ? (previous.generationSeconds ?? previous.seconds ?? null)
+        : seconds,
+      kb: Math.round(final.length / 1024),
+      key,
+      edgeClearedPixels,
+      strictCleanupPixels,
+      prompt: recordedPrompt,
+    };
+    const timing = REPROCESS ? "raw reprocess" : `${seconds}s`;
+    console.log(
+      `ok — ${timing}, final ${Math.round(final.length / 1024)}KB, ` +
+        `key rgb(${key.r},${key.g},${key.b}), edge ${edgeClearedPixels}px, ` +
+        `strict ${strictCleanupPixels}px`,
+    );
   } catch (e) {
-    results.push({ id, style, error: String(e.message) });
+    failed = true;
+    resultsById[id] = {
+      id,
+      source: REPROCESS ? "raw-reprocess" : "api",
+      error: String(e.message),
+      ...(recordedPrompt ? { prompt: recordedPrompt } : {}),
+    };
     console.log(`FAILED — ${e.message}`);
   }
 }
+await writeFile(RESULTS_JSON, `${JSON.stringify(resultsById, null, 2)}\n`);
+const results = Object.keys(CANDIDATES).flatMap((id) =>
+  resultsById[id] ? [{ ...resultsById[id], style: CANDIDATES[id] }] : []);
 
 const html = [
   "<!doctype html><meta charset='utf-8'><title>style test — darkest context</title>",
@@ -130,13 +199,27 @@ const md = [
   "",
   `Pixel factor: ${PIXEL_FACTOR} · quality: low · subject: 피오나 4x3 hero sheet (PRD §2.8)`,
   "",
-  "| candidate | seconds | final KB |",
-  "|---|---|---|",
-  ...results.map((r) => (r.error ? `| ${r.id} | ERROR | ${r.error} |` : `| ${r.id} | ${r.seconds} | ${r.kb} |`)),
+  "| candidate | source | generation s | final KB | corner RGB | edge px | strict px |",
+  "|---|---|---|---|---|---|---|",
+  ...results.map((r) =>
+    r.error
+      ? `| ${r.id} | ERROR | — | — | — | — | ${r.error} |`
+      : `| ${r.id} | ${r.source} | ${r.generationSeconds ?? "—"} | ${r.kb} | ${r.key.r},${r.key.g},${r.key.b} | ${r.edgeClearedPixels} | ${r.strictCleanupPixels} |`),
   "",
   "## Full prompts",
   "",
-  ...results.flatMap((r) => [`### ${r.id}`, "```", `${r.style} ${SUBJECT}`, "```", ""]),
+  ...results.flatMap((r) => [
+    `### ${r.id}`,
+    "```",
+    r.prompt ?? "Prompt unavailable: no generation provenance was recorded.",
+    "```",
+    "",
+  ]),
 ];
 await writeFile(join(OUT, "summary.md"), md.join("\n"));
-console.log(`\nDone. Open ${join(OUT, "preview.html")} to compare candidates.`);
+if (failed) {
+  console.error("\nOne or more candidates failed validation. Re-run each failed id with --only.");
+  process.exitCode = 1;
+} else {
+  console.log(`\nDone. Open ${join(OUT, "preview.html")} to compare candidates.`);
+}

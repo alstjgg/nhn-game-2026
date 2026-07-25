@@ -1,15 +1,50 @@
 # asset-gen — Darkest Context 데모 asset 도구
 
-`demos/darkest-context/assets/` 팩 생성의 1단계인 **스타일 테스트** 도구.
-시트 구성·픽셀 파이프라인은 [PRD §2.8](../../PRD.md)에 동결되어 있다.
+`demos/darkest-context/assets/` 팩 생성 도구: 스타일 테스트(`style-test.mjs`, 완료)와
+본 팩 생성기(`generate-pack.mjs`). 시트 구성·픽셀 파이프라인은
+[PRD §2.8](../../PRD.md)에 동결되어 있다.
 **파이프라인 런 중에 에이전트가 돌리는 물건이 아니다** — 런 전에 사람이 실행한다.
 
 ## 진행 순서 (playability guide §3)
 
-1. **스타일 테스트** (`style-test.mjs`, 이 문서) — 후보 4종 × 1시트 → 사람이 승자 선택
-2. 승자 문장을 `data/generation.json`의 `styleBible`로 동결
-3. 본 팩 생성기(`generate-pack.mjs`, 스타일 확정 후 작성) — 10콜 → 검수 → `assets/` 복사 → manifest
+1. ~~**스타일 테스트** — 후보 4종 × 1시트 → 사람이 승자 선택~~ ✅ 2026-07-25, A 선정
+2. ~~승자 문장을 `data/generation.json`의 `styleBible`에 기록~~ ✅ frozen (A verbatim)
+3. **본 팩 생성기 실행** (`generate-pack.mjs`, 아래) — 10콜 → 검수 → `assets/` 복사 → manifest ← **지금 여기**
 4. proxy/adapter + `ai-smoke` PASS → 런 시작
+
+## 본 팩 생성 (generate-pack.mjs)
+
+PRD §2.8의 asset 10종을 생성한다. 스타일 문장과 keyed 프롬프트 가드는
+`data/generation.json`에서 읽고 (`styleBibleStatus: "frozen"`이 아니면 실행 거부),
+키잉은 `key-background.mjs` 파이프라인(코너 검증 → 경계 flood-fill → strict 정리 →
+÷4)을 그대로 쓴다. 비용: 10콜, `gpt-image-1` quality=low ≈ **총 $0.2 안팎**, 소요 3–7분.
+
+```bash
+cd demos/darkest-context/tools/asset-gen
+npm install
+OPENAI_API_KEY=sk-... node generate-pack.mjs
+OPENAI_API_KEY=... node generate-pack.mjs --only hero-fiona   # 재생성
+node generate-pack.mjs --reprocess                            # API 없이 raw 재키잉
+```
+
+id 목록: `bg-dungeon` · `hero-garrett` · `hero-fiona` · `hero-selene` ·
+`mob-spam-golem` · `mob-halluc-wisp` · `ui-bubble` · `ui-card-frame` ·
+`card-icons` · `ui-vial`
+
+### 생성 후 체크리스트
+
+1. `out-pack/*.png` 눈으로 검수:
+   - 영웅 시트: 걷기 행 4프레임 몸통 위치 고정 (`steps(4)` 전제 — 최우선) ·
+     게이지 행 4단이 순서대로 읽히는가 · 방어 포즈 구분 (must-prove #2) · 12칸 동일 인물
+   - 몬스터 시트: 공격 3프레임 위치 고정 (`steps(3)` 전제) · idle/피격/사망 구분
+   - `bg-dungeon`: 좌우 이어붙였을 때 이음새가 없는가
+   - `card-icons`: 12칸 순서가 코드 주석의 카드 순서와 일치하는가
+   - 컬러키: 가장자리 마젠타 잔티 (불량 → `--only`로 재생성)
+2. 통과분을 `demos/darkest-context/assets/`로 복사 (파일명 그대로, `out-pack/` 자체는 커밋 금지 — .gitignore가 막음).
+3. 리포 루트 `assets-manifest.json`에 파일마다 항목 추가 — `summary.md`의 프롬프트를
+   **verbatim**으로 `prompt` 필드에: `{file, tool: "gpt-image-1", prompt, license:
+   "generated for this project"}` (CLAUDE.md rule 5, 예외 없음).
+4. asset PR 생성 (raw 커밋 금지, 증적 이미지는 PR 코멘트 첨부).
 
 ## 스타일 테스트 요구사항
 
@@ -45,6 +80,14 @@ OPENAI_API_KEY=... node style-test.mjs --only C
 | C | 다크 판타지 고대비 — 굵은 검정 외곽선, 탈채도 + 핏빛 액센트 |
 | D | 1-bit 계열 — 4색 고딕 팔레트, 실루엣 극대화, 디더링 |
 
+## 현재 선택 상태
+
+- 2026-07-25: 후보 **A**를 선택하고 **동결**했다 (`styleBibleStatus: "frozen"`).
+- A verbatim 유지 근거: 던전 무드는 팔레트 구속 문장이 아니라 소재 프롬프트(횃불·뼈·
+  고딕 소품)로 낸다 — 팔레트 구속형 후보(B–D)는 1라운드에서 기술용 마젠타 배경과
+  충돌했고, 10콜 전체의 톤 일관성 리스크도 크다. apothecary(Style E 동일 문장)와
+  bake-off에서 한 시리즈로 보이는 부수 효과도 있다.
+
 ## 판정 체크리스트
 
 `out-style/preview.html`을 열고 (÷4 + 컬러키 + pixelated 적용본) 비교:
@@ -54,6 +97,31 @@ OPENAI_API_KEY=... node style-test.mjs --only C
 3. **액션 행**: 공격/방어/피격/쓰러짐이 구분되는가 — 특히 방어 (must-prove #2)
 4. 컬러키: 가장자리가 깨끗하게 뚫렸는가 (어두운 스타일일수록 마젠타 잔티 확인)
 5. 캐릭터가 12칸에서 동일 인물로 유지되는가
+
+## keyed 스프라이트 파이프라인 규칙
+
+초기 테스트에서 B/C/D의 어두운·제한 팔레트 지시가 기술용 마젠타 배경과 충돌해
+배경이 탈채도되거나 마젠타가 캐릭터 팔레트에 섞였다. 본 팩 생성기는
+`style-test.mjs`와 동일하게 다음 규칙을 재사용한다.
+
+1. 모든 keyed 스프라이트 프롬프트에 `data/generation.json`의
+   `keyedSpritePromptGuard`를 그대로 포함한다.
+2. 원본의 네 코너 영역 평균이 `R>180, B>180, G<100`을 만족하는지 키잉 전에
+   검증한다. 실패하면 원본만 남기고 FAIL 로그 및 0이 아닌 종료코드를 반환한 뒤
+   `--only`로 재생성한다.
+3. 1536×1024 원본에서 이미지 경계와 연결된 키-근접 픽셀만 flood-fill로 제거하고,
+   프롬프트에서 금지한 엄격한 기술색 범위의 고립 픽셀만 추가 정리한 뒤 4배
+   다운스케일한다. 전역 **톨러런스** 키잉은 캐릭터 내부의 어두운 보라색 픽셀을
+   뚫으므로 사용하지 않는다.
+
+`npm test`는 배경 검증 실패와 내부 키-근접 픽셀 보존을 회귀 검사한다.
+
+API를 다시 호출하지 않고 저장된 raw만 재처리하려면:
+
+```bash
+node style-test.mjs --reprocess
+node style-test.mjs --reprocess --only C
+```
 
 승자가 나오면: 해당 스타일 문장을 알려주면 `data/generation.json` 동결 + 본 팩
 생성기 작성으로 이어간다. 애매하면 `--only`로 재생성 1–2회까지는 싸다.

@@ -1,0 +1,43 @@
+[
+  {
+    "id": "mock-arena",
+    "displayName": "Deterministic Mock Arena",
+    "provider": "mock",
+    "model": "mock-agent-v1",
+    "capabilities": {
+      "streaming": true,
+      "functionTools": true,
+      "remoteMcp": true,
+      "skills": true,
+      "compaction": true
+    }
+  },
+  {
+    "id": "openai-arena",
+    "displayName": "OpenAI Arena",
+    "provider": "openai",
+    "modelEnv": "OPENAI_MODEL",
+    "apiKeyEnv": "OPENAI_API_KEY",
+    "capabilities": {
+      "streaming": true,
+      "functionTools": true,
+      "remoteMcp": true,
+      "skills": true,
+      "compaction": true
+    }
+  },
+  {
+    "id": "claude-arena",
+    "displayName": "Claude Arena",
+    "provider": "anthropic",
+    "modelEnv": "ANTHROPIC_MODEL",
+    "apiKeyEnv": "ANTHROPIC_API_KEY",
+    "capabilities": {
+      "streaming": true,
+      "functionTools": true,
+      "remoteMcp": true,
+      "skills": true,
+      "compaction": true
+    }
+  }
+]

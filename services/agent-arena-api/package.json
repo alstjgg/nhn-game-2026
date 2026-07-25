@@ -1,0 +1,29 @@
+{
+  "name": "@nan2026/agent-arena-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:live:bootstrap-skills": "tsx scripts/bootstrap-live-skills.ts",
+    "test:live": "tsx scripts/live-smoke.ts",
+    "openapi:check": "vitest run tests/openapi.test.ts"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "12.1.0",
+    "@types/node": "^24.10.1",
+    "ajv": "^8.20.0",
+    "tsx": "^4.21.0",
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.0",
+    "yaml": "^2.9.0"
+  }
+}
