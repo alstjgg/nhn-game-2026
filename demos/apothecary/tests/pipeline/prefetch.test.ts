@@ -1167,6 +1167,97 @@ describe('AC5 — cancel() stops in-flight work from ever touching state again',
     expect(handle.getState().dialogue.status).toBe('ready');
     handle.cancel();
   });
+
+  it('AC5-a — a subscriber fault is REPORTED to onListenerFault, not silently swallowed', async () => {
+    // §3-5 makes AI failures silent; a crashing SUBSCRIBER is not an AI failure.
+    // Without this the component just goes stale and nothing anywhere says why,
+    // so the hook must actually fire — with the fault AND the offending listener,
+    // so a boot-time telemetry sink can name the culprit.
+    const faults: { fault: unknown; listener: (state: PrefetchState) => void }[] = [];
+    const live = makeControlledAdapter();
+    const handle = startPrefetch({
+      adapter: live.adapter,
+      fallbackAdapter: makeStubAdapter().adapter,
+      clock: createManualClock(),
+      request: makeRequest(),
+      onListenerFault: (fault, listener) => faults.push({ fault, listener }),
+    });
+
+    const boom = (): void => {
+      throw new Error('BAD-SUBSCRIBER-9014');
+    };
+    const good: PrefetchState[] = [];
+    handle.subscribe(boom);
+    handle.subscribe((s) => good.push(s));
+
+    live.d.resolve(validBeat());
+    await flush();
+    await flush();
+
+    expect(faults).toHaveLength(1);
+    expect(faults[0]!.listener).toBe(boom); // the sink can name the culprit
+    expect((faults[0]!.fault as Error).message).toBe('BAD-SUBSCRIBER-9014');
+    expect(good).toHaveLength(1); // and the healthy subscriber still ran
+    // The fault is reported OUT, never folded into the state (§3-5).
+    expect(JSON.stringify(handle.getState())).not.toContain('BAD-SUBSCRIBER-9014');
+    handle.cancel();
+  });
+
+  it('AC5-a — every faulting subscriber is reported, once per notification', async () => {
+    const faults: unknown[] = [];
+    const live = makeControlledAdapter();
+    const handle = startPrefetch({
+      adapter: live.adapter,
+      fallbackAdapter: makeStubAdapter().adapter,
+      clock: createManualClock(),
+      request: makeRequest(),
+      onListenerFault: (fault) => faults.push(fault),
+    });
+
+    handle.subscribe(() => {
+      throw new Error('BAD-A');
+    });
+    handle.subscribe(() => {
+      throw new Error('BAD-B');
+    });
+
+    live.d.resolve(validBeat()); // one notification, two faulting listeners
+    await flush();
+    await flush();
+
+    expect(faults.map((f) => (f as Error).message)).toEqual(['BAD-A', 'BAD-B']);
+
+    live.p.resolve(validSheet()); // a second notification reports them again
+    await flush();
+    await flush();
+
+    expect(faults.map((f) => (f as Error).message)).toEqual(['BAD-A', 'BAD-B', 'BAD-A', 'BAD-B']);
+    expect(handle.getState().settled).toBe(true); // and both tracks still landed
+    handle.cancel();
+  });
+
+  it('AC5-a — a subscriber fault after cancel() is impossible: no notification, so no report', async () => {
+    const faults: unknown[] = [];
+    const live = makeControlledAdapter();
+    const handle = startPrefetch({
+      adapter: live.adapter,
+      fallbackAdapter: makeStubAdapter().adapter,
+      clock: createManualClock(),
+      request: makeRequest(),
+      onListenerFault: (fault) => faults.push(fault),
+    });
+
+    handle.subscribe(() => {
+      throw new Error('BAD-AFTER-CANCEL');
+    });
+    handle.cancel();
+
+    live.d.resolve(validBeat());
+    await flush();
+    await flush();
+
+    expect(faults).toHaveLength(0);
+  });
 });
 
 // ---------------------------------------------------------------------------
