@@ -843,9 +843,8 @@ test.describe('u14 deliverables — artifacts, append-only docs, juice policy', 
     // bare-substring count read that documentation as a second guard.
     const blocks = [...animations.matchAll(/@media[^{]*prefers-reduced-motion/g)].length;
     expect(blocks, 'reduced-motion blocks in animations.css must stay at exactly 1').toBe(1);
-    expect(appCss, 'app.css must not add its own reduced-motion block (NFR4b)').not.toMatch(
-      /prefers-reduced-motion/,
-    );
+    const appCssBlocks = [...appCss.matchAll(/@media[^{]*prefers-reduced-motion/g)].length;
+    expect(appCssBlocks, 'app.css must not add its own reduced-motion block (NFR4b)').toBe(0);
   });
 
   test('regression floor: no v1 spec file was deleted (AC14)', () => {
