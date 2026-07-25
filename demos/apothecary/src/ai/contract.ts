@@ -52,6 +52,11 @@ export interface PortraitRequest {
  * A generated 4×2 expression sheet (PNG base64) + the prompt used (manifest).
  * `url` is ADDITIVE (v2, unit u1): the stub mode serves a bundled fallback sheet
  * by URL instead of inlining base64, so nothing about the live payload changes.
+ *
+ * Stub mode leaves `b64` empty and always sets `url`; the live adapter is the
+ * opposite (`url` unset, `b64` required — see `src/ai/adapter.ts`'s guard on
+ * an empty `b64`). Never read `b64` directly to build an `<img>` src — use
+ * `portraitSrc()`, the only accessor that is safe across both modes.
  */
 export interface PortraitSheet {
   b64: string;
@@ -64,6 +69,22 @@ export function portraitSrc(sheet: PortraitSheet): string {
   return sheet.url !== undefined && sheet.url.length > 0
     ? sheet.url
     : `data:image/png;base64,${sheet.b64}`;
+}
+
+/**
+ * Validator shared by the live adapter (response gate) and the stub's own
+ * self-check. A sheet with an empty `b64` AND no/empty `url` is invalid — that
+ * is exactly the shape `portraitSrc()` cannot turn into a real image.
+ */
+export function isPortraitSheet(v: unknown): v is PortraitSheet {
+  if (typeof v !== 'object' || v === null) return false;
+  const s = v as Record<string, unknown>;
+  if (typeof s.prompt !== 'string' || s.prompt.length === 0) return false;
+  if (typeof s.b64 !== 'string') return false;
+  if (s.url !== undefined && typeof s.url !== 'string') return false;
+  const hasB64 = s.b64.length > 0;
+  const hasUrl = typeof s.url === 'string' && s.url.length > 0;
+  return hasB64 || hasUrl;
 }
 
 /** GET /ai/health response. */

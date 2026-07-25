@@ -236,7 +236,7 @@ describe('AC7 clueReveals stay inside availableClues', () => {
     }
   });
 
-  it('leaves an observe card with something to reveal (substitutes availableClues[0])', async () => {
+  it('leaves an observe card with something to reveal (substitutes an available same-script clue)', async () => {
     const only = [{ id: C1_CLUE_IDS[1], text: '차가운 손끝' }];
     const beat = await stub().dialogue(dialogueRequest({ availableClues: only }));
     const observe = beat.choices.find((c: BeatChoice) => c.verb === 'observe');
@@ -244,10 +244,25 @@ describe('AC7 clueReveals stay inside availableClues', () => {
     expect(observe?.clueReveals).toEqual([C1_CLUE_IDS[1]]);
   });
 
-  it('does not apply the rule when availableClues is empty (canned ids survive)', async () => {
+  // Regression guard for the review thread on this rule: an empty
+  // availableClues means "everything is already revealed" (the frozen proxy's
+  // rule, server/ai-proxy.mjs: "없으면 clueReveals를 비운다") — it must filter
+  // to [] like any other case, not leak every canned id unfiltered.
+  it('reveals nothing when availableClues is empty (matches the frozen proxy, no leak)', async () => {
     const beat = await stub().dialogue(dialogueRequest({ availableClues: [] }));
     const revealed = beat.choices.flatMap((c: BeatChoice) => c.clueReveals ?? []);
-    expect(revealed.length).toBeGreaterThan(0);
+    expect(revealed).toEqual([]);
+  });
+
+  // Regression guard: the observe-card fallback must never cross scripts —
+  // offering ONLY clues that belong to a different customer's script must not
+  // get substituted onto this script's observe card (the label would then
+  // contradict the revealed clue).
+  it('never substitutes a clue from a different customer script (cross-script leak guard)', async () => {
+    const beat = await stub().dialogue(dialogueRequest({ availableClues: c2Clues() }));
+    const observe = beat.choices.find((c: BeatChoice) => c.verb === 'observe');
+    expect(observe).toBeDefined();
+    expect(observe?.clueReveals ?? []).toEqual([]);
   });
 });
 
@@ -316,9 +331,26 @@ describe('AC10 setTimeout lives only in the stub scheduler', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('stub.ts contains exactly one setTimeout call (the default scheduler)', () => {
-    const src = readFileSync(new URL('../../src/ai/stub.ts', import.meta.url), 'utf8');
-    expect(src.match(/\bsetTimeout\s*\(/g) ?? []).toHaveLength(1);
+  // Behavioral version of the old "exactly one setTimeout in the source"
+  // grep (review thread): asserts the default scheduler schedules exactly one
+  // real timer per call, and that awaiting it actually resolves — strictly
+  // stronger than counting the substring "setTimeout", which breaks on a
+  // harmless refactor and passes on `const t = setTimeout; t(...)`.
+  it('the default scheduler schedules exactly one real timer per call, and it resolves', async () => {
+    vi.useFakeTimers();
+    const adapter = createStubAdapter({ latencyMs: { dialogueMs: 900, portraitMs: 2400 } });
+
+    const dialoguePromise = adapter.dialogue(dialogueRequest());
+    expect(vi.getTimerCount()).toBe(1);
+    await vi.advanceTimersByTimeAsync(900);
+    await expect(dialoguePromise).resolves.toBeDefined();
+    expect(vi.getTimerCount()).toBe(0);
+
+    const portraitPromise = adapter.portrait(portraitRequest());
+    expect(vi.getTimerCount()).toBe(1);
+    await vi.advanceTimersByTimeAsync(2400);
+    await expect(portraitPromise).resolves.toBeDefined();
+    expect(vi.getTimerCount()).toBe(0);
   });
 });
 
@@ -383,10 +415,25 @@ describe('AC13 portrait choice is deterministic', () => {
     expect(picked.size).toBe(2);
   });
 
-  it('uses no Math.random / Date.now in the stub source', () => {
-    const src = readFileSync(new URL('../../src/ai/stub.ts', import.meta.url), 'utf8');
-    expect(src).not.toMatch(/Math\.random/);
-    expect(src).not.toMatch(/Date\.now/);
+  // Behavioral version of the old "no Math.random / Date.now in the source"
+  // grep (review thread): AC4's determinism test already proves identical
+  // requests are deeply equal; this adds many-trials + cross-instance +
+  // repeated-call determinism, which a seeded PRNG or a clock read anywhere
+  // in the path would break but the grep would happily pass.
+  it('is deterministic across many trials, repeated calls and fresh adapter instances', async () => {
+    for (const traits of [['조용한'], ['지친', '말수가 적은'], ['a', 'b', 'c'], []]) {
+      const results = await Promise.all(
+        Array.from({ length: 5 }, () => stub().portrait(portraitRequest(traits))),
+      );
+      const urls = new Set(results.map((r) => r.url));
+      expect(urls.size, `traits ${JSON.stringify(traits)} produced varying urls`).toBe(1);
+    }
+
+    const adapter = stub();
+    const beats = await Promise.all(
+      Array.from({ length: 5 }, () => adapter.dialogue(dialogueRequest({ history: historyOf(2) }))),
+    );
+    for (const beat of beats) expect(beat).toEqual(beats[0]);
   });
 });
 
@@ -409,9 +456,29 @@ describe('loadStubDialogue validates at load time', () => {
     expect(() => loadStubDialogue('nope')).toThrow(/stub-dialogue/);
   });
 
-  it('rejects missing default script', () => {
+  it('rejects missing fallback script', () => {
     const raw = validStubRaw();
-    delete raw.default;
+    delete raw.fallback;
+    expect(() => loadStubDialogue(raw)).toThrow(/stub-dialogue/);
+  });
+
+  it('rejects an empty scripts array', () => {
+    const raw = validStubRaw();
+    raw.scripts = [];
+    expect(() => loadStubDialogue(raw)).toThrow(/stub-dialogue/);
+  });
+
+  it('rejects duplicate problem keys across scripts (first-wins would silently hide the second)', () => {
+    const raw = validStubRaw();
+    const scripts = raw.scripts as Record<string, unknown>[];
+    scripts.push({ ...structuredClone(scripts[0]), problem: C1_PROBLEM });
+    expect(() => loadStubDialogue(raw)).toThrow(/stub-dialogue/);
+  });
+
+  it('rejects a real (non-fallback) script with an empty problem string', () => {
+    const raw = validStubRaw();
+    const scripts = raw.scripts as Record<string, unknown>[];
+    scripts[0].problem = '';
     expect(() => loadStubDialogue(raw)).toThrow(/stub-dialogue/);
   });
 
@@ -490,6 +557,29 @@ describe('selectScript matches problem exactly, else default', () => {
       selectScript(data, UNKNOWN_PROBLEM),
     ]) {
       expect(script.beats.length).toBeGreaterThanOrEqual(3);
+    }
+  });
+});
+
+// ── Drift guard (DISCOVERY.md: "renaming a customer's problem silently drops
+// that script to `default`") — imports the REAL data/customers.json so a
+// rename there fails this test instead of silently degrading every affected
+// customer to the generic fallback script.
+describe("every data/customers.json problem resolves to its own script, not the fallback", () => {
+  it('selectScript never falls through to the fallback for a seeded customer', () => {
+    const data = loadStubDialogue(
+      JSON.parse(readFileSync(new URL('../../data/stub-dialogue.json', import.meta.url), 'utf8')),
+    );
+    const seededCustomers = JSON.parse(
+      readFileSync(new URL('../../data/customers.json', import.meta.url), 'utf8'),
+    ) as { id: string; problem: string }[];
+    expect(seededCustomers.length).toBeGreaterThan(0);
+    for (const customer of seededCustomers) {
+      const script = selectScript(data, customer.problem);
+      expect(
+        script.problem,
+        `customer "${customer.id}" (problem "${customer.problem}") resolved to the fallback script`,
+      ).toBe(customer.problem);
     }
   });
 });

@@ -13,11 +13,8 @@ import { createStubAdapter, type StubAdapterConfig } from './stub.ts';
 
 export type HealthProbe = (timeoutMs?: number) => Promise<AIHealth | null>;
 
-/** A probe function, or any object exposing one (test spies pass the whole spy). */
-export type ProbeSource = HealthProbe | { probe: HealthProbe };
-
 export interface BootDeps {
-  probe?: ProbeSource;
+  probe?: HealthProbe;
   /** Health-probe budget; PRD §2.1 fixes the default at 800ms. */
   timeoutMs?: number;
   createLive?: () => AIAdapter;
@@ -32,20 +29,22 @@ export function chooseMode(health: AIHealth | null): 'live' | 'stub' {
   return health !== null && health.ok ? 'live' : 'stub';
 }
 
-function toProbe(source: ProbeSource): HealthProbe {
-  return typeof source === 'function' ? source : source.probe;
-}
-
 /** Runs the probe defensively: any throw/rejection reads as "no proxy". */
-function probeSafely(source: ProbeSource, timeoutMs: number): Promise<AIHealth | null> {
+function probeSafely(probe: HealthProbe, timeoutMs: number): Promise<AIHealth | null> {
   return Promise.resolve()
-    .then(() => toProbe(source)(timeoutMs))
+    .then(() => probe(timeoutMs))
     .catch(() => null);
 }
 
 /**
- * Builds the adapter the app runs with. Never rejects: every failure — a dead
- * probe, a broken live adapter — degrades silently to the canned stub (§3-5).
+ * Builds the adapter the app runs with. Degrades silently to the canned stub
+ * (§3-5) for every *runtime* failure — a dead/rejecting/throwing probe, a
+ * `createLive()` construction error. It does NOT swallow a bad stub config or
+ * a malformed `data/stub-dialogue.json`: `createStub()` is trusted to throw
+ * loudly on bad data (D3, `loadStubDialogue` → `fail()`), and that rejection
+ * propagates out of `createBootAdapter` on purpose — a canned-data bug is a
+ * boot-time crash, not a mode to fall back from. See tests/ai/boot.test.ts
+ * AC16 vs AC16b.
  */
 export async function createBootAdapter(deps: BootDeps = {}): Promise<AIAdapter> {
   const {

@@ -290,4 +290,50 @@ this unit deliberately leaves `src/main.ts` / `src/app/index.ts` untouched, so
 Cards carry `verb` only; the cost is stamped from `data/generation.json.verbCosts`
 at load time (single tuning source, AC5). The script `problem` keys are byte-exact
 matches of `data/customers.json` — `selectScript` does no trimming or fuzzy
-matching, so renaming a customer's problem silently drops that script to `default`.
+matching, so renaming a customer's problem silently drops that script to `fallback`.
+A test now imports the real `data/customers.json` and pins that every seeded
+customer resolves to its own script (see PR #40 review follow-up below).
+
+### Review follow-up (PR #40, Lead) — 8 threads, all fixed
+Lead flagged eight issues against this unit's original cut. All eight were
+accepted and fixed (no rebuttals):
+- **`createBootAdapter` contract vs. reality.** JSDoc/AC16 claimed "never
+  rejects", but a malformed `stubConfig.data` made it reject via `createStub`'s
+  fail-loud data guard. Resolved by keeping fail-loud (consistent with D3) and
+  correcting the doc + tests: AC16 now scopes "never rejects" to probe/live
+  failures only; a new AC16b pins that bad canned data propagates.
+- **`clueRevealsFor` leaked all canned ids when `availableClues` was empty**,
+  contradicting the frozen proxy's rule ("없으면 clueReveals를 비운다"). The
+  early-return special case is gone; an empty list now filters to `[]` like
+  any other case.
+- **The observe-card fallback could substitute a clue from a different
+  customer's script** (label/clue drift), because the substitution was
+  positional (`availableClues[0]`) with no script awareness. Fixed by
+  restricting the fallback to clue ids that appear somewhere in the SAME
+  script (`scriptClueIds`).
+- **`BootDeps.probe` was widened to `HealthProbe | { probe: HealthProbe }`**
+  only to accommodate three tests passing the whole probe spy instead of
+  `spy.probe`. Reverted to `HealthProbe` only; the three call sites now pass
+  `.probe` like every other test in the file.
+- **Stub `PortraitSheet`s (`b64: ''`) were never checked against the same
+  gate the live adapter enforces** (non-empty `b64` OR `url`). Added
+  `isPortraitSheet` to `contract.ts` (mirrors `isDialogueBeat`'s role) and had
+  the stub assert its own `dialogue()`/`portrait()` output against the shared
+  validators before returning — the file header's "same contract validators
+  as the live path" claim is now actually true, not just documented.
+- **`data/generation.json`'s ailment strings can near-miss `data/customers.json`'s
+  and silently fall to the generic default script**, with no test catching a
+  rename. Added a drift-guard test that imports the real `customers.json` and
+  asserts every seeded problem resolves to its own script; documented (in
+  `selectScript`'s JSDoc) that `generation.json`'s wider ailment pool is NOT
+  covered by canned scripts in v1 by design — future customer-generation work
+  must extend the scripts or accept the fallback consciously.
+- **The JSON key `default` mapped to a TS field named `fallback`.** Renamed
+  the JSON key to `fallback` (data file + fixtures + tests) so the two names
+  match; also added loader guards for an empty `scripts` array, duplicate
+  `problem` keys, and an empty `problem` on a non-fallback script.
+- **Two source-text greps (`stub.ts` has exactly one `setTimeout`; no
+  `Math.random`/`Date.now` substring) stood in for behavioral assertions**,
+  passing on real violations and breaking on harmless refactors. Replaced
+  with a fake-timers test asserting exactly one real timer per call (and that
+  it resolves), and a many-trials/cross-instance determinism test.

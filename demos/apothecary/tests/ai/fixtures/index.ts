@@ -119,7 +119,7 @@ export function validStubRaw(): Record<string, unknown> {
         beats: [validBeat('c1 비트 0', true), validBeat('c1 비트 1'), validBeat('c1 비트 2')],
       },
     ],
-    default: {
+    fallback: {
       problem: '',
       beats: [validBeat('기본 비트 0'), validBeat('기본 비트 1'), validBeat('기본 비트 2')],
     },

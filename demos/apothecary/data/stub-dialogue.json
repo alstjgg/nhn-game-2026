@@ -162,7 +162,7 @@
       ]
     }
   ],
-  "default": {
+  "fallback": {
     "problem": "",
     "beats": [
       {

@@ -2,7 +2,9 @@
 //
 // Contract under test (design §3.4, src/ai/boot.ts):
 //   chooseMode(health: AIHealth | null): 'live' | 'stub'
-//   createBootAdapter(deps?): Promise<AIAdapter>   — never rejects
+//   createBootAdapter(deps?): Promise<AIAdapter>   — never rejects on a
+//     probe/live-adapter FAILURE (AC16); DOES reject when createStub() throws
+//     on bad canned data (AC16b) — that is a boot-time crash by design.
 //
 // Everything injectable: probe / timeoutMs / createLive / createStub. The unit
 // must not perform a real health request and must not modify main.ts or app/index.ts.
@@ -55,27 +57,27 @@ describe('AC14 chooseMode', () => {
 // ── AC15 — injected probe, default 800ms timeout ───────────────────────────
 describe('AC15 createBootAdapter uses the injected probe', () => {
   it('calls the injected probe exactly once and never fetches', async () => {
-    const probe = fakeProbe(healthOk());
-    await createBootAdapter({ probe, createLive: liveDouble, createStub: stubDouble });
-    expect(probe.args).toHaveLength(1);
+    const spy = fakeProbe(healthOk());
+    await createBootAdapter({ probe: spy.probe, createLive: liveDouble, createStub: stubDouble });
+    expect(spy.args).toHaveLength(1);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('passes the PRD §2.1 default timeout of 800ms', async () => {
-    const probe = fakeProbe(healthOk());
-    await createBootAdapter({ probe, createLive: liveDouble, createStub: stubDouble });
-    expect(probe.args[0]).toBe(800);
+    const spy = fakeProbe(healthOk());
+    await createBootAdapter({ probe: spy.probe, createLive: liveDouble, createStub: stubDouble });
+    expect(spy.args[0]).toBe(800);
   });
 
   it('honours an explicit timeoutMs override', async () => {
-    const probe = fakeProbe(healthOk());
+    const spy = fakeProbe(healthOk());
     await createBootAdapter({
-      probe,
+      probe: spy.probe,
       timeoutMs: 120,
       createLive: liveDouble,
       createStub: stubDouble,
     });
-    expect(probe.args[0]).toBe(120);
+    expect(spy.args[0]).toBe(120);
   });
 
   it('returns the live adapter when health is ok', async () => {
@@ -123,7 +125,9 @@ describe('AC15 createBootAdapter uses the injected probe', () => {
   });
 });
 
-// ── AC16 — every failure degrades to the stub, never rejects ───────────────
+// ── AC16 — every *runtime* failure (probe/live) degrades to the stub ───────
+// Bad canned DATA is deliberately NOT covered here — see AC16b below, which
+// pins the opposite behaviour: createBootAdapter propagates that rejection.
 describe('AC16 failures degrade silently to the stub adapter', () => {
   it('falls back when the probe rejects', async () => {
     const adapter = await createBootAdapter({
@@ -156,7 +160,7 @@ describe('AC16 failures degrade silently to the stub adapter', () => {
     expect(adapter.mode).toBe('stub');
   });
 
-  it('resolves (never rejects) for every failure shape', async () => {
+  it('resolves (never rejects) for every probe/live failure shape', async () => {
     await expect(
       createBootAdapter({
         probe: fakeProbe(new Error('down')).probe,
@@ -171,6 +175,42 @@ describe('AC16 failures degrade silently to the stub adapter', () => {
     expect(adapter.mode).toBe('stub');
     expect(typeof adapter.dialogue).toBe('function');
     expect(typeof adapter.portrait).toBe('function');
+  });
+});
+
+// ── AC16b — bad canned DATA is a boot-time crash, not a stub fallback ──────
+// createStub() is trusted to fail loudly (D3); createBootAdapter must not
+// swallow that the way it swallows a probe/live failure above.
+describe('AC16b a broken stubConfig/data propagates instead of degrading', () => {
+  it('rejects when the injected createStub throws', async () => {
+    await expect(
+      createBootAdapter({
+        probe: fakeProbe(null).probe,
+        createStub: () => {
+          throw new Error('stub-dialogue: scripts must be an array');
+        },
+      }),
+    ).rejects.toThrow(/stub-dialogue/);
+  });
+
+  it('rejects when the real createStub is handed malformed canned data', async () => {
+    await expect(
+      createBootAdapter({ probe: () => Promise.resolve(null), stubConfig: { data: { nope: 1 } } }),
+    ).rejects.toThrow(/stub-dialogue/);
+  });
+
+  it('also rejects on the live-health path (not just the null-health path)', async () => {
+    await expect(
+      createBootAdapter({
+        probe: fakeProbe(healthOk()).probe,
+        createLive: () => {
+          throw new Error('live construction failed');
+        },
+        createStub: () => {
+          throw new Error('stub-dialogue: bad canned data');
+        },
+      }),
+    ).rejects.toThrow(/stub-dialogue/);
   });
 });
 

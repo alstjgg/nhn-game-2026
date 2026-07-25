@@ -15,14 +15,16 @@ import fallbackPortraitB from '../../assets/fallback-portrait-2.png';
 import generation from '../../data/generation.json';
 import rawStubDialogue from '../../data/stub-dialogue.json';
 import type { AIAdapter } from './adapter.ts';
-import type {
-  BeatChoice,
-  ChoiceVerb,
-  DialogueBeat,
-  DialogueRequest,
-  PatienceTier,
-  PortraitRequest,
-  PortraitSheet,
+import {
+  isDialogueBeat,
+  isPortraitSheet,
+  type BeatChoice,
+  type ChoiceVerb,
+  type DialogueBeat,
+  type DialogueRequest,
+  type PatienceTier,
+  type PortraitRequest,
+  type PortraitSheet,
 } from './contract.ts';
 
 /** Single tuning source for card costs — the canned data never states a cost. */
@@ -162,19 +164,48 @@ export function loadStubDialogue(input: unknown): StubDialogueData {
     fail('portraitPromptPrefix must be a non-empty string');
   }
   if (!Array.isArray(scripts)) fail('scripts must be an array');
+  if (scripts.length === 0) fail('scripts must not be empty');
+  const parsedScripts = scripts.map((script, i) => parseScript(script, `script ${i}`));
+  const seenProblems = new Set<string>();
+  parsedScripts.forEach((script, i) => {
+    if (script.problem.length === 0) fail(`script ${i} must not have an empty problem (that is the fallback script's job)`);
+    if (seenProblems.has(script.problem)) fail(`duplicate script problem: "${script.problem}"`);
+    seenProblems.add(script.problem);
+  });
   return {
     latency: parseLatency(root.latency),
     portraitPromptPrefix,
-    scripts: scripts.map((script, i) => parseScript(script, `script ${i}`)),
-    fallback: parseScript(root.default, 'default script'),
+    scripts: parsedScripts,
+    // JSON key is `fallback` — same name as the TS field, on purpose (D3
+    // review: a `default`-keyed JSON with a `fallback`-named field made the
+    // next reader grep for "fallback" in the data and find nothing).
+    fallback: parseScript(root.fallback, 'fallback script'),
   };
 }
 
 // ── Pure selectors ──────────────────────────────────────────────────────────
 
-/** Exact problem match only — no trimming, no fuzzy matching. */
+/**
+ * Exact problem match only — no trimming, no fuzzy matching. `data/stub-
+ * dialogue.json` scripts are keyed byte-for-byte to `data/customers.json`
+ * problems ONLY — a `selectScript` drift guard (tests/ai/stub.test.ts) pins
+ * this. `data/generation.json`'s `traitTable.ailments` problems are a
+ * DIFFERENT, larger pool (used to procedurally spawn customers, not the two
+ * seeded ones) and are deliberately NOT covered by canned scripts in v1: most
+ * of them fall through to `data.fallback`, which is a valid (if generic)
+ * beat, not a crash. If a future unit starts spawning customers from
+ * `traitTable.ailments`, extend the canned scripts (or accept the generic
+ * fallback) rather than assuming coverage.
+ */
 export function selectScript(data: StubDialogueData, problem: string): StubScript {
   return data.scripts.find((script) => script.problem === problem) ?? data.fallback;
+}
+
+/** Every clue id that ANY beat of this script can reveal — the substitution
+ * pool for `clueRevealsFor` below, so an observe fallback can never surface a
+ * clue that belongs to a different customer's script. */
+function scriptClueIds(script: StubScript): Set<string> {
+  return new Set(script.beats.flatMap((beat) => beat.choices.flatMap((choice) => choice.clueReveals ?? [])));
 }
 
 /** History depth → beat index, clamped so the script can never be exhausted. */
@@ -190,25 +221,43 @@ function lineForTier(beat: StubBeat, tier: PatienceTier): string {
 
 /**
  * Clue ids the card may reveal. Canned ids survive only while the request still
- * offers them; an observe card left with nothing falls back to the first
- * available clue so observing is never a wasted turn.
+ * offers them — an empty `availableClues` means "everything is already
+ * revealed" (matches the frozen proxy's rule, server/ai-proxy.mjs: "없으면
+ * clueReveals를 비운다"), so it filters to `[]` like any other case, never to
+ * "return every canned id unfiltered".
+ *
+ * An observe card left with nothing to reveal falls back to an available clue
+ * so observing is never a wasted turn — but ONLY a clue that belongs to this
+ * same script (`scriptClues`), so a customer's observe card can never surface
+ * a different customer's clue (the label and the revealed clue would drift
+ * apart with nothing to keep them related).
  */
-function clueRevealsFor(choice: StubChoice, availableClues: { id: string }[]): string[] {
+function clueRevealsFor(
+  choice: StubChoice,
+  availableClues: { id: string }[],
+  scriptClues: Set<string>,
+): string[] {
   const canned = choice.clueReveals ?? [];
-  if (availableClues.length === 0) return [...canned];
   const offered = new Set(availableClues.map((clue) => clue.id));
   const kept = canned.filter((id) => offered.has(id));
-  if (kept.length === 0 && choice.verb === 'observe') return [availableClues[0].id];
+  if (kept.length === 0 && choice.verb === 'observe') {
+    const candidate = availableClues.find((clue) => scriptClues.has(clue.id));
+    if (candidate !== undefined) return [candidate.id];
+  }
   return kept;
 }
 
-function toBeatChoice(choice: StubChoice, availableClues: { id: string }[]): BeatChoice {
+function toBeatChoice(
+  choice: StubChoice,
+  availableClues: { id: string }[],
+  scriptClues: Set<string>,
+): BeatChoice {
   const card: BeatChoice = {
     label: choice.label,
     verb: choice.verb,
     patienceCost: VERB_COSTS[choice.verb],
   };
-  const reveals = clueRevealsFor(choice, availableClues);
+  const reveals = clueRevealsFor(choice, availableClues, scriptClues);
   if (reveals.length > 0) card.clueReveals = reveals;
   return card;
 }
@@ -217,10 +266,20 @@ function toBeatChoice(choice: StubChoice, availableClues: { id: string }[]): Bea
 export function resolveBeat(data: StubDialogueData, req: DialogueRequest): DialogueBeat {
   const script = selectScript(data, req.customer.problem);
   const beat = script.beats[beatIndexFor(req.history.length, script.beats.length)];
-  return {
+  const scriptClues = scriptClueIds(script);
+  const built: DialogueBeat = {
     npcLine: lineForTier(beat, req.patienceTier),
-    choices: beat.choices.map((choice) => toBeatChoice(choice, req.availableClues)),
+    choices: beat.choices.map((choice) => toBeatChoice(choice, req.availableClues, scriptClues)),
   };
+  // Defensive self-check only — loadStubDialogue already validated every
+  // field this builds from, so this should never fire on real data. It
+  // exists so a future bug in this construction logic (not the data) fails
+  // loudly instead of silently shipping a beat the live path's own gate
+  // (isDialogueBeat) would have rejected.
+  if (!isDialogueBeat(built)) {
+    fail(`internal: resolved beat for "${script.problem}" failed isDialogueBeat (construction bug, not a data error)`);
+  }
+  return built;
 }
 
 /** FNV-1a — deterministic across runs and platforms, order-sensitive. */
@@ -267,11 +326,19 @@ export function createStubAdapter(config: StubAdapterConfig = {}): AIAdapter {
     },
     async portrait(req: PortraitRequest): Promise<PortraitSheet> {
       await sleep(latency.portraitMs);
-      return {
+      const sheet: PortraitSheet = {
         b64: '',
         prompt: `${data.portraitPromptPrefix}${req.traits.join(', ')}`,
         url: pickPortraitUrl(req.traits, pool),
       };
+      // Defensive self-check, same rationale as resolveBeat's above: this
+      // should never fire (pickPortraitUrl always returns a non-empty pool
+      // member), but a stub PortraitSheet the live path's own gate would
+      // reject (empty b64 AND empty/missing url) must never reach a caller.
+      if (!isPortraitSheet(sheet)) {
+        fail('internal: generated portrait sheet failed isPortraitSheet (construction bug, not a data error)');
+      }
+      return sheet;
     },
   };
 }
