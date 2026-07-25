@@ -7,7 +7,8 @@
 ## 진행 순서 (playability guide §3)
 
 1. **스타일 테스트** (`style-test.mjs`, 이 문서) — 후보 4종 × 1시트 → 사람이 승자 선택
-2. 승자 문장을 `data/generation.json`의 `styleBible`로 동결
+2. 승자 문장을 `data/generation.json`의 `styleBible`에 기록
+   (`styleBibleStatus: "provisional"`이면 본 팩 생성 전 재검토)
 3. 본 팩 생성기(`generate-pack.mjs`, 스타일 확정 후 작성) — 10콜 → 검수 → `assets/` 복사 → manifest
 4. proxy/adapter + `ai-smoke` PASS → 런 시작
 
@@ -44,6 +45,13 @@ OPENAI_API_KEY=... node style-test.mjs --only C
 | B | Style E + 고딕 던전 팔레트 (횃불 그림자, 웜 액센트 1색) |
 | C | 다크 판타지 고대비 — 굵은 검정 외곽선, 탈채도 + 핏빛 액센트 |
 | D | 1-bit 계열 — 4색 고딕 팔레트, 실루엣 극대화, 디더링 |
+
+## 현재 선택 상태
+
+- 2026-07-25: 후보 **A**를 첫 스타일 테스트의 현재 기준선으로 선택했다.
+- 이 선택은 최종 동결이 아니다. `data/generation.json`의
+  `styleBibleStatus: "provisional"` 및 `styleBibleRevisionPlanned: true`를 유지하고,
+  본 팩 생성기 작성·실행 전에 `styleBible` 문장을 개선한다.
 
 ## 판정 체크리스트
 

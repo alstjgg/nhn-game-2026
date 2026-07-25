@@ -1,0 +1,11 @@
+{
+  "styleBible": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette.",
+  "styleBibleStatus": "provisional",
+  "styleBibleRevisionPlanned": true,
+  "styleBibleNote": "Candidate A is the current baseline from the initial human-reviewed style test, not the final style lock. Refine this sentence before full-pack generation.",
+  "styleTest": {
+    "selectedCandidate": "A",
+    "selectedOn": "2026-07-25"
+  },
+  "pixelFactor": 4
+}
