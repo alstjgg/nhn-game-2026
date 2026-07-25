@@ -48,10 +48,22 @@ export interface PortraitRequest {
   traits: string[];
 }
 
-/** A generated 4×2 expression sheet (PNG base64) + the prompt used (manifest). */
+/**
+ * A generated 4×2 expression sheet (PNG base64) + the prompt used (manifest).
+ * `url` is ADDITIVE (v2, unit u1): the stub mode serves a bundled fallback sheet
+ * by URL instead of inlining base64, so nothing about the live payload changes.
+ */
 export interface PortraitSheet {
   b64: string;
   prompt: string;
+  url?: string;
+}
+
+/** The one way to build an <img> src: bundled sheet first, live base64 otherwise. */
+export function portraitSrc(sheet: PortraitSheet): string {
+  return sheet.url !== undefined && sheet.url.length > 0
+    ? sheet.url
+    : `data:image/png;base64,${sheet.b64}`;
 }
 
 /** GET /ai/health response. */

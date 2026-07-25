@@ -260,3 +260,34 @@ not gitignored) as it plays the real app at `/`:
 `01-entrance` · `02-conversation` · `03-crafting` · `04-handover` (the weighted
 `[건네기]` beat) · `05-overlap-revisit` (the §1.4 overlap: C1's 재방문 over C2's live
 talk) · `06-door-note` (the 문앞 쪽지 ending).
+
+## u1 — Stub adapter + boot factory (IMPLEMENT agent)
+
+### Spec gap: no design.md/spec.md for this unit
+`.claude/super/units/u1/` held only `tests.md` (the TDD-Red contract). The exported
+surface of `src/ai/stub.ts` (`loadStubDialogue` / `selectScript` / `beatIndexFor` /
+`resolveBeat` / `stableHash` / `pickPortraitUrl`) and of `src/ai/boot.ts`
+(`chooseMode` / `createBootAdapter`) is therefore **test-defined**, pinned from
+PRD §2.1 (800ms probe → live/stub) and §2.3 (latency only through the adapter).
+
+### The boot probe accepts a function *or* an object exposing one
+`tests/ai/boot.test.ts` passes the whole `fakeProbe()` spy (`{probe, args}`) as
+`deps.probe` in the AC15 cases, and the bare `spy.probe` function elsewhere. Rather
+than fail those cases, `BootDeps.probe` is typed `ProbeSource = HealthProbe |
+{ probe: HealthProbe }` and normalized by `toProbe()`. Harmless for production
+(u13 passes `probeHealth` directly), but it is an API shape the *tests* chose.
+
+### Portrait assets are ES-imported, so the pool is hashed at build time
+`assets/fallback-portrait-{1,2}.png` are `import`ed (not string paths) so Vite
+emits and fingerprints them. Under vitest the import resolves to a path containing
+the plain filename; in `dist` it becomes `assets/fallback-portrait-1-<hash>.png`.
+Any future assertion on a portrait URL must not assume the un-hashed name outside
+unit tests. Note the sheets only land in `dist` once u13 wires the adapter in —
+this unit deliberately leaves `src/main.ts` / `src/app/index.ts` untouched, so
+`stub.ts` is not yet in the bundle graph.
+
+### `data/stub-dialogue.json` states no patienceCost
+Cards carry `verb` only; the cost is stamped from `data/generation.json.verbCosts`
+at load time (single tuning source, AC5). The script `problem` keys are byte-exact
+matches of `data/customers.json` — `selectScript` does no trimming or fuzzy
+matching, so renaming a customer's problem silently drops that script to `default`.
