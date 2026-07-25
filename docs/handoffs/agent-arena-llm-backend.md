@@ -1,5 +1,12 @@
 # Handoff — Agent Arena LLM backend
 
+> [!IMPORTANT]
+> **Superseded (2026-07-25).** This service is retained as a verified reference
+> implementation and will not be deployed. The deployment path is now the
+> stateless turn-decision proxy (API Gateway → Lambda → Bedrock Converse) from
+> [the AWS/Bedrock research note](../llm-backend-aws-bedrock.md). The
+> [Next work](#next-work-void--superseded) section below is void.
+
 > Backend-only implementation state. Project-wide state remains in
 > `docs/status.md`.
 
@@ -143,13 +150,19 @@ that document is the single source for verification detail.
   but already-executed provider work cannot be preempted; use client-run functions
   when a strict pre-execution cap is required.
 
-## Next work
+## Next work (void — superseded)
 
-1. Configure the verified OpenAI and Claude aliases in the deployment
-   environment rather than relying on command-only overrides.
-2. Replace the public synthetic calculator MCP target with a team-owned HTTPS
-   endpoint, then pin and verify that deployment.
-3. Integrate the game backend's closed actions and durable state with this API.
+The items below are void: this service will not be deployed, and deployment
+follows [`docs/llm-backend-aws-bedrock.md`](../llm-backend-aws-bedrock.md)
+instead. What carries forward into the Lambda build: closed-action validation
+(`src/validation.ts`), the turn contract shapes, fail-closed registry/config
+validation, the non-root Docker pattern, and the live-smoke discipline.
+
+1. ~~Configure the verified OpenAI and Claude aliases in the deployment
+   environment rather than relying on command-only overrides.~~
+2. ~~Replace the public synthetic calculator MCP target with a team-owned HTTPS
+   endpoint, then pin and verify that deployment.~~
+3. ~~Integrate the game backend's closed actions and durable state with this API.~~
 
 The verified capability claim is limited to the exact allowlisted calculator MCP
 card and reviewed `arena-tactics` Skill fixture. Do not generalize it to
