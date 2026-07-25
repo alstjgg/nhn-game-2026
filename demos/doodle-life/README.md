@@ -1,5 +1,13 @@
 # Doodle Life — request-first vertical slice
 
+> ⚠️ **[폐기됨 · 2026-07-24 결정]** 이 데모(Doodle Life)는 데모 생성·테스트를 거쳐
+> 베이크오프 대상에서 **제외**되었습니다. 실제 플레이 결과 약 20초의 VLM 판독 지연,
+> 동일 그림에 대한 판정 편차, 난해한 NPC 대사, 낮은 체감 재미가 확인되어 개선 비용
+> 대비 효용이 낮다고 판단했습니다. 남은 트랙은 **Apothecary**와 **Agent Arena** 둘입니다.
+> 근거: [2026-07-24 데모 중간 점검 회의록](../../docs/meeting-notes/2026-07-24-demo-mid-check.md)
+> 확정 결정사항 #1. 이 PR은 기록 보존(커밋 히스토리 = 심사 제출물) 목적으로만 병합하며,
+> 이후 이 트랙의 개발은 진행하지 않습니다. 아래 문서는 당시 구현·평가 기록으로 남깁니다.
+
 주민의 부탁을 먼저 관찰하고, 해결책을 그림으로 답하는 로컬 웹 데모입니다. 현재 브라우저
 진입점은 request-first v2이며, 최신 게임 규칙은
 [`docs/game-concept-doodle-life.md`](../../docs/game-concept-doodle-life.md)를 따릅니다.
