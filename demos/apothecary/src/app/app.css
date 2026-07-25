@@ -189,6 +189,27 @@
   pointer-events: auto;
 }
 
+/* The notification's own exit (f2 fix): it belongs to the customer-2
+ * conversation it overlapped, so it fades out the moment the app moves past
+ * that phase — never lingering into the waiting beat / the next customer's
+ * conversation / the door-note ending. Reuses the fade vocabulary; clamped by
+ * the global prefers-reduced-motion guard like every other animation here. */
+@keyframes revisit-notification-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.revisit-notification--exit {
+  animation: revisit-notification-exit var(--duration-base) var(--ease-standard) both;
+  pointer-events: none;
+}
+
 /* Arrival ring (u9 juice): once the banner has popped in, a single accent ring
  * expands and fades out of the card edge — the "a past result just came back"
  * ping. It rides a pseudo-element so the note's OWN animation stays the u5

@@ -1,9 +1,18 @@
 /* waiting.css — screen-scoped scenery for the door-idle beat (u8).
  * Self-contained: colour/space/motion tokens come from base.css, while the
- * shared vocabulary in animations.css is left untouched (OCP) — the two
- * keyframes below are `waiting-*` prefixed and live only here.
- * The motion is deliberately non-indicative: a lamp that breathes and dust that
- * drifts. Nothing fills, sweeps, counts or otherwise reads as a meter. */
+ * shared vocabulary in animations.css is left untouched (OCP) — the one
+ * keyframe below is `waiting-*` prefixed and lives only here.
+ * The motion is deliberately non-indicative: dust that drifts and a seam of
+ * light that widens once. Nothing fills, sweeps, counts or otherwise reads as
+ * a meter.
+ *
+ * f3 fix: this screen used to paint its OWN flat door (a rounded box) and lamp
+ * (a gradient blob) — a second, vector-flat door+lantern rendered directly on
+ * top of u7's pixel-art `bg-shop.png` (src/styles/base.css), which already
+ * paints both. Two visual languages stacked on the same screen read as a
+ * rendering glitch in judge-facing screenshots, so this scene no longer draws
+ * either shape: only the light-seam and the dust motes remain, as accents that
+ * layer onto the painted art rather than compete with it. */
 
 .waiting {
   display: flex;
@@ -27,44 +36,20 @@
   justify-content: center;
 }
 
-.waiting__door {
-  position: relative;
-  width: 120px;
-  height: 180px;
-  border: 2px solid var(--color-border);
-  border-bottom: none;
-  border-radius: var(--radius-card) var(--radius-card) 0 0;
-  background: var(--color-surface);
-  overflow: hidden;
-  transition: background-color var(--duration-slow) var(--ease-emphasized);
-}
-
-/* The sliver of light under the door — widens when the beat settles. */
+/* The sliver of light under the painted door — widens when the beat settles.
+ * Grounded on the scene box itself (no CSS door shape underneath it). */
 .waiting__door-seam {
   position: absolute;
   left: 50%;
   bottom: 0;
   width: 2px;
-  height: 100%;
+  height: 96px;
   transform: translateX(-50%);
   background: var(--color-accent);
   opacity: 0.25;
   transition:
     width var(--duration-slow) var(--ease-emphasized),
     opacity var(--duration-slow) var(--ease-emphasized);
-}
-
-.waiting__lamp {
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  width: 96px;
-  height: 96px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--color-accent), transparent 70%);
-  opacity: 0.35;
-  animation: waiting-lamp-breathe 9s var(--ease-standard) infinite;
 }
 
 .waiting__mote {
@@ -82,19 +67,19 @@
 
 /* --- the injected line --------------------------------------------------- */
 
+/* Sits below the scene, clear of the painted door's window (bg-shop.png):
+ * a soft text-shadow keeps it legible over the busy shelves without a second
+ * flat panel drawn over the art. */
 .waiting__line {
   margin: 0;
   max-width: 32ch;
   text-align: center;
   line-height: 1.6;
   color: var(--color-text-dim);
+  text-shadow: 0 1px 6px rgb(0 0 0 / 70%);
 }
 
 /* --- settling: the caller opened the door -------------------------------- */
-
-.waiting[data-phase='settling'] .waiting__door {
-  background: var(--color-surface-hover);
-}
 
 .waiting[data-phase='settling'] .waiting__door-seam {
   width: 100%;
@@ -102,18 +87,6 @@
 }
 
 /* --- ambient keyframes --------------------------------------------------- */
-
-@keyframes waiting-lamp-breathe {
-  0%,
-  100% {
-    opacity: 0.28;
-    transform: translateX(-50%) scale(0.96);
-  }
-  50% {
-    opacity: 0.42;
-    transform: translateX(-50%) scale(1.04);
-  }
-}
 
 @keyframes waiting-mote-rise {
   0% {
@@ -130,12 +103,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .waiting__lamp,
   .waiting__mote {
     animation: none;
   }
 
-  .waiting__door,
   .waiting__door-seam {
     transition: none;
   }

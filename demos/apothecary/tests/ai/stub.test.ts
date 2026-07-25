@@ -360,7 +360,7 @@ describe('AC11 portrait() returns a bundled fallback sheet', () => {
     const sheet = await stub().portrait(portraitRequest());
     expect(typeof sheet.b64).toBe('string');
     expect(typeof sheet.prompt).toBe('string');
-    expect(sheet.prompt.length).toBeGreaterThan(0);
+    expect(sheet.prompt?.length).toBeGreaterThan(0);
     expect(typeof sheet.url).toBe('string');
   });
 

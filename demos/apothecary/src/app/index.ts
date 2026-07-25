@@ -179,11 +179,31 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
   (window as unknown as { __app: AppTestApi }).__app = api;
 
   /**
+   * Clears the overlap overlay (재방문 notification) whenever the stage moves
+   * to a new phase. The notification exists to overlap the ONE live
+   * conversation it was mounted during (§1.4) — left unmounted, it lingers
+   * through every later phase (the following waiting beat, the next
+   * customer's whole conversation, even the door-note ending; f2). It is not
+   * pinned to any single roster slot, so this lives in the shared swap path
+   * rather than any one phase function.
+   */
+  function clearOverlay(): void {
+    const lingering = Array.from(overlayLayer.children) as HTMLElement[];
+    for (const node of lingering) {
+      node.classList.add('revisit-notification--exit');
+      const drop = (): void => node.remove();
+      node.addEventListener('animationend', drop, { once: true });
+      window.setTimeout(drop, EXIT_FALLBACK_MS);
+    }
+  }
+
+  /**
    * Swap the stage to a fresh screen, animating the old one out and the new one
    * in (§4.6 — never an instant swap). Returns the new wrapper so the caller can
    * mount a screen into it.
    */
   function swapStage(): HTMLElement {
+    clearOverlay();
     const outgoing = stage.firstElementChild as HTMLElement | null;
     if (outgoing) {
       outgoing.classList.remove('phase-enter');

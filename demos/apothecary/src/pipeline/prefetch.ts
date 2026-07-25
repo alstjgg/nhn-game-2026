@@ -14,6 +14,7 @@ import type { CancelTimer, Clock } from './clock.ts';
 import type { AIAdapter } from '../ai/adapter.ts';
 import {
   isDialogueBeat,
+  isPortraitSheet,
   type DialogueBeat,
   type DialogueRequest,
   type PortraitRequest,
@@ -119,28 +120,15 @@ export interface PrefetchHandle {
 }
 
 /**
- * Response gate for the portrait track (the dialogue one lives in
- * contract.ts; this one stays here because prefetch.ts is the only file
- * this unit's file_globs cover — contract.ts is out of scope for u5).
- *
- * Deliberately matches createLiveAdapter.portrait's own gate exactly: b64
- * only. `prompt` is manifest metadata (CLAUDE.md rule 5), not image
- * validity, so a live response with a valid image and a missing/blank
- * prompt must not be thrown away here just because a stricter check would
- * reject it — that would silently cost us live portraits that the adapter
- * itself already accepted. Consumers reading `.prompt` should treat it as
- * best-effort display metadata, not a value the type system truly guarantees
- * is present.
- * TODO(follow-up, outside u5 file_globs): contract.ts types
- * `PortraitSheet.prompt` as a required string; consider loosening it to
- * optional there so the type stops promising more than this gate (or the
- * adapter) actually delivers.
+ * Response gate for the portrait track. Re-exported from contract.ts's
+ * `isPortraitSheet` — THE single gate shared with the live adapter and the
+ * stub's own self-check (see contract.ts's doc comment). This module used to
+ * carry its own b64-only copy, which meant a live/hosted portrait delivered
+ * by `url` (b64 empty) was silently discarded here even though contract.ts's
+ * gate — and `portraitSrc()` — already treat b64-empty-with-url as valid
+ * (integration f1). Do not re-fork this check.
  */
-export function isPortraitSheet(v: unknown): v is PortraitSheet {
-  if (typeof v !== 'object' || v === null) return false;
-  const sheet = v as Record<string, unknown>;
-  return typeof sheet.b64 === 'string' && sheet.b64.length > 0;
-}
+export { isPortraitSheet };
 
 interface Track<T> {
   status: TrackStatus;

@@ -76,22 +76,25 @@ export function createSettleLatch(onSettled?: () => void): SettleLatch {
 /** Decorative dust specks; each gets an index the stylesheet staggers on. */
 const MOTE_COUNT = 3;
 
-/** Build the purely decorative scenery — hidden from assistive tech. */
+/**
+ * Build the purely decorative scenery — hidden from assistive tech.
+ *
+ * Deliberately does NOT paint its own door or lamp shape: u7's pixel-art
+ * `bg-shop.png` (src/styles/base.css) already paints a door and a hanging
+ * lantern behind every screen, so a second, flat CSS door/lamp drawn on top
+ * of it read as a rendering glitch in judge-facing screenshots (f3). This
+ * scene only adds the light-seam (grounded on the scene box itself, not a
+ * door shape) and the drifting dust motes — ambient accents that layer onto
+ * the painted art instead of competing with it.
+ */
 function buildScene(): HTMLElement {
   const scene = document.createElement('div');
   scene.className = 'waiting__scene';
   scene.setAttribute('aria-hidden', 'true');
 
-  const door = document.createElement('div');
-  door.className = 'waiting__door';
   const seam = document.createElement('span');
   seam.className = 'waiting__door-seam';
-  door.append(seam);
-
-  const lamp = document.createElement('span');
-  lamp.className = 'waiting__lamp';
-
-  scene.append(door, lamp);
+  scene.append(seam);
 
   for (let i = 0; i < MOTE_COUNT; i += 1) {
     const mote = document.createElement('span');

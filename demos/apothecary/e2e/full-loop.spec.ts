@@ -620,6 +620,9 @@ test.describe('full loop v2 — three customers end to end (u14 final gate)', ()
       onConversation: async (scope) => {
         await expect(scope.getByTestId(TID.portrait)).toBeVisible();
         await assertNoPatienceNumbers(page);
+        // f2 regression: C1's 재방문 notification belonged to C2's conversation
+        // (phase 5) — it must not still be sitting in the overlay layer here.
+        await expect(page.getByTestId(TID.revisit)).toHaveCount(0);
         await shoot(page, '08-c3-conversation');
       },
     });

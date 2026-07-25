@@ -57,10 +57,14 @@ export interface PortraitRequest {
  * opposite (`url` unset, `b64` required — see `src/ai/adapter.ts`'s guard on
  * an empty `b64`). Never read `b64` directly to build an `<img>` src — use
  * `portraitSrc()`, the only accessor that is safe across both modes.
+ *
+ * `prompt` is manifest metadata (CLAUDE.md rule 5), not image validity — it is
+ * best-effort display text, not something the type system (or `isPortraitSheet`)
+ * truly guarantees is present or well-formed.
  */
 export interface PortraitSheet {
   b64: string;
-  prompt: string;
+  prompt?: string;
   url?: string;
 }
 
@@ -72,14 +76,20 @@ export function portraitSrc(sheet: PortraitSheet): string {
 }
 
 /**
- * Validator shared by the live adapter (response gate) and the stub's own
- * self-check. A sheet with an empty `b64` AND no/empty `url` is invalid — that
- * is exactly the shape `portraitSrc()` cannot turn into a real image.
+ * THE single portrait response gate — shared by the live adapter, the
+ * prefetch pipeline's response gate (re-exported from
+ * `src/pipeline/prefetch.ts`) and the stub's own self-check. Do not fork this
+ * check: a second copy is exactly how the b64-only track silently discarded
+ * every url-only sheet (integration f1).
+ *
+ * A sheet with an empty `b64` AND no/empty `url` is invalid — that is exactly
+ * the shape `portraitSrc()` cannot turn into a real image. `prompt` is never
+ * checked here: it is manifest metadata, not image validity, so a missing,
+ * empty or malformed `prompt` must not cost us an otherwise-valid image.
  */
 export function isPortraitSheet(v: unknown): v is PortraitSheet {
   if (typeof v !== 'object' || v === null) return false;
   const s = v as Record<string, unknown>;
-  if (typeof s.prompt !== 'string' || s.prompt.length === 0) return false;
   if (typeof s.b64 !== 'string') return false;
   if (s.url !== undefined && typeof s.url !== 'string') return false;
   const hasB64 = s.b64.length > 0;

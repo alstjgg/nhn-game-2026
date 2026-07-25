@@ -830,6 +830,32 @@ describe('AC4 — failures are absorbed into the fallback, never surfaced (§3-5
     expect(isPortraitSheet('aaa')).toBe(false);
   });
 
+  it('f1 — isPortraitSheet accepts a url-only sheet (b64 empty, url non-empty) — this is exactly the stub adapter\'s shape', () => {
+    expect(isPortraitSheet({ b64: '', prompt: 'p', url: '/assets/npc/sheet.png' })).toBe(true);
+    expect(isPortraitSheet({ b64: '', prompt: 'p', url: '' })).toBe(false); // no image at all
+    expect(isPortraitSheet({ b64: '', prompt: 'p' })).toBe(false); // no image at all
+  });
+
+  it('f1 — a url-only portrait sheet (the stub/bundled-pack shape: {b64:\'\', prompt, url}) reaches status READY, not fallback', async () => {
+    const fallback = makeStubAdapter();
+    const urlOnlySheet: PortraitSheet = {
+      b64: '',
+      prompt: 'weary merchant, 4x2 expression sheet',
+      url: '/assets/npc/weary-merchant.png',
+    };
+    const handle = startPrefetch({
+      adapter: makeResolvingAdapter(validBeat(), urlOnlySheet),
+      fallbackAdapter: fallback.adapter,
+      clock: createManualClock(),
+      request: makeRequest(),
+    });
+
+    await flush();
+    expect(handle.getState().portrait).toEqual({ status: 'ready', value: urlOnlySheet });
+    expect(fallback.calls.portrait).toBe(0);
+    handle.cancel();
+  });
+
   it('AC4-d — no adapter error message or error-shaped key ever reaches the state', async () => {
     const secret = 'ORACLE-BOOM-1234';
     const handle = startPrefetch({
