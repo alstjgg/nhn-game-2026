@@ -288,6 +288,14 @@ async function runToolCall(req, cfg, spec) {
     actionIds: tool.input_schema.properties.action.enum,
   };
 
+  // INV-4: forced tool-use lets the model pick an enumerated id and nothing
+  // else. An empty enum leaves no legal answer at all, so the call could only
+  // come back schema-invalid — refuse before it is spent. 503 ("cannot be
+  // composed"), not 502, which means the vendor was reached and failed.
+  if (ctx.actionIds.length === 0) {
+    return { status: 503, body: { error: 'no action on offer — nothing to decide' } };
+  }
+
   let res;
   try {
     res = await fetch(ANTHROPIC_URL, {
@@ -312,8 +320,14 @@ async function runToolCall(req, cfg, spec) {
   }
 
   if (!res.ok) {
-    const detail = await res.text().catch(() => '');
-    return { status: 502, body: { error: `anthropic ${res.status}: ${String(detail).slice(0, 200)}` } };
+    // INV-2: a vendor 4xx quotes the offending request back — which can carry
+    // the key and the server-composed prose. Splicing that into the response
+    // would push both across the membrane, so the caller gets the status and
+    // nothing else (it falls back silently anyway). The detail stays here, in
+    // the dev server's own terminal, with the key redacted even from that.
+    const detail = String(await res.text().catch(() => '')).slice(0, 500);
+    console.error(`[ai-proxy] upstream ${res.status}: ${detail.split(key).join('[key redacted]')}`);
+    return { status: 502, body: { error: `upstream rejected the call (${res.status})` } };
   }
 
   let json;
@@ -384,13 +398,18 @@ export function aiProxy() {
     name: 'darkest-context-ai-proxy',
     apply: 'serve', // dev server only — the build never carries this middleware
     configureServer(server) {
-      server.middlewares.use('/ai/health', (_nodeReq, res) =>
-        send(res, 200, {
-          ok: !!apiKey(),
-          decide: !!apiKey(),
-          stance: !!apiKey(),
-          models: { ...MODELS },
-        }),
+      // PRD §2.1 declares exactly one verb here: the adapter's GET boot probe.
+      // Anything else is a request this proxy has no answer for, and is refused
+      // the same way /ai/decide refuses a non-POST.
+      server.middlewares.use('/ai/health', (nodeReq, res) =>
+        nodeReq.method !== 'GET'
+          ? send(res, 405, { error: 'GET only' })
+          : send(res, 200, {
+              ok: !!apiKey(),
+              decide: !!apiKey(),
+              stance: !!apiKey(),
+              models: { ...MODELS },
+            }),
       );
       server.middlewares.use('/ai/decide', post(handleDecide));
       server.middlewares.use('/ai/stance', post(handleStance));

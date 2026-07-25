@@ -30,7 +30,8 @@
 //   requires the loader to tolerate a bare array too, since u4 owns that call.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -1076,3 +1077,246 @@ describe('human-run gates are written down', () => {
     expect(md).toMatch(/live/i);
   });
 });
+
+// ═══════════════════════ wave 2 (TDD-Red) — acceptance-criterion gaps ═══════════════════════
+//
+// The first wave of this file was written against an implementation that already
+// existed in the worktree, so it documents behaviour rather than driving it. The
+// blocks below re-read the five acceptance criteria and pin the seam behaviour
+// they require but nothing yet asserted. Same six `-t` filter phrases apply.
+
+// ─────────── AC2 — the engine-facing type surface other units build against ───────────
+
+describe('validator: contract.ts exports the request types engine units build against', () => {
+  // Type-only imports vanish at runtime (esbuild strips them without checking),
+  // so the vitest run alone cannot notice a deleted interface. Pin the source.
+  const declared = (name: string) =>
+    new RegExp(`export\\s+(interface|type)\\s+${name}\\b`).test(stripComments(read('src/ai/contract.ts')));
+
+  it('declares SituationSnapshot and StanceRequest as exported types (AC2)', () => {
+    expect(declared('SituationSnapshot'), 'SituationSnapshot must be exported').toBe(true);
+    expect(declared('StanceRequest'), 'StanceRequest must be exported').toBe(true);
+  });
+
+  it('declares the rest of the request surface those two are assembled from', () => {
+    for (const name of ['EntityView', 'SelfView', 'ActionOption', 'DecideRequest', 'StanceOption', 'SheetRef', 'ValidationCtx']) {
+      expect(declared(name), `${name} must be exported from contract.ts`).toBe(true);
+    }
+  });
+
+  it('is the SAME function the proxy imports — ai-proxy.mjs pulls it from src/ai/contract.ts (INV-5)', () => {
+    const src = stripComments(read('server/ai-proxy.mjs'));
+    expect(src, 'the proxy must import isAgentDecision from the contract').toMatch(
+      /import[\s\S]{0,200}isAgentDecision[\s\S]{0,160}from\s+['"][^'"]*src\/ai\/contract(\.ts)?['"]/,
+    );
+    expect(src, 'the proxy must not define a second schema gate').not.toMatch(/function\s+isAgentDecision/);
+  });
+});
+
+// ─────────── AC4 — an unanswerable tool schema must never reach the vendor ───────────
+
+describe('prompt composition: an empty choice set is refused before the vendor call (INV-4)', () => {
+  const KEY = 'sk-ant-test-key-not-real';
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    process.env.ANTHROPIC_API_KEY = KEY;
+    fetchMock = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ content: [{ type: 'tool_use', name: 'emit', input: GOOD }] }),
+      text: async () => '',
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+  });
+
+  afterEach(() => {
+    delete process.env.ANTHROPIC_API_KEY;
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  // Forced tool-use lets the model pick an enumerated id and nothing else
+  // (INV-4). With an empty enum there is no legal answer at all: the call can
+  // only come back schema-invalid, so it must never be spent. 503 is the
+  // existing "this call cannot be composed" family (no key / data unavailable),
+  // as opposed to 502 which means the vendor was reached and failed.
+  it('handleDecide makes NO call and returns 503 when the snapshot offers zero actions', async () => {
+    const { handleDecide } = await loadProxy();
+    const req: DecideRequest = { ...DECIDE_REQ, snapshot: { ...SNAPSHOT, availableActions: [] } };
+    const res = await handleDecide(req, cfg());
+    expect(fetchMock, 'an empty action enum must not burn a vendor call').not.toHaveBeenCalled();
+    expect(res.status).toBe(503);
+    expect(typeof (res.body as { error?: unknown }).error).toBe('string');
+  });
+
+  it('handleStance makes NO call and returns 503 when the council offers zero options', async () => {
+    const { handleStance } = await loadProxy();
+    const res = await handleStance({ ...STANCE_REQ, options: [] }, cfg());
+    expect(fetchMock, 'an empty option enum must not burn a vendor call').not.toHaveBeenCalled();
+    expect(res.status).toBe(503);
+  });
+
+  it('still calls the vendor when exactly one action is on offer', async () => {
+    const { handleDecide } = await loadProxy();
+    const one: DecideRequest = {
+      ...DECIDE_REQ,
+      snapshot: { ...SNAPSHOT, availableActions: [SNAPSHOT.availableActions[0]] },
+    };
+    await handleDecide(one, cfg());
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ─────────── AC3 — the upstream error path is part of the client-facing surface ───────────
+
+describe('no secrets: an upstream error never carries the key or the composed prose back', () => {
+  const KEY = 'sk-ant-test-key-not-real';
+  const TONE = (JSON.parse(read('data/prompting.json')) as { tierTones: string[] }).tierTones[2];
+  const HERO_PROSE = HEROES_FIXTURE.heroes[0].defaultPrompt.text;
+
+  const upstreamError = (message: string) => ({
+    ok: false,
+    status: 400,
+    text: async () => JSON.stringify({ type: 'error', error: { type: 'invalid_request_error', message } }),
+    json: async () => ({ type: 'error', error: { type: 'invalid_request_error', message } }),
+  });
+
+  beforeEach(() => {
+    process.env.ANTHROPIC_API_KEY = KEY;
+  });
+
+  afterEach(() => {
+    delete process.env.ANTHROPIC_API_KEY;
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  // A vendor 400 quotes the offending request back. Splicing that text into the
+  // proxy response would push server-side prompt prose across the membrane to
+  // the client — exactly what INV-2 / AC3 forbid ("no key/prompt prose reaches
+  // the client"). The status is all the caller needs; it falls back silently.
+  it('does not echo composed system prose that an upstream error quoted back', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => upstreamError(`system: ${HERO_PROSE} / ${TONE}`)));
+    const { handleDecide } = await loadProxy();
+    const res = await handleDecide(DECIDE_REQ, cfg());
+    const out = JSON.stringify(res.body);
+    expect(res.status).toBe(502);
+    expect(out, 'sheet prose leaked to the client through the error body').not.toContain(HERO_PROSE);
+    expect(out, 'tier tone prose leaked to the client through the error body').not.toContain(TONE);
+  });
+
+  it('does not echo the api key when the upstream error body repeats it', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => upstreamError(`authentication failed for ${KEY}`)));
+    const { handleDecide } = await loadProxy();
+    const res = await handleDecide(DECIDE_REQ, cfg());
+    expect(res.status).toBe(502);
+    expect(JSON.stringify(res.body), 'the key leaked through the upstream error body').not.toContain(KEY);
+  });
+
+  it('still tells the caller something went upstream, without the payload', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => upstreamError('rate limited')));
+    const { handleDecide } = await loadProxy();
+    const res = await handleDecide(DECIDE_REQ, cfg());
+    expect(typeof (res.body as { error?: unknown }).error).toBe('string');
+    expect((res.body as { error: string }).error.length).toBeGreaterThan(0);
+  });
+});
+
+// ─────────── AC3 — the dist gate itself, and what the build must not contain ───────────
+
+describe('no secrets: the dist gate fails closed', () => {
+  const tmpDirs: string[] = [];
+  const scratch = (): string => {
+    const dir = mkdtempSync(join(tmpdir(), 'u2-gate-'));
+    tmpDirs.push(dir);
+    return dir;
+  };
+  const runGate = (dir: string): void => {
+    execFileSync('node', [p('scripts/gate-secrets.mjs'), dir], { stdio: 'pipe' });
+  };
+
+  afterEach(() => {
+    while (tmpDirs.length > 0) rmSync(tmpDirs.pop() as string, { recursive: true, force: true });
+  });
+
+  it('exits non-zero when a provider token sits in the scanned dir', () => {
+    const dir = scratch();
+    writeFileSync(join(dir, 'main.js'), 'const k = import.meta.env.ANTHROPIC_API_KEY;');
+    expect(() => runGate(dir), 'the gate must catch a planted provider token').toThrow();
+  });
+
+  it('exits non-zero when the scanned dir does not exist (a gate that cannot look is not a gate)', () => {
+    expect(() => runGate(join(scratch(), 'never-built'))).toThrow();
+  });
+
+  it('exits 0 on a clean dir', () => {
+    const dir = scratch();
+    writeFileSync(join(dir, 'main.js'), 'console.log("stub mode");');
+    expect(() => runGate(dir)).not.toThrow();
+  });
+
+  it.skipIf(!existsSync(p('dist')))(
+    'a built dist carries no /ai route, no env token and no composed prose',
+    () => {
+      const tone = (JSON.parse(read('data/prompting.json')) as { tierTones: string[] }).tierTones[0];
+      const walk = (dir: string): string[] =>
+        readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+          e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)],
+        );
+      for (const file of walk(p('dist'))) {
+        const text = readFileSync(file, 'latin1');
+        for (const token of ['/ai/decide', '/ai/stance', '/ai/health', 'ANTHROPIC_API_KEY', tone]) {
+          expect(text.includes(token), `${file} contains "${token}"`).toBe(false);
+        }
+      }
+    },
+  );
+});
+
+// ─────────── AC1 — the health route is a GET probe, not an open endpoint ───────────
+
+describe('plugin shape: /ai/health answers the boot probe only', () => {
+  const routesOf = async (): Promise<Map<string, (req: unknown, res: unknown) => unknown>> => {
+    const { aiProxy } = await loadProxy();
+    const routes = new Map<string, (req: unknown, res: unknown) => unknown>();
+    aiProxy().configureServer({
+      middlewares: {
+        use: (path: string, h: (req: unknown, res: unknown) => unknown) => void routes.set(path, h),
+      },
+    });
+    return routes;
+  };
+
+  const fakeRes = () => {
+    const res = {
+      statusCode: 0,
+      payload: '',
+      setHeader() {},
+      end(chunk: string) {
+        res.payload = chunk;
+      },
+    };
+    return res;
+  };
+
+  afterEach(() => {
+    delete process.env.ANTHROPIC_API_KEY;
+  });
+
+  it('answers 200 to the GET probe the adapter boots with', async () => {
+    const res = fakeRes();
+    await (await routesOf()).get('/ai/health')?.({ method: 'GET' }, res);
+    expect(res.statusCode).toBe(200);
+  });
+
+  // PRD §2.1 declares exactly one verb here: GET /ai/health. Anything else is a
+  // request the dev proxy has no answer for and must refuse, like /ai/decide
+  // already refuses a non-POST.
+  it('answers 405 to a POST on the health route', async () => {
+    const res = fakeRes();
+    await (await routesOf()).get('/ai/health')?.({ method: 'POST', on: () => {} }, res);
+    expect(res.statusCode).toBe(405);
+  });
+});
+>>>>>>> origin/super/u2/20260725-153055
