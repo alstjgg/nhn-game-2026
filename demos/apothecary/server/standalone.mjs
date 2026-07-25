@@ -1,18 +1,26 @@
 // Standalone AI server — the same three /ai/* endpoints the Vite dev-proxy
-// serves, packaged as a deployable node:http service (zero dependencies).
-// This is the piece that lets the Pages-hosted demo run live AI: deploy this
-// next to the API keys (e.g. an AWS host), build the client with
-// VITE_AI_BASE_URL pointing here, and src/ai/adapter.ts does the rest.
+// serves, packaged as a node:http service (zero dependencies).
+//
+// LOCAL FALLBACK ONLY — this is NOT the deployment target. The deployed
+// live-AI path is the common LLM layer (GitHub Pages → API Gateway → Lambda →
+// Bedrock; see docs/handoffs/llm-layer.md). This server exists for local and
+// container runs that need the live endpoints without a Vite dev server
+// (e.g. serving a built dist/): build the client with VITE_AI_BASE_URL
+// pointing here, and src/ai/adapter.ts does the rest.
 //
 // Prompt composition and vendor calls live in server/handlers.mjs (shared with
-// the dev-proxy). This file adds only what public exposure requires:
+// the dev-proxy; llm-layer phase 1 ports them into the Lambda wrapper). This
+// file adds only what network exposure requires:
 //   - CORS allowlist (AI_ALLOWED_ORIGINS, comma-separated; e.g. the Pages origin)
 //   - fixed-window per-IP rate limits so a stranger can't drain the keys
 //   - request-body size cap (handlers.readJson)
 //
 // There is deliberately NO bearer token: any token shipped in the Pages bundle
-// would be public anyway. Per-IP quotas + CORS are the protection tier this
-// demo needs; player sessions/quotas beyond that are the (future) BFF's job.
+// would be public anyway. Per-IP quotas + CORS are adequate for a local
+// fallback, but they are NOT the public deployment's cost protection — that
+// lives at the AWS edge (API Gateway throttling, reserved concurrency, budget
+// alarms; llm-layer decision 8). Player sessions/quotas beyond that are the
+// (future) BFF's job.
 //
 // Env:
 //   ANTHROPIC_API_KEY / OPENAI_API_KEY   vendor keys (either enables its route)

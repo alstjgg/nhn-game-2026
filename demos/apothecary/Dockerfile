@@ -2,6 +2,10 @@
 # there is no install step; the image is the runtime, the server files, and
 # the balance data the prompts are composed from.
 #
+# LOCAL/CONTAINER FALLBACK ONLY — not the deployment target. The deployed
+# live-AI path is the common LLM layer (API Gateway → Lambda → Bedrock;
+# docs/handoffs/llm-layer.md).
+#
 # Build from demos/apothecary/ so data/generation.json is in context:
 #   docker build -t apothecary-ai .
 #   docker run --rm -p 8791:8791 \
