@@ -1,0 +1,64 @@
+{
+  "agendas": [
+    {
+      "id": "riddle_golem",
+      "kind": "puzzle",
+      "prompt": "돌로 된 골렘이 길을 막고 묻는다. 나눌수록 커지는 것은 무엇인가?",
+      "answerOptionId": "op_riddle_knowledge",
+      "hintLine": "렌즈 너머로 골렘의 몸에 새겨진 글자가 읽힌다. 입에서 입으로 옮겨도 줄지 않는 것.",
+      "options": [
+        { "id": "op_riddle_knowledge", "text": "지식", "relatedStat": "int" },
+        { "id": "op_riddle_gold", "text": "금화", "relatedStat": "cha" },
+        { "id": "op_riddle_shadow", "text": "그림자", "relatedStat": "wis" }
+      ]
+    },
+    {
+      "id": "fallen_merchant",
+      "kind": "choice",
+      "prompt": "길가에 상인이 쓰러져 있다. 숨은 붙어 있지만, 해가 지기 전에 다음 타일에 닿아야 한다.",
+      "answerOptionId": null,
+      "hintLine": null,
+      "options": [
+        { "id": "op_merchant_save", "text": "구한다", "relatedStat": "wis" },
+        { "id": "op_merchant_pass", "text": "지나친다", "relatedStat": "int" }
+      ]
+    }
+  ],
+  "rewards": {
+    "t1": { "kind": "fixed", "cardId": "taunt" },
+    "t2": {
+      "kind": "draft",
+      "optionCardIds": ["fearless", "gambler", "translation_lens"],
+      "countRef": "draft.optionCount",
+      "pickCountRef": "draft.pickCount"
+    },
+    "t3a": {
+      "kind": "conditional",
+      "on": "riddle_golem",
+      "branches": {
+        "correct": { "cardId": "mirror_shield" },
+        "wrong": { "gaugeAllRef": "gauge.puzzleWrong" }
+      }
+    },
+    "t3b": {
+      "kind": "conditional",
+      "on": "fallen_merchant",
+      "branches": {
+        "op_merchant_save": { "cardId": "compassion" },
+        "op_merchant_pass": {}
+      }
+    },
+    "t4a": {
+      "kind": "draft",
+      "optionCardIds": ["grudge", "allies_first", "flame_scroll"],
+      "countRef": "draft.optionCount",
+      "pickCountRef": "draft.pickCount"
+    },
+    "t5": {
+      "kind": "draft",
+      "optionCardIds": ["dual_slash", "healing_potion_x3", "gambler"],
+      "countRef": "draft.optionCount",
+      "pickCountRef": "draft.pickCount"
+    }
+  }
+}

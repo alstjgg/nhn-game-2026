@@ -1,0 +1,44 @@
+{
+  "monsters": [
+    {
+      "id": "spam_golem",
+      "name": "스팸 골렘",
+      "hp": 36,
+      "damage": 4,
+      "gaugeOnHitExtraRef": "gauge.spamGolemExtra",
+      "behavior": { "rule": "lowest_hp_hero" }
+    },
+    {
+      "id": "hallucination_spirit",
+      "name": "환각 정령",
+      "hp": 22,
+      "damage": 0,
+      "gaugeOnAttackRef": "gauge.spiritAttack",
+      "behavior": { "rule": "highest_gauge_hero" }
+    }
+  ],
+  "rosters": [
+    {
+      "id": "roster_t1",
+      "tileId": "t1",
+      "entries": [{ "instanceId": "t1_spam_golem_1", "monsterId": "spam_golem" }]
+    },
+    {
+      "id": "roster_t5",
+      "tileId": "t5",
+      "entries": [
+        { "instanceId": "t5_spam_golem_1", "monsterId": "spam_golem" },
+        { "instanceId": "t5_hallucination_spirit_1", "monsterId": "hallucination_spirit" }
+      ]
+    },
+    {
+      "id": "roster_t7",
+      "tileId": "t7",
+      "entries": [
+        { "instanceId": "t7_spam_golem_1", "monsterId": "spam_golem" },
+        { "instanceId": "t7_spam_golem_2", "monsterId": "spam_golem" },
+        { "instanceId": "t7_hallucination_spirit_1", "monsterId": "hallucination_spirit" }
+      ]
+    }
+  ]
+}

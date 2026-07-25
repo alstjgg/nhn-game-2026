@@ -1,0 +1,31 @@
+{
+  "gauge": {
+    "onHit": 10,
+    "spamGolemExtra": 10,
+    "spiritAttack": 25,
+    "puzzleWrong": 15,
+    "max": 100,
+    "tiers": { "calm": 0, "uneasy": 40, "limit": 70, "overload": 100 },
+    "rest": { "think": -50, "clearTo": 0 }
+  },
+  "damage": {
+    "strike": 3,
+    "defend": 2,
+    "dual_slash": [2, 3],
+    "flame_scroll": 4,
+    "healing_potion_x3": 6,
+    "mirror_shield": 30
+  },
+  "latency": {
+    "stub": 900,
+    "unit": 0,
+    "e2e": "scripted",
+    "scripted": [120, 240, 180]
+  },
+  "timeout": { "stub": 3000, "live": 8000, "healthProbe": 800 },
+  "walk": { "durationMs": 4000, "testDurationMs": 0 },
+  "slots": { "prompt": 3, "skill": 2, "mcp": 3 },
+  "draft": { "optionCount": 3, "pickCount": 1 },
+  "tieBreak": { "stub": "index", "live": "random", "test": "index" },
+  "chatter": { "minPerWalk": 2, "maxPerWalk": 3 }
+}
