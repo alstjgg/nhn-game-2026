@@ -3,6 +3,15 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-07-24)
+
+**Demo phase — bake-off narrowed to 2 tracks.** The 2026-07-24 mid-check dropped
+Doodle Life after playtesting its demo (VLM read latency ~20s, verdict variance on
+identical drawings, opaque NPC dialogue, low felt fun). Remaining tracks: **Apothecary**
+(demo in progress via super-pipeline) and **Agent Arena** (simplified to a "build-an-agent"
+game — no real MCP wiring; examples/Brief must be locked before its PRD + demo). Final
+concept selection targeted for 2026-07-25 (at schedule risk — Agent Arena has no demo yet).
+
 ## Status (2026-07-22)
 
 **Demo phase.** Concept drafting is closed: the 2026-07-22 team meeting consolidated the
@@ -18,16 +27,21 @@ change here.
 
 | Track | Demo location | Merged from | Demo state |
 |---|---|---|---|
-| Agent arena — build an LLM agent from structured items, pit it in auto-battles | `demos/agent-arena/` | [agent-roguelike](./game-concept-agent-roguelike.md) + [autobattler](./game-concept-autobattler.md), combined | not started |
-| Apothecary — read what customers *actually* ail from and prescribe | `demos/apothecary/` | [apothecary](./game-concept-apothecary.md), absorbing [blacksmith](./game-concept-blacksmith.md) | not started |
-| Doodle Life — read residents' requests and draw living solutions | `demos/doodle-life/` | [doodle-life](./game-concept-doodle-life.md), absorbing [placement](./game-concept-placement.md) | playable full-AI prototype evaluated; redesigning around three bounded generation stages and clue-driven NPC puzzles |
+| Agent arena — build an LLM agent from structured items, pit it in auto-battles | `demos/agent-arena/` | [agent-roguelike](./game-concept-agent-roguelike.md) + [autobattler](./game-concept-autobattler.md), combined | not started — examples/Brief being locked first |
+| Apothecary — read what customers *actually* ail from and prescribe | `demos/apothecary/` | [apothecary](./game-concept-apothecary.md), absorbing [blacksmith](./game-concept-blacksmith.md) | in progress (super-pipeline) |
+
+> ~~Doodle Life — read residents' requests and draw living solutions~~ — **cut 2026-07-24**
+> from the bake-off (its absorbed [placement](./game-concept-placement.md) concept paused
+> too). Demo stays in history as evaluated-and-rejected. Ref:
+> [meeting-notes/2026-07-24-demo-mid-check.md](./meeting-notes/2026-07-24-demo-mid-check.md).
 
 ## Next steps (priority order)
 
-1. Scaffold `demos/` — three subdirectories, per-demo stack choice (separate task).
-2. Build each demo's core loop to minimally playable.
-3. Demo bake-off: compare plausibility, select the final concept.
-4. Phase transition: update CLAUDE.md, begin the real build at the repo root.
+1. Lock Agent Arena examples (prompt/skill/task/turn-combat) + Brief.
+2. Finish Apothecary demo (super-pipeline).
+3. Build Agent Arena PRD → super-pipeline play demo.
+4. Bake-off: compare Apothecary vs Agent Arena, select final concept (target 2026-07-25).
+5. Phase transition: update CLAUDE.md, begin the real build at the repo root.
 
 ## Open TODOs
 
@@ -37,6 +51,13 @@ change here.
 
 ## Decision log
 
+- 2026-07-24 — Doodle Life cut from the bake-off (placement absorption paused too);
+  focus on Apothecary + Agent Arena. Ref: meeting-notes/2026-07-24-demo-mid-check.md.
+- 2026-07-24 — Agent Arena scoped down: no real MCP integration (concept-only as game
+  rules), augment-style card picks (not deckbuilding), branching auto-advance map,
+  turn-based spectator combat.
+- 2026-07-24 — super-pipeline: document structure + PR/Issue/Review trail as methodology
+  evidence rather than open-sourcing the full pipeline repo.
 - 2026-07-22 — Blacksmith absorption executed: apothecary doc gains 단골 아크 (§5.8),
   [정석]/[실험] 조제 (§5.3), 연쇄 결과 (§5.5), 상태 원장 (§6); economy/능력 격차 and
   world-channel expansion dropped (see apothecary 부록 A). Blacksmith doc marked archive.
