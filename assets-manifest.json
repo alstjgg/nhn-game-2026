@@ -66,6 +66,54 @@
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Character sheet: a 4x2 grid of eight bust portraits of the SAME person, identical framing, scale and head position in every cell, shoulders-up, facing the viewer. Four columns, one expression per column — column 1: calm and neutral; column 2: indifferent, losing interest; column 3: irritated, frowning; column 4: fed up, about to walk out. Two rows: the top row has eyes open; the bottom row repeats the exact same portrait as the cell above but with eyes closed mid-blink, everything else identical. Flat single-color background in all cells. No gridlines, no borders, no text, no labels. An elderly woman with a kind wrinkled face, grey hair in a neat bun, dark shawl over a hanbok-style jacket.",
       "license": "generated for this project"
+    },
+    {
+      "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/A.png",
+      "tool": "gpt-image-1 + sharp",
+      "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate A for the original full prompt.",
+      "license": "generated for this project; review-only snapshot"
+    },
+    {
+      "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/B.png",
+      "tool": "gpt-image-1 + sharp",
+      "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate B for the original full prompt.",
+      "license": "generated for this project; review-only snapshot"
+    },
+    {
+      "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/C.png",
+      "tool": "gpt-image-1 + sharp",
+      "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate C for the original full prompt.",
+      "license": "generated for this project; review-only snapshot"
+    },
+    {
+      "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/D.png",
+      "tool": "gpt-image-1 + sharp",
+      "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate D for the original full prompt.",
+      "license": "generated for this project; review-only snapshot"
+    },
+    {
+      "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/raw/A.png",
+      "tool": "gpt-image-1",
+      "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate A for the original full prompt.",
+      "license": "generated for this project; review-only source"
+    },
+    {
+      "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/raw/B.png",
+      "tool": "gpt-image-1",
+      "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate B for the original full prompt.",
+      "license": "generated for this project; review-only source"
+    },
+    {
+      "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/raw/C.png",
+      "tool": "gpt-image-1",
+      "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate C for the original full prompt.",
+      "license": "generated for this project; review-only source"
+    },
+    {
+      "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/raw/D.png",
+      "tool": "gpt-image-1",
+      "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate D for the original full prompt.",
+      "license": "generated for this project; review-only source"
     }
   ]
 }
