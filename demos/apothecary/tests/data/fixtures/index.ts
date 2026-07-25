@@ -21,8 +21,11 @@ export function validCustomers(): Customer[] {
       name: '손님 하나',
       portrait: 'portraits/c1.png',
       problem: '잠이 오지 않아요',
+      hiddenCause: '...',
       patienceBudget: 5,
-      dialogueNodes: [{ npcLine: '...', choices: [{ label: '...', patienceCost: 1 }] }],
+      dialogueNodes: [
+        { npcLine: '...', choices: [{ label: '...', verb: 'indirect', patienceCost: 1 }] },
+      ],
       observationClues: [{ id: 'clue-c1', text: '...' }],
     },
     {
@@ -30,6 +33,7 @@ export function validCustomers(): Customer[] {
       name: '손님 둘',
       portrait: 'portraits/c2.png',
       problem: '기침이 멎지 않아요',
+      hiddenCause: '...',
       patienceBudget: 3,
       dialogueNodes: [{ npcLine: '...', choices: [] }],
       observationClues: [{ id: 'clue-c2', text: '...' }],

@@ -4,6 +4,7 @@
 // for missing structural fields.
 import type {
   Choice,
+  ChoiceVerb,
   Customer,
   DialogueNode,
   Ingredient,
@@ -34,6 +35,48 @@ function requireString(v: unknown, ctx: string, field: string): string {
 function requireNumber(v: unknown, ctx: string, field: string): number {
   if (typeof v !== 'number' || Number.isNaN(v)) {
     throw new Error(`${ctx}: field '${field}' must be a number (got ${typeName(v)})`);
+  }
+  return v;
+}
+
+function requireBoolean(v: unknown, ctx: string, field: string): boolean {
+  if (typeof v !== 'boolean') {
+    throw new Error(`${ctx}: field '${field}' must be a boolean (got ${typeName(v)})`);
+  }
+  return v;
+}
+
+// u6 — the ChoiceVerb vocabulary, runtime side. Mirrors contract.ts ChoiceVerb.
+// Derived from a `Record<ChoiceVerb, true>` so completeness is enforced BY
+// CONSTRUCTION: a dropped member is a TS2741 (missing property) and a typo'd
+// key is excess-property-checked — both compile-time errors. (A bare
+// `readonly ChoiceVerb[]` annotation looks like it would do this but does not:
+// it constrains element TYPE, not SET completeness, so `['indirect', 'direct',
+// 'observe']` — craft dropped — still type-checks clean; confirmed by direct
+// tsc reproduction. And the failure direction if a member were silently
+// dropped is the opposite of "silently-permissive": the loader would REJECT
+// valid data carrying the missing verb, not accept invalid data.)
+const CHOICE_VERB_SET = {
+  indirect: true,
+  direct: true,
+  observe: true,
+  craft: true,
+} satisfies Record<ChoiceVerb, true>;
+const CHOICE_VERBS: readonly ChoiceVerb[] = Object.keys(CHOICE_VERB_SET) as ChoiceVerb[];
+
+// Enum fields fail SELF-DESCRIBINGLY: the message names the field, lists every
+// allowed value, and echoes the offending one, so a hand-authored typo or a
+// model-generated verb outside the vocabulary is diagnosable from the message alone.
+function isChoiceVerb(v: unknown): v is ChoiceVerb {
+  return CHOICE_VERBS.some((verb) => verb === v);
+}
+
+function requireChoiceVerb(v: unknown, ctx: string, field: string): ChoiceVerb {
+  if (!isChoiceVerb(v)) {
+    throw new Error(
+      `${ctx}: field '${field}' must be one of ${CHOICE_VERBS.join(' | ')} ` +
+        `(got ${JSON.stringify(v)})`,
+    );
   }
   return v;
 }
@@ -69,12 +112,18 @@ function validateObservationClue(v: unknown, ctx: string): ObservationClue {
 
 function validateChoice(v: unknown, ctx: string): Choice {
   if (!isRecord(v)) throw new Error(`${ctx}: choice must be an object (got ${typeName(v)})`);
+  // Field order is load-bearing: the structural fields shared with v1 are checked
+  // FIRST so a v1-shaped malformed choice still reports its own broken field rather
+  // than the (newer) missing `verb`.
   const label = requireString(v.label, ctx, 'label');
   const patienceCost = requireNumber(v.patienceCost, ctx, 'patienceCost');
-  const choice: Choice = { label, patienceCost };
-  if (v.clueReveals !== undefined) {
-    choice.clueReveals = requireArrayOfStrings(v.clueReveals, ctx, 'clueReveals');
-  }
+  const clueReveals =
+    v.clueReveals === undefined
+      ? undefined
+      : requireArrayOfStrings(v.clueReveals, ctx, 'clueReveals');
+  const verb = requireChoiceVerb(v.verb, ctx, 'verb');
+  const choice: Choice = { label, verb, patienceCost };
+  if (clueReveals !== undefined) choice.clueReveals = clueReveals;
   return choice;
 }
 
@@ -83,7 +132,11 @@ function validateDialogueNode(v: unknown, ctx: string): DialogueNode {
   const npcLine = requireString(v.npcLine, ctx, 'npcLine');
   const rawChoices = requireArrayOf<unknown>(v.choices, ctx, 'choices');
   const choices = rawChoices.map((c, i) => validateChoice(c, `${ctx}.choices[${i}]`));
-  return { npcLine, choices };
+  const node: DialogueNode = { npcLine, choices };
+  // `evasive` is optional but NOT truthy-tested: an authored `false` must survive
+  // the round trip, and a non-boolean (`'yes'`, `1`) must fail loudly.
+  if (v.evasive !== undefined) node.evasive = requireBoolean(v.evasive, ctx, 'evasive');
+  return node;
 }
 
 // ── Customers ────────────────────────────────────────────────────────────────
@@ -101,6 +154,7 @@ export function loadCustomers(input: unknown): Customer[] {
       name: requireString(raw.name, ctx, 'name'),
       portrait: requireString(raw.portrait, ctx, 'portrait'),
       problem: requireString(raw.problem, ctx, 'problem'),
+      hiddenCause: requireString(raw.hiddenCause, ctx, 'hiddenCause'),
       patienceBudget: requireNumber(raw.patienceBudget, ctx, 'patienceBudget'),
       dialogueNodes: rawDialogueNodes.map((n, i2) => validateDialogueNode(n, `${ctx}.dialogueNodes[${i2}]`)),
       observationClues: rawObservationClues.map((c, i2) =>
