@@ -797,6 +797,16 @@ describe('no inline tunables', () => {
   const TUNABLE_ASSIGN =
     /\b(gauge|damage|dmg|hp|slot|latency|timeout|walk|draft|tieBreak|heal|reflect)\w*\s*(?:[:=]|[+\-]=|===|>=|<=|>|<)\s*-?\d+/i;
 
+  // Two carve-outs, both about numbers that are STRUCTURE rather than balance. They are
+  // deliberately operand/line-shaped, never file-shaped: no source file is ever exempt.
+  //
+  // 1. A type-level declaration states the shape of a value, not its value:
+  //    `export type GaugeTier = 0 | 1 | 2 | 3` names the four tiers, it does not tune them.
+  const TYPE_DECL = /^\s*(?:export\s+)?(?:declare\s+)?(?:type|interface)\b/;
+  // 2. An operand of a shift/bitwise operator is an algorithm constant: the `15` in a PRNG's
+  //    `state >>> 15` is not the puzzle-gauge 15, and moving it to tuning.json would be a bug.
+  const BITWISE_OPERAND = /(?:>>>|>>|<<|[&|^])\s*\(?\s*$/;
+
   function sourceFiles(): string[] {
     const srcRoot = resolve(demoRoot, 'src');
     const skipped = resolve(srcRoot, 'data');
@@ -827,23 +837,53 @@ describe('no inline tunables', () => {
       .replace(/`(?:\\.|[^`\\])*`/g, '``');
   }
 
+  /** The scanner itself, over one file's source — extracted so it is testable below. */
+  function scanSource(rel: string, source: string): string[] {
+    const violations: string[] = [];
+    scrub(source)
+      .split('\n')
+      .forEach((line, i) => {
+        for (const literal of DENY_LITERALS) {
+          const scan = new RegExp(`(?<![\\w.])${literal}(?![\\w.])`, 'g');
+          for (let hit = scan.exec(line); hit !== null; hit = scan.exec(line)) {
+            if (BITWISE_OPERAND.test(line.slice(0, hit.index))) continue;
+            violations.push(`${rel}:${i + 1} — literal ${literal} belongs in data/tuning.json`);
+            break; // one report per literal per line
+          }
+        }
+        if (!TYPE_DECL.test(line) && TUNABLE_ASSIGN.test(line)) {
+          violations.push(`${rel}:${i + 1} — tunable assigned a number literal: ${line.trim()}`);
+        }
+      });
+    return violations;
+  }
+
   it('finds no inlined tunable literal in src/** (src/data/** excluded)', () => {
     const violations: string[] = [];
     for (const file of sourceFiles()) {
       const rel = relative(demoRoot, file);
-      const lines = scrub(readFileSync(file, 'utf8')).split('\n');
-      lines.forEach((line, i) => {
-        for (const literal of DENY_LITERALS) {
-          if (new RegExp(`(?<![\\w.])${literal}(?![\\w.])`).test(line)) {
-            violations.push(`${rel}:${i + 1} — literal ${literal} belongs in data/tuning.json`);
-          }
-        }
-        if (TUNABLE_ASSIGN.test(line)) {
-          violations.push(`${rel}:${i + 1} — tunable assigned a number literal: ${line.trim()}`);
-        }
-      });
+      violations.push(...scanSource(rel, readFileSync(file, 'utf8')));
     }
     expect(violations, violations.join('\n')).toEqual([]);
+  });
+
+  // ── the scanner keeps its teeth: the carve-outs above must not become an escape hatch ──
+
+  it('still catches a real inlined tunable — a literal and a tunable assignment', () => {
+    expect(scanSource('src/fake.ts', 'const budget = 8000;')).toHaveLength(1);
+    expect(scanSource('src/fake.ts', 'let timeoutMs = 1234;')).toHaveLength(1);
+    expect(scanSource('src/fake.ts', 'const gaugeOnHit = 25;')).toHaveLength(2); // both rules
+    // a bitwise operator elsewhere on the line does not launder an inlined tunable
+    expect(scanSource('src/fake.ts', 'const budget = 8000 | flags;')).toHaveLength(1);
+  });
+
+  it('does not flag a type-level declaration or a bit-twiddling constant', () => {
+    expect(scanSource('src/fake.ts', 'export type GaugeTier = 0 | 1 | 2 | 3;')).toEqual([]);
+    expect(scanSource('src/fake.ts', 'const t = state ^ (state >>> 15);')).toEqual([]);
+    expect(scanSource('src/fake.ts', 'const mask = value & 50;')).toEqual([]);
+    // …and prose/strings are still scrubbed before the scan
+    expect(scanSource('src/fake.ts', '// the 900ms stub latency')).toEqual([]);
+    expect(scanSource('src/fake.ts', "const src = 'sprite-3000.png';")).toEqual([]);
   });
 
   it('reads tunables through resolveTuningRef rather than a second copy', () => {
