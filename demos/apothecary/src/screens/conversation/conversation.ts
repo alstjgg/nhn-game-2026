@@ -88,6 +88,22 @@ export interface ConversationOptions {
 }
 
 /**
+ * What the host keeps hold of after mounting (u13, PRD §2.3). The screen owns no
+ * generation of its own: the portrait sheet is pushed in by whoever prefetched
+ * it, whenever it lands — at mount, or mid-conversation.
+ */
+export interface ConversationHandle {
+  /**
+   * Resolve the backlit silhouette into an already-pixelated sheet, IN PLACE:
+   * u9's panel is CSS-sized, so this is a repaint of the cell the customer was
+   * already occupying and never a layout change (§2.3 "arrival mid-conversation
+   * is expected and must not reflow the layout"). Calling it before any sheet
+   * exists is simply never done; calling it twice just repaints.
+   */
+  setPortraitSheet(url: string): void;
+}
+
+/**
  * The screen's ONLY touchpoint with the u9 portrait component (design D3): it
  * wraps the framed panel in the host element this screen has always exposed —
  * `[data-testid=portrait]`, `role=img`, the customer's name as the label and the
@@ -113,7 +129,7 @@ export function mountConversation(
   customer: Customer,
   callbacks: ConversationCallbacks = {},
   options: ConversationOptions = {},
-): void {
+): ConversationHandle {
   const clueTextById = new Map(customer.observationClues.map((c) => [c.id, c.text]));
   const revealedClueIds = new Set<string>();
   // Enter the conversation phase up front: the u2 reducer only spends patience
@@ -202,6 +218,14 @@ export function mountConversation(
   syncTier();
   syncPhase();
   void renderBeat();
+
+  // The host's only handle on this screen. Everything below is a hoisted
+  // function declaration, so the mount is complete at this point.
+  return {
+    setPortraitSheet(url: string): void {
+      portraitPanel.setSheet(url);
+    },
+  };
 
   /**
    * Publish the patience tier: one attribute write, plus the portrait's column.
