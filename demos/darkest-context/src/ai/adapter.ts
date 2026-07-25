@@ -35,13 +35,28 @@ export class AIUnavailableError extends Error {
 }
 
 /**
+ * The budget that keeps boot from stalling is a tunable, so INV-8
+ * (balance-as-data) puts it in `data/tuning.json` and reads it through u4's
+ * seam rather than inlining it here. Imported lazily: the AI seam's module
+ * graph stays independent of the data layer, so CLI tools that import the
+ * contract for its types never pull in six JSON files. The data layer imports
+ * nothing from `src/ai/`, so this direction is acyclic either way.
+ */
+async function healthProbeBudgetMs(): Promise<number> {
+  const { loadBundledGameData, resolveTuningRef } = await import('../data/loader.ts');
+  return resolveTuningRef(loadBundledGameData().tuning, 'timeout.healthProbe');
+}
+
+/**
  * Boot probe (PRD §2.2): resolves the health payload, or `null` when the proxy
  * is absent/slow — production builds, dev without a key, bad networks — in
- * which case boot picks the stub adapter. 800ms budget so boot never stalls.
+ * which case boot picks the stub adapter. Omit `timeoutMs` to use the tuned
+ * budget, so no caller has to know the number.
  */
-export async function probeHealth(timeoutMs = 800): Promise<AIHealth | null> {
+export async function probeHealth(timeoutMs?: number): Promise<AIHealth | null> {
   try {
-    const res = await fetch('/ai/health', { signal: AbortSignal.timeout(timeoutMs) });
+    const budgetMs = timeoutMs ?? (await healthProbeBudgetMs());
+    const res = await fetch('/ai/health', { signal: AbortSignal.timeout(budgetMs) });
     if (!res.ok) return null;
     const health = (await res.json()) as AIHealth;
     return health.ok ? health : null;

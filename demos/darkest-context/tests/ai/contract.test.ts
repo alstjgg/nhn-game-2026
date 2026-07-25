@@ -15,7 +15,9 @@
 //
 // API contracts this file pins down (see .claude/super/units/u2/design.md):
 //   src/ai/contract.ts  → isAgentDecision(v, ctx?) + the exported types
-//   src/ai/adapter.ts   → AIAdapter, AIUnavailableError, probeHealth(800)
+//   src/ai/adapter.ts   → AIAdapter, AIUnavailableError, probeHealth(timeoutMs?)
+//                         — the default budget comes from u4's tuning seam
+//                           (`timeout.healthProbe`, 800ms per PRD §2.2)
 //   src/ai/live.ts      → createLiveAdapter({timeoutMs?}) : AIAdapter
 //   server/ai-proxy.mjs → buildSheet(cfg, unitId, cardIds) : SheetRef[]
 //                         composeDecidePrompt(cfg, req) : {system, user}
@@ -830,8 +832,19 @@ describe('live adapter: boot health probe', () => {
     await expect(probeHealth()).resolves.toBeNull();
   });
 
-  it('defaults the boot probe budget to 800ms (PRD §2.2)', () => {
-    expect(stripComments(read('src/ai/adapter.ts'))).toMatch(/timeoutMs\s*=\s*800\b/);
+  // Asserted as behaviour, not as source text: the budget is a tunable, so
+  // INV-8 (balance-as-data) requires it to live in `data/tuning.json` and reach
+  // the probe through u4's seam. Pinned here on both ends — the number PRD §2.2
+  // specifies, and the abort the probe actually arms with it.
+  it('defaults the boot probe budget to 800ms (PRD §2.2)', async () => {
+    const { loadBundledGameData, resolveTuningRef } = await import('../../src/data/loader.ts');
+    expect(resolveTuningRef(loadBundledGameData().tuning, 'timeout.healthProbe')).toBe(800);
+
+    const armed = vi.spyOn(AbortSignal, 'timeout');
+    fetchMock.mockResolvedValue({ ok: true, status: 200, json: async () => health(true) } as never);
+    const { probeHealth } = await import('../../src/ai/adapter.ts');
+    await probeHealth();
+    expect(armed).toHaveBeenCalledWith(800);
   });
 });
 
