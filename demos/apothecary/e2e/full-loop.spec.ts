@@ -149,7 +149,7 @@ test.describe('full loop — both customers end to end (u9 final gate)', () => {
     // ── PHASE 2 · Customer 1 conversation ─────────────────────────────────
     const c1Conv = page.getByTestId('phase-c1-conversation');
     await expect(c1Conv).toBeVisible();
-    await expect(c1Conv.getByTestId('patience-fill')).toBeVisible();
+    await expect(c1Conv.locator('.conversation[data-tier]')).toBeVisible();
     await shoot(page, '02-conversation');
     await driveConversation(c1Conv);
 
