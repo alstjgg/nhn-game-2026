@@ -337,3 +337,74 @@ accepted and fixed (no rebuttals):
   passing on real violations and breaking on harmless refactors. Replaced
   with a fake-timers test asserting exactly one real timer per call (and that
   it resolves), and a many-trials/cross-instance determinism test.
+
+## u3 contract correction — `PixelContext.drawImage(source: never)` → `source: unknown`
+
+The u3 spec §2 declared the injected-context method as
+`drawImage(source: never, dx, dy, dw, dh): void`. A parameter typed `never` accepts no
+argument at all, so `pixelate`'s own single call site cannot compile:
+
+```
+error TS2345: Argument of type 'T' is not assignable to parameter of type 'never'.
+  Type 'PixelSource' is not assignable to type 'never'.
+```
+
+`src/ui/pixelate.ts` therefore declares `drawImage(source: unknown, …)`. This is a pure
+widening of a brand-new interface (no consumer existed yet), and method-shorthand
+bivariance keeps real `CanvasRenderingContext2D` / `OffscreenCanvasRenderingContext2D`
+structurally assignable, so the default factory needs no cast. All load-bearing names
+(`pixelate`, `PIXEL_FACTOR`, `SHEET_COLUMNS`, `SHEET_ROWS`, `downscaledSize`,
+`sheetCellSize`, `PixelateOptions.createCanvas`) are unchanged.
+
+## u3 — PixelSource contract
+
+Review follow-up (PR #34, Lead thread on `pixelate.ts:39`, resolve pending on the
+broken cross-reference this section now closes).
+
+`PixelSource = {width, height}` is deliberately the WEAKEST type that satisfies the
+module's own size math, so DOM-free unit tests can inject plain object fakes without
+touching `CanvasImageSource`. That weakness is not free: a real browser call site that
+passes something with matching `width`/`height` but that isn't actually drawable will
+make `ctx.drawImage` throw, which `pixelate`'s own §3-5 try/catch swallows — the caller
+gets `source` back, unchanged and silently. There is no console signal by design.
+Consumer-facing contract:
+
+- Only pass real `CanvasImageSource`-compatible values (`ImageBitmap`, `<img>`,
+  `<canvas>`, etc.) at real call sites. `{width, height}` fakes are for tests only.
+- `result === source` is the ONLY detection signal for "this did not get pixelated,"
+  whether the cause was a bad wire-up, no canvas support in the environment, or an
+  invalid `factor`/`size` override. There is nothing more specific to inspect.
+- Sheet images specifically: call `pixelateSheet(sheet, options)`, not
+  `pixelate(sheet, options)`. The plain `pixelate` default (`downscaledSize`) rounds
+  the whole image independently of the 4×2 cell grid and can drift a pixel from
+  `sheetCellSize`'s own tiling at factors other than 4/2 — `pixelateSheet` closes that
+  footgun by always deriving its target size from `sheetPixelSize`. See the doc
+  comments on both functions.
+
+Canvas → CSS conversion responsibility (the open question from the same thread):
+**out of scope for u3.** `pixelate`/`pixelateSheet` return a `PixelCanvas`
+(`HTMLCanvasElement`/`OffscreenCanvas`), not a URL. PRD §2.4's render path
+(`background-position`/`border-image`) needs a string CSS can reference, which means
+converting the canvas via `toDataURL`/`convertToBlob` + `URL.createObjectURL` — and
+whichever unit performs that conversion also owns calling `URL.revokeObjectURL` when
+the sheet is replaced or the screen unmounts, to avoid leaking blob URLs. u3 does not
+do this conversion or own that lifecycle; it is the render-path unit's (u4/u5)
+responsibility.
+
+## u3 — TEST phase re-entered on a green unit
+
+The TEST (TDD-red) phase was dispatched for u3 while the unit was already at
+`phase: verify / status: green` (head `b93778c`), with `src/ui/pixelate.ts` and a
+47-test `tests/ui/pixelate.test.ts` committed and passing. No `design.md`/`spec.md`
+existed (DESIGN skipped as low-complexity) and no `tests.md` had been written.
+
+A literal RED was therefore unreachable without deleting shipped implementation.
+The phase instead audited the 47 existing tests against the four acceptance criteria
+and appended 38 tests for the real gaps (default-canvas-factory discovery, `getContext`
+throwing, throwing size setters, determinism, `sheetPixelSize` D4 validation, membrane
+scan). Each new block was proven non-vacuous by mutating the implementation, observing
+RED, and restoring it byte-identically. See `.claude/super/units/u3/tests.md`.
+
+Scope gap worth flagging to the decomposer: the read-scope for a re-entered phase should
+say whether the unit already has an implementation, so the agent does not plan for a
+greenfield RED.
