@@ -17,7 +17,26 @@ export interface Clock {
   after(ms: number, cb: () => void): CancelTimer;
 }
 
-/** Deterministic clock for tests: time only moves when advance() is called. */
+/**
+ * Deterministic clock for tests: time only moves when advance() is called.
+ *
+ * DIVERGENCE FROM createRealClock (read this before racing a live result
+ * against the deadline in a test): advance() fires every due booking's
+ * callback SYNCHRONOUSLY and inline, in scheduling order. createRealClock's
+ * callbacks run via the host's own delayed-timer primitive (see the bottom
+ * of this file) — a macrotask, which the JS job queue always runs *after*
+ * every microtask already queued at the moment the timer fires. A
+ * ManualClock does not give that guarantee for free: if you resolve/reject
+ * an adapter promise and then call advance() before that promise's `.then`
+ * has had a turn to run, the deadline callback can fire first even though
+ * the live result "arrived" first in wall-clock terms — an ordering the
+ * browser can never produce. Tests exercising a race between a live result
+ * and the deadline MUST `await` a microtask turn (e.g. `await flush()`)
+ * after resolving/rejecting before calling advance(), or they can pin an
+ * ordering production never sees. See the "N2 — production ordering" block
+ * in tests/pipeline/prefetch.test.ts for a createRealClock-driven pin of the
+ * actual guarantee this module relies on.
+ */
 export interface ManualClock extends Clock {
   /** Moves time forward by `ms`, firing every booking due at or before the target. */
   advance(ms: number): void;
@@ -34,8 +53,12 @@ interface Booking {
 }
 
 /**
- * Ceiling on callbacks drained by a single advance(), so a self-rescheduling
- * callback degrades into a capped run instead of hanging the test runner.
+ * Ceiling on callbacks drained by a single advance(). A well-behaved pipeline
+ * never approaches this; it exists so a callback that keeps re-arming itself
+ * (chain-scheduling forever inside the same window) fails LOUDLY instead of
+ * hanging the test runner. Hitting the cap throws rather than degrading into
+ * a silent capped run — a fake clock's whole job is to catch exactly this
+ * class of bug, so going quiet here would defeat the point of it.
  */
 const MAX_CALLBACKS_PER_ADVANCE = 10_000;
 
@@ -74,9 +97,14 @@ export function createManualClock(start = 0): ManualClock {
     advance(ms: number): void {
       const target = current + Math.max(0, ms);
       let drained = 0;
-      while (drained < MAX_CALLBACKS_PER_ADVANCE) {
+      for (;;) {
         const booking = nextDue(target);
         if (booking === null) break;
+        if (drained === MAX_CALLBACKS_PER_ADVANCE) {
+          throw new Error(
+            `ManualClock.advance() drained ${MAX_CALLBACKS_PER_ADVANCE} callbacks without settling — runaway rescheduling?`,
+          );
+        }
         drop(booking);
         if (booking.due > current) current = booking.due;
         drained++;

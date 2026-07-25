@@ -329,15 +329,16 @@ describe('AC1 — startPrefetch starts both tracks at once and exposes them inde
 const here = dirname(fileURLToPath(import.meta.url));
 const pipelineDir = resolve(here, '../../src/pipeline'); // demos/apothecary/src/pipeline
 const REAL_CLOCK_SENTINEL = '// >>> REAL-CLOCK BOUNDARY <<<';
-const BANNED_TIMING = [
-  'setTimeout',
-  'setInterval',
-  'clearTimeout',
-  'clearInterval',
-  'Date.now',
-  'performance.now',
-  'Math.random',
-];
+// §3-3 is specifically about WAITING (timers/wall-clock reads) flowing through
+// the injected Clock — it says nothing about randomness, so Math.random is
+// deliberately not in this list: a future pipeline file with legitimate
+// non-timing randomness (customer shuffling, etc.) must not go red here for
+// something AC2 never asked it to avoid. NOTE (known limitation): this is a
+// plain substring scan, so it also trips on the banned words appearing inside
+// a comment or a string, and it would miss an obfuscated access like
+// `globalThis['set' + 'Timeout']`. That's an accepted trade-off for a cheap
+// source-scan guard, not a claim of airtight enforcement.
+const BANNED_TIMING = ['setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'Date.now', 'performance.now'];
 
 function collectTsFiles(dir: string): string[] {
   if (!existsSync(dir)) return [];
@@ -455,6 +456,62 @@ describe('AC2 — injected clock only (source scan) and an exact 25_000ms deadli
     await flush();
     expect(handle.getState().dialogue.status).toBe('fallback');
     expect(handle.getState().portrait.status).toBe('fallback');
+    handle.cancel();
+  });
+
+  it('AC2-f — deadlineMs: NaN must not silently disable live AI; it falls back to DEADLINE_MS', async () => {
+    const live = makeControlledAdapter();
+    const fallback = makeStubAdapter();
+    const clock = createManualClock();
+    const handle = startPrefetch({
+      adapter: live.adapter,
+      fallbackAdapter: fallback.adapter,
+      clock,
+      request: makeRequest(),
+      deadlineMs: Number.NaN,
+    });
+
+    // A NaN deadline must NOT fire instantly — that would be the headline AI
+    // feature turning itself off silently on a config typo.
+    clock.advance(0);
+    await flush();
+    expect(handle.getState().dialogue.status).toBe('pending');
+    expect(fallback.calls.dialogue).toBe(0);
+
+    clock.advance(DEADLINE_MS - 1);
+    await flush();
+    expect(handle.getState().dialogue.status).toBe('pending');
+
+    clock.advance(1); // t = DEADLINE_MS exactly — the sanitised default boundary
+    await flush();
+    expect(handle.getState().dialogue.status).toBe('fallback');
+    expect(handle.getState().portrait.status).toBe('fallback');
+    handle.cancel();
+  });
+
+  it.each<[string, number]>([
+    ['negative', -1],
+    ['zero', 0],
+    ['+Infinity', Number.POSITIVE_INFINITY],
+    ['-Infinity', Number.NEGATIVE_INFINITY],
+  ])('AC2-f — deadlineMs: %s is also rejected and falls back to DEADLINE_MS', async (_label, bad) => {
+    const live = makeControlledAdapter();
+    const fallback = makeStubAdapter();
+    const clock = createManualClock();
+    const handle = startPrefetch({
+      adapter: live.adapter,
+      fallbackAdapter: fallback.adapter,
+      clock,
+      request: makeRequest(),
+      deadlineMs: bad,
+    });
+
+    clock.advance(DEADLINE_MS - 1);
+    await flush();
+    expect(handle.getState().dialogue.status).toBe('pending');
+    clock.advance(1);
+    await flush();
+    expect(handle.getState().dialogue.status).toBe('fallback');
     handle.cancel();
   });
 
@@ -594,6 +651,57 @@ describe('AC3 — deadline expiry degrades silently and late live results never 
     expect(state.settled).toBe(true);
     handle.cancel();
   });
+
+  it('AC3-e — the 25s beat is a REQUEST-start deadline, not a transition deadline: the track stays pending while a slow pack is in flight', async () => {
+    const live = makeControlledAdapter();
+    const pack = makeControlledAdapter(); // fallback we can hold open by hand
+    const clock = createManualClock();
+    const handle = startPrefetch({
+      adapter: live.adapter,
+      fallbackAdapter: pack.adapter,
+      clock,
+      request: makeRequest(),
+    });
+
+    clock.advance(DEADLINE_MS);
+    await flush();
+    expect(pack.calls.dialogue).toBe(1); // the pack WAS asked right at the deadline...
+    expect(handle.getState().dialogue.status).toBe('pending'); // ...but nothing has answered yet
+
+    pack.d.resolve(validBeat('스텁 응답'));
+    await flush();
+    expect(handle.getState().dialogue.status).toBe('fallback'); // transition only happens once the pack answers
+    handle.cancel();
+  });
+
+  it("AC3-e — a live result that beats the pack while the pack is still in flight is ADOPTED (nothing has been shown yet, so there is no customer to swap)", async () => {
+    const live = makeControlledAdapter();
+    const pack = makeControlledAdapter();
+    const clock = createManualClock();
+    const handle = startPrefetch({
+      adapter: live.adapter,
+      fallbackAdapter: pack.adapter,
+      clock,
+      request: makeRequest(),
+    });
+
+    clock.advance(DEADLINE_MS);
+    await flush();
+    expect(pack.calls.dialogue).toBe(1);
+    expect(handle.getState().dialogue.status).toBe('pending');
+
+    const beat = validBeat('폴백보다 늦게 요청됐지만 먼저 도착한 라이브 대사');
+    live.d.resolve(beat);
+    await flush();
+    expect(handle.getState().dialogue).toEqual({ status: 'ready', value: beat });
+
+    // the pack's own (now-moot) answer must be discarded, and must not ask twice
+    pack.d.resolve(validBeat('너무 늦은 스텁'));
+    await flush();
+    expect(handle.getState().dialogue).toEqual({ status: 'ready', value: beat });
+    expect(pack.calls.dialogue).toBe(1);
+    handle.cancel();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -625,7 +733,7 @@ describe('AC4 — failures are absorbed into the fallback, never surfaced (§3-5
     const fallback = makeStubAdapter();
     const adapter = makeThrowingAdapter('SYNC-THROW-8802');
 
-    let handle: PrefetchHandle | null = null;
+    let handle: PrefetchHandle | undefined;
     expect(() => {
       handle = startPrefetch({
         adapter,
@@ -636,11 +744,12 @@ describe('AC4 — failures are absorbed into the fallback, never surfaced (§3-5
     }).not.toThrow();
 
     await flush();
-    const live = handle as unknown as PrefetchHandle;
-    expect(live.getState().dialogue.status).toBe('fallback');
-    expect(live.getState().portrait.status).toBe('fallback');
-    expect(JSON.stringify(live.getState())).not.toContain('SYNC-THROW-8802');
-    live.cancel();
+    expect(handle).toBeDefined();
+    const started = handle!;
+    expect(started.getState().dialogue.status).toBe('fallback');
+    expect(started.getState().portrait.status).toBe('fallback');
+    expect(JSON.stringify(started.getState())).not.toContain('SYNC-THROW-8802');
+    started.cancel();
   });
 
   it.each<[string, unknown]>([
@@ -669,7 +778,6 @@ describe('AC4 — failures are absorbed into the fallback, never surfaced (§3-5
     ['empty b64', { b64: '', prompt: 'p' }],
     ['missing b64', { prompt: 'p' }],
     ['b64 not a string', { b64: 12, prompt: 'p' }],
-    ['prompt not a string', { b64: 'aaa', prompt: 7 }],
     ['null payload', null],
   ])('AC4-c — an invalid portrait sheet (%s) degrades to the fallback', async (_label, payload) => {
     const fallback = makeStubAdapter();
@@ -687,12 +795,36 @@ describe('AC4 — failures are absorbed into the fallback, never surfaced (§3-5
     handle.cancel();
   });
 
-  it('AC4-c — isPortraitSheet accepts a real sheet and rejects every malformed shape', () => {
+  it.each<[string, unknown]>([
+    ['missing prompt', { b64: 'aaa' }],
+    ['prompt not a string', { b64: 'aaa', prompt: 7 }],
+  ])(
+    'AC4-c — a portrait sheet with a valid image but a malformed prompt (%s) still goes READY (b64-only gate, matches the adapter)',
+    async (_label, payload) => {
+      const fallback = makeStubAdapter();
+      const handle = startPrefetch({
+        adapter: makeResolvingAdapter(validBeat(), payload),
+        fallbackAdapter: fallback.adapter,
+        clock: createManualClock(),
+        request: makeRequest(),
+      });
+
+      await flush();
+      // `prompt` is manifest metadata, not image validity — a live image must
+      // not be discarded over it (see isPortraitSheet's doc comment).
+      expect(handle.getState().portrait.status).toBe('ready');
+      expect(fallback.calls.portrait).toBe(0);
+      handle.cancel();
+    },
+  );
+
+  it('AC4-c — isPortraitSheet accepts a real sheet, matches the adapter\'s b64-only gate, and rejects a broken image', () => {
     expect(isPortraitSheet(validSheet())).toBe(true);
     expect(isPortraitSheet({ b64: 'aaa', prompt: '' })).toBe(true); // prompt is manifest metadata
+    expect(isPortraitSheet({ b64: 'aaa' })).toBe(true); // missing prompt: still a valid image (adapter parity)
+    expect(isPortraitSheet({ b64: 'aaa', prompt: 7 })).toBe(true); // malformed prompt: still a valid image
     expect(isPortraitSheet({ b64: '', prompt: 'p' })).toBe(false);
     expect(isPortraitSheet({ prompt: 'p' })).toBe(false);
-    expect(isPortraitSheet({ b64: 'aaa' })).toBe(false);
     expect(isPortraitSheet(null)).toBe(false);
     expect(isPortraitSheet(undefined)).toBe(false);
     expect(isPortraitSheet('aaa')).toBe(false);
@@ -845,6 +977,13 @@ describe('AC5 — cancel() stops in-flight work from ever touching state again',
   // degrade() has already issued the pack request, the live-path `claimed` gate
   // is behind us and the pack's own await is the only thing left in flight. If
   // the customer leaves right there, the settle handler is the last guard.
+  //
+  // Per-track status can be left at 'pending' forever in this window — cancel()
+  // does not force a terminal status onto in-flight work (see cancel()'s doc
+  // comment on why: no AbortSignal seam to actually stop it). What must NOT
+  // happen is a consumer hanging on `settled`, so `settled` treats cancellation
+  // itself as terminal regardless of any individual track's status — see the
+  // PrefetchState.settled doc comment.
   it('AC5-a — cancel() during an in-flight fallback request discards the pack result', async () => {
     const live = makeControlledAdapter();
     const pack = makeControlledAdapter(); // fallback we can hold open by hand
@@ -873,12 +1012,15 @@ describe('AC5 — cancel() stops in-flight work from ever touching state again',
     await flush();
 
     expect(sub.seen).toHaveLength(0);
-    expect(handle.getState().dialogue.status).toBe('pending');
+    expect(handle.getState().dialogue.status).toBe('pending'); // abandoned, not "still coming" — cancelled tells you which
     expect(handle.getState().dialogue.value).toBeNull();
     expect(handle.getState().portrait.status).toBe('pending');
     expect(handle.getState().portrait.value).toBeNull();
-    expect(handle.getState().settled).toBe(false);
     expect(handle.getState().cancelled).toBe(true);
+    // settled must not hang forever just because the abandoned pack request
+    // never got a chance to flip the per-track status (cancel() is terminal
+    // for the whole prefetch even when a track's own status stays pending).
+    expect(handle.getState().settled).toBe(true);
   });
 
   it('AC5-a — cancel() during an in-flight fallback that then REJECTS stays silent too', async () => {
@@ -907,6 +1049,7 @@ describe('AC5 — cancel() stops in-flight work from ever touching state again',
     expect(handle.getState().dialogue.status).toBe('pending');
     expect(handle.getState().portrait.status).toBe('pending');
     expect(handle.getState().cancelled).toBe(true);
+    expect(handle.getState().settled).toBe(true); // cancelled is terminal even though the pack rejected too
     expect(JSON.stringify(handle.getState())).not.toContain('PACK-DOWN-4472');
   });
 
@@ -1137,7 +1280,7 @@ describe('ManualClock — deterministic timing seam', () => {
     expect(clock.scheduled).toBe(2);
   });
 
-  it('C4 — a runaway self-rescheduling callback is capped instead of hanging the runner', () => {
+  it('C4 — a runaway self-rescheduling callback throws instead of hanging or silently capping', () => {
     const clock = createManualClock();
     let n = 0;
     const tick = (): void => {
@@ -1146,9 +1289,10 @@ describe('ManualClock — deterministic timing seam', () => {
     };
     clock.after(0, tick);
 
-    expect(() => clock.advance(1)).not.toThrow();
-    expect(n).toBeGreaterThan(0);
-    expect(n).toBeLessThanOrEqual(10_000);
+    // A fake clock exists to catch exactly this bug class; the safety net
+    // firing must be loud, not a quietly-passing test (see MAX_CALLBACKS_PER_ADVANCE).
+    expect(() => clock.advance(1)).toThrow(/runaway rescheduling/);
+    expect(n).toBe(10_000);
   });
 
   it('C3 — a non-positive delay is clamped to "as soon as time moves"', () => {
@@ -1188,6 +1332,104 @@ describe('createRealClock — the single seam allowed to touch real time', () =>
     await flush();
     await flush();
     expect(fired).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// N2 — production ordering: a live result racing the deadline under REAL
+// timers, pinning the guarantee ManualClock's synchronous advance() cannot
+// reproduce for free (see the DIVERGENCE note on ManualClock in clock.ts).
+// ---------------------------------------------------------------------------
+
+describe('N2 — production ordering (createRealClock): live-before-deadline always wins', () => {
+  it('a live result resolved via a plain microtask beats a real deadline timer, however short', async () => {
+    // Under real timers a promise resolved via a microtask ALWAYS finishes
+    // before any setTimeout-based deadline, even a near-zero one, because the
+    // job queue drains every already-queued microtask before running the
+    // next macrotask. This is the ordering AC3 relies on in the browser;
+    // ManualClock's synchronous-firing advance() does not give it for free,
+    // which is exactly what the earlier ManualClock-only tests could not
+    // have caught on their own.
+    const live = makeControlledAdapter();
+    const fallback = makeStubAdapter();
+    const clock = createRealClock();
+
+    const handle = startPrefetch({
+      adapter: live.adapter,
+      fallbackAdapter: fallback.adapter,
+      clock,
+      request: makeRequest(),
+      deadlineMs: 5,
+    });
+
+    const beat = validBeat('실제 타이머 아래에서 이긴 대사');
+    live.d.resolve(beat);
+    live.p.resolve(validSheet());
+
+    await flush();
+    await flush();
+
+    expect(handle.getState().dialogue).toEqual({ status: 'ready', value: beat });
+    expect(handle.getState().portrait.status).toBe('ready');
+    expect(fallback.calls.dialogue).toBe(0);
+    expect(fallback.calls.portrait).toBe(0);
+    handle.cancel();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// N4 — subscribe() does not replay (A5): the getState()-then-subscribe
+// pattern PrefetchHandle.subscribe's doc comment requires, pinned so u6/u7
+// can copy it instead of rediscovering the hazard.
+// ---------------------------------------------------------------------------
+
+describe('N4 — subscribe() does not replay; getState()-then-subscribe is the required pattern', () => {
+  it('a subscriber attached after a track has already settled receives no callback for it (the hazard)', async () => {
+    const live = makeControlledAdapter();
+    const handle = startPrefetch({
+      adapter: live.adapter,
+      fallbackAdapter: makeStubAdapter().adapter,
+      clock: createManualClock(),
+      request: makeRequest(),
+    });
+
+    live.d.resolve(validBeat());
+    await flush(); // dialogue -> 'ready', with no subscriber yet to hear it
+
+    const seen: string[] = [];
+    handle.subscribe((s) => seen.push(s.dialogue.status));
+    await flush();
+
+    expect(seen).toEqual([]); // A5: no replay — this is exactly the hazard the doc comment warns about
+    expect(handle.getState().dialogue.status).toBe('ready'); // but getState() always has the truth
+    handle.cancel();
+  });
+
+  it('seeding from getState() before subscribing never misses a state a consumer needs (the fix)', async () => {
+    const live = makeControlledAdapter();
+    const handle = startPrefetch({
+      adapter: live.adapter,
+      fallbackAdapter: makeStubAdapter().adapter,
+      clock: createManualClock(),
+      request: makeRequest(),
+    });
+
+    live.d.resolve(validBeat());
+    await flush();
+
+    // required pattern: seed synchronously from getState(), THEN subscribe
+    // for whatever comes next — never subscribe alone and assume the first
+    // callback is the current state.
+    let current = handle.getState();
+    handle.subscribe((s) => {
+      current = s;
+    });
+    expect(current.dialogue.status).toBe('ready'); // seeded correctly despite settling before subscribe()
+
+    live.p.resolve(validSheet());
+    await flush();
+    expect(current.portrait.status).toBe('ready'); // and still tracks live updates from here on
+    handle.cancel();
   });
 });
 

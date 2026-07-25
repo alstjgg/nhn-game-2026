@@ -20,21 +20,44 @@ import {
   type PortraitSheet,
 } from '../ai/contract.ts';
 
-/** The waiting beat from PRD §2.3: 25s and the customer walks in regardless. */
+/**
+ * The waiting beat from PRD §2.3: 25s and the customer walks in regardless.
+ * TODO(balance-as-data): this is a tuning knob (CLAUDE.md "balance-as-data:
+ * all tunables ... live in data/"), not logic, and belongs in
+ * data/generation.json once a unit's file_globs cover data/** — u5's do not.
+ * Until then, boot wiring can already override it per-call via
+ * PrefetchOptions.deadlineMs below instead of editing this constant. Flagged
+ * on the u5 PR review thread for board follow-up.
+ */
 export const DEADLINE_MS = 25_000;
 
 /** `fallback` means "this is the bundled pack's answer", not "an error occurred". */
 export type TrackStatus = 'pending' | 'ready' | 'fallback';
 
-export interface TrackState<T> {
-  status: TrackStatus;
-  value: T | null;
-}
+/**
+ * Discriminated on `status` so the compiler — not the caller — knows `value`
+ * is non-null once a track is `ready`. `fallback` keeps `T | null` because a
+ * broken fallback pack (AC4-e) is a real, renderer-visible state: "we tried
+ * and even the bundled pack failed" is different from "still coming".
+ */
+export type TrackState<T> =
+  | { status: 'pending'; value: null }
+  | { status: 'ready'; value: T }
+  | { status: 'fallback'; value: T | null };
 
 export interface PrefetchState {
   dialogue: TrackState<DialogueBeat>;
   portrait: TrackState<PortraitSheet>;
-  /** True once neither track is pending any more. */
+  /**
+   * True once neither track is pending any more, OR once cancel() has been
+   * called. cancel() does not force an in-flight track's status to a
+   * terminal value (it may still read 'pending' if the customer left while a
+   * request was still outstanding — see cancel()'s doc comment) but the
+   * whole prefetch stops mattering to any consumer at that point, so
+   * `settled` treats cancellation itself as terminal too. Always check
+   * `cancelled` first: a `pending` track alongside `cancelled: true` means
+   * "abandoned", not "still coming".
+   */
   settled: boolean;
   cancelled: boolean;
 }
@@ -54,22 +77,69 @@ export interface PrefetchOptions {
   request: PrefetchRequest;
   /** Defaults to DEADLINE_MS; injected only by tests and tuning. */
   deadlineMs?: number;
+  /**
+   * Diagnostic escape hatch for a bug IN A SUBSCRIBER — not an AI failure;
+   * those are §3-5's job to absorb silently. Defaults to a no-op so this
+   * module still has zero host-API surface of its own. A throwing listener
+   * never stops the remaining listeners from being notified either way; this
+   * only controls whether the fault is reported anywhere. Boot wiring may
+   * pass a console/telemetry sink so a crashing render/reducer doesn't just
+   * vanish with the component silently going stale.
+   */
+  onListenerFault?: (fault: unknown, listener: (state: PrefetchState) => void) => void;
 }
 
 export interface PrefetchHandle {
   /** A fresh snapshot every call — mutating it cannot reach internal state. */
   getState(): PrefetchState;
-  /** Fires on every track transition. Does not replay the current state. */
+  /**
+   * Fires on every track transition. Does NOT replay the current state (by
+   * design) and does not invoke the listener immediately either: a listener
+   * attached after a track has already settled will never hear about it on
+   * its own. REQUIRED PATTERN: read `getState()` to seed, THEN `subscribe()`
+   * for updates from that point on — never subscribe alone and assume the
+   * first callback is the current state. See the "N4 — subscribe() does not
+   * replay" tests in prefetch.test.ts for a pinned example of both the
+   * hazard and the correct pattern.
+   */
   subscribe(listener: (state: PrefetchState) => void): () => void;
-  /** Customer left / app unmounted: in-flight work stops touching state. */
+  /**
+   * Customer left / app unmounted: suppresses every future state change and
+   * callback. LIMITATION: this does NOT abort in-flight adapter work — the
+   * live/fallback promises already in flight keep running to completion (or
+   * their own timeout) with the result simply discarded here. AIAdapter has
+   * no AbortSignal seam to cancel them through, and src/ai/adapter.ts is a
+   * frozen path for this unit. Concretely, createLiveAdapter's own timeouts
+   * mean an orphaned dialogue call can keep running up to ~70s (35s × one
+   * retry) and a portrait call up to 180s past this cancel(). Follow-up:
+   * thread an AbortSignal through AIAdapter so cancel() can actually stop
+   * the network call, not just its effect on this module's state.
+   */
   cancel(): void;
 }
 
-/** Response gate for the portrait track (the dialogue one lives in contract.ts). */
+/**
+ * Response gate for the portrait track (the dialogue one lives in
+ * contract.ts; this one stays here because prefetch.ts is the only file
+ * this unit's file_globs cover — contract.ts is out of scope for u5).
+ *
+ * Deliberately matches createLiveAdapter.portrait's own gate exactly: b64
+ * only. `prompt` is manifest metadata (CLAUDE.md rule 5), not image
+ * validity, so a live response with a valid image and a missing/blank
+ * prompt must not be thrown away here just because a stricter check would
+ * reject it — that would silently cost us live portraits that the adapter
+ * itself already accepted. Consumers reading `.prompt` should treat it as
+ * best-effort display metadata, not a value the type system truly guarantees
+ * is present.
+ * TODO(follow-up, outside u5 file_globs): contract.ts types
+ * `PortraitSheet.prompt` as a required string; consider loosening it to
+ * optional there so the type stops promising more than this gate (or the
+ * adapter) actually delivers.
+ */
 export function isPortraitSheet(v: unknown): v is PortraitSheet {
   if (typeof v !== 'object' || v === null) return false;
   const sheet = v as Record<string, unknown>;
-  return typeof sheet.b64 === 'string' && sheet.b64.length > 0 && typeof sheet.prompt === 'string';
+  return typeof sheet.b64 === 'string' && sheet.b64.length > 0;
 }
 
 interface Track<T> {
@@ -77,14 +147,10 @@ interface Track<T> {
   value: T | null;
   /** Set the moment this track's outcome is decided — the late-arrival gate. */
   claimed: boolean;
-}
-
-/**
- * A listener's exception is contained here: the pipeline must keep notifying the
- * remaining listeners, and §3-5 forbids surfacing the failure any further.
- */
-function containListenerFault(_fault: unknown): void {
-  return;
+  /** Set the moment the fallback pack is requested — dedupes the request,
+   *  independent of `claimed` (which now only flips once the pack *answers*;
+   *  see degrade()). */
+  packRequested: boolean;
 }
 
 /** Turns a synchronously throwing adapter into a plain rejected promise. */
@@ -96,20 +162,39 @@ function call<T>(load: () => Promise<T>): Promise<T> {
   }
 }
 
+/**
+ * A misconfigured deadline must never silently disable live AI (it would be
+ * the one failure §3-5's "always fail silently" stance should NOT cover):
+ * anything that isn't a finite, positive number falls back to DEADLINE_MS.
+ */
+function sanitizeDeadline(raw: number | undefined): number {
+  return typeof raw === 'number' && Number.isFinite(raw) && raw > 0 ? raw : DEADLINE_MS;
+}
+
 export function startPrefetch(options: PrefetchOptions): PrefetchHandle {
   const { adapter, fallbackAdapter, clock, request } = options;
-  const deadlineMs = options.deadlineMs ?? DEADLINE_MS;
+  const deadlineMs = sanitizeDeadline(options.deadlineMs);
+  const reportListenerFault = options.onListenerFault ?? (() => undefined);
 
-  const dialogue: Track<DialogueBeat> = { status: 'pending', value: null, claimed: false };
-  const portrait: Track<PortraitSheet> = { status: 'pending', value: null, claimed: false };
+  const dialogue: Track<DialogueBeat> = { status: 'pending', value: null, claimed: false, packRequested: false };
+  const portrait: Track<PortraitSheet> = { status: 'pending', value: null, claimed: false, packRequested: false };
   let cancelled = false;
   let listeners: ((state: PrefetchState) => void)[] = [];
   let releaseDeadline: CancelTimer = () => undefined;
 
+  const toState = <T>(track: Track<T>): TrackState<T> => {
+    if (track.status === 'ready') return { status: 'ready', value: track.value as T };
+    if (track.status === 'fallback') return { status: 'fallback', value: track.value };
+    return { status: 'pending', value: null };
+  };
+
   const snapshot = (): PrefetchState => ({
-    dialogue: { status: dialogue.status, value: dialogue.value },
-    portrait: { status: portrait.status, value: portrait.value },
-    settled: dialogue.status !== 'pending' && portrait.status !== 'pending',
+    dialogue: toState(dialogue),
+    portrait: toState(portrait),
+    // Cancellation is terminal for the whole prefetch even when an
+    // individual track never got to decide its own outcome — see the
+    // PrefetchState.settled doc comment.
+    settled: (dialogue.status !== 'pending' && portrait.status !== 'pending') || cancelled,
     cancelled,
   });
 
@@ -119,7 +204,7 @@ export function startPrefetch(options: PrefetchOptions): PrefetchHandle {
       try {
         listener(state);
       } catch (fault) {
-        containListenerFault(fault);
+        reportListenerFault(fault, listener);
       }
     }
   };
@@ -137,12 +222,29 @@ export function startPrefetch(options: PrefetchOptions): PrefetchHandle {
     notify();
   };
 
+  /**
+   * Requests the fallback pack (once — packRequested dedupes repeat calls
+   * from a live rejection racing the deadline). Deliberately does NOT claim
+   * the track until the pack actually answers: claiming at request-time
+   * would treat "we asked the bundled pack" as "the customer is decided"
+   * even though nothing has been shown yet, discarding a live result that
+   * arrives while the pack is still in flight for no reason — AC3 only
+   * requires that an ALREADY-DISPLAYED customer never gets swapped.
+   */
   const degrade = <T>(track: Track<T>, pack: () => Promise<T>, accepts: (v: unknown) => v is T): void => {
-    if (cancelled || track.claimed) return;
-    claim(track);
+    if (cancelled || track.claimed || track.packRequested) return;
+    track.packRequested = true;
     call(pack).then(
-      (v) => finish(track, 'fallback', accepts(v) ? v : null),
-      () => finish(track, 'fallback', null),
+      (v) => {
+        if (cancelled || track.claimed) return; // a live result claimed it while the pack was in flight
+        claim(track);
+        finish(track, 'fallback', accepts(v) ? v : null);
+      },
+      () => {
+        if (cancelled || track.claimed) return;
+        claim(track);
+        finish(track, 'fallback', null);
+      },
     );
   };
 
