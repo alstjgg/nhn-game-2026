@@ -6,6 +6,11 @@
  * the commit beat resolves on animationend either way. */
 
 .crafting {
+  /* Hold time of ONE equipment in-use frame. Mirrors `equipFrameMs` in
+   * data/sprites.json (the frame table CSS cannot import); tests/ui/sprite.test.ts
+   * fails the build if the two drift apart. */
+  --sprite-equip-frame: 140ms;
+
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -37,8 +42,30 @@
   font-weight: 600;
 }
 
+/* The ingredient shelf (u7 asset pack, PRD §2.4): the jar cards sit ON a real
+ * shelf panel instead of floating on the page. `ui-shelf.png` is a square
+ * cabinet drawing (drawers + shelf structure) — it is scaled UNIFORMLY and
+ * cropped to fill the box (`cover`), never stretched non-uniformly, so its
+ * frame/drawer lines stay straight (a plain `100% 100%` stretch skews a
+ * ~1:1 image into a wide short box and reads as an unrecognisable smear). */
 .crafting__grid {
-  padding: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-card);
+  background-image: url('../../../assets/ui-shelf.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  image-rendering: pixelated;
+}
+
+/* The vessel the brew is handed over in — the potions sheet's empty-bottle cell
+ * (src/ui/sprite.ts paints the cell inline; absent asset = no element at all). */
+.crafting__vessel {
+  align-self: center;
+  width: 88px;
+  height: 88px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
 }
 
 /* The weighted [건네기] — a card-feel primary action. */
@@ -121,4 +148,41 @@
 
 .crafting--committed .crafting__commit {
   pointer-events: none;
+}
+
+/* Equipment in-use loop (u7 asset pack): the three non-idle cells of the 2×2
+ * equipment sheet, cycled while its method card is the chosen one. The stops are
+ * the `equipFrames.inUse` cells from data/sprites.json expressed through the same
+ * percent formula src/ui/sprite.ts uses — the unit test compares them character
+ * for character, so retiming/reframing stays a data edit. */
+@keyframes equip-inuse {
+  0% {
+    background-position: 100% 0%;
+  }
+  33.3333% {
+    background-position: 0% 100%;
+  }
+  66.6667% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 100% 0%;
+  }
+}
+
+/* step-end: each cell is HELD, never interpolated — interpolation would slide
+ * two half-cells into view. Only the selected method's equipment is at work.
+ * The `* 3` below MUST equal `equipFrames.inUse.length` (currently 3) — CSS
+ * cannot read that count from data/sprites.json, so
+ * tests/ui/sprite.test.ts asserts the two stay in sync (retiming/reframing that
+ * changes the frame count without touching this multiplier fails the build). */
+.crafting .card--selected .card__sprite--equip {
+  animation: equip-inuse calc(var(--sprite-equip-frame) * 3) step-end infinite;
+}
+
+/* NF4 — animations.css is not loaded on this screen, so the guard lives here. */
+@media (prefers-reduced-motion: reduce) {
+  .crafting .card--selected .card__sprite--equip {
+    animation: none;
+  }
 }

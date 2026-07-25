@@ -45,6 +45,20 @@
   outline-offset: 2px;
 }
 
+/* Decorative sheet-cell layer (u7 asset pack). The geometry — which cell of
+ * which sheet — is painted inline by src/ui/sprite.ts; this rule only reserves
+ * the box and keeps the pixels unsmoothed. A card without an available asset
+ * simply has no sprite child, so the v1 text-only card is the fallback. */
+.card__sprite {
+  display: block;
+  align-self: center;
+  width: 56px;
+  height: 56px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
 .card__label {
   font-weight: 600;
 }
