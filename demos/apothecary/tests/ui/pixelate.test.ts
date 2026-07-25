@@ -23,6 +23,7 @@ import {
   downscaledSize,
   loadPixelFactor,
   pixelate,
+  pixelateSheet,
   sheetCellSize,
   sheetPixelSize,
 } from '../../src/ui/pixelate';
@@ -197,6 +198,12 @@ describe('u3 A6: downscale factor comes from data/generation.json, not from code
           .filter((f) => f.endsWith('.js'))
           .map((f) => readFileSync(resolve(outDir, f), 'utf8'))
           .join('\n');
+        // Review follow-up (PR #34, Lead thread on this test): a non-vacuous guard
+        // first — if the build ever emits to a different filename/path, `emitted`
+        // silently becomes '' and every `not.toMatch` below would pass on nothing.
+        // Assert real, expected content landed before asserting the spoiler didn't.
+        expect(emitted.length).toBeGreaterThan(0);
+        expect(emitted).toMatch(/pixelFactor/);
         expect(emitted).not.toMatch(/hiddenCause/);
         // A sample hiddenCause fragment and a tierTones fragment, so this fails
         // loudly (not just on the JSON key name) if the whole table ever leaks in.
@@ -321,6 +328,72 @@ describe('u3 A8b: sheetPixelSize tiles sheetCellSize exactly for every factor, n
     expect(canvases[0]!.height % cell.height).toBe(0);
     expect(canvases[0]!.width / cell.width).toBe(SHEET_COLUMNS);
     expect(canvases[0]!.height / cell.height).toBe(SHEET_ROWS);
+  });
+});
+
+// ── A23 — pixelateSheet closes the sheet-tiling footgun at the API level ──────
+// Review follow-up (PR #34, Lead thread on pixelate.ts:220): plain `pixelate(sheet)`
+// compiles and runs, but silently drifts off the cell grid at factors other than 4/2
+// because it takes `downscaledSize`'s per-image rounding by default. The safe call
+// (manually passing `size: sheetPixelSize(...)`) was longer than the dangerous
+// default, and a caller could pass a `size`/`factor` pair that disagree without
+// either being flagged. `pixelateSheet` removes the option entirely: there is no
+// `size` to get wrong, and `factor` always drives the `size` it's paired with.
+describe('u3 A23: pixelateSheet always draws a sheet that tiles the cell grid exactly', () => {
+  const factors = [2, 3, 4, 5, 6, 7, 9];
+
+  for (const factor of factors) {
+    it(`factor=${factor}: pixelateSheet(sheet, { factor }) tiles the cell grid — no manual size needed`, () => {
+      const cell = sheetCellSize(SHEET.width, SHEET.height, factor);
+      const { factory, canvases } = makeFactory();
+      const out = pixelateSheet(SHEET, { createCanvas: factory, factor });
+      expect(out).toBe(canvases[0]);
+      expect(canvases[0]!.width).toBe(cell.width * SHEET_COLUMNS);
+      expect(canvases[0]!.height).toBe(cell.height * SHEET_ROWS);
+      expect(canvases[0]!.width % cell.width).toBe(0);
+      expect(canvases[0]!.height % cell.height).toBe(0);
+    });
+  }
+
+  it('default factor (no options) matches PIXEL_FACTOR — same target as calling with { factor: PIXEL_FACTOR }', () => {
+    const { factory: f1, canvases: c1 } = makeFactory();
+    const { factory: f2, canvases: c2 } = makeFactory();
+    pixelateSheet(SHEET, { createCanvas: f1 });
+    pixelateSheet(SHEET, { createCanvas: f2, factor: PIXEL_FACTOR });
+    expect(c1[0]!.width).toBe(c2[0]!.width);
+    expect(c1[0]!.height).toBe(c2[0]!.height);
+  });
+
+  it('cannot be called with a mismatched size (there is no size option to pass)', () => {
+    // Compile-time guarantee, restated as a runtime fact: the options type this
+    // function accepts has no `size` key, so a caller physically cannot pass a
+    // `size` that disagrees with `factor` the way the raw `pixelate(sheet, {...})`
+    // call allowed.
+    const options: Parameters<typeof pixelateSheet>[1] = { factor: 3 };
+    expect('size' in options).toBe(false);
+  });
+
+  it('a bad factor (D4) falls back to the source silently, matching pixelate\'s own §3-5 contract', () => {
+    const { factory } = makeFactory();
+    for (const bad of [0, -1, 2.5, NaN]) {
+      expect(pixelateSheet(SHEET, { createCanvas: factory, factor: bad })).toBe(SHEET);
+    }
+  });
+
+  it('an undecoded (NaN) source falls back to the source silently, without pixelateSheet itself throwing', () => {
+    const { factory } = makeFactory();
+    const bad = { width: NaN, height: NaN };
+    expect(() => pixelateSheet(bad, { createCanvas: factory })).not.toThrow();
+    expect(pixelateSheet(bad, { createCanvas: factory })).toBe(bad);
+  });
+
+  it('end to end: draws with imageSmoothing on, matching pixelate\'s own draw contract', () => {
+    const ctx = new FakeCtx();
+    const { factory } = makeFactory({ ctx });
+    pixelateSheet(SHEET, { createCanvas: factory, factor: 3 });
+    expect(ctx.calls).toHaveLength(1);
+    expect(ctx.calls[0]!.smoothingAtDraw).toBe(true);
+    expect(ctx.calls[0]!.qualityAtDraw).toBe('high');
   });
 });
 

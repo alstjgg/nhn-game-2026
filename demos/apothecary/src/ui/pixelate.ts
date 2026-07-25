@@ -31,7 +31,9 @@ import { pixelFactor } from '../../data/generation.json';
  * assignable without a DOM. `pixelate`'s browser-facing call sites should still only
  * ever pass real drawable sources (`CanvasImageSource`) — see the note on
  * `pixelate` below for what happens when they don't, and DISCOVERY.md ("u3 —
- * PixelSource contract") for the consumer-facing contract this implies.
+ * PixelSource contract") for the consumer-facing contract this implies, including
+ * who (u4/u5) owns turning the returned `PixelCanvas` into something CSS
+ * `background-position`/`border-image` can actually reference.
  */
 export interface PixelSource {
   readonly width: number;
@@ -246,4 +248,35 @@ export function pixelate<T extends PixelSource>(source: T, options: PixelateOpti
   } catch {
     return source;
   }
+}
+
+/**
+ * Review follow-up (PR #34, Lead thread on `pixelate.ts:220`): pixelates a full
+ * portrait-SHEET image using `sheetPixelSize` as the target size, instead of
+ * `pixelate`'s default per-image `downscaledSize`. Plain `pixelate(sheet)` compiles
+ * and runs fine but drifts a pixel off the cell grid at factors other than 4/2 (see
+ * `sheetPixelSize`'s doc comment) — the safe call was longer than the natural one and
+ * a mismatched manual `{ size, factor }` pair could silently disagree. This wrapper
+ * removes both footguns: there is no `size` option to get wrong, and `factor` always
+ * drives the `size` it's paired with.
+ *
+ * `sheetPixelSize` can throw on a bad `factor` (D4, via `loadPixelFactor`) — computing
+ * it here, wrapped in its own try/catch, keeps that failure inside the same §3-5
+ * silent-fallback boundary as `pixelate` itself instead of leaking out of this
+ * function. An undecoded/NaN `source` doesn't throw here (`Math.round(NaN)` is NaN,
+ * not an exception); it falls through as a NaN `size`, which `pixelate`'s own
+ * `isDecodedDimension` check already catches.
+ */
+export function pixelateSheet<T extends PixelSource>(
+  source: T,
+  options: Omit<PixelateOptions, 'size'> = {},
+): PixelCanvas | T {
+  const factor = options.factor ?? PIXEL_FACTOR;
+  let size: PixelSize;
+  try {
+    size = sheetPixelSize(source.width, source.height, factor);
+  } catch {
+    return source;
+  }
+  return pixelate(source, { ...options, factor, size });
 }
