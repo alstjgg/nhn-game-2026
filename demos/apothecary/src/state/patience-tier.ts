@@ -1,44 +1,55 @@
-// patience-tier.ts — patience → expression tier, pure projection (PRD §2.2).
+// patience-tier.ts — classifies the customer's patience bar into an expression
+// tier (PRD §2.2: 평온 · 심드렁 · 짜증 · 한계). Read-only derivation: the single
+// source of patience arithmetic stays in src/state/index.ts (chooseDialogue);
+// this module never mutates state and never decides a phase.
 //
-// EXTENDS-only module: the v1 state machine in ./index.ts stays the single source
-// of the patience arithmetic; this file only *reads* a patience/budget pair and
-// derives which of the four faces (0 평온 · 1 심드렁 · 2 짜증 · 3 한계) the customer
-// is wearing. Nothing here mutates state and nothing here is imported by ./index.
-//
-// Balance-as-data (CLAUDE.md): every threshold lives in data/patience-tiers.json.
-// This module contains no tuning literal of its own — only the shape rules that
-// make bad data fail loudly at import time.
-//
-// Documented tier rules, in evaluation order:
-//   1. a non-finite patience or budget throws (a silent tier would hide the bug);
-//   2. an exhausted (patience at or below zero) or absent (budget at or below
-//      zero) patience pool is always the limit tier — checked before the ladder,
-//      so no threshold triple can report a calm face at exhaustion;
-//   3. otherwise the remaining fraction (patience over budget, clamped at one for
-//      an over-full pool) walks the descending threshold ladder: at a value equal
-//      to a threshold the customer stays in the CALMER tier (the comparison is
-//      >=), and falling under the last threshold gives the limit tier.
-// The tier is therefore non-decreasing as patience falls, for any valid triple.
+// Balance-as-data: every tuning number comes from data/patience-tiers.json, so
+// no threshold literal is inlined here. The binding rule, in this exact order:
+//   1. non-finite patience or budget      -> throw (never a silent tier)
+//   2. patience at or below zero          -> LIMIT tier (hard rule, checked first)
+//   3. budget at or below zero            -> LIMIT tier (no divide-by-zero)
+//   4. ratio = min(1, patience / budget); walk the descending threshold ladder
+//      and return the first tier whose floor the ratio clears
+//   5. clearing none of them               -> LIMIT tier
+// Comparisons use `>=`: exactly on a threshold the calmer tier wins. The tier
+// index is 1:1 with data/generation.json `tierTones` (index order is frozen).
 import raw from '../../data/patience-tiers.json';
 import type { PatienceTier } from '../ai/contract';
 
-/** Arity of the frozen PatienceTier union — also the length of tierLabels and of generation.json's tierTones. */
-export const TIER_COUNT = 4;
-
-/** One floor per non-limit tier: the limit tier is "below everything". */
-const THRESHOLD_COUNT = TIER_COUNT - 1;
-
-/** The calmest and the harshest faces, named so the ladder reads without indices. */
-const CALM_TIER: PatienceTier = 0;
-const LIMIT_TIER: PatienceTier = 3;
-
-/** Descending remaining-fraction floors: [tier-0 floor, tier-1 floor, tier-2 floor]. */
+/** Descending ratio floors for tiers 0, 1 and 2; anything below t2 is the limit tier. */
 export type PatienceThresholds = readonly [number, number, number];
 
-export interface PatienceTiersConfig {
+export interface PatienceTierConfig {
   readonly thresholds: PatienceThresholds;
   readonly tierLabels: readonly string[];
 }
+
+/** Arity of the PatienceTier union (0 | 1 | 2 | 3) — pinned to generation.json tierTones. */
+export const TIER_COUNT = 4;
+
+/** One floor per tier except the last: the limit tier is the fallthrough. */
+const THRESHOLD_COUNT = TIER_COUNT - 1;
+
+/** The harshest tier: derived from TIER_COUNT, not hand-pinned, so it moves with the arity. */
+const LIMIT_TIER: PatienceTier = (TIER_COUNT - 1) as PatienceTier;
+
+/**
+ * Tier reported when the ratio clears thresholds[i] but no earlier one, in
+ * ladder order. Length is derived from THRESHOLD_COUNT (itself derived from
+ * TIER_COUNT), so tierFor's loop below always walks exactly as many floors as
+ * requireThresholds requires — growing TIER_COUNT can no longer leave a
+ * threshold unread while a hand-unrolled branch keeps reporting the old limit
+ * tier forever (see PR #37 review).
+ */
+const NON_LIMIT_TIERS: readonly PatienceTier[] = Array.from(
+  { length: THRESHOLD_COUNT },
+  (_unused, tier) => tier as PatienceTier,
+);
+
+const FULL_RATIO = 1;
+const EMPTY_RATIO = 0;
+
+const PREFIX = 'patience-tiers:';
 
 function typeName(v: unknown): string {
   if (v === null) return 'null';
@@ -47,89 +58,111 @@ function typeName(v: unknown): string {
 }
 
 function requireThresholds(v: unknown): PatienceThresholds {
-  if (!Array.isArray(v) || v.length !== THRESHOLD_COUNT) {
+  if (!Array.isArray(v)) {
+    throw new Error(`${PREFIX} field 'thresholds' must be an array (got ${typeName(v)})`);
+  }
+  // Re-bind through `readonly unknown[]`: `Array.isArray` narrows `unknown` to `any[]`,
+  // which would silently defeat every element-access check below (see PR #37 review).
+  const arr: readonly unknown[] = v;
+  if (arr.length !== THRESHOLD_COUNT) {
     throw new Error(
-      `patience-tiers: thresholds must be an array of exactly ${THRESHOLD_COUNT} finite numbers (got ${typeName(v)} of length ${Array.isArray(v) ? v.length : 'n/a'})`,
+      `${PREFIX} field 'thresholds' must hold exactly ${THRESHOLD_COUNT} entries (got ${arr.length})`,
     );
   }
-  v.forEach((item: unknown, i: number) => {
-    if (typeof item !== 'number' || !Number.isFinite(item)) {
+  const nums: number[] = arr.map((entry, i): number => {
+    if (typeof entry !== 'number' || !Number.isFinite(entry)) {
       throw new Error(
-        `patience-tiers: thresholds[${i}] must be a finite number (got ${typeName(item)})`,
+        `${PREFIX} 'thresholds[${i}]' must be a finite number (got ${typeName(entry)})`,
       );
     }
-  });
-  const values: number[] = v;
-  values.forEach((value, i) => {
-    if (value < 0 || value > 1) {
+    if (entry < EMPTY_RATIO || entry > FULL_RATIO) {
       throw new Error(
-        `patience-tiers: thresholds[${i}] must be within [0, 1] inclusive (got ${value})`,
+        `${PREFIX} 'thresholds[${i}]' must be a ratio within [${EMPTY_RATIO}, ${FULL_RATIO}] (got ${entry})`,
       );
     }
+    return entry;
   });
-  if (!(values[0] > values[1] && values[1] > values[2])) {
-    throw new Error(
-      `patience-tiers: thresholds must be strictly descending (got ${values.join(', ')})`,
-    );
+  for (let i = 1; i < nums.length; i++) {
+    if (!(nums[i - 1] > nums[i])) {
+      throw new Error(
+        `${PREFIX} 'thresholds' must be strictly descending (${nums[i - 1]} is not above ${nums[i]})`,
+      );
+    }
   }
-  return [values[0], values[1], values[2]];
+  return [nums[0], nums[1], nums[2]];
 }
 
 function requireTierLabels(v: unknown): readonly string[] {
-  if (!Array.isArray(v) || v.length !== TIER_COUNT) {
+  if (!Array.isArray(v)) {
+    throw new Error(`${PREFIX} field 'tierLabels' must be an array (got ${typeName(v)})`);
+  }
+  // Same narrowing hazard as requireThresholds: keep element access behind `unknown`.
+  const arr: readonly unknown[] = v;
+  if (arr.length !== TIER_COUNT) {
     throw new Error(
-      `patience-tiers: tierLabels must be an array of exactly ${TIER_COUNT} non-empty strings (got ${typeName(v)} of length ${Array.isArray(v) ? v.length : 'n/a'})`,
+      `${PREFIX} field 'tierLabels' must hold exactly ${TIER_COUNT} entries (got ${arr.length})`,
     );
   }
-  v.forEach((item: unknown, i: number) => {
-    if (typeof item !== 'string' || item.trim().length === 0) {
-      throw new Error(
-        `patience-tiers: tierLabels[${i}] must be a non-empty string (got ${typeName(item)})`,
-      );
+  return arr.map((label, i): string => {
+    if (typeof label !== 'string') {
+      throw new Error(`${PREFIX} 'tierLabels[${i}]' must be a string (got ${typeName(label)})`);
     }
+    if (label.trim().length === 0) {
+      throw new Error(`${PREFIX} 'tierLabels[${i}]' must not be empty`);
+    }
+    return label;
   });
-  const labels: string[] = [...v];
-  return labels;
 }
 
 /**
- * Exported for direct invariant testing: callers should use the frozen
- * PATIENCE_TIERS singleton below rather than loading data themselves.
+ * Validates and freezes a patience-tier config. Exported so the shipped data and
+ * any future variant can be invariant-tested directly; runtime callers should use
+ * the PATIENCE_TIERS singleton below. Fails loudly — a bad tuning file must not
+ * degrade into a silently wrong expression.
  */
-export function loadPatienceTiers(input: unknown): PatienceTiersConfig {
+export function loadPatienceTiers(input: unknown): PatienceTierConfig {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) {
-    throw new Error(`patience-tiers: root must be an object (got ${typeName(input)})`);
+    throw new Error(`${PREFIX} root must be an object (got ${typeName(input)})`);
   }
-  const record = input as { thresholds?: unknown; tierLabels?: unknown };
-  const thresholds = requireThresholds(record.thresholds);
-  const tierLabels = requireTierLabels(record.tierLabels);
+  const thresholds = requireThresholds((input as { thresholds: unknown }).thresholds);
+  const tierLabels = requireTierLabels((input as { tierLabels: unknown }).tierLabels);
   return Object.freeze({
     thresholds: Object.freeze(thresholds),
     tierLabels: Object.freeze(tierLabels),
   });
 }
 
-/** The shipped, validated, frozen tier configuration. */
-export const PATIENCE_TIERS: PatienceTiersConfig = loadPatienceTiers(raw);
+/** The shipped tuning, validated at module load. */
+export const PATIENCE_TIERS: PatienceTierConfig = loadPatienceTiers(raw);
 
 /**
- * Which face the customer is wearing at `patience` out of `budget`.
- * Pure and deterministic; see the rule list at the top of this file.
+ * Pure classifier: patience + its budget -> expression tier. Total for every
+ * finite input (negative or over-budget values are clamped, never thrown on);
+ * non-finite input throws, because a NaN patience would otherwise masquerade as
+ * an exhausted customer.
+ *
+ * `config` must be a validated `PatienceTierConfig` (i.e. the return value of
+ * `loadPatienceTiers`, or the shipped `PATIENCE_TIERS` default) — never a raw
+ * threshold triple. Requiring the validated shape here, rather than an
+ * unchecked `PatienceThresholds`, closes off a public API path that could
+ * otherwise bypass AC2's balance-as-data guarantees and AC3's monotonicity
+ * guarantee (both hold only for thresholds that passed `requireThresholds`).
  */
 export function tierFor(
   patience: number,
   budget: number,
-  thresholds: PatienceThresholds = PATIENCE_TIERS.thresholds,
+  config: PatienceTierConfig = PATIENCE_TIERS,
 ): PatienceTier {
   if (!Number.isFinite(patience) || !Number.isFinite(budget)) {
     throw new Error(
-      `patience-tier: patience and budget must be finite (got patience=${patience}, budget=${budget})`,
+      `${PREFIX} tierFor needs finite numbers (patience=${patience}, budget=${budget})`,
     );
   }
-  if (patience <= 0 || budget <= 0) return LIMIT_TIER;
-  const remaining = patience > budget ? 1 : patience / budget;
-  if (remaining >= thresholds[0]) return CALM_TIER;
-  if (remaining >= thresholds[1]) return 1;
-  if (remaining >= thresholds[2]) return 2;
+  if (patience <= EMPTY_RATIO) return LIMIT_TIER;
+  if (budget <= EMPTY_RATIO) return LIMIT_TIER;
+  const ratio = Math.min(FULL_RATIO, patience / budget);
+  for (let i = 0; i < config.thresholds.length; i++) {
+    if (ratio >= config.thresholds[i]) return NON_LIMIT_TIERS[i];
+  }
   return LIMIT_TIER;
 }

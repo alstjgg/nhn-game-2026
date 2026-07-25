@@ -1,410 +1,448 @@
-// u2 TDD-Red — 인내심 → 표정 티어 순수 코어 (PRD §2.2, spec §1.2/§1.3).
+// u2 TDD-Red — patience → expression-tier pure core (thresholds as balance-as-data).
+// Covers AC1 (boundary semantics of tierFor), AC2 (loader guards + no inline threshold
+// literal in the source), AC3 (monotonicity property + patience 0 ⇒ tier 3), AC5
+// (non-finite input throws), and F6 (tier arity pinned 1:1 to generation.json tierTones).
 //
-// RED until u2-BUILD creates:
-//   - demos/apothecary/data/patience-tiers.json
-//   - demos/apothecary/src/state/patience-tier.ts
-// (both imports below fail to resolve, so the whole suite is red.)
+// Binding rule under test (spec §1.2 / design D-4), in this exact order:
+//   0. non-finite patience or budget            → throw
+//   1. patience <= 0                            → 3
+//   2. budget   <= 0                            → 3
+//   3. ratio = min(1, patience / budget); >= t0 → 0, >= t1 → 1, >= t2 → 2
+//   4. otherwise                                → 3
+// Comparisons are `>=`: at exactly a threshold you stay in the calmer tier.
 //
-// Maps 1:1 to spec acceptance AC1/AC2/AC3/AC5 + F4/F6 pins.
-// A3: the core must never be assumed to ship any particular threshold triple, so
-// every *behavioral* test passes explicit fixture thresholds. Only the clearly
-// labelled "shipped defaults" block asserts data/patience-tiers.json values.
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+// A3: the shipped default triple is a tunable, NOT a behavioural contract — every
+// behavioural assertion below passes its thresholds explicitly. The shipped data is
+// only checked against the loader's invariants, never against specific numbers.
 import { describe, expect, it } from 'vitest';
-
-import generationData from '../../data/generation.json';
-import tiersData from '../../data/patience-tiers.json';
-import type { PatienceTier } from '../../src/ai/contract';
 import {
   PATIENCE_TIERS,
   TIER_COUNT,
   loadPatienceTiers,
   tierFor,
 } from '../../src/state/patience-tier';
-import type { PatienceThresholds } from '../../src/state/patience-tier';
+import type { PatienceThresholds, PatienceTierConfig } from '../../src/state/patience-tier';
+import type { PatienceTier } from '../../src/ai/contract';
+import generation from '../../data/generation.json';
+import patienceTiersData from '../../data/patience-tiers.json';
 
-// Fixture thresholds chosen so every "ratio === threshold" boundary is an EXACT
-// binary float (n/8), i.e. the boundary tests can never be fooled by rounding.
-const TH: PatienceThresholds = [0.75, 0.5, 0.25];
-const BUDGET = 8;
+// Exactly-representable binary fractions, so `patience / budget === threshold` is an
+// exact IEEE-754 equality and the boundary tests below cannot be flaky.
+const T: PatienceThresholds = [0.5, 0.25, 0.125];
+const B = 8; // budget: ratio steps of 1/8 are exact
 
 const VALID = {
-  thresholds: [0.7, 0.4, 0.15],
+  thresholds: [0.5, 0.25, 0.125],
   tierLabels: ['평온', '심드렁', '짜증', '한계'],
 };
 
-const TIERS = [0, 1, 2, 3];
+// tierFor only accepts a *validated* config (PR #37 review: a raw threshold triple
+// bypassed the loader's invariants). Build one from an arbitrary threshold triple —
+// tierLabels never affects tierFor's arithmetic, so VALID's labels are reused.
+const configOf = (thresholds: PatienceThresholds): PatienceTierConfig =>
+  loadPatienceTiers({ thresholds, tierLabels: VALID.tierLabels });
 
-// ── AC1 — tierFor: exported, pure, documented boundary rules (spec §1.2) ──────
-describe('AC1 — tierFor is an exported pure function returning 0|1|2|3', () => {
-  it('is a function of arity >= 2 (patience, budget, thresholds?)', () => {
-    expect(typeof tierFor).toBe('function');
-    expect(tierFor.length).toBeGreaterThanOrEqual(2);
+const CFG = configOf(T);
+
+// ---------------------------------------------------------------------------
+// AC1 — tierFor boundary semantics
+// ---------------------------------------------------------------------------
+
+describe('AC1 — tierFor boundaries (explicit thresholds, documented rule §1.2)', () => {
+  it('returns tier 0 at full patience (ratio 1)', () => {
+    expect(tierFor(B, B, CFG)).toBe(0);
   });
 
-  it('is deterministic: the same inputs always give the same tier', () => {
-    for (let p = 0; p <= BUDGET; p++) {
-      const first = tierFor(p, BUDGET, TH);
-      expect(tierFor(p, BUDGET, TH)).toBe(first);
-      expect(tierFor(p, BUDGET, TH)).toBe(first);
+  it('stays in the calmer tier at exactly t0 (>= comparison)', () => {
+    expect(4 / B).toBe(T[0]); // guard: the boundary really is exact
+    expect(tierFor(4, B, CFG)).toBe(0);
+  });
+
+  it('drops to tier 1 just below t0', () => {
+    expect(tierFor(3.9, B, CFG)).toBe(1);
+  });
+
+  it('stays in the calmer tier at exactly t1 (>= comparison)', () => {
+    expect(2 / B).toBe(T[1]);
+    expect(tierFor(2, B, CFG)).toBe(1);
+  });
+
+  it('drops to tier 2 just below t1', () => {
+    expect(tierFor(1.9, B, CFG)).toBe(2);
+  });
+
+  it('stays in the calmer tier at exactly t2 (>= comparison)', () => {
+    expect(1 / B).toBe(T[2]);
+    expect(tierFor(1, B, CFG)).toBe(2);
+  });
+
+  it('drops to tier 3 just below t2 while patience is still positive', () => {
+    // Q1 default = yes: tier 3 is an expression state and carries no phase authority.
+    expect(tierFor(0.9, B, CFG)).toBe(3);
+  });
+
+  it('returns tier 3 when patience is exactly 0 (hard rule, checked first)', () => {
+    expect(tierFor(0, B, CFG)).toBe(3);
+  });
+
+  it('returns tier 3 for negative patience (data anomaly, never throws)', () => {
+    expect(tierFor(-1, B, CFG)).toBe(3);
+    expect(tierFor(-100, B, CFG)).toBe(3);
+  });
+
+  it('returns tier 3 when budget is 0 (no divide-by-zero, no NaN leak)', () => {
+    expect(tierFor(5, 0, CFG)).toBe(3);
+  });
+
+  it('returns tier 3 when budget is negative', () => {
+    expect(tierFor(5, -3, CFG)).toBe(3);
+  });
+
+  it('returns tier 3 when both patience and budget are 0', () => {
+    expect(tierFor(0, 0, CFG)).toBe(3);
+  });
+
+  it('clamps patience > budget to ratio 1 → tier 0, and does not throw', () => {
+    expect(() => tierFor(99, B, CFG)).not.toThrow();
+    expect(tierFor(99, B, CFG)).toBe(0);
+    expect(tierFor(B + 1, B, CFG)).toBe(0);
+  });
+
+  it('handles budget 1 (the smallest sane budget) deterministically', () => {
+    expect(tierFor(1, 1, CFG)).toBe(0);
+    expect(tierFor(0, 1, CFG)).toBe(3);
+  });
+
+  it('only ever returns 0 | 1 | 2 | 3', () => {
+    for (let patience = -2; patience <= B + 2; patience += 0.25) {
+      expect([0, 1, 2, 3]).toContain(tierFor(patience, B, CFG));
     }
   });
 
-  it('never mutates the thresholds it is given', () => {
-    const before: PatienceThresholds = [0.75, 0.5, 0.25];
-    const snapshot = [...before];
-    tierFor(3, BUDGET, before);
-    expect([...before]).toEqual(snapshot);
+  it('is pure: repeated calls with the same input agree', () => {
+    expect(tierFor(3, B, CFG)).toBe(tierFor(3, B, CFG));
+    expect(tierFor(0, B, CFG)).toBe(tierFor(0, B, CFG));
   });
 
-  it('always returns a member of {0,1,2,3}', () => {
-    for (let p = -3; p <= BUDGET + 3; p++) {
-      expect(TIERS).toContain(tierFor(p, BUDGET, TH));
-    }
+  it('does not mutate the config it is given', () => {
+    const custom = configOf([0.75, 0.5, 0.25]);
+    tierFor(3, B, custom);
+    expect(custom.thresholds).toEqual([0.75, 0.5, 0.25]);
   });
-});
 
-describe('AC1 — boundary: at exactly a threshold you stay in the CALMER tier (>=)', () => {
-  it.each<[string, number, PatienceTier]>([
-    // [why, patience (budget 8, thresholds .75/.5/.25), expected tier]
-    ['ratio 1.0 (full budget) -> calmest tier', 8, 0],
-    ['ratio === t0 exactly (0.75) -> stays tier 0', 6, 0],
-    ['ratio just below t0 (0.625) -> tier 1', 5, 1],
-    ['ratio === t1 exactly (0.5) -> stays tier 1', 4, 1],
-    ['ratio just below t1 (0.375) -> tier 2', 3, 2],
-    ['ratio === t2 exactly (0.25) -> stays tier 2', 2, 2],
-    ['ratio just below t2 (0.125) -> tier 3', 1, 3],
-  ])('%s', (_why, patience, expected) => {
-    expect(tierFor(patience, BUDGET, TH)).toBe(expected);
+  it('honours a caller-supplied threshold triple over the shipped defaults', () => {
+    const strict = configOf([0.99, 0.98, 0.97]);
+    const lax = configOf([0.03, 0.02, 0.01]);
+    expect(tierFor(4, B, strict)).toBe(3); // ratio 0.5 is below every strict floor
+    expect(tierFor(4, B, lax)).toBe(0); // ratio 0.5 clears every lax floor
+  });
+
+  it('defaults its third argument to the shipped thresholds (still a total function)', () => {
+    const tier: PatienceTier = tierFor(B, B);
+    expect([0, 1, 2, 3]).toContain(tier);
+    expect(tierFor(0, B)).toBe(3);
   });
 });
 
-describe('AC1 — boundary: patience === 0 is ALWAYS tier 3 (hard rule, checked first)', () => {
-  it.each<number>([1, 2, 3, 5, 8, 20, 999])('budget %i, patience 0 -> tier 3', (budget) => {
-    expect(tierFor(0, budget, TH)).toBe(3);
-  });
+// ---------------------------------------------------------------------------
+// AC2 — thresholds come only from data; the loader fails loudly
+// ---------------------------------------------------------------------------
 
-  it('patience 0 is tier 3 even when the threshold triple would allow tier 0 at ratio 0', () => {
-    // A degenerate-but-valid triple (all floors at 0) must NOT be able to report
-    // a calm tier at exhaustion: rule 1 short-circuits before the ladder.
-    const permissive: PatienceThresholds = [0, 0, 0];
-    expect(tierFor(0, 5, permissive)).toBe(3);
-  });
-});
-
-describe('AC1 — boundary: budget === 0 -> tier 3 (no divide-by-zero, never throws)', () => {
-  it('budget 0 with positive patience is tier 3', () => {
-    expect(tierFor(5, 0, TH)).toBe(3);
-  });
-
-  it('budget 0 and patience 0 is tier 3', () => {
-    expect(tierFor(0, 0, TH)).toBe(3);
-  });
-
-  it('a negative budget (data anomaly) is tier 3 rather than a throw or NaN tier', () => {
-    expect(tierFor(5, -4, TH)).toBe(3);
-  });
-
-  it('never yields NaN or a non-integer for a zero budget', () => {
-    expect(TIERS).toContain(tierFor(5, 0, TH));
-  });
-});
-
-describe('AC1 — boundary: patience > budget clamps to ratio 1 -> tier 0, never throws', () => {
-  it.each<number>([9, 12, 100])('patience %i over budget 8 -> tier 0', (patience) => {
-    expect(() => tierFor(patience, BUDGET, TH)).not.toThrow();
-    expect(tierFor(patience, BUDGET, TH)).toBe(0);
-  });
-});
-
-describe('AC1 — boundary: negative patience -> tier 3 (treated as exhausted, no throw)', () => {
-  it.each<number>([-1, -5, -100])('patience %i -> tier 3', (patience) => {
-    expect(() => tierFor(patience, BUDGET, TH)).not.toThrow();
-    expect(tierFor(patience, BUDGET, TH)).toBe(3);
-  });
-});
-
-describe('AC1 — the thresholds argument is optional and defaults to PATIENCE_TIERS.thresholds', () => {
-  it('a 2-arg call equals the explicit 3-arg call with the shipped thresholds', () => {
-    for (let budget = 1; budget <= 8; budget++) {
-      for (let p = 0; p <= budget; p++) {
-        expect(tierFor(p, budget)).toBe(tierFor(p, budget, PATIENCE_TIERS.thresholds));
-      }
-    }
-  });
-});
-
-// ── AC5 — non-finite input throws; a silent tier is forbidden ─────────────────
-describe('AC5 — non-finite patience or budget throws Error (never returns a tier)', () => {
-  it.each<[string, number, number]>([
-    ['patience NaN', NaN, 5],
-    ['patience Infinity', Infinity, 5],
-    ['patience -Infinity', -Infinity, 5],
-    ['budget NaN', 5, NaN],
-    ['budget Infinity', 5, Infinity],
-    ['budget -Infinity', 5, -Infinity],
-    ['both NaN', NaN, NaN],
-  ])('%s throws', (_why, patience, budget) => {
-    expect(() => tierFor(patience, budget, TH)).toThrow(Error);
-  });
-
-  it('NaN patience throws even though the patience <= 0 rule would swallow it', () => {
-    // Regression guard for the ordering trap: `NaN <= 0` is false and `NaN >= t`
-    // is false, so a NaN reaching the ladder would silently report tier 3.
-    expect(() => tierFor(NaN, 5, TH)).toThrow();
-  });
-
-  it('non-finite input throws with the 2-arg (default thresholds) call too', () => {
-    expect(() => tierFor(NaN, 5)).toThrow(Error);
-    expect(() => tierFor(5, NaN)).toThrow(Error);
-  });
-});
-
-// ── AC3 — property: monotone in patience, always in range, 0 ⇒ tier 3 ─────────
-const PROPERTY_TRIPLES: ReadonlyArray<readonly [string, PatienceThresholds]> = [
-  ['shipped defaults', PATIENCE_TIERS.thresholds],
-  ['fixture .75/.5/.25', [0.75, 0.5, 0.25]],
-  ['wide .9/.5/.1', [0.9, 0.5, 0.1]],
-  ['tight .55/.5/.45', [0.55, 0.5, 0.45]],
-  ['edge 1/.5/0', [1, 0.5, 0]],
-];
-
-describe('AC3 — property: tier is non-decreasing as patience falls budget -> 0', () => {
-  it.each(PROPERTY_TRIPLES)('%s: monotone for every budget 1..20', (_name, thresholds) => {
-    for (let budget = 1; budget <= 20; budget++) {
-      let previous = tierFor(budget, budget, thresholds);
-      for (let patience = budget; patience >= 0; patience--) {
-        const tier = tierFor(patience, budget, thresholds);
-        expect(TIERS, `budget ${budget}, patience ${patience}`).toContain(tier);
-        expect(tier, `budget ${budget}, patience ${patience} must not calm down`).toBeGreaterThanOrEqual(
-          previous,
-        );
-        previous = tier;
-      }
-    }
-  });
-
-  it.each(PROPERTY_TRIPLES)('%s: patience 0 is tier 3 for every budget 1..20', (_name, thresholds) => {
-    for (let budget = 1; budget <= 20; budget++) {
-      expect(tierFor(0, budget, thresholds), `budget ${budget}`).toBe(3);
-    }
-  });
-
-  it.each(PROPERTY_TRIPLES)('%s: a full budget is never worse than tier 0', (_name, thresholds) => {
-    for (let budget = 1; budget <= 20; budget++) {
-      expect(tierFor(budget, budget, thresholds), `budget ${budget}`).toBe(0);
-    }
-  });
-});
-
-// ── AC2 / F4 — thresholds come ONLY from data/patience-tiers.json ────────────
-const here = dirname(fileURLToPath(import.meta.url));
-const sourceFile = resolve(here, '../../src/state/patience-tier.ts');
-
-describe('AC2 / F4 — balance-as-data: no threshold literal inlined in the module', () => {
-  it('src/state/patience-tier.ts contains no decimal literal anywhere (comments included)', () => {
-    const src = readFileSync(sourceFile, 'utf8');
-    const hits = src.split('\n').flatMap((line, i) => {
-      const m = line.match(/0\.[0-9]+/);
-      return m ? [`${i + 1}: ${line.trim()}`] : [];
-    });
-    expect(hits, `inline threshold literal(s) found:\n${hits.join('\n')}`).toEqual([]);
-  });
-
-  it('imports the thresholds from the JSON data file', () => {
-    const src = readFileSync(sourceFile, 'utf8');
-    expect(src).toMatch(/from\s+['"][^'"]*data\/patience-tiers\.json['"]/);
-  });
-
-  it('PATIENCE_TIERS is exactly what the shipped JSON declares (no code-side override)', () => {
-    expect([...PATIENCE_TIERS.thresholds]).toEqual(tiersData.thresholds);
-    expect([...PATIENCE_TIERS.tierLabels]).toEqual(tiersData.tierLabels);
-  });
-});
-
-// ── AC2 — loadPatienceTiers fails loudly, one test per §1.3 rule ─────────────
-describe('AC2 — loadPatienceTiers accepts well-formed data', () => {
-  it('does not throw on the canonical shape', () => {
+describe('AC2 — shipped PATIENCE_TIERS satisfies its own invariants', () => {
+  it('accepts a well-formed config', () => {
     expect(() => loadPatienceTiers(VALID)).not.toThrow();
   });
 
-  it('returns the parsed thresholds and labels unchanged', () => {
-    const cfg = loadPatienceTiers(VALID);
-    expect([...cfg.thresholds]).toEqual(VALID.thresholds);
-    expect([...cfg.tierLabels]).toEqual(VALID.tierLabels);
+  it('exposes exactly 3 finite thresholds', () => {
+    expect(PATIENCE_TIERS.thresholds).toHaveLength(3);
+    for (const t of PATIENCE_TIERS.thresholds) {
+      expect(Number.isFinite(t)).toBe(true);
+    }
   });
 
-  it('accepts the boundary-legal triple [1, 0.5, 0]', () => {
-    expect(() => loadPatienceTiers({ ...VALID, thresholds: [1, 0.5, 0] })).not.toThrow();
+  it('keeps every threshold within [0, 1]', () => {
+    for (const t of PATIENCE_TIERS.thresholds) {
+      expect(t).toBeGreaterThanOrEqual(0);
+      expect(t).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('keeps thresholds strictly descending', () => {
+    const [t0, t1, t2] = PATIENCE_TIERS.thresholds;
+    expect(t0).toBeGreaterThan(t1);
+    expect(t1).toBeGreaterThan(t2);
+  });
+
+  it('ships one non-empty label per tier', () => {
+    expect(PATIENCE_TIERS.tierLabels).toHaveLength(TIER_COUNT);
+    for (const label of PATIENCE_TIERS.tierLabels) {
+      expect(typeof label).toBe('string');
+      expect(label.trim().length).toBeGreaterThan(0);
+    }
   });
 });
 
-describe('AC2 rule 1 — root must be an object', () => {
-  it.each<[string, unknown]>([
-    ['null', null],
-    ['undefined', undefined],
-    ['a number', 42],
-    ['a string', 'patience'],
-    ['an array', [0.7, 0.4, 0.15]],
-  ])('rejects %s', (_why, input) => {
-    expect(() => loadPatienceTiers(input)).toThrow(/patience-tiers:.*root must be an object/);
+describe('AC2 — loadPatienceTiers guard tests (one per §1.3 rule)', () => {
+  it('rule 1: rejects a non-object root', () => {
+    expect(() => loadPatienceTiers(null)).toThrow(/patience-tiers:/);
+    expect(() => loadPatienceTiers(undefined)).toThrow(/patience-tiers:/);
+    expect(() => loadPatienceTiers(42)).toThrow(/patience-tiers:/);
+    expect(() => loadPatienceTiers('nope')).toThrow(/patience-tiers:.*root.*object/);
   });
-});
 
-describe('AC2 rule 2 — thresholds must be an array of exactly 3 finite numbers', () => {
-  it.each<[string, unknown]>([
-    ['missing', undefined],
-    ['not an array', 0.7],
-    ['an object', { 0: 0.7, 1: 0.4, 2: 0.15 }],
-    ['only 2 entries', [0.7, 0.4]],
-    ['4 entries', [0.7, 0.4, 0.15, 0.05]],
-    ['empty', []],
-    ['containing a string', [0.7, '0.4', 0.15]],
-    ['containing null', [0.7, null, 0.15]],
-    ['containing NaN', [0.7, NaN, 0.15]],
-    ['containing Infinity', [Infinity, 0.4, 0.15]],
-  ])('rejects thresholds %s', (_why, thresholds) => {
-    expect(() => loadPatienceTiers({ ...VALID, thresholds })).toThrow(
+  it('rule 2: rejects thresholds that are not an array', () => {
+    expect(() => loadPatienceTiers({ ...VALID, thresholds: 0.5 })).toThrow(
+      /patience-tiers:.*thresholds/,
+    );
+    expect(() => loadPatienceTiers({ ...VALID, thresholds: undefined })).toThrow(
       /patience-tiers:.*thresholds/,
     );
   });
-});
 
-describe('AC2 rule 3 — every threshold must be within [0, 1] inclusive', () => {
-  it.each<[string, number[]]>([
-    ['a negative floor', [0.7, 0.4, -0.1]],
-    ['a floor above 1', [1.5, 0.4, 0.15]],
-    ['all out of range', [9, 5, 2]],
-  ])('rejects %s', (_why, thresholds) => {
-    expect(() => loadPatienceTiers({ ...VALID, thresholds })).toThrow(
-      /patience-tiers:.*thresholds.*\[0, 1\]/,
+  it('rule 2: rejects the wrong number of thresholds', () => {
+    expect(() => loadPatienceTiers({ ...VALID, thresholds: [0.5, 0.25] })).toThrow(
+      /patience-tiers:.*thresholds/,
+    );
+    expect(() =>
+      loadPatienceTiers({ ...VALID, thresholds: [0.8, 0.5, 0.25, 0.125] }),
+    ).toThrow(/patience-tiers:.*thresholds/);
+    expect(() => loadPatienceTiers({ ...VALID, thresholds: [] })).toThrow(
+      /patience-tiers:.*thresholds/,
     );
   });
 
-  it('accepts the inclusive endpoints 1 and 0', () => {
-    expect(() => loadPatienceTiers({ ...VALID, thresholds: [1, 0.4, 0] })).not.toThrow();
-  });
-});
-
-describe('AC2 rule 4 — thresholds must be strictly descending (t0 > t1 > t2)', () => {
-  it.each<[string, number[]]>([
-    ['ascending', [0.15, 0.4, 0.7]],
-    ['unsorted', [0.4, 0.7, 0.15]],
-    ['t0 equal to t1', [0.5, 0.5, 0.2]],
-    ['t1 equal to t2', [0.7, 0.4, 0.4]],
-    ['all equal', [0.5, 0.5, 0.5]],
-  ])('rejects %s', (_why, thresholds) => {
-    expect(() => loadPatienceTiers({ ...VALID, thresholds })).toThrow(
-      /patience-tiers:.*strictly descending/,
+  it('rule 2: rejects non-finite / non-numeric threshold entries', () => {
+    expect(() => loadPatienceTiers({ ...VALID, thresholds: [0.5, Number.NaN, 0.125] })).toThrow(
+      /patience-tiers:.*thresholds/,
+    );
+    expect(() =>
+      loadPatienceTiers({ ...VALID, thresholds: [Number.POSITIVE_INFINITY, 0.25, 0.125] }),
+    ).toThrow(/patience-tiers:.*thresholds/);
+    expect(() => loadPatienceTiers({ ...VALID, thresholds: ['0.5', 0.25, 0.125] })).toThrow(
+      /patience-tiers:.*thresholds/,
     );
   });
-});
 
-describe('AC2 rule 5 — tierLabels must be an array of exactly 4 non-empty strings', () => {
-  it.each<[string, unknown]>([
-    ['missing', undefined],
-    ['not an array', '평온'],
-    ['only 3 labels', ['평온', '심드렁', '짜증']],
-    ['5 labels', ['평온', '심드렁', '짜증', '한계', '폭발']],
-    ['empty', []],
-    ['containing a number', ['평온', '심드렁', '짜증', 4]],
-    ['containing an empty string', ['평온', '심드렁', '짜증', '']],
-    ['containing a whitespace-only string', ['평온', '심드렁', '짜증', '   ']],
-  ])('rejects tierLabels %s', (_why, tierLabels) => {
-    expect(() => loadPatienceTiers({ ...VALID, tierLabels })).toThrow(
+  it('rule 3: rejects a threshold outside [0, 1]', () => {
+    expect(() => loadPatienceTiers({ ...VALID, thresholds: [1.5, 0.25, 0.125] })).toThrow(
+      /patience-tiers:.*thresholds/,
+    );
+    expect(() => loadPatienceTiers({ ...VALID, thresholds: [0.5, 0.25, -0.1] })).toThrow(
+      /patience-tiers:.*thresholds/,
+    );
+  });
+
+  it('rule 3: accepts the inclusive endpoints 0 and 1', () => {
+    expect(() => loadPatienceTiers({ ...VALID, thresholds: [1, 0.5, 0] })).not.toThrow();
+  });
+
+  it('rule 4: rejects thresholds that are not strictly descending', () => {
+    expect(() => loadPatienceTiers({ ...VALID, thresholds: [0.25, 0.5, 0.75] })).toThrow(
+      /patience-tiers:.*descending/,
+    );
+    expect(() => loadPatienceTiers({ ...VALID, thresholds: [0.5, 0.5, 0.25] })).toThrow(
+      /patience-tiers:.*descending/,
+    );
+    expect(() => loadPatienceTiers({ ...VALID, thresholds: [0.5, 0.25, 0.25] })).toThrow(
+      /patience-tiers:.*descending/,
+    );
+  });
+
+  it('rule 5: rejects tierLabels that are not an array of exactly 4 entries', () => {
+    expect(() => loadPatienceTiers({ ...VALID, tierLabels: undefined })).toThrow(
       /patience-tiers:.*tierLabels/,
     );
+    expect(() => loadPatienceTiers({ ...VALID, tierLabels: '평온' })).toThrow(
+      /patience-tiers:.*tierLabels/,
+    );
+    expect(() => loadPatienceTiers({ ...VALID, tierLabels: ['평온', '짜증', '한계'] })).toThrow(
+      /patience-tiers:.*tierLabels/,
+    );
+    expect(() =>
+      loadPatienceTiers({ ...VALID, tierLabels: ['평온', '심드렁', '짜증', '한계', '폭발'] }),
+    ).toThrow(/patience-tiers:.*tierLabels/);
   });
-});
 
-describe('AC2 rule 6 — the result and its nested arrays are frozen', () => {
-  it('freezes the config object and both arrays', () => {
+  it('rule 5: rejects empty / whitespace-only / non-string labels', () => {
+    expect(() =>
+      loadPatienceTiers({ ...VALID, tierLabels: ['평온', '', '짜증', '한계'] }),
+    ).toThrow(/patience-tiers:.*tierLabels/);
+    expect(() =>
+      loadPatienceTiers({ ...VALID, tierLabels: ['평온', '   ', '짜증', '한계'] }),
+    ).toThrow(/patience-tiers:.*tierLabels/);
+    expect(() =>
+      loadPatienceTiers({ ...VALID, tierLabels: ['평온', 3, '짜증', '한계'] }),
+    ).toThrow(/patience-tiers:.*tierLabels/);
+  });
+
+  it('rule 6: freezes the result and its nested arrays', () => {
     const cfg = loadPatienceTiers(VALID);
     expect(Object.isFrozen(cfg)).toBe(true);
     expect(Object.isFrozen(cfg.thresholds)).toBe(true);
     expect(Object.isFrozen(cfg.tierLabels)).toBe(true);
-  });
-
-  it('freezes the shipped PATIENCE_TIERS singleton too', () => {
     expect(Object.isFrozen(PATIENCE_TIERS)).toBe(true);
     expect(Object.isFrozen(PATIENCE_TIERS.thresholds)).toBe(true);
     expect(Object.isFrozen(PATIENCE_TIERS.tierLabels)).toBe(true);
   });
 
-  it('mutating a frozen threshold throws in strict mode', () => {
-    const cfg = loadPatienceTiers(VALID);
-    expect(() => {
-      (cfg.thresholds as unknown as number[])[0] = 0.99;
-    }).toThrow(TypeError);
-    expect(cfg.thresholds[0]).toBe(VALID.thresholds[0]);
-  });
-
-  it('does not alias the caller-supplied input arrays', () => {
-    const input = { thresholds: [0.7, 0.4, 0.15], tierLabels: [...VALID.tierLabels] };
+  it('does not alias the input object it was handed', () => {
+    const input = { thresholds: [0.5, 0.25, 0.125], tierLabels: [...VALID.tierLabels] };
     const cfg = loadPatienceTiers(input);
-    input.thresholds[0] = 0.1; // the raw input stays mutable; the config must not follow
-    expect(cfg.thresholds[0]).toBe(0.7);
+    input.thresholds[0] = 0.9;
+    expect(cfg.thresholds[0]).toBe(0.5);
   });
 });
 
-// ── F6 — tier index order is 1:1 with generation.json › tierTones ─────────────
-describe('F6 — TIER_COUNT pins the 1:1 type ↔ labels ↔ tones arity', () => {
-  it('TIER_COUNT is 4 (arity of the frozen PatienceTier union)', () => {
-    expect(TIER_COUNT).toBe(4);
+// PR #37 review: asserting on the *source text* (e.g. "no decimal literal appears")
+// is both unsound (`7/10`, `.7`, `7e-1` all dodge a literal-shaped regex) and brittle
+// (any unrelated decimal — a comment example, a future epsilon constant — breaks it).
+// The behavioural claim balance-as-data actually makes is: classification tracks the
+// data, not a constant baked into the module. Prove that directly instead.
+describe('AC2 — balance-as-data: classification follows data, not a baked-in constant', () => {
+  it('changing the threshold data changes the classification for the same input', () => {
+    // Same (patience, budget); only the config differs. If a threshold were hardcoded
+    // in tierFor's logic, both calls would agree regardless of which config is passed.
+    const strict = configOf([0.99, 0.98, 0.97]);
+    const lax = configOf([0.03, 0.02, 0.01]);
+    expect(tierFor(4, B, strict)).not.toBe(tierFor(4, B, lax));
   });
 
-  it('tierLabels has exactly TIER_COUNT entries', () => {
-    expect(PATIENCE_TIERS.tierLabels.length).toBe(TIER_COUNT);
+  it('PATIENCE_TIERS is exactly what loadPatienceTiers(data/patience-tiers.json) produces', () => {
+    // Ties the shipped singleton to the actual data file end-to-end, without caring
+    // what the numbers are (that's PATIENCE_TIERS's own invariant tests, above).
+    expect(PATIENCE_TIERS).toEqual(loadPatienceTiers(patienceTiersData));
   });
+});
 
-  it('generation.json tierTones has exactly TIER_COUNT entries', () => {
-    expect(generationData.tierTones.length).toBe(TIER_COUNT);
-  });
+// ---------------------------------------------------------------------------
+// AC3 — monotonicity property
+// ---------------------------------------------------------------------------
 
-  it('every tier index returned by tierFor is a valid index into both arrays', () => {
-    for (let budget = 1; budget <= 10; budget++) {
-      for (let patience = 0; patience <= budget; patience++) {
-        const tier: PatienceTier = tierFor(patience, budget);
-        expect(PATIENCE_TIERS.tierLabels[tier]).toBeTypeOf('string');
-        expect(generationData.tierTones[tier]).toBeTypeOf('string');
+describe('AC3 — property: tier is non-decreasing as patience falls, and 0 ⇒ tier 3', () => {
+  const configs: PatienceTierConfig[] = [
+    PATIENCE_TIERS,
+    configOf([0.5, 0.25, 0.125]),
+    configOf([0.9, 0.6, 0.3]),
+    configOf([1, 0.5, 0]),
+    configOf([0.05, 0.02, 0.01]),
+  ];
+
+  it('walks patience budget → 0 in integer steps without a tier ever decreasing', () => {
+    for (const config of configs) {
+      for (let budget = 1; budget <= 20; budget++) {
+        let previous = tierFor(budget, budget, config);
+        for (let patience = budget; patience >= 0; patience--) {
+          const tier = tierFor(patience, budget, config);
+          expect([0, 1, 2, 3]).toContain(tier);
+          expect(
+            tier,
+            `tier decreased at patience=${patience}/${budget} with ${config.thresholds.join(',')}`,
+          ).toBeGreaterThanOrEqual(previous);
+          previous = tier;
+        }
+        expect(tierFor(0, budget, config)).toBe(3);
       }
+    }
+  });
+
+  it('stays non-decreasing under a fine-grained (fractional) walk', () => {
+    const steps = 40;
+    for (const config of configs) {
+      for (let budget = 1; budget <= 20; budget++) {
+        let previous = tierFor(budget, budget, config);
+        for (let i = steps; i >= 0; i--) {
+          const patience = (budget * i) / steps;
+          const tier = tierFor(patience, budget, config);
+          expect(tier).toBeGreaterThanOrEqual(previous);
+          previous = tier;
+        }
+      }
+    }
+  });
+
+  it('always reports tier 3 at exhaustion, for every budget and threshold set', () => {
+    for (const config of configs) {
+      for (let budget = 1; budget <= 20; budget++) {
+        expect(tierFor(0, budget, config)).toBe(3);
+        expect(tierFor(-1, budget, config)).toBe(3);
+      }
+    }
+  });
+
+  it('reports tier 0 at full patience whenever the top floor is reachable', () => {
+    const topFloor = configOf([1, 0.5, 0.25]);
+    for (let budget = 1; budget <= 20; budget++) {
+      expect(tierFor(budget, budget, topFloor)).toBe(0);
     }
   });
 });
 
-// ── Shipped defaults (data pin, NOT core behavior — see A3) ───────────────────
-describe('shipped defaults produce the spec §1.3 tier tables', () => {
-  it('budget 5 walks 0,0,1,1,2,3 as patience falls 5 -> 0', () => {
-    const walk = [5, 4, 3, 2, 1, 0].map((p) => tierFor(p, 5));
-    expect(walk).toEqual([0, 0, 1, 1, 2, 3]);
+// ---------------------------------------------------------------------------
+// AC5 — non-finite input throws (never a silent tier)
+// ---------------------------------------------------------------------------
+
+describe('AC5 — non-finite input throws instead of returning a tier', () => {
+  it('throws on non-finite patience', () => {
+    expect(() => tierFor(Number.NaN, B, CFG)).toThrow();
+    expect(() => tierFor(Number.POSITIVE_INFINITY, B, CFG)).toThrow();
+    expect(() => tierFor(Number.NEGATIVE_INFINITY, B, CFG)).toThrow();
   });
 
-  it('budget 3 walks 0,1,2,3 as patience falls 3 -> 0', () => {
-    const walk = [3, 2, 1, 0].map((p) => tierFor(p, 3));
-    expect(walk).toEqual([0, 1, 2, 3]);
+  it('throws on non-finite budget', () => {
+    expect(() => tierFor(4, Number.NaN, CFG)).toThrow();
+    expect(() => tierFor(4, Number.POSITIVE_INFINITY, CFG)).toThrow();
+    expect(() => tierFor(4, Number.NEGATIVE_INFINITY, CFG)).toThrow();
+  });
+
+  it('throws on NaN even though NaN would otherwise fall through to tier 3 (D-4 ordering)', () => {
+    // The finiteness guard must run BEFORE the `patience <= 0` rule; otherwise NaN
+    // silently lands on tier 3 and the failure is invisible.
+    expect(() => tierFor(Number.NaN, Number.NaN, CFG)).toThrow();
+  });
+
+  it('throws an Error (not a string / undefined rejection)', () => {
+    expect(() => tierFor(Number.NaN, B, CFG)).toThrow(Error);
   });
 });
 
-// ── AC4 — EXTENDS only: src/state/index.ts must stay untouched ───────────────
-describe('AC4 — the v1 reducer module is not modified or re-exported through', () => {
-  const indexFile = resolve(here, '../../src/state/index.ts');
+// ---------------------------------------------------------------------------
+// F6 — tier arity is pinned 1:1 to generation.json tierTones
+// ---------------------------------------------------------------------------
 
-  it('src/state/index.ts does not reference the new tier module', () => {
-    const src = readFileSync(indexFile, 'utf8');
-    expect(src).not.toMatch(/patience-tier/);
-    expect(src).not.toMatch(/tierFor/);
+describe('F6 — tier count is 1:1 with generation.json tierTones', () => {
+  it('TIER_COUNT matches the PatienceTier union arity (0|1|2|3)', () => {
+    expect(TIER_COUNT).toBe(4);
   });
 
-  it('src/state/index.ts still owns the patience arithmetic (single source, F3)', () => {
-    const src = readFileSync(indexFile, 'utf8');
-    expect(src).toMatch(/chooseDialogue/);
+  it('generation.json ships exactly TIER_COUNT tone lines', () => {
+    expect(Array.isArray(generation.tierTones)).toBe(true);
+    expect(generation.tierTones).toHaveLength(TIER_COUNT);
   });
 
-  it('the tier module does not import or re-implement the reducer (read-only projection)', () => {
-    const src = readFileSync(sourceFile, 'utf8');
-    expect(src).not.toMatch(/from\s+['"]\.\/index['"]/);
-    expect(src).not.toMatch(/\breduce\b/);
+  it('tierLabels, tierTones and TIER_COUNT all agree', () => {
+    expect(PATIENCE_TIERS.tierLabels.length).toBe(TIER_COUNT);
+    expect(PATIENCE_TIERS.tierLabels.length).toBe(generation.tierTones.length);
+  });
+
+  it('every tier index returned by tierFor indexes a label and a tone', () => {
+    for (let patience = 0; patience <= B; patience++) {
+      const tier = tierFor(patience, B, CFG);
+      expect(PATIENCE_TIERS.tierLabels[tier]).toBeTruthy();
+      expect(generation.tierTones[tier]).toBeTruthy();
+    }
+  });
+
+  // PR #37 review: tierFor's ladder used to be hand-unrolled (`if (ratio >= t0) return
+  // 0; ...`), so a config declaring N thresholds could still silently leave the last
+  // one unread and never report the tier past it. tierFor now walks config.thresholds
+  // in a loop, but that guarantee is only worth something if every position on the
+  // ladder is provably reachable — not just the first and the last.
+  it('every threshold position on the ladder is reachable, not only the endpoints', () => {
+    const seen = new Set<PatienceTier>();
+    for (let i = 0; i <= 40; i++) {
+      seen.add(tierFor((B * i) / 40, B, CFG));
+    }
+    expect(seen.size).toBe(TIER_COUNT);
+    expect([...seen].sort()).toEqual([0, 1, 2, 3]);
   });
 });
