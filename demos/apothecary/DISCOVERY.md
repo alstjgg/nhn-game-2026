@@ -355,3 +355,21 @@ bivariance keeps real `CanvasRenderingContext2D` / `OffscreenCanvasRenderingCont
 structurally assignable, so the default factory needs no cast. All load-bearing names
 (`pixelate`, `PIXEL_FACTOR`, `SHEET_COLUMNS`, `SHEET_ROWS`, `downscaledSize`,
 `sheetCellSize`, `PixelateOptions.createCanvas`) are unchanged.
+
+## u3 — TEST phase re-entered on a green unit
+
+The TEST (TDD-red) phase was dispatched for u3 while the unit was already at
+`phase: verify / status: green` (head `b93778c`), with `src/ui/pixelate.ts` and a
+47-test `tests/ui/pixelate.test.ts` committed and passing. No `design.md`/`spec.md`
+existed (DESIGN skipped as low-complexity) and no `tests.md` had been written.
+
+A literal RED was therefore unreachable without deleting shipped implementation.
+The phase instead audited the 47 existing tests against the four acceptance criteria
+and appended 38 tests for the real gaps (default-canvas-factory discovery, `getContext`
+throwing, throwing size setters, determinism, `sheetPixelSize` D4 validation, membrane
+scan). Each new block was proven non-vacuous by mutating the implementation, observing
+RED, and restoring it byte-identically. See `.claude/super/units/u3/tests.md`.
+
+Scope gap worth flagging to the decomposer: the read-scope for a re-entered phase should
+say whether the unit already has an implementation, so the agent does not plan for a
+greenfield RED.

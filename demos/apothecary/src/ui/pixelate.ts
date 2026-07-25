@@ -15,9 +15,24 @@
 //   * Per PRD §3-5 a failure is silent: `pixelate` never throws, never logs and
 //     never produces error text. It returns the SAME object it was given, so
 //     `result === source` is the documented "not pixelated" signal.
-import generation from '../../data/generation.json';
+// Named import: pulls only `pixelFactor` out of the JSON module graph. A default
+// import (`import generation from '...'`) is NOT tree-shaken by this repo's Vite
+// (verified against the built chunk) and would ship the ENTIRE generation table —
+// including `ailments[].hiddenCause` (the game's answer key) and `tierTones` — into
+// the client bundle the moment any screen imports this module. The named form
+// inlines the single numeric literal instead; `tests/ui/pixelate.test.ts` pins this
+// with a built-bundle regression check.
+import { pixelFactor } from '../../data/generation.json';
 
-/** Anything with decoded pixel dimensions: an image bitmap, an <img>, a canvas. */
+/**
+ * Anything with decoded pixel dimensions: an image bitmap, an <img>, a canvas.
+ * This is intentionally the WEAKEST contract that satisfies the module's own size
+ * math (`downscaledSize`/`sheetCellSize`), so plain `{width, height}` test fakes are
+ * assignable without a DOM. `pixelate`'s browser-facing call sites should still only
+ * ever pass real drawable sources (`CanvasImageSource`) — see the note on
+ * `pixelate` below for what happens when they don't, and DISCOVERY.md ("u3 —
+ * PixelSource contract") for the consumer-facing contract this implies.
+ */
 export interface PixelSource {
   readonly width: number;
   readonly height: number;
@@ -50,8 +65,15 @@ export interface PixelCanvas extends PixelSource {
 export type CanvasFactory = (width: number, height: number) => PixelCanvas | null;
 
 export interface PixelateOptions {
-  /** Overrides the data-driven downscale divisor. Defaults to PIXEL_FACTOR. */
+  /** Overrides the data-driven downscale divisor. Defaults to PIXEL_FACTOR. Ignored when `size` is given. */
   factor?: number;
+  /**
+   * Overrides the computed downscale target, bypassing `downscaledSize` entirely.
+   * Portrait-sheet consumers MUST pass `sheetPixelSize(source.width, source.height,
+   * factor)` here — see that function's doc comment for why the default per-image
+   * downscale can drift a pixel from the cell grid at factors other than 4/2.
+   */
+  size?: PixelSize;
   /** The surface seam. Defaults to an ambient canvas when one exists. */
   createCanvas?: CanvasFactory;
 }
@@ -76,8 +98,18 @@ export function loadPixelFactor(input: unknown): number {
   return input;
 }
 
+// PIXEL_FACTOR is evaluated at module-import time, so a corrupt `pixelFactor` in
+// data/generation.json throws THERE — the one spot in this file that isn't behind
+// the pixelate() try/catch (see the note above pixelate). That's intentional, not an
+// oversight: data/generation.json is checked-in, build-time data, not something a
+// player's session can corrupt at runtime, so the loud D4 throw fires in CI/`npm
+// test`/`vite build` — every one of which imports this module — long before it could
+// ever reach a browser. `tests/ui/pixelate.test.ts` ("u3 A17b") pins
+// `loadPixelFactor(pixelFactor)` not throwing for the shipped value specifically (not
+// just the literal 4) so a future edit to generation.json fails CI loudly instead of
+// blanking the player's screen.
 /** Shared downscale divisor — read from data, never written as a literal here. */
-export const PIXEL_FACTOR: number = loadPixelFactor(generation.pixelFactor);
+export const PIXEL_FACTOR: number = loadPixelFactor(pixelFactor);
 
 // The portrait sheet grid. `generation.portraitSheetFormat` states it in prose
 // ("a 4x2 grid of eight bust portraits"), which is not machine-readable, so the
@@ -98,16 +130,54 @@ export function downscaledSize(width: number, height: number, factor: number = P
   return Object.freeze({ width: shrink(width, divisor), height: shrink(height, divisor) });
 }
 
-/** Pixel dimensions of ONE cell of a downscaled portrait sheet. Throws on a bad factor (D4). */
+/**
+ * Pixel dimensions of ONE cell of a downscaled portrait sheet. Throws on a bad
+ * factor (D4).
+ *
+ * Computed DIRECTLY from the raw sheet dimensions (`round(raw / grid / factor)`),
+ * never by downscaling the whole sheet first and then dividing — that two-step path
+ * (round once for the sheet, round again for the cell) drifts by a pixel at factors
+ * that don't divide the grid evenly. `factor` is balance-as-data (tunable), and only
+ * 4 and 2 happen to divide the shipped 4x2 grid cleanly; e.g. at factor=3 a
+ * sheet-then-divide sheet of 512x341 wants a 128x171 cell, but 171*2=342 ≠ 341 — a
+ * silent 1px seam in whatever consumes these cells via CSS `background-position`.
+ * Computing the cell first sidesteps the mismatch: see `sheetPixelSize`, which
+ * derives the whole-sheet target FROM this cell so the two can never disagree.
+ */
 export function sheetCellSize(
   sheetWidth: number,
   sheetHeight: number,
   factor: number = PIXEL_FACTOR,
 ): PixelSize {
-  const sheet = downscaledSize(sheetWidth, sheetHeight, factor);
+  const divisor = loadPixelFactor(factor);
   return Object.freeze({
-    width: Math.max(1, Math.round(sheet.width / SHEET_COLUMNS)),
-    height: Math.max(1, Math.round(sheet.height / SHEET_ROWS)),
+    width: Math.max(1, Math.round(sheetWidth / SHEET_COLUMNS / divisor)),
+    height: Math.max(1, Math.round(sheetHeight / SHEET_ROWS / divisor)),
+  });
+}
+
+/**
+ * Pixel dimensions of the WHOLE downscaled portrait sheet, derived FROM
+ * `sheetCellSize` (`cell * grid`) rather than computed independently — this is the
+ * size that tiles the cell grid exactly, for every factor, by construction.
+ *
+ * Consumers pixelating a full sheet image (u4/u5's render path) MUST pass this as
+ * `pixelate`'s `size` option instead of relying on the default per-image
+ * `downscaledSize`, which rounds the whole image independently of the cell grid and
+ * can be off by a pixel from `sheetCellSize`'s own tiling at factors other than 4/2
+ * (see `sheetCellSize`'s doc comment). Passing this here is what makes
+ * `cell.width * SHEET_COLUMNS === <the actual drawn canvas width>` a guarantee
+ * instead of a coincidence of the shipped factor being 4.
+ */
+export function sheetPixelSize(
+  sheetWidth: number,
+  sheetHeight: number,
+  factor: number = PIXEL_FACTOR,
+): PixelSize {
+  const cell = sheetCellSize(sheetWidth, sheetHeight, factor);
+  return Object.freeze({
+    width: cell.width * SHEET_COLUMNS,
+    height: cell.height * SHEET_ROWS,
   });
 }
 
@@ -138,18 +208,31 @@ const defaultCanvasFactory: CanvasFactory = (width, height) => {
  * Downscales `source` onto a small surface and returns that surface.
  * On ANY failure — no surface available, no context, an undecoded source, a bad
  * caller factor, a throwing draw — returns `source` unchanged and silently (§3-5).
+ *
+ * `source` is typed as the weak `PixelSource` (see its doc comment) so DOM-free unit
+ * tests can inject plain `{width, height}` fakes. In a real browser, passing
+ * something with matching `width`/`height` but that isn't actually drawable
+ * (`CanvasImageSource`) makes `ctx.drawImage` throw — which this function's own
+ * try/catch swallows per §3-5, so the caller gets `source` back unchanged. There is
+ * no console signal by design; callers who need to detect "did this actually get
+ * pixelated" should compare `result === source`.
  */
 export function pixelate<T extends PixelSource>(source: T, options: PixelateOptions = {}): PixelCanvas | T {
   // Outside the try: an undecoded source must not even reach the factory.
   if (!isDecodedDimension(source.width) || !isDecodedDimension(source.height)) return source;
 
   try {
-    const size = downscaledSize(source.width, source.height, options.factor ?? PIXEL_FACTOR);
+    const size = options.size ?? downscaledSize(source.width, source.height, options.factor ?? PIXEL_FACTOR);
+    if (!isDecodedDimension(size.width) || !isDecodedDimension(size.height)) return source;
     const createCanvas = options.createCanvas ?? defaultCanvasFactory;
     const canvas = createCanvas(size.width, size.height);
     if (canvas === null) return source;
-    canvas.width = size.width;
-    canvas.height = size.height;
+    // Only reassign when the factory's surface doesn't already match: setting
+    // width/height on a real HTMLCanvasElement/OffscreenCanvas reallocates and
+    // clears the bitmap even when assigned the SAME value, which would quietly
+    // defeat a factory that hands back a pooled/pre-sized surface.
+    if (canvas.width !== size.width) canvas.width = size.width;
+    if (canvas.height !== size.height) canvas.height = size.height;
 
     const ctx = canvas.getContext('2d');
     if (ctx === null) return source;
