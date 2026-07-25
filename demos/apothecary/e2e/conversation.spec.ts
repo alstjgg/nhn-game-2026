@@ -22,7 +22,7 @@
 //             clue-shelf · clue-card
 //   u5 classes: .anim-portrait-enter · .anim-type-on · .card · .card--clue
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 const HARNESS = '/e2e/harness/conversation/index.html';
 const SCREEN = 'section.conversation';
@@ -294,9 +294,11 @@ test.describe('conversation screen (u6)', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 // u10 — multiverb beat engine (adapter-driven beat source + 3–4 verb cards).
 //
-// APPENDED ONLY. Everything above (AC1–AC9 + the terminal-node regression) is
-// byte-identical on purpose: u10's spec AC5a requires those bodies unchanged,
-// and the patience-meter assertions stay until u11 owns their removal.
+// APPENDED ONLY. Everything above (AC1–AC9 + the terminal-node regression) was
+// byte-identical on purpose: u10's spec AC5a required those bodies unchanged,
+// and the meter assertions stayed until u11 owned their removal. u11 has now
+// landed, so this block reads patience the same way the rest of the file does —
+// off the screen root's `data-tier` (see AC12/AC13/AC17 below).
 //
 // Contract pinned here: .claude/super/units/u10/spec.md §4 rows AC2a–AC5b.
 // RED until the beat source lands, `conversation.ts` dispatches on `verb`, the
@@ -402,11 +404,16 @@ test.describe('conversation screen — multiverb beats (u10)', () => {
     const firstVerb = await card(page).first().getAttribute('data-verb');
     expect(['indirect', 'direct'], `first card is a "${firstVerb}" card`).toContain(firstVerb);
 
-    // And it really is the paid path: committing it drains the meter.
-    const fill = page.getByTestId('patience-fill');
-    const before = await scaleX(fill);
+    // And it really is the paid path (u11 replacement for the deleted meter
+    // drain): driving the whole conversation through the FIRST card alone spends
+    // enough patience to tighten the customer's expression tier. One 우회 질문
+    // (cost 1 of budget 5) does not cross a floor on its own, so both beats are
+    // played — the point is that the first card is the one that charges.
+    expect(await tierOf(page), 'the screen does not mount at 평온(0)').toBe(0);
     await card(page).first().click();
-    await expect.poll(async () => scaleX(fill), { timeout: 3000 }).toBeLessThan(before - 0.01);
+    await awaitBeat(page);
+    await card(page).first().click();
+    await expect.poll(async () => tierOf(page), { timeout: 3000 }).toBeGreaterThan(0);
   });
 
   // AC3a/AC3a2 — [관찰] card: real clue text, zero cost, does not advance.
@@ -416,13 +423,15 @@ test.describe('conversation screen — multiverb beats (u10)', () => {
     await page.goto(HARNESS);
     await awaitBeat(page);
 
-    const fill = page.getByTestId('patience-fill');
     const line = page.getByTestId('npc-line');
     const clueCards = page.getByTestId('clue-card');
     const observeCard = card(page, 'observe').first();
     await expect(observeCard).toBeVisible();
 
-    const patienceBefore = await scaleX(fill);
+    // u11: patience is observable as the expression tier, so "free" means the
+    // tier never moves (replaces the deleted meter fill sampling).
+    const tierBefore = await tierOf(page);
+    expect(tierBefore, 'the screen carries no expression tier').toBeGreaterThanOrEqual(0);
     const lineBefore = (await line.textContent())?.trim() ?? '';
     expect(await clueCards.count(), 'clues revealed before observing').toBe(0);
 
@@ -439,12 +448,9 @@ test.describe('conversation screen — multiverb beats (u10)', () => {
       expect(authored, `clue text not found in customers.json: ${text}`).toContain(text);
     }
 
-    // Zero patience cost — give the meter transition time to (not) move.
+    // Zero patience cost — give the tier time to (not) move.
     await page.waitForTimeout(500);
-    expect(
-      Math.abs((await scaleX(fill)) - patienceBefore),
-      'observing spent patience',
-    ).toBeLessThan(0.01);
+    expect(await tierOf(page), 'observing spent patience').toBe(tierBefore);
 
     // Does not advance the beat, does not freeze the rest of the hand.
     expect((await line.textContent())?.trim() ?? '', 'observing advanced the beat').toBe(lineBefore);
@@ -519,11 +525,21 @@ test.describe('conversation screen — multiverb beats (u10)', () => {
     );
   });
 
-  // AC5a — DELETE 금지: the patience meter is u11's to remove, not u10's.
-  test('AC17 the patience meter DOM survives the multiverb refactor', async ({ page }) => {
+  // AC5a — u10 had to KEEP the v1 patience gauge (it was not its deletion to
+  // make); u11 removed it and put the diegetic readout in its place. The
+  // assertion is inverted rather than dropped, so the multiverb refactor is
+  // still pinned to exactly one patience readout — never zero, never two.
+  test('AC17 the multiverb hand reports patience only through the expression tier', async ({
+    page,
+  }) => {
     await page.goto(HARNESS);
-    await expect(page.getByTestId('patience-meter')).toBeVisible();
-    await expect(page.getByTestId('patience-fill')).toBeVisible();
+    await awaitBeat(page);
+
+    await expect(page.locator(SCREEN)).toHaveAttribute('data-tier', /^[0-3]$/);
+    expect(
+      await page.locator('[data-testid*="patience"], progress, meter, [role="progressbar"]').count(),
+      'a numeric/gauge patience readout survives the multiverb hand',
+    ).toBe(0);
     await expect(page.getByTestId('observe-btn')).toBeVisible();
   });
 

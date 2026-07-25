@@ -529,3 +529,50 @@ edge: any bottom slice large enough to contain the tail stretches it across the 
 bottom edge. Landed slices (`56 40 88 38 fill`, border box at half scale) keep the tail
 readable as a bottom-left bump, verified by screenshot rather than by assertion — the e2e
 can only prove that *a* tuned 9-slice is applied, never that it looks like a bubble.
+
+## u11 — Diegetic patience (BUILD agent, TDD-Green)
+
+### The unit's base was stale: u9 + u10 had to be merged into the worktree first
+`design.md` §5 predicted this ("rebase onto u2+u9+u10 **before** Phase 1"), and it was
+real: the worktree branched at u8, while u9 (`src/ui/portrait.ts`, PR #52) and u10 (the
+multiverb beat engine, PR #51) had already merged into the integration branch. Without the
+merge, three of this unit's ACs are unreachable by construction (`portrait-cell` and
+`choice-card[data-verb=direct]` simply do not exist), and — worse — the TDD-Red spec edits
+had been authored against the *pre-u10* `e2e/conversation.spec.ts`. Pipeline lesson: a unit
+whose wave depends on an earlier wave needs its worktree re-based **at hand-off**, not at
+BUILD's discretion; the RED report's pass/fail counts are otherwise measured against a tree
+that will never be built on.
+
+### Approved-deletion scope was written before u10 existed, and u10 widened it
+The run's only sanctioned deletions were `conversation.spec.ts` AC5/AC6 + the terminal-node
+`scaleX` samples and one line of `full-loop.spec.ts`. But u10 *appended* three more meter
+assertions to the same file — AC12's drain probe, AC13's zero-cost probe, and AC17, whose
+own comment reads "DELETE 금지: the patience meter is u11's to remove, not u10's". All three
+were re-expressed against `data-tier` in this unit (AC17 inverted rather than dropped: it now
+pins that the multiverb hand reports patience through *exactly one* readout, never zero and
+never two). Nothing was deleted without a replacement landing beside it, but the spec's
+"only permitted deletions" list was stale the moment u10 merged.
+
+### AC6's zero-reflow assertion is only satisfiable if nothing else is animating or scrolling
+`AC6` samples the portrait cell/frame `getBoundingClientRect()` at mount and re-compares it
+after every tier change. Two implementation-visible consequences, neither of them about
+tiers:
+1. **The u5 `portrait-enter` keyframe animates `transform`.** At mount it is still easing
+   (measured: ~80 ms in, scale ≈ 0.9916 of final), so the first sample is a mid-flight box
+   and *every* later sample differs. Fixed by making the framed panel a fixture of the
+   counter — `transform: none !important` on the host keeps the fade (and the
+   `animationName === 'portrait-enter'` contract AC2 pins) while the panel never slides.
+   `!important` is the only cascade level that outranks an animation; this is what it is for.
+2. **Viewport-relative coordinates mean a page scroll reads as a reflow.** Stacking the
+   256 px-tall u9 panel above the bubble, the 4-card hand, `[관찰]` and the clue shelf made
+   the harness page 732 px tall in a 720 px viewport, so Playwright scrolled 12 px to click a
+   card and the portrait's `y` moved. Fixed by laying the screen out as portrait *beside*
+   dialogue (549 px total) — which is also the better read: a page that scrolls on a card
+   press drags the customer's face off the counter mid-conversation.
+
+### Out-of-glob edit (design D7): the harness needed a customer/budget knob
+`e2e/harness/conversation/main.ts` (u10's file) grew `?customer=<id>&budget=<n>`. Only two
+beats exist per customer ⇒ at most two paid commits ⇒ at most three of the four tiers are
+observable in one run, so the 0→3 ladder needs two runs with different budgets. The knob is a
+harness-boundary substitution (`{ ...customer, patienceBudget: n }`) with a byte-identical
+default, so it moves the ladder out of `data/customers.json` — a content file other specs pin.

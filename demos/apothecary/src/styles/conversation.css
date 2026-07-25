@@ -1,64 +1,102 @@
-/* conversation.css — layout + placeholder art for the conversation screen (u6).
- * Builds only on the shared tokens (base.css) and the u5 card/animation
- * vocabulary; screen-specific pieces (portrait placeholder, patience meter,
- * clue-card modifier, observe affordance) live here rather than mutating the
- * stable u5 primitives. */
+/* conversation.css — layout + diegetic patience for the conversation screen
+ * (u6 + u11). Builds only on the shared tokens (base.css) and the u5
+ * card/animation vocabulary; screen-specific pieces (portrait host, tier
+ * warmth, ambient tap, clue-card modifier, observe affordance) live here rather
+ * than mutating the stable u5 primitives.
+ *
+ * u11 (PRD §2.2 / invariant §3-4): the patience gauge is gone. `data-tier` on
+ * the root is the single source of the customer's mood and everything below
+ * selects off it — no bar, no number, no JS animation timing. */
 .conversation {
+  /* Anchor for the out-of-flow ambient tap below, so adding it moves nothing. */
+  position: relative;
+  /* The customer faces the dialogue instead of standing on top of it: the u9
+   * portrait panel is a 3:4 sheet cell, so stacking it above the bubble, the
+   * hand, the observe button and the clue shelf pushed the screen past the
+   * viewport — and a page that scrolls when a card is pressed slides the face
+   * the player is reading right off the counter. */
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: flex-start;
   gap: var(--space-4);
-  max-width: 640px;
+  max-width: 720px;
   margin: 0 auto;
   padding: var(--space-4);
+  /* 0 → 1 across the tier ladder: the diegetic replacement for the deleted
+   * meter's accent → alarm colour mix. Consumed by the portrait host's glow
+   * only, so growing impatience is felt around the customer, never measured. */
+  --tier-warmth: 0;
 }
 
-/* Portrait — a warm CSS placeholder (no raster art shipped, design D9). */
-.portrait {
+.conversation[data-tier='1'] {
+  --tier-warmth: 0.34;
+}
+
+.conversation[data-tier='2'] {
+  --tier-warmth: 0.67;
+}
+
+.conversation[data-tier='3'] {
+  --tier-warmth: 1;
+}
+
+/* The dialogue column — the line, the hand, [관찰], the clue shelf. `min-width: 0`
+ * so a long line wraps inside the column instead of widening the whole screen. */
+.conversation__dialogue {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 96px;
-  height: 96px;
-  border: 1px solid var(--color-border);
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/* Portrait host — a bare, non-reflowing wrapper: the u9 panel inside it owns
+ * every dimension (portrait.css), this only carries the screen's a11y hooks,
+ * the u5 enter animation and the tier warmth.
+ *
+ * The framed panel is a FIXTURE of the counter: the customer arrives by lighting
+ * up inside it (u9's silhouette → resolve, PRD §2.3), not by sliding the frame
+ * across the screen. So the shared `portrait-enter` keyframe is kept for its fade
+ * — v1's entry contract — while the translate/scale half of it is suppressed
+ * here. `!important` is deliberate and load-bearing: it is the only cascade level
+ * that outranks an animation. Without it the panel's box would still be easing
+ * into place while the first beat is already on screen, and every expression
+ * swap during that window would read as a reflow it is not (NF5). */
+.conversation__portrait {
+  align-self: flex-start;
+  transform: none !important;
   border-radius: var(--radius-card);
-  background: linear-gradient(135deg, var(--color-surface-hover), var(--color-surface));
+  box-shadow: 0 0 calc(var(--tier-warmth) * 20px)
+    color-mix(in srgb, var(--color-alarm) calc(var(--tier-warmth) * 55%), transparent);
+  transition: box-shadow var(--duration-slow) var(--ease-standard);
 }
 
-.portrait__name {
-  padding: var(--space-1);
-  color: var(--color-text-dim);
-  font-size: 0.8em;
-  text-align: center;
+/* Ambient impatience — the customer's fingers drumming on the counter. Purely
+ * decorative and absolutely positioned, so it neither reflows the dialogue nor
+ * needs a JS toggle: the tier gates it, and the global prefers-reduced-motion
+ * guard in animations.css covers the keyframe for free. */
+.finger-tap {
+  --tap-period: 900ms;
+  position: absolute;
+  /* Pinned to the counter's far edge — never measured off the portrait panel,
+   * whose size is portrait.css's business alone. */
+  top: var(--space-4);
+  right: var(--space-4);
+  width: 26px;
+  height: 8px;
+  border-radius: 999px 999px var(--radius-card) var(--radius-card);
+  background: color-mix(in srgb, var(--color-alarm) 45%, var(--color-surface-hover));
+  transform-origin: right center;
+  opacity: 0;
+  pointer-events: none;
+  animation: none;
 }
 
-/* Patience meter — the fill's scaleX is driven from remaining patience and
- * animates via a transform transition (compositor-only, no layout). */
-.patience-meter {
-  width: 100%;
-  height: 10px;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-surface);
-}
-
-.patience-fill {
-  /* --patience (0..1) is driven from the reducer's remaining patience in TS; the
-   * fill's colour is a live mix of accent → alarm so the bar warms toward red as
-   * it empties (u9 juice). Both the width (scaleX) and the colour ease via the
-   * shared motion tokens — never an instant flip (design D4). */
-  --patience: 1;
-  width: 100%;
-  height: 100%;
-  transform: scaleX(1);
-  transform-origin: left center;
-  background: color-mix(
-    in srgb,
-    var(--color-accent) calc(var(--patience) * 100%),
-    var(--color-alarm)
-  );
-  transition: transform var(--duration-slow) var(--ease-standard),
-    background-color var(--duration-slow) var(--ease-standard);
+/* From 짜증 on — and only then — the drumming starts and never stops. */
+.conversation[data-tier='2'] .finger-tap,
+.conversation[data-tier='3'] .finger-tap {
+  opacity: 1;
+  animation: finger-tap var(--tap-period) var(--ease-standard) infinite;
 }
 
 /* Speech bubble — the generated ui-bubble.png sliced as a 9-slice frame, so the
