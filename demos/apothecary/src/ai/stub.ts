@@ -12,7 +12,10 @@
 
 import fallbackPortraitA from '../../assets/fallback-portrait-1.png';
 import fallbackPortraitB from '../../assets/fallback-portrait-2.png';
-import generation from '../../data/generation.json';
+// Named import only (see src/ui/pixelate.ts:18-24 and src/pipeline/persona.ts):
+// a default import of this JSON is not tree-shaken and would publish the prompt
+// scaffolding (`styleBible`, `portraitSheetFormat`, `tierTones`) in the client bundle.
+import { verbCosts } from '../../data/generation.json';
 import rawStubDialogue from '../../data/stub-dialogue.json';
 import type { AIAdapter } from './adapter.ts';
 import {
@@ -28,7 +31,7 @@ import {
 } from './contract.ts';
 
 /** Single tuning source for card costs — the canned data never states a cost. */
-const VERB_COSTS: Record<ChoiceVerb, number> = generation.verbCosts;
+const VERB_COSTS: Record<ChoiceVerb, number> = verbCosts;
 
 /** Bundled expression sheets used whenever no portrait was generated. */
 const FALLBACK_PORTRAITS: readonly string[] = [fallbackPortraitA, fallbackPortraitB];

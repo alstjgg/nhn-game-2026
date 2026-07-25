@@ -917,5 +917,30 @@ test.describe('u13 — determinism, no game-logic timers, zero external traffic 
     expect(indexHtml, "dist must keep base:'./' (Pages subpath safety)").not.toMatch(
       /(src|href)="\/(?!\/)/,
     );
+
+    // Review follow-up (PR #33, R2 on src/pipeline/persona.ts:10): the client
+    // needs `traitTable` and `verbCosts` from data/generation.json and nothing
+    // else. The proxy's prompt scaffolding — styleBible / portraitSheetFormat /
+    // tierTones — must never be published, and a DEFAULT import of that JSON is
+    // what ships it (the rule is written in src/ui/pixelate.ts:18-24). The guard
+    // therefore reads the REAL artifact rather than a single-module test build.
+    const generation = JSON.parse(
+      readFileSync(resolve(demoRoot, 'data', 'generation.json'), 'utf8'),
+    ) as { styleBible: string; portraitSheetFormat: string; tierTones: string[] };
+    const serverOnly: readonly (readonly [string, string])[] = [
+      ['styleBible', generation.styleBible],
+      ['portraitSheetFormat', generation.portraitSheetFormat],
+      ...generation.tierTones.map((tone, i): readonly [string, string] => [`tierTones[${i}]`, tone]),
+    ];
+    for (const [field, prose] of serverOnly) {
+      // Compare on a distinctive slice: minification cannot rewrite string
+      // contents, so a substring hit is a real leak of that field's prose.
+      const needle = prose.slice(0, 24);
+      const leaked = bundles.filter((f) => readFileSync(f, 'utf8').includes(needle));
+      expect(
+        leaked.map((f) => relative(demoRoot, f)),
+        `${field} (server-side prompt scaffolding) leaked into dist — check for a default import of data/generation.json`,
+      ).toEqual([]);
+    }
   });
 });

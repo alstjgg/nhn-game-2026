@@ -31,6 +31,7 @@ import { dirname, resolve } from 'node:path';
 import generation from '../../data/generation.json';
 import { SHEET_COLUMNS, SHEET_ROWS, sheetCellSize, sheetPixelSize } from '../../src/ui/pixelate';
 import { createManualClock } from '../../src/pipeline/clock';
+import { resolveBuildInputs } from '../../vite.build-inputs.ts';
 import { createRng } from '../../src/pipeline/persona';
 import type { Rng } from '../../src/pipeline/persona';
 import {
@@ -489,10 +490,16 @@ describe('u9 AC4/AC5 — src/styles/portrait.css', () => {
 describe('u9 AC5 — vite.config.ts change is one harness build input and nothing else', () => {
   const config = () => read(VITE_CONFIG);
 
-  it('registers the portrait harness page as a build input', () => {
-    expect(config()).toMatch(
-      /portrait\s*:\s*input\(\s*['"]\.\/e2e\/harness\/portrait\/index\.html['"]\s*\)/,
-    );
+  // PR #33 (R2 on vite.config.ts:29): the harness inputs moved behind the E2E
+  // flag so the deployed dist/ is the demo home alone. The build-input map now
+  // lives in ./vite.build-inputs.ts, so this asserts the RESOLVED inputs (the
+  // real rule, exercised) rather than a source pattern in vite.config.ts.
+  it('registers the portrait harness page as a build input for the e2e build', () => {
+    expect(resolveBuildInputs({ E2E: '1' }).portrait).toBe('./e2e/harness/portrait/index.html');
+  });
+
+  it('does NOT register it in a plain (deployed) build', () => {
+    expect(resolveBuildInputs({})).toEqual({ main: './index.html' });
   });
 
   // u14 (final integration): the count was u9's "I added exactly one" receipt, and
@@ -502,11 +509,7 @@ describe('u9 AC5 — vite.config.ts change is one harness build input and nothin
   // input was dropped — so the set is enumerated, one entry per unit that owns a
   // harness, instead of frozen at a number one unit happened to leave behind.
   it('keeps the pre-existing inputs and adds only accounted-for harness pages', () => {
-    const block = config().match(/input\s*:\s*\{([\s\S]*?)\}/);
-    expect(block, 'rollupOptions.input map not found').toBeTruthy();
-    const keys = (block![1].match(/^\s*([A-Za-z_$][\w$]*)\s*:/gm) ?? []).map((k) =>
-      k.replace(/[\s:]/g, ''),
-    );
+    const keys = Object.keys(resolveBuildInputs({ E2E: '1' }));
     // main = the demo itself; the rest are e2e harness pages (u6, u7, u9, u13).
     const expected = ['main', 'conversation', 'crafting', 'portrait', 'generation'];
     expect(new Set(keys)).toEqual(new Set(expected));

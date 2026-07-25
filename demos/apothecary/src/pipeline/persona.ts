@@ -7,7 +7,13 @@
 // and every request is built by explicit field projection so caller-attached
 // extras cannot ride along. Prompt prose is the proxy's job, not ours.
 
-import generation from '../../data/generation.json';
+// Named import, never `import generation from '...'` (the rule written in
+// src/ui/pixelate.ts:18-24): a default import is NOT tree-shaken by this repo's
+// Vite, so it would ship the WHOLE generation table — `styleBible`,
+// `portraitSheetFormat` and `tierTones`, i.e. the prompt scaffolding the proxy
+// owns — into the client bundle. `traitTable` is the only row the client needs
+// here; e2e/generation.spec.ts (AC-13) asserts the other three never reach dist/.
+import { traitTable } from '../../data/generation.json';
 import type { DialogueRequest, PatienceTier, PortraitRequest } from '../ai/contract.ts';
 
 /** Injected deterministic source in [0, 1). */
@@ -155,10 +161,10 @@ export function buildPortraitRequest(persona: Persona): PortraitRequest {
  * effect for every other consumer of the same import.
  */
 export const GENERATION_TRAIT_TABLE: TraitTable = Object.freeze({
-  archetypes: Object.freeze(generation.traitTable.archetypes.slice()),
-  quirks: Object.freeze(generation.traitTable.quirks.slice()),
+  archetypes: Object.freeze(traitTable.archetypes.slice()),
+  quirks: Object.freeze(traitTable.quirks.slice()),
   ailments: Object.freeze(
-    generation.traitTable.ailments.map((ailment) =>
+    traitTable.ailments.map((ailment) =>
       Object.freeze({
         id: ailment.id,
         problem: ailment.problem,

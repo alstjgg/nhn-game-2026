@@ -10,6 +10,7 @@
 
 import {
   isDialogueBeat,
+  isPortraitSheet,
   type AIHealth,
   type DialogueBeat,
   type DialogueRequest,
@@ -72,8 +73,12 @@ export function createLiveAdapter(): AIAdapter {
       throw new AIUnavailableError('/ai/dialogue → schema-invalid twice');
     },
     async portrait(req) {
-      const sheet = await postJson<PortraitSheet>('/ai/portrait', req, 180_000);
-      if (typeof sheet.b64 !== 'string' || !sheet.b64) {
+      const sheet = await postJson<unknown>('/ai/portrait', req, 180_000);
+      // The SHARED gate, not a second hand-rolled check (§3-2 "live output is
+      // validated before use"): it pins the value shape of `b64`/`url` too, so a
+      // payload that could break out of the portrait cell's CSS url("…") literal
+      // never leaves this function. A live sheet must still carry real bytes.
+      if (!isPortraitSheet(sheet) || sheet.b64.length === 0) {
         throw new AIUnavailableError('/ai/portrait → no image payload');
       }
       return sheet;

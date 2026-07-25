@@ -17,6 +17,7 @@
 //
 // Membrane: pure data in, CSS strings out. No network, no form controls.
 import rawSpriteData from '../../data/sprites.json';
+import { cssUrl } from './css-url';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -459,7 +460,10 @@ export function spriteCell(
   if (offsets === undefined) return undefined;
 
   return {
-    backgroundImage: `url("${url}")`,
+    // One escaping helper for every CSS url() sink in the codebase (see
+    // src/ui/css-url.ts): these URLs are repo-controlled today, and stay safe if
+    // a future sheet id is ever data-driven from elsewhere.
+    backgroundImage: cssUrl(url),
     backgroundSize: offsets.backgroundSize,
     backgroundPosition: offsets.backgroundPosition,
     imageRendering: PIXELATED,

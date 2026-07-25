@@ -5,7 +5,7 @@
 // its name, signature and meaning, and the proxy's payload must still validate.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { isDialogueBeat, portraitSrc } from '../../src/ai/contract';
+import { isDialogueBeat, isPortraitSheet, portraitSrc } from '../../src/ai/contract';
 import type { DialogueBeat, PortraitSheet } from '../../src/ai/contract';
 import { proxyDialoguePayload, proxyPortraitPayload } from './fixtures';
 
@@ -60,6 +60,67 @@ describe('AC11 portraitSrc is the one way to build an <img> src', () => {
 });
 
 // ── AC18 — additive only ───────────────────────────────────────────────────
+// ── PR #33 review — the gate validates VALUES, not just types ──────────────
+// R1 (conversation.ts:355): a non-finite / negative `patienceCost` passes a
+// `typeof number` check, survives the reducer's clamp and then makes `tierFor()`
+// throw inside a card's click handler — the hand stays enabled and the
+// conversation dead-ends. R2 (portrait.ts:253): a `b64`/`url` carrying `"` and
+// `)` breaks out of the portrait cell's CSS `url("…")` literal and Chromium
+// fetches the fabricated layer. Both are rejected at this one shared gate.
+describe('isDialogueBeat rejects arithmetic-poison patience costs', () => {
+  const withCost = (cost: unknown): unknown => {
+    const beat = proxyDialoguePayload() as DialogueBeat;
+    (beat.choices[1] as { patienceCost: unknown }).patienceCost = cost;
+    return beat;
+  };
+
+  it.each([
+    ['NaN', Number.NaN],
+    ['Infinity', Number.POSITIVE_INFINITY],
+    ['-Infinity', Number.NEGATIVE_INFINITY],
+    ['negative', -3],
+  ])('rejects a %s patienceCost', (_label, cost) => {
+    expect(isDialogueBeat(withCost(cost))).toBe(false);
+  });
+
+  it('still accepts every cost the shipped verb table uses (0..2)', () => {
+    for (const cost of [0, 1, 2]) {
+      expect(isDialogueBeat(withCost(cost)), `cost ${cost}`).toBe(true);
+    }
+  });
+});
+
+describe('isPortraitSheet rejects payloads that could escape a CSS url() literal', () => {
+  it('rejects a b64 outside the base64 charset (the url("…") breakout)', () => {
+    expect(isPortraitSheet({ b64: 'AAAA"), url("https://evil.example/beacon.png' })).toBe(false);
+    expect(isPortraitSheet({ b64: 'AA AA' })).toBe(true); // wrapped payload: whitespace is fine
+    expect(isPortraitSheet({ b64: 'aGVsbG8=' })).toBe(true);
+  });
+
+  it('rejects a url that is not an asset path this build owns', () => {
+    for (const url of [
+      'https://evil.example/beacon.png',
+      '//evil.example/beacon.png',
+      'javascript:alert(1)',
+      './assets/x.png"), url("https://evil.example/b.png',
+      'data:image/png;base64,AAA"), url("https://evil.example/b.png',
+    ]) {
+      expect(isPortraitSheet({ b64: '', url }), url).toBe(false);
+    }
+  });
+
+  it('still accepts every url shape the demo actually paints', () => {
+    for (const url of [
+      './assets/fallback-portrait-1-mnw19BU3.png',
+      '/assets/fallback-portrait-2.png',
+      'assets/fallback-portrait-2.png',
+      'data:image/png;base64,iVBORw0KGgo=',
+    ]) {
+      expect(isPortraitSheet({ b64: '', url }), url).toBe(true);
+    }
+  });
+});
+
 describe('AC18 contract.ts changes are additive', () => {
   const src = readFileSync(new URL('../../src/ai/contract.ts', import.meta.url), 'utf8');
 
@@ -82,6 +143,14 @@ describe('AC18 contract.ts changes are additive', () => {
   it('keeps PortraitSheet.b64 required and adds url as optional', () => {
     expect(src).toMatch(/b64:\s*string/);
     expect(src).toMatch(/url\?:\s*string/);
+  });
+
+  // PR #33, R2 on contract.ts:67 — `prompt` was silently relaxed to optional this
+  // run. It is the provenance field CLAUDE.md rule 5 exists for and every producer
+  // on the branch sets it, so the guarantee is restored (and pinned here).
+  it('keeps PortraitSheet.prompt REQUIRED (image provenance, rule 5)', () => {
+    expect(src).toMatch(/prompt:\s*string/);
+    expect(src).not.toMatch(/prompt\?:\s*string/);
   });
 
   it('exports the new portraitSrc helper', () => {

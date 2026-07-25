@@ -26,6 +26,7 @@
 // comment), so this component takes a URL and renders it, gated by the caller.
 import '../styles/base.css';
 import '../styles/portrait.css';
+import { cssUrl } from './css-url';
 import { SHEET_COLUMNS, SHEET_ROWS } from './pixelate';
 import type { CancelTimer, Clock } from '../pipeline/clock';
 import type { Rng } from '../pipeline/persona';
@@ -187,6 +188,13 @@ export interface PortraitOptions {
    * call `setSheet()` when the portrait arrives.
    */
   readonly sheetUrl?: string;
+  /**
+   * Palette/mirror variant token for this customer's sheet (`Customer.
+   * portraitVariant`). Written to the frame's `data-variant`; the look is
+   * `../styles/portrait.css`'s alone. Two customers may share one bundled sheet,
+   * and this is what keeps them from reading as the same person.
+   */
+  readonly variant?: string;
   /** Provide both to run the idle blink loop; omit for a still portrait. */
   readonly blinkClock?: Clock;
   readonly blinkRng?: Rng;
@@ -219,6 +227,7 @@ export function mountPortrait(parent: HTMLElement, options: PortraitOptions = {}
   const frame = doc.createElement('div');
   frame.className = FRAME_CLASS;
   frame.dataset.testid = 'portrait-frame';
+  if (options.variant !== undefined) frame.dataset.variant = options.variant;
 
   const cell = doc.createElement('div');
   cell.className = CELL_CLASS;
@@ -250,7 +259,10 @@ export function mountPortrait(parent: HTMLElement, options: PortraitOptions = {}
   // what would mask a later dim — a future "next customer" reset has to drop
   // ARRIVED_CLASS again when it re-adds the silhouette.)
   const showSheet = (url: string): void => {
-    cell.style.backgroundImage = `url("${url}")`;
+    // `cssUrl`, never raw interpolation: a runtime sheet reaches this sink from
+    // the network, and §3-5's silent degrade passes an undecodable payload
+    // through verbatim (src/app/roster.ts's `pixelatedSheetUrl`).
+    cell.style.backgroundImage = cssUrl(url);
     cell.classList.remove(SILHOUETTE_CLASS);
     cell.classList.add(ARRIVED_CLASS);
     silhouette = false;
