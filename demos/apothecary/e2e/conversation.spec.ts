@@ -18,8 +18,13 @@
 // Contract pinned (spec §4 · design §4 data-testid hooks):
 //   URL:      /e2e/harness/conversation/index.html   (design D10)
 //   root:     section.conversation[data-tier="0..3"]  (u11)
-//   testids:  portrait · npc-line · choice-card[data-verb] · observe-btn ·
-//             clue-shelf · clue-card
+//   testids:  portrait · npc-line · choice-card[data-verb] · clue-shelf · clue-card
+//
+// u10 spec §3 Q3 flagged a standalone `[관찰]` button (testid observe-btn) as
+// redundant with the `observe` verb card inside the hand — both revealed the
+// same clues, and the deferral fell through u11/u14. Resolved here: the
+// standalone button is deleted (conversation.ts/conversation.css); every
+// drive below goes through the `observe` verb card instead.
 //   u5 classes: .anim-portrait-enter · .anim-type-on · .card · .card--clue
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { expect, test, type Locator, type Page } from '@playwright/test';
@@ -146,10 +151,10 @@ test.describe('conversation screen (u6)', () => {
     ).toBe(0);
   });
 
-  // AC6 — [관찰] costs 0 patience and reveals distinct, non-duplicating clue cards.
+  // AC6 — the observe verb card costs 0 patience and reveals distinct, non-duplicating clue cards.
   test('AC6 [관찰] reveals distinct clue cards without spending patience', async ({ page }) => {
     await page.goto(HARNESS);
-    const observe = page.getByTestId('observe-btn');
+    const observe = card(page, 'observe').first();
     const clueCards = page.getByTestId('clue-card');
     await expect(observe).toBeVisible();
 
@@ -283,7 +288,7 @@ test.describe('conversation screen (u6)', () => {
 
     await page.goto(HARNESS);
     await expect(page.getByTestId('npc-line')).toBeVisible();
-    await page.getByTestId('observe-btn').click();
+    await card(page, 'observe').first().click();
     await page.getByTestId('choice-card').first().click();
     await page.waitForLoadState('networkidle');
 
@@ -458,7 +463,7 @@ test.describe('conversation screen — multiverb beats (u10)', () => {
     await expect(card(page, 'craft').first()).toBeEnabled();
   });
 
-  // AC3b — observe is idempotent through BOTH routes (card and observe-btn).
+  // AC3b — re-observing through the observe card never duplicates a clue.
   test('AC14 re-observing never duplicates a clue card', async ({ page }) => {
     await page.goto(HARNESS);
     await awaitBeat(page);
@@ -474,9 +479,10 @@ test.describe('conversation screen — multiverb beats (u10)', () => {
     await page.waitForTimeout(300);
     expect(await clueCards.count(), 're-clicking the observe card duplicated clues').toBe(revealed);
 
-    await page.getByTestId('observe-btn').click();
+    // A third click stays idempotent too — not just a one-off double-click.
+    await observeCard.click();
     await page.waitForTimeout(300);
-    expect(await clueCards.count(), 'observe-btn duplicated the card’s clues').toBe(revealed);
+    expect(await clueCards.count(), 'a third observe click duplicated clues').toBe(revealed);
   });
 
   // AC3c — [조제하러 가기] card is an immediate early exit through onComplete.
@@ -540,7 +546,7 @@ test.describe('conversation screen — multiverb beats (u10)', () => {
       await page.locator('[data-testid*="patience"], progress, meter, [role="progressbar"]').count(),
       'a numeric/gauge patience readout survives the multiverb hand',
     ).toBe(0);
-    await expect(page.getByTestId('observe-btn')).toBeVisible();
+    await expect(card(page, 'observe').first()).toBeVisible();
   });
 
   // F2 — the per-beat fallback is SILENT: a full multiverb interaction logs nothing.
@@ -554,7 +560,7 @@ test.describe('conversation screen — multiverb beats (u10)', () => {
     await page.waitForTimeout(400);
     await awaitBeat(page);
     await card(page, 'observe').first().click();
-    await page.getByTestId('observe-btn').click();
+    await card(page, 'observe').first().click();
     await page.waitForTimeout(400);
 
     expect(errs.page, `page errors: ${errs.page.join(' | ')}`).toEqual([]);

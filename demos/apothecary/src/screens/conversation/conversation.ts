@@ -21,14 +21,16 @@
 // the motion policy — and the reduced-motion guard over it — stays in the
 // stylesheet (design D1).
 //
-// Four affordances, deliberately distinct (design D6/D7):
+// Three affordances, deliberately distinct (design D6/D7):
 //   • `indirect` / `direct` question cards — pressing one spends patience and
 //     advances the conversation to the next beat; the spend is felt as the
 //     customer's expression tightening, never as a bar ticking down.
-//   • the `observe` card and the persistent [관찰] button (both free) — reveal
-//     the current beat's observation clues as distinct `.card--clue` cards in
-//     their own shelf, idempotently (re-observing never duplicates a clue) and
-//     without advancing the beat.
+//   • the `observe` card (free) — reveals the current beat's observation clues
+//     as distinct `.card--clue` cards in their own shelf, idempotently
+//     (re-observing never duplicates a clue) and without advancing the beat.
+//     (A standalone [관찰] button used to duplicate this route outside the
+//     hand — u10 spec §Q3 flagged the redundancy; removed here, see the
+//     integration note in `.claude/super/units/u10/spec.md`.)
 //   • the `craft` card ([조제하러 가기]) — an immediate early exit that hands
 //     the conversation→crafting decision straight back to the host.
 //
@@ -121,8 +123,8 @@ function buildPortrait(customer: Customer): { host: HTMLElement; handle: Portrai
 
 /**
  * Mount the conversation screen for one customer into `container`.
- * Portrait, observe affordance and clue shelf are built once and persist; only
- * the NPC line and the hand re-render per beat.
+ * Portrait and clue shelf are built once and persist; only the NPC line and
+ * the hand (which carries the `observe` card) re-render per beat.
  */
 export function mountConversation(
   container: HTMLElement,
@@ -141,7 +143,6 @@ export function mountConversation(
   // cursor counts beats already PAINTED — it is what decides whether the
   // committed beat was the conversation's last one.
   let cursor = -1;
-  let current: DialogueBeat | undefined;
   /** Monotonic render token: a late beat from a superseded pull is dropped. */
   let renderToken = 0;
   /** Set once the dialogue is over (craft card, or forced crafting). */
@@ -186,14 +187,6 @@ export function mountConversation(
   const choicesHost = document.createElement('div');
   choicesHost.className = 'choices card-shelf';
 
-  // Persistent [관찰] affordance — separate from dialogue choices, 0 patience.
-  const observeBtn = document.createElement('button');
-  observeBtn.type = 'button';
-  observeBtn.className = 'observe-btn';
-  observeBtn.dataset.testid = 'observe-btn';
-  observeBtn.textContent = '[관찰]';
-  observeBtn.addEventListener('click', observe);
-
   // Clue shelf — distinct home for revealed observation clues.
   const clueShelf = document.createElement('div');
   clueShelf.className = 'clue-shelf card-shelf';
@@ -211,7 +204,7 @@ export function mountConversation(
   proceedBtn.hidden = true;
   proceedBtn.addEventListener('click', () => callbacks.onComplete?.());
 
-  dialogue.append(lineHost, choicesHost, observeBtn, clueShelf, proceedBtn);
+  dialogue.append(lineHost, choicesHost, clueShelf, proceedBtn);
   screen.append(portrait, dialogue, fingerTap);
   container.replaceChildren(screen);
 
@@ -262,7 +255,6 @@ export function mountConversation(
     const beat = await source.next();
     if (token !== renderToken) return;
     cursor += 1;
-    current = beat;
     paintBeat(beat);
   }
 
@@ -326,13 +318,6 @@ export function mountConversation(
       return card;
     });
     clueShelf.replaceChildren(...cards);
-  }
-
-  /** [관찰]: reveal the current beat's observation clues, free of charge. */
-  function observe(): void {
-    for (const choice of current?.choices ?? []) {
-      if (choice.verb === 'observe') reveal(choice.clueReveals);
-    }
   }
 
   /**

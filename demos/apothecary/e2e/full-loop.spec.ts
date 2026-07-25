@@ -67,6 +67,29 @@ const MAX_BEATS = 12;
 const FALLBACK_DEADLINE_MS = 25_000;
 /** AC4: the whole play-through, screenshots included, must stay under a minute. */
 const RUN_BUDGET_MS = 60_000;
+/** u12 seeded/fallback tier tone table (data/tier-variants.json). */
+const TIER_VARIANTS_JSON = 'data/tier-variants.json';
+
+/**
+ * Integration regression guard: the customer arriving through the v2 fallback
+ * pool (`data/fallback-npcs.json`) must have its own rows here — this file used
+ * to cover only the seeded `customers.json` roster, so the pack customer's
+ * lines were identical at every tier (silent no-op, caught by integration
+ * review). Read fresh per call so a re-introduced gap fails THIS assertion by
+ * name rather than by a missing property crashing somewhere unrelated.
+ */
+function tierVariantRowsFor(customerId: string): readonly (readonly string[])[] {
+  const table = JSON.parse(readFileSync(TIER_VARIANTS_JSON, 'utf-8')) as Record<
+    string,
+    string[][]
+  >;
+  const rows = table[customerId];
+  expect(
+    rows,
+    `data/tier-variants.json ships no rows for "${customerId}" — its lines cannot tone (u12/u13 wave gap)`,
+  ).toBeTruthy();
+  return rows;
+}
 
 interface Outcome {
   channel: string;
@@ -623,6 +646,23 @@ test.describe('full loop v2 — three customers end to end (u14 final gate)', ()
         // f2 regression: C1's 재방문 notification belonged to C2's conversation
         // (phase 5) — it must not still be sitting in the overlay layer here.
         await expect(page.getByTestId(TID.revisit)).toHaveCount(0);
+
+        // u12/u13 integration regression: the fallback-pool customer's mounted
+        // line must be ITS authored tier-0 variant, and that variant must be
+        // distinct from its tier-3 one — the exact silent no-op (identical line
+        // at 평온/0 and 한계/3) integration review caught for this customer.
+        const rows = tierVariantRowsFor(c3);
+        const mountLine = (await scope.getByTestId(TID.npcLine).textContent())?.trim() ?? '';
+        const row = rows.find((r) => r[0] === mountLine);
+        expect(
+          row,
+          `"${mountLine}" is not ${c3}'s authored tier-0 line in ${TIER_VARIANTS_JSON}`,
+        ).toBeTruthy();
+        expect(
+          row?.[3],
+          `${c3}: tier 0 and tier 3 are byte-identical — tone toning is a no-op`,
+        ).not.toBe(row?.[0]);
+
         await shoot(page, '08-c3-conversation');
       },
     });

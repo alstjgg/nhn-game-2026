@@ -142,19 +142,3 @@
   background: var(--color-surface);
 }
 
-/* Persistent [관찰] affordance — a ghost button, never a dialogue choice card. */
-.observe-btn {
-  align-self: flex-start;
-  padding: var(--space-2) var(--space-3);
-  border: 1px dashed var(--color-border-hover);
-  border-radius: var(--radius-card);
-  background: transparent;
-  color: var(--color-accent);
-  font: inherit;
-  cursor: pointer;
-  transition: var(--transition-base);
-}
-
-.observe-btn:hover {
-  background: var(--color-surface-hover);
-}

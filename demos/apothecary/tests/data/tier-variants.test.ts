@@ -22,6 +22,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import customersData from '../../data/customers.json';
+import fallbackNpcsData from '../../data/fallback-npcs.json';
 import generationData from '../../data/generation.json';
 import tierVariantsData from '../../data/tier-variants.json';
 import type { AIAdapter } from '../../src/ai/adapter';
@@ -47,8 +48,16 @@ import {
 import { createBeatSource, toBeat } from '../../src/screens/conversation/beats';
 
 // ── Fixtures: the real shipped content through the real loaders ──────────────
+//
+// The roster the app actually mounts (u13, src/app/roster.ts `buildRoster`) is
+// customers.json's seeded rows PLUS the fallback-npcs.json pack customer — that
+// third slot must clear the same coverage bar or a gap between the two files
+// ships silently (u12/u13 wave-ordering drift, integration finding).
 
-const CUSTOMERS: Customer[] = loadCustomers(customersData);
+const CUSTOMERS: Customer[] = [
+  ...loadCustomers(customersData),
+  ...loadCustomers([fallbackNpcsData.customer]),
+];
 const TIERS: readonly PatienceTier[] = [0, 1, 2, 3];
 
 /** The table under test, materialized once through its own loud loader (F5). */
@@ -221,7 +230,7 @@ describe('AC3 selectTierLine returns the row variant for the tier, and is total'
         }
       });
     }
-    expect(pinned, 'fewer cases pinned than the shipped content has').toBeGreaterThanOrEqual(16);
+    expect(pinned, 'fewer cases pinned than the shipped content has').toBeGreaterThanOrEqual(24);
   });
 
   it('is idempotent — a toned line re-tones to the same row (D-2b)', () => {
