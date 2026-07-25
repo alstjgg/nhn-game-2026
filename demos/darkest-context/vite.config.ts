@@ -3,6 +3,11 @@ import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
+// Dev-only AI middleware (PRD §2.1). The plugin declares `apply: 'serve'`, so
+// `vite build` / `vite preview` physically lack it: the deployed demo carries
+// no proxy and no key, and the dist secret grep stays clean (INV-2).
+import { aiProxy } from './server/ai-proxy.mjs';
+
 // base: './' — dist ships to GitHub Pages under a NESTED path
 // (…/nhn-game-2026/demos/darkest-context/), so every emitted asset URL must stay
 // relative. Never hardcode the repo-name base the root config uses: relative
@@ -27,6 +32,7 @@ const harnessInputs = Object.fromEntries(
 
 export default defineConfig({
   base: './',
+  plugins: [aiProxy()],
   build: {
     rollupOptions: {
       input: {

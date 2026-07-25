@@ -1,0 +1,45 @@
+{
+  "_note": "Sample engine state for the smoke tool. The engine builds the real snapshot at runtime (u5 owns combat, u6 the council); this file only exists so the tool can compose a request before those units land, and so --dry-run needs no dev server. Unit/card rows come from data/heroes.json + data/cards.json whenever they exist — the rows below are the fallback until u4 ships them.",
+  "heroes": [
+    {
+      "id": "garret",
+      "name": "가렛",
+      "defaultPrompt": { "id": "garret.default", "text": "나는 앞줄에서 아군을 막아선다." },
+      "stats": { "hp": 30, "atk": 4 }
+    },
+    {
+      "id": "fiona",
+      "name": "피오나",
+      "defaultPrompt": { "id": "fiona.default", "text": "나는 다친 이를 먼저 살핀다." },
+      "stats": { "hp": 20, "atk": 2 }
+    }
+  ],
+  "cards": [
+    {
+      "id": "card_lens",
+      "kind": "mcp",
+      "text": "적의 말을 곧이곧대로 믿지 않는다."
+    }
+  ],
+  "decide": {
+    "turn": 3,
+    "gaugeTier": 2,
+    "selfHp": 18,
+    "allyHp": 9,
+    "enemies": [{ "id": "golem_1", "name": "스팸 골렘", "hp": 12, "hpMax": 24, "alive": true }],
+    "availableActions": [
+      { "id": "attack", "label": "공격", "needsTarget": true },
+      { "id": "defend", "label": "방어", "needsTarget": false },
+      { "id": "protect_ally", "label": "감싸기", "needsTarget": true }
+    ],
+    "corrupted": false
+  },
+  "stance": {
+    "agendaId": "agenda_gate",
+    "options": [
+      { "id": "opt_open", "label": "문을 연다" },
+      { "id": "opt_wait", "label": "기다린다" }
+    ],
+    "hintId": "hint_lens"
+  }
+}
