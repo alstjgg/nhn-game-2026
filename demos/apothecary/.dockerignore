@@ -1,0 +1,10 @@
+node_modules
+dist
+test-results
+e2e
+tests
+tools
+assets
+src
+*.log
+.env*
