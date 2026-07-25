@@ -44,10 +44,32 @@
   box-sizing: border-box;
 }
 
+/* The shop interior (u7 asset pack, PRD §2.4) — one full-bleed pixel-art plate
+ * behind every screen. The flat scrim on top keeps card text legible over the
+ * busy shelves without a second image; the pack is upscaled with
+ * `image-rendering: pixelated` (inherited, so every sheet below stays crisp too)
+ * so the 16-bit grid survives on high-DPI displays.
+ * If the file is ever missing, --color-bg still paints the v1 look underneath. */
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--color-bg);
+  background-color: var(--color-bg);
+  background-image: linear-gradient(rgb(26 20 16 / 62%), rgb(26 20 16 / 62%)),
+    url('../../assets/bg-shop.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  background-attachment: fixed;
+  image-rendering: pixelated;
   color: var(--color-text);
   font-family: system-ui, -apple-system, "Noto Sans KR", sans-serif;
+  /* Korean wraps at WORD boundaries, never mid-어절 (PR #33, R3): the default
+   * `break-word` behaviour split 목도 칼칼하 / 고요. in the speech bubble and
+   * 잠 못 드 / 는 서생 in the 재방문 overlay — one dangling syllable under a
+   * pixel-art bubble reads as a layout bug. `keep-all` applies to every text
+   * surface at once (bubble, clue cards, notes) instead of per selector;
+   * `overflow-wrap: anywhere` is the safety net so an unbreakable run (a long
+   * URL/id) still cannot overflow its box. */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }

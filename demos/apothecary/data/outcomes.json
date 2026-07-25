@@ -2,7 +2,11 @@
   "c1": {
     "entries": [
       {
-        "ingredients": ["baekbokryeong", "daechu", "sanjoin"],
+        "ingredients": [
+          "baekbokryeong",
+          "daechu",
+          "sanjoin"
+        ],
         "method": "달이기",
         "declaration": "정석",
         "outcome": {
@@ -12,7 +16,10 @@
         }
       },
       {
-        "ingredients": ["gamcho", "sanjoin"],
+        "ingredients": [
+          "gamcho",
+          "sanjoin"
+        ],
         "method": "우리기",
         "declaration": "실험",
         "outcome": {
@@ -26,12 +33,20 @@
       "channel": "재방문",
       "text": "손님이 다시 들러, 이번에도 별 차도가 없었다고 조용히 말한다.",
       "arrivalTrigger": "revisit_no_effect"
+    },
+    "nearMiss": {
+      "channel": "재방문",
+      "text": "손님이 다시 들러, 약재는 맞은 듯한데 달이는 법이 아쉬웠다고 말한다.",
+      "arrivalTrigger": "revisit_right_herbs_wrong_brew"
     }
   },
   "c2": {
     "entries": [
       {
-        "ingredients": ["doraji", "gamcho"],
+        "ingredients": [
+          "doraji",
+          "gamcho"
+        ],
         "method": "달이기",
         "declaration": "정석",
         "outcome": {
@@ -41,7 +56,10 @@
         }
       },
       {
-        "ingredients": ["bakha", "doraji"],
+        "ingredients": [
+          "bakha",
+          "doraji"
+        ],
         "method": "빻기",
         "declaration": "실험",
         "outcome": {
@@ -55,6 +73,11 @@
       "channel": "문앞 쪽지",
       "text": "문 앞 쪽지에는 별 효험이 없었다는 짧은 한마디만 남아 있다.",
       "arrivalTrigger": "note_no_effect"
+    },
+    "nearMiss": {
+      "channel": "문앞 쪽지",
+      "text": "쪽지가 왔다. 약재는 옳았으나 내는 법이 달랐던 듯하다고 적혀 있다.",
+      "arrivalTrigger": "note_right_herbs_wrong_brew"
     }
   }
 }

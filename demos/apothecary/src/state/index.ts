@@ -102,7 +102,12 @@ export function reduce(state: MachineState, event: GameEvent): MachineState {
       // balance-as-data (customers.json): a negative cost must never *heal*
       // patience. Clamp at the boundary so a data typo can't silently revive
       // a customer's patience bar.
-      const cost = Math.max(0, event.cost);
+      // `Math.max(0, NaN)` is NaN, so the clamp alone does NOT neutralise a
+      // non-finite cost: it would poison `patience`, and the screen's next
+      // `tierFor()` throws by design on a non-finite patience (PR #33, R1). The
+      // boundary gates (`isDialogueBeat`, the data loader) reject such costs
+      // first; this keeps the reducer's own invariant true for ANY input.
+      const cost = Number.isFinite(event.cost) ? Math.max(0, event.cost) : 0;
       const patience = Math.max(0, state.patience - cost);
       // A real deduction (cost > 0) that lands on zero forces crafting (F3).
       // A no-cost observe ([관찰]) never advances on its own — reaches-zero is

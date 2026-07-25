@@ -1,68 +1,150 @@
-/* conversation.css — layout + placeholder art for the conversation screen (u6).
- * Builds only on the shared tokens (base.css) and the u5 card/animation
- * vocabulary; screen-specific pieces (portrait placeholder, patience meter,
- * clue-card modifier, observe affordance) live here rather than mutating the
- * stable u5 primitives. */
+/* conversation.css — layout + diegetic patience for the conversation screen
+ * (u6 + u11). Builds only on the shared tokens (base.css) and the u5
+ * card/animation vocabulary; screen-specific pieces (portrait host, tier
+ * warmth, ambient tap, clue-card modifier, observe affordance) live here rather
+ * than mutating the stable u5 primitives.
+ *
+ * u11 (PRD §2.2 / invariant §3-4): the patience gauge is gone. `data-tier` on
+ * the root is the single source of the customer's mood and everything below
+ * selects off it — no bar, no number, no JS animation timing. */
 .conversation {
+  /* Anchor for the out-of-flow ambient tap below, so adding it moves nothing. */
+  position: relative;
+  /* The customer faces the dialogue instead of standing on top of it: the u9
+   * portrait panel is a 3:4 sheet cell, so stacking it above the bubble, the
+   * hand, the observe button and the clue shelf pushed the screen past the
+   * viewport — and a page that scrolls when a card is pressed slides the face
+   * the player is reading right off the counter. */
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: flex-start;
   gap: var(--space-4);
-  max-width: 640px;
+  max-width: 720px;
   margin: 0 auto;
   padding: var(--space-4);
+  /* 0 → 1 across the tier ladder: the diegetic replacement for the deleted
+   * meter's accent → alarm colour mix. Consumed by the portrait host's glow
+   * only, so growing impatience is felt around the customer, never measured. */
+  --tier-warmth: 0;
 }
 
-/* Portrait — a warm CSS placeholder (no raster art shipped, design D9). */
-.portrait {
+.conversation[data-tier='1'] {
+  --tier-warmth: 0.34;
+}
+
+.conversation[data-tier='2'] {
+  --tier-warmth: 0.67;
+}
+
+.conversation[data-tier='3'] {
+  --tier-warmth: 1;
+}
+
+/* The dialogue column — the line, the hand, [관찰], the clue shelf. `min-width: 0`
+ * so a long line wraps inside the column instead of widening the whole screen. */
+.conversation__dialogue {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 96px;
-  height: 96px;
-  border: 1px solid var(--color-border);
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/* Portrait host — a bare, non-reflowing wrapper: the u9 panel inside it owns
+ * every dimension (portrait.css), this only carries the screen's a11y hooks,
+ * the u5 enter animation and the tier warmth.
+ *
+ * The framed panel is a FIXTURE of the counter: the customer arrives by lighting
+ * up inside it (u9's silhouette → resolve, PRD §2.3), not by sliding the frame
+ * across the screen. So the shared `portrait-enter` keyframe is kept for its fade
+ * — v1's entry contract — while the translate/scale half of it is suppressed
+ * here. `!important` is deliberate and load-bearing: it is the only cascade level
+ * that outranks an animation. Without it the panel's box would still be easing
+ * into place while the first beat is already on screen, and every expression
+ * swap during that window would read as a reflow it is not (NF5). */
+.conversation__portrait {
+  align-self: flex-start;
+  /* Anchor for the drumming hand below, which hangs off the panel's bottom edge.
+   * The panel's own box is portrait.css's; this adds no size of its own. */
+  position: relative;
+  transform: none !important;
   border-radius: var(--radius-card);
-  background: linear-gradient(135deg, var(--color-surface-hover), var(--color-surface));
+  box-shadow: 0 0 calc(var(--tier-warmth) * 20px)
+    color-mix(in srgb, var(--color-alarm) calc(var(--tier-warmth) * 55%), transparent);
+  transition: box-shadow var(--duration-slow) var(--ease-standard);
 }
 
-.portrait__name {
-  padding: var(--space-1);
-  color: var(--color-text-dim);
-  font-size: 0.8em;
-  text-align: center;
-}
-
-/* Patience meter — the fill's scaleX is driven from remaining patience and
- * animates via a transform transition (compositor-only, no layout). */
-.patience-meter {
-  width: 100%;
-  height: 10px;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-surface);
-}
-
-.patience-fill {
-  /* --patience (0..1) is driven from the reducer's remaining patience in TS; the
-   * fill's colour is a live mix of accent → alarm so the bar warms toward red as
-   * it empties (u9 juice). Both the width (scaleX) and the colour ease via the
-   * shared motion tokens — never an instant flip (design D4). */
-  --patience: 1;
-  width: 100%;
-  height: 100%;
-  transform: scaleX(1);
-  transform-origin: left center;
-  background: color-mix(
-    in srgb,
-    var(--color-accent) calc(var(--patience) * 100%),
-    var(--color-alarm)
+/* Ambient impatience — the customer's fingers drumming on the counter. Purely
+ * decorative and absolutely positioned, so it neither reflows the dialogue nor
+ * needs a JS toggle: the tier gates it, and the global prefers-reduced-motion
+ * guard in animations.css covers the keyframe for free.
+ *
+ * WHERE it sits is the point (PR #33, R3): a 26x8 pill in the dialogue column's
+ * top-right corner was 0.02% of the frame, ~600px from the face, and read as a
+ * dark smudge beside the bubble rather than as a hand. It now hangs off the
+ * portrait panel's bottom edge — the counter line, right under the face the
+ * player is already reading — as three drumming fingers (the bars are one
+ * gradient, so the extra channel costs no extra element). Percentage offsets
+ * only, so it still measures nothing off the panel's box. */
+.finger-tap {
+  --tap-period: 900ms;
+  --tap-finger: 17px;
+  --tap-gap: 8px;
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: calc(var(--tap-finger) * 3 + var(--tap-gap) * 2);
+  height: 17px;
+  margin-left: calc((var(--tap-finger) * 3 + var(--tap-gap) * 2) / -2);
+  border-radius: 999px 999px var(--space-1) var(--space-1);
+  /* Three fingers: an opaque bar, a gap, repeated. Warm skin-in-lantern-light
+   * rather than the alarm red, so it reads as a hand and not as a warning chip. */
+  background-image: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-alarm) 34%, var(--color-text-dim))
+      0 var(--tap-finger),
+    transparent var(--tap-finger) calc(var(--tap-finger) + var(--tap-gap))
   );
-  transition: transform var(--duration-slow) var(--ease-standard),
-    background-color var(--duration-slow) var(--ease-standard);
+  /* The counter the fingers drum ON, so the motion has something to land against. */
+  box-shadow: 0 8px 0 -5px color-mix(in srgb, var(--color-border) 80%, transparent);
+  transform-origin: bottom center;
+  opacity: 0;
+  pointer-events: none;
+  animation: none;
+}
+
+/* From 짜증 on — and only then — the drumming starts and never stops. */
+.conversation[data-tier='2'] .finger-tap,
+.conversation[data-tier='3'] .finger-tap {
+  opacity: 1;
+  animation: finger-tap var(--tap-period) var(--ease-standard) infinite;
+}
+
+/* Speech bubble — the generated ui-bubble.png sliced as a 9-slice frame, so the
+ * pixel-art corners stay crisp while the panel stretches to whatever the line
+ * needs. `fill` paints the bubble's cream interior as the content background;
+ * the transparent border keeps the frame purely decorative. */
+.npc-line-host {
+  /* Slices are measured off ui-bubble.png's actual art (256×256: the bubble box
+   * spans x 28–227, y 47–178, with the tail hanging below to y 211), so the
+   * corners land in the corner tiles and the tail stays in the bottom edge.
+   * border-image-width mirrors the border box, which is half-scale — the pixel
+   * grid still reads at 2:1 and the frame stays compact above the hand. */
+  padding: var(--space-1) var(--space-2);
+  border-style: solid;
+  border-color: transparent;
+  border-width: 28px 20px 44px 20px;
+  border-image-source: url('../../assets/ui-bubble.png');
+  border-image-slice: 56 40 88 38 fill;
+  border-image-width: 28px 20px 44px 20px;
+  border-image-repeat: stretch;
 }
 
 .npc-line {
   margin: 0;
+  /* The bubble interior is cream art, so the line inks with the dark background
+   * token instead of the light-on-dark body colour. */
+  color: var(--color-bg);
   font-size: 1.1em;
   line-height: 1.5;
 }
@@ -81,19 +163,3 @@
   background: var(--color-surface);
 }
 
-/* Persistent [관찰] affordance — a ghost button, never a dialogue choice card. */
-.observe-btn {
-  align-self: flex-start;
-  padding: var(--space-2) var(--space-3);
-  border: 1px dashed var(--color-border-hover);
-  border-radius: var(--radius-card);
-  background: transparent;
-  color: var(--color-accent);
-  font: inherit;
-  cursor: pointer;
-  transition: var(--transition-base);
-}
-
-.observe-btn:hover {
-  background: var(--color-surface-hover);
-}

@@ -2,11 +2,34 @@
 // the implementer's call). Pure type declarations: `import type`-only from tests,
 // erased at runtime. Loader (loader.ts) validates these shapes and fails loudly.
 
+// u6 — the verb vocabulary is owned by the AI contract (contract.ts) and merely
+// re-exported here, so stub data and live-generated beats share ONE union
+// (invariant §3-2). Type-only re-export: erased at runtime, no import cycle.
+export type { ChoiceVerb } from '../ai/contract';
+import type { ChoiceVerb } from '../ai/contract';
+
 /** One selectable dialogue choice card (PRD §2: each carries a patience cost). */
 export interface Choice {
   label: string;
+  /**
+   * Which act this card performs (PRD §1-2). Costs live in data/generation.json.
+   *
+   * NOTE (out of this unit's file_globs, tracked for the conversation-screen
+   * owner): `src/screens/conversation/conversation.ts` currently distinguishes
+   * the free [관찰] card from paid cards by `patienceCost === 0` rather than
+   * `verb === 'observe'`. Before u6, cost 0 implied observe (the only free
+   * verb); this unit adds a second cost-0 verb (`craft`), so that heuristic no
+   * longer uniquely identifies observation — it should be migrated to dispatch
+   * on `verb` instead. See PR #39 review thread for the concrete failure mode.
+   */
+  verb: ChoiceVerb;
   patienceCost: number;
-  /** Ids of observation clues this choice reveals (optional; display-time). */
+  /**
+   * Ids of clues this choice reveals, from `Customer.observationClues`
+   * (optional; display-time). Despite the field's name, revealed clues are no
+   * longer exclusive to the free [관찰] action as of u6 — an `indirect` choice
+   * can reveal one too. See `ObservationClue`'s doc comment.
+   */
   clueReveals?: string[];
 }
 
@@ -14,9 +37,17 @@ export interface Choice {
 export interface DialogueNode {
   npcLine: string;
   choices: Choice[];
+  /** Marks this line as the customer dodging a direct question (concept doc §5.1). */
+  evasive?: boolean;
 }
 
-/** A clue surfaced by the free [관찰] action. */
+/**
+ * A clue this customer can yield — via the free [관찰] action OR an `indirect`
+ * question (as of u6, both verbs can populate a choice's `clueReveals`; the
+ * top-level field name `observationClues` is frozen by PRD §3 and predates
+ * that, so it no longer describes only its contents). `direct` never reveals
+ * one (#15 below pins that).
+ */
 export interface ObservationClue {
   id: string;
   text: string;
@@ -26,9 +57,25 @@ export interface ObservationClue {
 export interface Customer {
   id: string;
   name: string;
-  /** Reference to portrait art (relative asset path). */
+  /**
+   * Which bundled 4×2 expression sheet this customer wears, by FILE NAME (the
+   * key set of `BUNDLED_SHEETS` in src/app/roster.ts). Read on every render path
+   * — conversation, entrance and crafting all paint the sheet it names, and
+   * `tests/app/roster.test.ts` fails if it names no bundled file. (PR #33, R1:
+   * before that it was schema-required, resolved to nothing and was read by no
+   * code path at all.)
+   */
   portrait: string;
+  /**
+   * Optional palette/mirror variant applied to this customer's sheet cell, so two
+   * customers sharing one bundled sheet are still visibly two different people
+   * (the pool is smaller than the roster). A CSS-safe token; the look itself is
+   * `src/styles/portrait.css`'s (`.portrait-frame[data-variant]`).
+   */
+  portraitVariant?: string;
   problem: string;
+  /** The truth behind `problem`; never stated outright, only circled (PRD §2.5). */
+  hiddenCause: string;
   patienceBudget: number;
   dialogueNodes: DialogueNode[];
   observationClues: ObservationClue[];
@@ -59,10 +106,18 @@ export interface OutcomeEntry {
 /**
  * Per-customer outcome table. `default` is REQUIRED (PRD §2, F3): any unlisted
  * combination resolves to it, so no craft can dead-end.
+ *
+ * `nearMiss` is OPTIONAL and answers a wrong remedy IN PROPORTION to the work the
+ * player did (PR #33, R3): the ingredient list is the diagnosis, the method and
+ * the 건넬 말 are the preparation, so a craft that picked a winning row's exact
+ * ingredients but prepared them differently gets its own line — "the right herbs,
+ * the wrong hand" — instead of the flat "no effect" note that made the clue work
+ * invisible at the only moment it should pay off. Absent ⇒ `default`, unchanged.
  */
 export interface OutcomeTable {
   entries: OutcomeEntry[];
   default: Outcome;
+  nearMiss?: Outcome;
 }
 
 /** Map of customer id → that customer's outcome table. */

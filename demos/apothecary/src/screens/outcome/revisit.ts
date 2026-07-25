@@ -7,10 +7,21 @@
 // always animated, never a silent insert (§4.6). All text is data-driven from the
 // resolved Outcome (u3), so nothing here is hard-coded balance.
 import type { Customer, Outcome } from '../../data/schema.ts';
+import { cssUrl } from '../../ui/css-url.ts';
+import { portraitCell } from '../../ui/portrait.ts';
 
 export interface RevisitDeps {
   readonly customer: Customer;
   readonly outcome: Outcome;
+  /**
+   * The returning customer's sheet (PR #33, R3): the 56px box used to carry their
+   * NAME as text, which wrapped mid-word (잠 못 드 / 는 서생) in the demo's
+   * signature §1.4 frame. The name now has its own row and the box holds the face.
+   * Omitted ⇒ the plain placeholder box, no text inside it.
+   */
+  readonly sheetUrl?: string;
+  /** Palette/mirror variant, matching every other surface this face appears on. */
+  readonly variant?: string;
 }
 
 /**
@@ -46,17 +57,36 @@ export function mountRevisitNotification(
   portrait.dataset.testid = 'revisit-portrait';
   portrait.setAttribute('role', 'img');
   portrait.setAttribute('aria-label', customer.name);
-  const name = document.createElement('span');
-  name.className = 'portrait__name';
+  if (deps.sheetUrl !== undefined) {
+    // Tier 0: the customer is back at the counter, not mid-argument.
+    const cell = portraitCell(0, false);
+    if (cell !== undefined) {
+      portrait.classList.add('revisit-portrait--sheet');
+      if (deps.variant !== undefined) portrait.dataset.variant = deps.variant;
+      portrait.style.backgroundImage = cssUrl(deps.sheetUrl);
+      portrait.style.backgroundSize = cell.backgroundSize;
+      portrait.style.backgroundPosition = cell.backgroundPosition;
+    }
+  }
+
+  // The name gets its OWN row in the text column: a 56px column is narrower than
+  // any of these names and forced a mid-word break in the frame the demo is
+  // proudest of.
+  const column = document.createElement('div');
+  column.className = 'revisit-column';
+
+  const name = document.createElement('p');
+  name.className = 'revisit-name';
+  name.dataset.testid = 'revisit-name';
   name.textContent = customer.name;
-  portrait.appendChild(name);
 
   const text = document.createElement('p');
   text.className = 'revisit-text';
   text.dataset.testid = 'revisit-text';
   text.textContent = outcome.text;
 
-  body.append(portrait, text);
+  column.append(name, text);
+  body.append(portrait, column);
   note.append(banner, body);
   container.appendChild(note);
   return note;
