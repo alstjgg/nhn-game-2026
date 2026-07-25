@@ -61,8 +61,31 @@
     background-color var(--duration-slow) var(--ease-standard);
 }
 
+/* Speech bubble — the generated ui-bubble.png sliced as a 9-slice frame, so the
+ * pixel-art corners stay crisp while the panel stretches to whatever the line
+ * needs. `fill` paints the bubble's cream interior as the content background;
+ * the transparent border keeps the frame purely decorative. */
+.npc-line-host {
+  /* Slices are measured off ui-bubble.png's actual art (256×256: the bubble box
+   * spans x 28–227, y 47–178, with the tail hanging below to y 211), so the
+   * corners land in the corner tiles and the tail stays in the bottom edge.
+   * border-image-width mirrors the border box, which is half-scale — the pixel
+   * grid still reads at 2:1 and the frame stays compact above the hand. */
+  padding: var(--space-1) var(--space-2);
+  border-style: solid;
+  border-color: transparent;
+  border-width: 28px 20px 44px 20px;
+  border-image-source: url('../../assets/ui-bubble.png');
+  border-image-slice: 56 40 88 38 fill;
+  border-image-width: 28px 20px 44px 20px;
+  border-image-repeat: stretch;
+}
+
 .npc-line {
   margin: 0;
+  /* The bubble interior is cream art, so the line inks with the dark background
+   * token instead of the light-on-dark body colour. */
+  color: var(--color-bg);
   font-size: 1.1em;
   line-height: 1.5;
 }

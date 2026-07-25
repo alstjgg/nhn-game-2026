@@ -290,3 +290,258 @@ test.describe('conversation screen (u6)', () => {
     expect(external, `external requests: ${external.join(' | ')}`).toEqual([]);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// u10 — multiverb beat engine (adapter-driven beat source + 3–4 verb cards).
+//
+// APPENDED ONLY. Everything above (AC1–AC9 + the terminal-node regression) is
+// byte-identical on purpose: u10's spec AC5a requires those bodies unchanged,
+// and the patience-meter assertions stay until u11 owns their removal.
+//
+// Contract pinned here: .claude/super/units/u10/spec.md §4 rows AC2a–AC5b.
+// RED until the beat source lands, `conversation.ts` dispatches on `verb`, the
+// harness hands in a stub adapter and exposes `window.__onCompleteCount`, and
+// `conversation.css` wraps the npc line in the ui-bubble 9-slice frame.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CUSTOMERS_JSON = 'data/customers.json';
+const VERBS = ['indirect', 'direct', 'observe', 'craft'] as const;
+
+interface CustomerFixture {
+  observationClues: Array<{ id: string; text: string }>;
+}
+
+/**
+ * The customer the harness mounts (`customers[0]`) — its real clue vocabulary.
+ * `data/customers.json` is a bare ARRAY of customers (that is what
+ * `loadCustomers` validates); a `{ customers: [...] }` wrapper is tolerated so
+ * this fixture reader survives a future re-shaping of the file.
+ */
+function harnessCustomer(): CustomerFixture {
+  const raw = JSON.parse(readFileSync(CUSTOMERS_JSON, 'utf-8')) as
+    | CustomerFixture[]
+    | { customers: CustomerFixture[] };
+  const customers = Array.isArray(raw) ? raw : raw.customers;
+  expect(customers?.length, `no customers in ${CUSTOMERS_JSON}`).toBeGreaterThan(0);
+  return customers[0];
+}
+
+const card = (page: Page, verb?: string): Locator =>
+  verb === undefined
+    ? page.locator('[data-testid="choice-card"]')
+    : page.locator(`[data-testid="choice-card"][data-verb="${verb}"]`);
+
+/** data-verb of every rendered choice card, in DOM order. */
+async function verbsOnScreen(page: Page): Promise<string[]> {
+  return card(page).evaluateAll((els) =>
+    els.map((el) => el.getAttribute('data-verb') ?? ''),
+  );
+}
+
+/** Wait for the async beat render (S6) to have painted a full card set. */
+async function awaitBeat(page: Page): Promise<void> {
+  await expect(page.getByTestId('npc-line')).toBeVisible();
+  await expect.poll(async () => card(page).count(), { timeout: 5000 }).toBeGreaterThanOrEqual(3);
+}
+
+/** The persistent counter the harness increments inside its onComplete hook. */
+async function onCompleteCount(page: Page): Promise<number> {
+  return page.evaluate(
+    () => (window as unknown as { __onCompleteCount?: number }).__onCompleteCount ?? -1,
+  );
+}
+
+test.describe('conversation screen — multiverb beats (u10)', () => {
+  // AC2a/AC2c — every beat is a 3–4 card hand and every card names its verb.
+  test('AC10 every beat renders 3–4 choice cards, each carrying a valid data-verb', async ({
+    page,
+  }) => {
+    await page.goto(HARNESS);
+
+    for (const beat of ['first', 'second'] as const) {
+      await awaitBeat(page);
+      const verbs = await verbsOnScreen(page);
+      expect(verbs.length, `${beat} beat rendered ${verbs.length} cards, want 3–4`).toBeGreaterThanOrEqual(3);
+      expect(verbs.length, `${beat} beat rendered ${verbs.length} cards, want 3–4`).toBeLessThanOrEqual(4);
+      for (const verb of verbs) {
+        expect(VERBS, `card carries data-verb="${verb}"`).toContain(verb);
+      }
+      if (beat === 'first') {
+        // Advance with a paid card (never observe/craft — those do not advance).
+        await card(page, 'indirect').first().click();
+        await page.waitForTimeout(300);
+      }
+    }
+  });
+
+  // AC2b — the hand is genuinely multiverb, not four flavours of one act.
+  test('AC11 each beat mixes at least three distinct verbs including one observe', async ({
+    page,
+  }) => {
+    await page.goto(HARNESS);
+    await awaitBeat(page);
+
+    const verbs = await verbsOnScreen(page);
+    const distinct = [...new Set(verbs)];
+    expect(distinct.length, `only ${distinct.join('/')} on screen`).toBeGreaterThanOrEqual(3);
+    expect(
+      distinct.some((v) => v === 'indirect' || v === 'direct'),
+      'no paid question card (indirect/direct) offered',
+    ).toBe(true);
+    expect(distinct, 'no observation card offered').toContain('observe');
+  });
+
+  // S3 — card ORDER is load-bearing: overlap.spec.ts / full-loop.spec.ts drive
+  // the conversation via `choice-card.first()` and expect it to spend patience.
+  test('AC12 the first choice card is always a paid question card (S3 ordering)', async ({
+    page,
+  }) => {
+    await page.goto(HARNESS);
+    await awaitBeat(page);
+
+    const firstVerb = await card(page).first().getAttribute('data-verb');
+    expect(['indirect', 'direct'], `first card is a "${firstVerb}" card`).toContain(firstVerb);
+
+    // And it really is the paid path: committing it drains the meter.
+    const fill = page.getByTestId('patience-fill');
+    const before = await scaleX(fill);
+    await card(page).first().click();
+    await expect.poll(async () => scaleX(fill), { timeout: 3000 }).toBeLessThan(before - 0.01);
+  });
+
+  // AC3a/AC3a2 — [관찰] card: real clue text, zero cost, does not advance.
+  test('AC13 an observe card reveals real clue text for free without advancing', async ({
+    page,
+  }) => {
+    await page.goto(HARNESS);
+    await awaitBeat(page);
+
+    const fill = page.getByTestId('patience-fill');
+    const line = page.getByTestId('npc-line');
+    const clueCards = page.getByTestId('clue-card');
+    const observeCard = card(page, 'observe').first();
+    await expect(observeCard).toBeVisible();
+
+    const patienceBefore = await scaleX(fill);
+    const lineBefore = (await line.textContent())?.trim() ?? '';
+    expect(await clueCards.count(), 'clues revealed before observing').toBe(0);
+
+    await observeCard.click();
+    await expect(clueCards.first()).toBeVisible();
+    expect(await clueCards.count(), 'observe card revealed nothing').toBeGreaterThan(0);
+
+    // The shelf shows authored clue TEXT, never a raw `clue_*` id (spec S9).
+    const texts = await clueCards.allTextContents();
+    const authored = harnessCustomer().observationClues.map((c) => c.text);
+    for (const raw of texts) {
+      const text = raw.trim();
+      expect(/^clue_[a-z_]+$/i.test(text), `clue shelf shows a raw id: ${text}`).toBe(false);
+      expect(authored, `clue text not found in customers.json: ${text}`).toContain(text);
+    }
+
+    // Zero patience cost — give the meter transition time to (not) move.
+    await page.waitForTimeout(500);
+    expect(
+      Math.abs((await scaleX(fill)) - patienceBefore),
+      'observing spent patience',
+    ).toBeLessThan(0.01);
+
+    // Does not advance the beat, does not freeze the rest of the hand.
+    expect((await line.textContent())?.trim() ?? '', 'observing advanced the beat').toBe(lineBefore);
+    await expect(card(page, 'indirect').first()).toBeEnabled();
+    await expect(card(page, 'craft').first()).toBeEnabled();
+  });
+
+  // AC3b — observe is idempotent through BOTH routes (card and observe-btn).
+  test('AC14 re-observing never duplicates a clue card', async ({ page }) => {
+    await page.goto(HARNESS);
+    await awaitBeat(page);
+
+    const clueCards = page.getByTestId('clue-card');
+    const observeCard = card(page, 'observe').first();
+
+    await observeCard.click();
+    await expect(clueCards.first()).toBeVisible();
+    const revealed = await clueCards.count();
+
+    await observeCard.click();
+    await page.waitForTimeout(300);
+    expect(await clueCards.count(), 're-clicking the observe card duplicated clues').toBe(revealed);
+
+    await page.getByTestId('observe-btn').click();
+    await page.waitForTimeout(300);
+    expect(await clueCards.count(), 'observe-btn duplicated the card’s clues').toBe(revealed);
+  });
+
+  // AC3c — [조제하러 가기] card is an immediate early exit through onComplete.
+  test('AC15 a craft card fires onComplete exactly once and freezes the hand', async ({ page }) => {
+    await page.goto(HARNESS);
+    await awaitBeat(page);
+
+    expect(
+      await onCompleteCount(page),
+      'harness exposes no window.__onCompleteCount hook',
+    ).toBe(0);
+
+    const craftCard = card(page, 'craft').first();
+    await expect(craftCard).toBeVisible();
+    await craftCard.click();
+
+    await expect.poll(async () => onCompleteCount(page), { timeout: 3000 }).toBe(1);
+
+    // The beat's cards are frozen afterwards, so a second click cannot re-fire.
+    await expect(craftCard).toBeDisabled();
+    await craftCard.evaluate((el) => (el as HTMLButtonElement).click());
+    await page.waitForTimeout(300);
+    expect(await onCompleteCount(page), 'craft card double-fired onComplete').toBe(1);
+  });
+
+  // AC4a — the npc line sits inside a 9-slice ui-bubble frame (F8).
+  test('AC16 the npc line is wrapped by the ui-bubble border-image frame', async ({ page }) => {
+    await page.goto(HARNESS);
+    await expect(page.getByTestId('npc-line')).toBeVisible();
+
+    const frame = await page.getByTestId('npc-line').evaluate((el) => {
+      let node: Element | null = el as Element;
+      for (let hop = 0; hop < 4 && node; hop += 1) {
+        const cs = getComputedStyle(node);
+        if (cs.borderImageSource.includes('ui-bubble')) {
+          return { found: true, slice: cs.borderImageSlice, source: cs.borderImageSource };
+        }
+        node = node.parentElement;
+      }
+      return { found: false, slice: '', source: '' };
+    });
+
+    expect(frame.found, 'no ancestor of npc-line uses an ui-bubble border-image').toBe(true);
+    expect(frame.slice.trim(), 'border-image-slice was never tuned off the 100% default').not.toBe(
+      '100%',
+    );
+  });
+
+  // AC5a — DELETE 금지: the patience meter is u11's to remove, not u10's.
+  test('AC17 the patience meter DOM survives the multiverb refactor', async ({ page }) => {
+    await page.goto(HARNESS);
+    await expect(page.getByTestId('patience-meter')).toBeVisible();
+    await expect(page.getByTestId('patience-fill')).toBeVisible();
+    await expect(page.getByTestId('observe-btn')).toBeVisible();
+  });
+
+  // F2 — the per-beat fallback is SILENT: a full multiverb interaction logs nothing.
+  test('AC18 a full multiverb interaction produces no console or page errors', async ({ page }) => {
+    const errs = attachErrorCapture(page);
+
+    await page.goto(HARNESS);
+    await awaitBeat(page);
+    await card(page, 'observe').first().click();
+    await card(page).first().click();
+    await page.waitForTimeout(400);
+    await awaitBeat(page);
+    await card(page, 'observe').first().click();
+    await page.getByTestId('observe-btn').click();
+    await page.waitForTimeout(400);
+
+    expect(errs.page, `page errors: ${errs.page.join(' | ')}`).toEqual([]);
+    expect(errs.console, `console errors: ${errs.console.join(' | ')}`).toEqual([]);
+  });
+});

@@ -408,3 +408,124 @@ RED, and restoring it byte-identically. See `.claude/super/units/u3/tests.md`.
 Scope gap worth flagging to the decomposer: the read-scope for a re-entered phase should
 say whether the unit already has an implementation, so the agent does not plan for a
 greenfield RED.
+
+## u9 — TEST phase: no contract file, and the timing seams were out of scope
+
+The read-scope pointed at `.claude/super/prd.md` and
+`.claude/super/units/u9/{design,spec}.md`. None of the three exist in this worktree
+(`.claude/super/` is gitignored — rule 4 — and only `progress.json` was seeded), so the
+PRD paragraphs were read from the tracked `demos/apothecary/PRD.md` (§2.1 sheet/model
+paragraph, §2.2 tier columns, §2.3 generated-frames / framed-panel / no-`setTimeout`
+paragraphs) instead. With no DESIGN output to follow, `tests/ui/portrait.test.ts` and
+`e2e/portrait.spec.ts` *are* the API contract for u9; it is written out in
+`.claude/super/units/u9/tests.md` so the BUILD agent has one place to read it.
+
+Two dependencies the read-scope omitted, both required by AC2's "injected clock/rng
+only, no `setTimeout` in the module": `src/pipeline/clock.ts` (`Clock` / `CancelTimer` /
+`createManualClock`, the existing §3-3 seam and the only file allowed to touch host
+timers) and `src/pipeline/persona.ts` (`Rng` / `createRng`, the seeded-determinism
+seam). The blink schedule has to be built on those two rather than on a new seam, or the
+codebase ends up with two timing conventions.
+
+Also worth flagging to the decomposer: this worktree had no `node_modules`, so the TEST
+phase ran `npm ci` in `demos/apothecary/` before either verification command could run.
+
+## u9 — BUILD phase: two things the contract implies but never states
+
+1. **`page.evaluate` cannot see the spec module's helpers.** `e2e/portrait.spec.ts`
+   drives the harness through a spec-side `const api = () => window.__portrait`, but a
+   function handed to `page.evaluate` is compiled *in the page*, so `api()` only resolves
+   if the PAGE defines that name. The harness therefore publishes the same handle twice:
+   `window.__portrait` (what the spec waits for after navigation) and a global `api()`
+   accessor (what it calls from inside `evaluate`). Worth writing into the harness pattern
+   (design D10) so the next screen unit does not rediscover it as 13 identical
+   `ReferenceError: api is not defined` failures.
+2. **The first blink cannot come from the rng.** `startBlinking`'s contract (no blink on
+   mount; `advance(BLINK_INTERVAL_MS[1])` then `advance(BLINK_DURATION_MS[0] - 1)` must
+   still be mid-blink under seed 99) is only satisfiable if the first close is booked at
+   the interval MAXIMUM instead of a drawn value — with a drawn first interval, seed 99
+   closes at 3781ms and has long reopened by 6000ms. That reads fine as design (an
+   arriving portrait holds a steady gaze for the full window before the randomized loop
+   starts) and every later blink is fully seed-driven, but it is a behavioural decision the
+   tests pin implicitly rather than state.
+3. **AC4b vs. a filter transition.** Reading the computed `filter` immediately after the
+   silhouette class is dropped returns the transition's *start* value, so a
+   `transition: filter` on the arrival direction can never satisfy "not still darkening".
+   The arrival is therefore carried by `@keyframes portrait-resolve` (animations outrank
+   transitions, and the keyframes re-state `brightness(1)` so the lighting releases at
+   once); the declared filter transition carries the reverse, dimming direction.
+
+## u10 — Multiverb beat engine (TEST agent, TDD-Red)
+
+### Spec gap: `BeatSourceOptions` (S1) cannot satisfy the S9 normalizer
+Spec §1.2 S1 fixes `BeatSourceOptions` as `{ adapter?, seeded, buildRequest?, patienceTier? }`,
+but S9 — the load-bearing clue-id normalization — needs two things that surface carries no
+door for: the customer's own clue table (`customer.observationClues`, to drop the u1
+vocabulary's foreign ids) and the set of clues already on the shelf (steps 2–3 substitute
+only *unrevealed* clues). Design §4's `BeatContext`/`normalizeClueReveals` both take them, so
+the omission is in S1's option list, not in the intent. The RED tests pin two additional
+**optional** fields in the design's own vocabulary — `customer?: Customer` and
+`revealed?: () => ReadonlySet<string>` — rather than smuggling the clue table through
+`buildRequest`. BUILD should treat those two names as contract.
+
+### Test-defined: `history.length === cursor`
+Neither S1 nor S7 says who tracks conversation history, yet the u1 stub adapter picks its
+beat with `beatIndexFor(history.length, beatCount)` (`src/ai/stub.ts:212`). If the beat source
+sends an empty history every pull, every beat renders the *same* line and the pre-existing
+e2e AC7 ("committing a choice advances to a different line") goes red. The RED suite therefore
+pins that the request for beat *i* carries `history.length === i`. Whether the labels come from
+an injected getter or from the source's own bookkeeping is BUILD's call (u12 co-owns tone).
+
+### AC1g is a node gate, so cursor monotonicity is pinned on the source
+Design D6 puts the out-of-order guard in `conversation.ts` (`renderBeat`'s token), but spec §4
+gates AC1g with vitest, and `beats.ts` is the only node-testable half. The RED suite reads AC1g
+as a property of the source: concurrent `next()` calls must each claim their own cursor and
+resolve in cursor order even when the adapter resolves in reverse. The DOM-side token is still
+needed for S6; it is simply not what AC1g can observe.
+
+### Read-scope gaps (carried from spec §4b, re-confirmed)
+The assigned read scope omitted files the TEST phase had to open as narrow slices:
+`src/ai/adapter.ts` (`AIAdapter` / `AIUnavailableError` — the failure contract the fakes
+imitate), `src/ai/stub.ts` (`StubAdapterConfig` + `beatIndexFor` — see above),
+`src/data/schema.ts` (`Choice`/`Customer`/`ObservationClue` shapes), `vitest.config.ts`
+(`environment: 'node'` — the reason every DOM assertion lives in Playwright) and
+`data/{customers,stub-dialogue}.json` (the two disjoint clue vocabularies S9 exists for).
+
+### Pipeline friction: worktree has no `node_modules`
+`npx vitest run` in a fresh super-worktree fails at config load (`Cannot find package 'vitest'`)
+because `demos/apothecary/node_modules` is not shared across worktrees. `npm ci` (~10s) is a
+required first step for any agent whose verification command runs in `demos/apothecary`; worth
+folding into the harness's worktree setup so every unit does not rediscover it.
+
+### Q3 (from spec §3), unresolved by design: `observe-btn` vs observe card
+Two affordances now reveal the same clues. u10 keeps both (e2e AC6/AC9 drive the button and no
+unit may delete it), and the RED suite pins that they cannot diverge — the button must not
+duplicate what the card revealed. Consolidation is a u11/u14 decision.
+
+## u10 — Multiverb beat engine (IMPLEMENT agent, TDD-Green)
+
+### RED suite carried a fixture-reader bug that hid behind a real failure
+The appended e2e block's `harnessCustomer()` helper read
+`JSON.parse(data/customers.json).customers[0]`, but that file is a **bare array** of
+customers (which is exactly what `loadCustomers` validates and what every other reader
+assumes). The helper therefore threw a `TypeError` before AC13 reached a single assertion
+— indistinguishable, in the RED report, from the missing implementation. BUILD fixed the
+reader only (accepts either shape, asserts the list is non-empty); no assertion was
+weakened. Worth noting for the pipeline: a RED failure whose message is a `TypeError`
+inside a fixture helper is not evidence that the *feature* is missing, and the TEST phase
+cannot tell the difference without running the helper against real data once.
+
+### Spec-vs-reality: `patienceCost` was load-bearing in TWO places, not one
+Migrating dispatch to `verb` (S2b) needed both the choice-card filter
+(`patienceCost > 0`) **and** the persistent `[관찰]` button's reveal loop
+(`patienceCost === 0`) rewritten — the second one is easy to miss because it reads like a
+cost check rather than a verb test, and it silently became "reveal the clues of every free
+card, including `craft`" the moment `craft` shipped as a second zero-cost verb.
+
+### The tail of a speech bubble does not survive a 9-slice
+`assets/ui-bubble.png` (256×256, frozen) draws the bubble box at x 28–227 / y 47–178 with
+a tail hanging to y 211. A 9-slice can preserve corners, not a feature in the middle of an
+edge: any bottom slice large enough to contain the tail stretches it across the whole
+bottom edge. Landed slices (`56 40 88 38 fill`, border box at half scale) keep the tail
+readable as a bottom-left bump, verified by screenshot rather than by assertion — the e2e
+can only prove that *a* tuned 9-slice is applied, never that it looks like a bubble.

@@ -1,0 +1,91 @@
+/* portrait.css — u9 portrait panel (PRD §2.3 "Portraits render inside a framed
+ * card panel" + the backlit-silhouette entry).
+ *
+ * Two elements, one job each:
+ *   .portrait-frame        the framed card panel. Its size comes from HERE — an
+ *                          aspect-ratio on a fixed width — never from whatever
+ *                          image happens to have loaded. That is what makes the
+ *                          silhouette, the arrival and every tier swap resolve
+ *                          inside one box that never reflows.
+ *   .portrait-frame__cell  the sheet, scaled so exactly one 4x2 cell fills the
+ *                          panel. Only background-position/-image ever change,
+ *                          so a portrait change is a repaint, not a relayout.
+ *
+ * The pixel pipeline is split: u3 owns the DOWNSCALE (smoothing on, off-screen),
+ * this file owns the crisp UPSCALE via image-rendering: pixelated.
+ *
+ * The silhouette is a plain filter: brightness(0) on the cell — the same art,
+ * unlit. No compositing of any kind (no blending, no cutout, no masking) and no
+ * transparent-background generation: a backlit figure is a lighting state, so the
+ * arrival is just that filter animating back up to full light. */
+
+.portrait-frame {
+  position: relative;
+  width: 192px;
+  /* One sheet cell is 3:4 (e.g. 384x512 of a 1536x1024 sheet). */
+  aspect-ratio: 3 / 4;
+  flex: none;
+  overflow: hidden;
+  border: 2px solid var(--color-border, #5a4630);
+  border-radius: var(--radius-card, 10px);
+  /* Warm backlight behind the silhouette — a gradient, no asset, no network. */
+  background: linear-gradient(
+    180deg,
+    var(--color-surface-hover, #38291d),
+    var(--color-surface, #2a2018)
+  );
+}
+
+.portrait-frame__cell {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  /* Explicit full brightness, so the lighting state is one animatable value. */
+  filter: brightness(1);
+  /* Carries the DIM direction: a portrait leaving falls back into the backlight
+   * over this duration. The arrival direction is the `--arrived` keyframes below,
+   * for the reason documented there. */
+  transition: filter var(--duration-slow, 320ms) var(--ease-emphasized, cubic-bezier(0.3, 0, 0, 1));
+}
+
+/* Pre-arrival: the unlit figure. Removing this class IS the arrival. */
+.portrait-frame__cell--silhouette {
+  filter: brightness(0);
+}
+
+/* The arrival: the lit portrait rises out of the backlight over the same panel.
+ *
+ * The keyframes RE-STATE brightness(1) on purpose. Animations outrank transitions,
+ * so pinning the lighting here makes the silhouette's brightness(0) release at
+ * once — the pixel art is readable from the first frame instead of crawling up
+ * through 320ms of grey wash — and leaves the fade to carry the motion. Dropping
+ * the filter line would hand the arrival back to the transition above and turn a
+ * fade-in into a slow dimmer. */
+.portrait-frame__cell--arrived {
+  animation: portrait-resolve var(--duration-slow, 320ms)
+    var(--ease-emphasized, cubic-bezier(0.3, 0, 0, 1)) both;
+}
+
+@keyframes portrait-resolve {
+  from {
+    opacity: 0;
+    filter: brightness(1);
+  }
+  to {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Both directions stay single code paths, just imperceptible — no ramp at all
+   * for viewers who asked for none. */
+  .portrait-frame__cell {
+    transition-duration: 1ms;
+  }
+
+  .portrait-frame__cell--arrived {
+    animation-duration: 1ms;
+  }
+}

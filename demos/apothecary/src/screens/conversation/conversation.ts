@@ -6,20 +6,47 @@
 // choices are u5 `.card` primitives — never native form controls (membrane §4.1
 // / cards-never-forms §4.5).
 //
-// Two affordances, deliberately distinct (design D6/D7):
-//   • dialogue choices (patienceCost > 0) — pressing one spends patience and
-//     advances the conversation to the next node; the patience meter animates
+// u10 — the hand is now a MULTIVERB beat (PRD §1 must-prove 2): every beat
+// offers 3–4 cards and each card names the act it performs in `verb`, which is
+// the ONLY thing dispatch reads. (Before u10 the free [관찰] card was told apart
+// by `patienceCost === 0`; `craft` is a second free verb, so that heuristic no
+// longer identifies anything.) Beats arrive from an injected beat source, so
+// live-generated and seeded beats reach this renderer as the same type.
+//
+// Four affordances, deliberately distinct (design D6/D7):
+//   • `indirect` / `direct` question cards — pressing one spends patience and
+//     advances the conversation to the next beat; the patience meter animates
 //     down via a CSS transform transition (design D4), never an instant flip.
-//   • the persistent [관찰] observe button (0 patience) — reveals the current
-//     node's observation clues as distinct `.card--clue` cards in their own
-//     shelf, idempotently (re-observing never duplicates a clue).
+//   • the `observe` card and the persistent [관찰] button (both free) — reveal
+//     the current beat's observation clues as distinct `.card--clue` cards in
+//     their own shelf, idempotently (re-observing never duplicates a clue) and
+//     without advancing the beat.
+//   • the `craft` card ([조제하러 가기]) — an immediate early exit that hands
+//     the conversation→crafting decision straight back to the host.
 //
 // Patience arithmetic is delegated to the u2 pure reducer so the balance rule
 // (a data typo can never heal patience) is enforced in one place.
 import { createCard } from '../../ui/card.ts';
-import type { Choice, Customer } from '../../data/schema.ts';
+import type { AIAdapter } from '../../ai/adapter.ts';
+import type { BeatChoice, ChoiceVerb, DialogueBeat } from '../../ai/contract.ts';
+import type { Customer } from '../../data/schema.ts';
 import { createMachine, reduce, type MachineState, type Phase } from '../../state/index.ts';
+import { tierFor } from '../../state/patience-tier.ts';
+import { createBeatSource, toBeat, type BeatSource } from './beats.ts';
 import '../../styles/conversation.css';
+
+/**
+ * Card order is load-bearing: the app-level e2e flows drive a conversation via
+ * the FIRST choice card and expect it to be the paid question path, so the hand
+ * is always laid out question → question → observation → craft regardless of
+ * the order a generated beat happened to list its cards in.
+ */
+const VERB_ORDER: Record<ChoiceVerb, number> = {
+  indirect: 0,
+  direct: 1,
+  observe: 2,
+  craft: 3,
+};
 
 /** Host hooks for events the conversation screen itself has no authority over. */
 export interface ConversationCallbacks {
@@ -40,14 +67,27 @@ export interface ConversationCallbacks {
 }
 
 /**
+ * Where the beats come from. Additive and optional: a 2/3-argument call site
+ * keeps the seeded `data/customers.json` slice it always had (the app shell's
+ * wiring is its own unit's business).
+ */
+export interface ConversationOptions {
+  /** Pre-built source (tests / harnesses); wins over `adapter` when present. */
+  beatSource?: BeatSource;
+  /** AI adapter driving the beats; absent ⇒ seeded beats only. */
+  adapter?: AIAdapter;
+}
+
+/**
  * Mount the conversation screen for one customer into `container`.
  * Portrait, patience meter, observe affordance and clue shelf are built once
- * and persist; only the NPC line and dialogue choices re-render per node.
+ * and persist; only the NPC line and the hand re-render per beat.
  */
 export function mountConversation(
   container: HTMLElement,
   customer: Customer,
   callbacks: ConversationCallbacks = {},
+  options: ConversationOptions = {},
 ): void {
   const clueTextById = new Map(customer.observationClues.map((c) => [c.id, c.text]));
   const revealedClueIds = new Set<string>();
@@ -56,7 +96,25 @@ export function mountConversation(
   let state: MachineState = reduce(createMachine(customer.patienceBudget), {
     type: 'advance',
   });
-  let cursor = 0;
+  // Beats arrive asynchronously (the adapter may be a network call), so the
+  // cursor counts beats already PAINTED — it is what decides whether the
+  // committed beat was the conversation's last one.
+  let cursor = -1;
+  let current: DialogueBeat | undefined;
+  /** Monotonic render token: a late beat from a superseded pull is dropped. */
+  let renderToken = 0;
+  /** Set once the dialogue is over (craft card, or forced crafting). */
+  let finished = false;
+
+  const source: BeatSource =
+    options.beatSource ??
+    createBeatSource({
+      seeded: customer.dialogueNodes.map(toBeat),
+      customer,
+      adapter: options.adapter,
+      patienceTier: () => tierFor(state.patience, customer.patienceBudget),
+      revealed: () => revealedClueIds,
+    });
 
   const screen = document.createElement('section');
   screen.className = 'conversation';
@@ -117,7 +175,7 @@ export function mountConversation(
   container.replaceChildren(screen);
 
   updateMeter();
-  renderNode();
+  void renderBeat();
 
   /** Sync the meter fill's scaleX to the fraction of patience remaining. */
   function updateMeter(): void {
@@ -130,33 +188,47 @@ export function mountConversation(
     fill.style.setProperty('--patience', String(ratio));
   }
 
-  /** Re-render the NPC line (retriggering type-on) and the node's choice cards. */
-  function renderNode(): void {
-    const node = customer.dialogueNodes[cursor];
+  /**
+   * Pull the next beat and paint it. The beat source never rejects, so there is
+   * no error branch; a beat that arrives after a newer pull started is dropped
+   * (its token is stale) so the hand can never rewind.
+   */
+  async function renderBeat(): Promise<void> {
+    renderToken += 1;
+    const token = renderToken;
+    const beat = await source.next();
+    if (token !== renderToken) return;
+    cursor += 1;
+    current = beat;
+    paintBeat(beat);
+  }
 
+  /** Re-render the NPC line (retriggering type-on) and the beat's hand. */
+  function paintBeat(beat: DialogueBeat): void {
     const line = document.createElement('p');
     line.className = 'npc-line anim-type-on';
     line.dataset.testid = 'npc-line';
-    line.textContent = node.npcLine;
+    line.textContent = beat.npcLine;
     lineHost.replaceChildren(line);
 
-    const cards = node.choices
-      .filter((choice) => choice.patienceCost > 0)
+    const cards = [...beat.choices]
+      .sort((a, b) => VERB_ORDER[a.verb] - VERB_ORDER[b.verb])
       .map((choice) => {
-        // A dialogue choice is a one-shot commit action, not a toggle: `.card`'s
-        // native primitive toggles selected on/off per click, but re-clicking an
-        // already-committed choice must never re-commit. On a non-terminal node
-        // `renderNode()` replaces these cards outright when advancing, so this
-        // only bites on the conversation's last node — guard it directly instead
-        // of leaning on that replacement as an accidental safety net.
+        // A card is a one-shot action, not a toggle: `.card`'s native primitive
+        // toggles selected on/off per click, but re-clicking an already-committed
+        // card must never act twice. On a non-terminal beat `renderBeat()`
+        // replaces these cards outright when advancing, so this only bites on the
+        // conversation's last beat — guard it directly instead of leaning on that
+        // replacement as an accidental safety net.
         const card = createCard({
           label: choice.label,
           onToggle: (selected) => {
             if (!selected) return;
-            commitChoice(choice);
+            playCard(choice);
           },
         });
         card.dataset.testid = 'choice-card';
+        card.dataset.verb = choice.verb;
         return card;
       });
     choicesHost.replaceChildren(...cards);
@@ -193,23 +265,54 @@ export function mountConversation(
     clueShelf.replaceChildren(...cards);
   }
 
-  /** [관찰]: reveal the current node's zero-cost observation clues, free of charge. */
+  /** [관찰]: reveal the current beat's observation clues, free of charge. */
   function observe(): void {
-    const node = customer.dialogueNodes[cursor];
-    for (const choice of node.choices) {
-      if (choice.patienceCost === 0) reveal(choice.clueReveals);
+    for (const choice of current?.choices ?? []) {
+      if (choice.verb === 'observe') reveal(choice.clueReveals);
     }
   }
 
-  /** Commit a dialogue choice: spend patience, reveal its clues, advance a node. */
-  function commitChoice(choice: Choice): void {
+  /**
+   * Dispatch a pressed card on its `verb` — the only thing that decides what a
+   * card DOES (never its cost, which is the reducer's arithmetic input alone).
+   */
+  function playCard(choice: BeatChoice): void {
+    if (finished) return;
+    switch (choice.verb) {
+      case 'observe':
+        // Free and non-advancing: the rest of the hand stays live.
+        reveal(choice.clueReveals);
+        return;
+      case 'craft':
+        // Early exit: the screen owns no crafting UI, so the host decides.
+        finished = true;
+        disableChoices();
+        callbacks.onComplete?.();
+        return;
+      case 'indirect':
+      case 'direct':
+        commitChoice(choice);
+        return;
+      default: {
+        // Exhaustiveness guard: a new verb fails to compile here rather than
+        // silently rendering a card that does nothing when pressed.
+        const exhaustive: never = choice.verb;
+        return exhaustive;
+      }
+    }
+  }
+
+  /** Commit a question card: spend patience, reveal its clues, advance a beat. */
+  function commitChoice(choice: BeatChoice): void {
     state = reduce(state, { type: 'chooseDialogue', cost: choice.patienceCost });
     updateMeter();
     reveal(choice.clueReveals);
-    // Freeze the just-committed node's cards immediately: on a non-terminal
-    // node `renderNode()` below replaces them anyway, but on the terminal node
-    // nothing else would stop a second click on the same (or another) card
-    // from committing again.
+    // The pressed card is what the NEXT request reports as the player's move,
+    // so the customer can react to what was actually asked.
+    source.recordChoice(choice.label);
+    // Freeze the just-committed beat's cards immediately: on a non-terminal beat
+    // the cards are cleared below anyway, but on the terminal beat nothing else
+    // would stop a second click on the same (or another) card from acting again.
     disableChoices();
 
     if (state.phase !== 'conversation') {
@@ -217,16 +320,20 @@ export function mountConversation(
       // screen owns dialogue only — it has no crafting UI — so it stops
       // advancing and hands the phase change to the host rather than going
       // dead-ended with a frozen, zeroed-out meter.
+      finished = true;
       callbacks.onPhaseChange?.(state.phase);
       return;
     }
 
-    if (cursor + 1 < customer.dialogueNodes.length) {
-      cursor += 1;
-      renderNode();
+    if (cursor + 1 < source.total) {
+      // Clear the spent hand while the next beat is in flight: a stale, frozen
+      // card set must never be mistaken for the beat being played.
+      choicesHost.replaceChildren();
+      void renderBeat();
     } else {
-      // Terminal node committed with patience to spare — the dialogue is done.
+      // Terminal beat committed with patience to spare — the dialogue is done.
       // Reveal the proceed affordance so the host can advance to crafting.
+      finished = true;
       proceedBtn.hidden = false;
     }
   }
