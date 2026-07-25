@@ -5,6 +5,13 @@
 // `createCard` self-toggles and cannot express "blocked". No event wiring here;
 // index.ts owns behaviour. render() is a pure model → class sync.
 import type { Ingredient } from '../../data/schema';
+import {
+  applySprite,
+  ingredientSprite,
+  methodSprite,
+  potionSprite,
+  type SpriteStyle,
+} from '../../ui/sprite';
 import type { CraftingConfig } from './config';
 import type { SelectionModel } from './selection';
 
@@ -44,6 +51,22 @@ function makeCard(group: string, label: string, detail?: string): HTMLButtonElem
   return card;
 }
 
+/**
+ * Prepend the asset-pack sprite layer to a card (u7). Purely additive: the card's
+ * label, dataset hooks and aria state are untouched, the layer is decorative
+ * (aria-hidden — the label already names the thing), and an unresolved sprite
+ * adds NO element at all, so the v1 text-only card remains the fallback.
+ */
+function attachSprite(card: HTMLElement, kind: string, style: SpriteStyle | undefined): void {
+  if (style === undefined) return;
+  const layer = document.createElement('span');
+  layer.className = `card__sprite card__sprite--${kind}`;
+  layer.dataset.sprite = kind;
+  layer.setAttribute('aria-hidden', 'true');
+  applySprite(layer, style);
+  card.insertBefore(layer, card.firstChild);
+}
+
 function makeGroup(labelText: string, className: string): HTMLElement {
   const section = document.createElement('section');
   section.className = `crafting__group ${className}`;
@@ -68,6 +91,18 @@ export function buildCraftingView(
   beatElement.dataset.role = 'portrait';
   root.appendChild(beatElement);
 
+  // The vessel the brew goes into — the potions sheet's empty-bottle cell (u7).
+  // Decorative: it mirrors the crafting state, it is never a control.
+  const vesselStyle = potionSprite();
+  if (vesselStyle !== undefined) {
+    const vessel = document.createElement('div');
+    vessel.className = 'crafting__vessel';
+    vessel.dataset.sprite = 'potion';
+    vessel.setAttribute('aria-hidden', 'true');
+    applySprite(vessel, vesselStyle);
+    root.appendChild(vessel);
+  }
+
   // Ingredient grid (data-driven, F1/AC2).
   const ingredientSection = makeGroup('재료 (1–3장)', 'crafting__ingredients');
   const ingredientGrid = document.createElement('div');
@@ -77,6 +112,8 @@ export function buildCraftingView(
     const detail = ing.propertyTags.join(' · ');
     const card = makeCard('ingredient', ing.name, detail);
     card.dataset.id = ing.id;
+    // Jar sprite at the shelf's default stock level (u7); unknown ids paint nothing.
+    attachSprite(card, 'ingredient', ingredientSprite(ing.id));
     ingredientButtons.set(ing.id, card);
     ingredientGrid.appendChild(card);
   }
@@ -91,6 +128,8 @@ export function buildCraftingView(
   for (const verb of config.methods) {
     const card = makeCard('method', verb);
     card.dataset.value = verb;
+    // Equipment sprite, idle frame; crafting.css runs the in-use loop when selected.
+    attachSprite(card, 'equip', methodSprite(verb));
     methodButtons.set(verb, card);
     methodShelf.appendChild(card);
   }

@@ -1,0 +1,56 @@
+{
+  "sheets": {
+    "bg-shop": { "file": "bg-shop.png", "cols": 1, "rows": 1 },
+    "ui-shelf": { "file": "ui-shelf.png", "cols": 1, "rows": 1 },
+    "ingredients-1": { "file": "ingredients-1.png", "cols": 4, "rows": 3 },
+    "ingredients-2": { "file": "ingredients-2.png", "cols": 4, "rows": 3 },
+    "equip-teapot": { "file": "equip-teapot.png", "cols": 2, "rows": 2 },
+    "equip-pot": { "file": "equip-pot.png", "cols": 2, "rows": 2 },
+    "equip-mortar": { "file": "equip-mortar.png", "cols": 2, "rows": 2 },
+    "potions": { "file": "potions.png", "cols": 3, "rows": 2 }
+  },
+
+  "ingredientCells": {
+    "gamcho": { "sheet": "ingredients-1", "col": 0 },
+    "daechu": { "sheet": "ingredients-1", "col": 1 },
+    "saenggang": { "sheet": "ingredients-1", "col": 2 },
+    "gukhwa": { "sheet": "ingredients-1", "col": 3 },
+    "doraji": { "sheet": "ingredients-2", "col": 0 },
+    "baekbokryeong": { "sheet": "ingredients-2", "col": 1 },
+    "sanjoin": { "sheet": "ingredients-2", "col": 2 },
+    "bakha": { "sheet": "ingredients-2", "col": 3 }
+  },
+
+  "quantityStates": [
+    { "state": "full", "row": 0, "min": 7 },
+    { "state": "half", "row": 1, "min": 3 },
+    { "state": "low", "row": 2, "min": 0 }
+  ],
+  "defaultQuantity": 9,
+
+  "methodEquip": {
+    "우리기": "equip-teapot",
+    "달이기": "equip-pot",
+    "빻기": "equip-mortar"
+  },
+  "equipFrames": {
+    "idle": [0, 0],
+    "inUse": [
+      [1, 0],
+      [0, 1],
+      [1, 1]
+    ]
+  },
+  "equipFrameMs": 140,
+
+  "potionSheet": "potions",
+  "potionCells": {
+    "empty": [0, 0],
+    "calm": [1, 0],
+    "clear": [2, 0],
+    "warm": [0, 1],
+    "bitter": [1, 1],
+    "murky": [2, 1]
+  },
+  "defaultPotion": "empty"
+}
