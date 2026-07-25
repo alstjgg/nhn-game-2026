@@ -20,7 +20,19 @@ export interface WaitingDeps {
 
 export interface WaitingHandle {
   readonly root: HTMLElement;
-  /** Caller-initiated end of the beat: visual open, then onSettled once. */
+  /**
+   * Caller-initiated end of the beat. Synchronously flips `root` to
+   * `data-phase="settling"` (door widens, seam brightens — see waiting.css)
+   * and fires `onSettled` once, in the same tick: this screen owns no
+   * clock (§3-3), so it cannot stagger those two effects itself.
+   *
+   * Contract for the caller (u13's pipeline, the sole caller): the settling
+   * visual only paints if `root` stays mounted for at least
+   * `--duration-slow` after this call returns. Calling `destroy()` from
+   * inside `onSettled` unmounts before the browser paints a frame, so the
+   * transition never becomes visible — that is expected, not a bug here,
+   * and holding the node mounted long enough is on the caller.
+   */
   settle(): void;
   /** Detach root; idempotent; disarms the latch so settle() can no longer fire. */
   destroy(): void;

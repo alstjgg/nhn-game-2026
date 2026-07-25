@@ -34,6 +34,14 @@ const ts = (): string => read(TS_REL);
 const css = (): string => read(CSS_REL);
 const both = (): string => `${ts()}\n${css()}`;
 
+// For the N1/N1.5/N2 forbidden-*word* blocklists only: this repo's convention
+// (AC2.1 §D-6) is that scans read source text, so a comment that *describes*
+// why a word is absent (e.g. "this screen owns no timeout") would otherwise
+// trip the same regex that guards against actually using it. Structural /
+// wiring scans below deliberately do NOT use this — they need the raw text.
+const stripComments = (s: string): string =>
+  s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+
 type WaitingModule = typeof import('../../../src/screens/waiting/waiting');
 const loadWaiting = (): Promise<WaitingModule> => import('../../../src/screens/waiting/waiting');
 
@@ -256,6 +264,13 @@ describe('mountWaiting view contract (AC1.2, AC1.3, D-3, F5)', () => {
     expect(ts()).toMatch(/textContent\s*=\s*(deps\.)?line\b/);
   });
 
+  it('actually wires the line element into the tree it returns, not just an orphan node (AC1.3)', () => {
+    // Catches the element carrying the injected line being built (and given
+    // textContent) but never appended anywhere — the previous regex above
+    // only proves the assignment exists in source, not that it reaches root.
+    expect(ts()).toMatch(/root\.append\([\s\S]{0,80}?\blineEl\b[\s\S]{0,20}?\);/);
+  });
+
   it('never uses innerHTML (injected copy stays inert — mirrors renderDoorNote)', () => {
     expect(ts()).not.toMatch(/innerHTML/);
   });
@@ -267,9 +282,15 @@ describe('mountWaiting view contract (AC1.2, AC1.3, D-3, F5)', () => {
     expect(src).toMatch(/dataset\.testid/);
   });
 
-  it('appends its own root to container instead of clearing it (A4)', () => {
+  it('appends its own root to container unconditionally, never clearing it (A4)', () => {
     const src = ts();
-    expect(src).toMatch(/container\.(append|appendChild)\b/);
+    // Exact-indentation match: `container.append(root);` must sit as a
+    // direct, unconditional statement at mountWaiting's top level (2-space
+    // indent). Moving it inside an if/ternary/loop guard would push it to a
+    // deeper indent level and fail this, unlike a bare "does this substring
+    // exist anywhere" check — see PR #35 review: a mutation that gated this
+    // call behind an always-false condition previously passed the gate.
+    expect(src).toMatch(/\n {2}container\.append\(root\);\n/);
     expect(src).not.toMatch(/container\.innerHTML/);
     expect(src).not.toMatch(/container\.replaceChildren/);
   });
@@ -283,6 +304,17 @@ describe('mountWaiting view contract (AC1.2, AC1.3, D-3, F5)', () => {
 
   it('destroy() detaches only the element u8 created (A4)', () => {
     expect(ts()).toMatch(/root\.remove\s*\(\s*\)/);
+  });
+
+  it('settle() flips data-phase to settling before firing the latch (D-1, WaitingHandle.settle contract)', () => {
+    // The settling visual (waiting.css) is gated entirely on this attribute;
+    // node has no DOM to render it in, so this pins the wiring by source
+    // scan. Whether the transition ever *paints* is the caller's (u13)
+    // responsibility per the settle() docstring — see that JSDoc for the
+    // full contract this line only partially proves.
+    expect(ts()).toMatch(
+      /settle\(\):\s*void\s*\{\s*root\.dataset\.phase\s*=\s*['"]settling['"];\s*latch\.settle\(\);/,
+    );
   });
 
   it('owns no Korean copy of its own — the line is injected (AC1.3, A2, design D-2)', () => {
@@ -318,7 +350,7 @@ describe('waiting.ts owns no timer or clock (AC2.1, N1, §3-3)', () => {
     ['performance.now', /performance\.now/],
     ['new Date', /new\s+Date\b/],
   ])('contains no %s', (_label, re) => {
-    expect(ts()).not.toMatch(re);
+    expect(stripComments(ts())).not.toMatch(re);
   });
 
   it('never gates the callback on animationend (D-1)', () => {
@@ -336,7 +368,7 @@ describe('the 25s deadline lives in u5/u13, not here (AC1.5, A1)', () => {
     ['timeout', /timeout/i],
     ['a bare ms duration word', /\bms\b/i],
   ])('waiting.ts contains no %s', (_label, re) => {
-    expect(ts()).not.toMatch(re);
+    expect(stripComments(ts())).not.toMatch(re);
   });
 });
 
@@ -360,7 +392,7 @@ describe('no loading / error vocabulary anywhere (AC3.1, N2, §3-5)', () => {
     ['failed', /failed/i],
     ['spinner', /spinner/i],
   ])('waiting.ts + waiting.css contain no %s', (_label, re) => {
-    expect(both()).not.toMatch(re);
+    expect(stripComments(both())).not.toMatch(re);
   });
 });
 
