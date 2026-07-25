@@ -1,7 +1,10 @@
 # Style-test review snapshots
 
-스타일 테스트의 변경 전후를 PR에서 직접 비교하기 위한 검토 자료다. 게임에 실리는
-asset pack이 아니며 `assets-manifest.json` 대상도 아니다.
+이 디렉토리는 스타일 판정·파이프라인 검증 증적이며 게임 asset이 아니다. 게임은
+`demos/darkest-context/assets/`만 로드한다. 생성 증적의 최종 비교본은 라이선스
+추적을 위해 `assets-manifest.json`에 기록하지만, 본 팩 asset의 manifest 항목에는
+apothecary 선례처럼 생성에 사용한 프롬프트를 요약이나 참조가 아닌 verbatim으로
+넣어야 한다.
 
 - [`initial-prompt/`](./initial-prompt/README.md): 프롬프트·API 파라미터·키잉 수정 전
   최초 A–D 결과
@@ -21,3 +24,9 @@ asset pack이 아니며 `assets-manifest.json` 대상도 아니다.
 수정본은 `background: "opaque"`를 명시하고, 기술용 마젠타를 캐릭터 팔레트에서
 금지하며, 원본 코너 검증 후 원본 해상도에서 경계 flood-fill을 수행한다. 넓은 전역
 톨러런스는 사용하지 않는다.
+
+## 다크 스타일 채택 시 후속 조치
+
+D 최종본 발밑에는 `G<100` strict 범위를 비껴간 muted-magenta blend 픽셀이
+남아 있다. 현재 선택된 Style A에는 영향이 없지만 다크 스타일을 채택할 경우 strict
+범위를 완화하거나 다운스케일 후 프린지 제거 패스를 추가해야 한다.

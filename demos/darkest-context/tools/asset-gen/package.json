@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test key-background.test.mjs review-output.test.mjs"
+    "test": "node --test key-background.test.mjs result-provenance.test.mjs review-output.test.mjs"
   },
   "dependencies": {
     "sharp": "^0.35.3"

@@ -16,11 +16,6 @@ const ROWS = [
 
 for (const candidate of CANDIDATES) {
   test(`${candidate} revised output is a clean, populated 4x3 sheet`, async () => {
-    const rawMeta = await sharp(join(REVIEW, "raw", `${candidate}.png`)).metadata();
-    assert.equal(rawMeta.width, 1536);
-    assert.equal(rawMeta.height, 1024);
-    assert.equal(rawMeta.hasAlpha, false);
-
     const output = await sharp(join(REVIEW, `${candidate}.png`))
       .ensureAlpha()
       .raw()

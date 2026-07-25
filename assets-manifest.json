@@ -92,30 +92,6 @@
       "license": "generated for this project; review-only snapshot"
     },
     {
-      "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/raw/A.png",
-      "tool": "gpt-image-1",
-      "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate A for the original full prompt.",
-      "license": "generated for this project; review-only source"
-    },
-    {
-      "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/raw/B.png",
-      "tool": "gpt-image-1",
-      "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate B for the original full prompt.",
-      "license": "generated for this project; review-only source"
-    },
-    {
-      "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/raw/C.png",
-      "tool": "gpt-image-1",
-      "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate C for the original full prompt.",
-      "license": "generated for this project; review-only source"
-    },
-    {
-      "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/raw/D.png",
-      "tool": "gpt-image-1",
-      "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate D for the original full prompt.",
-      "license": "generated for this project; review-only source"
-    },
-    {
       "file": "demos/darkest-context/tools/asset-gen/review/revised-pipeline/A.png",
       "tool": "gpt-image-1 + sharp",
       "prompt": "See demos/darkest-context/tools/asset-gen/review/revised-pipeline/summary.md candidate A for the revised full prompt.",
@@ -138,30 +114,6 @@
       "tool": "gpt-image-1 + sharp",
       "prompt": "See demos/darkest-context/tools/asset-gen/review/revised-pipeline/summary.md candidate D for the revised full prompt.",
       "license": "generated for this project; review-only snapshot"
-    },
-    {
-      "file": "demos/darkest-context/tools/asset-gen/review/revised-pipeline/raw/A.png",
-      "tool": "gpt-image-1",
-      "prompt": "See demos/darkest-context/tools/asset-gen/review/revised-pipeline/summary.md candidate A for the revised full prompt.",
-      "license": "generated for this project; review-only source"
-    },
-    {
-      "file": "demos/darkest-context/tools/asset-gen/review/revised-pipeline/raw/B.png",
-      "tool": "gpt-image-1",
-      "prompt": "See demos/darkest-context/tools/asset-gen/review/revised-pipeline/summary.md candidate B for the revised full prompt.",
-      "license": "generated for this project; review-only source"
-    },
-    {
-      "file": "demos/darkest-context/tools/asset-gen/review/revised-pipeline/raw/C.png",
-      "tool": "gpt-image-1",
-      "prompt": "See demos/darkest-context/tools/asset-gen/review/revised-pipeline/summary.md candidate C for the revised full prompt.",
-      "license": "generated for this project; review-only source"
-    },
-    {
-      "file": "demos/darkest-context/tools/asset-gen/review/revised-pipeline/raw/D.png",
-      "tool": "gpt-image-1",
-      "prompt": "See demos/darkest-context/tools/asset-gen/review/revised-pipeline/summary.md candidate D for the revised full prompt.",
-      "license": "generated for this project; review-only source"
     }
   ]
 }

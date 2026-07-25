@@ -26,6 +26,7 @@ import {
   clearIsolatedTechnicalMagenta,
   floodFillTechnicalBackground,
 } from "./key-background.mjs";
+import { resolveRecordedPrompt } from "./result-provenance.mjs";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const OUT = join(ROOT, "out-style");
@@ -131,9 +132,15 @@ if (only || REPROCESS) {
 let failed = false;
 for (const [id, style] of Object.entries(CANDIDATES).filter(([id]) => !only || id === only)) {
   process.stdout.write(`candidate ${id} ... `);
+  const currentPrompt = buildPrompt(style);
+  const previous = resultsById[id] ?? {};
+  let recordedPrompt = REPROCESS ? previous.prompt : currentPrompt;
   try {
-    const prompt = buildPrompt(style);
-    const previous = resultsById[id] ?? {};
+    recordedPrompt = resolveRecordedPrompt({
+      reprocess: REPROCESS,
+      previousPrompt: previous.prompt,
+      currentPrompt,
+    });
     const generated = REPROCESS
       ? { png: await readFile(join(RAW, `${id}.png`)), seconds: null }
       : await generate(style);
@@ -151,7 +158,7 @@ for (const [id, style] of Object.entries(CANDIDATES).filter(([id]) => !only || i
       key,
       edgeClearedPixels,
       strictCleanupPixels,
-      prompt,
+      prompt: recordedPrompt,
     };
     const timing = REPROCESS ? "raw reprocess" : `${seconds}s`;
     console.log(
@@ -161,7 +168,12 @@ for (const [id, style] of Object.entries(CANDIDATES).filter(([id]) => !only || i
     );
   } catch (e) {
     failed = true;
-    resultsById[id] = { id, error: String(e.message), prompt: buildPrompt(style) };
+    resultsById[id] = {
+      id,
+      source: REPROCESS ? "raw-reprocess" : "api",
+      error: String(e.message),
+      ...(recordedPrompt ? { prompt: recordedPrompt } : {}),
+    };
     console.log(`FAILED — ${e.message}`);
   }
 }
@@ -196,7 +208,13 @@ const md = [
   "",
   "## Full prompts",
   "",
-  ...results.flatMap((r) => [`### ${r.id}`, "```", r.prompt ?? buildPrompt(r.style), "```", ""]),
+  ...results.flatMap((r) => [
+    `### ${r.id}`,
+    "```",
+    r.prompt ?? "Prompt unavailable: no generation provenance was recorded.",
+    "```",
+    "",
+  ]),
 ];
 await writeFile(join(OUT, "summary.md"), md.join("\n"));
 if (failed) {
