@@ -7,7 +7,8 @@
 ## 진행 순서 (playability guide §3)
 
 1. **스타일 테스트** (`style-test.mjs`, 이 문서) — 후보 4종 × 1시트 → 사람이 승자 선택
-2. 승자 문장을 `data/generation.json`의 `styleBible`로 동결
+2. 승자 문장을 `data/generation.json`의 `styleBible`에 기록
+   (`styleBibleStatus: "provisional"`이면 본 팩 생성 전 재검토)
 3. 본 팩 생성기(`generate-pack.mjs`, 스타일 확정 후 작성) — 10콜 → 검수 → `assets/` 복사 → manifest
 4. proxy/adapter + `ai-smoke` PASS → 런 시작
 
@@ -45,6 +46,13 @@ OPENAI_API_KEY=... node style-test.mjs --only C
 | C | 다크 판타지 고대비 — 굵은 검정 외곽선, 탈채도 + 핏빛 액센트 |
 | D | 1-bit 계열 — 4색 고딕 팔레트, 실루엣 극대화, 디더링 |
 
+## 현재 선택 상태
+
+- 2026-07-25: 후보 **A**를 첫 스타일 테스트의 현재 기준선으로 선택했다.
+- 이 선택은 최종 동결이 아니다. `data/generation.json`의
+  `styleBibleStatus: "provisional"` 및 `styleBibleRevisionPlanned: true`를 유지하고,
+  본 팩 생성기 작성·실행 전에 `styleBible` 문장을 개선한다.
+
 ## 판정 체크리스트
 
 `out-style/preview.html`을 열고 (÷4 + 컬러키 + pixelated 적용본) 비교:
@@ -54,6 +62,31 @@ OPENAI_API_KEY=... node style-test.mjs --only C
 3. **액션 행**: 공격/방어/피격/쓰러짐이 구분되는가 — 특히 방어 (must-prove #2)
 4. 컬러키: 가장자리가 깨끗하게 뚫렸는가 (어두운 스타일일수록 마젠타 잔티 확인)
 5. 캐릭터가 12칸에서 동일 인물로 유지되는가
+
+## keyed 스프라이트 파이프라인 규칙
+
+초기 테스트에서 B/C/D의 어두운·제한 팔레트 지시가 기술용 마젠타 배경과 충돌해
+배경이 탈채도되거나 마젠타가 캐릭터 팔레트에 섞였다. 본 팩 생성기는
+`style-test.mjs`와 동일하게 다음 규칙을 재사용한다.
+
+1. 모든 keyed 스프라이트 프롬프트에 `data/generation.json`의
+   `keyedSpritePromptGuard`를 그대로 포함한다.
+2. 원본의 네 코너 영역 평균이 `R>180, B>180, G<100`을 만족하는지 키잉 전에
+   검증한다. 실패하면 원본만 남기고 FAIL 로그 및 0이 아닌 종료코드를 반환한 뒤
+   `--only`로 재생성한다.
+3. 1536×1024 원본에서 이미지 경계와 연결된 키-근접 픽셀만 flood-fill로 제거하고,
+   프롬프트에서 금지한 엄격한 기술색 범위의 고립 픽셀만 추가 정리한 뒤 4배
+   다운스케일한다. 전역 **톨러런스** 키잉은 캐릭터 내부의 어두운 보라색 픽셀을
+   뚫으므로 사용하지 않는다.
+
+`npm test`는 배경 검증 실패와 내부 키-근접 픽셀 보존을 회귀 검사한다.
+
+API를 다시 호출하지 않고 저장된 raw만 재처리하려면:
+
+```bash
+node style-test.mjs --reprocess
+node style-test.mjs --reprocess --only C
+```
 
 승자가 나오면: 해당 스타일 문장을 알려주면 `data/generation.json` 동결 + 본 팩
 생성기 작성으로 이어간다. 애매하면 `--only`로 재생성 1–2회까지는 싸다.
