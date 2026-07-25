@@ -11,9 +11,11 @@
 > `data/generation.json`, `assets/` pack, `tools/ai-smoke/` PASS). Agents **integrate
 > against them and may extend the contract, but do not rewrite vendor-call code and never
 > generate assets in-run.** Conflict order: this PRD → provided inputs → concept doc
-> (`docs/game-concept-darkest-context.md`, **reference-only**) → examples spec
+> (`docs/game-concept-darkest-context.md`, **reference-only**) → merged brief
+> (`docs/agent-arena-brief.md`, **reference-only**) → examples spec
 > (`docs/agent-arena-examples.md`, **reference-only**). Nothing from the reference docs is
-> in scope unless this PRD names it; the demo slice is cut here.
+> in scope unless this PRD names it; the demo slice is cut here. (The brief's three open
+> decisions are settled by this PRD: 강제 배분 **cut** §1 · cutline §2.4 · 자동 전진 §2.4.)
 
 ---
 
@@ -42,20 +44,32 @@ canned decisions cannot prove criterion 1, because an authored flip is never *un
    the engine poisons the structured snapshot before prompt composition and the model
    honestly judges bad input (a phantom enemy in her bubble); stub mode: canned
    `gauge_noise` variants. Execution always runs on real state. Gauge is engine-managed
-   numbers — deterministic, level-designable.
+   numbers — deterministic, level-designable. **Observable in T1:** 스팸 골렘's 도배 hits
+   concentrate the gauge on one hero, so at default tunables at least one unit reaches ≥70
+   inside the first combat (§2.5, e2e-asserted) — a judge must never finish the demo
+   without seeing a noise turn.
 5. **Mode-blind renderer** — boot health probe picks live or stub behind one `AIAdapter`
    interface; the renderer cannot tell modes apart; live output passes the same validator
    as stub data; degradation is silent.
 6. **Membrane + player verbs** — the player only clicks: 분기 선택 · 카드 드래프트 · 장착
-   (강제 배분) · 휴식 선택 · 재시작. Zero typing, zero free text.
+   (자유 배정) · 휴식 선택 · 재시작. Zero typing, zero free text.
 
 **Does NOT do** (concept features explicitly cut from this demo): network calls **in the
 deployed build** (dev-proxy only, §2.1) · API keys in the bundle or repo · in-run asset
 generation (pack is a provided input, §2.8) · roster 선발 screen (party fixed at 3, §2.3) ·
 토큰/상점/보물상자/뇌물 (no currency at all) · 탈옥/교섭 · 1대1 결투 · 인선 회의 · 보스전
-vs 상대 에이전트 파티 · 회의 라운드2 반론 (council is 1 stance round + vote) · 프롬프트
-임프류 저주-카드 강제 장착 · 귀속 리포트 화면 (per-decision chips only) ·
-save/audio/routing/meta-progression · balance tuning · runtime randomness of any kind ·
+vs 상대 에이전트 파티 · 회의 라운드2 반론 (council is 1 stance round + vote) ·
+**강제 배분 (the discard choice when slots are full)** — the brief §8-1 signature, but it
+does not hold at demo scale: one run grants at most 5 cards against 3 units × 8 = 24 slots,
+so slots never fill. Narrowing slots or widening card influx is balance tuning, not this
+demo's PoC question → **drafted cards are freely assigned to any unit** (examples spec §4.4
+훈련장 grammar as-is). 저주성 Prompt cards (「허세」 「수다스러움」) are cut with it — without
+a full-slot puzzle to absorb the bitterness, a curse is just a weak card ·
+프롬프트 임프 (a monster force-equipping a curse card) · 귀속 리포트 screen (per-decision
+chips only) · **live response cache** (the brief §6 [조합 × 맥락 버킷] interpretation cache —
+at 7 tiles cost is not the problem, so it goes) · save/audio/routing/meta-progression ·
+balance tuning · **randomness in outcomes** (damage dice · probabilistic rewards · random
+encounters — randomness breaks ties and nothing else, §2.2) ·
 runtime LLM chatter (design-time pool only).
 
 ## 2. Architecture & baked defaults
@@ -102,6 +116,19 @@ runtime LLM chatter (design-time pool only).
   the adapter: monsters run authored deterministic behavior tables in
   `data/encounters.json` (스팸 골렘 hits lowest-HP hero; 환각 정령 gauge-attacks the
   highest-gauge hero).
+- **Single tie-break seam (repo-wide in this demo):** every numeric tie — target
+  selection, execution order, the council's deciding vote — resolves through **one
+  injectable `tieBreak(candidates, ctx)` utility**. Two policies, chosen at boot alongside
+  the adapter mode:
+  - **`index`** — lowest array index in the owning `data/*.json` file (party:
+    `data/heroes.json`; enemies: that encounter's roster order). **The default under
+    automated gates (vitest/Playwright) and in stub mode** — e2e needs idempotence to run
+    without flake.
+  - **`random`** — **seeded RNG**, the default in live mode. A tie should genuinely be
+    random; index order manufactures fake patterns ("가렛 always gets hit first"). The seed
+    is drawn once at run start and kept in run state, so one run stays reproducible.
+  - `Math.random` appears **only in seed creation** — never called directly anywhere in
+    game logic, a single grep-able point (invariant 6).
 
 ### 2.3 Party, cards, sheets
 
@@ -111,12 +138,20 @@ runtime LLM chatter (design-time pool only).
   pack — cover only these 3).
 - **Card pool — exactly 11:** Prompt 5 (「겁이 없다」 「원한」 「동료를 먼저」 「승부사」
   「연민」) · Skill 2 (「이단 베기」 「도발」) · MCP 4 (「화염 두루마리」(1회용 광역)
-  「치유 물약」(1회용 회복) 「거울 방패」(지속) 「번역 렌즈」(퍼즐 힌트 1회)). Texts and
-  effects from examples spec §3; numbers live in `data/cards.json`.
-- **Slots per unit:** Prompt 3 · Skill 2 · MCP 3. **Forced-allocation rule (baked):** a
-  granted/drafted card must be equipped to someone immediately; if the target's slots are
-  full, the player picks an equipped card to discard, or forfeits the new card. Both
-  choices are cards, not dialogs.
+  「치유 물약 ×3」(**a 3-charge consumable** — the one-shot heal, three times)
+  「거울 방패」(지속) 「번역 렌즈」(퍼즐 힌트 1회)). Texts and effects from examples spec §3;
+  numbers live in `data/cards.json`. 저주성 Prompt cards (「허세」 「수다스러움」) are cut —
+  §1 does-NOT-do.
+- **Slots per unit:** Prompt 3 · Skill 2 · MCP 3.
+- **Drafts are 3택1; equipping is free assignment.** The player always picks both the card
+  and the unit it goes on — the engine never grants a specific card and never chooses the
+  target. **Full-slot handling is out of scope for this demo** (강제 배분 cut, §1
+  does-NOT-do): a run's card influx (5 at most) sits far below the slot total (3 units ×
+  8 = 24), so slots never fill. The slot UI shows remaining capacity; no discard flow is
+  built.
+- **Duplicate pickups allowed:** a card that sits in two reward pools may be held twice.
+  But **the same card cannot be equipped twice on one unit** — that unit is disabled in the
+  target picker.
 - Sheet assembly (system-prompt metaphor): base persona + equipped card sentences + stats.
   In live mode this composition happens in the proxy from structured ids; in stub mode it
   exists as the same data structure for the detail panel. Clicking a unit opens its sheet;
@@ -124,7 +159,7 @@ runtime LLM chatter (design-time pool only).
 
 ### 2.4 Map, pacing, chatter
 
-- **Fixed 8-tile map, 1 branch** (`data/map.json`):
+- **Fixed map — 9 tile entries, 1 branch, 7 tiles per run** (`data/map.json`):
   `T1 전투(스팸 골렘 ×1)` → `T2 훈련장` → **branch** → path A: `T3a 퍼즐(수수께끼 골렘)`
   → `T4a 훈련장` / path B: `T3b 선택이벤트(쓰러진 상인)` → `T4b 휴식` → rejoin →
   `T5 전투(스팸 골렘 + 환각 정령)` → `T6 휴식` → `T7 최종 전투(스팸 골렘 ×2 + 환각 정령)`.
@@ -142,24 +177,50 @@ runtime LLM chatter (design-time pool only).
 - Side-scroll line view: heroes left, enemies right, nobody moves; bubbles above heads.
 - Turn loop: engine builds each hero's structured snapshot (real state, or corrupted copy
   at gauge ≥70) → parallel adapter calls → engine executes all intents in **민첩
-  descending order** with **fixed damage values** from `data/` (no dice, no RNG anywhere —
-  in live mode the LLM chooses *which* enumerated action, never any number).
+  descending order** (ties → §2.2 `tieBreak`) with **fixed damage values** from `data/`
+  (no dice, no RNG in outcomes — in live mode the LLM chooses *which* enumerated action,
+  never any number; randomness breaks ties and nothing else).
 - Base actions always available: `strike | defend | guard_ally`; Skill/MCP cards register
   additional actions. Consumables decrement in the engine.
 - **Context gauge** (per unit, 0–100, HUD as a tinted vial — numbers in `data/tuning.json`):
-  피격 +10 · 환각 정령 attack +25 · 퍼즐 오답 +15 (all party). Tiers: <40 none ·
+  피격 +10 · **a 스팸 골렘 hit adds +10 more as 도배** (+20 total — 스팸 골렘 is the
+  monster that fills your context with garbage) · 환각 정령 attack +25 · 퍼즐 오답 +15
+  (all party). **The only relief is a 휴식 tile** (§2.7) — path A has none until T6. That
+  is not a bug but the branch's designed risk: you carry gauge in exchange for more cards.
+  **Early-drama requirement (design rule, e2e-asserted):** 스팸 골렘 keeps hitting the
+  lowest-HP hero, so gauge concentrates on one unit — at default tunables **at least one
+  unit must reach ≥70 inside the T1 combat**, the observation point for must-prove 4. Tune
+  it with HP/damage numbers; if it drifts, adjust `data/tuning.json` only (the rule is
+  fixed). Tiers: <40 none ·
   40–70 presentation only (bubble stutter, delayed-reply acting — also the live latency
   mask) · ≥70 **noise injection** — the snapshot handed to the adapter is corrupted (e.g.
   피오나 sees a phantom `spam_golem_2`; her bubble says so; execution still targets real
   entities — attacking a phantom renders as "허공을 벤다"). Gauge tier also selects the
-  hero 대기-포즈 cell (§2.8) · 100 judgment skipped, 직업 기본 행동 forced, fixed bubble.
-- Victory → reward card(s) + forced allocation (§2.3). Defeat (all heroes at 0 HP) →
+  hero 대기-포즈 cell (§2.8) · **100 → judgment skipped, 직업 기본 행동 forced, fixed
+  bubble.** The 100 tier is not failure handling or an exception — it is **authored
+  drama**: watching an agent whose context blew out stop judging and repeat its base action
+  is itself part of the spectacle. (Observation item: whether spectating dies when 100
+  persists for several turns — measured at the bake-off, logged in DISCOVERY.md. Relief is
+  the 휴식 tile's value, so no other cushion is added.)
+- Victory → reward card(s) + free assignment (§2.3). Defeat (all heroes at 0 HP) →
   defeat screen → 재시작 (fresh run). Both screens reachable, e2e-asserted.
-- **Rewards baked:** T1 → fixed grant 「도발」. T2 훈련장 → 3택1 from
-  [「겁이 없다」 「이단 베기」 「치유 물약」]. T4a 훈련장 → 3택1 from
-  [「원한」 「동료를 먼저」 「화염 두루마리」]. T3a 퍼즐 정답 → 「거울 방패」; 오답 →
-  gauge +15 all, no card. T3b 구한다 → 「연민」; 지나친다 → nothing. T5 → 3택1 from
-  [「승부사」 「치유 물약」 「번역 렌즈」]. T7 → run clear screen.
+- **Rewards baked** (all 11 cards reachable within one run; any card with an interaction
+  appears **before** the tile that uses it):
+  - T1 승리 → fixed grant 「도발」.
+  - **T2 훈련장 → 3택1 from [「겁이 없다」 「승부사」 「번역 렌즈」]** — the
+    branch-preparation draft. The personality flip (§1-1) / the merchant council line
+    (§2.6) / the puzzle hint (§2.6) each hook into one of T3's two forks, and two of the
+    three must be given up — so what you passed on hurts immediately at T3. This is where
+    the brief §3 claim "분기 선택이 빌드와 상호작용한다" lives.
+  - T3a 퍼즐 정답 → 「거울 방패」 / 오답 → gauge +15 all, no card.
+  - T3b 구한다 → 「연민」 / 지나친다 → nothing.
+  - T4a 훈련장 → 3택1 from [「원한」 「동료를 먼저」 「화염 두루마리」]. T4b is 휴식, so the
+    asymmetry — **path A pays in cards, path B in gauge relief** — is what the branch is
+    worth.
+  - T5 승리 → 3택1 from [「이단 베기」 「치유 물약 ×3」 「승부사」] (a second shot at
+    「승부사」 if it was passed over at T2 — the merchant council is behind you, so here it
+    reads only as combat temperament).
+  - T7 → run clear screen.
 
 ### 2.6 Council engine — 퍼즐 · 선택이벤트 (shared)
 
@@ -167,17 +228,25 @@ One engine, two skins. Flow (baked, simplified from concept): engine presents an
 agenda + closed options (`data/council.json`) → **one stance round** (parallel adapter
 calls via `/ai/stance` in live mode; canned stances per unit per agenda in stub, with
 card-variant entries — 셀레네+「승부사」 changes her vote on the merchant) → majority
-vote; tie → highest agenda-related stat casts the deciding vote. **The player cannot
+vote; tie → highest agenda-related stat casts the deciding vote (stat ties → §2.2
+`tieBreak` — with a 3-unit party a 1-1-1 split on a 3-option 퍼즐 really happens). **The
+player cannot
 intervene** — watching your party's values decide is the tile's point. 퍼즐: 수수께끼
 골렘, 3 options, authored answer; 「번역 렌즈」 (if equipped on anyone) reveals a hint
-line before the vote. 선택이벤트: 쓰러진 상인, 구한다/지나친다.
+line before the vote. 선택이벤트: 쓰러진 상인, 구한다/지나친다. **Both card interactions
+(셀레네+「승부사」 flipping her vote · the 「번역 렌즈」 hint) are obtainable in the T2 draft,
+so natural play reaches them** (§2.5) — no authored content is unreachable.
 
 ### 2.7 훈련장 · 휴식 (no adapter calls)
 
-- **훈련장:** 3 cards fan out → player picks 1 → picks a unit → forced allocation (§2.3).
+- **훈련장:** 3 cards fan out → player picks 1 → picks a unit → free assignment (§2.3).
+  훈련장 **does not touch the gauge at all** — it only hands out cards (gauge relief is the
+  휴식 tile's value, and "training empties your context" makes no sense in-concept).
 - **휴식:** two option cards. ① 생각정리 — every unit's gauge −50. ② **Clear** — every
   unit's gauge → 0, but one equipped Prompt card (deterministic pick: the earliest-equipped
-  one; no RNG) is forgotten — "기억까지 지워진다". Safe trim vs gamble, in two clicks.
+  one across the party; no RNG) is forgotten — "기억까지 지워진다". **If no Prompt card is
+  equipped at all, only the gauge goes to 0** — no warning, no error text; the fallback is
+  silent (invariant 7). Safe trim vs gamble, in two clicks.
 
 ### 2.8 Asset pack (provided input) + pixel pipeline
 
@@ -212,7 +281,8 @@ overlay + vial HUD로 처리한다.
 
 The deployed demo runs stub-mode forever, so the canned pool must be worth playing on its
 own. `data/decisions.json` covers every (unit × bucket) with a default, plus the named
-card-variant entries (§1-1, §2.6), written to the tone bar of the concept doc's §4.1 turn
+card-variant entries — 피오나+「겁이 없다」 · 가렛+「원한」 (§1-1) · 셀레네+「승부사」
+(§2.6) — written to the tone bar of the concept doc's §4.1 turn
 walkthrough (in-character Korean, one sentence, no translationese). All game text is
 Korean. Chatter pool ≥ 12 exchanges.
 
@@ -220,13 +290,14 @@ Korean. Chatter pool ≥ 12 exchanges.
 
 `data/heroes.json` (4 heroes: stats, default prompt text+id, base skill, 직업 기본 행동) ·
 `data/cards.json` (11 cards: type, text, engine hook, slot kind) ·
-`data/map.json` (8 tiles: id, kind, branch links, walk duration ref) ·
+`data/map.json` (9 tile entries: id, kind, branch links, walk duration ref) ·
 `data/encounters.json` (monster stats, deterministic behavior tables, per-tile rosters) ·
 `data/decisions.json` (canned decisions keyed unit×bucket×card?, council stances, chatter
 pool) · `data/council.json` (agendas, options, answers, rewards) ·
 `data/generation.json` (**provided input**: style bible, sheet-assembly prose rules, tier
 tones) · `data/tuning.json` (gauge numbers, damage, latency sim, per-mode timeouts, walk
-duration, slot counts). All tunables live here — never inline.
+duration, slot counts, draft pick count, per-mode `tieBreak` policy). All tunables live
+here — never inline.
 
 ## 4. Invariants (review-blocking)
 
@@ -242,8 +313,12 @@ duration, slot counts). All tunables live here — never inline.
    corrupts **judgment input only**; execution always runs on real state.
 5. **Stub schema = live schema** — everything the renderer consumes crosses the
    `AIAdapter` interface and passes the shared validator; the renderer is mode-blind.
-6. **All timing through the adapter / `data/` tunables** — no game-logic `setTimeout`,
-   no `Math.random` at runtime (fully deterministic in stub mode).
+6. **All timing through the adapter / `data/` tunables** — no game-logic `setTimeout`.
+   **Randomness is confined to tie-breaking**: outcomes (damage, targets-by-rule, rewards,
+   chatter, council answers) are never random; numeric ties go through the single
+   `tieBreak()` seam (§2.2) whose policy is `index` under automated gates and seeded
+   `random` in live mode. `Math.random` appears in exactly one place — seed creation —
+   and nowhere else (grep-able).
 7. **The game never waits on a decision** — per-mode timeout → 직업 기본 행동 + "…"
    bubble. **Graceful degradation is silent** — fallbacks never show error text.
 8. Repo-wide: no engine/framework · balance-as-data · Vite `base: './'` subpath-safe
@@ -253,14 +328,20 @@ duration, slot counts). All tunables live here — never inline.
 
 ## 5. Verification seams
 
-- **All automated gates run stub mode** with adapter latency 0 (unit) or scripted (e2e) —
-  deterministic by construction (no RNG, event-driven transitions).
+- **All automated gates run stub mode** with adapter latency 0 (unit) or scripted (e2e)
+  **and `tieBreak` policy `index`** — deterministic by construction (event-driven
+  transitions, no random outcomes). The `random` policy gets its own unit test with a
+  fixed seed; nothing else in the suite ever sees it.
 - vitest for pure logic: data loaders/validators, adapter keying + fallback chain +
   timeout, combat turn resolution, gauge/noise thresholds, council vote/tie-break, run FSM.
 - Playwright per-screen specs are the unit gates: page loads with zero console errors,
   phase reachable by click, named animations/classes fire, `because` chips render and
   resolve, the 피오나 stub flip is observable, the pacing rule (§1-3) holds at default
   tunables, assets render (or CSS fallback if missing).
+- **Two gates that exist because the content would otherwise be unreachable:**
+  ① at least one unit reaches gauge ≥70 inside the T1 combat and a noise turn renders (§2.5).
+  ② the 「번역 렌즈」 / 「승부사」 council interactions are observed in T2-acquire →
+  T3-fire order (§2.6).
 - **Live mode is gated by `e2e/live-smoke.md`** — a manual checklist (keys exported →
   `npm run dev` → live combat decisions observed with because chips; a card equip changes
   live behavior; gauge-noise turn observed; kill network mid-run → silent stub fallback).
@@ -277,9 +358,9 @@ duration, slot counts). All tunables live here — never inline.
 | u2 | Shared UI primitives: side-view stage, unit panels + sheet detail, speech bubble + because chips, card component, gauge/HUD, animation vocabulary | — | standard | `playwright test e2e/primitives.spec.ts` |
 | u3 | AI adapter integration on the provided seam (§2.1–2.2): stub impl (keying/fallback/latency), boot probe wiring, adapter tests, no-secrets check | u1 | standard | `vitest run tests/adapter/` + `npm run build` + dist grep clean |
 | u4 | Run FSM + map: auto-advance, walk scroll + chatter, branch choice, event firing + prefire hook, clear/defeat screens | u1,u2 | standard | `vitest run tests/run/` + `playwright test e2e/map.spec.ts` |
-| u5 | Combat: turn loop, deterministic execution, gauge + noise injection, rewards handoff | u1,u2,u3 | high | `vitest run tests/combat/` + `playwright test e2e/combat.spec.ts` |
+| u5 | Combat: turn loop, deterministic execution (incl. the §2.2 `tieBreak` seam), gauge + 스팸 도배 + noise injection, rewards handoff | u1,u2,u3 | high | `vitest run tests/combat/` + `playwright test e2e/combat.spec.ts` |
 | u6 | Council engine + 퍼즐/선택이벤트 screens | u1,u2,u3 | standard | `playwright test e2e/council.spec.ts` |
-| u7 | 훈련장 + forced allocation + 휴식 (생각정리/Clear) | u1,u2 | standard | `playwright test e2e/equip.spec.ts` |
+| u7 | 훈련장 (3택1 + free assignment · no duplicate card on one unit) + 휴식 (생각정리/Clear, no-Prompt-card fallback) | u1,u2 | standard | `playwright test e2e/equip.spec.ts` |
 | u8 | Asset pack integration across all screens (bg/sprites/frames/vial + pixel rendering) | u2 | standard | `playwright test e2e/assets.spec.ts` + manifest check |
 | u9 | Full-run integration + juice pass + full e2e (incl. §1 must-proves) + `e2e/live-smoke.md` + DISCOVERY.md | u4,u5,u6,u7,u8 | standard | full stub-mode suite + `npm run build` |
 
