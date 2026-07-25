@@ -46,10 +46,23 @@ function requireBoolean(v: unknown, ctx: string, field: string): boolean {
   return v;
 }
 
-// u6 — the ChoiceVerb vocabulary, runtime side. Mirrors contract.ts ChoiceVerb;
-// the `readonly ChoiceVerb[]` annotation makes a typo or a dropped member a
-// typecheck error rather than a silently-permissive loader.
-const CHOICE_VERBS: readonly ChoiceVerb[] = ['indirect', 'direct', 'observe', 'craft'];
+// u6 — the ChoiceVerb vocabulary, runtime side. Mirrors contract.ts ChoiceVerb.
+// Derived from a `Record<ChoiceVerb, true>` so completeness is enforced BY
+// CONSTRUCTION: a dropped member is a TS2741 (missing property) and a typo'd
+// key is excess-property-checked — both compile-time errors. (A bare
+// `readonly ChoiceVerb[]` annotation looks like it would do this but does not:
+// it constrains element TYPE, not SET completeness, so `['indirect', 'direct',
+// 'observe']` — craft dropped — still type-checks clean; confirmed by direct
+// tsc reproduction. And the failure direction if a member were silently
+// dropped is the opposite of "silently-permissive": the loader would REJECT
+// valid data carrying the missing verb, not accept invalid data.)
+const CHOICE_VERB_SET = {
+  indirect: true,
+  direct: true,
+  observe: true,
+  craft: true,
+} satisfies Record<ChoiceVerb, true>;
+const CHOICE_VERBS: readonly ChoiceVerb[] = Object.keys(CHOICE_VERB_SET) as ChoiceVerb[];
 
 // Enum fields fail SELF-DESCRIBINGLY: the message names the field, lists every
 // allowed value, and echoes the offending one, so a hand-authored typo or a
