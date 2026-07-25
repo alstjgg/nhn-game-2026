@@ -69,15 +69,19 @@ export interface ConversationCallbacks {
   /**
    * Fired the moment the machine's phase leaves `'conversation'` — today that
    * is only the forced-crafting handoff (u2 F3: patience reaches zero). The
-   * screen has no crafting UI of its own, so once this fires the dialogue is
-   * frozen (choices already disabled) and the host owns what happens next.
+   * dialogue is frozen from here on (choices already disabled), so this is the
+   * host's cue to MIRROR the phase — not to swap the stage: the screen keeps the
+   * customer's last line up behind the proceed affordance, and the player takes
+   * the handover through `onComplete` (PR #33, R3). A host that also advanced on
+   * this callback would delete the reply this press just earned.
    */
   onPhaseChange?: (phase: Phase) => void;
   /**
-   * Fired when the dialogue reaches its natural end — the last node's choice has
-   * been committed with patience to spare (the non-forced path). The screen has
-   * no crafting UI of its own, so it surfaces a proceed affordance and hands the
-   * decision to advance to crafting back to the host (u8 app shell).
+   * Fired when the player takes the handover to crafting — the ONLY event that
+   * means "this conversation is done being looked at". It reaches the host from
+   * all three endings: the craft card's early exit, the natural end (last node
+   * committed with patience to spare) and, since PR #33 (R3), the forced end,
+   * which surfaces the same proceed affordance instead of vanishing mid-line.
    */
   onComplete?: () => void;
 }
@@ -225,7 +229,10 @@ export function mountConversation(
   clueShelf.className = 'clue-shelf card-shelf';
   clueShelf.dataset.testid = 'clue-shelf';
 
-  // Proceed affordance — hidden until the dialogue reaches its natural end. It
+  // Proceed affordance — hidden until the dialogue is over, by EITHER ending: the
+  // natural end (patience to spare) or the forced one (patience spent, PR #33 R3),
+  // which needs it more, since the line it holds on screen is the customer's last
+  // word. Whichever ending revealed it, pressing it is the handover to crafting. It
   // is a plain <button> (never a native form control / free-text field: the
   // membrane §4.1 / cards-never-forms §4.5 still hold), and hands the
   // conversation→crafting decision back to the host via onComplete.
@@ -430,9 +437,23 @@ export function mountConversation(
     if (state.phase !== 'conversation') {
       // u2's reducer forces crafting the instant patience hits zero (F3). This
       // screen owns dialogue only — it has no crafting UI — so it stops
-      // advancing and hands the phase change to the host rather than going
-      // dead-ended on a customer whose patience is already spent.
+      // advancing and reports the phase change to the host.
+      //
+      // It does NOT hand the stage over here (PR #33, R3 on line 383). The press
+      // that spent the last of the patience is also the press whose reply
+      // `syncTier` just re-inked at 한계 — and the forced handover used to unmount
+      // that line in the same frame it was written, mid-type: the six authored
+      // tier-3 lines ("약만 주시오." and its siblings) lived for ~40ms inside a
+      // phase that was already fading out, so "his patience ran out" was the one
+      // outcome in the game the customer never got to say out loud.
+      //
+      // So the forced ending lands on the SAME proceed affordance the
+      // patience-to-spare ending uses: the last line stays legible for as long as
+      // the player wants it, and the player takes the handover. No timer is
+      // involved — a fixed hold would still be a gamble against a judge's reading
+      // pace, and the shop never advances on a clock of its own (FR-9).
       finished = true;
+      proceedBtn.hidden = false;
       callbacks.onPhaseChange?.(state.phase);
       return;
     }

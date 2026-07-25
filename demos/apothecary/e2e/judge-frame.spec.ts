@@ -389,4 +389,74 @@ test.describe('the judge frame (1280x720, built stub)', () => {
       FALLBACK.outcomeTable.nearMiss.text,
     );
   });
+
+  // R3 follow-up on src/screens/conversation/conversation.ts:383 (2nd round): the
+  // re-ink landed, but the ONE ending that reaches the 한계 row is the forced one
+  // (u2 F3: a paid question landing patience on exactly 0), and the forced handover
+  // swapped the stage in the same frame the line was written — a per-frame recording
+  // showed "약만 주시오." above 50% opacity for ~40ms of a 320ms type-on, inside a
+  // phase already fading out. Six of the twelve authored 한계 lines lived only there.
+  test('R3-10 the forced handover keeps the 한계 line on stage until the player leaves', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    // Customer 1 out of the way via the craft card (an early exit, no spend):
+    // customer 2's budget is the shallowest, so it is the deck whose plainest
+    // play — one indirect, one direct — lands patience on exactly 0.
+    await greet(page);
+    await page.locator('[data-testid="choice-card"][data-verb="craft"]').first().click();
+    await craftAndCommit(page);
+    await advancePastOutcome(page);
+
+    await greet(page);
+    const conv = page.locator('section.conversation').first();
+    const line = page.getByTestId('npc-line');
+    await expect(line).toBeVisible({ timeout: 20_000 });
+    const stage = page.locator('[data-phase="conversation"][data-customer]').first();
+    const customerId = await stage.getAttribute('data-customer');
+    expect(customerId, 'no customer on stage to read a tier table for').toBeTruthy();
+    const rows = TIER_VARIANTS[customerId as string];
+    expect(rows, `${customerId} has no authored tier variants`).toBeTruthy();
+
+    // Beat 1 → beat 2 on the cheap verb (cost 1), then the terminal question
+    // (cost 2) spends the last of the patience: 3 → 2 → 0, forced at 한계.
+    await page
+      .locator('[data-testid="choice-card"][data-verb="indirect"]:not([disabled])')
+      .first()
+      .click();
+    await expect.poll(async () => conv.getAttribute('data-tier')).toBe('1');
+    const beforeTerminal = ((await line.textContent()) ?? '').trim();
+
+    await page
+      .locator('[data-testid="choice-card"][data-verb="direct"]:not([disabled])')
+      .first()
+      .click();
+    await expect.poll(async () => conv.getAttribute('data-tier')).toBe('3');
+    // The screen's own machine HAS left the conversation (F3 is intact) …
+    await expect(conv).toHaveAttribute('data-phase', 'crafting');
+
+    // … and the reply that press earned is on screen: the AUTHORED 한계 variant.
+    const row = rows.find((variants) => variants.includes(beforeTerminal));
+    expect(row, 'the pre-press line is not an authored variant').toBeTruthy();
+    const forced = (row as string[])[3];
+    await expect(line, 'the forced ending printed no 한계 line').toHaveText(forced);
+
+    // … and it STAYS: nothing hands the stage over on a clock of its own. Well past
+    // the 320ms type-on and any phase animation, the conversation is still the
+    // phase on stage, at full opacity, with the crafting screen not yet mounted.
+    await page.waitForTimeout(1_500);
+    await expect(line, 'the 한계 line was deleted mid-read').toHaveText(forced);
+    await expect(page.locator('.crafting'), 'crafting mounted itself over the reply').toHaveCount(0);
+    expect(
+      await stage.evaluate((node) => getComputedStyle(node as Element).opacity),
+      'the conversation phase is fading out under the line',
+    ).toBe('1');
+
+    // The player takes the handover — the same affordance the patience-to-spare
+    // ending offers, so the forced ending is not a dead end either.
+    const proceed = page.getByTestId('conversation-proceed');
+    await expect(proceed, 'the forced ending offers no way on').toBeVisible();
+    await proceed.click();
+    await expect(page.locator('.crafting').first()).toBeVisible({ timeout: 20_000 });
+  });
 });

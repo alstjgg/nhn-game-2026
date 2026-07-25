@@ -423,19 +423,36 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
     let liveConversation: ConversationHandle | null = null;
     const wrapper = swapPhase(entry.customer.id, 'conversation');
     let advanced = false;
-    const toCrafting = (): void => {
-      if (advanced) return; // onComplete and onPhaseChange are mutually exclusive; guard anyway
-      advanced = true;
-      // Normal path leaves the app machine in 'conversation'; the forced path
-      // (patience→0) does too, since the conversation screen owns its OWN
-      // machine. Either way the app advances via the canonical event.
+    /**
+     * Mirror the conversation's phase onto this slot's app machine. The
+     * conversation screen owns its OWN machine, so the app's copy only moves when
+     * it is told to — and it is told twice on the forced path (the phase report,
+     * then the handover). The second call is a D3 identity no-op, which is why
+     * this can be the ONE place the event is dispatched.
+     */
+    const mirrorCrafting = (): void => {
       machines[slot] = reduce(machines[slot], { type: 'proceedToCrafting' });
+    };
+    const toCrafting = (): void => {
+      if (advanced) return; // one handover per conversation, however it was reached
+      advanced = true;
+      mirrorCrafting();
       startCrafting(slot, liveConversation?.tier ?? 0);
     };
     const conversation = mountConversation(
       wrapper,
       entry.customer,
-      { onComplete: toCrafting, onPhaseChange: toCrafting },
+      {
+        // The handover — from any of the three endings (craft card, natural end,
+        // forced end) — is the player's press, never a phase report.
+        onComplete: toCrafting,
+        // Patience hit zero (u2 F3). The stage does NOT swap here (PR #33, R3):
+        // the screen keeps the customer's 한계 line up behind its proceed
+        // affordance, and swapping now would delete the reply that press earned
+        // mid-type. Only the app machine moves, so `window.__app` and the overlap
+        // predicate read the truth while the conversation is still on stage.
+        onPhaseChange: mirrorCrafting,
+      },
       conversationOptionsFor(seedFor(slot)),
     );
     liveConversation = conversation;

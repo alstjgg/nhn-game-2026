@@ -65,6 +65,13 @@ const ADVANCING_VERBS = ['indirect', 'direct'] as const;
 const MAX_BEATS = 12;
 /** src/pipeline/prefetch.ts:32 DEADLINE_MS — jumped over, never waited out. */
 const FALLBACK_DEADLINE_MS = 25_000;
+/**
+ * How far AHEAD of a live `Date.now()` read the fake clock is frozen (see
+ * `pauseClock`). Must be larger than the slowest evaluate→command round trip
+ * under full-suite load (tens of ms) and far smaller than the deadline being
+ * frozen — 1s satisfies both by orders of magnitude.
+ */
+const CLOCK_PAUSE_LEAD_MS = 1_000;
 /** AC4: the whole play-through, screenshots included, must stay under a minute. */
 const RUN_BUDGET_MS = 60_000;
 /** u12 seeded/fallback tier tone table (data/tier-variants.json). */
@@ -462,7 +469,21 @@ async function installFastClock(page: Page): Promise<void> {
  */
 async function pauseClock(page: Page): Promise<void> {
   const now = await page.evaluate(() => Date.now());
-  await page.clock.pauseAt(now);
+  // FORWARD-ONLY (PR #33, R1). `pauseAt` fast-forwards to its target and refuses
+  // to move backwards, and the fake clock was resumed at install — so between the
+  // `evaluate` result crossing back and this command reaching the page, real time
+  // passes and a bare `pauseAt(now)` is already in the past. Under full-suite load
+  // the round trip is tens of ms, which is why this failed 2 runs in 3 with the
+  // whole suite competing for CPU and passed every time in isolation. Freezing a
+  // short step AHEAD of the read can never be in the past however slow the trip
+  // is; the step is orders of magnitude below the deadline being held
+  // (CLOCK_PAUSE_LEAD_MS vs FALLBACK_DEADLINE_MS, asserted below), so nothing
+  // that was not already due fires inside it.
+  expect(
+    CLOCK_PAUSE_LEAD_MS,
+    'the pause lead must stay far inside the deadline it freezes',
+  ).toBeLessThan(FALLBACK_DEADLINE_MS / 4);
+  await page.clock.pauseAt(now + CLOCK_PAUSE_LEAD_MS);
 }
 async function expireFallbackDeadline(page: Page): Promise<'app' | 'clock'> {
   const hasHook = await page.evaluate(
