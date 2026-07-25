@@ -1,8 +1,8 @@
 {
   "styleBible": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette.",
-  "styleBibleStatus": "provisional",
-  "styleBibleRevisionPlanned": true,
-  "styleBibleNote": "Candidate A is the current baseline from the initial human-reviewed style test, not the final style lock. Refine this sentence before full-pack generation.",
+  "styleBibleStatus": "frozen",
+  "styleBibleRevisionPlanned": false,
+  "styleBibleNote": "Frozen 2026-07-25: candidate A verbatim, after the two-round style test (PR #42). Dungeon mood comes from subject prompts (torches, bones, gothic props), not from palette clauses — the palette-constraining variants (B-D) fought the technical magenta background in round 1 and add tone-consistency risk across the 10-call pack.",
   "keyedSpritePromptGuard": "The magenta background is a technical chroma-key layer, not part of the palette — never use magenta, pink, or purple on the subject itself.",
   "keyingPipeline": {
     "background": "#FF00FF",
@@ -11,7 +11,8 @@
   },
   "styleTest": {
     "selectedCandidate": "A",
-    "selectedOn": "2026-07-25"
+    "selectedOn": "2026-07-25",
+    "frozenOn": "2026-07-25"
   },
   "pixelFactor": 4
 }
