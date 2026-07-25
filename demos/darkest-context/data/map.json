@@ -1,0 +1,70 @@
+{
+  "startTileId": "t1",
+  "tiles": [
+    {
+      "id": "t1",
+      "kind": "combat",
+      "next": ["t2"],
+      "walkDurationRef": "walk.durationMs",
+      "rosterId": "roster_t1",
+      "rewardId": "t1"
+    },
+    {
+      "id": "t2",
+      "kind": "training",
+      "next": ["t3a", "t3b"],
+      "walkDurationRef": "walk.durationMs",
+      "rewardId": "t2"
+    },
+    {
+      "id": "t3a",
+      "kind": "puzzle",
+      "next": ["t4a"],
+      "walkDurationRef": "walk.durationMs",
+      "agendaId": "riddle_golem",
+      "rewardId": "t3a"
+    },
+    {
+      "id": "t3b",
+      "kind": "choice",
+      "next": ["t4b"],
+      "walkDurationRef": "walk.durationMs",
+      "agendaId": "fallen_merchant",
+      "rewardId": "t3b"
+    },
+    {
+      "id": "t4a",
+      "kind": "training",
+      "next": ["t5"],
+      "walkDurationRef": "walk.durationMs",
+      "rewardId": "t4a"
+    },
+    {
+      "id": "t4b",
+      "kind": "rest",
+      "next": ["t5"],
+      "walkDurationRef": "walk.durationMs"
+    },
+    {
+      "id": "t5",
+      "kind": "combat",
+      "next": ["t6"],
+      "walkDurationRef": "walk.durationMs",
+      "rosterId": "roster_t5",
+      "rewardId": "t5"
+    },
+    {
+      "id": "t6",
+      "kind": "rest",
+      "next": ["t7"],
+      "walkDurationRef": "walk.durationMs"
+    },
+    {
+      "id": "t7",
+      "kind": "combat_final",
+      "next": [],
+      "walkDurationRef": "walk.durationMs",
+      "rosterId": "roster_t7"
+    }
+  ]
+}
