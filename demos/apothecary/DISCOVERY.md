@@ -699,3 +699,111 @@ globs — and they are structurally unfixable from inside this unit:
 - **Runtime pixelation is live-only in practice.** `roster.ts` sends a generated (`b64`)
   sheet through `pixelateSheet` before it reaches the cell, per §2.4; bundled pool sheets
   ship pre-downscaled and are used verbatim. In stub mode no sheet ever takes the first path.
+
+# u14 — 최종 통합/골든 게이트 (IMPLEMENT agent, TDD-Green)
+
+전체 흐름을 판정 관점(스텁 모드, `/`에서 손님 3명 끝까지)으로 실제로 클릭해 본 결과.
+`e2e/full-loop.spec.ts` 한 파일이 이 유닛의 런타임 오라클 + 비런타임 산출물 감사를
+겸한다.
+
+## 1. 비동기 심(seam)의 마찰 — v2에서 새로 드러난 것
+
+### 문앞 대기 비트는 "가만히 두면" 스텁 모드에서 절대 안 보인다
+`beginVisit`은 대사 트랙이 `pending`일 때만 대기 비트를 재생한다(`src/app/index.ts`).
+그런데 슬롯 3의 프리페치는 **손님 2의 대화가 열리는 순간** 착수되고, 배포 스텁의
+데드라인은 8초(`stubDeadlineMs`)다. 손님 2를 사람 속도로 플레이하면 조제를 건네기
+훨씬 전에 8초가 지나 번들 팩이 이미 답을 채워 놓는다 → 대기 비트 건너뜀. u13이
+"사람 속도로는 도달하지 않는다"고 적어 둔 그 지점이다. **골든 e2e는 이걸 레이스로
+두면 안 되므로** Playwright 페이크 클록을 손님 2 대화 시점에 `pauseAt`으로 세워
+데드라인을 공중에 띄운 뒤, 대기 비트를 관찰하고 `fastForward`로 데드라인만 인위적으로
+넘긴다(`installFastClock`/`pauseClock`/`expireFallbackDeadline`).
+
+### 클록 주입(clock injection)의 실제 비용
+데드라인이 주입 Clock(`src/pipeline/clock.ts` → `setTimeout`)을 타기 때문에 페이크
+클록으로 조종할 수 있다는 것이 이 아키텍처의 순이익이다. 대신 대가가 세 가지 있었다:
+1. `clock.install()`은 `goto` **이전에** 해야 한다(설치 전에 로드된 페이지의 타이머는
+   진짜 타이머다). 그래서 클록 준비가 테스트 첫 줄에 온다.
+2. 클록을 세운 구간에서는 `window.setTimeout` 폴백들도 함께 얼어붙는다. 조제 커밋
+   비트(`crafting/index.ts`)와 페이즈 퇴장(`app/index.ts`)이 **animationend 우선 +
+   setTimeout 폴백** 구조였던 덕에 무사히 진행됐다 — 만약 어느 화면이 타이머만으로
+   전진했다면 정지 구간에서 그대로 데드락이었다. (앞으로 추가되는 화면도 전진 신호는
+   이벤트, 타이머는 폴백으로 유지할 것.)
+3. 앱이 `__app.expireFallbackDeadline()` 훅을 노출하지 않아 이번 실행은 클록 경로로
+   갔다(`clock-route=clock` 애노테이션). 훅이 생기면 spec은 자동으로 그쪽을 쓴다.
+
+### 늦은 도착(late arrival)과 프리페치 취소는 스텁 모드에서 관찰 불가
+- **늦은 도착**: 두 트랙이 데드라인을 공유하므로 스텁에서는 대사/초상이 항상 같은
+  순간에 결정된다 → 대화 도중 초상만 늦게 도착하는 프레임이 존재하지 않는다. 결과적으로
+  **실루엣 입장도 스텁에서는 한 번도 관찰되지 않았다**(`silhouette-entry=false`
+  애노테이션으로 기록. spec은 이 비트를 skip하지 않고 관찰값을 남긴다).
+  → 실루엣 해소는 라이브 체크리스트 F로 넘겼다.
+- **프리페치 취소**: `PrefetchState.cancelled`는 있지만 앱 셸에서 `cancel()`을 부르는
+  경로가 없다(손님이 먼저 떠나는 시나리오가 아직 없다). 즉 취소는 계약에만 있고
+  플레이에서는 도달 불가 — 라이브 스모크에서 새로고침으로 대신 확인한다.
+
+### 재방문 알림은 오버레이에 붙은 뒤 사라지지 않는다
+손님 1의 재방문 카드가 `overlay-layer`에 마운트된 채 이후 모든 페이즈(대기 비트,
+손님 3 대화, 마지막 문앞 쪽지)에 계속 떠 있다. 스크린샷 07/09에서 눈으로 확인된다.
+게이트를 깨지는 않지만(§1.4 오버랩 자체는 이 잔존과 무관) 마지막 화면의 정적(靜)을
+해치는 폴리시 결함이다. 해제 시점(다음 페이즈 전환? 클릭?)은 설계 결정이고
+`src/app/index.ts`는 u14 글로브 밖이라 손대지 않았다 — **후속 유닛 몫**.
+
+## 2. u14 juice policy — 결정과 근거
+
+- **`meter-drain` 유지(삭제 아님).** u11이 게이지를 없애서 `src/` 어디에서도 이
+  키프레임을 참조하지 않는다. 그런데 `tests/ui/cards.test.ts`와
+  `e2e/patience.spec.ts`가 여전히 이 어휘의 존재를 핀으로 박고 있고 두 파일 모두
+  u14 글로브 밖이다. 지우면 전체 게이트가 빨개진다 → **유지 + 사유 기록**(이 항목)으로
+  결정하고, `animations.css`의 해당 블록에 "RETAINED, NOT LIVE" 주석을 남겼다.
+  프로덕션 셀렉터가 닿을 수 없으므로 죽은 CSS 한 덩어리 비용만 남는다.
+- **v2 두 대기 상태에 모션 어휘 추가**: `silhouette-breathe`(도착 전 역광 인물),
+  `waiting-hush`(문앞 대기 비트의 대사). 둘 다 **채우거나 훑거나 세지 않는** 앰비언트
+  루프다 — 화면에서 "얼마나 늦었는지"를 읽을 수 있으면 §2.3의 무readout 규칙이 깨진다.
+  지속시간은 `calc(var(--duration-slow) * 12)`로 토큰에서 파생(인라인 ms 금지).
+- **어휘는 `animations.css`, 부착은 `app.css`.** 무대에 어떤 페이즈가 올라와 있는지
+  아는 것은 셸뿐이라 셀렉터는 `app.css`가 갖고, 키프레임은 어휘 계층에 둔다. 그러면
+  파일 맨 아래 `prefers-reduced-motion` 와일드카드가 무한 반복까지 한 번에 걷어낸다
+  (NFR4b: 가드 블록은 계속 정확히 1개, `app.css`는 자기 가드를 만들지 않는다).
+- **관찰된 예외(고치지 않음)**: `src/screens/waiting/waiting.css`(u8)는 자기 소유의
+  `prefers-reduced-motion` 블록과 인라인 지속시간(`9s`, `5.5s`)을 갖고 있다. 감사
+  대상 두 파일 밖이라 통과하지만 정책상으로는 어휘 계층으로 올라오는 게 맞다 —
+  글로브 밖이므로 기록만 한다.
+
+## 3. 누락 에셋 감사 — 누락 없음
+
+`assets/` 11개 파일 전부가 참조와 1:1로 맞는다: 코드 import 2개
+(`fallback-portrait-1/2.png`), CSS `url()` 3개(`bg-shop`, `ui-bubble`, `ui-shelf`),
+`data/sprites.json` 시트 8개. 반대로 참조되지 않는 파일도 없다. 슬롯별로 비어 있는
+곳이 없으므로 **누락 에셋: 없음**이며, 대체 표시(placeholder)를 넣은 슬롯도 없다.
+(생성 초상은 런타임 산출물이라 이 감사 대상이 아니다 — 스텁 배포에서는 번들 폴백
+시트 2장이 슬롯 3의 얼굴을 담당한다.)
+
+## 4. 스코프 갱신
+
+- **u13 브랜치를 워크트리에 병합해야 했다.** u14의 베이스는 u12까지였고, 손님 3 자체가
+  u13(`src/app/roster.ts`, `data/fallback-npcs.json`)에서 온다. u11이 남긴 선례와
+  같은 방식으로 `super/20260725-025242-u13`을 먼저 병합한 뒤 골든 게이트를 돌렸다.
+- **읽기 스코프 밖 파일 2개를 열었다**: `src/app/index.ts`(대기 비트/문앞 쪽지의 실제
+  전이 순서 확인 — v1 spec의 PHASE 7~9 순서가 틀렸다: 문앞 쪽지 → 초대 카드 → 대기
+  비트 → 손님 3), `data/fallback-npcs.json`(손님 3의 결과 테이블은 `c3` 키가 아니라
+  `outcomeTable` 필드에 있다 — spec의 데이터 조회를 앱과 같은 조인 방식으로 맞췄다).
+- **글로브 밖 편집 3건 (tests/**) — u13이 "구조적으로 못 고친다"고 남긴 인계 영수증 회수.**
+  u13의 DISCOVERY가 이미 지목한 3개 단정은 전부 "u13은 아직 안 일어났다"를 주장하는
+  영수증이고, u13은 `tests/**`가 글로브 밖이라 손댈 수 없었다. u14가 전체 게이트
+  green을 책임지는 통합 유닛이므로 여기서 회수했다. **삭제는 하지 않았다** — 각 케이스를
+  병합 이후에도 참인 불변식으로 다시 썼다:
+  1. `tests/ai/boot.test.ts` AC20: "main.ts는 아직 boot 팩토리를 import하지 않는다" →
+     "boot 배선은 main.ts에 **정확히 한 번**만 있다"(app/index.ts 쪽 단정은 그대로).
+  2. `tests/ui/portrait.test.ts`(u9 AC5): 빌드 input "4개 고정" → 소유 유닛별로 열거한
+     5개 집합(`main` + u6/u7/u9/u13 하네스). 개수 대신 **누락/미확인 input 금지**로.
+  3. `tests/screens/conversation/callbacks.test.ts`: `src/app/index.ts`의 git-diff 영수증
+     → 셸이 u10 내부로 손을 뻗지 못한다는 불변식(대화 화면 import는 `conversation.ts`
+     하나뿐)로. 브랜치 diff 단정은 기다리던 병합이 오면 살아남을 수 없다.
+  같이 딸린 정리: 그 파일에서 쓰이지 않게 된 `git` 헬퍼/`execFileSync` import 제거
+  (`noUnusedLocals` 때문에 typecheck가 막힌다).
+- **u14 오라클 자체 교정 2건**(`e2e/full-loop.spec.ts`, 이 유닛 소유):
+  ① reduced-motion 가드 개수를 **문자열 등장 수**가 아니라 `@media` 블록 수로 센다 —
+  u11이 주석에서 가드를 언급한 것을 두 번째 가드로 오독했다.
+  ② 대기 비트 키프레임을 `animations.css`가 아니라 `app.css`에서 찾는다 — u8 AC5.4가
+  `animations.css`에 "waiting" 단어 자체를 금지하고 그 스펙은 u14 글로브 밖이다.
+  한쪽 green을 다른 쪽 red로 바꾸지 않는 유일한 배치.

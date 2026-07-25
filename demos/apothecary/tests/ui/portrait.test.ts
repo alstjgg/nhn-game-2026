@@ -495,14 +495,22 @@ describe('u9 AC5 — vite.config.ts change is one harness build input and nothin
     );
   });
 
-  it('keeps the pre-existing inputs and adds exactly one (4 total)', () => {
+  // u14 (final integration): the count was u9's "I added exactly one" receipt, and
+  // u13 has since added its own generation harness page (which must be a build
+  // input to be served from dist/ at the path its spec navigates to). The guard
+  // that still matters is that every input is an ACCOUNTED-FOR harness page and no
+  // input was dropped — so the set is enumerated, one entry per unit that owns a
+  // harness, instead of frozen at a number one unit happened to leave behind.
+  it('keeps the pre-existing inputs and adds only accounted-for harness pages', () => {
     const block = config().match(/input\s*:\s*\{([\s\S]*?)\}/);
     expect(block, 'rollupOptions.input map not found').toBeTruthy();
     const keys = (block![1].match(/^\s*([A-Za-z_$][\w$]*)\s*:/gm) ?? []).map((k) =>
       k.replace(/[\s:]/g, ''),
     );
-    expect(new Set(keys)).toEqual(new Set(['main', 'conversation', 'crafting', 'portrait']));
-    expect(keys.length).toBe(4);
+    // main = the demo itself; the rest are e2e harness pages (u6, u7, u9, u13).
+    const expected = ['main', 'conversation', 'crafting', 'portrait', 'generation'];
+    expect(new Set(keys)).toEqual(new Set(expected));
+    expect(keys.length).toBe(expected.length);
   });
 
   it('leaves the aiProxy plugin wiring byte-identical', () => {
