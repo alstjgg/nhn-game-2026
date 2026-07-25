@@ -39,6 +39,14 @@ export type Clue = DialogueRequest['availableClues'][number];
 /**
  * mulberry32 — a seeded 32-bit generator. Determinism is a public contract:
  * the same seed must replay the same persona for reproducible demos and tests.
+ *
+ * @param seed Truncated to a 32-bit signed integer (`seed | 0`) before use.
+ *   Only the truncated value distinguishes streams: non-integer seeds are
+ *   floored toward zero, values outside `[-2**31, 2**31)` wrap, and the
+ *   sequence itself repeats with period `2**32`. Two different seeds that
+ *   share the same truncated value (e.g. `1` and `1 + 2**32`) replay an
+ *   identical persona — callers deriving seeds from hashes/timestamps should
+ *   reduce into this domain deliberately rather than relying on wraparound.
  */
 export function createRng(seed: number): Rng {
   let state = seed | 0;
@@ -50,26 +58,64 @@ export function createRng(seed: number): Rng {
   };
 }
 
-/** Pick one element with a single draw. Never overflows for draws in [0, 1). */
-function pick<T>(rng: Rng, rows: readonly T[]): T {
-  const index = Math.min(rows.length - 1, Math.floor(rng() * rows.length));
-  return rows[index];
+/**
+ * Pick one element with a single draw. `emptyMessage` is a literal,
+ * call-site-supplied error naming the source list, so a failure points at
+ * which table is malformed instead of just "composePersona blew up two
+ * lines away". Passed as a whole literal (not interpolated in here) so this
+ * function stays free of the prose-assembly this file forbids (D-9): no
+ * template literals, no `+`, no `.join`, even for diagnostics.
+ *
+ * Both failure modes are real for the table-injecting public API (AC-5b):
+ * an empty list (e.g. a caller excluding an already-seen ailment down to
+ * zero) or a misbehaving injected rng must throw here, loudly, rather than
+ * let `undefined` ride out through the membrane as a "trait" string.
+ */
+function pick<T>(rng: Rng, rows: readonly T[], emptyMessage: string): T {
+  if (rows.length === 0) {
+    throw new RangeError(emptyMessage);
+  }
+  const draw = rng();
+  if (!(draw >= 0 && draw < 1)) {
+    throw new RangeError('persona rng draw out of [0, 1) contract');
+  }
+  return rows[Math.floor(draw * rows.length)];
 }
 
 /**
- * Compose a customer from the injected table with exactly three draws, in the
- * order archetype -> quirk -> ailment. problem and hiddenCause always come
- * from one and the same ailment row (they are a pair, never independent picks).
+ * Compose a customer *and* the identity of the ailment row it was drawn
+ * from, with exactly three draws, in the order archetype -> quirk ->
+ * ailment. problem and hiddenCause always come from one and the same
+ * ailment row (they are a pair, never independent picks).
+ *
+ * `ailmentId` is not part of the DialogueRequest/PortraitRequest contract
+ * (D-1) — Persona stays exactly `{personaTraits, problem, hiddenCause}` —
+ * but outcome judging (does the prepared remedy match the true cause?) is the
+ * natural consumer of a stable row identifier. Without this, a consumer is
+ * pushed toward recovering the row via `problem`/`hiddenCause` prose-string
+ * equality, which silently breaks the moment a table sentence is reworded.
+ */
+export function composeCase(rng: Rng, table: TraitTable): { persona: Persona; ailmentId: string } {
+  const archetype = pick(rng, table.archetypes, 'persona trait table has no rows for "archetypes"');
+  const quirk = pick(rng, table.quirks, 'persona trait table has no rows for "quirks"');
+  const ailment = pick(rng, table.ailments, 'persona trait table has no rows for "ailments"');
+  return {
+    persona: {
+      personaTraits: [archetype, quirk],
+      problem: ailment.problem,
+      hiddenCause: ailment.hiddenCause,
+    },
+    ailmentId: ailment.id,
+  };
+}
+
+/**
+ * Compose a customer from the injected table. Thin wrapper over
+ * `composeCase` for callers that only need the contract payload — same
+ * three draws, same order, `ailmentId` simply dropped.
  */
 export function composePersona(rng: Rng, table: TraitTable): Persona {
-  const archetype = pick(rng, table.archetypes);
-  const quirk = pick(rng, table.quirks);
-  const ailment = pick(rng, table.ailments);
-  return {
-    personaTraits: [archetype, quirk],
-    problem: ailment.problem,
-    hiddenCause: ailment.hiddenCause,
-  };
+  return composeCase(rng, table).persona;
 }
 
 /**
