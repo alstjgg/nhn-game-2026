@@ -409,3 +409,189 @@ test.describe('diegetic patience (u11)', () => {
     }
   });
 });
+
+// ── u12 — tier tone content (spec §4 AC12/AC13, design D-3b) ─────────────────
+//
+// The DOM half of u12: a tier bump must actually CHANGE the customer's written
+// line, and the new line must be the authored variant for the tier the screen is
+// in. Source-agnostic by construction (spec C2): the harness mounts the stub
+// adapter, so in-browser lines come from `data/stub-dialogue.json` `tierLines`
+// (u1), while the seeded/fallback path is toned from `data/tier-variants.json`
+// (u12). The assertion therefore looks the rendered line up in the UNION of both
+// files at the observed tier. No length comparison — u1's shipped tierLines are
+// deliberately not length-monotone (spec C3); that rule binds u12's file only,
+// where `tests/data/tier-variants.test.ts` enforces it.
+//
+// RED until the build lands: `data/tier-variants.json` does not exist, so the
+// union index cannot be built. Read with readFileSync inside the new test only,
+// so a missing file cannot take u11's assertions above down with it (AC13).
+const TIER_VARIANTS_JSON = 'data/tier-variants.json';
+const STUB_DIALOGUE_JSON = 'data/stub-dialogue.json';
+
+/** Every authored line → the tiers it is authored FOR, across both data files. */
+function unionTierIndex(): Map<string, Set<number>> {
+  const index = new Map<string, Set<number>>();
+  const add = (line: unknown, tier: number, where: string): void => {
+    expect(typeof line, `${where}: variant is not a string`).toBe('string');
+    const key = (line as string).trim();
+    const tiers = index.get(key) ?? new Set<number>();
+    tiers.add(tier);
+    index.set(key, tiers);
+  };
+  const addBeat = (beat: unknown, where: string): void => {
+    const b = beat as { npcLine?: unknown; tierLines?: unknown };
+    if (Array.isArray(b.tierLines)) {
+      expect(b.tierLines.length, `${where}: tierLines is not 4 long`).toBe(4);
+      b.tierLines.forEach((line, tier) => add(line, tier, `${where} tier ${tier}`));
+      return;
+    }
+    // No tierLines ⇒ u1's lineForTier serves npcLine at every tier.
+    for (const tier of [0, 1, 2, 3]) add(b.npcLine, tier, `${where} tier ${tier}`);
+  };
+
+  // u12's seeded/fallback variants: { [customerId]: [ [t0, t1, t2, t3], … ] }.
+  const variants = JSON.parse(readFileSync(TIER_VARIANTS_JSON, 'utf-8')) as Record<string, unknown>;
+  for (const [cid, rows] of Object.entries(variants)) {
+    expect(Array.isArray(rows), `tier-variants.json: ${cid} is not an array of rows`).toBe(true);
+    (rows as unknown[]).forEach((row, beat) => {
+      expect(Array.isArray(row), `tier-variants.json: ${cid} beat ${beat} is not a row`).toBe(true);
+      expect((row as unknown[]).length, `tier-variants.json: ${cid} beat ${beat} is not 4 long`).toBe(4);
+      (row as unknown[]).forEach((line, tier) => add(line, tier, `tier-variants ${cid} beat ${beat}`));
+    });
+  }
+
+  // u1's stub-adapter scripts + generic fallback script.
+  const stub = JSON.parse(readFileSync(STUB_DIALOGUE_JSON, 'utf-8')) as {
+    scripts: { problem: string; beats: unknown[] }[];
+    fallback: { beats: unknown[] };
+  };
+  stub.scripts.forEach((script, s) =>
+    script.beats.forEach((beat, b) => addBeat(beat, `stub script ${s} beat ${b}`)),
+  );
+  stub.fallback.beats.forEach((beat, b) => addBeat(beat, `stub fallback beat ${b}`));
+
+  return index;
+}
+
+async function lineOf(page: Page): Promise<string> {
+  return ((await page.getByTestId('npc-line').textContent()) ?? '').trim();
+}
+
+test.describe('tier tone content (u12)', () => {
+  // AC12 — the rendered line is (a) non-empty, (b) different from the tier-0
+  // line, and (c) the authored variant for the tier the screen reports, at two
+  // distinct tiers within one play-through.
+  test('AC12 a tier bump rewrites the customer line to that tier variant', async ({ page }) => {
+    const errs: string[] = [];
+    page.on('pageerror', (err) => errs.push(err.message));
+    const external: string[] = [];
+    page.on('request', (req) => {
+      const url = req.url();
+      if (
+        !/^(data:|blob:|about:)/.test(url) &&
+        !url.includes('localhost') &&
+        !url.includes('127.0.0.1')
+      ) {
+        external.push(url);
+      }
+    });
+
+    const union = unionTierIndex();
+    expect(union.size, 'the union tier index is suspiciously small').toBeGreaterThan(8);
+
+    await openHarness(page, LADDER_URL);
+    const seenTiers: number[] = [await tierOf(page)];
+    let line = await lineOf(page);
+    expect(seenTiers[0], 'the ladder run did not mount at 평온(0)').toBe(0);
+    expect(line.length, 'the mounted npc line is empty').toBeGreaterThan(0);
+    const tierZeroLine = line;
+
+    // A line can only be re-authored when a beat is painted, and c1 ships two
+    // dialogue nodes (`source.total === seeded.length`; `conversation.ts:368`
+    // stops advancing on the terminal beat) — so exactly ONE of this run's two
+    // tier bumps has a beat left to paint. The second commit is asserted below as
+    // what it actually is: the tier rises, the spent hand freezes, and the line
+    // already on screen stays. The high tiers' prose is proven by the drain test
+    // (0 → 2 → 3) and by tests/data/tier-variants.test.ts.
+    {
+      const beforeTier = seenTiers[seenTiers.length - 1];
+      const beforeLine = line;
+      await playDirect(page);
+      // Poll the PAIR: the tier is stamped synchronously on commit but the next
+      // beat arrives through the adapter, so reading them apart could sample the
+      // new tier next to the previous beat's line.
+      await expect
+        .poll(
+          async () => ((await tierOf(page)) > beforeTier && (await lineOf(page)) !== beforeLine),
+          { timeout: 5000 },
+        )
+        .toBe(true);
+
+      const tier = await tierOf(page);
+      line = await lineOf(page);
+      seenTiers.push(tier);
+
+      expect(line.length, `tier ${tier}: the npc line went empty`).toBeGreaterThan(0);
+      expect(line, `tier ${tier}: the line did not change from tier 0`).not.toBe(tierZeroLine);
+      expect(line, `tier ${tier}: the line did not change on the tier bump`).not.toBe(beforeLine);
+      expect(
+        [...(union.get(line) ?? [])],
+        `tier ${tier}: "${line}" is not the authored variant for that tier`,
+      ).toContain(tier);
+    }
+
+    // Terminal commit: the ladder still rises, and the frozen line is still the
+    // authored variant for the tier it was painted at — never blanked, never a
+    // line no data file authors.
+    {
+      const beforeTier = seenTiers[seenTiers.length - 1];
+      const paintedTier = beforeTier;
+      const frozenLine = line;
+      await playDirect(page);
+      await expect.poll(async () => tierOf(page), { timeout: 5000 }).toBeGreaterThan(beforeTier);
+      seenTiers.push(await tierOf(page));
+
+      const after = await lineOf(page);
+      expect(after.length, 'the frozen npc line went empty on the terminal commit').toBeGreaterThan(
+        0,
+      );
+      expect(after, 'the spent hand repainted a line without a beat').toBe(frozenLine);
+      expect(
+        [...(union.get(after) ?? [])],
+        `"${after}" is not the authored variant for the tier it was painted at`,
+      ).toContain(paintedTier);
+    }
+
+    expect(
+      [...new Set(seenTiers)].length,
+      `fewer than 2 distinct tiers observed: ${seenTiers.join('→')}`,
+    ).toBeGreaterThanOrEqual(2);
+    expect(errs, `page errors: ${errs.join(' | ')}`).toEqual([]);
+    expect(external, `external requests: ${external.join(' | ')}`).toEqual([]);
+  });
+
+  // AC12 (second half) — the same proof on the drain fixture, which walks a
+  // DIFFERENT pair of tiers (0 → 2 → 3), so the two runs together show the tone
+  // following the tier rather than the beat cursor.
+  test('AC12 the drain run tones its own tiers, including 한계', async ({ page }) => {
+    const union = unionTierIndex();
+
+    await openHarness(page, DRAIN_URL);
+    const mountLine = await lineOf(page);
+    expect(await tierOf(page), 'the drain run did not mount at 평온(0)').toBe(0);
+    expect([...(union.get(mountLine) ?? [])], `mounted line is not a tier-0 variant`).toContain(0);
+
+    const tiers = await driveTierLadder(page, DRAIN_URL, 2);
+    const tier = tiers[tiers.length - 1];
+    expect(tier, 'the drain run did not reach 한계').toBe(3);
+
+    // 한계 freezes the hand (u11 AC8) — the line on screen is the last one served.
+    const finalLine = await lineOf(page);
+    expect(finalLine.length, 'the 한계 line is empty').toBeGreaterThan(0);
+    expect(finalLine, 'the 한계 line is still the mounted 평온 line').not.toBe(mountLine);
+    expect(
+      [...(union.get(finalLine) ?? [])].some((t) => t >= 2),
+      `the 한계 line "${finalLine}" is not authored for a high tier`,
+    ).toBe(true);
+  });
+});
