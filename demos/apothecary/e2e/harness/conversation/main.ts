@@ -21,10 +21,30 @@ interface HarnessHooks {
 const hooks = window as unknown as HarnessHooks;
 hooks.__onCompleteCount = 0;
 
+/**
+ * u11 harness knob (design D7): `?customer=<id>` picks which shipped customer is
+ * mounted and `?budget=<n>` overrides that customer's patience budget, so the
+ * tier ladder can be driven end to end WITHOUT editing data/customers.json (a
+ * content file other specs pin). Both are harness-boundary substitutions —
+ * absent or unusable params leave the default mount byte-identical.
+ */
+function pickCustomer<T extends { id: string; patienceBudget: number }>(
+  customers: readonly T[],
+  search: string,
+): T | undefined {
+  const params = new URLSearchParams(search);
+  const wanted = params.get('customer');
+  const chosen = customers.find((customer) => customer.id === wanted) ?? customers[0];
+  if (chosen === undefined) return undefined;
+  const budget = Number(params.get('budget'));
+  if (!Number.isInteger(budget) || budget <= 0) return chosen;
+  return { ...chosen, patienceBudget: budget };
+}
+
 const app = document.getElementById('app');
 if (app) {
   const customers = loadCustomers(customersData);
-  const first = customers[0];
+  const first = pickCustomer(customers, window.location.search);
   if (first) {
     mountConversation(
       app,
