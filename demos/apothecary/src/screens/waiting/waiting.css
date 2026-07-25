@@ -1,0 +1,142 @@
+/* waiting.css — screen-scoped scenery for the door-idle beat (u8).
+ * Self-contained: colour/space/motion tokens come from base.css, while the
+ * shared vocabulary in animations.css is left untouched (OCP) — the two
+ * keyframes below are `waiting-*` prefixed and live only here.
+ * The motion is deliberately non-indicative: a lamp that breathes and dust that
+ * drifts. Nothing fills, sweeps, counts or otherwise reads as a meter. */
+
+.waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  min-height: 320px;
+  padding: var(--space-4);
+  color: var(--color-text-dim);
+}
+
+/* --- scenery ------------------------------------------------------------- */
+
+.waiting__scene {
+  position: relative;
+  width: 160px;
+  height: 200px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.waiting__door {
+  position: relative;
+  width: 120px;
+  height: 180px;
+  border: 2px solid var(--color-border);
+  border-bottom: none;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  background: var(--color-surface);
+  overflow: hidden;
+  transition: background-color var(--duration-slow) var(--ease-emphasized);
+}
+
+/* The sliver of light under the door — widens when the beat settles. */
+.waiting__door-seam {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 2px;
+  height: 100%;
+  transform: translateX(-50%);
+  background: var(--color-accent);
+  opacity: 0.25;
+  transition:
+    width var(--duration-slow) var(--ease-emphasized),
+    opacity var(--duration-slow) var(--ease-emphasized);
+}
+
+.waiting__lamp {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 96px;
+  height: 96px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-accent), transparent 70%);
+  opacity: 0.35;
+  animation: waiting-lamp-breathe 9s var(--ease-standard) infinite;
+}
+
+.waiting__mote {
+  position: absolute;
+  bottom: 24px;
+  left: calc(38% + var(--i) * 12%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--color-text-dim);
+  opacity: 0;
+  animation: waiting-mote-rise 5.5s var(--ease-standard) infinite;
+  animation-delay: calc(var(--i) * 1.4s);
+}
+
+/* --- the injected line --------------------------------------------------- */
+
+.waiting__line {
+  margin: 0;
+  max-width: 32ch;
+  text-align: center;
+  line-height: 1.6;
+  color: var(--color-text-dim);
+}
+
+/* --- settling: the caller opened the door -------------------------------- */
+
+.waiting[data-phase='settling'] .waiting__door {
+  background: var(--color-surface-hover);
+}
+
+.waiting[data-phase='settling'] .waiting__door-seam {
+  width: 100%;
+  opacity: 0.6;
+}
+
+/* --- ambient keyframes --------------------------------------------------- */
+
+@keyframes waiting-lamp-breathe {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: translateX(-50%) scale(0.96);
+  }
+  50% {
+    opacity: 0.42;
+    transform: translateX(-50%) scale(1.04);
+  }
+}
+
+@keyframes waiting-mote-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-90px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waiting__lamp,
+  .waiting__mote {
+    animation: none;
+  }
+
+  .waiting__door,
+  .waiting__door-seam {
+    transition: none;
+  }
+}
