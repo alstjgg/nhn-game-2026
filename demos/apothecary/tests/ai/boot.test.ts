@@ -233,13 +233,20 @@ describe('AC17 boot.ts is side-effect free at import time', () => {
 });
 
 // ── AC20 guard — the wiring files stay untouched in this unit ──────────────
-describe('AC20 u1 does not wire the app (u13 owns main.ts / app/index.ts)', () => {
-  it('main.ts does not import the boot factory yet', () => {
+// u14 (final integration) retired the first assertion's "…yet": u13 landed the
+// wiring, so "main.ts must not import the boot factory" became a receipt for a
+// hand-off that has happened. Same guard, post-hand-off form — boot wiring lives
+// in main.ts and ONLY there, which is the invariant the pair always protected
+// (the app shell is handed an adapter; it never builds one). Nothing is dropped:
+// the app/index.ts half below is untouched.
+describe('AC20 the boot factory is wired in main.ts and nowhere else', () => {
+  it('main.ts is the single boot site (imports the factory exactly once)', () => {
     const src = readFileSync(new URL('../../src/main.ts', import.meta.url), 'utf8');
-    expect(src).not.toMatch(/ai\/boot/);
+    expect([...src.matchAll(/from\s*'[^']*ai\/boot[^']*'/g)]).toHaveLength(1);
+    expect(src).toMatch(/createBootAdapter/);
   });
 
-  it('app/index.ts does not import the boot factory yet', () => {
+  it('app/index.ts does not import the boot factory', () => {
     const src = readFileSync(new URL('../../src/app/index.ts', import.meta.url), 'utf8');
     expect(src).not.toMatch(/ai\/boot/);
   });

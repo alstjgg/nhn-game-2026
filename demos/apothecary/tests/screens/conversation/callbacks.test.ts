@@ -14,7 +14,6 @@
 //
 // RED until `conversation.ts` grows the additive `options` parameter and the
 // verb dispatch: the S8/S2b assertions below read the current file and fail.
-import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
@@ -25,11 +24,8 @@ const APP_REPO_REL = 'demos/apothecary/src/app/index.ts';
 const read = (rel: string): string =>
   readFileSync(new URL(`../../../${rel}`, import.meta.url), 'utf8');
 
-/** Repo root — two levels above demos/apothecary. */
-const repoRoot = (): string => new URL('../../../../../', import.meta.url).pathname;
-
-const git = (...args: string[]): string =>
-  execFileSync('git', args, { cwd: repoRoot(), encoding: 'utf8' }).trim();
+// (The git helper this file used for its branch-diff receipt went with the
+// assertion u14 retired — the remaining checks are all source-text reads.)
 
 /** Body of `export interface <name> { … }`, brace-matched. */
 function interfaceBody(src: string, name: string): string {
@@ -122,11 +118,26 @@ describe('S2b — patienceCost is no longer an identity test', () => {
   });
 });
 
-describe('AC3d/AC5a — foreign files stay out of this unit’s diff', () => {
-  it('leaves src/app/index.ts untouched (u13 owns the wiring)', () => {
-    expect(git('status', '--porcelain', '--', APP_REPO_REL)).toBe('');
-    const base = git('merge-base', 'HEAD', 'main');
-    expect(git('log', '--oneline', `${base}..HEAD`, '--', APP_REPO_REL)).toBe('');
+describe('AC3d/AC5a — the conversation screen’s front door is the only way in', () => {
+  // u14 (final integration): this was a git-diff receipt ("u10 did not touch the
+  // file u13 owns"), and u13 has now rewired that file on purpose — a branch-diff
+  // assertion cannot survive the merge it was waiting for. What it was really
+  // protecting is that the shell may not reach PAST the screen's front door into
+  // u10's internals, so that is asserted directly on the wiring file instead. The
+  // mount-signature half below is untouched.
+  it('lets the app shell import the conversation only through conversation.ts', () => {
+    const src = read(APP_REL);
+    const imports = [...src.matchAll(/from\s*'([^']*screens\/conversation\/[^']*)'/g)].map(
+      (m) => m[1],
+    );
+    expect(imports.length, `${APP_REPO_REL} imports no conversation module at all`).toBeGreaterThan(
+      0,
+    );
+    for (const specifier of imports) {
+      expect(specifier, 'the shell reached past conversation.ts into u10’s internals').toMatch(
+        /screens\/conversation\/conversation\.ts$/,
+      );
+    }
   });
 
   it('leaves the app-shell mount calls at 3 arguments (no options passed yet)', () => {

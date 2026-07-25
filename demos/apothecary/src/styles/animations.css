@@ -37,7 +37,15 @@
   }
 }
 
-/* patience meter draining toward zero — animates `transform: scaleX()`
+/* RETAINED, NOT LIVE (u14 juice audit). u11 replaced the patience meter with the
+ * diegetic expression tier, so NOTHING under src/ references these rules any more
+ * — but two specs u14 may not edit still pin the vocabulary's existence
+ * (tests/ui/cards.test.ts, e2e/patience.spec.ts). Deleting it here would turn the
+ * whole-gate green red, so the decision is "keep it and record why"
+ * (DISCOVERY.md › u14 juice policy) rather than a silent removal. It costs one
+ * unused keyframe and stays honest: no production selector can reach it.
+ *
+ * patience meter draining toward zero — animates `transform: scaleX()`
  * (compositor-only) rather than `width`, so a continuously draining meter
  * never triggers layout/paint. Requires `transform-origin: left` on the
  * meter fill element (set on .anim-meter-drain below) so the scale shrinks
@@ -71,6 +79,41 @@
     transform: translateY(10%) rotate(2deg);
   }
 }
+
+/* ── v2 async beats (u14) ──────────────────────────────────────────────────
+ * The async pipeline (§2.3) made two NEW "not here yet" states visible, and both
+ * are pauses — so both are ambient by policy: they breathe, never fill, sweep or
+ * count, because a player must not be able to read "how late is it" off the
+ * screen (§2.3's no-readout rule, same reason the patience meter is gone).
+ *
+ * They live at the vocabulary layer, not in the screens that show them, for two
+ * concrete reasons: the reduced-motion wildcard at the bottom of this file then
+ * clamps their infinite iteration for free (NFR4b — one guard, not one per
+ * screen), and the app shell (app.css) is what knows which phase is on stage, so
+ * it is what attaches them. Durations are derived from the shared tokens
+ * (`calc()` on --duration-slow), never authored as inline milliseconds. */
+
+/* A portrait that has NOT arrived yet: the backlit figure breathes instead of
+ * sitting on the counter as a dead black rectangle. u9 owns the arrival itself
+ * (portrait-resolve, portrait.css) — this is only the wait before it, and it is
+ * opacity-only so a late-arriving sheet still costs zero layout. */
+@keyframes silhouette-breathe {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* The door-idle beat's companion keyframe (the hush under the lamp) canNOT live
+ * here: u8's AC5.4 pins this sheet against that screen's own vocabulary — the
+ * door-idle screen must stay self-contained — and that spec is outside u14's
+ * globs. It is defined one layer up instead, in src/app/app.css beside the phase
+ * selector that attaches it; the wildcard guard below is a `*` rule, so it clamps
+ * that animation exactly the same. Recorded in DISCOVERY.md › u14 juice policy. */
 
 /* reusable helpers screens can attach to elements */
 .anim-portrait-enter {

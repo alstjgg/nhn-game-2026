@@ -126,6 +126,43 @@
   transform: translateY(-1px);
 }
 
+/* ── v2 async beats (u14 juice) ─────────────────────────────────────────────
+ * The shell attaches the two waiting animations from the shared vocabulary
+ * (animations.css) because the shell is what knows which phase is on stage. Both
+ * are ambient loops with NO readout: nothing on screen may let a player measure
+ * how late a generation is (§2.3). Durations derive from the motion tokens, and
+ * the reduced-motion wildcard in animations.css clamps both for free (NFR4b). */
+
+/* The unlit figure at the counter, while its sheet is still in flight. Scoped to
+ * the conversation phase so it cannot outlive the wait: u9's arrival swaps
+ * --silhouette out for --arrived, which drops this selector entirely and hands
+ * the panel back to portrait-resolve. */
+.phase[data-phase='conversation'] .portrait-frame__cell--silhouette {
+  animation: silhouette-breathe calc(var(--duration-slow) * 12) var(--ease-standard) infinite;
+}
+
+/* The door-idle beat's hush: the shop's own thought breathes while the next
+ * customer is still being generated. Pairs with u8's lamp/mote scenery
+ * (waiting.css) — same non-indicative register, one octave quieter. Defined HERE
+ * rather than in the shared vocabulary because u8 pins animations.css against the
+ * word "waiting" (its screen must stay self-contained); the reduced-motion
+ * wildcard in animations.css is a `*` rule and clamps it either way. */
+@keyframes waiting-hush {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* The door-idle beat's line (u8's `waiting__line`), breathing under the lamp. */
+.phase[data-phase='waiting'] .waiting__line {
+  animation: waiting-hush calc(var(--duration-slow) * 12) var(--ease-standard) infinite;
+}
+
 /* ── Overlap overlay (재방문 channel) ───────────────────────────────────────
  * Sits ABOVE the live customer-2 conversation so customer 1's delayed outcome
  * literally overlaps the next visit (§1.4). It arrives via its own keyframe so
