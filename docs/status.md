@@ -37,6 +37,19 @@ change here.
 
 ## Decision log
 
+- 2026-07-25 — No real-time image generation, in any concept: NPCs (appearance, problems,
+  portraits) ship as pre-generated, manifested asset sets; only speech/dialogue text is
+  generated at runtime. The runtime LLM layer is therefore single-provider (Bedrock only) —
+  no gpt-image-1/OpenAI in deployment; apothecary's portrait endpoint is dev-time tooling.
+- 2026-07-25 — LLM backend direction settled: stateless proxy, GitHub Pages → API Gateway →
+  Lambda → Bedrock Converse, per `docs/llm-backend-aws-bedrock.md` (PR #48). PR #15's
+  `services/agent-arena-api/` merged as a **superseded reference implementation** — kept for
+  history and salvage (closed-action validation, contract shapes), never deployed.
+- 2026-07-25 — AWS account live and verified: personal account `141840355276`, IAM Identity
+  Center (both members), CLI profile `nhn-game`, budget alarms, and both candidate models
+  (Haiku 4.5 / Nova 2 Lite) answering real Converse calls via Global inference profiles.
+  The common LLM layer is being built **before** the bake-off completes (plumbing is
+  concept-agnostic); plan + account state in `docs/handoffs/llm-layer.md`.
 - 2026-07-25 — Darkest Context: solo-tile 담당 (1:1 duel, jailbreak) is not player-assigned;
   the party elects one member via the shared council engine at walk-start (volunteer/nominate
   → deterministic engine tally; fallback = highest aptitude stat), then the elected unit's
