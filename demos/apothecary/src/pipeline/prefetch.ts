@@ -109,12 +109,11 @@ export interface PrefetchHandle {
    * callback. LIMITATION: this does NOT abort in-flight adapter work — the
    * live/fallback promises already in flight keep running to completion (or
    * their own timeout) with the result simply discarded here. AIAdapter has
-   * no AbortSignal seam to cancel them through, and src/ai/adapter.ts is a
-   * frozen path for this unit. Concretely, createLiveAdapter's own timeouts
-   * mean an orphaned dialogue call can keep running up to ~70s (35s × one
-   * retry) and a portrait call up to 180s past this cancel(). Follow-up:
-   * thread an AbortSignal through AIAdapter so cancel() can actually stop
-   * the network call, not just its effect on this module's state.
+   * no AbortSignal seam to cancel them through. Concretely, the current live
+   * dialogue call has one 8.5s request budget and no retry; runtime portrait
+   * generation rejects without making a request. Follow-up: thread an
+   * AbortSignal through AIAdapter so cancel() can actually stop the dialogue
+   * request, not just its effect on this module's state.
    */
   cancel(): void;
 }

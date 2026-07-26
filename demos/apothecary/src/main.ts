@@ -2,12 +2,16 @@
 // decisions the app shell must not make for itself:
 //
 //   1. WHICH ADAPTER. `createBootAdapter` probes the dev-proxy's health and takes
-//      the live adapter only when it answers ok. Production ships no middleware
-//      (the proxy plugin is `apply: 'serve'`), so a built demo must not even ask:
-//      the probe is dev-only, which makes the deployed Pages build stub-mode by
-//      construction — no request, no secrets, no failed fetch in the console.
-//      The resulting instance is injected ONCE and shared by the whole app; no
-//      screen ever builds its own.
+//      the live adapter only when it answers ok and advertises dialogue support.
+//      Local Lambda mode reaches AWS through Vite's same-origin proxy. A Pages
+//      build opts into the deployed endpoint with VITE_AI_BASE_URL; builds with
+//      no endpoint remain stub-only and make no request.
+//      The health decision runs behind a deferred adapter so the first entrance
+//      paints immediately; a cold start can never leave a blank page. The
+//      bundled stub is validated synchronously before that mount, so malformed
+//      static data still fails loudly instead of becoming a silent fallback.
+//      After validation, network/live failures select that known-good stub. The
+//      resulting selected instance is injected ONCE and shared by the whole app.
 //   2. HOW LONG THE SHOP WAITS. Deadlines are data. The live spec is 25s, but a
 //      judge playing the deployed stub build must never be parked that long, so
 //      boot hands the shell the stub deadline instead — same code path, same
@@ -18,23 +22,34 @@
 // No routing — phases are animated DOM states inside #app (the app shell's job).
 import { probeHealth } from './ai/adapter.ts';
 import { createBootAdapter } from './ai/boot.ts';
+import { createDeferredAdapter } from './ai/deferred.ts';
 import { createRealClock } from './pipeline/clock.ts';
 import { mountApp } from './app/index.ts';
 import { LIVE_DEADLINE_MS, SIMULATED_GENERATION_MS, STUB_DEADLINE_MS } from './app/roster.ts';
 
-async function boot(container: HTMLElement): Promise<void> {
-  const adapter = await createBootAdapter({
-    probe: import.meta.env.DEV ? probeHealth : () => Promise.resolve(null),
-    stubConfig: { latencyMs: SIMULATED_GENERATION_MS },
+function boot(container: HTMLElement): void {
+  const liveEndpointConfigured =
+    import.meta.env.DEV || Boolean(import.meta.env.VITE_AI_BASE_URL);
+  const selected = createBootAdapter({
+    probe: liveEndpointConfigured ? probeHealth : () => Promise.resolve(null),
+    stubConfig: {
+      latencyMs: liveEndpointConfigured
+        ? { dialogueMs: 0, portraitMs: 0 }
+        : SIMULATED_GENERATION_MS,
+    },
   });
+  const adapter = createDeferredAdapter(selected);
   mountApp(container, {
     adapter,
     clock: createRealClock(),
-    generatedDeadlineMs: adapter.mode === 'live' ? LIVE_DEADLINE_MS : STUB_DEADLINE_MS,
+    // A prefetch started while health is still pending must outlive the probe.
+    // Offline production keeps the authored short deadlines and choreography.
+    ...(liveEndpointConfigured ? { deadlineMs: LIVE_DEADLINE_MS } : {}),
+    generatedDeadlineMs: liveEndpointConfigured ? LIVE_DEADLINE_MS : STUB_DEADLINE_MS,
   });
 }
 
 const app = document.getElementById('app');
 if (app) {
-  void boot(app);
+  boot(app);
 }

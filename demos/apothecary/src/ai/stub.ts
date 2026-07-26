@@ -1,7 +1,7 @@
-// Stub AI adapter (PRD §2.1) — the deployed Pages build has no dev-proxy, so this
-// is the mode judges actually play. It answers from canned data
-// (data/stub-dialogue.json) through the SAME AIAdapter seam and the SAME
-// contract validators as the live path, so the renderer cannot tell them apart.
+// Stub AI adapter (PRD §2.1) — the authored fallback used when the live dialogue
+// endpoint is unavailable. It answers from data/stub-dialogue.json through the
+// same AIAdapter seam and contract validator, so the renderer cannot tell the
+// delivery modes apart.
 //
 // Two invariants shape this file:
 //   - determinism: identical requests produce deeply-equal beats; portrait choice
@@ -32,8 +32,9 @@ import {
 
 /** Single tuning source for card costs — the canned data never states a cost. */
 const VERB_COSTS: Record<ChoiceVerb, number> = verbCosts;
+const VERBS = Object.keys(VERB_COSTS) as ChoiceVerb[];
 
-/** Bundled expression sheets used whenever no portrait was generated. */
+/** Bundled expression sheets used for every runtime portrait. */
 const FALLBACK_PORTRAITS: readonly string[] = [fallbackPortraitA, fallbackPortraitB];
 
 // ── Canned-data shapes (JSON mirror of DialogueBeat, minus derived fields) ───
@@ -121,12 +122,14 @@ function parseBeat(raw: unknown, where: string): StubBeat {
   const beat = asRecord(raw, where);
   const { npcLine, choices, tierLines } = beat;
   if (typeof npcLine !== 'string' || npcLine.length === 0) fail(`${where} needs a non-empty npcLine`);
-  if (!Array.isArray(choices) || choices.length < 3 || choices.length > 4) {
-    fail(`${where} needs 3–4 choices`);
+  if (!Array.isArray(choices) || choices.length !== 4) {
+    fail(`${where} needs exactly 4 choices`);
   }
   const parsedChoices = choices.map((choice, i) => parseChoice(choice, `${where} choice ${i}`));
-  if (parsedChoices.filter((choice) => choice.verb === 'craft').length !== 1) {
-    fail(`${where} needs exactly one craft card`);
+  for (const verb of VERBS) {
+    if (parsedChoices.filter((choice) => choice.verb === verb).length !== 1) {
+      fail(`${where} needs exactly one ${verb} card`);
+    }
   }
   const parsed: StubBeat = { npcLine, choices: parsedChoices };
   if (tierLines !== undefined) {
@@ -225,9 +228,8 @@ function lineForTier(beat: StubBeat, tier: PatienceTier): string {
 /**
  * Clue ids the card may reveal. Canned ids survive only while the request still
  * offers them — an empty `availableClues` means "everything is already
- * revealed" (matches the frozen proxy's rule, server/ai-proxy.mjs: "없으면
- * clueReveals를 비운다"), so it filters to `[]` like any other case, never to
- * "return every canned id unfiltered".
+ * revealed", so it filters to `[]` like any other case, never to "return every
+ * canned id unfiltered".
  *
  * An observe card left with nothing to reveal falls back to an available clue
  * so observing is never a wasted turn — but ONLY a clue that belongs to this
@@ -279,7 +281,7 @@ export function resolveBeat(data: StubDialogueData, req: DialogueRequest): Dialo
   // exists so a future bug in this construction logic (not the data) fails
   // loudly instead of silently shipping a beat the live path's own gate
   // (isDialogueBeat) would have rejected.
-  if (!isDialogueBeat(built)) {
+  if (!isDialogueBeat(built, req.availableClues.map((clue) => clue.id))) {
     fail(`internal: resolved beat for "${script.problem}" failed isDialogueBeat (construction bug, not a data error)`);
   }
   return built;

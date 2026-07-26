@@ -54,7 +54,8 @@ function validBeat(npcLine = '어깨가 무겁습니다'): DialogueBeat {
     choices: [
       { label: '조심스레 묻는다', verb: 'indirect', patienceCost: 1 },
       { label: '바로 캐묻는다', verb: 'direct', patienceCost: 2 },
-      { label: '손끝을 살핀다', verb: 'observe', patienceCost: 1, clueReveals: ['c1'] },
+      { label: '손끝을 살핀다', verb: 'observe', patienceCost: 0, clueReveals: ['c1'] },
+      { label: '[조제하러 가기]', verb: 'craft', patienceCost: 0 },
     ],
   };
 }

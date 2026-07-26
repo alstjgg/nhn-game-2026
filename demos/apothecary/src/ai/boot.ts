@@ -1,13 +1,17 @@
 // Boot factory (PRD §2.1) — decides live vs stub ONCE, at startup.
 //
-// Rule: probe the dev-proxy health endpoint with an 800ms budget; take the live
-// adapter only when it answers ok, otherwise the stub. Production builds ship no
-// middleware, so the deployed demo is stub-mode by construction.
+// Rule: probe the configured health endpoint with a cold-start-aware budget;
+// take the live adapter only when dialogue is available, otherwise use the stub.
 //
 // Everything is injectable and this module is side-effect free at import time —
-// nothing here runs until a caller (u13's wiring) awaits the factory.
+// nothing here runs until a caller invokes the factory.
 
-import { createLiveAdapter, probeHealth, type AIAdapter } from './adapter.ts';
+import {
+  createLiveAdapter,
+  HEALTH_PROBE_TIMEOUT_MS,
+  probeHealth,
+  type AIAdapter,
+} from './adapter.ts';
 import type { AIHealth } from './contract.ts';
 import { createStubAdapter, type StubAdapterConfig } from './stub.ts';
 
@@ -15,18 +19,18 @@ export type HealthProbe = (timeoutMs?: number) => Promise<AIHealth | null>;
 
 export interface BootDeps {
   probe?: HealthProbe;
-  /** Health-probe budget; PRD §2.1 fixes the default at 800ms. */
+  /** Health-probe budget; allows one Lambda cold start without retrying. */
   timeoutMs?: number;
   createLive?: () => AIAdapter;
   createStub?: (config?: StubAdapterConfig) => AIAdapter;
   stubConfig?: StubAdapterConfig;
 }
 
-const DEFAULT_PROBE_TIMEOUT_MS = 800;
+const DEFAULT_PROBE_TIMEOUT_MS = HEALTH_PROBE_TIMEOUT_MS;
 
 /** Pure decision: only an ok health payload earns the live adapter. */
 export function chooseMode(health: AIHealth | null): 'live' | 'stub' {
-  return health !== null && health.ok ? 'live' : 'stub';
+  return health !== null && health.ok === true && health.dialogue === true ? 'live' : 'stub';
 }
 
 /** Runs the probe defensively: any throw/rejection reads as "no proxy". */
@@ -37,16 +41,16 @@ function probeSafely(probe: HealthProbe, timeoutMs: number): Promise<AIHealth | 
 }
 
 /**
- * Builds the adapter the app runs with. Degrades silently to the canned stub
- * (§3-5) for every *runtime* failure — a dead/rejecting/throwing probe, a
- * `createLive()` construction error. It does NOT swallow a bad stub config or
- * a malformed `data/stub-dialogue.json`: `createStub()` is trusted to throw
- * loudly on bad data (D3, `loadStubDialogue` → `fail()`), and that rejection
- * propagates out of `createBootAdapter` on purpose — a canned-data bug is a
- * boot-time crash, not a mode to fall back from. See tests/ai/boot.test.ts
- * AC16 vs AC16b.
+ * Builds the adapter the app runs with. The bundled stub is constructed before
+ * the asynchronous health probe starts. That keeps malformed bundled data a
+ * synchronous boot failure, so deferred mounting cannot accidentally turn a
+ * static-data bug into a per-track fallback.
+ *
+ * Once that validation succeeds, every *runtime* failure degrades silently to
+ * the already-validated stub (§3-5): a dead/rejecting/throwing probe or a
+ * `createLive()` construction error. See tests/ai/boot.test.ts AC16 vs AC16b.
  */
-export async function createBootAdapter(deps: BootDeps = {}): Promise<AIAdapter> {
+export function createBootAdapter(deps: BootDeps = {}): Promise<AIAdapter> {
   const {
     probe = probeHealth,
     timeoutMs = DEFAULT_PROBE_TIMEOUT_MS,
@@ -55,13 +59,18 @@ export async function createBootAdapter(deps: BootDeps = {}): Promise<AIAdapter>
     stubConfig,
   } = deps;
 
-  const health = await probeSafely(probe, timeoutMs);
-  if (chooseMode(health) === 'live') {
-    try {
-      return createLive();
-    } catch {
-      return createStub(stubConfig);
+  // Deliberately before the first Promise: bad bundled data must throw at the
+  // boot call site, before main.ts mounts the app.
+  const stub = createStub(stubConfig);
+
+  return probeSafely(probe, timeoutMs).then((health) => {
+    if (chooseMode(health) === 'live') {
+      try {
+        return createLive();
+      } catch {
+        return stub;
+      }
     }
-  }
-  return createStub(stubConfig);
+    return stub;
+  });
 }

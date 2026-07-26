@@ -482,11 +482,11 @@ describe('loadStubDialogue validates at load time', () => {
     expect(() => loadStubDialogue(raw)).toThrow(/stub-dialogue/);
   });
 
-  it('rejects a beat with fewer than 3 choices', () => {
+  it('rejects a beat without exactly four choices', () => {
     const raw = validStubRaw();
     const scripts = raw.scripts as { beats: Record<string, unknown>[] }[];
     const beat = scripts[0].beats[0];
-    (beat.choices as unknown[]).splice(2);
+    (beat.choices as unknown[]).pop();
     expect(() => loadStubDialogue(raw)).toThrow(/stub-dialogue/);
   });
 
@@ -501,6 +501,13 @@ describe('loadStubDialogue validates at load time', () => {
     const raw = validStubRaw();
     const scripts = raw.scripts as { beats: Record<string, unknown>[] }[];
     (scripts[0].beats[0].choices as { verb: string }[])[3].verb = 'direct';
+    expect(() => loadStubDialogue(raw)).toThrow(/stub-dialogue/);
+  });
+
+  it('rejects duplicate non-craft verbs at load time', () => {
+    const raw = validStubRaw();
+    const scripts = raw.scripts as { beats: Record<string, unknown>[] }[];
+    (scripts[0].beats[0].choices as { verb: string }[])[2].verb = 'indirect';
     expect(() => loadStubDialogue(raw)).toThrow(/stub-dialogue/);
   });
 

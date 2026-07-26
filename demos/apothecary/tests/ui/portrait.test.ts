@@ -516,10 +516,14 @@ describe('u9 AC5 — vite.config.ts change is one harness build input and nothin
     expect(keys.length).toBe(expected.length);
   });
 
-  it('leaves the aiProxy plugin wiring byte-identical', () => {
+  it('keeps the legacy aiProxy for normal dev and isolates the Lambda proxy mode', () => {
     const src = config();
     expect(src).toMatch(/import\s*\{\s*aiProxy\s*\}\s*from\s*'\.\/server\/ai-proxy\.mjs';/);
-    expect(src).toMatch(/plugins\s*:\s*\[aiProxy\(\)\],/);
+    expect(src).toMatch(
+      /plugins\s*:\s*lambdaUpstream\s*\?\s*\[loopbackOnlyAiProxy\(\)\]\s*:\s*\[aiProxy\(\)\],/,
+    );
+    expect(src).toMatch(/mode\s*===\s*'lambda'/);
+    expect(src).toMatch(/headers:\s*\{\s*Origin:\s*PAGES_ORIGIN\s*\}/);
     expect(src).toMatch(/base\s*:\s*'\.\/',/);
   });
 });

@@ -35,13 +35,19 @@ jobs:
       # on purpose (a deliverable that can't build should be loud); Pages keeps the
       # last successful deploy, so the live root site never breaks meanwhile.
       - name: Build demos into subpaths
+        env:
+          APOTHECARY_AI_BASE_URL: https://zcyeajmv11.execute-api.ap-northeast-2.amazonaws.com
         run: |
           shopt -s nullglob
           for demo in demos/*/; do
             [ -f "${demo}package.json" ] || continue
             slug="$(basename "$demo")"
             echo "::group::Build demo ${slug}"
-            (cd "$demo" && npm ci && npm run build)
+            if [ "$slug" = "apothecary" ]; then
+              (cd "$demo" && npm ci && VITE_AI_BASE_URL="$APOTHECARY_AI_BASE_URL" npm run build)
+            else
+              (cd "$demo" && npm ci && npm run build)
+            fi
             mkdir -p "dist/${slug}"
             cp -r "${demo}dist/." "dist/${slug}/"
             echo "::endgroup::"

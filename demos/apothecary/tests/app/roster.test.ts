@@ -13,7 +13,11 @@
 import { describe, expect, it } from 'vitest';
 import customersData from '../../data/customers.json';
 import fallbackNpcs from '../../data/fallback-npcs.json';
-import { buildRoster } from '../../src/app/roster';
+import {
+  buildRoster,
+  LIVE_DEADLINE_MS,
+  STUB_DEADLINE_MS,
+} from '../../src/app/roster';
 import { loadCustomers } from '../../src/data/loader';
 
 const roster = buildRoster();
@@ -70,5 +74,27 @@ describe('Customer.portrait is READ, and its values resolve', () => {
       // Provenance is required of every producer (CLAUDE.md rule 5).
       expect(sheet.prompt.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('roster prefetch deadlines', () => {
+  it('keeps authored defaults when no live endpoint is configured', () => {
+    const defaultRoster = buildRoster();
+
+    expect(defaultRoster.map((entry) => entry.deadlineMs)).toEqual([
+      fallbackNpcs.seededDeadlineMs,
+      fallbackNpcs.seededDeadlineMs,
+      STUB_DEADLINE_MS,
+    ]);
+  });
+
+  it('applies the live deadline uniformly so C2 cannot fall back at 1.2 seconds', () => {
+    const liveRoster = buildRoster({ deadlineMs: LIVE_DEADLINE_MS });
+
+    expect(liveRoster.map((entry) => entry.deadlineMs)).toEqual([
+      LIVE_DEADLINE_MS,
+      LIVE_DEADLINE_MS,
+      LIVE_DEADLINE_MS,
+    ]);
   });
 });

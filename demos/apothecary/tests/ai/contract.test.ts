@@ -1,24 +1,19 @@
-// u1 RED — contract additions must be additive only (spec AC11, AC18, AC19).
-//
-// src/ai/contract.ts is shared with the FROZEN server/ai-proxy.mjs. This unit may
-// only add `PortraitSheet.url?` and `portraitSrc()`; every existing export must keep
-// its name, signature and meaning, and the proxy's payload must still validate.
+// Renderer-facing response gates shared by authored and Lambda-backed dialogue.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { isDialogueBeat, isPortraitSheet, portraitSrc } from '../../src/ai/contract';
 import type { DialogueBeat, PortraitSheet } from '../../src/ai/contract';
 import { proxyDialoguePayload, proxyPortraitPayload } from './fixtures';
 
-// ── AC19 — the frozen proxy payload still validates ────────────────────────
-describe('AC19 proxy payloads keep passing isDialogueBeat', () => {
-  it('accepts the 4-card beat server/ai-proxy.mjs emits', () => {
+describe('isDialogueBeat enforces the Lambda dialogue contract', () => {
+  it('accepts the four-card beat emitted by the Lambda', () => {
     expect(isDialogueBeat(proxyDialoguePayload())).toBe(true);
   });
 
-  it('accepts a 3-card beat (proxy filters unknown verbs out)', () => {
+  it('requires exactly four cards', () => {
     const payload = proxyDialoguePayload() as DialogueBeat;
     payload.choices.splice(3, 1);
-    expect(isDialogueBeat(payload)).toBe(true);
+    expect(isDialogueBeat(payload)).toBe(false);
   });
 
   it('still rejects the v1 customers.json dialogueNodes shape (2 cards, no verb)', () => {
@@ -33,7 +28,17 @@ describe('AC19 proxy payloads keep passing isDialogueBeat', () => {
     ).toBe(false);
   });
 
-  it('still rejects malformed beats (unchanged validator semantics)', () => {
+  it('requires each registered verb exactly once', () => {
+    const duplicated = proxyDialoguePayload() as DialogueBeat;
+    duplicated.choices[0] = {
+      label: '또 바로 묻는다',
+      verb: 'direct',
+      patienceCost: 2,
+    };
+    expect(isDialogueBeat(duplicated)).toBe(false);
+  });
+
+  it('rejects malformed beats', () => {
     expect(isDialogueBeat(null)).toBe(false);
     expect(isDialogueBeat({ npcLine: '', choices: [] })).toBe(false);
     const badVerb = proxyDialoguePayload() as DialogueBeat;
@@ -53,7 +58,7 @@ describe('AC11 portraitSrc is the one way to build an <img> src', () => {
     expect(portraitSrc(sheet)).toMatch(/fallback-portrait-[12]\.png/);
   });
 
-  it('falls back to a base64 data URI for the live proxy payload (no url)', () => {
+  it('falls back to a base64 data URI for a compatible inline payload (no url)', () => {
     const sheet: PortraitSheet = proxyPortraitPayload();
     expect(portraitSrc(sheet)).toBe(`data:image/png;base64,${sheet.b64}`);
   });
@@ -83,10 +88,36 @@ describe('isDialogueBeat rejects arithmetic-poison patience costs', () => {
     expect(isDialogueBeat(withCost(cost))).toBe(false);
   });
 
-  it('still accepts every cost the shipped verb table uses (0..2)', () => {
-    for (const cost of [0, 1, 2]) {
-      expect(isDialogueBeat(withCost(cost)), `cost ${cost}`).toBe(true);
-    }
+  it('requires the server-owned cost for each verb', () => {
+    expect(isDialogueBeat(withCost(2))).toBe(true);
+    expect(isDialogueBeat(withCost(0))).toBe(false);
+    expect(isDialogueBeat(withCost(1))).toBe(false);
+  });
+});
+
+describe('isDialogueBeat validates revealed clue identifiers', () => {
+  function withClues(clueReveals: unknown): unknown {
+    const beat = proxyDialoguePayload() as DialogueBeat;
+    (beat.choices[2] as { clueReveals: unknown }).clueReveals = clueReveals;
+    return beat;
+  }
+
+  it('accepts unique identifiers supplied by the dialogue request', () => {
+    expect(
+      isDialogueBeat(
+        withClues(['clue_dark_circles', 'clue:racing-mind']),
+        ['clue_dark_circles', 'clue:racing-mind'],
+      ),
+    ).toBe(true);
+  });
+
+  it.each([
+    ['an invented request-scoped id', ['clue_invented'], ['clue_dark_circles']],
+    ['a malformed id', ['not valid'], undefined],
+    ['duplicate ids', ['clue_dark_circles', 'clue_dark_circles'], undefined],
+    ['more than four ids', ['c1', 'c2', 'c3', 'c4', 'c5'], undefined],
+  ])('rejects %s', (_label, clueReveals, availableClueIds) => {
+    expect(isDialogueBeat(withClues(clueReveals), availableClueIds)).toBe(false);
   });
 });
 

@@ -3,11 +3,11 @@
 // Contract under test (design §3.4, src/ai/boot.ts):
 //   chooseMode(health: AIHealth | null): 'live' | 'stub'
 //   createBootAdapter(deps?): Promise<AIAdapter>   — never rejects on a
-//     probe/live-adapter FAILURE (AC16); DOES reject when createStub() throws
-//     on bad canned data (AC16b) — that is a boot-time crash by design.
+//     probe/live-adapter FAILURE (AC16); DOES throw synchronously when
+//     createStub() finds bad canned data (AC16b) — a boot-time crash by design.
 //
 // Everything injectable: probe / timeoutMs / createLive / createStub. The unit
-// must not perform a real health request and must not modify main.ts or app/index.ts.
+// must not perform a real health request or hide boot selection inside app/index.ts.
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AIAdapter } from '../../src/ai/adapter';
@@ -54,7 +54,7 @@ describe('AC14 chooseMode', () => {
   });
 });
 
-// ── AC15 — injected probe, default 800ms timeout ───────────────────────────
+// ── AC15 — injected probe, Lambda-cold-start-aware timeout ─────────────────
 describe('AC15 createBootAdapter uses the injected probe', () => {
   it('calls the injected probe exactly once and never fetches', async () => {
     const spy = fakeProbe(healthOk());
@@ -63,10 +63,10 @@ describe('AC15 createBootAdapter uses the injected probe', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('passes the PRD §2.1 default timeout of 800ms', async () => {
+  it('passes the Lambda cold-start-aware default timeout of 8000ms', async () => {
     const spy = fakeProbe(healthOk());
     await createBootAdapter({ probe: spy.probe, createLive: liveDouble, createStub: stubDouble });
-    expect(spy.args[0]).toBe(800);
+    expect(spy.args[0]).toBe(8_000);
   });
 
   it('honours an explicit timeoutMs override', async () => {
@@ -87,6 +87,19 @@ describe('AC15 createBootAdapter uses the injected probe', () => {
       createStub: stubDouble,
     });
     expect(adapter.mode).toBe('live');
+  });
+
+  it('accepts dialogue-only health when runtime portraits are pre-generated', async () => {
+    const health = healthOk();
+    health.portrait = false;
+    health.models.portrait = 'pre-generated-assets';
+    expect(chooseMode(health)).toBe('live');
+  });
+
+  it('rejects ok health when dialogue capability is unavailable', () => {
+    const health = healthOk();
+    health.dialogue = false;
+    expect(chooseMode(health)).toBe('stub');
   });
 
   it('returns the stub adapter when health is not ok', async () => {
@@ -179,38 +192,40 @@ describe('AC16 failures degrade silently to the stub adapter', () => {
 });
 
 // ── AC16b — bad canned DATA is a boot-time crash, not a stub fallback ──────
-// createStub() is trusted to fail loudly (D3); createBootAdapter must not
-// swallow that the way it swallows a probe/live failure above.
+// createStub() is called before the asynchronous probe and trusted to fail
+// loudly (D3); createBootAdapter must not turn that failure into a rejected
+// deferred selection that the prefetch layer could silently absorb.
 describe('AC16b a broken stubConfig/data propagates instead of degrading', () => {
-  it('rejects when the injected createStub throws', async () => {
-    await expect(
+  it('throws synchronously when the injected createStub throws', () => {
+    expect(() =>
       createBootAdapter({
         probe: fakeProbe(null).probe,
         createStub: () => {
           throw new Error('stub-dialogue: scripts must be an array');
         },
       }),
-    ).rejects.toThrow(/stub-dialogue/);
+    ).toThrow(/stub-dialogue/);
   });
 
-  it('rejects when the real createStub is handed malformed canned data', async () => {
-    await expect(
+  it('throws synchronously when the real createStub is handed malformed canned data', () => {
+    expect(() =>
       createBootAdapter({ probe: () => Promise.resolve(null), stubConfig: { data: { nope: 1 } } }),
-    ).rejects.toThrow(/stub-dialogue/);
+    ).toThrow(/stub-dialogue/);
   });
 
-  it('also rejects on the live-health path (not just the null-health path)', async () => {
-    await expect(
+  it('fails before the health probe starts, even when that probe would report live', async () => {
+    const probe = vi.fn(() => Promise.resolve(healthOk()));
+
+    expect(() =>
       createBootAdapter({
-        probe: fakeProbe(healthOk()).probe,
-        createLive: () => {
-          throw new Error('live construction failed');
-        },
+        probe,
         createStub: () => {
           throw new Error('stub-dialogue: bad canned data');
         },
       }),
-    ).rejects.toThrow(/stub-dialogue/);
+    ).toThrow(/stub-dialogue/);
+    await Promise.resolve();
+    expect(probe).not.toHaveBeenCalled();
   });
 });
 
@@ -244,6 +259,8 @@ describe('AC20 the boot factory is wired in main.ts and nowhere else', () => {
     const src = readFileSync(new URL('../../src/main.ts', import.meta.url), 'utf8');
     expect([...src.matchAll(/from\s*'[^']*ai\/boot[^']*'/g)]).toHaveLength(1);
     expect(src).toMatch(/createBootAdapter/);
+    expect(src).toMatch(/VITE_AI_BASE_URL/);
+    expect(src).not.toMatch(/import\.meta\.env\.DEV\s*\?\s*probeHealth\s*:/);
   });
 
   it('app/index.ts does not import the boot factory', () => {

@@ -1,7 +1,8 @@
-// AI contract — the ONE schema stub and live modes share (PRD §2.1, invariant
-// §3-2). Mirrored by the dev-proxy (server/ai-proxy.mjs); any renderer-facing
-// type lives here and only here. PROVIDED INPUT for the v2 run: extend via new
-// fields if a unit needs them, but keep stub and live emitting the same shape.
+// AI contract — the ONE renderer-facing schema shared by bundled and live
+// dialogue (PRD §2.1, invariant §3-2). The Lambda validates the same response
+// invariants before returning a beat.
+
+import { verbCosts } from '../../data/generation.json';
 
 /** Choice verbs (PRD §1-2). Patience costs per verb live in data/generation.json. */
 export type ChoiceVerb = 'indirect' | 'direct' | 'observe' | 'craft';
@@ -43,20 +44,17 @@ export interface DialogueRequest {
   availableClues: { id: string; text: string }[];
 }
 
-/** Portrait request: trait strings only; the proxy composes the prose prompt. */
+/** Portrait selection request: traits deterministically select a bundled sheet. */
 export interface PortraitRequest {
   traits: string[];
 }
 
 /**
- * A generated 4×2 expression sheet (PNG base64) + the prompt used (manifest).
- * `url` is ADDITIVE (v2, unit u1): the stub mode serves a bundled fallback sheet
- * by URL instead of inlining base64, so nothing about the live payload changes.
+ * A 4×2 expression sheet reference plus provenance metadata.
  *
- * Stub mode leaves `b64` empty and always sets `url`; the live adapter is the
- * opposite (`url` unset, `b64` required — see `src/ai/adapter.ts`'s guard on
- * an empty `b64`). Never read `b64` directly to build an `<img>` src — use
- * `portraitSrc()`, the only accessor that is safe across both modes.
+ * Runtime portraits are bundled assets and therefore set `url` while leaving
+ * `b64` empty. The base64 form remains supported for compatibility. Never read
+ * either field directly to build an `<img>` src — use `portraitSrc()`.
  *
  * `prompt` is REQUIRED of every producer: it is the only machine-checkable tie
  * between a sheet and the prose that produced it, i.e. the provenance CLAUDE.md
@@ -97,7 +95,7 @@ function isAssetUrl(url: string): boolean {
   return !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url);
 }
 
-/** The one way to build an <img> src: bundled sheet first, live base64 otherwise. */
+/** The one way to build an <img> src: bundled sheet first, inline base64 otherwise. */
 export function portraitSrc(sheet: PortraitSheet): string {
   return sheet.url !== undefined && sheet.url.length > 0
     ? sheet.url
@@ -105,11 +103,9 @@ export function portraitSrc(sheet: PortraitSheet): string {
 }
 
 /**
- * THE single portrait response gate — shared by the live adapter, the
- * prefetch pipeline's response gate (re-exported from
- * `src/pipeline/prefetch.ts`) and the stub's own self-check. Do not fork this
- * check: a second copy is exactly how the b64-only track silently discarded
- * every url-only sheet (integration f1).
+ * THE single portrait value gate — shared by the prefetch pipeline and the
+ * bundled provider's self-check. Do not fork this check: a second copy is
+ * exactly how a b64-only track can silently discard every url-only sheet.
  *
  * A sheet with an empty `b64` AND no/empty `url` is invalid — that is exactly
  * the shape `portraitSrc()` cannot turn into a real image. `prompt` is never
@@ -144,37 +140,61 @@ export interface AIHealth {
 }
 
 /**
- * Validator shared by live adapter (response gate) and stub tests.
+ * Validator shared by the live adapter, authored beats and stub tests.
  *
- * `patienceCost` is checked FINITE and non-negative (PR #33, R1 on
- * src/screens/conversation/conversation.ts:355), not merely `typeof number`.
- * A `NaN` cost survives the reducer's `Math.max(0, cost)` clamp, and the very
- * next `tierFor()` throws by design on a non-finite patience — inside a card's
- * click handler, so the beat never advances, the hand stays enabled and the
- * conversation dead-ends with no degrade. `Infinity` silently force-ends the
- * conversation, a negative cost makes a paid card free. All three are payload
- * bugs, so they are rejected at the ONE renderer-facing gate and the beat
- * degrades to the seeded one (§2.1) instead of reaching the arithmetic.
+ * Every beat must contain the four verbs exactly once, with patience costs from
+ * the game-owned table. This keeps malformed or model-selected costs out of the
+ * reducer and makes the client boundary match the Lambda response contract.
  */
-export function isDialogueBeat(v: unknown): v is DialogueBeat {
+const DIALOGUE_VERBS: readonly ChoiceVerb[] = ['indirect', 'direct', 'observe', 'craft'];
+const CLUE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
+const VERB_COSTS: Readonly<Record<ChoiceVerb, number>> = verbCosts;
+
+/**
+ * When `availableClueIds` is supplied (the live request boundary), revealed
+ * clues must be members of that request. Callers validating authored data can
+ * omit it and still receive the structural and identifier checks.
+ */
+export function isDialogueBeat(
+  v: unknown,
+  availableClueIds?: Iterable<string>,
+): v is DialogueBeat {
   if (typeof v !== 'object' || v === null) return false;
   const b = v as Record<string, unknown>;
   if (typeof b.npcLine !== 'string' || !b.npcLine) return false;
-  if (!Array.isArray(b.choices) || b.choices.length < 3 || b.choices.length > 4) return false;
-  const verbs: string[] = ['indirect', 'direct', 'observe', 'craft'];
-  return b.choices.every((c) => {
+  if (!Array.isArray(b.choices) || b.choices.length !== DIALOGUE_VERBS.length) return false;
+
+  const allowedClueIds =
+    availableClueIds === undefined ? undefined : new Set(availableClueIds);
+  const seenVerbs = new Set<ChoiceVerb>();
+  const choicesAreValid = b.choices.every((c) => {
     if (typeof c !== 'object' || c === null) return false;
     const ch = c as Record<string, unknown>;
+    if (
+      typeof ch.label !== 'string' ||
+      ch.label.length === 0 ||
+      typeof ch.verb !== 'string' ||
+      !DIALOGUE_VERBS.includes(ch.verb as ChoiceVerb)
+    ) {
+      return false;
+    }
+
+    const verb = ch.verb as ChoiceVerb;
+    if (seenVerbs.has(verb) || ch.patienceCost !== VERB_COSTS[verb]) return false;
+    seenVerbs.add(verb);
+
+    if (ch.clueReveals === undefined) return true;
+    if (!Array.isArray(ch.clueReveals) || ch.clueReveals.length > 4) return false;
+    const clues = ch.clueReveals;
     return (
-      typeof ch.label === 'string' &&
-      ch.label.length > 0 &&
-      typeof ch.verb === 'string' &&
-      verbs.includes(ch.verb) &&
-      typeof ch.patienceCost === 'number' &&
-      Number.isFinite(ch.patienceCost) &&
-      ch.patienceCost >= 0 &&
-      (ch.clueReveals === undefined ||
-        (Array.isArray(ch.clueReveals) && ch.clueReveals.every((id) => typeof id === 'string')))
+      new Set(clues).size === clues.length &&
+      clues.every(
+        (id) =>
+          typeof id === 'string' &&
+          CLUE_ID_PATTERN.test(id) &&
+          (allowedClueIds === undefined || allowedClueIds.has(id)),
+      )
     );
   });
+  return choicesAreValid && seenVerbs.size === DIALOGUE_VERBS.length;
 }

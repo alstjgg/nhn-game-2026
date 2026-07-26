@@ -733,13 +733,6 @@ const REQUIRED_SHOTS = [
   '09-c3-outcome',
 ] as const;
 
-/**
- * The live-only tag, assembled rather than written: a literal occurrence in this
- * file would both trip the fence audit below and hide whatever test title holds
- * it from the default gate (`grepInvert` in playwright.config.ts:12).
- */
-const LIVE_TAG = `@${'live'}`;
-
 /** v1 regression floor: every spec that existed before u14 must still exist. */
 const SPEC_FLOOR = [
   'assets.spec.ts',
@@ -789,38 +782,29 @@ test.describe('u14 deliverables — artifacts, append-only docs, juice policy', 
     }
   });
 
-  test('live-smoke.md gains a v2 live-behaviour section and deletes nothing (AC10/FR4)', () => {
-    const rel = 'demos/apothecary/e2e/live-smoke.md';
-    expect(deletedLines(rel), 'live-smoke.md is a provided input: append only').toEqual([]);
-
+  test('live-smoke.md documents the dedicated Lambda test command (AC10/FR4)', () => {
     const md = readDemo('e2e/live-smoke.md');
     for (const heading of [
-      '### A. 부트 & 모드 판별',
-      '### B. 라이브 대화 (손님 1~2)',
-      '### C. 비동기 생성 (손님 3 — 핵심 검증)',
-      '### D. 무음 열화 (네트워크 차단)',
-      `### E. (선택) ${LIVE_TAG} 태그 스펙`,
-      '## 기록',
+      '## Automated Lambda playthrough',
+      '## Deployed Pages check',
+      '## Failure-path check',
+      '## Record',
     ]) {
-      expect(md, `existing section vanished: ${heading}`).toContain(heading);
+      expect(md, `missing current runbook section: ${heading}`).toContain(heading);
     }
-
-    // A new section, past E, inserted BEFORE the 「기록」 table (D7).
-    const ledgerAt = md.indexOf('## 기록');
-    const head = md.slice(0, ledgerAt);
-    const newSections = [...head.matchAll(/^### (?![A-E]\.)(.+)$/gm)].map((m) => m[1]);
-    expect(newSections.length, 'no v2 section appended before the 「기록」 table').toBeGreaterThan(0);
-
-    const added = head.slice(head.search(/^### (?![A-E]\.)/m));
-    for (const [label, re] of [
-      ['customer-3 live generation', /손님\s*3/],
-      ['silhouette resolution', /실루엣/],
-      ['silent fallback on a blocked network', /(차단|폴백|fallback)/],
-    ] as const) {
-      expect(added, `v2 section does not cover ${label}`).toMatch(re);
+    expect(md).toContain('npm run test:e2e:lambda');
+    for (const stale of [
+      'LIVE=1 npx playwright test',
+      'ANTHROPIC_API_KEY',
+      'OPENAI_API_KEY',
+      '/ai/portrait',
+    ]) {
+      expect(md).not.toContain(stale);
     }
-    // Observation procedure, not prose: each item is a checklist line.
-    expect((added.match(/^- \[ \]/gm) ?? []).length, 'v2 section has no checklist items').toBeGreaterThanOrEqual(3);
+    expect(md).toContain('two Bedrock dialogue requests');
+    expect(md).toContain('no runtime portrait request');
+    expect(md).toContain('GitHub Pages');
+    expect(md).toContain('authored dialogue is selected');
   });
 
   test('DISCOVERY.md records the v2 async-seam friction and deletes nothing (AC12/FR5)', () => {
@@ -914,22 +898,10 @@ test.describe('u14 deliverables — artifacts, append-only docs, juice policy', 
     }
   });
 
-  // NB: this title deliberately spells the tag as "live-tagged" — writing the
-  // literal tag here would make grepInvert filter THIS audit out of the gate.
-  test('live-tagged specs stay behind the grepInvert fence (AC11/NFR4)', () => {
-    const tag = LIVE_TAG;
-    for (const name of SPEC_FLOOR) {
-      const src = readFileSync(resolve(here, name), 'utf8');
-      for (const [i, lineText] of src.split('\n').entries()) {
-        if (!lineText.includes(tag)) continue;
-        const tagged = /test(\.describe)?(\.\w+)*\(\s*['"`]/.test(lineText);
-        const comment = /^\s*(\/\/|\*|\/\*)/.test(lineText);
-        expect(
-          tagged || comment,
-          `e2e/${name}:${i + 1} mentions ${tag} outside a test/describe title — ` +
-            'the grepInvert fence only filters titles, so this leaks into the default gate',
-        ).toBe(true);
-      }
-    }
+  test('the deployed Lambda spec requires its dedicated config (AC11/NFR4)', () => {
+    const regularConfig = readDemo('playwright.config.ts');
+    const lambdaConfig = readDemo('playwright.lambda.config.ts');
+    expect(regularConfig).toContain('testIgnore: /live-lambda\\.spec\\.ts$/');
+    expect(lambdaConfig).toContain("testMatch: 'live-lambda.spec.ts'");
   });
 });

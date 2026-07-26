@@ -1,88 +1,50 @@
-# live-smoke — 라이브 AI 경로 수동 검증 체크리스트
+# Apothecary live-AI smoke test
 
-> **사람이 실행한다** (PRD §4). 자동 게이트는 전부 스텁 모드이므로, 라이브 경로의
-> 최종 보증은 이 체크리스트다. bake-off 전 반드시 1회 통과시킬 것.
-> 사전 조건: `tools/ai-smoke/`가 PASS 상태 (프록시·키·스키마의 콜 단위 검증).
-> 이 문서는 **제공 입력**이다 — 파이프라인 유닛은 새 라이브 동작을 추가할 때만
-> 항목을 덧붙이고, 기존 항목을 수정/삭제하지 않는다.
+The live path uses the deployed API Gateway → Lambda → Bedrock service for the
+C2 and C3 opening dialogue. Later dialogue is authored, and portraits are
+bundled assets.
 
-## 준비
+## Automated Lambda playthrough
+
+Run the dedicated configuration:
 
 ```bash
 cd demos/apothecary
-ANTHROPIC_API_KEY=sk-ant-... OPENAI_API_KEY=sk-... npm run dev
+npm run test:e2e:lambda
 ```
 
-키는 명령줄 환경변수로만 (CLAUDE.md rule 6). 개인 키만 사용.
+This test consumes two Bedrock dialogue requests. The regular
+`npm run test:e2e` command never selects the Lambda spec.
 
-## 체크리스트
+The automated gate verifies:
 
-### A. 부트 & 모드 판별
-- [ ] 브라우저로 dev 서버 접속 → 게임이 **live 모드**로 부팅 (개발자도구 Network에
-      `/ai/health` 200, 응답 `ok: true`)
-- [ ] 번들에 키 없음: 개발자도구 Sources에서 `ANTHROPIC`/`OPENAI` 검색 → 0건
+- `GET /ai/health` returns `ok=true` and `dialogue=true`
+- the app selects the live adapter
+- C2 and C3 each use one successful `POST /ai/dialogue` response
+- both response lines match the rendered UI
+- both responses report `x-llm-fallback=false`
+- no runtime portrait request is made
+- no browser console or page error occurs
+- the game reaches the closing screen
 
-### B. 라이브 대화 (손님 1~2)
-- [ ] 손님 대사가 스텁 원문과 다른, 생성된 문장으로 나온다
-- [ ] 매 비트 선택 카드 3~4장, 4개 verb(우회/직접/[관찰]/[조제하러 가기])가 고르게 등장
-- [ ] 인내심 tier가 오르면 말투가 눈에 띄게 퉁명해진다 (숫자/게이지 UI는 어디에도 없음)
+## Deployed Pages check
 
-### C. 비동기 생성 (손님 3 — 핵심 검증)
-- [ ] 손님 2 대화 **시작 시점**에 Network에서 손님 3의 `/ai/dialogue`+`/ai/portrait`
-      프리페치가 나간다
-- [ ] 초상이 늦으면 손님 3이 실루엣(역광)으로 입장 → 도착 시 부드럽게 해소,
-      레이아웃 리플로우 없음
-- [ ] 생성된 초상이 픽셀화되어 고정 asset과 밀도가 맞는다 (painterly면 클라이언트
-      ÷4 픽셀화 미적용 — 버그)
-- [ ] 눈 깜빡임 동작 (3~6초 간격, 아래 행 스왑)
+After deploying the client, play C1 → C2 → C3 → closing from the GitHub Pages
+URL and confirm:
 
-### D. 무음 열화 (네트워크 차단)
-- [ ] dev 서버를 끄거나 네트워크 차단 → 다음 비트부터 스텁으로 조용히 폴백,
-      **에러 UI/스피너/콘솔 붉은 줄 노출 없음** (플레이어 시점)
-- [ ] 손님 3 생성이 안 되면 25초 대기 비트 후 fallback 초상 + 스텁 대사로 진행
+- the C2 and C3 opening dialogue renders normally
+- the browser reports no CORS or mixed-content error
+- each customer uses a bundled portrait
+- the final note and closing screen are reachable
 
-### E. (선택) @live 태그 스펙
-유닛들이 `@live` Playwright 스펙을 추가했다면 — 게이트에서는 자동 제외됨
-(`playwright.config.ts`의 `grepInvert`):
+## Failure-path check
 
-```bash
-# dev 서버(키 포함)가 떠 있는 상태에서
-LIVE=1 npx playwright test --grep @live
-```
+In a controlled environment, make Bedrock unavailable and repeat the game.
+Confirm that authored dialogue is selected without an error screen, spinner,
+or unhandled browser error.
 
-### F. v2 비동기 파이프라인 (u13 통합 이후 새로 생긴 동작)
+## Record
 
-A~E는 그대로 두고, 아래 항목만 **추가**된다. v2에서 손님이 3명이 되고
-(1~2 시드 + 3번째 생성/폴백 슬롯), 생성이 **직전 손님의 대화 시작 시점**에
-착수되면서 라이브에서만 관찰 가능한 경로가 늘었다.
-
-- [ ] **손님 3 생성 착수 시점**: 손님 2의 대화가 열리는 프레임에
-      `/ai/dialogue` + `/ai/portrait` 두 요청이 **동시에** 나가고, 그 대화의 첫
-      입력(카드 클릭)이 한 틱도 밀리지 않는다 (대화 중 블로킹 0)
-- [ ] **대기 비트 진입 조건**: 손님 2의 결과를 건네고 [문을 열어 두고 다음 손님을
-      기다린다]를 눌렀을 때 손님 3 대사가 아직 안 왔으면 문앞 대기 비트가 뜬다.
-      숫자·게이지·스피너·"생성 중" 문구가 **하나도** 없다 (램프 호흡 + 먼지만)
-- [ ] **라이브 데드라인 실측**: 대기 비트에서 25초 이내에 손님 3이 들어온다.
-      실제 생성 소요시간을 아래 「기록」 메모에 적는다 (스텁은 8초 펜스라
-      이 수치는 라이브에서만 얻을 수 있다)
-- [ ] **실루엣 해결 관찰**: 대사가 먼저 오고 초상이 늦으면 손님 3이 실루엣(역광)
-      으로 입장 → 초상 도착 시 **같은 패널 안에서** 밝아지며 해소되고, 레이아웃
-      리플로우·패널 크기 변화가 없다. 실루엣이 숨 쉬듯 미세하게 밝기 변하는지도
-      확인 (u14 juice: `silhouette-breathe`)
-- [ ] **늦은 도착 / 프리페치 취소**: 손님 3이 실루엣으로 입장한 뒤 초상이 대화
-      **도중에** 도착해도 화면이 튀지 않는다. 반대로 대기 비트 도중 새로고침해
-      요청을 버려도 콘솔에 unhandled rejection이 남지 않는다
-- [ ] **무음 폴백 (네트워크 차단)**: 손님 3 생성이 착수된 뒤 dev 서버를 끄거나
-      네트워크를 차단 → 데드라인이 지나면 번들 폴백 팩(대사 + 폴백 초상)으로
-      **조용히** 넘어가고, 플레이어 시점에서는 그냥 손님이 들어온 것으로 보인다
-      (에러 UI·스피너·붉은 콘솔 줄 없음)
-- [ ] **끝까지 한 판**: 손님 3의 조제를 건네면 문앞 쪽지가 마지막 화면으로 남고
-      (다음 손님 초대 카드 없음), 3명 전원의 결과 채널이 서로 다르게 도착했다
-
-## 기록
-
-통과 시 날짜/실행자/특이사항(생성 소요시간 실측 등)을 아래에 남긴다:
-
-| 날짜 | 실행자 | 결과 | 메모 |
+| Date | Environment | Result | Notes |
 |---|---|---|---|
 | | | | |

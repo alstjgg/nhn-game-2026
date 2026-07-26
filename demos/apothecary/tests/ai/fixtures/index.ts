@@ -62,9 +62,8 @@ export function portraitRequest(traits: string[] = ['말수가 적은', '지쳐 
   return structuredClone({ traits });
 }
 
-// ── Proxy payload mirrors (AC19: the frozen server must keep validating) ────
-// Shape copied from server/ai-proxy.mjs `toBeat()`: 4 cards, patienceCost stamped
-// server-side from generation.json.verbCosts, clueReveals only when non-empty.
+// ── Dialogue response fixtures ─────────────────────────────────────────────
+// Four cards with game-owned patience costs, matching the Lambda response.
 export function proxyDialoguePayload(): unknown {
   return structuredClone({
     npcLine: '요즘 통 잠을 못 자요. 눈만 감으면 생각이 꼬리를 물어서요.',
@@ -82,7 +81,7 @@ export function proxyDialoguePayload(): unknown {
   });
 }
 
-/** Portrait payload the frozen proxy returns: b64 + prompt, never a url. */
+/** Compatible inline portrait payload retained for value-gate coverage. */
 export function proxyPortraitPayload(): { b64: string; prompt: string } {
   return structuredClone({ b64: 'aGVsbG8=', prompt: 'style bible … 말수가 적은' });
 }
