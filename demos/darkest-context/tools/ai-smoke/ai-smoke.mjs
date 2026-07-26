@@ -94,7 +94,9 @@ const stanceReq = {
   unitId: ally.id,
   equippedCardIds: card ? [card.id] : [],
   agendaId: agenda?.id ?? fixture.stance.agendaId,
-  options: agenda?.options ?? fixture.stance.options,
+  options: agenda
+    ? agenda.options.map((o) => ({ id: o.id, label: o.text }))
+    : fixture.stance.options,
   hintId: fixture.stance.hintId,
 };
 

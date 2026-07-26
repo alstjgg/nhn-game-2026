@@ -1078,6 +1078,13 @@ describe('ai-smoke tool gates structure without a key', () => {
     expect(r.out).not.toContain(secret);
   });
 
+  it('--dry-run composes the stance prompt from the real data/council.json agenda without "undefined" labels', () => {
+    const r = run({ ANTHROPIC_API_KEY: '' });
+    expect(r.code, r.out).toBe(0);
+    expect(r.out).toContain('/ai/stance');
+    expect(r.out).not.toMatch(/undefined/);
+  });
+
   it('ships a runbook for the key holder', () => {
     expect(existsSync(p('tools/ai-smoke/README.md'))).toBe(true);
     const md = read('tools/ai-smoke/README.md');
