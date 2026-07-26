@@ -838,3 +838,47 @@ test.describe('must-prove: the shipped page', () => {
     expectQuiet(w);
   });
 });
+
+// ─────────────── u16 asset pack — the OWN-SLICE GATE on the COMPOSED page ───────────────
+//
+// e2e/assets.spec.ts already proves the pack paints on its own harness. That is not the
+// same claim as "the shipped page paints it": src/styles/assets.css only reaches the DOM
+// because something in the real app import graph pulls in src/assets/slots.ts, and a
+// harness-only import leaves `/` painting nothing but u7's CSS-only fallbacks. This is
+// the composed-run half of that gate.
+
+test.describe('must-prove: asset pack reaches the shipped page', () => {
+  test('a staged hero resolves --slot-hero to a real pack url, not the CSS-only fallback', async ({
+    page,
+  }) => {
+    const w = watch(page);
+    await page.goto(GATE);
+    await waitForScreen(page, 'combat');
+
+    const sprite = page.locator('[data-testid="combat-sprite"]').first();
+    await expect(sprite, 'no staged hero sprite mounted').toBeAttached();
+
+    const slotVar = await sprite.evaluate((el) =>
+      getComputedStyle(el as Element).getPropertyValue('--slot-hero').trim(),
+    );
+    const backgroundImage = await sprite.evaluate((el) =>
+      getComputedStyle(el as Element).backgroundImage,
+    );
+
+    expect(
+      slotVar,
+      '--slot-hero is unset on the composed page — assets.css never reached `/`, so the ' +
+        'app is stuck on the CSS-only fallback (src/assets/slots.ts is not imported by the ' +
+        'app entry graph)',
+    ).toMatch(/url\(/);
+    expect(
+      backgroundImage,
+      'the sprite paints no url() background-image — the pack is not lit on the shipped page',
+    ).toMatch(/url\(/);
+    expect(backgroundImage, 'the sprite must resolve to a .png cell, not an inline gradient').not.toMatch(
+      /gradient/,
+    );
+
+    expectQuiet(w);
+  });
+});

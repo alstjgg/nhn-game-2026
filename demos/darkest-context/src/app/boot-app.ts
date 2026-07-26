@@ -14,6 +14,11 @@
 
 import decisionsRaw from '../../data/decisions.json';
 import type { BootState } from '../ai/boot.ts';
+// u16's asset pack (src/styles/assets.css) rides in on this import. Nothing here uses
+// the module's exports — the composition root is simply the one place in `src/**`
+// guaranteed to be in every real page load, so it is where the pack's CSS actually
+// reaches the shipped app instead of only the unit's own e2e harness.
+import '../assets/slots.ts';
 import { bootDeployed } from '../deploy/deployed-boot.ts';
 import type { DeployedBootOptions } from '../deploy/deployed-boot.ts';
 import type { Hero } from '../data/schema.ts';

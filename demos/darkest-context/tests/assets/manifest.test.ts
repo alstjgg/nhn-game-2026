@@ -35,6 +35,11 @@ const ASSETS_CSS_PATH = resolve(demo, 'src/styles/assets.css');
 const SLOTS_CSS_PATH = resolve(demo, 'src/styles/slots.css');
 const SLOTS_TS_PATH = resolve(demo, 'src/assets/slots.ts');
 const DISCOVERY_PATH = resolve(demo, 'discovery/u16.md');
+// The app entry graph: main.ts -> boot-app.ts -> screens. Either file importing
+// slots.ts is enough to light the pack up on the shipped page (the composed-run e2e
+// gate in e2e/must-prove.spec.ts is the behavioral half of this same check).
+const MAIN_TS_PATH = resolve(demo, 'src/main.ts');
+const BOOT_APP_PATH = resolve(demo, 'src/app/boot-app.ts');
 
 const MANIFEST_REL = 'demos/darkest-context/assets';
 
@@ -384,10 +389,27 @@ describe('src/styles/assets.css: fills the u7 slot contract', () => {
     expect(existsSync(ASSETS_CSS_PATH), 'no src/styles/assets.css').toBe(true);
   });
 
-  it('is reachable from the app — src/assets/slots.ts imports it', () => {
+  it('slots.ts imports it', () => {
     expect(read(SLOTS_TS_PATH), 'nothing imports assets.css, so the seam is never filled').toMatch(
       /import\s+['"]\.\.\/styles\/assets\.css['"]/,
     );
+  });
+
+  it('is reachable from the app entry — main.ts or boot-app.ts imports slots.ts', () => {
+    // The chain above only proves slots.ts is wired to assets.css; it says nothing
+    // about whether the APP ever imports slots.ts. Without this half, the pack can
+    // (and did) end up reachable only from e2e/harness/assets/main.ts, painting the
+    // unit's own harness while the shipped page at `/` renders CSS-only fallbacks.
+    const importsSlots = (body: string): boolean =>
+      /import\s+['"](\.\.\/)*assets\/slots(\.ts)?['"]/.test(body) ||
+      /import\s+['"]\.\/slots(\.ts)?['"]/.test(body);
+    const mainImportsIt = importsSlots(read(MAIN_TS_PATH));
+    const bootAppImportsIt = importsSlots(read(BOOT_APP_PATH));
+    expect(
+      mainImportsIt || bootAppImportsIt,
+      'neither src/main.ts nor src/app/boot-app.ts imports src/assets/slots.ts — ' +
+        'the shipped page never loads assets.css, so every slot falls back to CSS-only art',
+    ).toBe(true);
   });
 
   for (const prop of SLOT_PROPS) {
