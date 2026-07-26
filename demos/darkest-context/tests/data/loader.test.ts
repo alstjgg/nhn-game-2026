@@ -1115,7 +1115,10 @@ describe('encounters', () => {
   it('gives 스팸 골렘 the lowest-HP targeting rule plus its 도배 gauge reference', () => {
     const golem = byId('spam_golem');
     expect(golem.behavior.rule).toBe('lowest_hp_hero');
-    expect(golem.hp).toBe(36);
+    // 37, not 36: the early-drama rule needs the golem to outlive the 4 도배 hits that
+    // carry a hero to 한계, plus the turn that judges on the corrupted snapshot
+    // (PRD §2.5, asserted in tests/combat/drama.test.ts).
+    expect(golem.hp).toBe(37);
     expect(golem.damage).toBe(4);
     expect(golem.gaugeOnHitExtraRef).toBe('gauge.spamGolemExtra');
   });

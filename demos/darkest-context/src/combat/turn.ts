@@ -15,6 +15,7 @@ import type { PartyLoadout } from '../equip/types.ts';
 
 import { executeTurn, sanitizeIntent } from './execute.ts';
 import { buildDecideRequests } from './snapshot.ts';
+import { gaugeOf } from './types.ts';
 import type {
   CombatDeps,
   CombatState,
@@ -132,5 +133,9 @@ export async function runTurn(state: CombatState, deps: CombatDeps): Promise<Tur
     intents.push(sanitizeIntent(answers[index], requests[index], state, deps));
   }
 
-  return executeTurn(state, intents, deps);
+  const result = executeTurn(state, intents, deps);
+  // The post-hit half of the gauge hook: one call per turn, on that turn's events, so
+  // replaying the same start state accrues exactly once (PRD §2.5).
+  gaugeOf(deps).accrue?.(result.events);
+  return result;
 }
