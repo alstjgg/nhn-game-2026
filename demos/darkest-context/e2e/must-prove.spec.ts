@@ -881,4 +881,44 @@ test.describe('must-prove: asset pack reaches the shipped page', () => {
 
     expectQuiet(w);
   });
+
+  test('a staged enemy resolves --slot-mob to a real pack url, keyed off the MONSTER id, not the CSS-only fallback', async ({
+    page,
+  }) => {
+    const w = watch(page);
+    await page.goto(GATE);
+    await waitForScreen(page, 'combat');
+
+    // Enemies never get a `[data-testid="combat-sprite"]` tag (u10 only tags heroes) —
+    // reach the enemy sprite through the stage side it is staged on instead.
+    const sprite = page
+      .locator('[data-testid="stage-enemies"] .dc-unit__sprite')
+      .first();
+    await expect(sprite, 'no staged enemy sprite mounted').toBeAttached();
+
+    const slotVar = await sprite.evaluate((el) =>
+      getComputedStyle(el as Element).getPropertyValue('--slot-mob').trim(),
+    );
+    const backgroundImage = await sprite.evaluate(
+      (el) => getComputedStyle(el as Element).backgroundImage,
+    );
+
+    expect(
+      slotVar,
+      '--slot-mob is unset on the composed page — the enemy element carries its ' +
+        'per-encounter instance id on data-unit-id, and assets.css must key the monster ' +
+        'sheet off data-monster-id (the MONSTER id) instead for this to resolve',
+    ).toMatch(/url\(/);
+    expect(
+      backgroundImage,
+      'the enemy sprite paints no url() background-image — the monster sheet is not lit ' +
+        'on the shipped page',
+    ).toMatch(/url\(/);
+    expect(
+      backgroundImage,
+      'the enemy sprite must resolve to a .png cell, not an inline gradient',
+    ).not.toMatch(/gradient/);
+
+    expectQuiet(w);
+  });
 });

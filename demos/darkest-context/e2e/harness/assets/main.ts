@@ -16,11 +16,20 @@ import {
 
 // `window.__assets` is declared once, by the spec that reads it (e2e/assets.spec.ts).
 
-/** slot id → the domain id `assets.css` keys that sheet off (heroes and monsters only). */
-const UNIT_ID_BY_SLOT: Record<string, string> = Object.fromEntries(
-  [...Object.entries(HERO_SLOT_BY_ID), ...Object.entries(MONSTER_SLOT_BY_ID)].map(
-    ([unitId, slotId]) => [slotId, unitId],
-  ),
+/** slot id → hero id. `assets.css` keys a hero sheet off `data-unit-id`. */
+const HERO_ID_BY_SLOT: Record<string, string> = Object.fromEntries(
+  Object.entries(HERO_SLOT_BY_ID).map(([unitId, slotId]) => [slotId, unitId]),
+);
+
+/**
+ * slot id → monster id. `assets.css` keys a monster sheet off `data-monster-id`, never
+ * `data-unit-id` — on the composed page a staged enemy's `data-unit-id` is its
+ * per-encounter INSTANCE id, distinct from the monster the sheet is shared across (see
+ * src/app/fight-view.ts, src/ui/stage.ts). The harness mirrors that attribute split so
+ * this fixture proves the same rule the shipped page relies on, not a harness-only one.
+ */
+const MONSTER_ID_BY_SLOT: Record<string, string> = Object.fromEntries(
+  Object.entries(MONSTER_SLOT_BY_ID).map(([monsterId, slotId]) => [slotId, monsterId]),
 );
 
 const root = document.querySelector<HTMLElement>('#harness');
@@ -31,28 +40,33 @@ if (root === null) {
 /** The u7 class name behind a slot's `.slot-*` selector. */
 const className = (slot: AssetSlot): string => slot.cls.replace(/^\./, '');
 
+function tagDomainId(el: HTMLElement, slot: AssetSlot): void {
+  const heroId = HERO_ID_BY_SLOT[slot.id];
+  if (heroId !== undefined) el.dataset.unitId = heroId;
+  const monsterId = MONSTER_ID_BY_SLOT[slot.id];
+  if (monsterId !== undefined) el.dataset.monsterId = monsterId;
+}
+
 function createSlot(slot: AssetSlot): HTMLElement {
   const el = document.createElement('div');
   el.className = className(slot);
   el.dataset.testid = `slot-${slot.id}`;
   el.dataset.slotId = slot.id;
   el.dataset.file = slot.file;
-  const unitId = UNIT_ID_BY_SLOT[slot.id];
-  if (unitId !== undefined) el.dataset.unitId = unitId;
+  tagDomainId(el, slot);
   return el;
 }
 
 function createGrid(testid: string, slot: AssetSlot): HTMLElement {
   const grid = document.createElement('div');
   grid.dataset.testid = testid;
-  const unitId = UNIT_ID_BY_SLOT[slot.id];
   for (let row = 0; row < slot.rows; row += 1) {
     for (let col = 0; col < slot.cols; col += 1) {
       const cell = document.createElement('div');
       cell.className = className(slot);
       cell.dataset.col = String(col);
       cell.dataset.row = String(row);
-      if (unitId !== undefined) cell.dataset.unitId = unitId;
+      tagDomainId(cell, slot);
       cell.style.setProperty('--cell-col', String(col));
       cell.style.setProperty('--cell-row', String(row));
       grid.append(cell);

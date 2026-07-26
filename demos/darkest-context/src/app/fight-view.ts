@@ -109,6 +109,10 @@ export function createFightView(options: FightViewOptions): FightView {
     }
     return {
       id: entry.instanceId,
+      // The stage keys the CSS asset slot off the MONSTER id (one sheet per monster,
+      // shared across every instance of it), never the per-encounter instanceId that
+      // keeps siblings addressable — see src/styles/assets.css + src/ui/stage.ts.
+      monsterId: entry.monsterId,
       name: monster.name,
       side: 'enemy',
       gauge: NO_GAUGE,

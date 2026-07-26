@@ -48,15 +48,20 @@
   --slot-hero: url('../../assets/hero-selene.png');
 }
 
-/* ── 몬스터 2종 — one 3×2 sheet each, keyed off the encounter id
-      (data/encounters.json). ── */
-.slot-mob[data-unit-id='spam_golem'],
-[data-unit-id='spam_golem'] .slot-mob {
+/* ── 몬스터 2종 — one 3×2 sheet each, keyed off the MONSTER id
+      (data/encounters.json), via `data-monster-id` — never `data-unit-id`: on the
+      composed page a staged enemy's `data-unit-id` is its per-encounter INSTANCE id
+      (so two of the same monster stay addressable; src/app/fight-view.ts +
+      src/ui/stage.ts), while the sheet is one-per-monster, shared across instances.
+      The standalone harness (e2e/harness/assets/main.ts) stamps `data-monster-id`
+      too, so both the harness and the shipped page resolve the same rule. ── */
+.slot-mob[data-monster-id='spam_golem'],
+[data-monster-id='spam_golem'] .slot-mob {
   --slot-mob: url('../../assets/mob-spam-golem.png');
 }
 
-.slot-mob[data-unit-id='hallucination_spirit'],
-[data-unit-id='hallucination_spirit'] .slot-mob {
+.slot-mob[data-monster-id='hallucination_spirit'],
+[data-monster-id='hallucination_spirit'] .slot-mob {
   --slot-mob: url('../../assets/mob-halluc-wisp.png');
 }
 
