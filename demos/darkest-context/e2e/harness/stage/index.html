@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Inline empty icon, same reason as the demo home: a missing /favicon.ico would
+         404 and the zero-console-errors gate would fail on it. -->
+    <link rel="icon" href="data:," />
+    <title>Stage Harness — Darkest Context</title>
+  </head>
+  <body>
+    <!--
+      u14's OWN render surface. index.html and src/main.ts are u1-owned and frozen for
+      this unit, so the walk / fork / clear / defeat screens get this standalone page
+      instead. It is picked up automatically by the e2e/harness/*/index.html glob in
+      vite.config.ts — no shared file is edited to add it.
+
+      One mount point: the run screen swaps the walk view for an end screen by itself,
+      which is the whole point of the A12 restart assertions.
+    -->
+    <div id="harness"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
