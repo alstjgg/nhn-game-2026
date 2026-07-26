@@ -137,6 +137,11 @@ export interface GaugePort {
   judgmentSuppressed: (unitId: string) => boolean;
   /** ≥70 → the JUDGMENT INPUT is poisoned. Execution still runs on real state. */
   corrupt?: (snapshot: SituationSnapshot, unitId: string) => SituationSnapshot;
+  /**
+   * The post-turn hook: the turn loop hands over the events it just produced and the
+   * gauge decides what each one costs. Combat owns no accrual number (PRD §2.5).
+   */
+  accrue?: (events: readonly CombatEvent[]) => void;
 }
 
 /** The port combat runs on when no gauge is injected: a calm, silent, honest one. */

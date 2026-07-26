@@ -3,7 +3,7 @@
     {
       "id": "spam_golem",
       "name": "스팸 골렘",
-      "hp": 36,
+      "hp": 37,
       "damage": 4,
       "gaugeOnHitExtraRef": "gauge.spamGolemExtra",
       "behavior": { "rule": "lowest_hp_hero" }
