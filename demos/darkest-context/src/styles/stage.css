@@ -1,0 +1,219 @@
+/* stage.css — the walk / fork / end screens (PRD §2.4, §2.5, §2.8).
+ *
+ * ONE rule governs this whole file: the party runs in place and the world moves.
+ * `bg-scroll` is therefore the only keyframe declared here, it animates
+ * `background-position` (never a box), and no selector that names a hero, a
+ * sprite or a walking unit is allowed to carry `translateX`, `margin-left` or
+ * `left` — the walk cycle itself is `.sprite-walk` from slots.css, stepping
+ * through sheet row 0 in a fixed frame.
+ *
+ * The 고게이지 walking read (PRD §2.8: "걷기 중 게이지 표현은 별도 프레임이 아니라
+ * CSS overlay + vial HUD") is composed from three things that are all dressing:
+ * the wrapper's `--overload` rattle, the `.anim-gauge-tint` overlay, and the vial.
+ * None of them touches which sheet cell the sprite is on.
+ */
+
+/* ── the walk: one strip, one party line, bubbles above it ── */
+
+.dc-run {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+
+.dc-walk {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  padding: var(--dc-gap);
+  position: relative;
+}
+
+.dc-walk__bg {
+  border: 1px solid var(--dc-edge);
+  flex: 0 0 auto;
+}
+
+/* The strip only scrolls while the run says it is walking. Every other phase
+   parks it — the background is the walk, so a still background IS "stopped". */
+.dc-walk__bg--scrolling {
+  animation: bg-scroll var(--dc-walk-scroll-dur, 5200ms) linear infinite;
+}
+
+@keyframes bg-scroll {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: -352px;
+  }
+}
+
+/* The line-up stands ON the strip: the negative offset lifts the whole row onto
+   the background box. It is a static layout offset applied once to the row, not
+   motion, and no unit inside it is ever offset again. */
+.dc-walk__party {
+  display: flex;
+  gap: calc(var(--dc-gap) * 2);
+  justify-content: center;
+  margin-top: calc(var(--dc-gap) * -9);
+  position: relative;
+}
+
+/* A walking unit is a fixed box: the sprite steps through its cells inside it and
+   the box itself never travels. */
+.dc-walk__unit {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+/* 고게이지 흔들림 — the rattle from the shared vocabulary, run as a loop. It is an
+   overlay behaviour on the wrapper, so the sprite keeps its own cell loop. */
+.dc-walk__unit--overload {
+  animation: hit-shake calc(var(--dc-dur-slow) * 1.5) var(--dc-ease-out) infinite;
+}
+
+.dc-walk__hero {
+  position: relative;
+}
+
+.dc-walk__tint {
+  background: var(--dc-gauge-overload);
+  height: var(--cell-h, 88px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: var(--cell-w, 88px);
+}
+
+.dc-walk__hud {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+}
+
+.dc-walk__name {
+  color: var(--dc-ink-dim);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+/* ── chatter: the bubble rail above the line-up ── */
+
+.dc-walk__chatter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: var(--dc-gap) auto 0;
+  max-width: 460px;
+  width: 100%;
+}
+
+.dc-chatter {
+  padding: 4px 8px;
+}
+
+.dc-chatter__line {
+  color: var(--dc-ink);
+  font-size: 14px;
+  margin: 0;
+}
+
+.dc-chatter__line + .dc-chatter__line {
+  color: var(--dc-ink-dim);
+}
+
+/* ── the fork: the one player input point of a run (INV-1 — two buttons) ── */
+
+.dc-walk__fork {
+  display: flex;
+  gap: var(--dc-gap);
+  justify-content: center;
+  margin-top: var(--dc-gap);
+}
+
+.dc-walk__fork:empty {
+  display: none;
+}
+
+.dc-branch-card {
+  background: var(--dc-panel-raised);
+  color: var(--dc-ink);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font: inherit;
+  gap: 6px;
+  min-width: 168px;
+  padding: var(--dc-gap);
+  text-align: start;
+}
+
+.dc-branch-card:hover,
+.dc-branch-card:focus-visible {
+  color: var(--dc-lantern);
+}
+
+.dc-branch-card__title {
+  font-size: 17px;
+  letter-spacing: 0.06em;
+}
+
+.dc-branch-card__sentence {
+  color: var(--dc-ink-dim);
+  font-size: 13px;
+}
+
+/* ── the terminal screens (PRD §2.5) ── */
+
+.dc-end {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--dc-gap);
+  justify-content: center;
+  padding: calc(var(--dc-gap) * 4) var(--dc-gap);
+  text-align: center;
+}
+
+.dc-end__title {
+  font-size: 30px;
+  letter-spacing: 0.3em;
+  margin: 0;
+}
+
+.dc-end--clear .dc-end__title {
+  color: var(--dc-lantern);
+}
+
+.dc-end--defeat .dc-end__title {
+  color: var(--dc-gauge-overload);
+}
+
+.dc-end__sentence {
+  color: var(--dc-ink-dim);
+  margin: 0;
+  max-width: 34ch;
+}
+
+.dc-end__restart {
+  background: var(--dc-panel-raised);
+  border: 1px solid var(--dc-edge);
+  border-radius: var(--dc-radius);
+  color: var(--dc-ink);
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: 0.2em;
+  padding: 10px 26px;
+}
+
+.dc-end__restart:hover,
+.dc-end__restart:focus-visible {
+  border-color: var(--dc-lantern);
+  color: var(--dc-lantern);
+}
