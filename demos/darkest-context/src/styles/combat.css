@@ -1,0 +1,105 @@
+/* combat.css — the 전투 screen layout (PRD §2.5, §2.8).
+ *
+ * ONE rule governs this file: the line-up never moves. `.dc-combat__log` is the
+ * bubble layer and it is absolutely positioned INSIDE `.dc-combat__field`, so a
+ * bubble landing — one per beat, turn after turn — can never reflow the stage
+ * that sits under it. No selector here carries `translateX`, `left` or a margin
+ * on a staged unit; the breathing bob of `ui.css` is vertical and stays the only
+ * motion a combatant has (PRD §2.5 "정지 전투").
+ *
+ * The screen adds layout only. Bubbles, chips, sheets, panels and vials are u7
+ * primitives and are never restyled here.
+ */
+
+.dc-combat {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--dc-gap);
+  /* The whole fight fits one viewport, so the page itself never scrolls and a
+     staged unit's viewport position is stable for the entire encounter. */
+  height: 100vh;
+  overflow: hidden;
+  padding: var(--dc-gap);
+}
+
+.dc-combat__head {
+  align-items: baseline;
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--dc-gap);
+}
+
+.dc-combat__title {
+  color: var(--dc-lantern);
+  font-size: 15px;
+  letter-spacing: 0.34em;
+  margin: 0;
+}
+
+.dc-combat__turn {
+  color: var(--dc-ink-dim);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+
+/* ── HUD: one unit panel per hero, each carrying its gauge vial ── */
+
+.dc-combat__hud {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: var(--dc-gap);
+}
+
+/* ── the field: the line-up, with the bubble layer floating over it ── */
+
+.dc-combat__field {
+  border: 1px solid var(--dc-edge);
+  flex: 0 0 auto;
+  position: relative;
+}
+
+.dc-combat__log {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  inset: 0;
+  overflow-y: auto;
+  padding: var(--dc-gap);
+  /* The layer is scenery; only the bubbles inside it are reachable. */
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.dc-combat__log > * {
+  flex: 0 0 auto;
+  pointer-events: auto;
+}
+
+/* 허공을 벤다 — a swing that found nothing. Drama, never an error line (INV-7). */
+.dc-combat__phantom {
+  color: var(--dc-ink-dim);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+
+/* ── the sheets: what every chip on screen resolves to (INV-3) ── */
+
+.dc-combat__sheets {
+  display: flex;
+  flex: 1 1 auto;
+  gap: var(--dc-gap);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dc-combat__sheet {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  overflow-y: auto;
+}
