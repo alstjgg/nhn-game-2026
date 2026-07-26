@@ -17,7 +17,12 @@ Parameters:
       - both
       - haiku
       - nova
-    Description: IAM allowlist. Use both for the benchmark, then narrow it.
+    Description: >-
+      IAM allowlist for the Lambda execution role. Changing this rewrites the
+      role's inline policy, which the CloudFormation execution role is not
+      allowed to do, so it cannot be narrowed by CI or by the default local
+      deploy. Use the elevated path in docs/handoffs/llm-lambda-runtime.md and
+      keep both samconfig environments in sync.
   AllowedOrigin:
     Type: String
     Default: https://alstjgg.github.io

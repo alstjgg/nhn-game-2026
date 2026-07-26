@@ -145,9 +145,13 @@ sam deploy --profile nhn-game
 CloudFormation execution role. Review the change set before approval.
 
 Expected changes are limited to existing Lambda code/configuration, API
-routes/integrations/permissions, allowed model configuration, log retention,
-and throttling. Stop for an unexpected resource, public endpoint, IAM wildcard,
+routes/integrations/permissions, the active `ModelId`, log retention, and
+throttling. Stop for an unexpected resource, public endpoint, IAM wildcard,
 or protected-resource replacement/deletion.
+
+`ModelId` is a Lambda environment variable and deploys on this path.
+`AllowedProfileMode` is not: it rewrites the execution role's inline policy and
+requires the elevated path below.
 
 ### Bootstrap deployment
 
@@ -180,6 +184,65 @@ aws cloudformation set-stack-policy \
 
 IAM creation/mutation and protected-resource replacement are outside the
 automatic application deployment path.
+
+### Narrowing the Bedrock model allowlist
+
+`AllowedProfileMode` controls which Bedrock inference profiles the execution
+role may invoke. It is deployed as `both` so the benchmark can compare Nova and
+Haiku; once a model is chosen, narrow it.
+
+Changing it rewrites the inline policy on `LlmExecutionRole`, so CloudFormation
+calls `iam:PutRolePolicy`. `nhn-game-llm-cloudformation-exec` holds only
+`iam:GetRole`, `iam:GetRolePolicy`, `iam:ListAttachedRolePolicies`,
+`iam:ListRolePolicies`, and `iam:PassRole`, so both GitHub Actions and the
+default local deploy fail this change with `AccessDenied`. That restriction is
+deliberate: granting the role `iam:PutRolePolicy` over
+`role/nhn-game-llm-layer-*` would let anything holding it write an
+administrator policy onto a role it can already reach through the Lambda.
+
+Narrow it with the `elevated` samconfig environment, which uses the same stack
+and parameters but omits `role_arn`, so the change set runs under the operator's
+own SSO identity:
+
+1. Edit `parameter_overrides` in **both** `[default.deploy.parameters]` and
+   `[elevated.deploy.parameters]` in `samconfig.toml`, setting
+   `AllowedProfileMode` to `nova` or `haiku`. `npm run check` fails if the two
+   environments drift; leaving `[default]` on `both` makes the next CI deploy
+   replay the old value and fail on the same denial.
+2. Confirm `ModelId` names a profile the new mode still allows. The template's
+   `SelectedModelMustBeAllowed` rule rejects the change set otherwise.
+3. Deploy once with elevated credentials and review the change set. Expect an
+   `LlmExecutionRole` policy modification and nothing else:
+
+```bash
+cd "$(git rev-parse --show-toplevel)/infra/llm-layer"
+aws sso login --profile nhn-game --use-device-code
+npm run aws:preflight
+npm run check
+npm run sam:build
+sam deploy --config-env elevated --profile nhn-game
+```
+
+4. Verify the surviving permission and that dialogue still runs live:
+
+```bash
+aws iam get-role-policy \
+  --profile nhn-game \
+  --role-name "$(aws cloudformation describe-stack-resource \
+    --profile nhn-game --region ap-northeast-2 \
+    --stack-name nhn-game-llm-layer \
+    --logical-resource-id LlmExecutionRole \
+    --query 'StackResourceDetail.PhysicalResourceId' --output text)" \
+  --policy-name InvokeAllowlistedGlobalBedrockProfiles
+
+npm run smoke -- \
+  --url https://zcyeajmv11.execute-api.ap-northeast-2.amazonaws.com/ai/dialogue \
+  --health-url https://zcyeajmv11.execute-api.ap-northeast-2.amazonaws.com/ai/health \
+  --model-id global.amazon.nova-2-lite-v1:0
+```
+
+Commit the `samconfig.toml` change. The following CI deploy then produces an
+empty change set for this parameter.
 
 ## Post-deployment checks
 
@@ -245,6 +308,7 @@ Add `--audit-logs --profile nhn-game` for CloudWatch validation. Add
 | Pages-only failure | CORS preflight and build-time API root |
 | Model init failure | `MODEL_ID` versus the deployed allowlist |
 | CloudFormation denial | IAM mutation or protected replacement/deletion |
+| `iam:PutRolePolicy` denial | `AllowedProfileMode` changed on a non-elevated deploy |
 
 Recent Lambda logs:
 

@@ -192,6 +192,13 @@ Update `deploy/github-actions-bootstrap.yaml` locally with SSO only when the
 OIDC roles or artifact bucket must change. The regular deployment must not
 create, replace, or delete IAM roles or protected core resources.
 
+That also applies to `AllowedProfileMode`, which is a parameter of the
+application stack but rewrites the execution role's inline policy. Neither CI
+nor the default local deploy can apply it; use the `elevated` samconfig
+environment and keep both environments in sync. See
+[`docs/handoffs/llm-lambda-runtime.md`](../../docs/handoffs/llm-lambda-runtime.md)
+under "Narrowing the Bedrock model allowlist".
+
 ## Required checks by change
 
 | Changed area | Required checks |

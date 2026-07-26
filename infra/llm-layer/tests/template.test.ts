@@ -10,6 +10,22 @@ const samconfig = readFileSync(
   "utf8",
 );
 
+function deploySection(environment: string): string {
+  const matched = samconfig.match(
+    new RegExp(`\\[${environment}\\.deploy\\.parameters\\]([\\s\\S]*?)(?=\\n\\[|$)`),
+  )?.[1];
+  if (!matched) {
+    throw new Error(`Could not find [${environment}.deploy.parameters].`);
+  }
+  return matched;
+}
+
+function deployKey(environment: string, key: string): string | undefined {
+  return deploySection(environment).match(
+    new RegExp(`^${key} = "(.*)"$`, "m"),
+  )?.[1];
+}
+
 function numberFrom(pattern: RegExp, field: string): number {
   const matched = template.match(pattern)?.[1];
   if (!matched) {
@@ -70,5 +86,27 @@ describe("SAM timeout guardrails", () => {
 
     expect(healthTimeoutMs).toBe(9_000);
     expect(healthTimeoutMs).toBeLessThan(lambdaTimeoutMs);
+  });
+});
+
+describe("SAM deploy environments", () => {
+  it("keeps the elevated environment aligned with the default one", () => {
+    // AllowedProfileMode rewrites LlmExecutionRole's inline policy, which
+    // nhn-game-llm-cloudformation-exec may not do. The elevated environment
+    // exists to run that one change under the operator's own SSO identity. If
+    // the two environments ever disagree on a parameter, the next CI deploy
+    // replays the default value and fails on the same IAM denial.
+    expect(deployKey("elevated", "parameter_overrides")).toBe(
+      deployKey("default", "parameter_overrides"),
+    );
+    expect(deployKey("elevated", "stack_name")).toBe(
+      deployKey("default", "stack_name"),
+    );
+    expect(deployKey("default", "role_arn")).toBe(
+      "arn:aws:iam::141840355276:role/nhn-game-llm-cloudformation-exec",
+    );
+    expect(deployKey("elevated", "role_arn")).toBeUndefined();
+    // The elevated path runs with more privilege, so never skip the review.
+    expect(deploySection("elevated")).toContain("confirm_changeset = true");
   });
 });
