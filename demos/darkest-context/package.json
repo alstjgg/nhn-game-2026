@@ -10,7 +10,8 @@
     "test": "vitest run tests/",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
-    "gate:secrets": "node scripts/gate-secrets.mjs"
+    "gate:secrets": "node scripts/gate-secrets.mjs",
+    "discovery": "node scripts/assemble-discovery.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",

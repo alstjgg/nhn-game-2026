@@ -4,8 +4,22 @@ Automated gates only ever see stub mode: agents have no key, and the deployed
 build physically lacks the proxy. This checklist is the other half — the live
 path a person walks once, before the bake-off (PRD §5, §7 "Live mode").
 
-Prerequisite: `node tools/ai-smoke/ai-smoke.mjs` PASSes (one real call per
-endpoint). That proves the vendor path; the items below prove the *game* on it.
+## Prerequisites — the automated gates come first
+
+"Pre-bake-off" is an ordering claim: a human only walks this once the
+machine-checkable half is already green. Run, in order:
+
+1. `npm ci && npm run build` — the build the deployed demo ships.
+2. `npm test` — the whole vitest suite.
+3. `npm run test:e2e` — the whole Playwright suite in stub mode (`@live` specs
+   are fenced out unless `LIVE=1`). Every PRD §5 must-prove a machine *can*
+   judge is proven there; nothing below repeats one of them.
+4. `node scripts/gate-secrets.mjs` — the `dist/` secret gate.
+5. `node tools/ai-smoke/ai-smoke.mjs` PASSes (one real call per endpoint). That
+   proves the vendor path; the items below prove the *game* on it.
+
+If any of 1–4 is red, stop. A live smoke on a build that fails its own stub
+gates tells you nothing about live mode.
 
 ```bash
 cd demos/darkest-context

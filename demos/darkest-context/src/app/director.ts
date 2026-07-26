@@ -17,18 +17,23 @@
 import type { Grant, Tile } from '../data/schema.ts';
 import { createRun } from '../run/fsm.ts';
 import type { RunController, RunPartyUnit, RunState } from '../run/types.ts';
-import type { OverloadRow } from '../screens/combat/index.ts';
+import type { CombatTurnRecord, OverloadRow } from '../screens/combat/index.ts';
 import { loadChatterPool } from '../screens/stage/chatter.ts';
 import { createStageScreen } from '../screens/stage/index.ts';
 import { branchLabelFor } from '../screens/stage/labels.ts';
 import type { WalkUnitView } from '../screens/stage/walk.ts';
 
 import { createFightView } from './fight-view.ts';
-import type { FightOutcome } from './fight-view.ts';
+import type { FightOutcome, FightView } from './fight-view.ts';
 import type { GameContext } from './game-context.ts';
+import { playPhaseEntrance } from './juice.ts';
+import { hold, TEST_PACE } from './pace.ts';
+import type { PaceProfile } from './pace.ts';
 import { screenIdForTile } from './routes.ts';
 import type { ScreenId } from './routes.ts';
 import type { ScreenView } from './screen-view.ts';
+import { NO_SETTLE } from './settle.ts';
+import type { SettleTracker } from './settle.ts';
 import { mountScreen } from './shell.ts';
 import { createTaskQueue } from './task-queue.ts';
 import { afterArrival, afterOutcome } from './transition.ts';
@@ -59,6 +64,18 @@ export interface DirectorOptions {
   /** Automated gate: walks are budgeted at 0 ms. */
   readonly automatedGate?: boolean;
   readonly seed?: number;
+  /** How long the run lets a human look at things. Defaults to every hold zeroed. */
+  readonly pace?: PaceProfile;
+  /** Flips `[data-settled]` on the shell around every phase change. */
+  readonly settle?: SettleTracker;
+}
+
+/**
+ * One resolved combat turn of the RUN — the record `player.ts` already keeps, tagged
+ * with the tile whose fight produced it (u17).
+ */
+export interface RunTurn extends CombatTurnRecord {
+  readonly tileId: string;
 }
 
 export interface Director {
@@ -67,6 +84,8 @@ export interface Director {
   state(): RunState;
   /** unitId → equipped card ids. The run's cards, live. */
   loadout(): Record<string, string[]>;
+  /** Every combat turn the run has resolved, in order, tagged with its tile. */
+  turns(): RunTurn[];
   /** Begins the run. */
   start(): void;
   /**
@@ -91,6 +110,11 @@ export function createDirector(options: DirectorOptions): Director {
   const { context, slot, chatter, overload } = options;
   const { map, tuning } = context.data;
   const queue = createTaskQueue();
+  const pace = options.pace ?? TEST_PACE;
+  const settle = options.settle ?? NO_SETTLE;
+
+  /** Every fight the run has opened, oldest first — the source of `turns()`. */
+  const fights: FightView[] = [];
 
   const startParty: RunPartyUnit[] = context.partyIds.map((unitId) => ({
     unitId,
@@ -112,6 +136,10 @@ export function createDirector(options: DirectorOptions): Director {
     slot.replaceChildren();
     const unmount = mountScreen(id, slot, { view });
     current = { id, view, unmount: typeof unmount === 'function' ? unmount : (): void => {} };
+    // The phase change, as the player experiences it: the entrance is re-armed and the
+    // shell reports itself un-settled until the slot stops moving (u17).
+    playPhaseEntrance(view.element);
+    settle.begin();
   };
 
   // ── the run's own screens ──────────────────────────────────────────────────
@@ -119,6 +147,8 @@ export function createDirector(options: DirectorOptions): Director {
   const restart = (): void => {
     controller.restart();
     context.reset();
+    // 재시작 replays the RUN: the fights of the previous attempt are no longer part of it.
+    fights.length = 0;
     controller.start();
   };
 
@@ -187,6 +217,7 @@ export function createDirector(options: DirectorOptions): Director {
         context,
         tile,
         overload,
+        beatHoldMs: pace.beatHoldMs,
         // The settled fight stays readable before its reward replaces it.
         onOutcome: (outcome) => {
           afterOutcome(fight.element, () => {
@@ -194,6 +225,7 @@ export function createDirector(options: DirectorOptions): Director {
           });
         },
       });
+      fights.push(fight);
       show('combat', fight);
       return;
     }
@@ -251,7 +283,12 @@ export function createDirector(options: DirectorOptions): Director {
         // it ended on takes the slot (see `transition.ts`).
         const tile = tileOf(event.tile.id);
         afterArrival(slot, () => {
-          openTile(tile);
+          // …and at the authored pace the walk itself is READ before the tile opens:
+          // `walk.durationMs` is the budget the walk was declared with, and this is the
+          // only place the composition spends it (u17 §1-3). At gate pace it is 0 ms.
+          void hold(slot, pace.arrivalHoldMs).then(() => {
+            openTile(tile);
+          });
         });
         return;
       }
@@ -271,6 +308,10 @@ export function createDirector(options: DirectorOptions): Director {
     mounted: () => current?.id ?? null,
     state: () => controller.getState(),
     loadout: () => context.loadoutMap(),
+    turns: () =>
+      fights.flatMap((fight) =>
+        fight.fixture.turns.map((turn) => ({ tileId: fight.fixture.tileId, ...turn })),
+      ),
     start: () => {
       controller.start();
     },
