@@ -8,6 +8,10 @@ playwright-report
 test-results
 .cache
 
+# The phase screenshot set is CAPTURE output, rewritten by every gate run. The
+# directory and its README stay committed — they are the declared destination.
+e2e/artifacts/*.png
+
 # Throwaway harness dirs created by tests/scaffold.test.ts to prove the
 # vite rollup-input glob discovers pages it was never told about.
 e2e/harness/_probe-*

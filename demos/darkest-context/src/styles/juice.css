@@ -1,0 +1,119 @@
+/* juice.css — u17's motion pass (PRD §7 "juice", INV-6, INV-8).
+ *
+ * The u2 vocabulary in `animations.css` is the SHARED one: `bubble-in`, `hit-shake`,
+ * `phase-fade` and friends belong to the components that attach them, and this file
+ * never redefines a name that already lives there. What it adds is the layer above
+ * those: what a whole PHASE does when it takes the slot, and the two accents that make
+ * a still frame read as a moment rather than as a screenshot of a list.
+ *
+ * It is presentation only. Nothing here is timed against by any rule, no keyframe
+ * changes a layout box (the §2.5 promise that "nobody moves" survives it), and a
+ * stylesheet cannot arm a clock — so `src/ai/stub.ts` remains the only module in the
+ * app that owns a timer (INV-6).
+ *
+ * The reduced-motion block at the bottom is a HARD off switch for the whole page, not
+ * just for this file: a reader who asked for no motion means the sprite loops and the
+ * scrolling backdrop too. */
+
+:root {
+  --dc-juice-phase-dur: 340ms;
+  --dc-juice-accent-dur: 520ms;
+  --dc-juice-ease: cubic-bezier(0.22, 0.68, 0.32, 1);
+}
+
+/* A phase RISES into the slot out of the dark, rather than replacing the last one in
+   the same frame. The class is re-applied by `src/app/juice.ts` on every mount, so the
+   animation restarts per phase. */
+@keyframes dc-juice-phase-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The lantern warms up behind the banner as a phase lands — the one thing on screen
+   that is not part of any screen, so it reads as the app breathing. */
+@keyframes dc-juice-lantern-swell {
+  from {
+    opacity: 0.45;
+    letter-spacing: 0.3em;
+  }
+
+  60% {
+    opacity: 1;
+    letter-spacing: 0.46em;
+  }
+
+  to {
+    opacity: 1;
+    letter-spacing: 0.42em;
+  }
+}
+
+/* An edge-lit sweep across the top of the slot: motion that is legible in a still,
+   which is what the screenshot set actually needs. */
+@keyframes dc-juice-edge-sweep {
+  from {
+    opacity: 0;
+    transform: scaleX(0.2);
+  }
+
+  55% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+.dc-juice-phase {
+  animation: dc-juice-phase-rise var(--dc-juice-phase-dur) var(--dc-juice-ease) both;
+}
+
+.app-shell__banner {
+  animation: dc-juice-lantern-swell var(--dc-juice-accent-dur) var(--dc-juice-ease) both;
+}
+
+.screen-slot {
+  position: relative;
+}
+
+.screen-slot::before {
+  background: linear-gradient(90deg, transparent, var(--dc-lantern), transparent);
+  content: '';
+  height: 1px;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform-origin: left center;
+  z-index: 1;
+}
+
+.screen-slot:has(.dc-juice-phase)::before {
+  animation: dc-juice-edge-sweep var(--dc-juice-accent-dur) var(--dc-juice-ease) both;
+}
+
+/* OFF, not broken. Durations collapse to zero so every animation lands on its final
+   frame immediately: the phase is fully on screen, the settle flag still resolves, and
+   nothing on the page moves — including the loops this file did not declare. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-delay: 0s !important;
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-delay: 0s !important;
+    transition-duration: 0s !important;
+  }
+}

@@ -25,19 +25,32 @@ const STUB_LATENCY_REF = 'latency.stub';
 const GATE_LATENCY_REF = 'latency.unit';
 
 /**
+ * u17 adds ONE knob, and it is a duration: `?pace=default` runs the automated gate at
+ * the authored `latency.stub` delay instead of the unit-test one. Mode, policy and the
+ * skipped probe are untouched — it is the same boot decision, only slower, which is what
+ * makes it a legal boot to measure §1-3's "3–5 minutes" rule on.
+ */
+export interface DeployedBootOptions extends BootOptions {
+  readonly defaultPace?: boolean;
+}
+
+/**
  * Builds the stub-mode boot state. The policy travels with the mode exactly as it does
  * in `bootAdapter`: an automated gate takes `tieBreak.test` at unit latency, play takes
  * `tieBreak.stub` at stub latency. `index` needs no entropy, so no seed is drawn (INV-6).
  */
-export function bootDeployed(options: BootOptions): Promise<BootState> {
+export function bootDeployed(options: DeployedBootOptions): Promise<BootState> {
   const { tuning } = options;
   const gated = options.automatedGate === true;
+  // u17 `?pace=default`: a gate that watches at authored speed. The POLICY still travels
+  // with the mode — only the latency moves.
+  const fast = gated && options.defaultPace !== true;
 
   return Promise.resolve({
     mode: 'stub',
     adapter: createStubAdapter({
       pool: options.pool,
-      latencyMs: resolveTuningRef(tuning, gated ? GATE_LATENCY_REF : STUB_LATENCY_REF),
+      latencyMs: resolveTuningRef(tuning, fast ? GATE_LATENCY_REF : STUB_LATENCY_REF),
       timeoutMs: resolveTuningRef(tuning, STUB_TIMEOUT_REF),
       bucketConfig: options.bucketConfig,
     }),

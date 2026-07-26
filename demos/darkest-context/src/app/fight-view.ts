@@ -9,6 +9,7 @@
 // canned bucket answered and whether the snapshot was poisoned (INV-4), and those facts
 // belong to this fight only.
 
+import type { CombatFixture } from '../screens/combat/index.ts';
 import { createRecordingAdapter } from '../screens/combat/index.ts';
 import {
   COMBAT_DEFEAT_EVENT,
@@ -23,9 +24,18 @@ import type { Tile } from '../data/schema.ts';
 import type { UnitView } from '../ui/index.ts';
 
 import type { GameContext } from './game-context.ts';
+import { hold } from './pace.ts';
 import type { ScreenView } from './screen-view.ts';
 
 export type FightOutcome = 'victory' | 'defeat';
+
+/**
+ * A fight's view plus the record of what it resolved. u17 forwards this record up to
+ * `window.__app.turns`; the fight itself is unchanged by being read.
+ */
+export interface FightView extends ScreenView {
+  readonly fixture: CombatFixture;
+}
 
 /**
  * How far one playthrough may run before the composition stops watching. A party that
@@ -38,16 +48,22 @@ const MAX_TURNS = 60;
 /** A monster carries no context of its own — the absence of a reading, not a tunable. */
 const NO_GAUGE = 0;
 
+/** What u10's screen tags every rendered decision with — the paced drain's progress read. */
+const BUBBLE_SELECTOR = '[data-testid="combat-bubble"]';
+
 export interface FightViewOptions {
   readonly context: GameContext;
   readonly tile: Tile;
   /** The authored 폭주 pool (`data/decisions.json` → `overload`). */
   readonly overload: readonly OverloadRow[];
   readonly onOutcome: (outcome: FightOutcome) => void;
+  /** How long each bubble stays readable before the next one lands (u17 pace profile). */
+  readonly beatHoldMs?: number;
 }
 
-export function createFightView(options: FightViewOptions): ScreenView {
+export function createFightView(options: FightViewOptions): FightView {
   const { context, tile, overload, onOutcome } = options;
+  const beatHoldMs = options.beatHoldMs ?? 0;
   const { cards, encounters, tuning } = context.data;
   const gauge = context.gauge();
 
@@ -119,6 +135,31 @@ export function createFightView(options: FightViewOptions): ScreenView {
     maxTurns: MAX_TURNS,
   });
 
+  /**
+   * The paced half of `advance`: one beat, then a hold long enough to read it.
+   *
+   * u10's own `drain()` plays every beat back to back — correct for a gate, and far too
+   * fast for a human. Rather than teach the player a clock (it owns none, by design), the
+   * composition steps it and does the waiting, exactly as it already does for the arrival
+   * and outcome beats.
+   *
+   * "Did that step do anything" is read off the two things a step can move: the fight's
+   * resolved-turn count and the number of bubbles on screen. A step that moves neither is
+   * a fight with nothing left to play, which is where `player.drain()` stops too.
+   */
+  const progress = (): string =>
+    `${player.fixture.turns.length}:${screen.element.querySelectorAll(BUBBLE_SELECTOR).length}`;
+
+  const pacedDrain = async (): Promise<void> => {
+    const bound = MAX_TURNS * (context.partyIds.length + 1) + context.partyIds.length + 1;
+    for (let pass = 0; pass < bound; pass += 1) {
+      const before = progress();
+      await player.step();
+      if (progress() === before) return;
+      await hold(screen.element, beatHoldMs);
+    }
+  };
+
   screen.element.addEventListener(COMBAT_VICTORY_EVENT, () => {
     onOutcome('victory');
   });
@@ -127,5 +168,9 @@ export function createFightView(options: FightViewOptions): ScreenView {
   });
 
   player.start();
-  return { element: screen.element, advance: () => player.drain() };
+  return {
+    element: screen.element,
+    advance: beatHoldMs > 0 ? pacedDrain : () => player.drain(),
+    fixture: player.fixture,
+  };
 }

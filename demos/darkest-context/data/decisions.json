@@ -89,6 +89,17 @@
       }
     },
     {
+      "unitId": "garrett",
+      "bucket": "default",
+      "cardId": "grudge",
+      "decision": {
+        "action": "strike",
+        "target": "last_hit_by",
+        "say": "누가 날 쳤는지는 잊지 않는다.",
+        "because": ["garrett.default", "grudge"]
+      }
+    },
+    {
       "unitId": "fiona",
       "bucket": "opening",
       "cardId": null,

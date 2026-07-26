@@ -147,7 +147,18 @@ function manifest(): { assets: ManifestEntry[] } {
 const manifestFiles = (): string[] => (manifest().assets ?? []).map((e) => e.file ?? '');
 
 const IMAGE_RE = /\.(png|webp|jpe?g|gif|svg|avif)$/i;
-const SKIP_DIRS = new Set(['node_modules', 'dist', '.git', 'test-results', 'playwright-report']);
+// Build and test OUTPUT, not content. `artifacts` is u17's phase-screenshot set
+// (`e2e/artifacts/`), written by Playwright in the same register as `test-results/`:
+// this rule is about assets GENERATED into the game at run time (PRD §2.8), and a
+// still captured by a gate is neither an asset nor in the run.
+const SKIP_DIRS = new Set([
+  'node_modules',
+  'dist',
+  '.git',
+  'test-results',
+  'playwright-report',
+  'artifacts',
+]);
 
 function walkImages(dir: string, acc: string[] = []): string[] {
   if (!existsSync(dir)) return acc;
