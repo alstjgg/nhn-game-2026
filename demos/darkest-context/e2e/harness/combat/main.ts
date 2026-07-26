@@ -21,6 +21,7 @@
 // plain, serialisable data.
 
 import decisionsRaw from '../../../data/decisions.json';
+import { bucketConfigOf } from '../../../src/ai/bucket.ts';
 import type { BucketConfig, DecisionPool, PoolSection } from '../../../src/ai/bucket.ts';
 import { DEFAULT_KEY } from '../../../src/ai/bucket.ts';
 import type { AIAdapter } from '../../../src/ai/contract.ts';
@@ -50,11 +51,7 @@ const { cards, encounters, heroes, tuning } = loadBundledGameData();
 const PARTY_IDS = ['garrett', 'fiona', 'selene'];
 
 /** The situation thresholds every stub caller in this repo runs on (PRD §2.2). */
-const BUCKET_CONFIG: BucketConfig = {
-  openingTurn: 1,
-  hurtBelowRatio: 0.5,
-  enemyLowBelowRatio: 0.3,
-};
+const BUCKET_CONFIG: BucketConfig = bucketConfigOf(tuning);
 
 /**
  * How far a gate playthrough runs. A party that has coerced its way out of every

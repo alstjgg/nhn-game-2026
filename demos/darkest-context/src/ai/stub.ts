@@ -162,16 +162,26 @@ export async function decideOrDefault(
   return answer ?? fallbackFor(req.unitId);
 }
 
+/** Builds the validation context for ONE request — sheet ids are per unit (INV-3). */
+export type ValidationCtxFor = (req: DecideRequest) => ValidationCtx | undefined;
+
 /**
  * The party's turn: every call is issued before any is awaited, so the wall clock
  * is one latency window rather than the sum. Answers stay aligned to the request
  * order and a failure degrades its own index only (PRD §2.2).
+ *
+ * `ctxFor` is a FUNCTION, not one context: `sheetIds` are the loadout of a single
+ * unit, so one context shared across the party could never be correct for more than
+ * one of them — and a batch that hands the adapter no context at all validates the
+ * shape of an answer without ever checking that its citations resolve (INV-3).
  */
 export function decideAll(
   adapter: AIAdapter,
   requests: readonly DecideRequest[],
   fallbackFor: FallbackDecider,
-  ctx?: ValidationCtx,
+  ctxFor?: ValidationCtxFor,
 ): Promise<AgentDecision[]> {
-  return Promise.all(requests.map((req) => decideOrDefault(adapter, req, fallbackFor, ctx)));
+  return Promise.all(
+    requests.map((req) => decideOrDefault(adapter, req, fallbackFor, ctxFor?.(req))),
+  );
 }

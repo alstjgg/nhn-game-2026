@@ -15,6 +15,7 @@
 // Pure, synchronous, side-effect free: no timers live in this file.
 
 import { isAgentDecision } from './contract.ts';
+import type { Tuning } from '../data/schema.ts';
 import type {
   AgentDecision,
   EntityView,
@@ -40,6 +41,21 @@ export const DEFAULT_KEY = '_';
 
 /** The unit-wide section every unit must author — no combination dead-ends. */
 const DEFAULT_SECTION = 'default';
+
+/**
+ * The one reader of the declared thresholds: `data/tuning.json` → `BucketConfig`.
+ *
+ * Callers take their config from here rather than writing the three numbers out, so
+ * a unit slice, the composed run and the e2e harnesses can never grade themselves
+ * against private copies of a run-outcome tunable (INV-8).
+ */
+export function bucketConfigOf(tuning: Tuning): BucketConfig {
+  return {
+    openingTurn: tuning.bucket.openingTurn,
+    hurtBelowRatio: tuning.bucket.hurtBelowRatio,
+    enemyLowBelowRatio: tuning.bucket.enemyLowBelowRatio,
+  };
+}
 
 /** Thresholds the caller supplies; every number originates in `data/tuning.json`. */
 export interface BucketConfig {

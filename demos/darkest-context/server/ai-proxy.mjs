@@ -79,9 +79,27 @@ function sheetKind(card) {
 }
 
 /**
+ * The base-persona TEXT of a hero row.
+ *
+ * `data/heroes.json` authors the persona as `defaultPrompt.lines` — one belief per
+ * line; a single `text` field is accepted too, so a row of either shape composes.
+ * Joining them is the whole of it, and it is not cosmetic: the system prose tells the
+ * model that the sheet is the entirety of its personality, so an empty persona row
+ * means the baseline character (must-prove 1–2, PRD §2.3) was never sent at all.
+ */
+function personaText(prompt) {
+  if (typeof prompt.text === 'string' && prompt.text.trim() !== '') return prompt.text;
+  if (Array.isArray(prompt.lines)) return prompt.lines.map(String).join(' ');
+  return '';
+}
+
+/**
  * The unit's system-prompt sheet: its default prompt plus one line per equipped
  * card, in equip order. An id that resolves to no row is skipped — an
  * unresolvable id must never reach the prose (INV-1).
+ *
+ * @throws MissingDataError when the hero row carries no persona text at all — a
+ *         blank persona is a data/composer disagreement, never a degraded answer.
  */
 export function buildSheet(cfg, unitId, cardIds) {
   const heroes = asList(cfg.heroes, 'heroes');
@@ -89,11 +107,16 @@ export function buildSheet(cfg, unitId, cardIds) {
   const hero = heroes.find((h) => h && h.id === unitId);
   if (!hero || !hero.defaultPrompt) throw new MissingDataError('hero row unavailable');
 
+  const persona = personaText(hero.defaultPrompt);
+  if (persona.trim() === '') {
+    throw new MissingDataError(`hero '${unitId}' carries no base persona text`);
+  }
+
   const sheet = [
     {
       id: String(hero.defaultPrompt.id),
       kind: 'prompt',
-      text: String(hero.defaultPrompt.text ?? ''),
+      text: persona,
     },
   ];
   for (const id of Array.isArray(cardIds) ? cardIds : []) {

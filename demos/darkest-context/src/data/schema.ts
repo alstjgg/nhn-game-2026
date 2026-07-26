@@ -252,6 +252,22 @@ export interface ChatterTuning {
   maxPerWalk: number;
 }
 
+/**
+ * The situation thresholds every stub lookup runs on (PRD §2.2).
+ *
+ * They decide WHICH authored line a unit says on a given turn, so they are run-outcome
+ * balance data exactly like a damage number — a drift here flips a run from clear to
+ * defeat, and it belongs in data/ where the gates can see it (INV-8).
+ */
+export interface BucketTuning {
+  /** Turn number that still counts as the opening beat. */
+  openingTurn: number;
+  /** hp/hpMax below which a unit reads as hurt. */
+  hurtBelowRatio: number;
+  /** hp/hpMax below which an enemy reads as nearly down. */
+  enemyLowBelowRatio: number;
+}
+
 export interface Tuning {
   gauge: GaugeTuning;
   /** Keyed by base action id and by card id — no dice, fixed values (PRD §2.5). */
@@ -263,6 +279,7 @@ export interface Tuning {
   draft: DraftTuning;
   tieBreak: TieBreakTuning;
   chatter: ChatterTuning;
+  bucket: BucketTuning;
 }
 
 // ── the coherent bundle ──────────────────────────────────────────────────────

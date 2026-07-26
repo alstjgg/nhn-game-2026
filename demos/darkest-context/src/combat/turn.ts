@@ -118,7 +118,16 @@ export async function runTurn(state: CombatState, deps: CombatDeps): Promise<Tur
   const requests = buildDecideRequests(state, deps);
   // Every call is issued before any is awaited; one failure degrades its own
   // index only, and the party's turn costs one latency window.
-  const answers = await decideAll(deps.adapter, requests, deps.fallbackFor);
+  //
+  // The context is built PER REQUEST (INV-3): a chip may only cite a row of the
+  // asking unit's own sheet, and an action may only be one this unit was offered.
+  // Without it the adapter checks an answer's SHAPE and nothing else — the stub
+  // cascade loses its fall-through on an unattributable entry, and a live answer
+  // citing someone else's card is accepted and never retried.
+  const answers = await decideAll(deps.adapter, requests, deps.fallbackFor, (req) => ({
+    sheetIds: deps.sheetIdsOf(req.unitId),
+    actionIds: req.snapshot.availableActions.map((action) => action.id),
+  }));
 
   const asked = new Map(requests.map((request, index) => [request.unitId, index]));
   const intents: Intent[] = [];

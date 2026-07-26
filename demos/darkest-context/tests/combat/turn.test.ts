@@ -17,8 +17,10 @@ import type {
   DecideRequest,
   GaugeTier,
   SituationSnapshot,
+  ValidationCtx,
 } from '../../src/ai/contract.ts';
 import { DEFAULT_KEY } from '../../src/ai/bucket.ts';
+import { bucketConfigOf } from '../../src/ai/bucket.ts';
 import type { BucketConfig, DecisionPool } from '../../src/ai/bucket.ts';
 import { ELLIPSIS_SAY, createFallbackDecider, createStubAdapter } from '../../src/ai/stub.ts';
 import { createTieBreaker } from '../../src/core/tiebreak.ts';
@@ -333,6 +335,66 @@ describe('the engine-built snapshot carries ids and numbers only (INV-1)', () =>
 });
 
 // ═══════════════ the parallel call fan-out ═══════════════════════════════════
+describe('the turn arms INV-3 at the adapter seam', () => {
+  /** Records the ValidationCtx each call was handed, alongside its request. */
+  function ctxRecordingAdapter(): {
+    adapter: AIAdapter;
+    seen: Array<{ unitId: string; ctx: ValidationCtx | undefined }>;
+  } {
+    const seen: Array<{ unitId: string; ctx: ValidationCtx | undefined }> = [];
+    return {
+      seen,
+      adapter: {
+        mode: 'stub',
+        async decide(req: DecideRequest, ctx?: ValidationCtx) {
+          seen.push({ unitId: req.unitId, ctx });
+          return null;
+        },
+        async stance() {
+          return null;
+        },
+      },
+    };
+  }
+
+  it("hands every call the ASKING unit's own sheet ids, never one context for the party", async () => {
+    const spy = ctxRecordingAdapter();
+    const party = equipCard(
+      equipCard(emptyParty(), 'garrett', cardById('taunt'), tuning.slots),
+      'selene',
+      cardById('translation_lens'),
+      tuning.slots,
+    );
+    const d = deps({ adapter: spy.adapter });
+    const state = createCombat('t1', party, d);
+
+    await runTurn(state, d);
+
+    expect(spy.seen.length, 'the party was never asked').toBeGreaterThan(0);
+    for (const call of spy.seen) {
+      expect(call.ctx, `${call.unitId} was judged with no validation context (INV-3)`).toBeDefined();
+      expect(call.ctx?.sheetIds, `${call.unitId} got someone else's sheet`).toEqual(
+        d.sheetIdsOf(call.unitId),
+      );
+    }
+  });
+
+  it('offers only the actions that unit was actually given', async () => {
+    const spy = ctxRecordingAdapter();
+    const d = deps({ adapter: spy.adapter });
+    const state = createCombat('t1', emptyParty(), d);
+    const requests = buildDecideRequests(state, d);
+
+    await runTurn(state, d);
+
+    for (const call of spy.seen) {
+      const offered = requests.find((req) => req.unitId === call.unitId);
+      expect(offered, `no request was built for ${call.unitId}`).toBeDefined();
+      expect(call.ctx?.actionIds).toEqual(offered?.snapshot.availableActions.map((a) => a.id));
+    }
+  });
+});
+
 describe('the turn issues its adapter calls in parallel', () => {
   it('fires every unit call before awaiting any of them', async () => {
     const barrier = barrierAdapter(PARTY.length, {
@@ -498,11 +560,7 @@ describe('the turn loop moves the fight forward without arming a timer of its ow
   it('runs a real stub adapter at the unit-test latency of 0 with no fake timers', async () => {
     expect(tuning.latency.unit).toBe(0);
 
-    const bucketConfig: BucketConfig = {
-      openingTurn: 1,
-      hurtBelowRatio: 0.5,
-      enemyLowBelowRatio: 0.3,
-    };
+    const bucketConfig: BucketConfig = bucketConfigOf(tuning);
     const pool: DecisionPool = {
       decisions: {
         garrett: {

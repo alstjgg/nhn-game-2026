@@ -800,14 +800,42 @@ describe('no inline tunables', () => {
     expect(group('chatter')).toEqual({ minPerWalk: 2, maxPerWalk: 3 });
   });
 
+  // The situation thresholds decide WHICH authored line every unit says every turn, so
+  // a drift here flips a run from clear to defeat. They live in data/ like every other
+  // run-outcome number, and this is the single place they are written down (INV-8).
+  it('carries the situation thresholds the stub cascade buckets on', () => {
+    expect(group('bucket')).toEqual({
+      openingTurn: 1,
+      hurtBelowRatio: 0.5,
+      enemyLowBelowRatio: 0.3,
+    });
+  });
+
   // ── the grep gate: no tunable literal may be inlined anywhere in src/** ──
   // 0 scanned files ⇒ pass (u4 may land before the consumer units exist).
   const DENY_LITERALS = [900, 3000, 8000, 4000, 800, 70, 40, 25, 15, 50];
   // Assignment / initialisation only. A comparison (`gauge > 100`) reads a value against
   // its own domain bound; it does not bake a tunable in. Magic thresholds in comparisons
   // are still caught by the DENY_LITERALS pass below.
+  //
+  // The optional `\w+_` head is what lets a SCREAMING_SNAKE constant be seen: `\b` never
+  // matches before `TIMEOUT` in `LIVE_TIMEOUT_MS`, because `_` is a word character — so
+  // without it, renaming an inlined tunable is enough to hide it from this gate.
+  // `opening|hurt|enemyLow|bucket|ratio` cover the situation thresholds that decide which
+  // authored line every unit says (u12's BUCKET_CONFIG); they belong in data/ like the rest.
   const TUNABLE_ASSIGN =
-    /\b(gauge|damage|dmg|hp|slot|latency|timeout|walk|draft|tieBreak|heal|reflect)\w*\s*(?:[:=]|[+\-]=)\s*-?\d+/i;
+    /(?<![\w$])(?:[A-Za-z$][\w$]*_)?(?:gauge|damage|dmg|hp|slot|latency|timeout|walk|draft|tieBreak|heal|reflect|opening|hurt|enemyLow|bucket|ratio)\w*\s*(?:[:=]|[+\-]=)\s*(-?\d+(?:\.\d+)?)/i;
+
+  /**
+   * Zero is the ABSENCE of an amount, not a balance number: `NO_GAUGE_HIT = 0` says
+   * "this branch costs nothing" and has nothing to move into data/. Every declared
+   * value in data/tuning.json that is worth protecting is non-zero, and the
+   * DENY_LITERALS pass never listed 0 either, so exempting it takes no teeth out.
+   */
+  const assignsTunable = (code: string): boolean => {
+    const found = TUNABLE_ASSIGN.exec(code);
+    return found !== null && Number(found[1]) !== 0;
+  };
 
   // `root` is a parameter so the walk can be exercised over a throwaway tree (see the
   // end-to-end fixture below) without ever mutating the real, concurrently-read src/.
@@ -857,6 +885,15 @@ describe('no inline tunables', () => {
   const BITWISE = String.raw`(?:<<=?|>>>?=?|\^=?|~|(?<!\|)\|=?(?!\|)|(?<!&)&=?(?!&))`;
   const BITWISE_LEFT = new RegExp(String.raw`(${BITWISE}\s*\(*\s*)(${NUM})`, 'g');
   const BITWISE_RIGHT = new RegExp(String.raw`(${NUM})(\s*\)*\s*${BITWISE})`, 'g');
+
+  // ── numeric separators are spelling, not a different number ────────────────────
+  // `8_000` and `8000` are the same literal to the language, so they must be the same
+  // literal to the guard: without this, an inlined tunable is laundered past a
+  // review-blocking gate by typing one underscore (`7_0`, `4_000`, `9_00` …), and
+  // TUNABLE_ASSIGN never sees `LIVE_TIMEOUT_MS` either, since `_` is a word character
+  // and `\b` therefore never matches before `TIMEOUT`. Applied per line, so the
+  // reported line numbers stay exact.
+  const normaliseSeparators = (line: string): string => line.replace(/(?<=\d)_(?=\d)/g, '');
 
   function maskBitwiseOperands(line: string): string {
     const mask = (n: string): string => '#'.repeat(n.length);
@@ -912,7 +949,7 @@ describe('no inline tunables', () => {
 
     scrubbed.forEach((line, i) => {
       if (skip.has(i)) return;
-      const code = maskBitwiseOperands(line);
+      const code = normaliseSeparators(maskBitwiseOperands(line));
       const quoted = (rawLines[i] ?? '').trim();
       for (const literal of DENY_LITERALS) {
         if (new RegExp(`(?<![\\w.])${literal}(?![\\w.])`).test(code)) {
@@ -921,7 +958,7 @@ describe('no inline tunables', () => {
           );
         }
       }
-      if (TUNABLE_ASSIGN.test(code)) {
+      if (assignsTunable(code)) {
         violations.push(`${rel}:${i + 1} — tunable assigned a number literal: ${quoted}`);
       }
     });
@@ -1038,6 +1075,29 @@ describe('no inline tunables', () => {
 
     it('still catches a magic balance threshold used in a comparison', () => {
       expect(scan('if (gauge >= 70) { overload(); }\n').length).toBeGreaterThan(0);
+    });
+
+    // A numeric separator is spelling. If the guard reads `8_000` as anything other
+    // than 8000, every tunable in the deny list can be laundered past this gate.
+    it('sees through a numeric separator in a denied literal', () => {
+      expect(scan('const budgetMs = 8_000;\n').length).toBeGreaterThan(0);
+      expect(scan('const latencyMs = 9_00;\n').length).toBeGreaterThan(0);
+      expect(scan('const napMs = 4_000;\n').length).toBeGreaterThan(0);
+    });
+
+    // `\b` never matches before `TIMEOUT` in `LIVE_TIMEOUT_MS` — `_` is a word
+    // character — so a SCREAMING_SNAKE constant used to slip the assignment pass.
+    it('sees a tunable assigned under a SCREAMING_SNAKE name', () => {
+      expect(scan('const LIVE_TIMEOUT_MS = 8_000;\n').length).toBeGreaterThan(0);
+      expect(scan('const PARTY_HP_FLOOR = 7;\n').length).toBeGreaterThan(0);
+    });
+
+    // The situation thresholds pick which authored line every unit says every turn;
+    // an inline copy in src/ is balance data hiding from data/tuning.json.
+    it('catches an inlined situation threshold', () => {
+      expect(scan('  openingTurn: 1,\n').length).toBeGreaterThan(0);
+      expect(scan('  hurtBelowRatio: 0.5,\n').length).toBeGreaterThan(0);
+      expect(scan('  enemyLowBelowRatio: 0.3,\n').length).toBeGreaterThan(0);
     });
 
     it('keeps ignoring numbers inside comments and string literals', () => {

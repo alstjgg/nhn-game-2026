@@ -14,6 +14,7 @@
 
 import decisionsRaw from '../../data/decisions.json';
 import type { BootState } from '../ai/boot.ts';
+import { bucketConfigOf } from '../ai/bucket.ts';
 // u16's asset pack (src/styles/assets.css) rides in on this import. Nothing here uses
 // the module's exports — the composition root is simply the one place in `src/**`
 // guaranteed to be in every real page load, so it is where the pack's CSS actually
@@ -25,7 +26,7 @@ import type { Hero } from '../data/schema.ts';
 import { loadBundledGameData } from '../data/loader.ts';
 
 import { createDirector } from './director.ts';
-import { createGameContext, BUCKET_CONFIG } from './game-context.ts';
+import { createGameContext } from './game-context.ts';
 import { publishGateSeam, readGateOptions } from './gate.ts';
 import { defaultPace, TEST_PACE } from './pace.ts';
 import { buildDecisionPool } from './pool.ts';
@@ -88,7 +89,7 @@ export async function bootApp(options: BootAppOptions): Promise<void> {
   const boot = await bootOnce({
     tuning: data.tuning,
     pool: buildDecisionPool(decisionsRaw.combat, decisionsRaw.council),
-    bucketConfig: BUCKET_CONFIG,
+    bucketConfig: bucketConfigOf(data.tuning),
     heroes,
     automatedGate: gate.enabled,
     defaultPace: authoredPace,

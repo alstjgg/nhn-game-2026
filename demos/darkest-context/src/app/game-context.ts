@@ -9,6 +9,7 @@
 // but never a fresh boot — mode and tie-break policy are chosen once per page load.
 
 import type { BootState } from '../ai/boot.ts';
+import { bucketConfigOf } from '../ai/bucket.ts';
 import type { BucketConfig } from '../ai/bucket.ts';
 import { createGauge } from '../combat/gauge.ts';
 import type { Gauge } from '../combat/gauge.ts';
@@ -23,13 +24,6 @@ import type { HeroSheet } from '../screens/combat/index.ts';
 
 /** The demo party of PRD §2.3, in party order. */
 export const PARTY_IDS: readonly string[] = ['garrett', 'fiona', 'selene'];
-
-/** The situation thresholds every stub caller in this repo runs on (PRD §2.2). */
-export const BUCKET_CONFIG: BucketConfig = {
-  openingTurn: 1,
-  hurtBelowRatio: 0.5,
-  enemyLowBelowRatio: 0.3,
-};
 
 export interface GameContext {
   readonly data: GameData;
@@ -96,7 +90,7 @@ export function createGameContext(options: GameContextOptions): GameContext {
     partyIds: PARTY_IDS,
     heroes,
     boot,
-    bucketConfig: BUCKET_CONFIG,
+    bucketConfig: bucketConfigOf(data.tuning),
     tieBreak,
     heroById,
     loadout: () => party,

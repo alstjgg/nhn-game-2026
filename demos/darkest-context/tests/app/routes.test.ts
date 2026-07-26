@@ -266,7 +266,21 @@ describe('u15 A2 — this unit modifies no other unit\'s files', () => {
 
   const base = forkPoint();
 
-  it.skipIf(base === null)('touches no file under another unit\'s slice', () => {
+  /**
+   * The gate is a UNIT-branch gate: it asks whether u15's own branch stayed inside its
+   * slice. An integration branch is by definition the place where every slice's commits
+   * meet, so running it there asks a question that has no true answer — it would report
+   * every other unit's landed work as u15 trespassing. Off the unit branch it stands down.
+   */
+  const onUnitBranch = ((): boolean => {
+    try {
+      return /(^|[-/])u15$/.test(git(['rev-parse', '--abbrev-ref', 'HEAD']));
+    } catch {
+      return false;
+    }
+  })();
+
+  it.skipIf(base === null || !onUnitBranch)('touches no file under another unit\'s slice', () => {
     const changed = git(['diff', '--name-only', base as string, '--', '.'])
       .split('\n')
       .map((line) => line.trim())

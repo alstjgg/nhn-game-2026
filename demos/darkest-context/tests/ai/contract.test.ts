@@ -764,8 +764,35 @@ describe('live adapter: decide retries once then resolves null', () => {
     await expect(adapter.decide(DECIDE_REQ, CTX)).resolves.toBeNull();
   });
 
-  it('defaults the live budget to 8000ms (PRD §2.2)', () => {
-    expect(stripComments(read('src/ai/live.ts'))).toMatch(/8_?000/);
+  // PRD §2.2's 8s budget, proven where it is DECLARED. Asserting the literal in
+  // src/ai/live.ts pinned the duplicate instead: the adapter now resolves the number
+  // through the data seam, so the file that owns balance is the one under test (INV-8).
+  it('defaults the live budget to the declared data/tuning.json timeout.live', async () => {
+    const { loadBundledGameData, resolveTuningRef } = await import('../../src/data/loader.ts');
+    const declared = resolveTuningRef(loadBundledGameData().tuning, 'timeout.live');
+    expect(declared, 'PRD §2.2: a live call has 8s').toBe(8000);
+
+    const source = stripComments(read('src/ai/live.ts'));
+    expect(source, 'the budget must be read through the data seam').toContain('timeout.live');
+    expect(
+      source,
+      'no ms-scale literal may shadow data/tuning.json (a separator is not a disguise)',
+    ).not.toMatch(/(?<![\w.])\d[\d_]{2,}(?![\w.])/);
+
+    const budgets: number[] = [];
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockImplementation((ms: number) => {
+      budgets.push(ms);
+      return AbortSignal.abort as unknown as AbortSignal;
+    });
+    try {
+      const adapter = await make();
+      await adapter.decide(DECIDE_REQ, CTX);
+    } finally {
+      timeout.mockRestore();
+    }
+    expect(budgets, 'the call was budgeted with something other than the declared value').toEqual([
+      declared,
+    ]);
   });
 
   it('stance follows the same path: /ai/stance, one retry, then null', async () => {
@@ -1083,6 +1110,35 @@ describe('ai-smoke tool gates structure without a key', () => {
     expect(r.code, r.out).toBe(0);
     expect(r.out).toContain('/ai/stance');
     expect(r.out).not.toMatch(/undefined/);
+  });
+
+  // The persona row is the one sheet item the model is told IS the character. An
+  // `undefined` check passes on an empty string, so this reads the real
+  // data/heroes.json and demands the authored prose itself (PRD §2.3, must-prove 1–2).
+  it('--dry-run carries every composed hero persona verbatim, never an empty row', () => {
+    const r = run({ ANTHROPIC_API_KEY: '' });
+    expect(r.code, r.out).toBe(0);
+
+    const heroes = JSON.parse(read('data/heroes.json')) as Array<{
+      id: string;
+      defaultPrompt: { id: string; text?: string; lines?: string[] };
+    }>;
+    const composed = [...r.out.matchAll(/^\s*- \[([\w.]+)\] \([^)]*\)\s?(.*)$/gm)].map((m) => ({
+      id: m[1],
+      text: m[2].trim(),
+    }));
+    expect(composed.length, `no sheet rows in the composed prose:\n${r.out}`).toBeGreaterThan(0);
+
+    for (const row of composed) {
+      expect(row.text, `sheet row '${row.id}' composed empty`).not.toBe('');
+      const hero = heroes.find((h) => h.defaultPrompt.id === row.id);
+      if (hero === undefined) continue;
+      const first = (hero.defaultPrompt.text ?? hero.defaultPrompt.lines?.[0] ?? '').trim();
+      expect(first, `data/heroes.json authors no persona for '${row.id}'`).not.toBe('');
+      expect(row.text, `'${row.id}' lost its authored persona on the way into the prompt`).toContain(
+        first,
+      );
+    }
   });
 
   it('ships a runbook for the key holder', () => {

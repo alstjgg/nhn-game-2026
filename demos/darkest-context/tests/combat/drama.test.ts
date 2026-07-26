@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { AgentDecision, AIAdapter, DecideRequest, ValidationCtx } from '../../src/ai/contract.ts';
+import { bucketConfigOf } from '../../src/ai/bucket.ts';
 import type { BucketConfig, DecisionPool, PoolSection } from '../../src/ai/bucket.ts';
 import { DEFAULT_KEY } from '../../src/ai/bucket.ts';
 import { createFallbackDecider, createStubAdapter } from '../../src/ai/stub.ts';
@@ -33,7 +34,7 @@ const { heroes, cards, encounters, tuning } = loadBundledGameData();
 
 const PARTY = ['garrett', 'fiona', 'selene'] as const;
 const GAUGE = tuning.gauge;
-const CFG: BucketConfig = { openingTurn: 1, hurtBelowRatio: 0.5, enemyLowBelowRatio: 0.3 };
+const CFG: BucketConfig = bucketConfigOf(tuning);
 
 /** How many 도배 hits the accrual rate needs to carry one hero to 한계. */
 const HITS_TO_LIMIT = Math.ceil(GAUGE.tiers.limit / (GAUGE.onHit + GAUGE.spamGolemExtra));

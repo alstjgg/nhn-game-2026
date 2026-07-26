@@ -14,6 +14,7 @@
 
 import decisionsRaw from '../../../data/decisions.json';
 import type { AIAdapter } from '../../../src/ai/adapter';
+import { bucketConfigOf } from '../../../src/ai/bucket';
 import type { BucketConfig } from '../../../src/ai/bucket';
 import type { StanceRequest, ValidationCtx } from '../../../src/ai/contract';
 import { createStubAdapter } from '../../../src/ai/stub';
@@ -33,11 +34,7 @@ const PARTY_IDS = ['garrett', 'fiona', 'selene'];
 const DEFAULT_AGENDA_ID = 'riddle_golem';
 
 /** The council never computes a situation bucket; the stub still wants a shape-valid one. */
-const BUCKET_CONFIG: BucketConfig = {
-  openingTurn: 1,
-  hurtBelowRatio: 0.5,
-  enemyLowBelowRatio: 0.3,
-};
+const BUCKET_CONFIG: BucketConfig = bucketConfigOf(tuning);
 
 const params = new URLSearchParams(window.location.search);
 

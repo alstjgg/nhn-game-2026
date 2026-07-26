@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { isAgentDecision } from '../../src/ai/contract.ts';
 import type { AgentDecision, AIHealth, DecideRequest, ValidationCtx } from '../../src/ai/contract.ts';
 import { DEFAULT_KEY } from '../../src/ai/bucket.ts';
+import { bucketConfigOf } from '../../src/ai/bucket.ts';
 import type { BucketConfig, DecisionPool } from '../../src/ai/bucket.ts';
 import { bootAdapter } from '../../src/ai/boot.ts';
 import { tieBreak } from '../../src/core/tiebreak.ts';
@@ -19,7 +20,7 @@ import { loadBundledGameData, resolveTuningRef } from '../../src/data/loader.ts'
 
 const { tuning, heroes } = loadBundledGameData();
 
-const CFG: BucketConfig = { openingTurn: 1, hurtBelowRatio: 0.5, enemyLowBelowRatio: 0.3 };
+const CFG: BucketConfig = bucketConfigOf(tuning);
 const SEED = 0xc0ffee;
 const OTHER_SEED = 0x0badf00d;
 const GATE_BUDGET_MS = 300; // a gate boot must not pay the 900ms stub latency

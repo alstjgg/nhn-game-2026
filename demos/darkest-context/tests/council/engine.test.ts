@@ -19,6 +19,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import decisionsRaw from '../../data/decisions.json';
 import { DEFAULT_KEY, lookupStance } from '../../src/ai/bucket';
+import { bucketConfigOf } from '../../src/ai/bucket';
 import type { BucketConfig } from '../../src/ai/bucket';
 import type { AIAdapter } from '../../src/ai/adapter';
 import type { Stance, StanceRequest, ValidationCtx } from '../../src/ai/contract';
@@ -37,11 +38,7 @@ const { cards, council, heroes, tuning } = loadBundledGameData();
 const COUNCIL_ENTRIES = decisionsRaw.council as unknown as CouncilStanceEntry[];
 
 /** The council never computes a situation bucket; the stub still wants a shape-valid one. */
-const BUCKET_CONFIG: BucketConfig = {
-  openingTurn: 1,
-  hurtBelowRatio: 0.5,
-  enemyLowBelowRatio: 0.3,
-};
+const BUCKET_CONFIG: BucketConfig = bucketConfigOf(tuning);
 
 const agendaById = (id: string): Agenda => {
   const found = council.agendas.find((agenda) => agenda.id === id);

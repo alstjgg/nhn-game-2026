@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { AgentDecision, AIAdapter, DecideRequest } from '../../src/ai/contract.ts';
+import { bucketConfigOf } from '../../src/ai/bucket.ts';
 import type { BucketConfig } from '../../src/ai/bucket.ts';
 import { computeBucket } from '../../src/ai/bucket.ts';
 import { createFallbackDecider } from '../../src/ai/stub.ts';
@@ -33,7 +34,7 @@ const { heroes, cards, encounters, tuning } = loadBundledGameData();
 const PARTY = ['garrett', 'fiona', 'selene'] as const;
 const GAUGE = tuning.gauge;
 const T1_GOLEM = 't1_spam_golem_1';
-const CFG: BucketConfig = { openingTurn: 1, hurtBelowRatio: 0.5, enemyLowBelowRatio: 0.3 };
+const CFG: BucketConfig = bucketConfigOf(tuning);
 
 const heroById = (id: string): Hero => {
   const found = heroes.find((h) => h.id === id);

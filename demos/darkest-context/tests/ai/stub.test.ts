@@ -28,6 +28,7 @@ import type {
   StanceRequest,
 } from '../../src/ai/contract.ts';
 import { DEFAULT_KEY } from '../../src/ai/bucket.ts';
+import { bucketConfigOf } from '../../src/ai/bucket.ts';
 import type { BucketConfig, DecisionPool } from '../../src/ai/bucket.ts';
 import {
   ELLIPSIS_SAY,
@@ -43,7 +44,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..'); // demos/darkest-context/
 
 // ── tunables: test-local only. src/ai/{bucket,stub,boot}.ts may not inline any. ──
-const CFG: BucketConfig = { openingTurn: 1, hurtBelowRatio: 0.5, enemyLowBelowRatio: 0.3 };
+const CFG: BucketConfig = bucketConfigOf(loadBundledGameData().tuning);
 const NO_LATENCY = 0;
 const BUDGET_MS = 3;
 const SCRIPT: readonly number[] = [12, 24, 18];

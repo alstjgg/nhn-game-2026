@@ -21,6 +21,7 @@ import type {
   Agenda,
   AgendaOption,
   BaseSkill,
+  BucketTuning,
   Card,
   ChatterTuning,
   Council,
@@ -491,6 +492,15 @@ function validateChatter(rec: Record<string, unknown>): ChatterTuning {
   };
 }
 
+function validateBucket(rec: Record<string, unknown>): BucketTuning {
+  const ctx = 'tuning.bucket';
+  return {
+    openingTurn: requireNumber(rec.openingTurn, ctx, 'openingTurn'),
+    hurtBelowRatio: requireNumber(rec.hurtBelowRatio, ctx, 'hurtBelowRatio'),
+    enemyLowBelowRatio: requireNumber(rec.enemyLowBelowRatio, ctx, 'enemyLowBelowRatio'),
+  };
+}
+
 export function loadTuning(input: unknown): Tuning {
   if (!isRecord(input)) {
     throw new Error(`tuning: must be an object (got ${typeName(input)})`);
@@ -504,6 +514,7 @@ export function loadTuning(input: unknown): Tuning {
   const draft = requireRecord(input.draft, 'tuning', 'draft');
   const tieBreak = requireRecord(input.tieBreak, 'tuning', 'tieBreak');
   const chatter = requireRecord(input.chatter, 'tuning', 'chatter');
+  const bucket = requireRecord(input.bucket, 'tuning', 'bucket');
   return {
     gauge: validateGauge(gauge),
     damage: validateDamage(damage),
@@ -514,6 +525,7 @@ export function loadTuning(input: unknown): Tuning {
     draft: validateDraft(draft),
     tieBreak: validateTieBreak(tieBreak),
     chatter: validateChatter(chatter),
+    bucket: validateBucket(bucket),
   };
 }
 

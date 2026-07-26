@@ -22,17 +22,19 @@ import type {
 import {
   DEFAULT_KEY,
   SITUATION_BUCKETS,
+  bucketConfigOf,
   computeBucket,
   lookupDecision,
   lookupStance,
 } from '../../src/ai/bucket.ts';
 import type { BucketConfig, DecisionPool, SituationBucket } from '../../src/ai/bucket.ts';
+import { loadBundledGameData } from '../../src/data/loader.ts';
 
 // ── fixtures ────────────────────────────────────────────────────────────────
-// Thresholds are test-local numbers on purpose: `BucketConfig` is a REQUIRED
-// parameter (the src files may not inline a single tunable literal), so the
-// suite is the only place these values may appear.
-const CFG: BucketConfig = { openingTurn: 1, hurtBelowRatio: 0.5, enemyLowBelowRatio: 0.3 };
+// The thresholds come from `data/tuning.json`, the file that owns them: `BucketConfig`
+// is a REQUIRED parameter (no src file may inline a tunable), and a private copy here
+// would grade the cascade against a number the shipped run does not use (INV-8).
+const CFG: BucketConfig = bucketConfigOf(loadBundledGameData().tuning);
 
 const LATER_TURN = 4;
 
