@@ -11,7 +11,7 @@
     {
       "id": "hallucination_spirit",
       "name": "환각 정령",
-      "hp": 22,
+      "hp": 12,
       "damage": 0,
       "gaugeOnAttackRef": "gauge.spiritAttack",
       "behavior": { "rule": "highest_gauge_hero" }
