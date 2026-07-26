@@ -1,0 +1,439 @@
+{
+  "combat": [
+    {
+      "unitId": "garrett",
+      "bucket": "opening",
+      "cardId": null,
+      "decision": {
+        "action": "strike",
+        "target": "first_enemy",
+        "say": "정면으로 간다.",
+        "because": ["garrett.default"]
+      }
+    },
+    {
+      "unitId": "garrett",
+      "bucket": "ally_hurt",
+      "cardId": null,
+      "decision": {
+        "action": "guard_ally",
+        "target": "lowest_hp_ally",
+        "say": "물러서 있어, 다음 일격은 내 방패가 받는다.",
+        "because": ["garrett.default", "shield_up"]
+      }
+    },
+    {
+      "unitId": "garrett",
+      "bucket": "self_hurt",
+      "cardId": null,
+      "decision": {
+        "action": "defend",
+        "target": "self",
+        "say": "이 정도로는 안 물러난다.",
+        "because": ["garrett.default", "shield_up"]
+      }
+    },
+    {
+      "unitId": "garrett",
+      "bucket": "enemy_low",
+      "cardId": null,
+      "decision": {
+        "action": "strike",
+        "target": "lowest_hp_enemy",
+        "say": "숨통은 내가 끊는다.",
+        "because": ["garrett.default"]
+      }
+    },
+    {
+      "unitId": "garrett",
+      "bucket": "gauge_noise",
+      "cardId": null,
+      "decision": {
+        "action": "defend",
+        "target": "self",
+        "say": "적이 자꾸 늘어난다, 일단 앞을 막는다.",
+        "because": ["garrett.default", "shield_up"]
+      }
+    },
+    {
+      "unitId": "garrett",
+      "bucket": "default",
+      "cardId": null,
+      "decision": {
+        "action": "defend",
+        "target": "self",
+        "say": "대열은 내가 지킨다.",
+        "because": ["garrett.default", "shield_up"]
+      }
+    },
+    {
+      "unitId": "garrett",
+      "bucket": "self_hurt",
+      "cardId": "grudge",
+      "decision": {
+        "action": "strike",
+        "target": "last_hit_by",
+        "say": "방패는 됐다, 나를 친 놈부터 벤다.",
+        "because": ["garrett.default", "grudge"]
+      }
+    },
+    {
+      "unitId": "garrett",
+      "bucket": "enemy_low",
+      "cardId": "grudge",
+      "decision": {
+        "action": "strike",
+        "target": "last_hit_by",
+        "say": "약한 놈보다 나를 친 놈이 먼저다.",
+        "because": ["garrett.default", "grudge"]
+      }
+    },
+    {
+      "unitId": "fiona",
+      "bucket": "opening",
+      "cardId": null,
+      "decision": {
+        "action": "defend",
+        "target": "self",
+        "say": "아, 아직은 다들 괜찮으니까…",
+        "because": ["fiona.default"]
+      }
+    },
+    {
+      "unitId": "fiona",
+      "bucket": "ally_hurt",
+      "cardId": null,
+      "decision": {
+        "action": "guard_ally",
+        "target": "lowest_hp_ally",
+        "say": "다친 사람부터, 내 뒤로 와.",
+        "because": ["fiona.default", "first_aid"]
+      }
+    },
+    {
+      "unitId": "fiona",
+      "bucket": "self_hurt",
+      "cardId": null,
+      "decision": {
+        "action": "defend",
+        "target": "self",
+        "say": "무서워, 나부터 좀 살자.",
+        "because": ["fiona.default"]
+      }
+    },
+    {
+      "unitId": "fiona",
+      "bucket": "enemy_low",
+      "cardId": null,
+      "decision": {
+        "action": "wait",
+        "say": "다들 잡을 텐데 내가 나설 필요는 없잖아.",
+        "because": ["fiona.default"]
+      }
+    },
+    {
+      "unitId": "fiona",
+      "bucket": "gauge_noise",
+      "cardId": null,
+      "decision": {
+        "action": "defend",
+        "target": "self",
+        "say": "셋… 셋이나 있어…!",
+        "because": ["fiona.default"]
+      }
+    },
+    {
+      "unitId": "fiona",
+      "bucket": "default",
+      "cardId": null,
+      "decision": {
+        "action": "wait",
+        "say": "난 뒤에 있을게, 그게 낫잖아.",
+        "because": ["fiona.default"]
+      }
+    },
+    {
+      "unitId": "fiona",
+      "bucket": "opening",
+      "cardId": "fearless",
+      "decision": {
+        "action": "strike",
+        "target": "first_enemy",
+        "say": "먼저 부딪히면 안 무섭다고 했어.",
+        "because": ["fiona.default", "fearless"]
+      }
+    },
+    {
+      "unitId": "fiona",
+      "bucket": "ally_hurt",
+      "cardId": "fearless",
+      "decision": {
+        "action": "strike",
+        "target": "last_hit_by",
+        "say": "다치게 한 쪽을 먼저 끊는 게 빨라.",
+        "because": ["fiona.default", "fearless"]
+      }
+    },
+    {
+      "unitId": "fiona",
+      "bucket": "self_hurt",
+      "cardId": "fearless",
+      "decision": {
+        "action": "strike",
+        "target": "first_enemy",
+        "say": "맞았으면 갚아야지, 물러서지 않아.",
+        "because": ["fiona.default", "fearless"]
+      }
+    },
+    {
+      "unitId": "selene",
+      "bucket": "opening",
+      "cardId": null,
+      "decision": {
+        "action": "strike",
+        "target": "lowest_hp_enemy",
+        "say": "약해 보이는 쪽부터.",
+        "because": ["selene.default"]
+      }
+    },
+    {
+      "unitId": "selene",
+      "bucket": "ally_hurt",
+      "cardId": null,
+      "decision": {
+        "action": "guard_ally",
+        "target": "lowest_hp_ally",
+        "say": "저쪽 시선은 내가 끌어둘게.",
+        "because": ["selene.default", "plausible_lie"]
+      }
+    },
+    {
+      "unitId": "selene",
+      "bucket": "self_hurt",
+      "cardId": null,
+      "decision": {
+        "action": "evade",
+        "say": "이 몸으로 맞서는 건 수지가 안 맞아.",
+        "because": ["selene.default"]
+      }
+    },
+    {
+      "unitId": "selene",
+      "bucket": "enemy_low",
+      "cardId": null,
+      "decision": {
+        "action": "strike",
+        "target": "lowest_hp_enemy",
+        "say": "쓰러지기 직전이 제일 싸게 먹혀.",
+        "because": ["selene.default"]
+      }
+    },
+    {
+      "unitId": "selene",
+      "bucket": "gauge_noise",
+      "cardId": null,
+      "decision": {
+        "action": "evade",
+        "say": "숫자가 자꾸 늘어나는데, 셈이 안 맞아.",
+        "because": ["selene.default", "plausible_lie"]
+      }
+    },
+    {
+      "unitId": "selene",
+      "bucket": "default",
+      "cardId": null,
+      "decision": {
+        "action": "evade",
+        "say": "굳이 정면으로 갈 이유가 없지.",
+        "because": ["selene.default"]
+      }
+    }
+  ],
+  "council": [
+    {
+      "unitId": "garrett",
+      "agendaId": "riddle_golem",
+      "cardId": null,
+      "stance": {
+        "action": "op_riddle_shadow",
+        "say": "그림자는 사람이 늘수록 커지더군.",
+        "because": ["garrett.default"]
+      }
+    },
+    {
+      "unitId": "fiona",
+      "agendaId": "riddle_golem",
+      "cardId": null,
+      "stance": {
+        "action": "op_riddle_knowledge",
+        "say": "나눠도 줄지 않는 건 지식뿐이야.",
+        "because": ["fiona.default"]
+      }
+    },
+    {
+      "unitId": "selene",
+      "agendaId": "riddle_golem",
+      "cardId": null,
+      "stance": {
+        "action": "op_riddle_gold",
+        "say": "금화 이야기면 사람은 늘 모여들지.",
+        "because": ["selene.default", "plausible_lie"]
+      }
+    },
+    {
+      "unitId": "garrett",
+      "agendaId": "fallen_merchant",
+      "cardId": null,
+      "stance": {
+        "action": "op_merchant_save",
+        "say": "쓰러진 사람을 두고 가진 않는다.",
+        "because": ["garrett.default"]
+      }
+    },
+    {
+      "unitId": "fiona",
+      "agendaId": "fallen_merchant",
+      "cardId": null,
+      "stance": {
+        "action": "op_merchant_pass",
+        "say": "미안해, 해가 지는 게 더 무서워.",
+        "because": ["fiona.default"]
+      }
+    },
+    {
+      "unitId": "selene",
+      "agendaId": "fallen_merchant",
+      "cardId": null,
+      "stance": {
+        "action": "op_merchant_pass",
+        "say": "해 지기 전에 못 닿으면 우리가 짐이 돼.",
+        "because": ["selene.default"]
+      }
+    },
+    {
+      "unitId": "selene",
+      "agendaId": "fallen_merchant",
+      "cardId": "gambler",
+      "stance": {
+        "action": "op_merchant_save",
+        "say": "반반이면 걸어보지, 저 주머니가 비었을 리 없어.",
+        "because": ["selene.default", "gambler"]
+      }
+    }
+  ],
+  "chatter": [
+    {
+      "id": "walk_01",
+      "lines": [
+        { "unitId": "garrett", "text": "앞은 내가 본다, 뒤는 알아서들 해." },
+        { "unitId": "fiona", "text": "그 말 할 때마다 꼭 뭔가 나오더라." }
+      ]
+    },
+    {
+      "id": "walk_02",
+      "lines": [
+        { "unitId": "selene", "text": "이 길, 예전에 한 번 털린 적 있어." },
+        { "unitId": "garrett", "text": "그 얘긴 안 들은 걸로 하지." }
+      ]
+    },
+    {
+      "id": "walk_03",
+      "lines": [
+        { "unitId": "fiona", "text": "붕대가 두 개밖에 안 남았어." },
+        { "unitId": "selene", "text": "그럼 두 번만 다치면 되겠네." }
+      ]
+    },
+    {
+      "id": "walk_04",
+      "lines": [
+        { "unitId": "garrett", "text": "발소리를 줄여라, 골렘은 소리로 찾는다." },
+        { "unitId": "fiona", "text": "숨도 줄여야 하는 거야…?" }
+      ]
+    },
+    {
+      "id": "walk_05",
+      "lines": [
+        { "unitId": "selene", "text": "가렛, 그 방패 무겁지 않아?" },
+        { "unitId": "garrett", "text": "가벼우면 방패가 아니지." }
+      ]
+    },
+    {
+      "id": "walk_06",
+      "lines": [
+        { "unitId": "fiona", "text": "여기 공기가 좀 이상해." },
+        { "unitId": "selene", "text": "그건 네 기분 탓이야, 아마도." }
+      ]
+    },
+    {
+      "id": "walk_07",
+      "lines": [
+        { "unitId": "garrett", "text": "다음 싸움은 내가 먼저 붙는다." },
+        { "unitId": "selene", "text": "말리진 않을게, 값은 네가 치러." }
+      ]
+    },
+    {
+      "id": "walk_08",
+      "lines": [
+        { "unitId": "fiona", "text": "우리 지금 잘 가고 있는 거 맞지?" },
+        { "unitId": "garrett", "text": "길이 하나뿐이라 틀릴 일도 없다." }
+      ]
+    },
+    {
+      "id": "walk_09",
+      "lines": [
+        { "unitId": "selene", "text": "쉬는 자리 나오면 나부터 앉을 거야." },
+        { "unitId": "fiona", "text": "나도 좀 앉고 싶은데…" }
+      ]
+    },
+    {
+      "id": "walk_10",
+      "lines": [
+        { "unitId": "garrett", "text": "피오나, 너무 뒤에 처지지 마라." },
+        { "unitId": "fiona", "text": "이 정도가 딱 안전한 거리야." }
+      ]
+    },
+    {
+      "id": "walk_11",
+      "lines": [
+        { "unitId": "selene", "text": "저 앞에 뭔가 반짝인 것 같은데." },
+        { "unitId": "garrett", "text": "반짝이는 건 대개 미끼다." },
+        { "unitId": "fiona", "text": "둘 다 그냥 지나가면 안 될까." }
+      ]
+    },
+    {
+      "id": "walk_12",
+      "lines": [
+        { "unitId": "fiona", "text": "다들 아직 안 다쳤지?" },
+        { "unitId": "selene", "text": "네가 그 말 하면 꼭 누가 다치더라." },
+        { "unitId": "garrett", "text": "그럼 그 전에 내가 앞에 서지." }
+      ]
+    }
+  ],
+  "overload": [
+    {
+      "unitId": "garrett",
+      "decision": {
+        "action": "defend",
+        "target": "self",
+        "say": "…방패를, 든다.",
+        "because": ["garrett.default", "shield_up"]
+      }
+    },
+    {
+      "unitId": "fiona",
+      "decision": {
+        "action": "wait",
+        "say": "…아무 소리도 안 들려.",
+        "because": ["fiona.default"]
+      }
+    },
+    {
+      "unitId": "selene",
+      "decision": {
+        "action": "evade",
+        "say": "…생각이 안 나, 일단 피해.",
+        "because": ["selene.default"]
+      }
+    }
+  ]
+}
