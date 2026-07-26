@@ -831,8 +831,36 @@ describe('live adapter: boot health probe', () => {
     await expect(probeHealth()).resolves.toBeNull();
   });
 
-  it('defaults the boot probe budget to 800ms (PRD §2.2)', () => {
-    expect(stripComments(read('src/ai/adapter.ts'))).toMatch(/timeoutMs\s*=\s*800\b/);
+  // u0 — INV-6: the 800ms budget is still 800ms, but it now comes from
+  // data/tuning.json `timeout.healthProbe` instead of an adapter-side literal.
+  // (Supersedes the old `/timeoutMs = 800/` source grep, which pinned the very
+  // inline literal the balance-as-data rule forbids.)
+  const probeBudgetFromData = (): number =>
+    (JSON.parse(read('data/tuning.json')) as { timeout: { healthProbe: number } }).timeout
+      .healthProbe;
+
+  it('declares the boot probe budget in data, not in adapter.ts', () => {
+    expect(probeBudgetFromData()).toBe(800);
+    const src = stripComments(read('src/ai/adapter.ts'));
+    expect(src).not.toMatch(/timeoutMs\s*=\s*800\b/);
+    expect(src).not.toMatch(/(?<![\w.])800(?![\w.])/);
+  });
+
+  it('defaults the boot probe budget to the 800ms data declares (PRD §2.2)', async () => {
+    const timeoutSpy = vi.spyOn(AbortSignal, 'timeout');
+    fetchMock.mockResolvedValue({ ok: true, status: 200, json: async () => health(true) } as never);
+    const { probeHealth } = await import('../../src/ai/adapter.ts');
+    await probeHealth();
+    expect(timeoutSpy).toHaveBeenCalledWith(probeBudgetFromData());
+    expect(timeoutSpy).toHaveBeenCalledWith(800);
+  });
+
+  it('still lets a caller override the boot probe budget', async () => {
+    const timeoutSpy = vi.spyOn(AbortSignal, 'timeout');
+    fetchMock.mockResolvedValue({ ok: true, status: 200, json: async () => health(true) } as never);
+    const { probeHealth } = await import('../../src/ai/adapter.ts');
+    await probeHealth(1234);
+    expect(timeoutSpy).toHaveBeenCalledWith(1234);
   });
 });
 

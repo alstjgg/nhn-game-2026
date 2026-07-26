@@ -12,7 +12,16 @@
 // RED on arrival: src/data/{schema,loader}.ts and the six data/*.json files do not
 // exist yet, so this module fails to resolve and every filtered run fails with it.
 import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -794,11 +803,16 @@ describe('no inline tunables', () => {
   // ── the grep gate: no tunable literal may be inlined anywhere in src/** ──
   // 0 scanned files ⇒ pass (u4 may land before the consumer units exist).
   const DENY_LITERALS = [900, 3000, 8000, 4000, 800, 70, 40, 25, 15, 50];
+  // Assignment / initialisation only. A comparison (`gauge > 100`) reads a value against
+  // its own domain bound; it does not bake a tunable in. Magic thresholds in comparisons
+  // are still caught by the DENY_LITERALS pass below.
   const TUNABLE_ASSIGN =
-    /\b(gauge|damage|dmg|hp|slot|latency|timeout|walk|draft|tieBreak|heal|reflect)\w*\s*(?:[:=]|[+\-]=|===|>=|<=|>|<)\s*-?\d+/i;
+    /\b(gauge|damage|dmg|hp|slot|latency|timeout|walk|draft|tieBreak|heal|reflect)\w*\s*(?:[:=]|[+\-]=)\s*-?\d+/i;
 
-  function sourceFiles(): string[] {
-    const srcRoot = resolve(demoRoot, 'src');
+  // `root` is a parameter so the walk can be exercised over a throwaway tree (see the
+  // end-to-end fixture below) without ever mutating the real, concurrently-read src/.
+  function sourceFiles(root: string = resolve(demoRoot, 'src')): string[] {
+    const srcRoot = root;
     const skipped = resolve(srcRoot, 'data');
     const out: string[] = [];
     const walkDir = (dir: string): void => {
@@ -818,32 +832,254 @@ describe('no inline tunables', () => {
 
   // Comments and string literals are stripped first, so prose that merely mentions a
   // number (or an asset path like "sprite-3000.png") never trips the scan.
+  //
+  // Multi-line constructs (block comments, template literals) are blanked in place rather
+  // than collapsed: the scrubbed text must stay line-for-line aligned with the original,
+  // or every reported line number after the first JSDoc block is wrong. The scrubbed text
+  // is used for DETECTION only — reporting always quotes the untouched source line.
+  const blankOut = (match: string): string => match.replace(/[^\n]/g, ' ');
+
   function scrub(source: string): string {
     return source
-      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/\/\*[\s\S]*?\*\//g, blankOut)
       .replace(/(^|[^:])\/\/.*$/gm, '$1')
       .replace(/'(?:\\.|[^'\\])*'/g, "''")
       .replace(/"(?:\\.|[^"\\])*"/g, '""')
-      .replace(/`(?:\\.|[^`\\])*`/g, '``');
+      .replace(/`(?:\\.|[^`\\])*`/g, blankOut);
   }
+
+  // ── exemption 1: bitwise operands are algorithm identity, not balance data ──────
+  // `state >>> 15` / `1 | state` inside mulberry32 are the generator's definition —
+  // moving them to data/ would change the stream. Exempted per OCCURRENCE, not per
+  // line: a balance literal sharing a line with a bitwise expression is still caught.
+  // `||` and `&&` are excluded, so a logical operator never launders a tunable.
+  const NUM = String.raw`-?(?:0[xX][\da-fA-F]+|\d+(?:\.\d+)?)`;
+  const BITWISE = String.raw`(?:<<=?|>>>?=?|\^=?|~|(?<!\|)\|=?(?!\|)|(?<!&)&=?(?!&))`;
+  const BITWISE_LEFT = new RegExp(String.raw`(${BITWISE}\s*\(*\s*)(${NUM})`, 'g');
+  const BITWISE_RIGHT = new RegExp(String.raw`(${NUM})(\s*\)*\s*${BITWISE})`, 'g');
+
+  function maskBitwiseOperands(line: string): string {
+    const mask = (n: string): string => '#'.repeat(n.length);
+    return line
+      .replace(BITWISE_LEFT, (_m, op: string, n: string) => `${op}${mask(n)}`)
+      .replace(BITWISE_RIGHT, (_m, n: string, op: string) => `${mask(n)}${op}`);
+  }
+
+  // ── exemption 2: type-level declarations are not runtime tunables ───────────────
+  // `type GaugeTier = 0 | 1 | 2 | 3;` and `enum` members declare a compile-time set of
+  // permitted values; there is no number to move into data/. Returns the 0-based indices
+  // of the lines those declarations span.
+  function typeLevelLines(lines: string[]): Set<number> {
+    const TYPE_ALIAS = /^\s*(?:export\s+)?(?:declare\s+)?type\s+\w/;
+    const ENUM_DECL = /^\s*(?:export\s+)?(?:declare\s+)?(?:const\s+)?enum\s+\w/;
+    const skip = new Set<number>();
+    let inAlias = false;
+    let inEnum = false;
+    let depth = 0;
+
+    lines.forEach((line, i) => {
+      if (!inAlias && !inEnum) {
+        if (ENUM_DECL.test(line)) inEnum = true;
+        else if (TYPE_ALIAS.test(line)) inAlias = true;
+        else return;
+      }
+      skip.add(i);
+      if (inEnum) {
+        depth += (line.match(/\{/g) ?? []).length - (line.match(/\}/g) ?? []).length;
+        if (depth <= 0 && line.includes('}')) {
+          inEnum = false;
+          depth = 0;
+        }
+      } else if (/;\s*$/.test(line) || line.trim() === '') {
+        // `;` ends the alias; a blank line is the safety valve, so a missing semicolon
+        // can never swallow the rest of the file into the exemption.
+        inAlias = false;
+      }
+    });
+    return skip;
+  }
+
+  /**
+   * The whole scan, as one pure function: raw source in, `${rel}:${line} — …` out
+   * (`line` 1-based, `[]` when clean). Both the src/** walk and the synthetic
+   * `guard behaviour` fixtures go through here, so there is exactly one implementation.
+   */
+  function scanSource(rel: string, source: string): string[] {
+    const rawLines = source.split('\n');
+    const scrubbed = scrub(source).split('\n');
+    const skip = typeLevelLines(scrubbed);
+    const violations: string[] = [];
+
+    scrubbed.forEach((line, i) => {
+      if (skip.has(i)) return;
+      const code = maskBitwiseOperands(line);
+      const quoted = (rawLines[i] ?? '').trim();
+      for (const literal of DENY_LITERALS) {
+        if (new RegExp(`(?<![\\w.])${literal}(?![\\w.])`).test(code)) {
+          violations.push(
+            `${rel}:${i + 1} — literal ${literal} belongs in data/tuning.json: ${quoted}`,
+          );
+        }
+      }
+      if (TUNABLE_ASSIGN.test(code)) {
+        violations.push(`${rel}:${i + 1} — tunable assigned a number literal: ${quoted}`);
+      }
+    });
+    return violations;
+  }
+
+  // ── the seam (u0) ──────────────────────────────────────────────────────────────
+  // The scan is a pure function so the guard can be tested against synthetic source
+  // instead of only against whatever happens to sit in src/** today:
+  //
+  //     scanSource(rel: string, source: string): string[]
+  //
+  //   • `rel`    — repo-relative path, used only to prefix the message.
+  //   • `source` — RAW source text (scrubbing of comments/strings is scanSource's job).
+  //   • returns  — zero or more `${rel}:${line} — …` strings, `line` 1-based.
+  //
+  // RED on arrival: scanSource does not exist yet. The driver below and every
+  // `guard behaviour` case throw ReferenceError until u0 implements it.
 
   it('finds no inlined tunable literal in src/** (src/data/** excluded)', () => {
     const violations: string[] = [];
     for (const file of sourceFiles()) {
-      const rel = relative(demoRoot, file);
-      const lines = scrub(readFileSync(file, 'utf8')).split('\n');
-      lines.forEach((line, i) => {
-        for (const literal of DENY_LITERALS) {
-          if (new RegExp(`(?<![\\w.])${literal}(?![\\w.])`).test(line)) {
-            violations.push(`${rel}:${i + 1} — literal ${literal} belongs in data/tuning.json`);
-          }
-        }
-        if (TUNABLE_ASSIGN.test(line)) {
-          violations.push(`${rel}:${i + 1} — tunable assigned a number literal: ${line.trim()}`);
-        }
-      });
+      violations.push(...scanSource(relative(demoRoot, file), readFileSync(file, 'utf8')));
     }
     expect(violations, violations.join('\n')).toEqual([]);
+  });
+
+  // ── guard behaviour: the scan must be precise, not merely quiet ────────────────
+  // Full test name stays under "no inline tunables", so the AC3 filter covers these.
+  describe('guard behaviour', () => {
+    const scan = (source: string, rel = 'src/fixture.ts') => scanSource(rel, source);
+    const scanFile = (rel: string) => scanSource(rel, readFileSync(resolve(demoRoot, rel), 'utf8'));
+
+    // AC2 — a type-level union is not a runtime tunable.
+    it('lets a type-alias union of numeric literals through', () => {
+      expect(scan('export type GaugeTier = 0 | 1 | 2 | 3;\n')).toEqual([]);
+      expect(scan('export type SlotCount = 2 | 3;\n')).toEqual([]);
+    });
+
+    it('lets a type-alias union carry denied literals', () => {
+      expect(scan('type ProbeBudgetMs = 800 | 3000 | 8000;\n')).toEqual([]);
+    });
+
+    it('lets an enum declaration through', () => {
+      expect(scan('enum Reflect {\n  Shield = 30,\n  None = 0,\n}\n')).toEqual([]);
+      expect(scan('const enum Hp {\n  Golem = 36,\n}\n')).toEqual([]);
+    });
+
+    it('clears the real src/ai/contract.ts', () => {
+      const found = scanFile('src/ai/contract.ts');
+      expect(found, found.join('\n')).toEqual([]);
+    });
+
+    // AC3 — bit-mixing constants are algorithm identity, not balance data.
+    it('lets PRNG mixing constants that are bitwise operands through', () => {
+      expect(scan('  let t = Math.imul(state ^ (state >>> 15), 1 | state);\n')).toEqual([]);
+      expect(scan('  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;\n')).toEqual([]);
+      expect(scan('  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;\n')).toEqual([]);
+      expect(scan('  state = (state + 0x6d2b79f5) | 0;\n')).toEqual([]);
+    });
+
+    it('clears the real src/core/rng.ts', () => {
+      const found = scanFile('src/core/rng.ts');
+      expect(found, found.join('\n')).toEqual([]);
+    });
+
+    it('still catches a balance literal sharing a line with a bitwise expression', () => {
+      const found = scan('const damageBonus = 40; const mask = seed >>> 3;\n');
+      expect(found.join('\n')).toContain('40');
+      expect(found.length).toBeGreaterThan(0);
+    });
+
+    // AC4 — the printed line must be the real one, not the scrubbed one.
+    it('quotes the original source line with its string literals intact', () => {
+      const source = "if (typeof gauge !== 'number') { gaugeOnHit = 40; }\n";
+      const report = scan(source, 'src/ui/vial.ts').join('\n');
+      expect(report).toContain("typeof gauge !== 'number'");
+      expect(report).not.toContain("typeof gauge !== ''");
+    });
+
+    it('numbers the offending line 1-based', () => {
+      const source = 'const ok = true;\n\nconst gaugeOnHit = 40;\n';
+      expect(scan(source, 'src/fixture.ts').join('\n')).toContain('src/fixture.ts:3');
+    });
+
+    it('clears the real src/ui/vial.ts domain-bound range check', () => {
+      const found = scanFile('src/ui/vial.ts');
+      expect(found, found.join('\n')).toEqual([]);
+    });
+
+    // AC5 — the one real violation, once it has moved into data/tuning.json.
+    it('clears the real src/ai/adapter.ts once the probe budget lives in data', () => {
+      const found = scanFile('src/ai/adapter.ts');
+      expect(found, found.join('\n')).toEqual([]);
+    });
+
+    it('still catches an inlined boot-probe budget', () => {
+      const found = scan('export async function probeHealth(timeoutMs = 800) {\n');
+      expect(found.join('\n')).toContain('800');
+    });
+
+    // AC6 — the guard must not have been softened into silence.
+    it('still catches a planted inline gauge literal', () => {
+      expect(scan('const gaugeOnHit = 40;\n').length).toBeGreaterThan(0);
+    });
+
+    it('still catches a planted inline damage literal', () => {
+      expect(scan('const damage = 25;\n').length).toBeGreaterThan(0);
+    });
+
+    it('still catches a planted inline latency literal', () => {
+      expect(scan('const latencyMs = 900;\n').length).toBeGreaterThan(0);
+    });
+
+    it('still catches a magic balance threshold used in a comparison', () => {
+      expect(scan('if (gauge >= 70) { overload(); }\n').length).toBeGreaterThan(0);
+    });
+
+    it('keeps ignoring numbers inside comments and string literals', () => {
+      expect(scan('// stub latency is 900ms, timeout 3000ms\n')).toEqual([]);
+      expect(scan('/* walk takes 4000ms */\n')).toEqual([]);
+      expect(scan("const sprite = 'sprite-3000.png';\n")).toEqual([]);
+    });
+
+    // AC6 — end-to-end: a real .ts file planted under the walked root must fail the walk.
+    // Same walker + same scan + a real file on disk as the src/** gate above, but the
+    // root is a throwaway temp tree. The fixture must NEVER be written into the real
+    // demos/darkest-context/src/: vitest runs test files in parallel workers, and
+    // tests/core/no-math-random.test.ts snapshots walk(src) at module scope then reads
+    // those paths lazily inside its `it` bodies — a fixture that is listed and then
+    // deleted makes that suite die with ENOENT (observed on attempt 1).
+    it('fails the walk when a tunable literal is planted under the walked root', () => {
+      const tmpRoot = mkdtempSync(join(tmpdir(), 'dc-guard-'));
+      try {
+        mkdirSync(join(tmpRoot, 'nested'));
+        const planted = join(tmpRoot, 'nested', '__guard-fixture__.ts');
+        writeFileSync(
+          planted,
+          'export const gaugeOnHit = 40;\nexport const latencyMs = 900;\n',
+          'utf8',
+        );
+        const walked = sourceFiles(tmpRoot);
+        expect(walked).toContain(planted);
+
+        const rel = relative(tmpRoot, planted);
+        const violations: string[] = [];
+        for (const file of walked) {
+          violations.push(...scanSource(relative(tmpRoot, file), readFileSync(file, 'utf8')));
+        }
+        expect(violations.filter((v) => v.startsWith(rel)).length).toBeGreaterThan(0);
+      } finally {
+        rmSync(tmpRoot, { recursive: true, force: true });
+      }
+    });
+
+    it('leaves no fixture behind in the real src/ tree', () => {
+      expect(sourceFiles().some((f) => f.includes('__guard-fixture__'))).toBe(false);
+    });
   });
 
   it('reads tunables through resolveTuningRef rather than a second copy', () => {
@@ -853,6 +1089,11 @@ describe('no inline tunables', () => {
     expect(resolveTuningRef(loaded, 'gauge.spiritAttack')).toBe(25);
     expect(resolveTuningRef(loaded, 'timeout.live')).toBe(8000);
     expect(resolveTuningRef(loaded, 'slots.mcp')).toBe(3);
+  });
+
+  // The ref src/ai/adapter.ts reads for its boot-probe budget (PRD §2.2, INV-6).
+  it('resolves the boot-probe budget by ref so the adapter never inlines it', () => {
+    expect(resolveTuningRef(loadTuning(tuningJson), 'timeout.healthProbe')).toBe(800);
   });
 });
 
