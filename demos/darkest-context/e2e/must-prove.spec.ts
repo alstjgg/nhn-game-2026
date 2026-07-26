@@ -796,14 +796,20 @@ test.describe('must-prove: the shipped page', () => {
 
   test('offline: the built page makes no network call beyond its own static assets', async ({
     page,
+    baseURL,
   }) => {
     test.setTimeout(180_000);
+    // The page's OWN origin, taken from the fixture the server was started on. A
+    // literal here turns this gate into "am I on port 4174": red on a correct build
+    // whenever the port differs, and green for a reason that has nothing to do with
+    // the bundle. INV-2 must be re-runnable in a judge's environment.
+    const own = new URL(baseURL ?? '').origin;
     const foreign: string[] = [];
     page.on('request', (request) => {
       const url = request.url();
       if (url.startsWith('data:') || url.startsWith('blob:')) return;
       const origin = new URL(url).origin;
-      if (origin !== 'http://localhost:4174' || /\/ai\//.test(new URL(url).pathname)) {
+      if (origin !== own || /\/ai\//.test(new URL(url).pathname)) {
         foreign.push(url);
       }
     });

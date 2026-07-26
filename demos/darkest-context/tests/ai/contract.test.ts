@@ -1347,9 +1347,18 @@ describe('no secrets: the dist gate fails closed', () => {
     expect(() => runGate(dir)).not.toThrow();
   });
 
-  it.skipIf(!existsSync(p('dist')))(
+  // NOT skipped when dist/ is missing. A gate whose result depends on whether someone
+  // happened to run `npm run build` earlier in the same shell is not a gate: on a fresh
+  // clone it used to pass by skipping itself, so "green npm test" said nothing about
+  // INV-2. `npm test` builds first (package.json), and if a dist is still absent this
+  // fails with the command that fixes it.
+  it(
     'a built dist carries no /ai route, no env token and no composed prose',
     () => {
+      expect(
+        existsSync(p('dist')),
+        'no dist/ to scan — run `npm run build` first (`npm test` does it for you)',
+      ).toBe(true);
       const tone = (JSON.parse(read('data/prompting.json')) as { tierTones: string[] }).tierTones[0];
       const walk = (dir: string): string[] =>
         readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
