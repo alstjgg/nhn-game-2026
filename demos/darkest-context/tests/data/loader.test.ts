@@ -12,7 +12,16 @@
 // RED on arrival: src/data/{schema,loader}.ts and the six data/*.json files do not
 // exist yet, so this module fails to resolve and every filtered run fails with it.
 import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -800,8 +809,10 @@ describe('no inline tunables', () => {
   const TUNABLE_ASSIGN =
     /\b(gauge|damage|dmg|hp|slot|latency|timeout|walk|draft|tieBreak|heal|reflect)\w*\s*(?:[:=]|[+\-]=)\s*-?\d+/i;
 
-  function sourceFiles(): string[] {
-    const srcRoot = resolve(demoRoot, 'src');
+  // `root` is a parameter so the walk can be exercised over a throwaway tree (see the
+  // end-to-end fixture below) without ever mutating the real, concurrently-read src/.
+  function sourceFiles(root: string = resolve(demoRoot, 'src')): string[] {
+    const srcRoot = root;
     const skipped = resolve(srcRoot, 'data');
     const out: string[] = [];
     const walkDir = (dir: string): void => {
@@ -1035,25 +1046,39 @@ describe('no inline tunables', () => {
       expect(scan("const sprite = 'sprite-3000.png';\n")).toEqual([]);
     });
 
-    // AC6 — end-to-end: a planted file really under src/** must fail the whole walk.
-    it('fails the src/** walk when a tunable literal is planted there', () => {
-      const planted = resolve(demoRoot, 'src', '__guard-fixture__.ts');
-      const rel = relative(demoRoot, planted);
+    // AC6 — end-to-end: a real .ts file planted under the walked root must fail the walk.
+    // Same walker + same scan + a real file on disk as the src/** gate above, but the
+    // root is a throwaway temp tree. The fixture must NEVER be written into the real
+    // demos/darkest-context/src/: vitest runs test files in parallel workers, and
+    // tests/core/no-math-random.test.ts snapshots walk(src) at module scope then reads
+    // those paths lazily inside its `it` bodies — a fixture that is listed and then
+    // deleted makes that suite die with ENOENT (observed on attempt 1).
+    it('fails the walk when a tunable literal is planted under the walked root', () => {
+      const tmpRoot = mkdtempSync(join(tmpdir(), 'dc-guard-'));
       try {
+        mkdirSync(join(tmpRoot, 'nested'));
+        const planted = join(tmpRoot, 'nested', '__guard-fixture__.ts');
         writeFileSync(
           planted,
           'export const gaugeOnHit = 40;\nexport const latencyMs = 900;\n',
           'utf8',
         );
+        const walked = sourceFiles(tmpRoot);
+        expect(walked).toContain(planted);
+
+        const rel = relative(tmpRoot, planted);
         const violations: string[] = [];
-        for (const file of sourceFiles()) {
-          violations.push(...scanSource(relative(demoRoot, file), readFileSync(file, 'utf8')));
+        for (const file of walked) {
+          violations.push(...scanSource(relative(tmpRoot, file), readFileSync(file, 'utf8')));
         }
         expect(violations.filter((v) => v.startsWith(rel)).length).toBeGreaterThan(0);
       } finally {
-        rmSync(planted, { force: true });
+        rmSync(tmpRoot, { recursive: true, force: true });
       }
-      expect(existsSync(planted)).toBe(false);
+    });
+
+    it('leaves no fixture behind in the real src/ tree', () => {
+      expect(sourceFiles().some((f) => f.includes('__guard-fixture__'))).toBe(false);
     });
   });
 
