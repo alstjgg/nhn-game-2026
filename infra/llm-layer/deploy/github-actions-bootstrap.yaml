@@ -1,0 +1,350 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: GitHub Actions OIDC and least-privilege deployment roles for the Apothecary LLM layer.
+
+Parameters:
+  GitHubOwner:
+    Type: String
+    Default: alstjgg
+    AllowedPattern: ^[A-Za-z0-9_.-]+$
+  GitHubOwnerId:
+    Type: String
+    Default: "26458319"
+    AllowedPattern: ^[0-9]+$
+  GitHubRepository:
+    Type: String
+    Default: nhn-game-2026
+    AllowedPattern: ^[A-Za-z0-9_.-]+$
+  GitHubRepositoryId:
+    Type: String
+    Default: "1306590172"
+    AllowedPattern: ^[0-9]+$
+  GitHubBranch:
+    Type: String
+    Default: main
+    AllowedPattern: ^[A-Za-z0-9_./-]+$
+  ApplicationStackName:
+    Type: String
+    Default: nhn-game-llm-layer
+    AllowedPattern: ^[A-Za-z][A-Za-z0-9-]+$
+  ApplicationApiId:
+    Type: String
+    Default: zcyeajmv11
+    AllowedPattern: ^[A-Za-z0-9]+$
+  DeployRoleName:
+    Type: String
+    Default: nhn-game-llm-github-deploy
+    AllowedPattern: ^[A-Za-z0-9+=,.@_-]+$
+  CloudFormationExecutionRoleName:
+    Type: String
+    Default: nhn-game-llm-cloudformation-exec
+    AllowedPattern: ^[A-Za-z0-9+=,.@_-]+$
+  ArtifactBucketName:
+    Type: String
+    Default: nhn-game-llm-artifacts-141840355276-ap-northeast-2
+    AllowedPattern: ^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$
+
+Resources:
+  GitHubActionsOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      Tags:
+        - Key: Project
+          Value: nhn-game-2026
+        - Key: Component
+          Value: github-actions-oidc
+
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName:
+        Ref: ArtifactBucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireDeploymentArtifacts
+            Status: Enabled
+            ExpirationInDays: 30
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+      Tags:
+        - Key: Project
+          Value: nhn-game-2026
+        - Key: Component
+          Value: llm-layer-artifacts
+
+  ArtifactBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: ArtifactBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource:
+              - Fn::Sub: arn:${AWS::Partition}:s3:::${ArtifactBucketName}
+              - Fn::Sub: arn:${AWS::Partition}:s3:::${ArtifactBucketName}/*
+            Condition:
+              Bool:
+                "aws:SecureTransport": false
+
+  CloudFormationExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Ref: CloudFormationExecutionRoleName
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: UpdateLlmLayerResources
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: InvokeServerlessTransform
+                Effect: Allow
+                Action:
+                  - cloudformation:CreateChangeSet
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:aws:transform/Serverless-2016-10-31
+              - Sid: ReadDeploymentArtifacts
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:s3:::${ArtifactBucketName}/nhn-game-llm-layer/*
+              - Sid: ManageLambda
+                Effect: Allow
+                Action:
+                  - lambda:AddPermission
+                  - lambda:DeleteFunctionConcurrency
+                  - lambda:GetFunction
+                  - lambda:GetFunctionCodeSigningConfig
+                  - lambda:GetFunctionConcurrency
+                  - lambda:GetFunctionRecursionConfig
+                  - lambda:GetPolicy
+                  - lambda:GetRuntimeManagementConfig
+                  - lambda:ListTags
+                  - lambda:ListVersionsByFunction
+                  - lambda:PutFunctionConcurrency
+                  - lambda:PutRuntimeManagementConfig
+                  - lambda:RemovePermission
+                  - lambda:TagResource
+                  - lambda:UntagResource
+                  - lambda:UpdateFunctionCode
+                  - lambda:UpdateFunctionConfiguration
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ApplicationStackName}-turn
+                  - Fn::Sub: arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ApplicationStackName}-turn:*
+              - Sid: ManageLambdaExecutionRole
+                Effect: Allow
+                Action:
+                  - iam:GetRole
+                  - iam:GetRolePolicy
+                  - iam:ListAttachedRolePolicies
+                  - iam:ListRolePolicies
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ApplicationStackName}-*
+              - Sid: PassLambdaExecutionRole
+                Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ApplicationStackName}-*
+                Condition:
+                  StringEquals:
+                    "iam:PassedToService": lambda.amazonaws.com
+              - Sid: ManageHttpApi
+                Effect: Allow
+                Action:
+                  - apigateway:GET
+                  - apigateway:PATCH
+                  - apigateway:PUT
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis/${ApplicationApiId}
+                  - Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis/${ApplicationApiId}/*
+                  - Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}::/tags/*
+              - Sid: ManageKnownLogGroups
+                Effect: Allow
+                Action:
+                  - logs:DeleteRetentionPolicy
+                  - logs:ListTagsForResource
+                  - logs:PutRetentionPolicy
+                  - logs:TagResource
+                  - logs:UntagResource
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ApplicationStackName}-turn
+                  - Fn::Sub: arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ApplicationStackName}-turn:*
+                  - Fn::Sub: arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${ApplicationStackName}
+                  - Fn::Sub: arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${ApplicationStackName}:*
+              - Sid: DescribeLogGroups
+                Effect: Allow
+                Action:
+                  - logs:DescribeIndexPolicies
+                  - logs:DescribeLogGroups
+                  - logs:DescribeResourcePolicies
+                Resource: "*"
+      Tags:
+        - Key: Project
+          Value: nhn-game-2026
+        - Key: Component
+          Value: llm-layer-cloudformation
+
+  GitHubActionsDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Ref: DeployRoleName
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated:
+                Ref: GitHubActionsOidcProvider
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                "token.actions.githubusercontent.com:aud": sts.amazonaws.com
+                "token.actions.githubusercontent.com:sub":
+                  Fn::Sub: repo:${GitHubOwner}@${GitHubOwnerId}/${GitHubRepository}@${GitHubRepositoryId}:ref:refs/heads/${GitHubBranch}
+                "token.actions.githubusercontent.com:repository":
+                  Fn::Sub: ${GitHubOwner}/${GitHubRepository}
+                "token.actions.githubusercontent.com:repository_id":
+                  Ref: GitHubRepositoryId
+                "token.actions.githubusercontent.com:repository_owner_id":
+                  Ref: GitHubOwnerId
+                "token.actions.githubusercontent.com:ref":
+                  Fn::Sub: refs/heads/${GitHubBranch}
+      Policies:
+        - PolicyName: DeployLlmLayer
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: CreateApplicationChangeSet
+                Effect: Allow
+                Action:
+                  - cloudformation:CreateChangeSet
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ApplicationStackName}/*
+                  - Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:aws:transform/Serverless-2016-10-31
+                Condition:
+                  ArnEquals:
+                    "cloudformation:RoleArn":
+                      Fn::GetAtt:
+                        - CloudFormationExecutionRole
+                        - Arn
+              - Sid: OperateApplicationChangeSet
+                Effect: Allow
+                Action:
+                  - cloudformation:DeleteChangeSet
+                  - cloudformation:DescribeChangeSet
+                  - cloudformation:DescribeStackEvents
+                  - cloudformation:DescribeStackResource
+                  - cloudformation:DescribeStackResources
+                  - cloudformation:DescribeStacks
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:GetTemplate
+                  - cloudformation:ListChangeSets
+                  - cloudformation:ListStackResources
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ApplicationStackName}/*
+              - Sid: ReadTemplateSummary
+                Effect: Allow
+                Action:
+                  - cloudformation:GetTemplateSummary
+                Resource: "*"
+              - Sid: PassCloudFormationExecutionRole
+                Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  Fn::GetAtt:
+                    - CloudFormationExecutionRole
+                    - Arn
+                Condition:
+                  StringEquals:
+                    "iam:PassedToService": cloudformation.amazonaws.com
+              - Sid: LocateArtifactBucket
+                Effect: Allow
+                Action:
+                  - s3:GetBucketLocation
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:s3:::${ArtifactBucketName}
+              - Sid: ListArtifactBucket
+                Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:s3:::${ArtifactBucketName}
+                Condition:
+                  StringLike:
+                    "s3:prefix":
+                      - nhn-game-llm-layer
+                      - nhn-game-llm-layer/*
+              - Sid: ManageDeploymentArtifacts
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:s3:::${ArtifactBucketName}/nhn-game-llm-layer/*
+              - Sid: AuditApplicationLogs
+                Effect: Allow
+                Action:
+                  - logs:FilterLogEvents
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ApplicationStackName}-turn
+                  - Fn::Sub: arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ApplicationStackName}-turn:*
+      Tags:
+        - Key: Project
+          Value: nhn-game-2026
+        - Key: Component
+          Value: llm-layer-deploy
+
+Outputs:
+  DeployRoleArn:
+    Value:
+      Fn::GetAtt:
+        - GitHubActionsDeployRole
+        - Arn
+  CloudFormationExecutionRoleArn:
+    Value:
+      Fn::GetAtt:
+        - CloudFormationExecutionRole
+        - Arn
+  ArtifactBucket:
+    Value:
+      Ref: ArtifactBucket
+  TrustedSubject:
+    Value:
+      Fn::Sub: repo:${GitHubOwner}@${GitHubOwnerId}/${GitHubRepository}@${GitHubRepositoryId}:ref:refs/heads/${GitHubBranch}

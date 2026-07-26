@@ -1,0 +1,145 @@
+name: LLM layer
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "infra/llm-layer/**"
+      - "demos/apothecary/data/customers.json"
+      - "demos/apothecary/data/fallback-npcs.json"
+      - "demos/apothecary/data/generation.json"
+      - ".github/workflows/llm-layer.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "infra/llm-layer/**"
+      - "demos/apothecary/data/customers.json"
+      - "demos/apothecary/data/fallback-npcs.json"
+      - "demos/apothecary/data/generation.json"
+      - ".github/workflows/llm-layer.yml"
+
+permissions: {}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: infra/llm-layer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: infra/llm-layer/package-lock.json
+      - uses: aws-actions/setup-sam@v2
+      - run: npm ci
+      - run: npm run check
+      - run: npm run sam:validate
+      - run: npm run bootstrap:validate
+      - run: npm run sam:build
+      - run: npm run sam:smoke
+
+  deploy:
+    name: Deploy to AWS
+    needs: verify
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: nhn-game-llm-layer-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      dialogue_url: ${{ steps.stack.outputs.dialogue_url }}
+      health_url: ${{ steps.stack.outputs.health_url }}
+      api_id: ${{ steps.stack.outputs.api_id }}
+    defaults:
+      run:
+        working-directory: infra/llm-layer
+    env:
+      AWS_REGION: ap-northeast-2
+      AWS_ACCOUNT_ID: "141840355276"
+      AWS_DEPLOY_ROLE_ARN: arn:aws:iam::141840355276:role/nhn-game-llm-github-deploy
+      AWS_CLOUDFORMATION_ROLE_ARN: arn:aws:iam::141840355276:role/nhn-game-llm-cloudformation-exec
+      SAM_ARTIFACT_BUCKET: nhn-game-llm-artifacts-141840355276-ap-northeast-2
+      SAM_CLI_TELEMETRY: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: infra/llm-layer/package-lock.json
+      - uses: aws-actions/setup-sam@v2
+      - run: npm ci
+      - run: npm run sam:build
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
+          role-session-name: nhn-game-llm-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Verify AWS identity
+        run: test "$(aws sts get-caller-identity --query Account --output text)" = "$AWS_ACCOUNT_ID"
+      - name: Deploy stack
+        run: >-
+          sam deploy
+          --stack-name nhn-game-llm-layer
+          --region "$AWS_REGION"
+          --capabilities CAPABILITY_IAM
+          --no-confirm-changeset
+          --no-fail-on-empty-changeset
+          --no-resolve-s3
+          --s3-bucket "$SAM_ARTIFACT_BUCKET"
+          --s3-prefix "nhn-game-llm-layer/$GITHUB_SHA"
+          --role-arn "$AWS_CLOUDFORMATION_ROLE_ARN"
+          --no-progressbar
+          --on-failure ROLLBACK
+      - name: Read deployed endpoints
+        id: stack
+        run: |
+          STACK_OUTPUTS="$(aws cloudformation describe-stacks \
+            --stack-name nhn-game-llm-layer \
+            --region "$AWS_REGION" \
+            --query 'Stacks[0].Outputs' \
+            --output json)"
+          DIALOGUE_URL="$(jq -r '.[] | select(.OutputKey == "DialogueEndpoint") | .OutputValue' <<<"$STACK_OUTPUTS")"
+          HEALTH_URL="$(jq -r '.[] | select(.OutputKey == "HealthEndpoint") | .OutputValue' <<<"$STACK_OUTPUTS")"
+          API_ID="$(jq -r '.[] | select(.OutputKey == "ApiId") | .OutputValue' <<<"$STACK_OUTPUTS")"
+
+          test -n "$DIALOGUE_URL"
+          test -n "$HEALTH_URL"
+          test -n "$API_ID"
+          test "$DIALOGUE_URL" = "https://${API_ID}.execute-api.${AWS_REGION}.amazonaws.com/ai/dialogue"
+          test "$HEALTH_URL" = "https://${API_ID}.execute-api.${AWS_REGION}.amazonaws.com/ai/health"
+
+          printf 'dialogue_url=%s\n' "$DIALOGUE_URL" >>"$GITHUB_OUTPUT"
+          printf 'health_url=%s\n' "$HEALTH_URL" >>"$GITHUB_OUTPUT"
+          printf 'api_id=%s\n' "$API_ID" >>"$GITHUB_OUTPUT"
+          printf 'LLM_DIALOGUE_URL=%s\n' "$DIALOGUE_URL" >>"$GITHUB_ENV"
+          printf 'LLM_HEALTH_URL=%s\n' "$HEALTH_URL" >>"$GITHUB_ENV"
+
+          {
+            printf '### LLM layer deployment\n\n'
+            printf -- '- Dialogue: `%s`\n' "$DIALOGUE_URL"
+            printf -- '- Health: `%s`\n' "$HEALTH_URL"
+            printf -- '- API ID: `%s`\n' "$API_ID"
+          } >>"$GITHUB_STEP_SUMMARY"
+      - name: Verify deployed dialogue
+        run: >-
+          npm run smoke --
+          --url "$LLM_DIALOGUE_URL"
+          --health-url "$LLM_HEALTH_URL"
+          --model-id global.amazon.nova-2-lite-v1:0
+          --audit-logs

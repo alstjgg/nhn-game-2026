@@ -1,0 +1,13 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "nhn-game-llm-layer"
+region = "ap-northeast-2"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = false
+s3_bucket = "nhn-game-llm-artifacts-141840355276-ap-northeast-2"
+s3_prefix = "nhn-game-llm-layer"
+role_arn = "arn:aws:iam::141840355276:role/nhn-game-llm-cloudformation-exec"
+fail_on_empty_changeset = false
+parameter_overrides = "ModelId=\"global.amazon.nova-2-lite-v1:0\" AllowedProfileMode=\"both\" AllowedOrigin=\"https://alstjgg.github.io\" MaxTokens=\"400\" ModelTimeoutMs=\"7000\" MaxBodyBytes=\"32768\" ReservedConcurrency=\"-1\" ThrottlingRateLimit=\"1\" ThrottlingBurstLimit=\"2\""

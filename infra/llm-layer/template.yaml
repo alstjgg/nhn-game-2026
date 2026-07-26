@@ -1,0 +1,375 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Stateless Apothecary dialogue Lambda backed by Amazon Bedrock Converse.
+
+Parameters:
+  ModelId:
+    Type: String
+    Default: global.amazon.nova-2-lite-v1:0
+    AllowedValues:
+      - global.anthropic.claude-haiku-4-5-20251001-v1:0
+      - global.amazon.nova-2-lite-v1:0
+    Description: Global inference profile selected by the Lambda.
+  AllowedProfileMode:
+    Type: String
+    Default: both
+    AllowedValues:
+      - both
+      - haiku
+      - nova
+    Description: IAM allowlist. Use both for the benchmark, then narrow it.
+  AllowedOrigin:
+    Type: String
+    Default: https://alstjgg.github.io
+    AllowedPattern: ^https://[A-Za-z0-9.-]+(?::[0-9]+)?$
+    Description: Exact GitHub Pages origin, without a trailing slash.
+  MaxTokens:
+    Type: Number
+    Default: 400
+    MinValue: 64
+    MaxValue: 512
+  ModelTimeoutMs:
+    Type: Number
+    Default: 7000
+    MinValue: 100
+    MaxValue: 7000
+  MaxBodyBytes:
+    Type: Number
+    Default: 32768
+    MinValue: 1024
+    MaxValue: 65536
+  ReservedConcurrency:
+    Type: Number
+    Default: -1
+    MinValue: -1
+    MaxValue: 10
+    Description: -1 omits the reservation, 0 disables calls, positive values require sufficient account quota.
+  ThrottlingRateLimit:
+    Type: Number
+    Default: 1
+    MinValue: 1
+    MaxValue: 20
+  ThrottlingBurstLimit:
+    Type: Number
+    Default: 2
+    MinValue: 1
+    MaxValue: 40
+
+Rules:
+  SelectedModelMustBeAllowed:
+    Assertions:
+      - Assert:
+          Fn::Or:
+            - Fn::Equals:
+                - Ref: AllowedProfileMode
+                - both
+            - Fn::And:
+                - Fn::Equals:
+                    - Ref: AllowedProfileMode
+                    - haiku
+                - Fn::Equals:
+                    - Ref: ModelId
+                    - global.anthropic.claude-haiku-4-5-20251001-v1:0
+            - Fn::And:
+                - Fn::Equals:
+                    - Ref: AllowedProfileMode
+                    - nova
+                - Fn::Equals:
+                    - Ref: ModelId
+                    - global.amazon.nova-2-lite-v1:0
+        AssertDescription: ModelId must be included by AllowedProfileMode.
+
+Conditions:
+  AllowHaiku:
+    Fn::Or:
+      - Fn::Equals:
+          - Ref: AllowedProfileMode
+          - both
+      - Fn::Equals:
+          - Ref: AllowedProfileMode
+          - haiku
+  AllowNova:
+    Fn::Or:
+      - Fn::Equals:
+          - Ref: AllowedProfileMode
+          - both
+      - Fn::Equals:
+          - Ref: AllowedProfileMode
+          - nova
+  AllowBoth:
+    Fn::Equals:
+      - Ref: AllowedProfileMode
+      - both
+  AllowOnlyHaiku:
+    Fn::Equals:
+      - Ref: AllowedProfileMode
+      - haiku
+  ConfigureReservedConcurrency:
+    Fn::Not:
+      - Fn::Equals:
+          - Ref: ReservedConcurrency
+          - -1
+
+Resources:
+  HttpApiAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/apigateway/${AWS::StackName}
+      RetentionInDays: 14
+
+  LlmHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      FailOnWarnings: true
+      CorsConfiguration:
+        AllowOrigins:
+          - Ref: AllowedOrigin
+        AllowHeaders:
+          - content-type
+        AllowMethods:
+          - GET
+          - POST
+        ExposeHeaders:
+          - x-request-id
+          - x-llm-fallback
+        MaxAge: 600
+      AccessLogSettings:
+        DestinationArn:
+          Fn::GetAtt:
+            - HttpApiAccessLogGroup
+            - Arn
+        Format: >-
+          {"requestId":"$context.requestId","routeKey":"$context.routeKey","status":"$context.status","responseLength":"$context.responseLength","integrationError":"$context.integrationErrorMessage"}
+      DefaultRouteSettings:
+        DetailedMetricsEnabled: true
+        ThrottlingRateLimit:
+          Ref: ThrottlingRateLimit
+        ThrottlingBurstLimit:
+          Ref: ThrottlingBurstLimit
+      DefinitionBody:
+        openapi: 3.0.1
+        info:
+          title: nan2026-llm-layer
+          version: "1.0"
+        paths: {}
+      Tags:
+        Project: nhn-game-2026
+        Component: llm-layer
+
+  LlmExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: WriteFunctionLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  Fn::Sub: ${TurnFunctionLogGroup.Arn}:*
+        - PolicyName: InvokeAllowlistedGlobalBedrockProfiles
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Fn::If:
+                  - AllowHaiku
+                  - Sid: InvokeHaikuGlobalProfile
+                    Effect: Allow
+                    Action: bedrock:InvokeModel
+                    Resource:
+                      - Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.anthropic.claude-haiku-4-5-20251001-v1:0
+                    Condition:
+                      StringEquals:
+                        "aws:RequestedRegion":
+                          Ref: AWS::Region
+                  - Ref: AWS::NoValue
+              - Fn::If:
+                  - AllowHaiku
+                  - Sid: InvokeHaikuInRegionModelThroughProfile
+                    Effect: Allow
+                    Action: bedrock:InvokeModel
+                    Resource:
+                      - Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0
+                    Condition:
+                      StringEquals:
+                        "aws:RequestedRegion":
+                          Ref: AWS::Region
+                        "bedrock:InferenceProfileArn":
+                          Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.anthropic.claude-haiku-4-5-20251001-v1:0
+                  - Ref: AWS::NoValue
+              - Fn::If:
+                  - AllowHaiku
+                  - Sid: InvokeHaikuGlobalModelThroughProfile
+                    Effect: Allow
+                    Action: bedrock:InvokeModel
+                    Resource:
+                      - Fn::Sub: arn:${AWS::Partition}:bedrock:::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0
+                    Condition:
+                      StringEquals:
+                        "aws:RequestedRegion": unspecified
+                        "bedrock:InferenceProfileArn":
+                          Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.anthropic.claude-haiku-4-5-20251001-v1:0
+                  - Ref: AWS::NoValue
+              - Fn::If:
+                  - AllowNova
+                  - Sid: InvokeNovaGlobalProfile
+                    Effect: Allow
+                    Action: bedrock:InvokeModel
+                    Resource:
+                      - Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.amazon.nova-2-lite-v1:0
+                    Condition:
+                      StringEquals:
+                        "aws:RequestedRegion":
+                          Ref: AWS::Region
+                  - Ref: AWS::NoValue
+              - Fn::If:
+                  - AllowNova
+                  - Sid: InvokeNovaInRegionModelThroughProfile
+                    Effect: Allow
+                    Action: bedrock:InvokeModel
+                    Resource:
+                      - Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/amazon.nova-2-lite-v1:0
+                    Condition:
+                      StringEquals:
+                        "aws:RequestedRegion":
+                          Ref: AWS::Region
+                        "bedrock:InferenceProfileArn":
+                          Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.amazon.nova-2-lite-v1:0
+                  - Ref: AWS::NoValue
+              - Fn::If:
+                  - AllowNova
+                  - Sid: InvokeNovaGlobalModelThroughProfile
+                    Effect: Allow
+                    Action: bedrock:InvokeModel
+                    Resource:
+                      - Fn::Sub: arn:${AWS::Partition}:bedrock:::foundation-model/amazon.nova-2-lite-v1:0
+                    Condition:
+                      StringEquals:
+                        "aws:RequestedRegion": unspecified
+                        "bedrock:InferenceProfileArn":
+                          Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.amazon.nova-2-lite-v1:0
+                  - Ref: AWS::NoValue
+      Tags:
+        - Key: Project
+          Value: nhn-game-2026
+        - Key: Component
+          Value: llm-layer
+
+  TurnFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-turn
+      Description: Serves validated Apothecary dialogue through Bedrock.
+      CodeUri: .
+      Handler: src/handler.handler
+      Runtime: nodejs24.x
+      Architectures:
+        - arm64
+      MemorySize: 512
+      Timeout: 10
+      ReservedConcurrentExecutions:
+        Fn::If:
+          - ConfigureReservedConcurrency
+          - Ref: ReservedConcurrency
+          - Ref: AWS::NoValue
+      LoggingConfig:
+        LogFormat: JSON
+        ApplicationLogLevel: INFO
+        SystemLogLevel: INFO
+        LogGroup:
+          Ref: TurnFunctionLogGroup
+      Role:
+        Fn::GetAtt:
+          - LlmExecutionRole
+          - Arn
+      Environment:
+        Variables:
+          BEDROCK_REGION:
+            Ref: AWS::Region
+          MODEL_ID:
+            Ref: ModelId
+          ALLOWED_MODEL_IDS:
+            Fn::If:
+              - AllowBoth
+              - global.anthropic.claude-haiku-4-5-20251001-v1:0,global.amazon.nova-2-lite-v1:0
+              - Fn::If:
+                  - AllowOnlyHaiku
+                  - global.anthropic.claude-haiku-4-5-20251001-v1:0
+                  - global.amazon.nova-2-lite-v1:0
+          MAX_TOKENS:
+            Ref: MaxTokens
+          MODEL_TIMEOUT_MS:
+            Ref: ModelTimeoutMs
+          ALLOWED_ORIGIN:
+            Ref: AllowedOrigin
+          MAX_BODY_BYTES:
+            Ref: MaxBodyBytes
+      Events:
+        Dialogue:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: LlmHttpApi
+            Path: /ai/dialogue
+            Method: POST
+            PayloadFormatVersion: "2.0"
+            TimeoutInMillis: 9000
+        Health:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: LlmHttpApi
+            Path: /ai/health
+            Method: GET
+            PayloadFormatVersion: "2.0"
+            TimeoutInMillis: 9000
+      Tags:
+        Project: nhn-game-2026
+        Component: llm-layer
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/handler.ts
+        Format: cjs
+        Minify: true
+        Sourcemap: false
+        Target: es2024
+
+  TurnFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/lambda/${AWS::StackName}-turn
+      RetentionInDays: 14
+
+Outputs:
+  DialogueEndpoint:
+    Description: Apothecary dialogue endpoint.
+    Value:
+      Fn::Sub: https://${LlmHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/ai/dialogue
+  HealthEndpoint:
+    Description: Service health endpoint that does not invoke a Bedrock model.
+    Value:
+      Fn::Sub: https://${LlmHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/ai/health
+  FunctionName:
+    Value:
+      Ref: TurnFunction
+  ApiId:
+    Value:
+      Ref: LlmHttpApi

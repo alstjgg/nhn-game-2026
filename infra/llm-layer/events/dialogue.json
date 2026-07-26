@@ -1,0 +1,30 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /ai/dialogue",
+  "rawPath": "/ai/dialogue",
+  "rawQueryString": "",
+  "headers": {
+    "content-type": "application/json",
+    "origin": "https://alstjgg.github.io"
+  },
+  "requestContext": {
+    "accountId": "test",
+    "apiId": "test",
+    "domainName": "test",
+    "domainPrefix": "test",
+    "http": {
+      "method": "POST",
+      "path": "/ai/dialogue",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "bundle-smoke"
+    },
+    "requestId": "dialogue-bundle-smoke",
+    "routeKey": "POST /ai/dialogue",
+    "stage": "$default",
+    "time": "",
+    "timeEpoch": 0
+  },
+  "body": "{",
+  "isBase64Encoded": false
+}
