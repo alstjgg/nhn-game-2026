@@ -425,6 +425,16 @@
       }
     },
     {
+      "unitId": "selene",
+      "agendaId": "riddle_golem",
+      "cardId": "translation_lens",
+      "stance": {
+        "action": "op_riddle_knowledge",
+        "say": "렌즈 너머로 글자가 읽혀, 나눠도 줄지 않는 건 지식이야.",
+        "because": ["selene.default", "translation_lens"]
+      }
+    },
+    {
       "unitId": "garrett",
       "agendaId": "fallen_merchant",
       "cardId": null,

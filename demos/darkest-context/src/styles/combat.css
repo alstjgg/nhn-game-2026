@@ -43,6 +43,14 @@
   letter-spacing: 0.12em;
 }
 
+/* The legend for the panels below: what pressing a unit gets you. */
+.dc-combat__hint {
+  color: var(--dc-ink-dim);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  margin-left: auto;
+}
+
 /* ── HUD: one unit panel per hero, each carrying its gauge vial ── */
 
 .dc-combat__hud {
@@ -58,15 +66,21 @@
   border: 1px solid var(--dc-edge);
   flex: 0 0 auto;
   position: relative;
+  /* Headroom for the bubble rail: the line-up is bottom-aligned inside the stage, so
+     this is the band the speech lands in — bubbles above heads, sprites never covered. */
+  --dc-stage-min-h: 300px;
 }
 
+/* The bubble rail: ONE band across the top of the field, never a column down the
+   middle of the line-up. Still absolutely positioned, so a landing bubble can no more
+   reflow the stage than before; `bottom: auto` is what keeps it out of the sprite band. */
 .dc-combat__log {
   align-items: flex-start;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  inset: 0;
-  overflow-y: auto;
+  flex-direction: row;
+  gap: var(--dc-gap);
+  inset: 0 0 auto 0;
+  overflow: hidden;
   padding: var(--dc-gap);
   /* The layer is scenery; only the bubbles inside it are reachable. */
   pointer-events: none;
@@ -74,8 +88,20 @@
   z-index: 2;
 }
 
+/* A line the unit has spoken past. It stays in the log as the fight's record and leaves
+   the stage, so the line-up is never buried under a wall of parchment. */
+.dc-combat__log > [data-retired='true'] {
+  display: none;
+}
+
+/* Each line hangs over its own speaker: `order` is the unit's position in the line-up,
+   so the reading order on screen matches the party on the stage while the DOM keeps the
+   민첩 order the beats actually resolved in. */
 .dc-combat__log > * {
+  /* Never shrunk below its own content: a squeezed bubble spills its sentence over the
+     9-slice frame it is printed on, which is the readability bug in another costume. */
   flex: 0 0 auto;
+  order: var(--speaker-order, 0);
   pointer-events: auto;
 }
 
@@ -86,7 +112,35 @@
   letter-spacing: 0.14em;
 }
 
+/* The readable numbers next to each panel: 체력 x/y · 컨텍스트 v/max. */
+.dc-combat__panel {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dc-combat__vitals {
+  color: var(--dc-ink-dim);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+/* The enemy's health, under the enemy — the other half of "who is winning". */
+.dc-combat__enemy-vitals {
+  color: var(--dc-ink-dim);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
 /* ── the sheets: what every chip on screen resolves to (INV-3) ── */
+
+/* Closed until a unit is pressed (or a chip cites it). The rows stay in the DOM — a
+   chip must always resolve to a real sheet item (INV-3) — they are simply not the
+   first thing the screen says. */
+.dc-combat__sheet[data-open='false'] {
+  display: none;
+}
 
 .dc-combat__sheets {
   display: flex;

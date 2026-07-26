@@ -320,6 +320,144 @@ test.describe('must-prove: tile rhythm', () => {
     expectQuiet(w);
   });
 
+  // The gate every green suite was missing: `advance()` is reachable from `drain()`,
+  // `drain` from `window.__app`, and `window.__app` only under `?gate=1`. So the whole
+  // "3–5 minute run" was proven through a seam that does not exist on the page a judge
+  // opens — where the fight sat on 턴 1 for ever and must-prove 2 was unobservable.
+  test('playable: the shipped page plays its own beats, with no test seam on it', async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    const w = watch(page);
+
+    await page.goto('/'); // the SHIPPED page — no gate, no seam, no override
+    const screen = page.getByTestId('combat-screen');
+    await expect(screen).toBeVisible({ timeout: 60_000 });
+
+    expect(
+      await page.evaluate(() => (window as unknown as { __app?: unknown }).__app === undefined),
+      'the shipped page must not publish the test seam',
+    ).toBe(true);
+
+    // Decisions land on their own…
+    await expect(page.getByTestId('combat-bubble').first()).toBeVisible({ timeout: 30_000 });
+    // …and the fight actually moves forward.
+    await expect(screen).not.toHaveAttribute('data-turn', '1', { timeout: 60_000 });
+
+    // Still no seam after the run has been playing: nothing test-only was published.
+    expect(
+      await page.evaluate(() => (window as unknown as { __app?: unknown }).__app === undefined),
+    ).toBe(true);
+    expectQuiet(w);
+  });
+
+  // must-prove 2 reads personality off three channels at once. Two of them were being
+  // lost in the pixels: the decision line was cream-on-cream inside the pack's parchment
+  // bubble (1.31 : 1), and the bubble rail stacked down the middle of the line-up until
+  // it covered the sprites whose pose is the third channel.
+  test('readable: the decision line clears WCAG on the bubble it is printed on', async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    await page.goto('/');
+    await expect(page.getByTestId('combat-bubble').first()).toBeVisible({ timeout: 60_000 });
+
+    const measured = await page.evaluate(async () => {
+      const bubble = document.querySelector('[data-testid="combat-bubble"]');
+      if (bubble === null) return null;
+      const say = bubble.querySelector('.dc-bubble__say');
+      const chip = bubble.querySelector('.dc-chip');
+      if (say === null || chip === null) return null;
+
+      // The rendered interior, read off the pack art itself: `border-image-slice: … fill`
+      // means the image — not the CSS background — is what the text sits on.
+      const source = getComputedStyle(bubble).borderImageSource;
+      const href = /url\("?([^")]+)"?\)/.exec(source)?.[1];
+      if (href === undefined) return null;
+      const image = new Image();
+      image.src = href;
+      await image.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx === null) return null;
+      ctx.drawImage(image, 0, 0);
+      const px = ctx.getImageData(
+        Math.floor(image.naturalWidth / 2),
+        Math.floor(image.naturalHeight / 2),
+        1,
+        1,
+      ).data;
+
+      const rgb = (value: string): number[] =>
+        (value.match(/\d+(\.\d+)?/g) ?? []).slice(0, 3).map(Number);
+      const channel = (v: number): number => {
+        const c = v / 255;
+        return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      };
+      const luminance = ([r, g, b]: number[]): number =>
+        0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+      const contrast = (a: number[], b: number[]): number => {
+        const [x, y] = [luminance(a), luminance(b)];
+        return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+      };
+
+      const fill = [px[0], px[1], px[2]];
+      return {
+        say: contrast(rgb(getComputedStyle(say).color), fill),
+        chip: contrast(rgb(getComputedStyle(chip).color), fill),
+      };
+    });
+
+    expect(measured, 'no bubble to measure').not.toBeNull();
+    expect(measured!.say, 'the decision line must be readable on its own bubble').toBeGreaterThan(
+      4.5,
+    );
+    expect(measured!.chip, 'the attribution chip must be readable too').toBeGreaterThan(4.5);
+  });
+
+  test('readable: no bubble ever covers a hero sprite (must-prove 2, the pose channel)', async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    await page.goto('/');
+    await expect(page.getByTestId('combat-bubble').first()).toBeVisible({ timeout: 60_000 });
+
+    // Sampled while the fight keeps playing: the rail used to GROW, so a single frame
+    // proves nothing. Nine bubbles by turn 4 is the failure this guards against.
+    for (let sample = 0; sample < 4; sample += 1) {
+      const overlaps = await page.evaluate(() => {
+        const hit = (a: DOMRect, b: DOMRect): boolean =>
+          a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        const sprites = [...document.querySelectorAll('[data-testid="combat-sprite"]')];
+        // ON STAGE only: the log keeps every line it ever rendered as the fight's record,
+        // and a retired one is display:none — zero-sized, and not what a player sees.
+        const bubbles = [
+          ...document.querySelectorAll('[data-testid="combat-bubble"]:not([data-retired="true"])'),
+        ];
+        const clashes: string[] = [];
+        for (const sprite of sprites) {
+          for (const bubble of bubbles) {
+            if (hit(sprite.getBoundingClientRect(), bubble.getBoundingClientRect())) {
+              clashes.push(
+                `${(sprite as HTMLElement).dataset.unitId} covered by ${(bubble as HTMLElement).dataset.unitId}`,
+              );
+            }
+          }
+        }
+        return { clashes, bubbles: bubbles.length, sprites: sprites.length };
+      });
+      expect(overlaps.sprites, 'the line-up must be on stage').toBeGreaterThan(0);
+      expect(overlaps.clashes, overlaps.clashes.join(' | ')).toEqual([]);
+      expect(
+        overlaps.bubbles,
+        'the rail must retire old lines, not grow for ever',
+      ).toBeLessThanOrEqual(overlaps.sprites);
+      await page.waitForTimeout(4_000);
+    }
+  });
+
   test('pacing: a scripted full run clears in 3–5 minutes at default tunables', async ({
     page,
   }) => {
@@ -523,6 +661,42 @@ test.describe('must-prove: council cards fire where the run grants them', () => 
     expect(hintBeforeTally, 'the hint must be readable ahead of the tally').toBe(true);
     await expect(hint, 'the hint stays readable through the vote').toBeVisible();
 
+    expectQuiet(w);
+  });
+
+  // PRD §2.5 claims all 11 cards are reachable in one run and §2.6 that no authored
+  // branch is dead. 「거울 방패」 sits behind the T3a `correct` branch, and the authored
+  // 1-1-1 split always lost it to 셀레네's 매력 12 — with or without the lens, so the
+  // lens's whole point (a hint that changes the answer) paid out nothing. The card row
+  // below is what a hint is FOR, and this gate plays it rather than asserting the data.
+  test('council-cards: with 「번역 렌즈」 the T3a puzzle is answered right and 「거울 방패」 lands', async ({
+    page,
+  }) => {
+    const w = watch(page);
+    await page.goto(GATE);
+
+    await waitForScreen(page, 'combat');
+    await drain(page);
+    await waitForScreen(page, 'training');
+    await grantCardTo(page, T1_FIXED_CARD, 'selene');
+    await drain(page);
+    await waitForScreen(page, 'training');
+    await grantCardTo(page, 'translation_lens', 'selene');
+
+    await drain(page);
+    await waitForScreen(page, 'stage');
+    await page.locator('[data-testid="branch-card"][data-tile-id="t3a"]').click();
+    await drain(page);
+    await waitForScreen(page, 'council');
+
+    await expect(
+      page.getByTestId('council-tally'),
+      'the lens must move a voter onto the answer, not merely print a line',
+    ).toHaveAttribute('data-winning-option-id', 'op_riddle_knowledge');
+    await expect(
+      page.getByTestId('council-outcome'),
+      'the correct branch is what makes 「거울 방패」 reachable at all (PRD §2.5)',
+    ).toHaveAttribute('data-card-id', 'mirror_shield');
     expectQuiet(w);
   });
 

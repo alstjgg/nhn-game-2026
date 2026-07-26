@@ -65,8 +65,18 @@
   --slot-mob: url('../../assets/mob-halluc-wisp.png');
 }
 
-/* ── 말풍선 frame — 9-slice source only; the slicing is u7's. ── */
+/* ── 말풍선 frame — 9-slice source only; the slicing is u7's. ──
+      The pack art carries the bubble INTERIOR (`border-image-slice: 12 fill`), and that
+      interior is parchment — rgb(247, 220, 173) at its centre. The shared ink tokens were
+      authored against the dark fallback, so wiring this image in put the decision line at
+      1.31 : 1 against its own panel: the single most important sentence in the demo, and
+      unreadable. The ink is therefore re-declared FOR THIS SCOPE (the bubble and the walk
+      chatter panel, both of which wear this frame), leaving every other surface untouched.
+      Measured against the decoded centre pixel: say 12.3 : 1, chip 11.2 : 1 (WCAG asks 4.5). */
 .slot-bubble-frame {
+  --dc-cited: #4a3410;
+  --dc-ink: #2b1d10;
+  --dc-ink-dim: #5c4526;
   --slot-bubble-frame: url('../../assets/ui-bubble.png');
 }
 

@@ -25,6 +25,8 @@ export interface StageScreenOptions {
   readonly tuning: Tuning;
   /** Display name for a fork's destination tile. Defaults to the tile id. */
   readonly branchLabel?: (tileId: string) => string;
+  /** What each fork destination will ask of the party (see labels.ts). */
+  readonly branchSentence?: (tileId: string) => string;
   /** How a fork click is committed. Defaults to the controller's own API. */
   readonly onBranchPick?: (tileId: string) => void;
   /** How 재시작 is honoured. Defaults to restart-then-start on the controller. */
@@ -38,7 +40,7 @@ function isTerminal(phase: RunPhase): phase is EndResult {
 }
 
 export function createStageScreen(options: StageScreenOptions): HTMLElement {
-  const { controller, party, chatter, tuning, branchLabel, onChatter } = options;
+  const { controller, party, chatter, tuning, branchLabel, branchSentence, onChatter } = options;
 
   const thresholds = {
     uneasy: tuning.gauge.tiers.uneasy,
@@ -63,7 +65,7 @@ export function createStageScreen(options: StageScreenOptions): HTMLElement {
     controller.start();
   };
 
-  const view = createWalkView({ party, thresholds, branchLabel });
+  const view = createWalkView({ party, thresholds, branchLabel, branchSentence });
 
   const root = document.createElement('div');
   root.className = 'dc-run';

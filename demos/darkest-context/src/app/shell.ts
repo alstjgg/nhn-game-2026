@@ -55,7 +55,21 @@ export function mountShell(root: HTMLElement): HTMLElement {
 
   const banner = document.createElement('header');
   banner.className = 'app-shell__banner';
-  banner.textContent = 'DARKEST CONTEXT';
+
+  const wordmark = document.createElement('span');
+  wordmark.className = 'app-shell__wordmark';
+  wordmark.textContent = 'DARKEST CONTEXT';
+
+  // What the run IS, before the first fight starts. A judge landed straight in
+  // 전투 · 턴 1 with no statement of the goal anywhere on the page; one sentence in
+  // the chrome is on screen from the first painted frame, on every phase.
+  const premise = document.createElement('p');
+  premise.className = 'app-shell__premise';
+  premise.dataset.testid = 'app-premise';
+  premise.textContent =
+    '세 용병은 각자의 신념대로 스스로 판단한다 — 컨텍스트가 한계에 닿기 전에 던전을 빠져나가라.';
+
+  banner.append(wordmark, premise);
 
   const slot = document.createElement('main');
   slot.className = 'screen-slot';

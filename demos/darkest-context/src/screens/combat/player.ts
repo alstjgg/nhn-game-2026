@@ -255,6 +255,24 @@ export function createCombatPlayer(options: CombatPlayerOptions): CombatPlayer {
     );
   };
 
+  /**
+   * Health and context, straight off the state the turn just produced. The screen is a
+   * readout and owns no state: it is TOLD the numbers, exactly like every other beat.
+   */
+  const paintVitals = (): void => {
+    for (const hero of state.heroes) {
+      screen.setVitals(hero.id, {
+        hp: hero.hp,
+        hpMax: hero.hpMax,
+        gauge: gauge.valueOf(hero.id),
+        gaugeMax: deps.tuning.gauge.max,
+      });
+    }
+    for (const enemy of state.enemies) {
+      screen.setVitals(enemy.id, { hp: enemy.hp, hpMax: enemy.hpMax });
+    }
+  };
+
   const canResolve = (): boolean => fixture.outcome === 'ongoing' && turnsPlayed < maxTurns;
 
   const resolveTurn = async (): Promise<void> => {
@@ -335,6 +353,7 @@ export function createCombatPlayer(options: CombatPlayerOptions): CombatPlayer {
 
     for (const id of heroIds) screen.setTier(id, gauge.tierNameOf(id));
     for (const hero of state.heroes) if (!hero.alive) screen.markDown(hero.id);
+    paintVitals();
     screen.setTurn(state.turn);
 
     fixture.outcome = state.outcome;
@@ -363,6 +382,9 @@ export function createCombatPlayer(options: CombatPlayerOptions): CombatPlayer {
       await step();
     }
   };
+
+  // The opening frame already knows who is standing and how loud the context is.
+  paintVitals();
 
   return {
     fixture,

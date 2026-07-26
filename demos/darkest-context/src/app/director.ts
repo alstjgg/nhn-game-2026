@@ -20,7 +20,7 @@ import type { RunController, RunPartyUnit, RunState } from '../run/types.ts';
 import type { CombatTurnRecord, OverloadRow } from '../screens/combat/index.ts';
 import { loadChatterPool } from '../screens/stage/chatter.ts';
 import { createStageScreen } from '../screens/stage/index.ts';
-import { branchLabelFor } from '../screens/stage/labels.ts';
+import { branchLabelFor, branchSentenceFor } from '../screens/stage/labels.ts';
 import type { WalkUnitView } from '../screens/stage/walk.ts';
 
 import { createFightView } from './fight-view.ts';
@@ -63,6 +63,12 @@ export interface DirectorOptions {
   readonly overload: readonly OverloadRow[];
   /** Automated gate: walks are budgeted at 0 ms. */
   readonly automatedGate?: boolean;
+  /**
+   * Plays each screen's engine half as soon as it is mounted — what makes the SHIPPED
+   * page play itself for a human who has no test seam to call. Off under an automated
+   * gate, where the spec drives the beats itself and determinism is the point.
+   */
+  readonly autoplay?: boolean;
   readonly seed?: number;
   /** How long the run lets a human look at things. Defaults to every hold zeroed. */
   readonly pace?: PaceProfile;
@@ -131,15 +137,49 @@ export function createDirector(options: DirectorOptions): Director {
 
   let current: Mounted | null = null;
 
+  /**
+   * The engine half of the screen that is in the slot, played without a player verb.
+   *
+   * `drain()` is the same walk for a gate; this is the one for a HUMAN. Without it
+   * `advance()` is reachable only through `window.__app`, which the shipped page never
+   * publishes — so at `/` the first fight would sit on 턴 1 forever and every read
+   * must-prove 2 asks for (action choice · bubble · pose) would be unobservable.
+   *
+   * It never presses a player verb: a screen with no engine half (훈련장 · 휴식 · 종료)
+   * and the fork are still waiting on a click, exactly as before.
+   */
+  const autoAdvance = (mounted: Mounted): void => {
+    if (options.autoplay !== true) return;
+    const advance = mounted.view.advance;
+    if (advance === undefined) return;
+    queue.push(() => {
+      // A screen the run walked onto meanwhile owns the slot now; it will be driven by
+      // its own mount. Only the screen this was queued for may be played here.
+      if (current !== mounted) return;
+      // A beat that cannot play must never stop the run (INV-7): the same
+      // resolve-either-way idiom `pace.ts` uses for a hold that drops a frame.
+      void advance().then(
+        () => undefined,
+        () => undefined,
+      );
+    });
+  };
+
   const show = (id: ScreenId, view: ScreenView): void => {
     current?.unmount();
     slot.replaceChildren();
     const unmount = mountScreen(id, slot, { view });
-    current = { id, view, unmount: typeof unmount === 'function' ? unmount : (): void => {} };
+    const mounted: Mounted = {
+      id,
+      view,
+      unmount: typeof unmount === 'function' ? unmount : (): void => {},
+    };
+    current = mounted;
     // The phase change, as the player experiences it: the entrance is re-armed and the
     // shell reports itself un-settled until the slot stops moving (u17).
     playPhaseEntrance(view.element);
     settle.begin();
+    autoAdvance(mounted);
   };
 
   // ── the run's own screens ──────────────────────────────────────────────────
@@ -168,6 +208,7 @@ export function createDirector(options: DirectorOptions): Director {
       chatter: loadChatterPool(chatter),
       tuning,
       branchLabel: branchLabelFor(map.tiles),
+      branchSentence: branchSentenceFor(map.tiles),
       onBranchPick: (tileId) => {
         controller.chooseBranch(tileId);
       },

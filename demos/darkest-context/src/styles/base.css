@@ -41,12 +41,24 @@ body {
 }
 
 .app-shell__banner {
+  align-items: baseline;
   border-bottom: 1px solid var(--dc-edge);
   color: var(--dc-lantern);
+  display: flex;
   font-size: 13px;
+  gap: calc(var(--dc-gap) * 1.5);
   letter-spacing: 0.42em;
   padding: var(--dc-gap) calc(var(--dc-gap) * 1.5);
   text-transform: uppercase;
+}
+
+/* The premise reads as prose, not as a wordmark: no tracking, no caps. */
+.app-shell__premise {
+  color: var(--dc-ink-dim);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  margin: 0;
+  text-transform: none;
 }
 
 .screen-slot {

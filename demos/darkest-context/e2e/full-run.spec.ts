@@ -133,9 +133,17 @@ test.describe('deliverables: the artifact set', () => {
     await observeSettle(page);
     await page.goto(GATE_DEFAULT_PACE);
 
-    // T1 전투.
-    await waitForScreen(page, 'combat');
+    // T1 전투 — captured on the SHIPPED page, with decisions actually on screen. The
+    // gate boot holds turn 1 until a spec drains it, so the old still was a 턴-1 frame
+    // with zero bubbles: the one thing must-prove 2 is about never reached the review
+    // set, and the unreadable-bubble regression hid behind that.
+    await page.goto('/');
+    await expect(page.getByTestId('combat-screen')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByTestId('combat-bubble').nth(1)).toBeVisible({ timeout: 60_000 });
     await captureSettled(page, '02-combat.png');
+
+    await page.goto(GATE_DEFAULT_PACE);
+    await waitForScreen(page, 'combat');
     await drain(page);
 
     // T1 보상 + T2 훈련장.

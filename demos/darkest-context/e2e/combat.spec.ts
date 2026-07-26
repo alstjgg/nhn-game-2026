@@ -272,8 +272,14 @@ test.describe('combat screen', () => {
     await drain(page);
 
     const bubbles = page.getByTestId('combat-bubble');
-    await expect(bubbles.first()).toBeVisible();
+    // The rail shows one LIVE line per speaker and keeps the rest as the fight's record
+    // (a wall of stacked panels used to bury the line-up), so "a decision is on screen"
+    // is asked of a line that has not been spoken past.
+    await expect(
+      page.locator('[data-testid="combat-bubble"]:not([data-retired="true"])').first(),
+    ).toBeVisible();
 
+    // Every decision the fight ever rendered still has to resolve (INV-3).
     const shown = await bubbles.evaluateAll((nodes) =>
       nodes.map((node) => ({
         unitId: (node as HTMLElement).dataset.unitId ?? '',

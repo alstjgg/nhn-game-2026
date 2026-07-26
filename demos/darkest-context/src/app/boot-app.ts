@@ -84,7 +84,13 @@ export async function bootApp(options: BootAppOptions): Promise<void> {
 
   // The shipped page is always watched at authored speed; only a gate may ask for the
   // fast one, and `?pace=default` opts a gate back into the authored durations (u17).
-  const authoredPace = gate.pace === 'default';
+  const authoredPace = !gate.enabled || gate.pace === 'default';
+
+  // …and the shipped page plays ITSELF. `advance()` is otherwise reachable only through
+  // the `window.__app` seam, which a page without `?gate=1` never publishes — so at `/`
+  // the run would mount the first fight and then wait for a caller that does not exist.
+  // A gate keeps driving the beats itself: that is what makes a spec deterministic.
+  const autoplay = !gate.enabled;
 
   const boot = await bootOnce({
     tuning: data.tuning,
@@ -92,7 +98,10 @@ export async function bootApp(options: BootAppOptions): Promise<void> {
     bucketConfig: bucketConfigOf(data.tuning),
     heroes,
     automatedGate: gate.enabled,
-    defaultPace: authoredPace,
+    // Only a PACED GATE takes the deployed arm without probing: its measurement must not
+    // depend on whether a proxy happened to be running. A dev page at `/` still probes,
+    // so `npm run dev` with a key keeps proving live mode (PRD §1).
+    defaultPace: gate.enabled && authoredPace,
     seed: gate.seed,
   });
   bootCount += 1;
@@ -108,6 +117,7 @@ export async function bootApp(options: BootAppOptions): Promise<void> {
     // Durations only: `?pace=default` still boots the gate's stub adapter and `index`
     // tie-break, it just spends the authored walk and the readable bubble holds.
     automatedGate: gate.enabled && !authoredPace,
+    autoplay,
     pace: authoredPace ? defaultPace(data.tuning) : TEST_PACE,
     settle: shell === null ? NO_SETTLE : createSettleTracker(shell, slot),
     seed: gate.seed,

@@ -59,6 +59,11 @@ const ACTION_CELL_FOR: Record<string, SpriteAction> = {
 
 const SCREEN_TITLE = '전투';
 const TURN_LABEL = '턴';
+const HP_LABEL = '체력';
+/** The gauge is the game's title mechanic; an unlabelled vial is not a readout. */
+const GAUGE_LABEL = '컨텍스트';
+/** The one line that says what the panels under the line-up are FOR. */
+const SHEET_HINT = '유닛을 누르면 그 판단이 인용한 행동 지침 시트가 열린다.';
 
 /** One unit's turn as the screen draws it. Every field is already engine-owned. */
 export interface CombatBeat {
@@ -86,11 +91,22 @@ export interface CombatScreenOptions {
   labels: Readonly<Record<string, Readonly<Record<string, string>>>>;
 }
 
+/** What the HUD says out loud about a unit: its health, and its context reading. */
+export interface UnitVitals {
+  hp: number;
+  hpMax: number;
+  /** Heroes only — a monster carries no context of its own. */
+  gauge?: number;
+  gaugeMax?: number;
+}
+
 export interface CombatScreen {
   element: HTMLElement;
   setTurn: (turn: number) => void;
   setOutcome: (outcome: CombatOutcome) => void;
   setTier: (unitId: string, tier: VialState) => void;
+  /** The readable numbers: who is winning, and how loud the context is (PRD §2.5). */
+  setVitals: (unitId: string, vitals: UnitVitals) => void;
   playBeat: (beat: CombatBeat) => void;
   /** 쓰러짐 — the unit holds the down cell for the rest of the fight. */
   markDown: (unitId: string) => void;
@@ -99,6 +115,7 @@ export interface CombatScreen {
 interface HeroSlot {
   view: UnitView;
   panelHost: HTMLElement;
+  vitalsHost: HTMLElement;
   sheetHost: HTMLElement;
   sprite: HTMLElement;
   tier: VialState;
@@ -138,7 +155,11 @@ export function createCombatScreen(options: CombatScreenOptions): CombatScreen {
   const turnRead = document.createElement('span');
   turnRead.className = 'dc-combat__turn';
   turnRead.textContent = `${TURN_LABEL} 1`;
-  head.append(title, turnRead);
+  const hint = document.createElement('span');
+  hint.className = 'dc-combat__hint';
+  hint.dataset.testid = 'combat-sheet-hint';
+  hint.textContent = SHEET_HINT;
+  head.append(title, turnRead, hint);
 
   const hud = block('dc-combat__hud', 'combat-hud');
   const field = block('dc-combat__field');
@@ -150,6 +171,8 @@ export function createCombatScreen(options: CombatScreenOptions): CombatScreen {
   element.append(head, hud, field, sheets);
 
   const slots = new Map<string, HeroSlot>();
+  /** Line-up position per hero — which column that unit's bubble hangs over. */
+  const speakerOrder = new Map(heroes.map((hero, index) => [hero.id, index]));
 
   /** Puts the sprite on the cell its current pose / action names (PRD §2.8). */
   const applyCell = (slot: HeroSlot): void => {
@@ -168,14 +191,29 @@ export function createCombatScreen(options: CombatScreenOptions): CombatScreen {
     slot.sheetHost.replaceChildren(createUnitSheet(slot.view, { because }));
   };
 
+  /** One sheet at a time: opening a unit's reasons closes the previous read. */
+  const openSheet = (slot: HeroSlot, because: readonly string[]): void => {
+    for (const other of slots.values()) other.sheetHost.dataset.open = 'false';
+    renderSheet(slot, because);
+    slot.sheetHost.dataset.open = 'true';
+  };
+
+  const toggleSheet = (slot: HeroSlot): void => {
+    const wasOpen = slot.sheetHost.dataset.open === 'true';
+    if (wasOpen) {
+      slot.sheetHost.dataset.open = 'false';
+      return;
+    }
+    // A panel press clears the citation — reading a sheet whole is a verb too.
+    openSheet(slot, []);
+  };
+
   const renderPanel = (slot: HeroSlot): void => {
-    slot.panelHost.replaceChildren(
-      createUnitPanel(slot.view, {
-        vialState: slot.tier,
-        // A panel press clears the citation — reading a sheet whole is a verb too.
-        onSelect: () => renderSheet(slot, []),
-      }),
-    );
+    const panel = createUnitPanel(slot.view, {
+      vialState: slot.tier,
+      onSelect: () => toggleSheet(slot),
+    });
+    slot.panelHost.replaceChildren(panel, slot.vitalsHost);
   };
 
   for (const hero of heroes) {
@@ -189,13 +227,21 @@ export function createCombatScreen(options: CombatScreenOptions): CombatScreen {
     sprite.dataset.unitId = hero.id;
 
     const panelHost = block('dc-combat__panel');
+    const vitalsHost = block('dc-combat__vitals', 'combat-vitals');
+    vitalsHost.dataset.unitId = hero.id;
+    panelHost.append(vitalsHost);
     hud.append(panelHost);
+    // The persona sheet is the answer to "why did it do that", not the opening view:
+    // printed always-open it filled the bottom half of the first painted frame and told
+    // the personality the fight is supposed to SHOW. It opens on a press (PRD §2.3).
     const sheetHost = block('dc-combat__sheet');
+    sheetHost.dataset.open = 'false';
     sheets.append(sheetHost);
 
     const slot: HeroSlot = {
       view: hero,
       panelHost,
+      vitalsHost,
       sheetHost,
       sprite,
       tier: tiers[hero.id] ?? 'calm',
@@ -217,6 +263,37 @@ export function createCombatScreen(options: CombatScreenOptions): CombatScreen {
     element.dataset.outcome = outcome;
   };
 
+  /**
+   * The numbers a watcher needs and the DOM did not carry: party health, enemy health,
+   * and the gauge as a VALUE next to its vial. Without them the fight is three names
+   * and an unlabelled icon, and no one can tell who is winning (PRD §2.5).
+   */
+  const enemyVitals = new Map<string, HTMLElement>();
+  for (const enemy of enemies) {
+    const unitEl = stage.querySelector<HTMLElement>(`.dc-unit[data-unit-id="${enemy.id}"]`);
+    if (unitEl === null) continue;
+    const read = block('dc-combat__enemy-vitals', 'combat-vitals');
+    read.dataset.unitId = enemy.id;
+    unitEl.append(read);
+    enemyVitals.set(enemy.id, read);
+  }
+
+  const setVitals = (unitId: string, vitals: UnitVitals): void => {
+    const health = `${HP_LABEL} ${vitals.hp}/${vitals.hpMax}`;
+    const enemyRead = enemyVitals.get(unitId);
+    if (enemyRead !== undefined) {
+      enemyRead.textContent = health;
+      return;
+    }
+    const slot = slots.get(unitId);
+    if (slot === undefined) return;
+    const gauge =
+      vitals.gauge === undefined || vitals.gaugeMax === undefined
+        ? ''
+        : ` · ${GAUGE_LABEL} ${vitals.gauge}/${vitals.gaugeMax}`;
+    slot.vitalsHost.textContent = `${health}${gauge}`;
+  };
+
   const setTier = (unitId: string, tier: VialState): void => {
     const slot = slots.get(unitId);
     if (slot === undefined) return;
@@ -232,13 +309,34 @@ export function createCombatScreen(options: CombatScreenOptions): CombatScreen {
     applyCell(slot);
   };
 
+  /**
+   * One LIVE line per speaker, in that speaker's own column.
+   *
+   * The rail used to show every line it had ever rendered: nine overlapping panels by
+   * turn 4, stacked down the middle of the line-up, so the bubble physically deleted the
+   * sprite pose — the third channel must-prove 2 reads personality from. A unit's older
+   * line is retired when its next one lands, and `--speaker-order` hangs each live
+   * bubble over its own unit while the DOM keeps 민첩 order.
+   *
+   * Retired, not removed: the log is also the RECORD of the fight (a spec reads the
+   * bubble a unit said three turns ago, and the composition reads the rendered count as
+   * its progress signal). Nothing is destroyed; it simply stops being on stage.
+   */
+  const retireLineOf = (unitId: string): void => {
+    for (const node of log.querySelectorAll(`[data-unit-id="${unitId}"]`)) {
+      if (node instanceof HTMLElement) node.dataset.retired = 'true';
+    }
+  };
+
   const playBeat = (beat: CombatBeat): void => {
+    retireLineOf(beat.unitId);
     const bubble = createBubble({
       unitId: beat.unitId,
       say: beat.say,
       because: beat.because,
       labels: labels[beat.unitId],
     });
+    bubble.style.setProperty('--speaker-order', String(speakerOrder.get(beat.unitId) ?? 0));
     bubble.dataset.testid = 'combat-bubble';
     bubble.dataset.actionId = beat.actionId;
     bubble.dataset.coerced = String(beat.coerced);
@@ -254,7 +352,7 @@ export function createCombatScreen(options: CombatScreenOptions): CombatScreen {
       if (itemId === undefined) continue;
       chip.addEventListener('click', () => {
         const slot = slots.get(beat.unitId);
-        if (slot !== undefined) renderSheet(slot, [itemId]);
+        if (slot !== undefined) openSheet(slot, [itemId]);
       });
     }
     log.append(bubble);
@@ -273,5 +371,5 @@ export function createCombatScreen(options: CombatScreenOptions): CombatScreen {
     }
   };
 
-  return { element, setTurn, setOutcome, setTier, playBeat, markDown };
+  return { element, setTurn, setOutcome, setTier, setVitals, playBeat, markDown };
 }

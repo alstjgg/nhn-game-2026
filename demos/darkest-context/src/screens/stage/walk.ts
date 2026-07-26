@@ -29,6 +29,8 @@ export interface WalkViewOptions {
   readonly thresholds: GaugeThresholds;
   /** Display name for a fork's destination tile. Defaults to the tile id. */
   readonly branchLabel?: (tileId: string) => string;
+  /** What that destination will ask of the party. Defaults to the neutral sentence. */
+  readonly branchSentence?: (tileId: string) => string;
 }
 
 export interface WalkView {
@@ -48,7 +50,11 @@ const WALKING_PHASE = 'walking';
 const SCROLLING = 'dc-walk__bg--scrolling';
 const OVERLOAD = 'dc-walk__unit--overload';
 
-/** The one sentence a fork card says under its destination's name. */
+/**
+ * What a fork card says when the caller hands over no per-destination line. It is the
+ * FALLBACK, not the copy: printing one module-level sentence under every card made the
+ * run's only choice read as "이 길로 간다." versus "이 길로 간다." (see labels.ts).
+ */
 const BRANCH_SENTENCE = '이 길로 간다.';
 
 function createUnit(unit: WalkUnitView, thresholds: GaugeThresholds): HTMLElement {
@@ -113,6 +119,7 @@ function createBubble(exchange: ChatterExchange): HTMLElement {
 export function createWalkView(options: WalkViewOptions): WalkView {
   const { party, thresholds } = options;
   const label = options.branchLabel ?? ((tileId: string): string => tileId);
+  const sentenceFor = options.branchSentence ?? ((): string => BRANCH_SENTENCE);
 
   const element = document.createElement('section');
   element.className = 'dc-walk anim-phase-fade';
@@ -160,7 +167,7 @@ export function createWalkView(options: WalkViewOptions): WalkView {
 
         const sentence = document.createElement('span');
         sentence.className = 'dc-branch-card__sentence';
-        sentence.textContent = BRANCH_SENTENCE;
+        sentence.textContent = sentenceFor(tileId);
 
         card.append(title, sentence);
         card.addEventListener('click', () => {
