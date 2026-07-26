@@ -3,7 +3,20 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
-## Status (2026-07-22)
+## Status (2026-07-27)
+
+**Apothecary live-AI integration is ready for review.** An automated local
+three-customer playthrough against the deployed API Gateway → Lambda → Bedrock
+Nova path reached closing. Both C2/C3 opening responses returned with
+`x-llm-fallback=false` and matched the rendered UI. The game makes exactly two
+runtime dialogue requests; later dialogue remains authored and portraits use
+pre-generated assets. AWS exposes only `/ai/dialogue` and `/ai/health`.
+Screenshots and the network trace are in the
+[live Lambda test report](./handoffs/apothecary-live-lambda-test-2026-07-26.md).
+The remaining production gate is the same full playthrough from the deployed
+GitHub Pages site.
+
+## Previous status (2026-07-22)
 
 **Demo phase.** Concept drafting is closed: the 2026-07-22 team meeting consolidated the
 6 proposals into 3 tracks. Next, a simple playable demo is built per track under
@@ -19,15 +32,17 @@ change here.
 | Track | Demo location | Merged from | Demo state |
 |---|---|---|---|
 | Darkest Context (구 agent arena) — build an LLM agent party from cards, watch it journey a tile map | `demos/darkest-context/` | [agent-roguelike](./game-concept-agent-roguelike.md) + [autobattler](./game-concept-autobattler.md) → [concept spec](./game-concept-darkest-context.md) | concept spec done; demo not started |
-| Apothecary — read what customers *actually* ail from and prescribe | `demos/apothecary/` | [apothecary](./game-concept-apothecary.md), absorbing [blacksmith](./game-concept-blacksmith.md) | not started |
+| Apothecary — read what customers *actually* ail from and prescribe | `demos/apothecary/` | [apothecary](./game-concept-apothecary.md), absorbing [blacksmith](./game-concept-blacksmith.md) | playable three-customer demo; C2/C3 opening beats connected to Lambda/Bedrock Nova |
 | Doodle Life — read residents' requests and draw living solutions | `demos/doodle-life/` | [doodle-life](./game-concept-doodle-life.md), absorbing [placement](./game-concept-placement.md) | playable full-AI prototype evaluated; redesigning around three bounded generation stages and clue-driven NPC puzzles |
 
 ## Next steps (priority order)
 
-1. Scaffold `demos/` — three subdirectories, per-demo stack choice (separate task).
-2. Build each demo's core loop to minimally playable.
-3. Demo bake-off: compare plausibility, select the final concept.
-4. Phase transition: update CLAUDE.md, begin the real build at the repo root.
+1. Review and merge the Lambda/SAM runtime and its operating documentation.
+2. Review and merge the Apothecary client integration and Pages configuration.
+3. Verify the full-play path from the deployed GitHub Pages browser.
+4. Run one deliberate Bedrock-failure full play to retain fallback evidence.
+5. Compare the three playable demo tracks and select the final concept.
+6. On selection, update `CLAUDE.md` and begin the production build at the repo root.
 
 ## Open TODOs
 
@@ -37,6 +52,11 @@ change here.
 
 ## Decision log
 
+- 2026-07-26 — Apothecary runtime scope fixed: Lambda generates exactly the C2
+  and C3 opening dialogue beats (two Bedrock calls per full play); later beats
+  remain authored. Local testing uses a loopback Vite proxy that supplies the
+  exact Pages Origin, while the Pages build receives the public API root through
+  `VITE_AI_BASE_URL`. Runtime portraits stay disabled.
 - 2026-07-25 — No real-time image generation, in any concept: NPCs (appearance, problems,
   portraits) ship as pre-generated, manifested asset sets; only speech/dialogue text is
   generated at runtime. The runtime LLM layer is therefore single-provider (Bedrock only) —

@@ -1,0 +1,207 @@
+{
+  "recordedAt": "2026-07-26T13:38:43.277Z",
+  "localUrl": "http://127.0.0.1:4174/",
+  "adapterMode": "live",
+  "health": {
+    "request": {
+      "method": "GET",
+      "url": "http://127.0.0.1:4174/ai/health",
+      "body": null
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "access-control-allow-origin": "https://alstjgg.github.io",
+        "access-control-expose-headers": "x-llm-fallback,x-request-id",
+        "apigw-requestid": "BHcZnhHVIE0ENQw=",
+        "cache-control": "no-store",
+        "connection": "close",
+        "content-length": "133",
+        "content-type": "application/json; charset=utf-8",
+        "date": "Sun, 26 Jul 2026 13:38:30 GMT",
+        "vary": "origin",
+        "x-request-id": "BHcZnhHVIE0ENQw="
+      },
+      "body": {
+        "ok": true,
+        "dialogue": true,
+        "portrait": false,
+        "models": {
+          "dialogue": "global.amazon.nova-2-lite-v1:0",
+          "portrait": "pre-generated-assets"
+        }
+      }
+    }
+  },
+  "dialogue": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:4174/ai/dialogue",
+        "body": {
+          "customer": {
+            "personaTraits": [
+              "A broad-shouldered blacksmith with soot-smudged cheeks, a singed leather apron and cropped hair.",
+              "Clutches a folded letter with a broken wax seal."
+            ],
+            "problem": "기침이 좀처럼 멎지 않아요.",
+            "hiddenCause": "새벽마다 냉기 도는 광에서 삯바느질을 하느라 몸이 상했다."
+          },
+          "patienceTier": 0,
+          "history": [],
+          "availableClues": [
+            {
+              "id": "clue_before_cockcrow",
+              "text": "닭이 울기도 전에 일어난다며 대수롭지 않게 말한다."
+            },
+            {
+              "id": "clue_hoarse_voice",
+              "text": "목소리가 갈라져 쉰 소리가 난다."
+            },
+            {
+              "id": "clue_cold_storeroom",
+              "text": "방이 아니라 광에서 밤을 난다는 말이 스치듯 나온다."
+            },
+            {
+              "id": "clue_needle_calluses",
+              "text": "손끝마다 바늘에 박인 굳은살이 도드라진다."
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "access-control-allow-origin": "https://alstjgg.github.io",
+          "access-control-expose-headers": "x-llm-fallback,x-request-id",
+          "apigw-requestid": "BHcZxjcWoE0EMrg=",
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "505",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Sun, 26 Jul 2026 13:38:33 GMT",
+          "vary": "origin",
+          "x-llm-fallback": "false",
+          "x-request-id": "BHcZxjcWoE0EMrg="
+        },
+        "body": {
+          "npcLine": "요즘은 밤마다 기침이 심해 잠을 이루지 못해요.",
+          "choices": [
+            {
+              "label": "요즘 하루를 어떻게 보내고 계십니까?",
+              "verb": "indirect",
+              "patienceCost": 1
+            },
+            {
+              "label": "밤마다 찬 곳에서 일하고 계신 겁니까?",
+              "verb": "direct",
+              "patienceCost": 2
+            },
+            {
+              "label": "[관찰] 손끝마다 바늘에 박인 굳은살이 도드라진다.",
+              "verb": "observe",
+              "patienceCost": 0,
+              "clueReveals": [
+                "clue_needle_calluses"
+              ]
+            },
+            {
+              "label": "[조제하러 가기]",
+              "verb": "craft",
+              "patienceCost": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:4174/ai/dialogue",
+        "body": {
+          "customer": {
+            "personaTraits": [
+              "A restless young peddler with quick eyes, patched travel clothes and a bundle of trinkets at the chest.",
+              "Clutches a folded letter with a broken wax seal."
+            ],
+            "problem": "속이 더부룩하고 얹힌 것 같아요.",
+            "hiddenCause": "잔칫집에서 상한 전을 먹었는데, 그 집과의 의리 때문에 잔치 이야기를 얼버무린다."
+          },
+          "patienceTier": 0,
+          "history": [],
+          "availableClues": [
+            {
+              "id": "clue_feast_leftovers",
+              "text": "잔치 음식을 싸 온 보퉁이가 아직 손에 들려 있다"
+            },
+            {
+              "id": "clue_grease_stain",
+              "text": "옷깃에 굳은 기름때가 여러 겹 묻어 있다"
+            },
+            {
+              "id": "clue_village_feast",
+              "text": "사흘 전 옆 마을 잔칫집에 묵었다고 흘린다"
+            },
+            {
+              "id": "clue_swallowed_burp",
+              "text": "말끝마다 트림을 삼키며 명치를 문지른다"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "access-control-allow-origin": "https://alstjgg.github.io",
+          "access-control-expose-headers": "x-llm-fallback,x-request-id",
+          "apigw-requestid": "BHcaKhfNIE0EM_A=",
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "642",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Sun, 26 Jul 2026 13:38:35 GMT",
+          "vary": "origin",
+          "x-llm-fallback": "false",
+          "x-request-id": "BHcaKhfNIE0EM_A="
+        },
+        "body": {
+          "npcLine": "요즘은 밤마다 속이 더부룩하고 뭔가 얹힌 것 같아요.",
+          "choices": [
+            {
+              "label": "요즘 하루를 어떻게 보내고 계신지 말씀해 주실 수 있으신가요?",
+              "verb": "indirect",
+              "patienceCost": 1
+            },
+            {
+              "label": "사흘 전 옆 마을 잔칫집에 묵으셨다고 하셨는데, 거기서 특별한 음식이나 상황이 있었나요?",
+              "verb": "direct",
+              "patienceCost": 2
+            },
+            {
+              "label": "[관찰] 보퉁이에 싸인 잔치 음식이 아직 손에 들려 있는 것을 확인한다.",
+              "verb": "observe",
+              "patienceCost": 0,
+              "clueReveals": [
+                "clue_feast_leftovers"
+              ]
+            },
+            {
+              "label": "[조제하러 가기]",
+              "verb": "craft",
+              "patienceCost": 0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "dialogueUiMatches": {
+    "c2": true,
+    "c3": true
+  },
+  "dialogueRequestCount": 2,
+  "portraitRequestCount": 0,
+  "consoleErrors": [],
+  "pageErrors": [],
+  "completedClosing": true
+}
