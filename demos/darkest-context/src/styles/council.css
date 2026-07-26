@@ -1,0 +1,109 @@
+/* u11 — layout for the 평의회 tile (PRD §2.6): 퍼즐 수수께끼 골렘 · 선택이벤트 쓰러진 상인.
+ *
+ * Component look stays in ui.css: a stance reuses `.dc-bubble`, a chip reuses `.dc-chip`.
+ * This file only arranges them and styles the two readouts the council owns — the CLOSED
+ * option list and the tally — neither of which exists in the primitive layer.
+ *
+ * The option list is deliberately styled as prose, not as controls: there is no hover
+ * affordance, no pointer cursor and no focus ring, because nothing here is pressable.
+ * No keyframes: motion is attached with the `.anim-*` vocabulary, never redefined. */
+
+.dc-council {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dc-gap);
+  padding: calc(var(--dc-gap) * 1.5);
+}
+
+.dc-council__title {
+  color: var(--dc-lantern);
+  font-size: 13px;
+  letter-spacing: 0.42em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.dc-council__prompt {
+  line-height: 1.7;
+  margin: 0;
+}
+
+.dc-council__hint {
+  border-left: 2px solid var(--dc-lantern);
+  color: var(--dc-ink-mcp);
+  line-height: 1.7;
+  margin: 0;
+  padding-left: var(--dc-gap);
+}
+
+.dc-council__options {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--dc-gap) / 2);
+}
+
+.dc-council__option {
+  background: var(--dc-panel);
+  border: 1px solid var(--dc-edge);
+  border-radius: var(--dc-radius);
+  color: var(--dc-ink-dim);
+  cursor: default;
+  display: flex;
+  gap: var(--dc-gap);
+  justify-content: space-between;
+  padding: calc(var(--dc-gap) / 1.5) var(--dc-gap);
+}
+
+.dc-council__option-stat {
+  color: var(--dc-ink-dim);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.dc-council__stances {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dc-gap);
+}
+
+.dc-council__tally,
+.dc-council__outcome {
+  border-top: 1px solid var(--dc-edge);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--dc-gap) / 2);
+  padding-top: var(--dc-gap);
+}
+
+.dc-council__count {
+  display: flex;
+  gap: var(--dc-gap);
+  justify-content: space-between;
+}
+
+.dc-council__count[data-winner='true'] {
+  color: var(--dc-lantern);
+}
+
+.dc-council__note {
+  color: var(--dc-ink-dim);
+  font-size: 12px;
+}
+
+.dc-council__done {
+  align-self: flex-start;
+  background: var(--dc-panel-raised);
+  border: 1px solid var(--dc-edge);
+  border-radius: var(--dc-radius);
+  color: var(--dc-ink);
+  cursor: pointer;
+  font: inherit;
+  padding: calc(var(--dc-gap) / 1.5) calc(var(--dc-gap) * 2);
+}
+
+.dc-council__done:hover,
+.dc-council__done:focus-visible {
+  border-color: var(--dc-lantern);
+  color: var(--dc-lantern);
+}
