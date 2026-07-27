@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Inline empty icon: keeps the deployed build free of any network request
+         (PRD §4-8) — a missing /favicon.ico would 404 under the Pages subpath. -->
+    <link rel="icon" href="data:," />
+    <!-- INV-7 (offline: the whole run still clears, silently): a pack slot that only a
+         LATER tile's roster or a drafted/played card touches (e.g. the 환각 정령 sheet,
+         which no tile before t5 stages; a card frame/icon, first painted whenever a card
+         happens to be drafted or played) is otherwise requested lazily, the first time it
+         paints — which can land well after the network has been cut. Preloading the whole
+         pack at boot, alongside everything else the entry graph already pulls in, means
+         no pack image is EVER first requested mid-run (vite resolves each href through the
+         same asset pipeline src/styles/assets.css does, so both point at the identical
+         built file — this adds no new image, see src/assets/slots.ts's ASSET_SLOTS). -->
+    <link rel="preload" as="image" type="image/png" href="./assets/bg-dungeon.png" />
+    <link rel="preload" as="image" type="image/png" href="./assets/hero-garrett.png" />
+    <link rel="preload" as="image" type="image/png" href="./assets/hero-fiona.png" />
+    <link rel="preload" as="image" type="image/png" href="./assets/hero-selene.png" />
+    <link rel="preload" as="image" type="image/png" href="./assets/mob-spam-golem.png" />
+    <link rel="preload" as="image" type="image/png" href="./assets/mob-halluc-wisp.png" />
+    <link rel="preload" as="image" type="image/png" href="./assets/ui-bubble.png" />
+    <link rel="preload" as="image" type="image/png" href="./assets/ui-card-frame.png" />
+    <link rel="preload" as="image" type="image/png" href="./assets/card-icons.png" />
+    <link rel="preload" as="image" type="image/png" href="./assets/ui-vial.png" />
+    <title>Darkest Context — 데모</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

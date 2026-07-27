@@ -1,0 +1,119 @@
+/* u12 — layout for the two 성장·정비 screens (PRD §2.7): 훈련장 and 휴식.
+ *
+ * Component look stays in ui.css: a target row reuses `.dc-unit-panel`, a rest option
+ * reuses `.dc-card`. This file only arranges them and adds the two readouts u12 owns —
+ * the slot meter and the rest readout — neither of which exists in the primitive layer.
+ * No keyframes here: motion is attached with the `.anim-*` vocabulary, never redefined. */
+
+.dc-training,
+.dc-rest {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dc-gap);
+  padding: calc(var(--dc-gap) * 1.5);
+}
+
+.dc-training__title,
+.dc-rest__title {
+  color: var(--dc-lantern);
+  font-size: 13px;
+  letter-spacing: 0.42em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* ── 훈련장 ─────────────────────────────────────────────────────────────── */
+
+.dc-training__meters,
+.dc-training__draft,
+.dc-training__picker,
+.dc-rest__options,
+.dc-rest__party {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dc-gap);
+}
+
+.dc-training__draft {
+  align-items: stretch;
+}
+
+.dc-slot-meter {
+  border: 1px solid var(--dc-edge);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 120px;
+  padding: 8px 10px;
+}
+
+.dc-slot-meter__name {
+  color: var(--dc-ink);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.dc-slot-meter__row {
+  color: var(--dc-ink-dim);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+
+.dc-slot-meter__row[data-remaining='0'] {
+  opacity: 0.45;
+}
+
+.dc-training__picker .dc-unit-panel[disabled] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.dc-training__done,
+.dc-rest__done {
+  align-self: flex-start;
+  background-color: transparent;
+  border: 1px solid var(--dc-lantern);
+  color: var(--dc-lantern);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  padding: 6px 18px;
+}
+
+/* ── 휴식 ───────────────────────────────────────────────────────────────── */
+
+.dc-rest-option[disabled] {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.dc-gauge-readout {
+  align-items: center;
+  border: 1px solid var(--dc-edge);
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.dc-gauge-readout__name {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.dc-gauge-readout__value {
+  color: var(--dc-ink-dim);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dc-rest__result,
+.dc-rest__forgotten {
+  color: var(--dc-ink);
+  font-size: 13px;
+  margin: 0;
+}
+
+.dc-rest__forgotten {
+  color: var(--dc-lantern);
+}

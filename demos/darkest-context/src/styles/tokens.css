@@ -1,0 +1,49 @@
+/* tokens.css — the token layer u7 adds on top of u1's base tone.
+ *
+ * base.css (u1-owned) holds the ground tone every screen inherits; it is never
+ * edited from here. This file adds only what the primitive layer needs and what
+ * later screen units must be able to re-tune in one place:
+ *
+ *   · card tints          — Prompt / Skill / MCP are told apart by CSS tint alone
+ *                           (PRD §2.8: "카드 frame ... Prompt/Skill/MCP 구분은 CSS tint")
+ *   · gauge tints         — the four vial tiers 평온 / 불안 / 한계 / 폭주 (PRD §2.5)
+ *   · motion tokens       — every keyframe in animations.css times itself from these,
+ *                           so timing stays tunable instead of scattered inline
+ *   · the pixel pipeline  — image-rendering is a TOKEN, never a literal, so the whole
+ *                           asset seam flips through one declaration (PRD §2.8)
+ *
+ * Balance numbers (gauge thresholds, damage, walk duration) do NOT live here —
+ * they are data/tuning.json's job (INV-8). These are presentation constants.
+ */
+
+:root {
+  /* ── card tints: three values that must read apart at a glance ── */
+  --dc-tint-prompt: #33285c;
+  --dc-tint-skill: #14403c;
+  --dc-tint-mcp: #4b3218;
+
+  --dc-ink-prompt: #c3b4f2;
+  --dc-ink-skill: #93d8c4;
+  --dc-ink-mcp: #e5bd84;
+
+  /* ── gauge tiers (presentation only — the numbers are data/tuning.json) ── */
+  --dc-gauge-calm: #4f7f5f;
+  --dc-gauge-uneasy: #b39140;
+  --dc-gauge-limit: #b8642f;
+  --dc-gauge-overload: #b23a3a;
+
+  /* ── surfaces the primitives paint on ── */
+  --dc-panel: #16131c;
+  --dc-panel-raised: #1e1a26;
+  --dc-cited: #c8964a;
+  --dc-radius: 3px;
+
+  /* ── motion vocabulary timing ── */
+  --dc-dur-fast: 180ms;
+  --dc-dur-slow: 640ms;
+  --dc-ease-out: cubic-bezier(0.22, 0.78, 0.34, 1);
+
+  /* ── pixel pipeline (PRD §2.8): generated at 4x, downscaled, upscaled by the
+       browser with nearest-neighbour. One token, so no slot ever hardcodes it. ── */
+  --dc-pixelated: pixelated;
+}

@@ -1,0 +1,17 @@
+/* Harness-page layout only — the two screens side by side. Nothing here belongs to the
+ * screen layer: src/styles/equip.css owns everything inside them, and this file declares
+ * no keyframes so the animation vocabulary stays exactly what animations.css says. */
+
+#harness {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 0 auto;
+  max-width: 1100px;
+  padding: 24px;
+}
+
+#harness > * {
+  border: 1px solid var(--dc-edge);
+  flex: 1 1 460px;
+}

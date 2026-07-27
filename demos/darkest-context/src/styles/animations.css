@@ -1,0 +1,127 @@
+/* animations.css — THE NAMED ANIMATION VOCABULARY.
+ *
+ * Six motions, declared once, exposed as `.anim-*` classes. Later screen units
+ * ATTACH these classes; they never re-declare a keyframe. That is the whole point
+ * of a vocabulary — if a screen needs a seventh motion it is added here, next to
+ * its siblings, and everyone gets it.
+ *
+ *   bubble-in / bubble-out  말풍선 enter + leave (PRD §2.5 bubbles above heads)
+ *   hit-shake               피격 reaction on a static sprite cell (PRD §2.8:
+ *                           "All other motion ... is CSS transforms/keyframes on
+ *                           static cells")
+ *   breathe-bob             idle breathing so a stationary line-up still lives
+ *   gauge-tint              the 고게이지 tint overlay pulse (PRD §2.5 tiers)
+ *   phase-fade              phase cross-fade — INV-8 forbids instant DOM swaps
+ *                           between phases ("no instant DOM swaps")
+ *
+ * Every duration/easing comes from tokens.css, never from an inline number.
+ * Sprite-sheet cell loops (walk / attack) are NOT here: they belong to the asset
+ * seam and live in slots.css with the sheets they step through.
+ */
+
+/* 말풍선 pops up from just under the head and settles */
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* …and shrinks back the same way when the turn moves on */
+@keyframes bubble-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(4px) scale(0.94);
+  }
+}
+
+/* 피격 — a short lateral rattle; the sprite never leaves its slot */
+@keyframes hit-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+/* idle breathing — vertical only, so a unit's horizontal position never drifts */
+@keyframes breathe-bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-2px);
+  }
+}
+
+/* 고게이지 overlay pulse — opacity only, so it composites without layout */
+@keyframes gauge-tint {
+  from {
+    opacity: 0.18;
+  }
+  to {
+    opacity: 0.52;
+  }
+}
+
+/* phase cross-fade — the anti-"instant DOM swap" motion (INV-8) */
+@keyframes phase-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── the reusable classes: attach, never redefine ── */
+
+.anim-bubble-in {
+  animation: bubble-in var(--dc-dur-fast) var(--dc-ease-out) both;
+}
+
+.anim-bubble-out {
+  animation: bubble-out var(--dc-dur-fast) var(--dc-ease-out) both;
+}
+
+.anim-hit-shake {
+  animation: hit-shake var(--dc-dur-fast) var(--dc-ease-out) 2;
+}
+
+.anim-breathe-bob {
+  animation: breathe-bob var(--dc-dur-slow) var(--dc-ease-out) infinite alternate;
+}
+
+.anim-gauge-tint {
+  animation: gauge-tint var(--dc-dur-slow) var(--dc-ease-out) infinite alternate;
+}
+
+.anim-phase-fade {
+  animation: phase-fade var(--dc-dur-slow) var(--dc-ease-out) both;
+}
+
+/* Respect an opted-out player. The guard lives at the vocabulary layer so every
+ * screen built on these classes inherits it. Durations collapse but animation
+ * NAMES stay intact, so end-state (`both`) styling still applies. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

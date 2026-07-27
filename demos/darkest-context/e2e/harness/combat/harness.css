@@ -1,0 +1,8 @@
+/* Combat harness page shell. Layout only — every combat class the spec asserts on
+   comes from src/styles/combat.css and the u7 primitive layer. */
+
+#harness {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}

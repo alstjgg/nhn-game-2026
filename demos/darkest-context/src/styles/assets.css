@@ -1,0 +1,102 @@
+/* assets.css — u16: the CONSUMER that fills u7's slot seam with the PROVIDED pack.
+ *
+ * PRD §2.8: `demos/darkest-context/assets/` is a provided input. This file adds no
+ * image, generates nothing, and only points the `--slot-*` custom properties that
+ * `slots.css` deliberately leaves open at the files already on disk (and already
+ * manifested at repo root, rule 5 / INV-8).
+ *
+ * It declares CUSTOM PROPERTIES ONLY. Every real style — background-size,
+ * background-position, border-image-slice, `image-rendering: var(--dc-pixelated)`,
+ * the box — stays u7-owned in `slots.css`, and no class name is invented here.
+ *
+ * MISSING-SLOT POLICY (PRD §2.8, last paragraph): a slot whose file is absent gets
+ * NO rule here, so `slots.css`'s CSS-only fallback keeps painting it, and the slot
+ * is logged in `discovery/u16.md`. All ten files are present — see that log.
+ *
+ * Cell geometry: every sheet in the pack is 384×256, so a 4×3 sheet's cell is
+ * 96 × (256/3) px and a 3×2 sheet's cell is square. `--cell-w` / `--cell-h` are u7
+ * custom properties; retuning them to the pack's real cell keeps the sheet
+ * undistorted (background-size = cols×rows cells must match the file's aspect).
+ * The 3×2 monster sheet already matches u7's square default, so it is left alone.
+ */
+
+/* ── 던전 배경 — 1 image, tiled horizontally by .slot-bg-dungeon ── */
+.slot-bg-dungeon {
+  --slot-bg-dungeon: url('../../assets/bg-dungeon.png');
+}
+
+/* ── 영웅 3종 — one 4×3 sheet each, keyed off the hero id (data/heroes.json).
+      The id may sit on the sprite itself or on the .dc-unit wrapper; custom
+      properties inherit, so both shapes reach the slot. ── */
+.slot-hero {
+  --cell-w: 96px;
+  --cell-h: 85.3333px;
+}
+
+.slot-hero[data-unit-id='garrett'],
+[data-unit-id='garrett'] .slot-hero {
+  --slot-hero: url('../../assets/hero-garrett.png');
+}
+
+.slot-hero[data-unit-id='fiona'],
+[data-unit-id='fiona'] .slot-hero {
+  --slot-hero: url('../../assets/hero-fiona.png');
+}
+
+.slot-hero[data-unit-id='selene'],
+[data-unit-id='selene'] .slot-hero {
+  --slot-hero: url('../../assets/hero-selene.png');
+}
+
+/* ── 몬스터 2종 — one 3×2 sheet each, keyed off the MONSTER id
+      (data/encounters.json), via `data-monster-id` — never `data-unit-id`: on the
+      composed page a staged enemy's `data-unit-id` is its per-encounter INSTANCE id
+      (so two of the same monster stay addressable; src/app/fight-view.ts +
+      src/ui/stage.ts), while the sheet is one-per-monster, shared across instances.
+      The standalone harness (e2e/harness/assets/main.ts) stamps `data-monster-id`
+      too, so both the harness and the shipped page resolve the same rule. ── */
+.slot-mob[data-monster-id='spam_golem'],
+[data-monster-id='spam_golem'] .slot-mob {
+  --slot-mob: url('../../assets/mob-spam-golem.png');
+}
+
+.slot-mob[data-monster-id='hallucination_spirit'],
+[data-monster-id='hallucination_spirit'] .slot-mob {
+  --slot-mob: url('../../assets/mob-halluc-wisp.png');
+}
+
+/* ── 말풍선 frame — 9-slice source only; the slicing is u7's. ──
+      The pack art carries the bubble INTERIOR (`border-image-slice: 12 fill`), and that
+      interior is parchment — rgb(247, 220, 173) at its centre. The shared ink tokens were
+      authored against the dark fallback, so wiring this image in put the decision line at
+      1.31 : 1 against its own panel: the single most important sentence in the demo, and
+      unreadable. The ink is therefore re-declared FOR THIS SCOPE (the bubble and the walk
+      chatter panel, both of which wear this frame), leaving every other surface untouched.
+      Measured against the decoded centre pixel: say 12.3 : 1, chip 11.2 : 1 (WCAG asks 4.5). */
+.slot-bubble-frame {
+  --dc-cited: #4a3410;
+  --dc-ink: #2b1d10;
+  --dc-ink-dim: #5c4526;
+  --slot-bubble-frame: url('../../assets/ui-bubble.png');
+}
+
+/* ── 카드 frame — 9-slice source only; the type tint stays CSS. ── */
+.slot-card-frame {
+  --slot-card-frame: url('../../assets/ui-card-frame.png');
+}
+
+/* ── 카드 아이콘 — 4×3 sheet (11 icons + the card back). 36×32 keeps u7's icon
+      height while holding the sheet's 3:2 aspect. ── */
+.slot-card-icon {
+  --cell-h: 32px;
+  --cell-w: 36px;
+  --slot-card-icon: url('../../assets/card-icons.png');
+}
+
+/* ── 게이지 vial — 4 states in one row; 18×48 keeps u7's vial width while
+      holding the sheet's 3:2 aspect. ── */
+.slot-vial {
+  --cell-h: 48px;
+  --cell-w: 18px;
+  --slot-vial: url('../../assets/ui-vial.png');
+}

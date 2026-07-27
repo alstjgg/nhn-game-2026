@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scaffold Harness — Darkest Context</title>
+  </head>
+  <body>
+    <!--
+      Dummy harness page (u1 fixture, no script on purpose).
+      It exists so the parallelism seam is provable: vite.config.ts discovers
+      rollup inputs by globbing e2e/harness/*/index.html at config time, so a
+      later screen unit adds its own harness dir here and NEVER edits
+      vite.config.ts. Deleting this dir breaks tests/scaffold.test.ts (-t harness).
+    -->
+    <div id="app" data-testid="harness-scaffold">harness scaffold ok</div>
+  </body>
+</html>

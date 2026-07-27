@@ -1,0 +1,266 @@
+/* ui.css — the component layer: stage · unit panel · unit sheet · bubble + chips ·
+ * card · gauge vial. One class vocabulary the later screen units compose; they add
+ * screen-specific layout, they do not restyle a primitive here.
+ *
+ * Loaded LAST of the four style files (see src/ui/index.ts) so a component class
+ * wins the specificity tie against the asset-slot class it sits on — a card is a
+ * `.dc-card.dc-card--prompt.slot-card-frame`, and the tint must beat the frame.
+ *
+ * There is no rule for a native form control in this file, and there never will
+ * be: INV-1 (the membrane) says the player never types. Every verb below is a
+ * button.
+ */
+
+/* ───────────────────────────── stage (PRD §2.5) ─────────────────────────────
+   Side-scroll line view: heroes left, enemies right, nobody moves. The left/right
+   split is CSS, not DOM luck — the two sides are the only in-flow children, so
+   they can never overlap. */
+
+.dc-stage {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--dc-gap);
+  justify-content: space-between;
+  /* A screen may ask for a taller stage (the 전투 rail needs a band above the heads);
+     the default is the authored height, so no other screen moves. */
+  min-height: var(--dc-stage-min-h, 208px);
+  overflow: hidden;
+  padding: calc(var(--dc-gap) * 1.5);
+  position: relative;
+  width: 100%;
+}
+
+.dc-stage__bg {
+  inset: 0;
+  position: absolute;
+  z-index: 0;
+}
+
+.dc-stage__side {
+  align-items: flex-end;
+  display: flex;
+  gap: var(--dc-gap);
+  position: relative;
+  z-index: 1;
+}
+
+.dc-stage__side--heroes {
+  justify-content: flex-start;
+}
+
+.dc-stage__side--enemies {
+  justify-content: flex-end;
+}
+
+.dc-unit {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* A screen may ask for a fixed column per staged hero — the 전투 rail hangs one bubble
+   over each unit, and a line is only self-attributing if it sits in the column its own
+   speaker stands in. The default is content width, so no other screen moves. The sprite
+   is centred in the column (`align-items: center` above), so the column's centre IS the
+   sprite's centre: a rail that repeats this same track lands each line on its own
+   speaker without measuring anything at runtime. */
+.dc-stage__side--heroes .dc-unit {
+  width: var(--dc-unit-col, auto);
+}
+
+.dc-unit__name {
+  color: var(--dc-ink-dim);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+/* ────────────────────── unit panel — the click target that opens a sheet ────────────────────── */
+
+.dc-unit-panel {
+  align-items: center;
+  background: var(--dc-panel);
+  border: 1px solid var(--dc-edge);
+  border-radius: var(--dc-radius);
+  color: var(--dc-ink);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: 10px;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.dc-unit-panel:hover,
+.dc-unit-panel:focus-visible {
+  background: var(--dc-panel-raised);
+  border-color: var(--dc-lantern);
+}
+
+.dc-unit-panel__name {
+  font-size: 14px;
+  letter-spacing: 0.06em;
+}
+
+/* ────────────────────── unit sheet — persona + card sentences + stats ────────────────────── */
+
+.dc-sheet {
+  background: var(--dc-panel);
+  border: 1px solid var(--dc-edge);
+  border-radius: var(--dc-radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--dc-gap);
+  padding: var(--dc-gap);
+}
+
+.dc-sheet__head {
+  border-bottom: 1px solid var(--dc-edge);
+  color: var(--dc-lantern);
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  padding-bottom: 6px;
+}
+
+.dc-sheet__section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dc-sheet__title {
+  color: var(--dc-ink-dim);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.dc-sheet__items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dc-sheet__item {
+  border-left: 2px solid transparent;
+  color: var(--dc-ink);
+  font-size: 13px;
+  padding: 2px 0 2px 8px;
+}
+
+.dc-sheet__item--cited {
+  background: rgba(200, 150, 74, 0.12);
+  border-left-color: var(--dc-cited);
+  color: var(--dc-cited);
+}
+
+/* ────────────────────── speech bubble + because chips (INV-3) ────────────────────── */
+
+.dc-bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 320px;
+  /* Inset from the 9-slice edge: with the pack frame wired in, an un-padded line — and
+     the attribution chip under it — sits ON the border art instead of on the parchment
+     it is meant to be read against. */
+  padding: 2px 4px 8px;
+}
+
+.dc-bubble__say {
+  color: var(--dc-ink);
+  font-size: 14px;
+  margin: 0;
+}
+
+.dc-bubble__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.dc-chip {
+  background: rgba(200, 150, 74, 0.14);
+  border: 1px solid var(--dc-cited);
+  border-radius: 999px;
+  color: var(--dc-cited);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+/* ────────────────────── card — Prompt / Skill / MCP told apart by tint ────────────────────── */
+
+.dc-card {
+  align-items: center;
+  background-color: var(--dc-panel);
+  color: var(--dc-ink);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font: inherit;
+  gap: 6px;
+  padding: 8px;
+  text-align: center;
+  width: 132px;
+}
+
+.dc-card--prompt {
+  background-color: var(--dc-tint-prompt);
+  color: var(--dc-ink-prompt);
+}
+
+.dc-card--skill {
+  background-color: var(--dc-tint-skill);
+  color: var(--dc-ink-skill);
+}
+
+.dc-card--mcp {
+  background-color: var(--dc-tint-mcp);
+  color: var(--dc-ink-mcp);
+}
+
+.dc-card--selected {
+  box-shadow: 0 0 0 2px var(--dc-lantern);
+}
+
+.dc-card__title {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.dc-card__sentence {
+  color: inherit;
+  font-size: 11px;
+  line-height: 1.35;
+  opacity: 0.82;
+}
+
+/* ────────────────────── gauge vial (PRD §2.5 tiers) ──────────────────────
+   The cell comes from slots.css; the tier tint lives here so the CSS-only
+   fallback still tells 평온 / 불안 / 한계 / 폭주 apart with no art in the slot. */
+
+.dc-vial {
+  flex: 0 0 auto;
+}
+
+.dc-vial[data-state='calm'] {
+  --dc-vial-tint: var(--dc-gauge-calm);
+}
+
+.dc-vial[data-state='uneasy'] {
+  --dc-vial-tint: var(--dc-gauge-uneasy);
+}
+
+.dc-vial[data-state='limit'] {
+  --dc-vial-tint: var(--dc-gauge-limit);
+}
+
+.dc-vial[data-state='overload'] {
+  --dc-vial-tint: var(--dc-gauge-overload);
+}

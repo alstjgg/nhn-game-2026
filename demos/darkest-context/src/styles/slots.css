@@ -1,0 +1,245 @@
+/* slots.css — THE ASSET-SLOT CSS CONTRACT (PRD §2.8 render column).
+ *
+ * This file is the seam the asset-pack unit fills. It references NO file: every
+ * slot reads its image from a `--slot-*` custom property that the CONSUMER sets,
+ * and it never assigns one itself. With the property unset the slot still paints
+ * a CSS-only fallback and still reserves its box — so PRD §2.8's rule ("if a
+ * listed file is missing at build time, agents keep the CSS fallback for that
+ * slot") is the DEFAULT state here, not an error path.
+ *
+ * One documented class per row of the §2.8 asset table:
+ *
+ *   asset row              pack file(s)                       class               layout
+ *   ─────────────────────  ─────────────────────────────────  ──────────────────  ─────────
+ *   던전 배경              assets/bg-dungeon.png              .slot-bg-dungeon    tileable strip
+ *   영웅 3종               assets/hero-garrett.png,           .slot-hero          sheet 4×3
+ *                          assets/hero-fiona.png,
+ *                          assets/hero-selene.png
+ *   몬스터 2종             assets/mob-spam-golem.png,         .slot-mob           sheet 3×2
+ *                          assets/mob-halluc-wisp.png
+ *   말풍선 frame           assets/ui-bubble.png               .slot-bubble-frame  9-slice
+ *   카드 frame             assets/ui-card-frame.png           .slot-card-frame    9-slice
+ *   카드 아이콘            assets/card-icons.png              .slot-card-icon     sheet 4×3
+ *   게이지 vial            assets/ui-vial.png                 .slot-vial          sheet 4×1
+ *
+ * How a consumer fills the seam (and this is the ONLY thing it has to do):
+ *
+ *   .dc-unit__sprite[data-hero="fiona"] { --slot-hero: url("../assets/…"); }
+ *
+ * Cells are chosen with `--cell-col` / `--cell-row` against the sheet geometry
+ * (`--sheet-cols` / `--sheet-rows`), so a caller sets a number, never a pixel
+ * offset. `image-rendering` is only ever the `--dc-pixelated` token.
+ *
+ * Sheet-geometry note carried forward rather than guessed: PRD §2.8 states the
+ * hero and card-icon sheets as 4×3 (cols×rows — the row list confirms it). The
+ * monster sheet's "2×3" is read here as 3 columns × 2 rows, the only reading that
+ * fits its own cell list (row 1: idle · 피격 · 사망 / row 2: 공격 3프레임) and the
+ * `steps(3)` attack loop the same table demands. The vial's "4 states" is laid out
+ * as 4×1. If the pack disagrees, a consumer overrides --sheet-cols/--sheet-rows;
+ * no class here has to change.
+ */
+
+/* The pixel pipeline, once, for every slot. */
+.slot-bg-dungeon,
+.slot-hero,
+.slot-mob,
+.slot-bubble-frame,
+.slot-card-frame,
+.slot-card-icon,
+.slot-vial {
+  image-rendering: var(--dc-pixelated);
+}
+
+/* ── 던전 배경: one horizontally tileable strip behind the walk / the line-up ── */
+.slot-bg-dungeon {
+  background-color: #131019;
+  background-image: var(
+    --slot-bg-dungeon,
+    repeating-linear-gradient(90deg, #131019 0 22px, #1a1622 22px 44px)
+  );
+  background-position: 0 100%;
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+  min-height: 168px;
+  min-width: 100%;
+}
+
+/* ── 영웅 sheet, 4×3: row 0 걷기 4프레임 · row 1 게이지 tier 대기 포즈 4종 ·
+      row 2 액션 4종 (공격/방어/피격/쓰러짐). Row/col are the caller's choice. ── */
+.slot-hero {
+  --sheet-cols: 4;
+  --sheet-rows: 3;
+  --cell-col: 0;
+  --cell-row: 0;
+  --cell-w: 88px;
+  --cell-h: 88px;
+  background-color: #1b1624;
+  background-image: var(--slot-hero, linear-gradient(180deg, #2f2740 0%, #17131f 100%));
+  background-position: calc(var(--cell-col) * var(--cell-w) * -1)
+    calc(var(--cell-row) * var(--cell-h) * -1);
+  background-repeat: no-repeat;
+  background-size: calc(var(--sheet-cols) * var(--cell-w))
+    calc(var(--sheet-rows) * var(--cell-h));
+  display: block;
+  height: var(--cell-h);
+  width: var(--cell-w);
+}
+
+/* ── 몬스터 sheet, 3×2: row 0 idle · 피격 · 사망(잔해) / row 1 공격 3프레임 ── */
+.slot-mob {
+  --sheet-cols: 3;
+  --sheet-rows: 2;
+  --cell-col: 0;
+  --cell-row: 0;
+  --cell-w: 88px;
+  --cell-h: 88px;
+  background-color: #201622;
+  background-image: var(--slot-mob, linear-gradient(180deg, #3b2434 0%, #1a1019 100%));
+  background-position: calc(var(--cell-col) * var(--cell-w) * -1)
+    calc(var(--cell-row) * var(--cell-h) * -1);
+  background-repeat: no-repeat;
+  background-size: calc(var(--sheet-cols) * var(--cell-w))
+    calc(var(--sheet-rows) * var(--cell-h));
+  display: block;
+  height: var(--cell-h);
+  width: var(--cell-w);
+}
+
+/* ── 말풍선 frame, 9-slice. `fill` on purpose: the pack art carries the bubble
+      interior, and the background-color below is what shows when it is absent. ── */
+.slot-bubble-frame {
+  background-color: rgba(22, 19, 28, 0.94);
+  border-image-repeat: stretch;
+  /* Sliced where the PACK's frame actually ends. The art (256×256) carries a 24px
+     transparent margin and a border that runs to ~x31/y45, so a 12px slice cut the
+     corners out of the transparency and stretched the border itself across the middle:
+     the parchment fill came out a narrow slab and the sentence printed half off it.
+     48 puts pure interior in the fill and the whole frame in the corners. */
+  border-image-slice: 48 fill;
+  border-image-source: var(
+    --slot-bubble-frame,
+    linear-gradient(180deg, #4c4159 0%, #262030 62%, #16131c 100%)
+  );
+  border-image-width: 14px;
+  border-style: solid;
+  border-width: 14px;
+  min-height: 56px;
+  min-width: 120px;
+}
+
+/* ── 카드 frame, 9-slice. NO `fill`: the interior must stay open so the
+      Prompt/Skill/MCP tint shows through it (PRD §2.8 "구분은 CSS tint"). ── */
+.slot-card-frame {
+  border-image-repeat: stretch;
+  border-image-slice: 9;
+  border-image-source: var(
+    --slot-card-frame,
+    linear-gradient(160deg, #6a5b75 0%, #2b2434 58%, #100d15 100%)
+  );
+  border-image-width: 9px;
+  border-style: solid;
+  border-width: 9px;
+  min-height: 104px;
+  min-width: 104px;
+}
+
+/* ── 카드 아이콘 sheet, 4×3: 11종 카드 아이콘 + 카드 뒷면 1, composited inside
+      the card frame. ── */
+.slot-card-icon {
+  --sheet-cols: 4;
+  --sheet-rows: 3;
+  --cell-col: 0;
+  --cell-row: 0;
+  --cell-w: 32px;
+  --cell-h: 32px;
+  background-color: rgba(255, 255, 255, 0.05);
+  background-image: var(
+    --slot-card-icon,
+    radial-gradient(circle at 50% 46%, rgba(255, 255, 255, 0.34) 0 26%, rgba(255, 255, 255, 0.06) 52%, transparent 72%)
+  );
+  background-position: calc(var(--cell-col) * var(--cell-w) * -1)
+    calc(var(--cell-row) * var(--cell-h) * -1);
+  background-repeat: no-repeat;
+  background-size: calc(var(--sheet-cols) * var(--cell-w))
+    calc(var(--sheet-rows) * var(--cell-h));
+  display: block;
+  height: var(--cell-h);
+  width: var(--cell-w);
+}
+
+/* ── 게이지 vial sheet, 4×1 — one cell per tier. The fallback fill reads
+      `--dc-vial-tint` (set per state by ui.css) so the four tiers stay
+      distinguishable even with no art in the slot. ── */
+.slot-vial {
+  --sheet-cols: 4;
+  --sheet-rows: 1;
+  --cell-col: 0;
+  --cell-row: 0;
+  --cell-w: 18px;
+  --cell-h: 36px;
+  background-color: #0e0c12;
+  background-image: var(
+    --slot-vial,
+    linear-gradient(180deg, transparent 0 34%, var(--dc-vial-tint, #4f7f5f) 34% 100%)
+  );
+  background-position: calc(var(--cell-col) * var(--cell-w) * -1)
+    calc(var(--cell-row) * var(--cell-h) * -1);
+  background-repeat: no-repeat;
+  background-size: calc(var(--sheet-cols) * var(--cell-w))
+    calc(var(--sheet-rows) * var(--cell-h));
+  border: 1px solid #2a2431;
+  display: block;
+  height: var(--cell-h);
+  width: var(--cell-w);
+}
+
+.slot-vial[data-state='calm'] {
+  --cell-col: 0;
+  --cell-row: 0;
+}
+
+.slot-vial[data-state='uneasy'] {
+  --cell-col: 1;
+  --cell-row: 0;
+}
+
+.slot-vial[data-state='limit'] {
+  --cell-col: 2;
+  --cell-row: 0;
+}
+
+.slot-vial[data-state='overload'] {
+  --cell-col: 3;
+  --cell-row: 0;
+}
+
+/* ── sprite-sheet cell loops. These step through COLUMNS of whichever sheet the
+      element already carries, so they compose with .slot-hero / .slot-mob. ── */
+
+@keyframes sprite-walk {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: calc(4 * var(--cell-w) * -1);
+  }
+}
+
+@keyframes sprite-attack {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: calc(3 * var(--cell-w) * -1);
+  }
+}
+
+/* 걷기 사이클 4프레임 (PRD §2.8: "walk = CSS steps(4) loop during scroll") */
+.sprite-walk {
+  animation: sprite-walk var(--dc-dur-slow) steps(4) infinite;
+}
+
+/* 공격 3프레임 (PRD §2.8: "attack = CSS steps(3) loop") */
+.sprite-attack {
+  animation: sprite-attack var(--dc-dur-fast) steps(3) 1;
+}
