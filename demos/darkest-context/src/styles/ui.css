@@ -21,7 +21,9 @@
   align-items: flex-end;
   gap: var(--dc-gap);
   justify-content: space-between;
-  min-height: 208px;
+  /* A screen may ask for a taller stage (the 전투 rail needs a band above the heads);
+     the default is the authored height, so no other screen moves. */
+  min-height: var(--dc-stage-min-h, 208px);
   overflow: hidden;
   padding: calc(var(--dc-gap) * 1.5);
   position: relative;
@@ -55,6 +57,16 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+/* A screen may ask for a fixed column per staged hero — the 전투 rail hangs one bubble
+   over each unit, and a line is only self-attributing if it sits in the column its own
+   speaker stands in. The default is content width, so no other screen moves. The sprite
+   is centred in the column (`align-items: center` above), so the column's centre IS the
+   sprite's centre: a rail that repeats this same track lands each line on its own
+   speaker without measuring anything at runtime. */
+.dc-stage__side--heroes .dc-unit {
+  width: var(--dc-unit-col, auto);
 }
 
 .dc-unit__name {
@@ -153,6 +165,10 @@
   flex-direction: column;
   gap: 6px;
   max-width: 320px;
+  /* Inset from the 9-slice edge: with the pack frame wired in, an un-padded line — and
+     the attribution chip under it — sits ON the border art instead of on the parchment
+     it is meant to be read against. */
+  padding: 2px 4px 8px;
 }
 
 .dc-bubble__say {

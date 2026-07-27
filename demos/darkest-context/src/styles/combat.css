@@ -1,0 +1,178 @@
+/* combat.css — the 전투 screen layout (PRD §2.5, §2.8).
+ *
+ * ONE rule governs this file: the line-up never moves. `.dc-combat__log` is the
+ * bubble layer and it is absolutely positioned INSIDE `.dc-combat__field`, so a
+ * bubble landing — one per beat, turn after turn — can never reflow the stage
+ * that sits under it. No selector here carries `translateX`, `left` or a margin
+ * on a staged unit; the breathing bob of `ui.css` is vertical and stays the only
+ * motion a combatant has (PRD §2.5 "정지 전투").
+ *
+ * The screen adds layout only. Bubbles, chips, sheets, panels and vials are u7
+ * primitives and are never restyled here.
+ */
+
+.dc-combat {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--dc-gap);
+  /* The whole fight fits one viewport, so the page itself never scrolls and a
+     staged unit's viewport position is stable for the entire encounter. */
+  height: 100vh;
+  overflow: hidden;
+  padding: var(--dc-gap);
+}
+
+.dc-combat__head {
+  align-items: baseline;
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--dc-gap);
+}
+
+.dc-combat__title {
+  color: var(--dc-lantern);
+  font-size: 15px;
+  letter-spacing: 0.34em;
+  margin: 0;
+}
+
+.dc-combat__turn {
+  color: var(--dc-ink-dim);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+
+/* The legend for the panels below: what pressing a unit gets you. */
+.dc-combat__hint {
+  color: var(--dc-ink-dim);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  margin-left: auto;
+}
+
+/* ── HUD: one unit panel per hero, each carrying its gauge vial ── */
+
+.dc-combat__hud {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: var(--dc-gap);
+}
+
+/* ── the field: the line-up, with the bubble layer floating over it ── */
+
+.dc-combat__field {
+  border: 1px solid var(--dc-edge);
+  flex: 0 0 auto;
+  position: relative;
+  /* Headroom for the bubble rail: the line-up is bottom-aligned inside the stage, so
+     this is the band the speech lands in — bubbles above heads, sprites never covered. */
+  --dc-stage-min-h: 316px;
+  /* ONE column per staged hero, and both the line-up and the rail above it are laid out
+     on it (ui.css `.dc-stage__side--heroes .dc-unit`). It has to be wide enough for a
+     whole sentence, because a bubble narrower than its column would still be attributed
+     by position but would wrap into a tower; wide enough that the party reads as a
+     line-up, not a crowd. */
+  --dc-unit-col: 216px;
+}
+
+/* The bubble rail: ONE band across the top of the field, never a column down the middle
+   of the line-up. Still absolutely positioned, so a landing bubble can no more reflow the
+   stage than before; `bottom: auto` is what keeps it out of the sprite band.
+   It is a GRID, not a packed row: a row only fixes the SEQUENCE of the bubbles, so a long
+   sentence pushed the next speaker's line right off its own hero and the tail — which is
+   the only thing naming the speaker — ended up pointing at the neighbour. The tracks below
+   are the line-up's own tracks: same origin (the stage's padding), same count, same width,
+   same gap. Column i therefore IS hero i's column, with no runtime measurement to drift. */
+.dc-combat__log {
+  /* Bottom of the band, so every live line hangs just over the heads on one baseline. */
+  align-items: end;
+  display: grid;
+  gap: var(--dc-gap);
+  grid-template-columns: repeat(var(--dc-speaker-count, 1), var(--dc-unit-col, 1fr));
+  inset: 0 0 auto 0;
+  overflow: hidden;
+  /* The stage's own padding — the offset the first hero column starts at. */
+  padding: calc(var(--dc-gap) * 1.5);
+  /* The layer is scenery; only the bubbles inside it are reachable. */
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+/* A line the unit has spoken past. It stays in the log as the fight's record and leaves
+   the stage, so the line-up is never buried under a wall of parchment. */
+.dc-combat__log > [data-retired='true'] {
+  display: none;
+}
+
+/* Each line hangs over its own speaker: `--speaker-column` is that unit's column in the
+   line-up, so the bubble's span contains its own sprite while the DOM keeps the 민첩 order
+   the beats actually resolved in. A speaker who is not in the line-up (never in this
+   build: only staged heroes decide) gets the whole band rather than a stranger's column. */
+.dc-combat__log > * {
+  grid-column: var(--speaker-column, 1 / -1);
+  /* One shared row: the live lines are one band, never a stack down the stage. */
+  grid-row: 1;
+  pointer-events: auto;
+}
+
+/* The miss line sits under its own speaker's bubble — same column, its own row, so it
+   can never widen the band a bubble is measured in. */
+.dc-combat__log > .dc-combat__phantom {
+  grid-row: 2;
+}
+
+/* 허공을 벤다 — a swing that found nothing. Drama, never an error line (INV-7). */
+.dc-combat__phantom {
+  color: var(--dc-ink-dim);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+
+/* The readable numbers next to each panel: 체력 x/y · 컨텍스트 v/max. */
+.dc-combat__panel {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dc-combat__vitals {
+  color: var(--dc-ink-dim);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+/* The enemy's health, under the enemy — the other half of "who is winning". */
+.dc-combat__enemy-vitals {
+  color: var(--dc-ink-dim);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+/* ── the sheets: what every chip on screen resolves to (INV-3) ── */
+
+/* Closed until a unit is pressed (or a chip cites it). The rows stay in the DOM — a
+   chip must always resolve to a real sheet item (INV-3) — they are simply not the
+   first thing the screen says. */
+.dc-combat__sheet[data-open='false'] {
+  display: none;
+}
+
+.dc-combat__sheets {
+  display: flex;
+  flex: 1 1 auto;
+  gap: var(--dc-gap);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dc-combat__sheet {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  overflow-y: auto;
+}

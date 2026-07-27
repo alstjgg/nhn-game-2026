@@ -1,0 +1,18 @@
+/* Harness-page layout only — one column, the run screen in it. Nothing here belongs to
+ * the screen layer: src/styles/stage.css owns everything inside it, and this file
+ * declares no keyframes so the animation vocabulary stays exactly what
+ * animations.css and stage.css say. */
+
+#harness {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 900px;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+#harness > * {
+  border: 1px solid var(--dc-edge);
+  flex: 1 1 auto;
+}

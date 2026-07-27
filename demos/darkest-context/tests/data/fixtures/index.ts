@@ -219,6 +219,7 @@ export function validTuning(): Rec {
     draft: { optionCount: 3, pickCount: 1 },
     tieBreak: { stub: 'index', live: 'random', test: 'index' },
     chatter: { minPerWalk: 2, maxPerWalk: 3 },
+    bucket: { openingTurn: 1, hurtBelowRatio: 0.5, enemyLowBelowRatio: 0.3 },
   });
 }
 

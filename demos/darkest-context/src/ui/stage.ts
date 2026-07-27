@@ -18,6 +18,9 @@ function createStageUnit(unit: UnitView): HTMLElement {
   el.className = 'dc-unit';
   el.dataset.unitId = unit.id;
   el.dataset.side = unit.side;
+  // The CSS asset slot is keyed off the MONSTER id, not the per-encounter instance id
+  // `unit.id` carries for an enemy (src/styles/assets.css, PRD §2.8 seam with u16).
+  if (unit.monsterId !== undefined) el.dataset.monsterId = unit.monsterId;
 
   const sprite = document.createElement('div');
   const slot = unit.side === 'hero' ? 'slot-hero' : 'slot-mob';

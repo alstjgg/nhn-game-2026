@@ -23,8 +23,22 @@ import type {
 } from './contract.ts';
 import type { AIAdapter } from './adapter.ts';
 
-/** Live decision budget (PRD §2.2): a call has 8_000ms before it is abandoned. */
-const LIVE_TIMEOUT_MS = 8_000;
+/** Where the live decision budget is declared (PRD §2.2, INV-6/INV-8: timing lives in data/). */
+const LIVE_TIMEOUT_REF = 'timeout.live';
+
+/**
+ * The declared live budget in ms.
+ *
+ * Resolved lazily through the data layer, exactly as `probeHealth` resolves its own
+ * budget: node-run tooling imports the contract surface directly, where the
+ * bundler-only data layer would not resolve, so the seam stays out of the module
+ * graph until a call actually needs a number. Nothing here duplicates the file that
+ * owns the value.
+ */
+async function liveBudgetMs(): Promise<number> {
+  const { loadBundledGameData, resolveTuningRef } = await import('../data/loader.ts');
+  return resolveTuningRef(loadBundledGameData().tuning, LIVE_TIMEOUT_REF);
+}
 
 const DECIDE_PATH = '/ai/decide';
 const STANCE_PATH = '/ai/stance';
@@ -72,13 +86,20 @@ export interface LiveAdapterConfig {
 }
 
 export function createLiveAdapter(config: LiveAdapterConfig = {}): AIAdapter {
-  const timeoutMs = config.timeoutMs ?? LIVE_TIMEOUT_MS;
+  // Resolved once per adapter, and only if a call is ever made.
+  let declared: Promise<number> | null = null;
+  const budgetMs = (): Promise<number> => {
+    if (config.timeoutMs !== undefined) return Promise.resolve(config.timeoutMs);
+    declared ??= liveBudgetMs();
+    return declared;
+  };
 
   async function ask(
     path: string,
     body: unknown,
     ctx: ValidationCtx | undefined,
   ): Promise<AgentDecision | null> {
+    const timeoutMs = await budgetMs();
     for (let attempt = 0; attempt < 2; attempt += 1) {
       let payload: unknown;
       try {

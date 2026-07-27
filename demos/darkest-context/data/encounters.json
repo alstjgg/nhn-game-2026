@@ -3,7 +3,7 @@
     {
       "id": "spam_golem",
       "name": "스팸 골렘",
-      "hp": 36,
+      "hp": 37,
       "damage": 4,
       "gaugeOnHitExtraRef": "gauge.spamGolemExtra",
       "behavior": { "rule": "lowest_hp_hero" }
@@ -11,7 +11,7 @@
     {
       "id": "hallucination_spirit",
       "name": "환각 정령",
-      "hp": 22,
+      "hp": 12,
       "damage": 0,
       "gaugeOnAttackRef": "gauge.spiritAttack",
       "behavior": { "rule": "highest_gauge_hero" }

@@ -40,13 +40,17 @@ test.describe('scaffold smoke', () => {
     expect(w.consoleErrors, `console errors: ${w.consoleErrors.join(' | ')}`).toEqual([]);
   });
 
-  test('the shell renders an empty boot slot for screen units to mount into', async ({ page }) => {
+  test('the shell renders a boot slot screen units mount into', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByTestId('app-shell')).toBeVisible();
     const slot = page.getByTestId('screen-slot');
     await expect(slot).toBeAttached();
-    // u1 registers no screen: the slot exists but nothing has mounted into it.
-    await expect(slot.locator(':scope > *')).toHaveCount(0);
+    // The seam this pins is WHERE a screen lands, not whether one has. When u1 shipped,
+    // no screen was registered and the slot was empty; u15 composes the run at `/`, so
+    // the shipped page now mounts one screen at a time into that same slot — the chrome
+    // is still the shell's and screens are still never children of #app.
+    await expect(slot.locator(':scope > *')).toHaveCount(1);
+    await expect(page.locator('#app > *')).toHaveCount(1);
   });
 
   test('the deployed build makes no external network requests (PRD §4-8)', async ({ page }) => {

@@ -110,14 +110,19 @@
 .slot-bubble-frame {
   background-color: rgba(22, 19, 28, 0.94);
   border-image-repeat: stretch;
-  border-image-slice: 12 fill;
+  /* Sliced where the PACK's frame actually ends. The art (256×256) carries a 24px
+     transparent margin and a border that runs to ~x31/y45, so a 12px slice cut the
+     corners out of the transparency and stretched the border itself across the middle:
+     the parchment fill came out a narrow slab and the sentence printed half off it.
+     48 puts pure interior in the fill and the whole frame in the corners. */
+  border-image-slice: 48 fill;
   border-image-source: var(
     --slot-bubble-frame,
     linear-gradient(180deg, #4c4159 0%, #262030 62%, #16131c 100%)
   );
-  border-image-width: 12px;
+  border-image-width: 14px;
   border-style: solid;
-  border-width: 12px;
+  border-width: 14px;
   min-height: 56px;
   min-width: 120px;
 }

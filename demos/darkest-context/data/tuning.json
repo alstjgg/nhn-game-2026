@@ -10,7 +10,7 @@
   },
   "damage": {
     "strike": 3,
-    "defend": 2,
+    "defend": 3,
     "dual_slash": [2, 3],
     "flame_scroll": 4,
     "healing_potion_x3": 6,
@@ -27,5 +27,6 @@
   "slots": { "prompt": 3, "skill": 2, "mcp": 3 },
   "draft": { "optionCount": 3, "pickCount": 1 },
   "tieBreak": { "stub": "index", "live": "random", "test": "index" },
-  "chatter": { "minPerWalk": 2, "maxPerWalk": 3 }
+  "chatter": { "minPerWalk": 2, "maxPerWalk": 3 },
+  "bucket": { "openingTurn": 1, "hurtBelowRatio": 0.5, "enemyLowBelowRatio": 0.3 }
 }

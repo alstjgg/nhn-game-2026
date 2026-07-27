@@ -39,6 +39,13 @@ export interface UnitView {
   /** Context gauge, 0–100. Tier thresholds are data, not UI — see vialStateForGauge. */
   gauge: number;
   items: SheetItem[];
+  /**
+   * Enemy-only: the MONSTER id (data/encounters.json), as opposed to `id`, which for an
+   * enemy is the per-encounter instance id (so two of the same monster stay addressable).
+   * The stage puts this on `data-monster-id`, which is what src/styles/assets.css keys
+   * the `--slot-mob` asset off — one sheet per monster, shared across its instances.
+   */
+  monsterId?: string;
 }
 
 export function isCardType(value: unknown): value is CardType {

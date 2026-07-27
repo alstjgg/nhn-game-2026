@@ -34,14 +34,32 @@ export class AIUnavailableError extends Error {
   }
 }
 
+/** Where the boot-probe budget is declared (PRD §2.2, INV-6 — timing lives in data/). */
+const HEALTH_PROBE_REF = 'timeout.healthProbe';
+
+/**
+ * The declared boot-probe budget in ms.
+ *
+ * The data layer is pulled in lazily on purpose: `contract.ts` re-exports `probeHealth`,
+ * and node-run tooling (`tools/ai-smoke`) imports that module directly, where the
+ * bundler-only data layer would not resolve. A dynamic import keeps the data seam out of
+ * the module graph until a probe actually runs.
+ */
+async function healthProbeBudgetMs(): Promise<number> {
+  const { loadBundledGameData, resolveTuningRef } = await import('../data/loader.ts');
+  return resolveTuningRef(loadBundledGameData().tuning, HEALTH_PROBE_REF);
+}
+
 /**
  * Boot probe (PRD §2.2): resolves the health payload, or `null` when the proxy
  * is absent/slow — production builds, dev without a key, bad networks — in
- * which case boot picks the stub adapter. 800ms budget so boot never stalls.
+ * which case boot picks the stub adapter. The budget comes from
+ * `data/tuning.json` (`timeout.healthProbe`) so boot never stalls.
  */
-export async function probeHealth(timeoutMs = 800): Promise<AIHealth | null> {
+export async function probeHealth(timeoutMs?: number): Promise<AIHealth | null> {
   try {
-    const res = await fetch('/ai/health', { signal: AbortSignal.timeout(timeoutMs) });
+    const budgetMs = timeoutMs ?? (await healthProbeBudgetMs());
+    const res = await fetch('/ai/health', { signal: AbortSignal.timeout(budgetMs) });
     if (!res.ok) return null;
     const health = (await res.json()) as AIHealth;
     return health.ok ? health : null;
