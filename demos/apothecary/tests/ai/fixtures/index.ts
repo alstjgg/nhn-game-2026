@@ -131,7 +131,28 @@ export function healthOk(): AIHealth {
     ok: true,
     dialogue: true,
     portrait: true,
-    models: { dialogue: 'claude-sonnet-5', portrait: 'gpt-image-1' },
+    models: {
+      dialogue: 'global.amazon.nova-2-lite-v1:0',
+      portrait: 'pre-generated-assets',
+    },
+    inference: {
+      default: {
+        modelId: 'global.amazon.nova-2-lite-v1:0',
+        reasoningEffort: 'off',
+      },
+      models: [
+        {
+          id: 'global.amazon.nova-2-lite-v1:0',
+          label: 'Nova 2 Lite',
+          reasoningEfforts: ['off', 'low', 'medium'],
+        },
+        {
+          id: 'global.anthropic.claude-haiku-4-5-20251001-v1:0',
+          label: 'Claude Haiku 4.5',
+          reasoningEfforts: ['off', 'low', 'medium', 'high'],
+        },
+      ],
+    },
   });
 }
 

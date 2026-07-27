@@ -1,0 +1,260 @@
+{
+  "recordedAt": "2026-07-27T01:25:00.189Z",
+  "model": {
+    "id": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "label": "Claude Haiku 4.5",
+    "slug": "claude-haiku-4-5",
+    "expectLive": true
+  },
+  "localUrl": "http://127.0.0.1:4174/",
+  "health": {
+    "request": {
+      "method": "GET",
+      "url": "http://127.0.0.1:4174/ai/health",
+      "body": null
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "access-control-allow-origin": "https://alstjgg.github.io",
+        "access-control-expose-headers": "x-request-id, x-llm-fallback, x-llm-model, x-llm-reasoning-effort, x-llm-latency-ms, x-llm-input-tokens, x-llm-output-tokens",
+        "cache-control": "no-store",
+        "connection": "close",
+        "content-length": "474",
+        "content-type": "application/json; charset=utf-8",
+        "date": "Mon, 27 Jul 2026 01:24:25 GMT",
+        "vary": "origin",
+        "x-request-id": "d91e2265-8ba0-4c5f-9981-2288f143ee5f"
+      },
+      "body": {
+        "ok": true,
+        "dialogue": true,
+        "portrait": false,
+        "models": {
+          "dialogue": "global.amazon.nova-2-lite-v1:0",
+          "portrait": "pre-generated-assets"
+        },
+        "inference": {
+          "default": {
+            "modelId": "global.amazon.nova-2-lite-v1:0",
+            "reasoningEffort": "off"
+          },
+          "models": [
+            {
+              "id": "global.amazon.nova-2-lite-v1:0",
+              "label": "Nova 2 Lite",
+              "reasoningEfforts": [
+                "off",
+                "low",
+                "medium"
+              ]
+            },
+            {
+              "id": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+              "label": "Claude Haiku 4.5",
+              "reasoningEfforts": [
+                "off",
+                "low",
+                "medium",
+                "high"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "dialogue": {
+    "low": {
+      "customerId": "c2",
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:4174/ai/dialogue",
+        "body": {
+          "customer": {
+            "personaTraits": [
+              "A broad-shouldered blacksmith with soot-smudged cheeks, a singed leather apron and cropped hair.",
+              "Clutches a folded letter with a broken wax seal."
+            ],
+            "problem": "기침이 좀처럼 멎지 않아요.",
+            "hiddenCause": "새벽마다 냉기 도는 광에서 삯바느질을 하느라 몸이 상했다."
+          },
+          "patienceTier": 0,
+          "history": [],
+          "availableClues": [
+            {
+              "id": "clue_before_cockcrow",
+              "text": "닭이 울기도 전에 일어난다며 대수롭지 않게 말한다."
+            },
+            {
+              "id": "clue_hoarse_voice",
+              "text": "목소리가 갈라져 쉰 소리가 난다."
+            },
+            {
+              "id": "clue_cold_storeroom",
+              "text": "방이 아니라 광에서 밤을 난다는 말이 스치듯 나온다."
+            },
+            {
+              "id": "clue_needle_calluses",
+              "text": "손끝마다 바늘에 박인 굳은살이 도드라진다."
+            }
+          ],
+          "inference": {
+            "modelId": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "reasoningEffort": "low"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "access-control-allow-origin": "https://alstjgg.github.io",
+          "access-control-expose-headers": "x-request-id, x-llm-fallback, x-llm-model, x-llm-reasoning-effort, x-llm-latency-ms, x-llm-input-tokens, x-llm-output-tokens",
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "476",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Mon, 27 Jul 2026 01:24:45 GMT",
+          "vary": "origin",
+          "x-llm-fallback": "false",
+          "x-llm-input-tokens": "1889",
+          "x-llm-latency-ms": "18914",
+          "x-llm-model": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+          "x-llm-output-tokens": "3046",
+          "x-llm-reasoning-effort": "low",
+          "x-request-id": "598c2621-b5a6-4ba4-95eb-f55157141fae"
+        },
+        "body": {
+          "npcLine": "기침이 좀처럼 멎지 않아요. 요즘 밤마다 더 심해서요.",
+          "choices": [
+            {
+              "label": "요즘 일은 어떻게 되고 계세요?",
+              "verb": "indirect",
+              "patienceCost": 1
+            },
+            {
+              "label": "밤에 주로 어디서 시간을 보내세요?",
+              "verb": "direct",
+              "patienceCost": 2
+            },
+            {
+              "label": "[관찰] 손끝의 굳은살을 살펴본다",
+              "verb": "observe",
+              "patienceCost": 0,
+              "clueReveals": [
+                "clue_needle_calluses"
+              ]
+            },
+            {
+              "label": "[조제하러 가기]",
+              "verb": "craft",
+              "patienceCost": 0
+            }
+          ]
+        }
+      },
+      "uiLine": "기침이 좀처럼 멎지 않아요. 요즘 밤마다 더 심해서요.",
+      "uiMatches": true
+    },
+    "medium": {
+      "customerId": "c3",
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:4174/ai/dialogue",
+        "body": {
+          "customer": {
+            "personaTraits": [
+              "A restless young peddler with quick eyes, patched travel clothes and a bundle of trinkets at the chest.",
+              "Clutches a folded letter with a broken wax seal."
+            ],
+            "problem": "속이 더부룩하고 얹힌 것 같아요.",
+            "hiddenCause": "잔칫집에서 상한 전을 먹었는데, 그 집과의 의리 때문에 잔치 이야기를 얼버무린다."
+          },
+          "patienceTier": 0,
+          "history": [],
+          "availableClues": [
+            {
+              "id": "clue_feast_leftovers",
+              "text": "잔치 음식을 싸 온 보퉁이가 아직 손에 들려 있다"
+            },
+            {
+              "id": "clue_grease_stain",
+              "text": "옷깃에 굳은 기름때가 여러 겹 묻어 있다"
+            },
+            {
+              "id": "clue_village_feast",
+              "text": "사흘 전 옆 마을 잔칫집에 묵었다고 흘린다"
+            },
+            {
+              "id": "clue_swallowed_burp",
+              "text": "말끝마다 트림을 삼키며 명치를 문지른다"
+            }
+          ],
+          "inference": {
+            "modelId": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+            "reasoningEffort": "medium"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "access-control-allow-origin": "https://alstjgg.github.io",
+          "access-control-expose-headers": "x-request-id, x-llm-fallback, x-llm-model, x-llm-reasoning-effort, x-llm-latency-ms, x-llm-input-tokens, x-llm-output-tokens",
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "516",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Mon, 27 Jul 2026 01:24:55 GMT",
+          "vary": "origin",
+          "x-llm-fallback": "false",
+          "x-llm-input-tokens": "1906",
+          "x-llm-latency-ms": "8851",
+          "x-llm-model": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+          "x-llm-output-tokens": "892",
+          "x-llm-reasoning-effort": "medium",
+          "x-request-id": "05be1da8-c9f5-4aa0-b137-24614411d24b"
+        },
+        "body": {
+          "npcLine": "사흘 전부터 자꾸만 더부룩한데 어제부턴 트림도 자꾸 나와요.",
+          "choices": [
+            {
+              "label": "요즘 길에서 뭘 잘못 먹은 건 아니신가요?",
+              "verb": "indirect",
+              "patienceCost": 1
+            },
+            {
+              "label": "혹시 어디서 상한 음식을 드신 건 아닙니까?",
+              "verb": "direct",
+              "patienceCost": 2
+            },
+            {
+              "label": "[관찰] 옷깃의 굳은 기름때를 살펴본다",
+              "verb": "observe",
+              "patienceCost": 0,
+              "clueReveals": [
+                "clue_grease_stain"
+              ]
+            },
+            {
+              "label": "[조제하러 가기]",
+              "verb": "craft",
+              "patienceCost": 0
+            }
+          ]
+        }
+      },
+      "uiLine": "사흘 전부터 자꾸만 더부룩한데 어제부턴 트림도 자꾸 나와요.",
+      "uiMatches": true
+    }
+  },
+  "inferenceHistory": [
+    "Claude Haiku 4.5 · 중간 · 8.9초 · 입력 1906 / 출력 892t · LIVE",
+    "Claude Haiku 4.5 · 낮음 · 18.9초 · 입력 1889 / 출력 3046t · LIVE"
+  ],
+  "dialogueRequestCount": 2,
+  "portraitRequestCount": 0,
+  "consoleErrors": [],
+  "pageErrors": [],
+  "completedClosing": true
+}

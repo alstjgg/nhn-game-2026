@@ -48,7 +48,10 @@ describe('local deployed-Lambda development mode', () => {
     expect(packageJson.scripts['test:e2e:lambda']).toBe(
       'playwright test --config playwright.lambda.config.ts',
     );
-    expect(playwrightSource).toContain('testIgnore: /live-lambda\\.spec\\.ts$/');
+    expect(playwrightSource).toContain('/live-lambda\\.spec\\.ts$/');
+    expect(playwrightSource).toContain(
+      '/local-inference-matrix\\.spec\\.ts$/',
+    );
     expect(lambdaPlaywrightSource).toContain(
       "testMatch: 'live-lambda.spec.ts'",
     );
@@ -56,9 +59,9 @@ describe('local deployed-Lambda development mode', () => {
   });
 
   it('uses the live deadline for every prefetched customer', () => {
-    expect(mainSource).toContain('{ deadlineMs: LIVE_DEADLINE_MS }');
+    expect(mainSource).toContain('{ deadlineMs: liveDeadlineMs }');
     expect(mainSource).toContain(
-      'generatedDeadlineMs: liveEndpointConfigured ? LIVE_DEADLINE_MS : STUB_DEADLINE_MS',
+      'configuredLiveDeadline >= LIVE_DEADLINE_MS',
     );
   });
 });

@@ -16,6 +16,7 @@ export const HARNESS_INPUTS: Readonly<Record<string, string>> = Object.freeze({
   crafting: './e2e/harness/crafting/index.html',
   portrait: './e2e/harness/portrait/index.html',
   generation: './e2e/harness/generation/index.html',
+  inference: './e2e/harness/inference/index.html',
 });
 
 /** The one entry every build emits. */

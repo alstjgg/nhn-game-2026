@@ -901,7 +901,8 @@ test.describe('u14 deliverables — artifacts, append-only docs, juice policy', 
   test('the deployed Lambda spec requires its dedicated config (AC11/NFR4)', () => {
     const regularConfig = readDemo('playwright.config.ts');
     const lambdaConfig = readDemo('playwright.lambda.config.ts');
-    expect(regularConfig).toContain('testIgnore: /live-lambda\\.spec\\.ts$/');
+    expect(regularConfig).toContain('/live-lambda\\.spec\\.ts$/');
+    expect(regularConfig).toContain('/local-inference-matrix\\.spec\\.ts$/');
     expect(lambdaConfig).toContain("testMatch: 'live-lambda.spec.ts'");
   });
 });

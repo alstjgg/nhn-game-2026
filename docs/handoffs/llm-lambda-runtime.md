@@ -54,8 +54,9 @@ existing CloudFormation resource. The API contract is dialogue-only.
 
 | Guardrail | Value |
 |---|---|
-| Model output | 400 tokens |
-| Model / API / Lambda timeout | 7 s / 9 s / 10 s |
+| Output ceiling | standard 400; Nova reasoning 5,000; Haiku high 4,496 tokens |
+| Request model / reasoning | Nova `off/low/medium`; Haiku `off/low/medium/high` |
+| Model / API / Lambda timeout | 20 s / 24 s / 25 s |
 | Request body | 32 KiB |
 | API rate / burst | 1 / 2 |
 | Reserved concurrency | `-1` (unset) |
@@ -69,6 +70,8 @@ Both a validated model result and deterministic fallback return HTTP 200:
 
 - `x-llm-fallback: false`: validated Bedrock output.
 - `x-llm-fallback: true`: deterministic server fallback.
+- `x-llm-model`, `x-llm-reasoning-effort`: selected comparison settings.
+- `x-llm-latency-ms`, `x-llm-input-tokens`, `x-llm-output-tokens`: run metrics.
 - `x-request-id`: request trace ID.
 
 Key infrastructure files:

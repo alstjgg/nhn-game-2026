@@ -1,23 +1,20 @@
-import {
-  BedrockRuntimeClient,
-  ConverseCommand,
-} from "@aws-sdk/client-bedrock-runtime";
 import { createHash } from "node:crypto";
 
 import {
   HAIKU_MODEL_ID,
   NOVA_MODEL_ID,
+  type RuntimeConfig,
 } from "../src/config.js";
+import { DIALOGUE_INPUT_SCHEMA } from "../src/dialogue-schema.js";
 import {
-  DIALOGUE_INPUT_SCHEMA,
-  DIALOGUE_TOOL_NAME,
-  dialogueToolSpec,
-} from "../src/dialogue-schema.js";
+  BedrockDialogueProvider,
+  createBedrockClient,
+} from "../src/dialogue-provider.js";
 import {
-  dialogueSystemPrompt,
-  dialogueUserPrompt,
-} from "../src/dialogue-prompt.js";
-import type { DialogueRequest } from "../src/dialogue-types.js";
+  REASONING_EFFORTS,
+  type DialogueRequest,
+  type ReasoningEffort,
+} from "../src/dialogue-types.js";
 import { parseDialogueBeat } from "../src/dialogue-validation.js";
 
 function argument(name: string, fallback?: string): string {
@@ -29,14 +26,22 @@ function argument(name: string, fallback?: string): string {
 
 const modelId = argument("--model-id", NOVA_MODEL_ID);
 const region = argument("--region", "ap-northeast-2");
+const reasoningEffort = argument("--reasoning-effort", "off") as ReasoningEffort;
 if (![HAIKU_MODEL_ID, NOVA_MODEL_ID].includes(modelId)) {
   throw new Error("The model ID is not in the template allowlist.");
 }
 if (region !== "ap-northeast-2") {
   throw new Error("Warm-up must run from ap-northeast-2.");
 }
+if (!REASONING_EFFORTS.includes(reasoningEffort)) {
+  throw new Error("Reasoning effort must be off, low, medium, or high.");
+}
+if (modelId === NOVA_MODEL_ID && reasoningEffort === "high") {
+  throw new Error("Nova high is not in the public capability list.");
+}
 
 const request: DialogueRequest = {
+  inference: { modelId, reasoningEffort },
   customer: {
     personaTraits: [
       "A plump young scholar with ink-stained fingers, round cheeks and a horsehair hat slightly askew.",
@@ -56,53 +61,39 @@ const request: DialogueRequest = {
   ],
 };
 
-const strict = modelId === HAIKU_MODEL_ID;
-const client = new BedrockRuntimeClient({ region, maxAttempts: 1 });
-const startedAt = performance.now();
-const result = await client.send(
-  new ConverseCommand({
-    modelId,
-    system: [{ text: dialogueSystemPrompt(request) }],
-    messages: [
-      {
-        role: "user",
-        content: [{ text: dialogueUserPrompt(request) }],
-      },
-    ],
-    inferenceConfig: { maxTokens: 400, temperature: 0.2 },
-    toolConfig: {
-      tools: [{ toolSpec: dialogueToolSpec(strict) }],
-      toolChoice: { tool: { name: DIALOGUE_TOOL_NAME } },
-    },
-  }),
-  { abortSignal: AbortSignal.timeout(300_000) },
-);
-
-const toolUses = (result.output?.message?.content ?? []).flatMap((block) =>
-  block.toolUse ? [block.toolUse] : [],
-);
-const toolUse = toolUses[0];
-if (
-  result.stopReason !== "tool_use" ||
-  toolUses.length !== 1 ||
-  toolUse?.name !== DIALOGUE_TOOL_NAME
-) {
-  throw new Error(
-    "Warm-up response must contain exactly one emit_dialogue_beat tool call.",
-  );
+const config: RuntimeConfig = {
+  region,
+  modelId,
+  allowedModelIds: [modelId],
+  maxTokens: 400,
+  modelTimeoutMs: 300_000,
+  allowedOrigin: "https://alstjgg.github.io",
+  maxBodyBytes: 32_768,
+};
+const client = createBedrockClient(config);
+const provider = new BedrockDialogueProvider(client, config);
+let result;
+try {
+  result = await provider.generate(request);
+} finally {
+  client.destroy();
 }
-parseDialogueBeat(toolUse.input, request);
+parseDialogueBeat(result.rawBeat, request);
 
 console.log(
   JSON.stringify({
     ok: true,
     modelId,
-    strict,
+    reasoningEffort,
+    outputMode:
+      modelId === HAIKU_MODEL_ID && reasoningEffort !== "off"
+        ? "structured-json"
+        : "forced-tool",
     schemaSha256: createHash("sha256")
       .update(JSON.stringify(DIALOGUE_INPUT_SCHEMA))
       .digest("hex"),
-    latencyMs: Math.round(performance.now() - startedAt),
-    inputTokens: result.usage?.inputTokens ?? 0,
-    outputTokens: result.usage?.outputTokens ?? 0,
+    latencyMs: result.latencyMs,
+    inputTokens: result.usage.inputTokens,
+    outputTokens: result.usage.outputTokens,
   }),
 );

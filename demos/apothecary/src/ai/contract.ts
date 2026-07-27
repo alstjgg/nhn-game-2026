@@ -131,12 +131,33 @@ export function isPortraitSheet(v: unknown): v is PortraitSheet {
   return hasB64 || hasUrl;
 }
 
+export const REASONING_EFFORTS = ['off', 'low', 'medium', 'high'] as const;
+export type ReasoningEffort = (typeof REASONING_EFFORTS)[number];
+
+export interface InferenceSelection {
+  modelId: string;
+  reasoningEffort: ReasoningEffort;
+}
+
+export interface InferenceModelOption {
+  id: string;
+  label: string;
+  reasoningEfforts: ReasoningEffort[];
+}
+
+export interface InferenceCapabilities {
+  default: InferenceSelection;
+  models: InferenceModelOption[];
+}
+
 /** GET /ai/health response. */
 export interface AIHealth {
   ok: boolean;
   dialogue: boolean;
   portrait: boolean;
   models: { dialogue: string; portrait: string };
+  /** Optional for compatibility with an older deployed Lambda during rollout. */
+  inference?: InferenceCapabilities;
 }
 
 /**

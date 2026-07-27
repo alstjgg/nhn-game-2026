@@ -19,19 +19,21 @@ function validEnv(): NodeJS.ProcessEnv {
 }
 
 describe("loadConfig", () => {
-  it("loads the deployed allowlist and selects strict mode for Haiku", () => {
+  it("loads the default model and deployed runtime allowlist", () => {
     const config = loadConfig(validEnv());
 
     expect(config.modelId).toBe(HAIKU_MODEL_ID);
     expect(config.allowedModelIds).toEqual([HAIKU_MODEL_ID, NOVA_MODEL_ID]);
-    expect(config.structuredOutputMode).toBe("strict-tool");
   });
 
-  it("selects ordinary tool mode for Nova", () => {
+  it("accepts Nova as the default while both models remain selectable", () => {
     const env = validEnv();
     env.MODEL_ID = NOVA_MODEL_ID;
 
-    expect(loadConfig(env).structuredOutputMode).toBe("tool");
+    expect(loadConfig(env)).toMatchObject({
+      modelId: NOVA_MODEL_ID,
+      allowedModelIds: [HAIKU_MODEL_ID, NOVA_MODEL_ID],
+    });
   });
 
   it("fails closed when MODEL_ID is outside the deployed allowlist", () => {
@@ -44,7 +46,7 @@ describe("loadConfig", () => {
   it.each([
     ["BEDROCK_REGION", "us-east-1"],
     ["MAX_TOKENS", "0"],
-    ["MODEL_TIMEOUT_MS", "7001"],
+    ["MODEL_TIMEOUT_MS", "22001"],
     ["MAX_BODY_BYTES", "999"],
     ["ALLOWED_ORIGIN", "https://alstjgg.github.io/path"],
     ["ALLOWED_ORIGIN", "http://alstjgg.github.io"],

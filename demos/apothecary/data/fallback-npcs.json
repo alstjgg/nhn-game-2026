@@ -2,7 +2,7 @@
   "seed": 20260725,
   "seededDeadlineMs": 1200,
   "stubDeadlineMs": 8000,
-  "liveDeadlineMs": 25000,
+  "liveDeadlineMs": 32000,
   "doorIdleHoldMs": 1800,
   "simulatedGenerationMs": {
     "dialogueMs": 30000,

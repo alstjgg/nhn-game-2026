@@ -12,7 +12,8 @@
 //      static data still fails loudly instead of becoming a silent fallback.
 //      After validation, network/live failures select that known-good stub. The
 //      resulting selected instance is injected ONCE and shared by the whole app.
-//   2. HOW LONG THE SHOP WAITS. Deadlines are data. The live spec is 25s, but a
+//   2. HOW LONG THE SHOP WAITS. Deadlines are data. The live comparison path
+//      leaves room for one health probe plus a reasoning request, but a
 //      judge playing the deployed stub build must never be parked that long, so
 //      boot hands the shell the stub deadline instead — same code path, same
 //      door-idle beat, shorter fence. The canned adapter's simulated generation
@@ -23,15 +24,29 @@
 import { probeHealth } from './ai/adapter.ts';
 import { createBootAdapter } from './ai/boot.ts';
 import { createDeferredAdapter } from './ai/deferred.ts';
+import { createInferenceController } from './ai/inference.ts';
 import { createRealClock } from './pipeline/clock.ts';
 import { mountApp } from './app/index.ts';
 import { LIVE_DEADLINE_MS, SIMULATED_GENERATION_MS, STUB_DEADLINE_MS } from './app/roster.ts';
+import { mountInferencePanel } from './runtime/inference-panel.ts';
 
 function boot(container: HTMLElement): void {
   const liveEndpointConfigured =
     import.meta.env.DEV || Boolean(import.meta.env.VITE_AI_BASE_URL);
+  const configuredLiveDeadline = Number(
+    import.meta.env.VITE_LIVE_DEADLINE_MS,
+  );
+  const liveDeadlineMs =
+    Number.isSafeInteger(configuredLiveDeadline) &&
+    configuredLiveDeadline >= LIVE_DEADLINE_MS &&
+    configuredLiveDeadline <= 300_000
+      ? configuredLiveDeadline
+      : LIVE_DEADLINE_MS;
+  const runtime = createInferenceController();
+  mountInferencePanel(document.body, runtime);
   const selected = createBootAdapter({
     probe: liveEndpointConfigured ? probeHealth : () => Promise.resolve(null),
+    runtime,
     stubConfig: {
       latencyMs: liveEndpointConfigured
         ? { dialogueMs: 0, portraitMs: 0 }
@@ -44,8 +59,10 @@ function boot(container: HTMLElement): void {
     clock: createRealClock(),
     // A prefetch started while health is still pending must outlive the probe.
     // Offline production keeps the authored short deadlines and choreography.
-    ...(liveEndpointConfigured ? { deadlineMs: LIVE_DEADLINE_MS } : {}),
-    generatedDeadlineMs: liveEndpointConfigured ? LIVE_DEADLINE_MS : STUB_DEADLINE_MS,
+    ...(liveEndpointConfigured ? { deadlineMs: liveDeadlineMs } : {}),
+    generatedDeadlineMs: liveEndpointConfigured
+      ? liveDeadlineMs
+      : STUB_DEADLINE_MS,
   });
 }
 

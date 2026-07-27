@@ -1,4 +1,5 @@
 import { PublicError } from "./errors.js";
+import type { ReasoningEffort } from "./dialogue-types.js";
 
 export const HAIKU_MODEL_ID =
   "global.anthropic.claude-haiku-4-5-20251001-v1:0";
@@ -6,7 +7,18 @@ export const NOVA_MODEL_ID = "global.amazon.nova-2-lite-v1:0";
 
 const SUPPORTED_MODEL_IDS = new Set([HAIKU_MODEL_ID, NOVA_MODEL_ID]);
 
-export type StructuredOutputMode = "strict-tool" | "tool";
+export const MODEL_LABELS: Readonly<Record<string, string>> = {
+  [HAIKU_MODEL_ID]: "Claude Haiku 4.5",
+  [NOVA_MODEL_ID]: "Nova 2 Lite",
+};
+export const MODEL_REASONING_EFFORTS: Readonly<
+  Record<string, readonly ReasoningEffort[]>
+> = {
+  [HAIKU_MODEL_ID]: ["off", "low", "medium", "high"],
+  // Nova high requires maxTokens to be omitted, which removes the public
+  // endpoint's output-cost ceiling. Keep the bounded modes available here.
+  [NOVA_MODEL_ID]: ["off", "low", "medium"],
+};
 
 export type RuntimeConfig = {
   region: "ap-northeast-2";
@@ -16,7 +28,6 @@ export type RuntimeConfig = {
   modelTimeoutMs: number;
   allowedOrigin: string;
   maxBodyBytes: number;
-  structuredOutputMode: StructuredOutputMode;
 };
 
 function required(env: NodeJS.ProcessEnv, name: string): string {
@@ -114,11 +125,10 @@ export function loadConfig(env: NodeJS.ProcessEnv): RuntimeConfig {
     modelId,
     allowedModelIds,
     maxTokens: boundedInteger(env, "MAX_TOKENS", 16, 512),
-    // API Gateway waits 9 seconds. Keep 2 seconds for validation + fallback.
-    modelTimeoutMs: boundedInteger(env, "MODEL_TIMEOUT_MS", 100, 7_000),
+    // API Gateway waits up to 24 seconds. Keep 2 seconds for validation +
+    // deterministic fallback after a reasoning request reaches its deadline.
+    modelTimeoutMs: boundedInteger(env, "MODEL_TIMEOUT_MS", 100, 22_000),
     allowedOrigin: parseOrigin(required(env, "ALLOWED_ORIGIN")),
     maxBodyBytes: boundedInteger(env, "MAX_BODY_BYTES", 1_024, 65_536),
-    structuredOutputMode:
-      modelId === HAIKU_MODEL_ID ? "strict-tool" : "tool",
   };
 }

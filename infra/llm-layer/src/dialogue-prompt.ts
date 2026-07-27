@@ -1,7 +1,10 @@
 import { APOTHECARY_TIER_TONES } from "../data/apothecary.js";
 import type { DialogueRequest } from "./dialogue-types.js";
 
-export function dialogueSystemPrompt(request: DialogueRequest): string {
+export function dialogueSystemPrompt(
+  request: DialogueRequest,
+  outputMode: "tool" | "json" = "tool",
+): string {
   return [
     "너는 조선풍 뒷골목 약방 게임의 손님 역할이다. 플레이어는 약방 주인이다.",
     "손님에게는 겉으로 말하는 증상과 숨기고 싶은 진짜 사정이 있다.",
@@ -10,7 +13,14 @@ export function dialogueSystemPrompt(request: DialogueRequest): string {
     "대사는 구어체 한국어 한 줄로 쓰고 시대극 톤은 가볍게만 사용한다.",
     `현재 손님의 기분: ${APOTHECARY_TIER_TONES[request.patienceTier]}`,
     "",
-    "emit_dialogue_beat 도구를 정확히 한 번 사용한다.",
+    outputMode === "tool"
+      ? "emit_dialogue_beat 도구를 정확히 한 번 사용한다."
+      : "지정된 JSON 스키마에 맞는 대화 데이터 하나만 반환한다.",
+    ...(outputMode === "json"
+      ? [
+        "이 작업은 짧은 게임 대사 구성이다. 내부 추론은 간결하게 마치고 JSON 생성에 집중한다.",
+      ]
+      : []),
     "[npcLine 전용 규칙]",
     "npcLine은 손님이 자기 증상이나 사정을 약방 주인에게 1인칭으로 말하는 평서문이다.",
     "npcLine에는 물음표를 쓰지 않는다.",

@@ -9,6 +9,7 @@ import {
   createHandler,
   handler as defaultLambdaHandler,
 } from "../src/handler.js";
+import { HAIKU_MODEL_ID, NOVA_MODEL_ID } from "../src/config.js";
 import type { DialogueProvider } from "../src/dialogue-types.js";
 import {
   validConfig,
@@ -133,6 +134,14 @@ describe("Lambda HTTP handler", () => {
       dialogue: boolean;
       portrait: boolean;
       models: { dialogue: string; portrait: string };
+      inference: {
+        default: { modelId: string; reasoningEffort: string };
+        models: Array<{
+          id: string;
+          label: string;
+          reasoningEfforts: string[];
+        }>;
+      };
     };
 
     expect(result.statusCode).toBe(200);
@@ -144,7 +153,49 @@ describe("Lambda HTTP handler", () => {
         dialogue: validConfig().modelId,
         portrait: "pre-generated-assets",
       },
+      inference: {
+        default: {
+          modelId: validConfig().modelId,
+          reasoningEffort: "off",
+        },
+        models: [
+          {
+            id: validConfig().modelId,
+            label: "Claude Haiku 4.5",
+            reasoningEfforts: ["off", "low", "medium", "high"],
+          },
+        ],
+      },
     });
+  });
+
+  it("advertises only bounded reasoning modes for each allowlisted model", async () => {
+    const handler = createHandler({
+      config: validConfig({
+        modelId: NOVA_MODEL_ID,
+        allowedModelIds: [NOVA_MODEL_ID, HAIKU_MODEL_ID],
+      }),
+      dialogueProvider: dialogueProvider(),
+    });
+
+    const result = structured(
+      await handler(routeEvent("/ai/health", "GET"), context),
+    );
+    const body = JSON.parse(result.body ?? "{}") as {
+      inference: {
+        models: Array<{ id: string; reasoningEfforts: string[] }>;
+      };
+    };
+    const nova = body.inference.models.find((model) => model.id === NOVA_MODEL_ID);
+    const haiku = body.inference.models.find((model) => model.id === HAIKU_MODEL_ID);
+
+    expect(nova?.reasoningEfforts).toEqual(["off", "low", "medium"]);
+    expect(haiku?.reasoningEfforts).toEqual([
+      "off",
+      "low",
+      "medium",
+      "high",
+    ]);
   });
 
   it("serves validated dialogue and logs only safe telemetry", async () => {
@@ -170,7 +221,13 @@ describe("Lambda HTTP handler", () => {
     expect(result.statusCode).toBe(200);
     expect(result.headers).toMatchObject({
       "access-control-allow-origin": "https://alstjgg.github.io",
+      "access-control-expose-headers": expect.stringContaining("x-llm-model"),
       "x-llm-fallback": "false",
+      "x-llm-model": validConfig().modelId,
+      "x-llm-reasoning-effort": "off",
+      "x-llm-latency-ms": expect.any(String),
+      "x-llm-input-tokens": "200",
+      "x-llm-output-tokens": "100",
       "x-request-id": "request-1",
     });
     expect(body.choices.map((choice) => choice.verb)).toEqual([

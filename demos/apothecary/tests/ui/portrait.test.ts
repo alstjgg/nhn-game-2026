@@ -511,7 +511,14 @@ describe('u9 AC5 — vite.config.ts change is one harness build input and nothin
   it('keeps the pre-existing inputs and adds only accounted-for harness pages', () => {
     const keys = Object.keys(resolveBuildInputs({ E2E: '1' }));
     // main = the demo itself; the rest are e2e harness pages (u6, u7, u9, u13).
-    const expected = ['main', 'conversation', 'crafting', 'portrait', 'generation'];
+    const expected = [
+      'main',
+      'conversation',
+      'crafting',
+      'portrait',
+      'generation',
+      'inference',
+    ];
     expect(new Set(keys)).toEqual(new Set(expected));
     expect(keys.length).toBe(expected.length);
   });

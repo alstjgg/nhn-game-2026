@@ -12,6 +12,7 @@
     "test": "vitest run tests/",
     "test:e2e": "playwright test",
     "test:e2e:lambda": "playwright test --config playwright.lambda.config.ts",
+    "test:e2e:inference-local": "playwright test --config playwright.inference-local.config.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json"
   },
   "devDependencies": {

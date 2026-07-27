@@ -1,82 +1,57 @@
-# Apothecary Lambda/Bedrock Gameplay Verification — 2026-07-26
+# Apothecary Lambda/Bedrock game test — 2026-07-26
 
 ## Result
 
-The automated C1 → C2 → C3 → closing playthrough passed against the deployed
-API Gateway → Lambda → Bedrock Nova path.
+The automated playthrough completed C1 → C2 → C3 → closing with the live
+dialogue adapter.
 
-- CloudFormation stack: `UPDATE_COMPLETE`
-- Lambda state: `Active`
-- C2 and C3 dialogue responses: HTTP 200
-- `x-llm-fallback`: `false` for both responses
-- API `npcLine` values matched the rendered UI
-- Dialogue requests per playthrough: 2
-- Runtime portrait requests: 0
-- Browser console errors: 0
-- Playwright page errors: 0
-- Closing screen reached
+| Check | Result |
+|---|---|
+| `GET /ai/health` | HTTP 200, `ok=true`, `dialogue=true` |
+| C2 `/ai/dialogue` | HTTP 200, `x-llm-fallback=false`, response matched the UI |
+| C3 `/ai/dialogue` | HTTP 200, `x-llm-fallback=false`, response matched the UI |
+| Dialogue requests | 2 |
+| Runtime portrait requests | 0 |
+| Browser console errors | 0 |
+| Page errors | 0 |
+| Closing screen | Reached |
 
-The machine-readable trace is
+The responses used `global.amazon.nova-2-lite-v1:0`. C2 and C3 use live AI
+only for their opening dialogue; later dialogue remains authored, and portraits
+remain bundled assets.
+
+## Network evidence
+
+The captured request and response bodies, status codes, response headers, UI
+match flags, request counts, and browser error arrays are in
 [network-evidence.json](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/network-evidence.json).
 
-## Verified runtime
+The browser ran the game through the local loopback proxy with the production
+Pages origin. A direct playthrough from the deployed GitHub Pages URL is outside
+this report's scope.
 
-| Item | Value |
-|---|---|
-| Region | `ap-northeast-2` |
-| Stack | `nhn-game-llm-layer` |
-| API Gateway | `zcyeajmv11` |
-| Lambda | `nhn-game-llm-layer-turn` |
-| Bedrock model | `global.amazon.nova-2-lite-v1:0` |
-| Allowed origin | `https://alstjgg.github.io` |
-| Dialogue endpoint | `POST /ai/dialogue` |
-| Health endpoint | `GET /ai/health` |
+## Automated screenshots
 
-## Automated checks
+### 1. C1 entrance
 
-```bash
-cd demos/apothecary
-npm run test:e2e:lambda
-```
+![C1 entrance](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/01-c1-entrance.png)
 
-The Playwright run passed one complete game in 15.6 seconds. It advanced
-without waiting for the API responses in test code, so the result also verifies
-that in-game prefetching applies the pending C2 and C3 responses correctly.
+### 2. C2 live dialogue
 
-| Customer | Request ID | Fallback | UI match |
-|---|---|---:|---:|
-| C2 — coughing woman | `BHcZxjcWoE0EMrg=` | false | true |
-| C3 — indigestion peddler | `BHcaKhfNIE0EM_A=` | false | true |
+![C2 live dialogue](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/02-c2-live-dialogue.png)
 
-Additional checks:
+### 3. Overlap revisit
 
-- Health returned HTTP 200 with `dialogue=true` and `portrait=false`
-- Exactly two `/ai/dialogue` requests were made
-- No `/ai/portrait` request was made
-- The final shop-closing state was reached
+![Overlap revisit](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/03-overlap-revisit.png)
 
-## Screenshots
+### 4. C3 live dialogue
 
-| Step | Evidence |
-|---|---|
-| C1 entrance | [01-c1-entrance.png](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/01-c1-entrance.png) |
-| C2 live dialogue | [02-c2-live-dialogue.png](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/02-c2-live-dialogue.png) |
-| Revisit overlay | [03-overlap-revisit.png](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/03-overlap-revisit.png) |
-| C3 live dialogue | [04-c3-live-dialogue.png](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/04-c3-live-dialogue.png) |
-| Final note | [05-final-note.png](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/05-final-note.png) |
-| Closing | [06-closing.png](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/06-closing.png) |
+![C3 live dialogue](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/04-c3-live-dialogue.png)
 
-## Runtime scope
+### 5. Final note
 
-- C1 starts prefetching the C2 opening dialogue.
-- C2 starts prefetching the C3 opening dialogue.
-- Bedrock generates the first line and four choices for C2 and C3.
-- Later dialogue beats use the authored deck.
-- Portraits use pre-generated manifest assets.
+![Final note](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/05-final-note.png)
 
-## Remaining production checks
+### 6. Closing
 
-1. Repeat the full playthrough from the deployed GitHub Pages site.
-2. Run a deliberate Bedrock-failure playthrough to verify deterministic
-   fallback behavior.
-3. Decide the public-launch authentication and cost limits.
+![Closing](../../demos/apothecary/e2e/artifacts/live-lambda-2026-07-26/06-closing.png)

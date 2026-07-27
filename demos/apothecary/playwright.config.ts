@@ -7,7 +7,10 @@ export default defineConfig({
   // The regular gate builds and previews static stub-mode output. The deployed
   // Lambda spec needs a different Vite server, so it is impossible to select
   // from this config accidentally (including via --grep or LIVE=1).
-  testIgnore: /live-lambda\.spec\.ts$/,
+  testIgnore: [
+    /live-lambda\.spec\.ts$/,
+    /local-inference-matrix\.spec\.ts$/,
+  ],
   use: {
     baseURL: 'http://localhost:4173',
   },

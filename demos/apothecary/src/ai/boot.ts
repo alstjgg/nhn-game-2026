@@ -13,6 +13,7 @@ import {
   type AIAdapter,
 } from './adapter.ts';
 import type { AIHealth } from './contract.ts';
+import type { InferenceController } from './inference.ts';
 import { createStubAdapter, type StubAdapterConfig } from './stub.ts';
 
 export type HealthProbe = (timeoutMs?: number) => Promise<AIHealth | null>;
@@ -21,9 +22,10 @@ export interface BootDeps {
   probe?: HealthProbe;
   /** Health-probe budget; allows one Lambda cold start without retrying. */
   timeoutMs?: number;
-  createLive?: () => AIAdapter;
+  createLive?: (runtime?: InferenceController) => AIAdapter;
   createStub?: (config?: StubAdapterConfig) => AIAdapter;
   stubConfig?: StubAdapterConfig;
+  runtime?: InferenceController;
 }
 
 const DEFAULT_PROBE_TIMEOUT_MS = HEALTH_PROBE_TIMEOUT_MS;
@@ -57,6 +59,7 @@ export function createBootAdapter(deps: BootDeps = {}): Promise<AIAdapter> {
     createLive = createLiveAdapter,
     createStub = createStubAdapter,
     stubConfig,
+    runtime,
   } = deps;
 
   // Deliberately before the first Promise: bad bundled data must throw at the
@@ -66,11 +69,14 @@ export function createBootAdapter(deps: BootDeps = {}): Promise<AIAdapter> {
   return probeSafely(probe, timeoutMs).then((health) => {
     if (chooseMode(health) === 'live') {
       try {
-        return createLive();
+        runtime?.connect(health as AIHealth);
+        return createLive(runtime);
       } catch {
+        runtime?.disconnect();
         return stub;
       }
     }
+    runtime?.disconnect();
     return stub;
   });
 }

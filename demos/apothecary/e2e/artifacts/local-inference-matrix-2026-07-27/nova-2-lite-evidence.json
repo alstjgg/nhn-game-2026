@@ -1,0 +1,260 @@
+{
+  "recordedAt": "2026-07-27T01:26:00.644Z",
+  "model": {
+    "id": "global.amazon.nova-2-lite-v1:0",
+    "label": "Amazon Nova 2 Lite",
+    "slug": "nova-2-lite",
+    "expectLive": true
+  },
+  "localUrl": "http://127.0.0.1:4174/",
+  "health": {
+    "request": {
+      "method": "GET",
+      "url": "http://127.0.0.1:4174/ai/health",
+      "body": null
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "access-control-allow-origin": "https://alstjgg.github.io",
+        "access-control-expose-headers": "x-request-id, x-llm-fallback, x-llm-model, x-llm-reasoning-effort, x-llm-latency-ms, x-llm-input-tokens, x-llm-output-tokens",
+        "cache-control": "no-store",
+        "connection": "close",
+        "content-length": "474",
+        "content-type": "application/json; charset=utf-8",
+        "date": "Mon, 27 Jul 2026 01:25:17 GMT",
+        "vary": "origin",
+        "x-request-id": "b9d496fe-c700-4633-9704-43635fc8d40d"
+      },
+      "body": {
+        "ok": true,
+        "dialogue": true,
+        "portrait": false,
+        "models": {
+          "dialogue": "global.amazon.nova-2-lite-v1:0",
+          "portrait": "pre-generated-assets"
+        },
+        "inference": {
+          "default": {
+            "modelId": "global.amazon.nova-2-lite-v1:0",
+            "reasoningEffort": "off"
+          },
+          "models": [
+            {
+              "id": "global.amazon.nova-2-lite-v1:0",
+              "label": "Nova 2 Lite",
+              "reasoningEfforts": [
+                "off",
+                "low",
+                "medium"
+              ]
+            },
+            {
+              "id": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+              "label": "Claude Haiku 4.5",
+              "reasoningEfforts": [
+                "off",
+                "low",
+                "medium",
+                "high"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "dialogue": {
+    "low": {
+      "customerId": "c2",
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:4174/ai/dialogue",
+        "body": {
+          "customer": {
+            "personaTraits": [
+              "A broad-shouldered blacksmith with soot-smudged cheeks, a singed leather apron and cropped hair.",
+              "Clutches a folded letter with a broken wax seal."
+            ],
+            "problem": "기침이 좀처럼 멎지 않아요.",
+            "hiddenCause": "새벽마다 냉기 도는 광에서 삯바느질을 하느라 몸이 상했다."
+          },
+          "patienceTier": 0,
+          "history": [],
+          "availableClues": [
+            {
+              "id": "clue_before_cockcrow",
+              "text": "닭이 울기도 전에 일어난다며 대수롭지 않게 말한다."
+            },
+            {
+              "id": "clue_hoarse_voice",
+              "text": "목소리가 갈라져 쉰 소리가 난다."
+            },
+            {
+              "id": "clue_cold_storeroom",
+              "text": "방이 아니라 광에서 밤을 난다는 말이 스치듯 나온다."
+            },
+            {
+              "id": "clue_needle_calluses",
+              "text": "손끝마다 바늘에 박인 굳은살이 도드라진다."
+            }
+          ],
+          "inference": {
+            "modelId": "global.amazon.nova-2-lite-v1:0",
+            "reasoningEffort": "low"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "access-control-allow-origin": "https://alstjgg.github.io",
+          "access-control-expose-headers": "x-request-id, x-llm-fallback, x-llm-model, x-llm-reasoning-effort, x-llm-latency-ms, x-llm-input-tokens, x-llm-output-tokens",
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "479",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Mon, 27 Jul 2026 01:25:25 GMT",
+          "vary": "origin",
+          "x-llm-fallback": "false",
+          "x-llm-input-tokens": "2024",
+          "x-llm-latency-ms": "7423",
+          "x-llm-model": "global.amazon.nova-2-lite-v1:0",
+          "x-llm-output-tokens": "996",
+          "x-llm-reasoning-effort": "low",
+          "x-request-id": "603fab16-aca9-45a7-af0c-ab8a47f6eddf"
+        },
+        "body": {
+          "npcLine": "요즘 기침이 계속 나와서 밤을 잘 못 자네요.",
+          "choices": [
+            {
+              "label": "요즘 하루를 어떻게 보내고 계신지요?",
+              "verb": "indirect",
+              "patienceCost": 1
+            },
+            {
+              "label": "새벽마다 찬 광에서 일하고 계신 건가요?",
+              "verb": "direct",
+              "patienceCost": 2
+            },
+            {
+              "label": "[관찰] 손끝의 굳은살을 살펴보다",
+              "verb": "observe",
+              "patienceCost": 0,
+              "clueReveals": [
+                "clue_needle_calluses"
+              ]
+            },
+            {
+              "label": "[조제하러 가기]",
+              "verb": "craft",
+              "patienceCost": 0
+            }
+          ]
+        }
+      },
+      "uiLine": "요즘 기침이 계속 나와서 밤을 잘 못 자네요.",
+      "uiMatches": true
+    },
+    "medium": {
+      "customerId": "c3",
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:4174/ai/dialogue",
+        "body": {
+          "customer": {
+            "personaTraits": [
+              "A restless young peddler with quick eyes, patched travel clothes and a bundle of trinkets at the chest.",
+              "Clutches a folded letter with a broken wax seal."
+            ],
+            "problem": "속이 더부룩하고 얹힌 것 같아요.",
+            "hiddenCause": "잔칫집에서 상한 전을 먹었는데, 그 집과의 의리 때문에 잔치 이야기를 얼버무린다."
+          },
+          "patienceTier": 0,
+          "history": [],
+          "availableClues": [
+            {
+              "id": "clue_feast_leftovers",
+              "text": "잔치 음식을 싸 온 보퉁이가 아직 손에 들려 있다"
+            },
+            {
+              "id": "clue_grease_stain",
+              "text": "옷깃에 굳은 기름때가 여러 겹 묻어 있다"
+            },
+            {
+              "id": "clue_village_feast",
+              "text": "사흘 전 옆 마을 잔칫집에 묵었다고 흘린다"
+            },
+            {
+              "id": "clue_swallowed_burp",
+              "text": "말끝마다 트림을 삼키며 명치를 문지른다"
+            }
+          ],
+          "inference": {
+            "modelId": "global.amazon.nova-2-lite-v1:0",
+            "reasoningEffort": "medium"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "access-control-allow-origin": "https://alstjgg.github.io",
+          "access-control-expose-headers": "x-request-id, x-llm-fallback, x-llm-model, x-llm-reasoning-effort, x-llm-latency-ms, x-llm-input-tokens, x-llm-output-tokens",
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "516",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Mon, 27 Jul 2026 01:25:56 GMT",
+          "vary": "origin",
+          "x-llm-fallback": "false",
+          "x-llm-input-tokens": "2022",
+          "x-llm-latency-ms": "29155",
+          "x-llm-model": "global.amazon.nova-2-lite-v1:0",
+          "x-llm-output-tokens": "4650",
+          "x-llm-reasoning-effort": "medium",
+          "x-request-id": "65ead08d-171b-481f-b121-9b73d9fa5855"
+        },
+        "body": {
+          "npcLine": "요즘은 속이 더부룩하고 얹히는 느낌이 계속 되네요.",
+          "choices": [
+            {
+              "label": "요즘 하루를 어떻게 보내고 계십니까?",
+              "verb": "indirect",
+              "patienceCost": 1
+            },
+            {
+              "label": "보퉁이에 담긴 잔치 음식을 최근에 드셨나요?",
+              "verb": "direct",
+              "patienceCost": 2
+            },
+            {
+              "label": "[관찰] 옷깃에 굳은 기름때가 여러 겹 묻어 있네요.",
+              "verb": "observe",
+              "patienceCost": 0,
+              "clueReveals": [
+                "clue_grease_stain"
+              ]
+            },
+            {
+              "label": "[조제하러 가기]",
+              "verb": "craft",
+              "patienceCost": 0
+            }
+          ]
+        }
+      },
+      "uiLine": "요즘은 속이 더부룩하고 얹히는 느낌이 계속 되네요.",
+      "uiMatches": true
+    }
+  },
+  "inferenceHistory": [
+    "Nova 2 Lite · 중간 · 29.2초 · 입력 2022 / 출력 4650t · LIVE",
+    "Nova 2 Lite · 낮음 · 7.4초 · 입력 2024 / 출력 996t · LIVE"
+  ],
+  "dialogueRequestCount": 2,
+  "portraitRequestCount": 0,
+  "consoleErrors": [],
+  "pageErrors": [],
+  "completedClosing": true
+}

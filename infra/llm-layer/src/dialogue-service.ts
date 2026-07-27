@@ -17,7 +17,7 @@ export class DialogueService {
   ) {}
 
   async handle(value: unknown): Promise<DialogueServiceResult> {
-    const request = parseDialogueRequest(value);
+    const request = parseDialogueRequest(value, this.config);
     const startedAt = performance.now();
     let response;
     let inputTokens = 0;
@@ -47,7 +47,8 @@ export class DialogueService {
     return {
       response,
       telemetry: {
-        model: this.config.modelId,
+        model: request.inference.modelId,
+        reasoningEffort: request.inference.reasoningEffort,
         latencyMs,
         inputTokens,
         outputTokens,

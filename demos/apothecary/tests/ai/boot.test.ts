@@ -12,6 +12,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AIAdapter } from '../../src/ai/adapter';
 import { chooseMode, createBootAdapter } from '../../src/ai/boot';
+import { createInferenceController } from '../../src/ai/inference';
 import { fakeProbe, healthDown, healthOk } from './fixtures';
 
 const fetchSpy = vi.fn((): never => {
@@ -89,6 +90,25 @@ describe('AC15 createBootAdapter uses the injected probe', () => {
     expect(adapter.mode).toBe('live');
   });
 
+  it('publishes health capabilities to the in-game runtime controls', async () => {
+    const runtime = createInferenceController();
+    await createBootAdapter({
+      probe: fakeProbe(healthOk()).probe,
+      createLive: liveDouble,
+      createStub: stubDouble,
+      runtime,
+    });
+
+    expect(runtime.getSnapshot()).toMatchObject({
+      connection: 'live',
+      selection: {
+        modelId: 'global.amazon.nova-2-lite-v1:0',
+        reasoningEffort: 'off',
+      },
+    });
+    expect(runtime.getSnapshot().models).toHaveLength(2);
+  });
+
   it('accepts dialogue-only health when runtime portraits are pre-generated', async () => {
     const health = healthOk();
     health.portrait = false;
@@ -112,12 +132,15 @@ describe('AC15 createBootAdapter uses the injected probe', () => {
   });
 
   it('returns the stub adapter when the probe resolves null', async () => {
+    const runtime = createInferenceController();
     const adapter = await createBootAdapter({
       probe: fakeProbe(null).probe,
       createLive: liveDouble,
       createStub: stubDouble,
+      runtime,
     });
     expect(adapter.mode).toBe('stub');
+    expect(runtime.getSnapshot().connection).toBe('offline');
   });
 
   it('does not construct the live adapter in stub mode', async () => {

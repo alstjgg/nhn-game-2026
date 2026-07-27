@@ -12,7 +12,7 @@ GitHub Pages → API Gateway HTTP API → Lambda → Amazon Bedrock Converse
 | Method and route | Purpose |
 |---|---|
 | `POST /ai/dialogue` | Return a validated NPC line and exactly four choices |
-| `GET /ai/health` | Report connectivity and the configured model without invoking Bedrock |
+| `GET /ai/health` | Report connectivity and selectable model/reasoning capabilities without invoking Bedrock |
 
 These are the only runtime routes. Portraits are pre-generated static assets, so
 there is no `/ai/portrait`.
@@ -29,8 +29,10 @@ or player free-text input.
 5. A timeout, model error, or invalid response produces deterministic fallback
    dialogue.
 
-Live and fallback dialogue responses both return HTTP 200. Read
-`x-llm-fallback`; only `false` means the response came from Bedrock.
+Live and fallback dialogue responses both return HTTP 200. Read the exposed
+`x-llm-fallback`, `x-llm-model`, `x-llm-reasoning-effort`,
+`x-llm-latency-ms`, and token-count headers to compare runs. Only
+`x-llm-fallback: false` means the response came from Bedrock.
 
 Logs contain only request ID, model ID, latency, token counts, and fallback
 status. Never log customer data, prompts, dialogue, clue text, or raw model
@@ -73,6 +75,10 @@ npm run sam:smoke
 
 ```json
 {
+  "inference": {
+    "modelId": "global.amazon.nova-2-lite-v1:0",
+    "reasoningEffort": "medium"
+  },
   "customer": {
     "personaTraits": ["registered appearance or behavior trait"],
     "problem": "registered visible symptom",
@@ -85,6 +91,14 @@ npm run sam:smoke
   ]
 }
 ```
+
+`inference` is optional for older clients. When omitted, the deployment's
+default model runs with reasoning `off`. The requested model must be in the
+deployment allowlist. Nova exposes `off`, `low`, and `medium`; its `high` mode
+is not public because AWS requires removing the output-token ceiling. Haiku
+exposes `off`, `low`, `medium`, and `high` with bounded thinking budgets. When
+thinking is active, Converse structured JSON output replaces forced tool choice
+because Claude thinking is incompatible with forced tools.
 
 See `infra/llm-layer/scripts/dialogue-smoke.mjs` for a complete request using
 registered game data.
@@ -114,6 +128,7 @@ Contract rules:
 - `clueReveals` may contain only IDs from the request's `availableClues`.
 - The server stamps patience costs; model-supplied costs are not trusted.
 - Unknown fields, personas, and `problem`/`hiddenCause` pairs are rejected.
+- A model or reasoning level not advertised by `/ai/health` is rejected.
 - The client must treat `x-llm-fallback: true` as valid deterministic dialogue,
   not as a transport failure.
 
@@ -128,10 +143,11 @@ Deployment defaults live in `infra/llm-layer/samconfig.toml`.
 | Application stack | `nhn-game-llm-layer` |
 | Model | `global.amazon.nova-2-lite-v1:0` |
 | Allowed model profiles | `both` (Nova and Haiku) |
+| Request reasoning | Nova: `off/low/medium`; Haiku: `off/low/medium/high` |
 | Allowed Origin | `https://alstjgg.github.io` |
-| Maximum model output | 400 tokens |
-| Model timeout | 7 seconds |
-| Lambda timeout | 10 seconds |
+| Output ceiling | standard 400; Nova reasoning 5,000; Haiku high 4,496 tokens |
+| Model timeout | 20 seconds |
+| Lambda timeout | 25 seconds |
 | Request body limit | 32 KiB |
 | Reserved concurrency | unset (`-1`) |
 | API rate / burst | 1 request/second / 2 requests |

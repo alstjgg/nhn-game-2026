@@ -329,7 +329,7 @@ export function mountApp(container: HTMLElement, deps: AppDeps): void {
   /**
    * The door-idle beat (§2.3): ambient staging, no readout, no countdown, no
    * error text — the player never learns anything is late. It ends on the
-   * prefetch's own transition, so the 25s ceiling is u5's injected-clock
+   * prefetch's own transition, so the configured ceiling is u5's injected-clock
    * deadline and this module schedules nothing.
    */
   function playWaitingBeat(slot: number, record: PrefetchRecord): void {

@@ -16,6 +16,7 @@
     "sam:build": "sam build --template-file template.yaml",
     "sam:smoke": "node scripts/bundle-smoke.cjs",
     "aws:preflight": "node scripts/aws-preflight.mjs",
+    "local:api": "tsx scripts/local-api.ts",
     "warmup": "tsx scripts/dialogue-warmup.ts",
     "smoke": "node scripts/dialogue-smoke.mjs"
   },

@@ -35,9 +35,9 @@ Parameters:
     MaxValue: 512
   ModelTimeoutMs:
     Type: Number
-    Default: 7000
+    Default: 22000
     MinValue: 100
-    MaxValue: 7000
+    MaxValue: 22000
   MaxBodyBytes:
     Type: Number
     Default: 32768
@@ -139,6 +139,11 @@ Resources:
         ExposeHeaders:
           - x-request-id
           - x-llm-fallback
+          - x-llm-model
+          - x-llm-reasoning-effort
+          - x-llm-latency-ms
+          - x-llm-input-tokens
+          - x-llm-output-tokens
         MaxAge: 600
       AccessLogSettings:
         DestinationArn:
@@ -286,7 +291,7 @@ Resources:
       Architectures:
         - arm64
       MemorySize: 512
-      Timeout: 10
+      Timeout: 25
       ReservedConcurrentExecutions:
         Fn::If:
           - ConfigureReservedConcurrency
@@ -333,7 +338,7 @@ Resources:
             Path: /ai/dialogue
             Method: POST
             PayloadFormatVersion: "2.0"
-            TimeoutInMillis: 9000
+            TimeoutInMillis: 24000
         Health:
           Type: HttpApi
           Properties:

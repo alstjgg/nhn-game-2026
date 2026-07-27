@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { DialogueService } from "../src/dialogue-service.js";
 import type { DialogueProvider } from "../src/dialogue-types.js";
+import { NOVA_MODEL_ID } from "../src/config.js";
 import { validConfig, validDialogueRequest } from "./fixtures.js";
 
 function validProvider(): DialogueProvider {
@@ -48,6 +49,24 @@ describe("DialogueService", () => {
     expect(result.telemetry.fallback).toBe(false);
     expect(result.telemetry.inputTokens).toBe(200);
     expect(result.response.choices).toHaveLength(4);
+  });
+
+  it("reports the request-selected model and reasoning effort", async () => {
+    const request = validDialogueRequest();
+    request.inference = {
+      modelId: NOVA_MODEL_ID,
+      reasoningEffort: "medium",
+    };
+    const result = await new DialogueService(
+      validConfig({ allowedModelIds: [validConfig().modelId, NOVA_MODEL_ID] }),
+      validProvider(),
+    ).handle(request);
+
+    expect(result.telemetry).toMatchObject({
+      model: NOVA_MODEL_ID,
+      reasoningEffort: "medium",
+      fallback: false,
+    });
   });
 
   it("returns a deterministic playable beat for provider failures", async () => {

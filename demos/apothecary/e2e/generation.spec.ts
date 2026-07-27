@@ -661,8 +661,8 @@ test.describe('u13 — roster of three, one code path (AC-10, AC-11, FR-9, FR-14
     expect(data.waitingLine.trim().length, 'waitingLine is empty').toBeGreaterThan(0);
     expect(data.waitingLine, 'the ambient line must not read like a countdown').not.toMatch(/\d/);
 
-    // Deadlines are DATA, so the deployed build never parks a judge for 25s (G-4).
-    expect(data.liveDeadlineMs, 'live spec deadline is 25s').toBe(25_000);
+    // The live path leaves room for the health probe plus a reasoning request.
+    expect(data.liveDeadlineMs, 'live comparison deadline is 32s').toBe(32_000);
     expect(data.stubDeadlineMs).toBeGreaterThan(0);
     expect(data.stubDeadlineMs, 'the deployed door-idle beat must be short').toBeLessThanOrEqual(
       8_000,

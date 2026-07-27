@@ -9,7 +9,11 @@ import {
   type DialogueBeat,
   type DialogueRequest,
   type DialogueVerb,
+  REASONING_EFFORTS,
+  type InferenceSelection,
 } from "./dialogue-types.js";
+import type { RuntimeConfig } from "./config.js";
+import { MODEL_REASONING_EFFORTS } from "./config.js";
 
 const CLUE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const PERSONA_TRAIT_SET = new Set<string>(APOTHECARY_PERSONA_TRAITS);
@@ -57,7 +61,70 @@ function boundedText(
   return value.trim();
 }
 
-export function parseDialogueRequest(value: unknown): DialogueRequest {
+function parseInferenceSelection(
+  value: unknown,
+  config: RuntimeConfig,
+): InferenceSelection {
+  if (value === undefined) {
+    return { modelId: config.modelId, reasoningEffort: "off" };
+  }
+  if (!isRecord(value)) {
+    throw new PublicError(
+      400,
+      "invalid_inference",
+      "inference must be an object.",
+    );
+  }
+  assertOnlyKeys(
+    value,
+    ["modelId", "reasoningEffort"],
+    "inference",
+    400,
+    "invalid_inference",
+  );
+  if (
+    typeof value.modelId !== "string" ||
+    !config.allowedModelIds.includes(value.modelId)
+  ) {
+    throw new PublicError(
+      400,
+      "model_not_allowed",
+      "inference.modelId is not enabled by this deployment.",
+    );
+  }
+  if (
+    typeof value.reasoningEffort !== "string" ||
+    !(REASONING_EFFORTS as readonly string[]).includes(
+      value.reasoningEffort,
+    )
+  ) {
+    throw new PublicError(
+      400,
+      "invalid_inference",
+      "inference.reasoningEffort must be off, low, medium, or high.",
+    );
+  }
+  if (
+    !MODEL_REASONING_EFFORTS[value.modelId]?.includes(
+      value.reasoningEffort as InferenceSelection["reasoningEffort"],
+    )
+  ) {
+    throw new PublicError(
+      400,
+      "reasoning_not_supported",
+      "The selected reasoning effort is not enabled for this model.",
+    );
+  }
+  return {
+    modelId: value.modelId,
+    reasoningEffort: value.reasoningEffort as InferenceSelection["reasoningEffort"],
+  };
+}
+
+export function parseDialogueRequest(
+  value: unknown,
+  config: RuntimeConfig,
+): DialogueRequest {
   if (!isRecord(value)) {
     throw new PublicError(
       400,
@@ -67,9 +134,10 @@ export function parseDialogueRequest(value: unknown): DialogueRequest {
   }
   assertOnlyKeys(
     value,
-    ["customer", "patienceTier", "history", "availableClues"],
+    ["inference", "customer", "patienceTier", "history", "availableClues"],
     "dialogue",
   );
+  const inference = parseInferenceSelection(value.inference, config);
   if (!isRecord(value.customer)) {
     throw new PublicError(
       400,
@@ -215,6 +283,7 @@ export function parseDialogueRequest(value: unknown): DialogueRequest {
   }
 
   return {
+    inference,
     customer: { personaTraits, problem, hiddenCause },
     patienceTier: value.patienceTier as 0 | 1 | 2 | 3,
     history,

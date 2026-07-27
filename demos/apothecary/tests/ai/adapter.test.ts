@@ -7,8 +7,14 @@ import {
   HEALTH_PROBE_TIMEOUT_MS,
   probeHealth,
 } from '../../src/ai/adapter.ts';
+import { createInferenceController } from '../../src/ai/inference.ts';
 import { LIVE_DEADLINE_MS } from '../../src/app/roster.ts';
-import { dialogueRequest, portraitRequest, proxyDialoguePayload } from './fixtures/index.ts';
+import {
+  dialogueRequest,
+  healthOk,
+  portraitRequest,
+  proxyDialoguePayload,
+} from './fixtures/index.ts';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -90,6 +96,51 @@ describe('Lambda-backed AI adapter', () => {
     expect(fetch.mock.calls[0]?.[0]).toBe('/ai/dialogue');
     expect(JSON.parse(String((fetch.mock.calls[0]?.[1] as RequestInit).body))).toEqual(request);
     expect(timeout).toHaveBeenCalledWith(DIALOGUE_TIMEOUT_MS);
+  });
+
+  it('sends the selected model/effort and records response telemetry', async () => {
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(proxyDialoguePayload()), {
+        status: 200,
+        headers: {
+          'x-llm-fallback': 'false',
+          'x-llm-latency-ms': '1234',
+          'x-llm-input-tokens': '200',
+          'x-llm-output-tokens': '456',
+        },
+      }),
+    );
+    vi.stubGlobal('fetch', fetch);
+    const runtime = createInferenceController();
+    runtime.connect(healthOk());
+    runtime.select({
+      modelId: 'global.anthropic.claude-haiku-4-5-20251001-v1:0',
+      reasoningEffort: 'medium',
+    });
+    const request = dialogueRequest();
+
+    await createLiveAdapter(runtime).dialogue(request);
+
+    const body = JSON.parse(
+      String((fetch.mock.calls[0]?.[1] as RequestInit).body),
+    ) as Record<string, unknown>;
+    expect(body).toMatchObject({
+      ...request,
+      inference: {
+        modelId: 'global.anthropic.claude-haiku-4-5-20251001-v1:0',
+        reasoningEffort: 'medium',
+      },
+    });
+    expect(runtime.getSnapshot().runs[0]).toMatchObject({
+      selection: {
+        modelId: 'global.anthropic.claude-haiku-4-5-20251001-v1:0',
+        reasoningEffort: 'medium',
+      },
+      status: 'success',
+      latencyMs: 1234,
+      inputTokens: 200,
+      outputTokens: 456,
+    });
   });
 
   it('does not retry a schema-invalid response', async () => {

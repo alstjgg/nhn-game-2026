@@ -13,7 +13,16 @@ export const DIALOGUE_VERBS = [
 
 export type DialogueVerb = (typeof DIALOGUE_VERBS)[number];
 
+export const REASONING_EFFORTS = ["off", "low", "medium", "high"] as const;
+export type ReasoningEffort = (typeof REASONING_EFFORTS)[number];
+
+export type InferenceSelection = {
+  modelId: string;
+  reasoningEffort: ReasoningEffort;
+};
+
 export type DialogueRequest = {
+  inference: InferenceSelection;
   customer: {
     personaTraits: string[];
     problem: string;
@@ -54,6 +63,7 @@ export interface DialogueProvider {
 
 export type DialogueTelemetry = {
   model: string;
+  reasoningEffort: ReasoningEffort;
   latencyMs: number;
   inputTokens: number;
   outputTokens: number;

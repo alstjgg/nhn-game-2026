@@ -38,6 +38,29 @@ function output(): ConverseCommandOutput {
   };
 }
 
+function structuredOutput(): ConverseCommandOutput {
+  return {
+    output: {
+      message: {
+        role: "assistant",
+        content: [
+          { reasoningContent: { reasoningText: { text: "brief thought" } } },
+          {
+            text: JSON.stringify({
+              npcLine: "밤마다 생각이 많아집니다.",
+              choices: [],
+            }),
+          },
+        ],
+      },
+    },
+    stopReason: "end_turn",
+    usage: { inputTokens: 200, outputTokens: 100, totalTokens: 300 },
+    metrics: { latencyMs: 123 },
+    $metadata: {},
+  };
+}
+
 describe("BedrockDialogueProvider", () => {
   it("disables AWS SDK retries", async () => {
     const client = createBedrockClient(validConfig());
@@ -84,11 +107,12 @@ describe("BedrockDialogueProvider", () => {
       validConfig({
         modelId: NOVA_MODEL_ID,
         allowedModelIds: [NOVA_MODEL_ID],
-        structuredOutputMode: "tool",
       }),
     );
 
-    await provider.generate(validDialogueRequest());
+    const request = validDialogueRequest();
+    request.inference.modelId = NOVA_MODEL_ID;
+    await provider.generate(request);
 
     const input = commandInput as {
       toolConfig: {
@@ -96,6 +120,80 @@ describe("BedrockDialogueProvider", () => {
       };
     };
     expect(input.toolConfig.tools[0]?.toolSpec).not.toHaveProperty("strict");
+  });
+
+  it("maps Nova reasoning effort to Bedrock reasoningConfig", async () => {
+    let commandInput: unknown;
+    const provider = new BedrockDialogueProvider(
+      {
+        send: async (command: { input: unknown }) => {
+          commandInput = command.input;
+          return output();
+        },
+      },
+      validConfig({
+        modelId: NOVA_MODEL_ID,
+        allowedModelIds: [NOVA_MODEL_ID],
+      }),
+    );
+    const request = validDialogueRequest();
+    request.inference = {
+      modelId: NOVA_MODEL_ID,
+      reasoningEffort: "medium",
+    };
+
+    await provider.generate(request);
+
+    expect(commandInput).toMatchObject({
+      modelId: NOVA_MODEL_ID,
+      additionalModelRequestFields: {
+        reasoningConfig: {
+          type: "enabled",
+          maxReasoningEffort: "medium",
+        },
+      },
+      inferenceConfig: { maxTokens: 5_000 },
+      toolConfig: {
+        toolChoice: { tool: { name: DIALOGUE_TOOL_NAME } },
+      },
+    });
+    expect(commandInput).not.toHaveProperty("inferenceConfig.temperature");
+  });
+
+  it("uses a thinking budget with structured JSON for Haiku", async () => {
+    let commandInput: unknown;
+    const provider = new BedrockDialogueProvider(
+      {
+        send: async (command: { input: unknown }) => {
+          commandInput = command.input;
+          return structuredOutput();
+        },
+      },
+      validConfig(),
+    );
+    const request = validDialogueRequest();
+    request.inference.reasoningEffort = "medium";
+
+    await provider.generate(request);
+
+    expect(commandInput).toMatchObject({
+      inferenceConfig: { maxTokens: 5_000 },
+      additionalModelRequestFields: {
+        thinking: { type: "enabled", budget_tokens: 1_536 },
+      },
+      outputConfig: {
+        textFormat: {
+          type: "json_schema",
+          structure: {
+            jsonSchema: {
+              name: "apothecary_dialogue_beat",
+            },
+          },
+        },
+      },
+    });
+    expect(commandInput).not.toHaveProperty("inferenceConfig.temperature");
+    expect(commandInput).not.toHaveProperty("toolConfig");
   });
 
   it("rejects anything other than exactly one dialogue tool call", async () => {

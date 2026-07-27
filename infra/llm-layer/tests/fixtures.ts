@@ -15,13 +15,13 @@ export function validConfig(
     modelTimeoutMs: 7_000,
     allowedOrigin: "https://alstjgg.github.io",
     maxBodyBytes: 32_768,
-    structuredOutputMode: "strict-tool",
     ...overrides,
   };
 }
 
 export function validDialogueRequest(): DialogueRequest {
   return {
+    inference: { modelId: HAIKU_MODEL_ID, reasoningEffort: "off" },
     customer: {
       personaTraits: [
         "A plump young scholar with ink-stained fingers, round cheeks and a horsehair hat slightly askew.",

@@ -4,7 +4,12 @@ import type {
   Context,
 } from "aws-lambda";
 
-import { loadConfig, type RuntimeConfig } from "./config.js";
+import {
+  loadConfig,
+  MODEL_LABELS,
+  MODEL_REASONING_EFFORTS,
+  type RuntimeConfig,
+} from "./config.js";
 import {
   BedrockDialogueProvider,
   createBedrockClient,
@@ -49,8 +54,10 @@ function jsonResponse(
       ...(requestId ? { "x-request-id": requestId } : {}),
       ...extraHeaders,
       ...(allowedOrigin
-        ? {
+          ? {
             "access-control-allow-origin": allowedOrigin,
+            "access-control-expose-headers":
+              "x-request-id, x-llm-fallback, x-llm-model, x-llm-reasoning-effort, x-llm-latency-ms, x-llm-input-tokens, x-llm-output-tokens",
             vary: "origin",
           }
         : {}),
@@ -152,6 +159,18 @@ export function createHandler({
               dialogue: config.modelId,
               portrait: "pre-generated-assets",
             },
+            inference: {
+              default: {
+                modelId: config.modelId,
+                reasoningEffort: "off",
+              },
+              models: config.allowedModelIds.map((modelId) => ({
+                id: modelId,
+                label: MODEL_LABELS[modelId] ?? modelId,
+                reasoningEfforts:
+                  MODEL_REASONING_EFFORTS[modelId] ?? ["off"],
+              })),
+            },
           },
           config.allowedOrigin,
           requestId,
@@ -176,7 +195,14 @@ export function createHandler({
         result.response,
         config.allowedOrigin,
         requestId,
-        { "x-llm-fallback": String(telemetry.fallback) },
+        {
+          "x-llm-fallback": String(telemetry.fallback),
+          "x-llm-model": telemetry.model,
+          "x-llm-reasoning-effort": telemetry.reasoningEffort,
+          "x-llm-latency-ms": String(telemetry.latencyMs),
+          "x-llm-input-tokens": String(telemetry.inputTokens),
+          "x-llm-output-tokens": String(telemetry.outputTokens),
+        },
       );
     } catch (error) {
       const publicError =
