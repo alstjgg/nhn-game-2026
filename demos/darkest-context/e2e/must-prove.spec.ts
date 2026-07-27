@@ -417,7 +417,7 @@ test.describe('must-prove: tile rhythm', () => {
     expect(measured!.chip, 'the attribution chip must be readable too').toBeGreaterThan(4.5);
   });
 
-  test('readable: no bubble ever covers a hero sprite (must-prove 2, the pose channel)', async ({
+  test('readable: every live line hangs over its OWN speaker and covers no sprite (must-prove 2)', async ({
     page,
   }) => {
     test.setTimeout(120_000);
@@ -425,9 +425,14 @@ test.describe('must-prove: tile rhythm', () => {
     await expect(page.getByTestId('combat-bubble').first()).toBeVisible({ timeout: 60_000 });
 
     // Sampled while the fight keeps playing: the rail used to GROW, so a single frame
-    // proves nothing. Nine bubbles by turn 4 is the failure this guards against.
-    for (let sample = 0; sample < 4; sample += 1) {
-      const overlaps = await page.evaluate(() => {
+    // proves nothing. Nine bubbles by turn 4 is one failure this guards against; the
+    // other is ATTRIBUTION. The bubble prints the sentence and its chips and no speaker
+    // name, and the 9-slice tail is fixed at its bottom-left — so POSITION is the only
+    // thing that says who spoke. A rail that merely ORDERS its bubbles satisfies the
+    // non-overlap check above while printing 셀레네's line over 가렛, which is exactly
+    // must-prove 2 failing: action choice, bubble and pose must agree about WHO.
+    for (let sample = 0; sample < 10; sample += 1) {
+      const frame = await page.evaluate(() => {
         const hit = (a: DOMRect, b: DOMRect): boolean =>
           a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
         const sprites = [...document.querySelectorAll('[data-testid="combat-sprite"]')];
@@ -446,15 +451,39 @@ test.describe('must-prove: tile rhythm', () => {
             }
           }
         }
-        return { clashes, bubbles: bubbles.length, sprites: sprites.length };
+
+        const centreOf = new Map<string, number>();
+        for (const sprite of sprites) {
+          const box = sprite.getBoundingClientRect();
+          centreOf.set((sprite as HTMLElement).dataset.unitId ?? '', box.x + box.width / 2);
+        }
+        const misattributed: string[] = [];
+        for (const bubble of bubbles) {
+          const unitId = (bubble as HTMLElement).dataset.unitId ?? '';
+          const centre = centreOf.get(unitId);
+          const box = bubble.getBoundingClientRect();
+          if (centre === undefined) {
+            misattributed.push(`"${unitId}" speaks but stands nowhere in the line-up`);
+          } else if (box.left > centre || box.right < centre) {
+            misattributed.push(
+              `${unitId}'s line spans ${Math.round(box.left)}–${Math.round(box.right)} ` +
+                `but ${unitId} stands at ${Math.round(centre)}`,
+            );
+          }
+        }
+        return { clashes, misattributed, bubbles: bubbles.length, sprites: sprites.length };
       });
-      expect(overlaps.sprites, 'the line-up must be on stage').toBeGreaterThan(0);
-      expect(overlaps.clashes, overlaps.clashes.join(' | ')).toEqual([]);
+      expect(frame.sprites, 'the line-up must be on stage').toBeGreaterThan(0);
+      expect(frame.clashes, frame.clashes.join(' | ')).toEqual([]);
       expect(
-        overlaps.bubbles,
+        frame.misattributed,
+        `a live line must contain its own speaker's sprite centre: ${frame.misattributed.join(' | ')}`,
+      ).toEqual([]);
+      expect(
+        frame.bubbles,
         'the rail must retire old lines, not grow for ever',
-      ).toBeLessThanOrEqual(overlaps.sprites);
-      await page.waitForTimeout(4_000);
+      ).toBeLessThanOrEqual(frame.sprites);
+      await page.waitForTimeout(2_500);
     }
   });
 

@@ -59,6 +59,16 @@
   gap: 4px;
 }
 
+/* A screen may ask for a fixed column per staged hero — the 전투 rail hangs one bubble
+   over each unit, and a line is only self-attributing if it sits in the column its own
+   speaker stands in. The default is content width, so no other screen moves. The sprite
+   is centred in the column (`align-items: center` above), so the column's centre IS the
+   sprite's centre: a rail that repeats this same track lands each line on its own
+   speaker without measuring anything at runtime. */
+.dc-stage__side--heroes .dc-unit {
+  width: var(--dc-unit-col, auto);
+}
+
 .dc-unit__name {
   color: var(--dc-ink-dim);
   font-size: 12px;

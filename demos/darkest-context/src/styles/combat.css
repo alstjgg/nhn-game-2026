@@ -68,20 +68,33 @@
   position: relative;
   /* Headroom for the bubble rail: the line-up is bottom-aligned inside the stage, so
      this is the band the speech lands in — bubbles above heads, sprites never covered. */
-  --dc-stage-min-h: 300px;
+  --dc-stage-min-h: 316px;
+  /* ONE column per staged hero, and both the line-up and the rail above it are laid out
+     on it (ui.css `.dc-stage__side--heroes .dc-unit`). It has to be wide enough for a
+     whole sentence, because a bubble narrower than its column would still be attributed
+     by position but would wrap into a tower; wide enough that the party reads as a
+     line-up, not a crowd. */
+  --dc-unit-col: 216px;
 }
 
-/* The bubble rail: ONE band across the top of the field, never a column down the
-   middle of the line-up. Still absolutely positioned, so a landing bubble can no more
-   reflow the stage than before; `bottom: auto` is what keeps it out of the sprite band. */
+/* The bubble rail: ONE band across the top of the field, never a column down the middle
+   of the line-up. Still absolutely positioned, so a landing bubble can no more reflow the
+   stage than before; `bottom: auto` is what keeps it out of the sprite band.
+   It is a GRID, not a packed row: a row only fixes the SEQUENCE of the bubbles, so a long
+   sentence pushed the next speaker's line right off its own hero and the tail — which is
+   the only thing naming the speaker — ended up pointing at the neighbour. The tracks below
+   are the line-up's own tracks: same origin (the stage's padding), same count, same width,
+   same gap. Column i therefore IS hero i's column, with no runtime measurement to drift. */
 .dc-combat__log {
-  align-items: flex-start;
-  display: flex;
-  flex-direction: row;
+  /* Bottom of the band, so every live line hangs just over the heads on one baseline. */
+  align-items: end;
+  display: grid;
   gap: var(--dc-gap);
+  grid-template-columns: repeat(var(--dc-speaker-count, 1), var(--dc-unit-col, 1fr));
   inset: 0 0 auto 0;
   overflow: hidden;
-  padding: var(--dc-gap);
+  /* The stage's own padding — the offset the first hero column starts at. */
+  padding: calc(var(--dc-gap) * 1.5);
   /* The layer is scenery; only the bubbles inside it are reachable. */
   pointer-events: none;
   position: absolute;
@@ -94,15 +107,21 @@
   display: none;
 }
 
-/* Each line hangs over its own speaker: `order` is the unit's position in the line-up,
-   so the reading order on screen matches the party on the stage while the DOM keeps the
-   민첩 order the beats actually resolved in. */
+/* Each line hangs over its own speaker: `--speaker-column` is that unit's column in the
+   line-up, so the bubble's span contains its own sprite while the DOM keeps the 민첩 order
+   the beats actually resolved in. A speaker who is not in the line-up (never in this
+   build: only staged heroes decide) gets the whole band rather than a stranger's column. */
 .dc-combat__log > * {
-  /* Never shrunk below its own content: a squeezed bubble spills its sentence over the
-     9-slice frame it is printed on, which is the readability bug in another costume. */
-  flex: 0 0 auto;
-  order: var(--speaker-order, 0);
+  grid-column: var(--speaker-column, 1 / -1);
+  /* One shared row: the live lines are one band, never a stack down the stage. */
+  grid-row: 1;
   pointer-events: auto;
+}
+
+/* The miss line sits under its own speaker's bubble — same column, its own row, so it
+   can never widen the band a bubble is measured in. */
+.dc-combat__log > .dc-combat__phantom {
+  grid-row: 2;
 }
 
 /* 허공을 벤다 — a swing that found nothing. Drama, never an error line (INV-7). */

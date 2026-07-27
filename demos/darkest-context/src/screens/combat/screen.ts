@@ -171,8 +171,10 @@ export function createCombatScreen(options: CombatScreenOptions): CombatScreen {
   element.append(head, hud, field, sheets);
 
   const slots = new Map<string, HeroSlot>();
-  /** Line-up position per hero — which column that unit's bubble hangs over. */
-  const speakerOrder = new Map(heroes.map((hero, index) => [hero.id, index]));
+  /** Line-up position per hero — the 1-based rail column that unit's bubble hangs over. */
+  const speakerColumn = new Map(heroes.map((hero, index) => [hero.id, index + 1]));
+  // The rail is laid out on the line-up's own tracks, so it has to know how many there are.
+  field.style.setProperty('--dc-speaker-count', String(heroes.length));
 
   /** Puts the sprite on the cell its current pose / action names (PRD §2.8). */
   const applyCell = (slot: HeroSlot): void => {
@@ -315,8 +317,14 @@ export function createCombatScreen(options: CombatScreenOptions): CombatScreen {
    * The rail used to show every line it had ever rendered: nine overlapping panels by
    * turn 4, stacked down the middle of the line-up, so the bubble physically deleted the
    * sprite pose — the third channel must-prove 2 reads personality from. A unit's older
-   * line is retired when its next one lands, and `--speaker-order` hangs each live
-   * bubble over its own unit while the DOM keeps 민첩 order.
+   * line is retired when its next one lands, and `--speaker-column` places each live
+   * bubble in its own unit's rail column while the DOM keeps 민첩 order.
+   *
+   * The column is what ATTRIBUTES the line: the bubble prints the sentence and its
+   * chips, not the speaker's name, and the 9-slice tail is fixed at its bottom-left. So
+   * ordering the rail is not enough — a packed row put a long sentence's neighbour over
+   * the wrong hero. The rail is a grid on the line-up's own tracks (src/styles/combat.css),
+   * and this is the number that puts a line on its speaker's track.
    *
    * Retired, not removed: the log is also the RECORD of the fight (a spec reads the
    * bubble a unit said three turns ago, and the composition reads the rendered count as
@@ -336,7 +344,10 @@ export function createCombatScreen(options: CombatScreenOptions): CombatScreen {
       because: beat.because,
       labels: labels[beat.unitId],
     });
-    bubble.style.setProperty('--speaker-order', String(speakerOrder.get(beat.unitId) ?? 0));
+    // No column for a speaker who is not in the line-up: the rail falls back to the whole
+    // band rather than printing that line over some other hero (INV-3 is about attribution).
+    const column = speakerColumn.get(beat.unitId);
+    if (column !== undefined) bubble.style.setProperty('--speaker-column', String(column));
     bubble.dataset.testid = 'combat-bubble';
     bubble.dataset.actionId = beat.actionId;
     bubble.dataset.coerced = String(beat.coerced);
@@ -360,6 +371,8 @@ export function createCombatScreen(options: CombatScreenOptions): CombatScreen {
     if (beat.phantomSwing) {
       const miss = block('dc-combat__phantom', 'phantom-swing');
       miss.dataset.unitId = beat.unitId;
+      // Under the same speaker's line, never across the band (INV-7: drama, attributed).
+      if (column !== undefined) miss.style.setProperty('--speaker-column', String(column));
       miss.textContent = PHANTOM_MISS_SAY;
       log.append(miss);
     }
