@@ -117,10 +117,12 @@ jobs:
           DIALOGUE_URL="$(jq -r '.[] | select(.OutputKey == "DialogueEndpoint") | .OutputValue' <<<"$STACK_OUTPUTS")"
           HEALTH_URL="$(jq -r '.[] | select(.OutputKey == "HealthEndpoint") | .OutputValue' <<<"$STACK_OUTPUTS")"
           API_ID="$(jq -r '.[] | select(.OutputKey == "ApiId") | .OutputValue' <<<"$STACK_OUTPUTS")"
+          MODEL_ID="$(jq -r '.[] | select(.OutputKey == "ModelId") | .OutputValue' <<<"$STACK_OUTPUTS")"
 
           test -n "$DIALOGUE_URL"
           test -n "$HEALTH_URL"
           test -n "$API_ID"
+          test -n "$MODEL_ID"
           test "$DIALOGUE_URL" = "https://${API_ID}.execute-api.${AWS_REGION}.amazonaws.com/ai/dialogue"
           test "$HEALTH_URL" = "https://${API_ID}.execute-api.${AWS_REGION}.amazonaws.com/ai/health"
 
@@ -129,17 +131,44 @@ jobs:
           printf 'api_id=%s\n' "$API_ID" >>"$GITHUB_OUTPUT"
           printf 'LLM_DIALOGUE_URL=%s\n' "$DIALOGUE_URL" >>"$GITHUB_ENV"
           printf 'LLM_HEALTH_URL=%s\n' "$HEALTH_URL" >>"$GITHUB_ENV"
+          printf 'LLM_MODEL_ID=%s\n' "$MODEL_ID" >>"$GITHUB_ENV"
 
           {
             printf '### LLM layer deployment\n\n'
             printf -- '- Dialogue: `%s`\n' "$DIALOGUE_URL"
             printf -- '- Health: `%s`\n' "$HEALTH_URL"
             printf -- '- API ID: `%s`\n' "$API_ID"
+            printf -- '- Model: `%s`\n' "$MODEL_ID"
           } >>"$GITHUB_STEP_SUMMARY"
+      # Decision 12 requires a warm-up before every deploy. It runs through the
+      # deployed endpoint rather than `npm run warmup`, because that script
+      # calls Bedrock directly and would need `bedrock:InvokeModel` on the
+      # deploy role. `--warm-only` never fails; the smoke below is the gate.
+      - name: Warm the deployed schema
+        run: >-
+          npm run smoke --
+          --url "$LLM_DIALOGUE_URL"
+          --health-url "$LLM_HEALTH_URL"
+          --model-id "$LLM_MODEL_ID"
+          --warm-only
       - name: Verify deployed dialogue
         run: >-
           npm run smoke --
           --url "$LLM_DIALOGUE_URL"
           --health-url "$LLM_HEALTH_URL"
-          --model-id global.amazon.nova-2-lite-v1:0
+          --model-id "$LLM_MODEL_ID"
           --audit-logs
+      # Enable only after the bootstrap stack grants the deploy role
+      # `cloudformation:GetStackPolicy` — see "Verifying the application stack
+      # policy" in docs/handoffs/llm-lambda-runtime.md. Until then this step
+      # would fail with AccessDenied on every deploy, so it stays commented out.
+      # `SetStackPolicy` is deliberately NOT requested: it can also remove the
+      # protection, so CI verifies and never applies.
+      # - name: Verify the application stack policy is attached
+      #   run: |
+      #     LIVE="$(aws cloudformation get-stack-policy \
+      #       --stack-name nhn-game-llm-layer \
+      #       --region "$AWS_REGION" \
+      #       --query StackPolicyBody --output text)"
+      #     test -n "$LIVE"
+      #     diff <(jq -S . <<<"$LIVE") <(jq -S . deploy/application-stack-policy.json)

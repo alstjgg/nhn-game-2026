@@ -19,7 +19,12 @@ The public API has exactly two routes:
 - `GET /ai/health`: report capabilities without invoking Bedrock.
 
 Portraits are pre-generated assets. There is no runtime image generation,
-session store, streaming endpoint, or player free-text input.
+session store, streaming endpoint, or player free-text input UI. The customer
+identity in a request is registry-checked, but `history[].npcLine`,
+`history[].playerChoiceLabel`, and `availableClues[].text` are client-supplied
+strings bounded only by length and count, and they reach the prompt verbatim —
+an accepted, mitigated residual risk, not an absence of free text. See the
+validation boundary in [`llm-layer.md`](./llm-layer.md).
 
 ## Production inventory
 
@@ -172,6 +177,35 @@ aws cloudformation deploy \
   --template-file deploy/github-actions-bootstrap.yaml
 ```
 
+### Verifying the application stack policy
+
+Nothing verified for a while that the replacement/deletion policy was actually
+attached to the live stack — `bootstrap:validate` only parses the JSON. The
+deploy workflow now carries a post-deploy check for it, **commented out**, because
+the deploy role needs `cloudformation:GetStackPolicy` first. That grant is already
+in `deploy/github-actions-bootstrap.yaml`; it reaches the account only through the
+bootstrap deployment above.
+
+To activate, in this order:
+
+1. Deploy the bootstrap stack with local SSO (previous section).
+2. Confirm the grant landed:
+
+```bash
+aws cloudformation get-stack-policy \
+  --profile nhn-game \
+  --region ap-northeast-2 \
+  --stack-name nhn-game-llm-layer \
+  --query StackPolicyBody --output text
+```
+
+3. Uncomment the "Verify the application stack policy is attached" step in
+   `.github/workflows/llm-layer.yml` and merge.
+
+Enabling it before step 1 makes every deploy fail with `AccessDenied`. The check
+is read-only by design: `cloudformation:SetStackPolicy` is deliberately not
+granted, since it could also remove the protection.
+
 Restore the application stack policy if it is ever removed:
 
 ```bash
@@ -188,8 +222,10 @@ automatic application deployment path.
 ### Narrowing the Bedrock model allowlist
 
 `AllowedProfileMode` controls which Bedrock inference profiles the execution
-role may invoke. It is deployed as `both` so the benchmark can compare Nova and
-Haiku; once a model is chosen, narrow it.
+role may invoke. It stays `both` while the operating-model decision is open —
+see "Open decision — model selection" in
+[`docs/llm-backend-aws-bedrock.md`](../llm-backend-aws-bedrock.md). Narrow it
+once that decision is recorded.
 
 Changing it rewrites the inline policy on `LlmExecutionRole`, so CloudFormation
 calls `iam:PutRolePolicy`. `nhn-game-llm-cloudformation-exec` holds only

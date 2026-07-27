@@ -124,6 +124,30 @@ async function post(body, requestOrigin = origin) {
   return { response, body: await parseResponse(response) };
 }
 
+// Decision 12: the first call against a strict schema compiles a grammar
+// server-side (cached ~24 h) and can exceed the model deadline. One throwaway
+// call absorbs that before the real smoke asserts on fallback. It reuses the
+// request below rather than a second copy of registered game data, and it never
+// fails the caller — the smoke that follows is the actual gate.
+if (flag("--warm-only")) {
+  const warmStartedAt = performance.now();
+  let status;
+  try {
+    status = (await post(JSON.stringify(request))).response.status;
+  } catch (error) {
+    status = error instanceof Error ? error.name : "error";
+  }
+  console.log(
+    JSON.stringify({
+      ok: true,
+      warmOnly: true,
+      status,
+      latencyMs: Math.round(performance.now() - warmStartedAt),
+    }),
+  );
+  process.exit(0);
+}
+
 const healthResponse = await fetch(healthUrl, {
   headers: { origin },
   signal: AbortSignal.timeout(12_000),

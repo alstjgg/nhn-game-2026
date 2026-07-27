@@ -290,7 +290,7 @@ export function parseDialogueBeat(
       502,
       "invalid_model_output",
     );
-    let label = boundedText(
+    const label = boundedText(
       entry.label,
       `dialogueBeat.choices[${index}].label`,
       160,
@@ -329,11 +329,19 @@ export function parseDialogueBeat(
         "Question labels must be direct Korean questions, not meta instructions.",
       );
     }
+    // Validate, never repair. Appending the mark here would ship a statement
+    // such as "그렇군요.?" to the player as a live (non-fallback) response;
+    // rejecting routes it to the deterministic fallback instead, which is what
+    // every neighbouring rule above already does.
     if (
       (verb === "indirect" || verb === "direct") &&
       !label.endsWith("?")
     ) {
-      label = `${label}?`;
+      throw new PublicError(
+        502,
+        "invalid_model_output",
+        "Question labels must end with a question mark.",
+      );
     }
     if (
       !Array.isArray(entry.clueReveals) ||

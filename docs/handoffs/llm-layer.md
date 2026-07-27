@@ -39,16 +39,27 @@ recorded in the asset manifest, and shipped with the static game.
 | Failure behavior | Valid requests degrade to a deterministic playable response |
 | Credentials | AWS credentials remain server-side; the browser receives none |
 
-Nova 2 Lite became the operating model after live access and schema behavior
-were verified. Other models may remain template-allowlisted for controlled
-evaluation, but changing the operating model requires an explicit access,
-schema, IAM, latency, and quality check.
+Nova 2 Lite operates on live verification of access and schema behavior, not on
+the model-selection benchmark the earlier plan required. That benchmark targeted
+a different concept and was dropped here — see "Open decision — model selection"
+in [the decision record](../llm-backend-aws-bedrock.md). Other models may remain
+template-allowlisted for controlled evaluation, but changing the operating model
+requires an explicit access, schema, IAM, latency, and quality check.
 
 ## Validation and fallback boundary
 
 Lambda is the trust boundary for model input and output. It:
 
-- accepts structured game data only, with no player free-text field;
+- accepts structured game data only, with no player free-text field. The
+  customer identity is registry-checked: persona traits and the
+  `problem`/`hiddenCause` pair must match the server's own tables. The
+  remaining fields — `history[].npcLine`, `history[].playerChoiceLabel`, and
+  `availableClues[].text` — are client-supplied strings bounded only by length
+  and count (roughly 9 KB in total), because procedural clues have no
+  server-side roster to check against. They reach the prompt verbatim, so this
+  is an accepted, mitigated residual risk rather than an absence of free text;
+  the mitigations are the rate limit, the output-token cap, the system-prompt
+  rule that data is state and not instruction, and the output validation below;
 - rejects unknown fields and unregistered customer traits or ailment pairs;
 - enforces request-size and history limits;
 - validates the returned dialogue schema, choice verbs, and clue identifiers;
@@ -88,7 +99,10 @@ The public demo uses several layers of protection:
 
 - an exact allowed browser Origin;
 - API Gateway stage rate and burst limits;
-- Lambda timeout and optional concurrency kill switch;
+- Lambda timeout, plus a concurrency kill switch that is deployed unset
+  (`ReservedConcurrency=-1`). The effective spend ceiling today is therefore the
+  1 rps / burst 2 stage throttle plus a manual redeploy at `0`, not a reserved
+  concurrency guardrail. Set a small positive value once account quota allows;
 - a bounded request body and output-token limit;
 - no automatic SDK retry;
 - an IAM allowlist for Bedrock inference profiles; and

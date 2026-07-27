@@ -170,13 +170,19 @@ describe("parseDialogueBeat", () => {
     );
   });
 
-  it("normalizes missing question punctuation without discarding the model beat", () => {
+  it.each([
+    "요즘 밤에는 어디에서 지내십니까",
+    "그렇군요.",
+  ])("rejects a question label that does not end with the mark: %s", (label) => {
+    // Repairing this instead of rejecting would ship "그렇군요.?" to the player
+    // marked as a live, non-fallback response.
     const beat = rawBeat();
-    beat.choices[0]!.label = "요즘 밤에는 어디에서 지내십니까";
+    beat.choices[0]!.label = label;
 
-    expect(
-      parseDialogueBeat(beat, validDialogueRequest()).choices[0]?.label,
-    ).toBe("요즘 밤에는 어디에서 지내십니까?");
+    expectCode(
+      () => parseDialogueBeat(beat, validDialogueRequest()),
+      "invalid_model_output",
+    );
   });
 
   it.each([

@@ -372,6 +372,13 @@ Outputs:
     Description: Service health endpoint that does not invoke a Bedrock model.
     Value:
       Fn::Sub: https://${LlmHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/ai/health
+  ModelId:
+    Description: >-
+      Operating model the deployed function selects. The post-deploy smoke reads
+      this instead of a literal so a model flip through samconfig.toml does not
+      fail verification after a successful stack update.
+    Value:
+      Ref: ModelId
   FunctionName:
     Value:
       Ref: TurnFunction

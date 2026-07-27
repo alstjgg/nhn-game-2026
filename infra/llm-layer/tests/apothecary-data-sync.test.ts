@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   APOTHECARY_AILMENTS,
   APOTHECARY_PERSONA_TRAITS,
+  APOTHECARY_TIER_TONES,
   APOTHECARY_VERB_COSTS,
 } from "../data/apothecary.js";
 
@@ -11,6 +12,7 @@ type Ailment = { problem: string; hiddenCause: string };
 type Customer = Ailment;
 type Generation = {
   verbCosts: Record<string, number>;
+  tierTones: string[];
   traitTable: {
     archetypes: string[];
     quirks: string[];
@@ -64,5 +66,11 @@ describe("Lambda registry mirrors the actual Apothecary game data", () => {
 
   it("uses the same server-owned verb costs as generation data", () => {
     expect(APOTHECARY_VERB_COSTS).toEqual(generation.verbCosts);
+  });
+
+  it("uses the same tier tones as generation data, in the same order", () => {
+    // Compared as an ordered list, unlike the sets above: the prompt indexes
+    // this by patienceTier, so a reordering silently gives the wrong mood.
+    expect([...APOTHECARY_TIER_TONES]).toEqual(generation.tierTones);
   });
 });

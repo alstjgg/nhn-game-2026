@@ -109,6 +109,66 @@ The project rejected:
 These options either exposed credentials, weakened the structured game
 boundary, or added cost and operations without serving the tested interaction.
 
+## Open decision — model selection
+
+The earlier research note carried a model-selection benchmark (~90 runs per
+candidate, p95 ≤ 6 s). It was written for the Agent Arena concept and scored
+things the Apothecary dialogue contract does not have — `reasonCardId` citation,
+action and target legality — so it is deliberately not restored here. Re-running
+a protocol built for a different game would invite the wrong comparison.
+
+Three questions are open. The dropped benchmark had merged them into one.
+
+### 1. Which model operates — Nova 2 Lite or Haiku 4.5
+
+Decide it on dialogue quality. The model's entire output is the opening line and
+four choice labels for two customers per playthrough — a judge's first
+impression of each. The other axes are near-ties: latency degrades to the
+deterministic fallback rather than failing, and is dominated by server-capped
+output length; cost is a real 2.5× ratio but about $0.48 per 100 playthroughs at
+the deployed token shape; and Haiku's `strict` grammar buys model-side schema
+enforcement at the price of the decision-12 warm-up that Nova does not need.
+
+### 2. How to compare quality — proposed protocol, not yet approved
+
+Quality is unmeasured. `parseDialogueBeat` encodes a floor — no question mark in
+`npcLine`, no meta-worded choice labels, fixed `[관찰]` and craft labels — but
+nothing scores period register, tier-appropriate mood, or whether a line adds
+anything beyond the `problem` string it was handed.
+
+Proposed:
+
+- **Held fixed:** the deployed prompt, `MAX_TOKENS=400`, reasoning off. Only
+  `modelId` varies, or the comparison measures the guardrails, not the model.
+- **Inputs:** all 7 registered ailment pairs at `patienceTier` 0 with empty
+  history — the only request shape production sends (`app/roster.ts`). 5 runs
+  each: 35 lines per model.
+- **Run:** locally through the Lambda's own prompt builder and validator,
+  extending `scripts/dialogue-warmup.ts`, so it neither contends with the 1 rps
+  production throttle nor pollutes production telemetry. Well under $1 in total.
+- **Score:** blind. Model identity stripped, order shuffled, both members score
+  independently against the prompt's own rules — stays in period register; never
+  volunteers the hidden cause; adds concrete detail beyond `problem`; the four
+  choices are genuinely different approaches. Plus one holistic 1–5, "do I want
+  to know more about this customer".
+- **Decision rule, fixed before the run:** any hidden-cause leak disqualifies
+  that model. Otherwise the higher holistic mean wins. If the two scorers
+  disagree on rank, or the means differ by less than 0.5, keep the cheaper Nova.
+- **Collected alongside at no extra cost:** per-model `invalid_model_output`
+  rate, latency, and token counts.
+
+### 3. Whether any broader benchmark is still needed
+
+Answerable only after question 2 runs. If the `invalid_model_output` rate and
+cost collected there are conclusive, record an explicit decision to skip the
+statistical benchmark instead of leaving the earlier plan's procedure nominally
+outstanding.
+
+Until question 1 is recorded, `AllowedProfileMode` stays `both`, and Nova 2 Lite
+operates on live verification — Bedrock access, schema behavior,
+`x-llm-fallback: false`, CORS, and CloudWatch telemetry — rather than on a
+benchmark. Narrowing the allowlist is gated on that decision.
+
 ## Consequences
 
 The chosen backend is inexpensive at idle, deployable as infrastructure as

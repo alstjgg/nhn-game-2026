@@ -283,6 +283,16 @@ Resources:
                 Action:
                   - cloudformation:GetTemplateSummary
                 Resource: "*"
+              # Read-only on purpose. The post-deploy check verifies that the
+              # replacement/deletion stack policy is still attached; it never
+              # applies one, so cloudformation:SetStackPolicy stays ungranted —
+              # that action can also remove the protection.
+              - Sid: VerifyApplicationStackPolicy
+                Effect: Allow
+                Action:
+                  - cloudformation:GetStackPolicy
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ApplicationStackName}/*
               - Sid: PassCloudFormationExecutionRole
                 Effect: Allow
                 Action:

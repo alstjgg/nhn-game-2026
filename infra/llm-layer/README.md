@@ -18,7 +18,12 @@ These are the only runtime routes. Portraits are pre-generated static assets, so
 there is no `/ai/portrait`.
 
 The service is stateless. It has no session store, database, streaming response,
-or player free-text input.
+or player free-text input UI. The customer identity in a request is
+registry-checked; `history[].npcLine`, `history[].playerChoiceLabel`, and
+`availableClues[].text` are client-supplied strings bounded only by length and
+count, and reach the prompt verbatim. That is an accepted, mitigated residual
+risk — see the validation boundary in
+[`docs/handoffs/llm-layer.md`](../../docs/handoffs/llm-layer.md).
 
 ## Request flow
 
