@@ -1,9 +1,9 @@
 # Agent Arena API 통합 가이드
 
 > 게임 백엔드가 Agent Arena API를 호출하는 전체 흐름. 요청·응답 스키마의 권위는
-> [`openapi.yaml`](../services/agent-arena-api/openapi.yaml), 서버 실행·환경변수는
-> [서비스 README](../services/agent-arena-api/README.md), 배포·BFF 경계의 상세는
-> [백엔드 핸드오프](./handoffs/agent-arena-llm-backend.md)를 본다.
+> [`openapi.yaml`](../../services/agent-arena-api/openapi.yaml), 서버 실행·환경변수는
+> [서비스 README](../../services/agent-arena-api/README.md), 배포·BFF 경계의 상세는
+> [백엔드 핸드오프](../handoffs/agent-arena-llm-backend.md)를 본다.
 
 ## 0. 빠른 참조
 
@@ -425,7 +425,7 @@ Agent Arena API는 Bearer key fingerprint를 owner 경계로 쓴다. BFF가 내�
 격리가 보장되지 않는다.
 
 BFF 책임 목록, AWS 단일 서버 구성, GitHub Actions 분리, secret 주입 방식 등 배포 상세는
-[핸드오프의 배포 경계 섹션](./handoffs/agent-arena-llm-backend.md#github-pages-deployment-boundary)이
+[핸드오프의 배포 경계 섹션](../handoffs/agent-arena-llm-backend.md#github-pages-deployment-boundary)이
 단일 출처다.
 
 ## 12. 통합 체크리스트

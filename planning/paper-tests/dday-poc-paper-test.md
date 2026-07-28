@@ -1,6 +1,6 @@
 # D-Day 시뮬레이션 — PoC 페이퍼 테스트 계획
 
-> **문서 상태:** 2026-07-28. [컨셉 초안](./game-concept-dday-simulation.md) §8 아키텍처의
+> **문서 상태:** 2026-07-28. [컨셉 초안](../concepts/game-concept-dday-simulation.md) §8 아키텍처의
 > 검증 계획. 플레이어·UI 없음 — 스크립트가 정해진 순서로 런을 돌리고, 산출된
 > 마크다운 보고서를 사람이 평가한다.
 
@@ -23,7 +23,7 @@
 
 ## 2. 슬라이스 — 청목 2호기 G1~G2
 
-[원자로 시나리오](./시나리오_원자로사고제어실_청목2호기.md)의 첫 2.5시간
+[원자로 시나리오](../dday-scenarios/시나리오_원자로사고제어실_청목2호기.md)의 첫 2.5시간
 (04:12~06:41). 인물 5명(하도경·서은채·강태오·배윤도·곽희수), 게이트 2개
 (G1 진단 / G2 신뢰), 진실 2개(T1 수위계 역결선 / T4 04:37의 일지).
 장소는 주제어실 + 보조제어반 두 곳으로 축소. **절반 테스트의 실전을 겸한다.**
@@ -151,7 +151,7 @@ LLM-NPC로 바꾼 변형을 돌린다.
 ### 3.4 런 디렉토리 (런 하나의 완전한 산출물)
 
 ```
-demos/dday-simulation/poc/runs/run-NN/
+planning/dday-poc/poc/runs/run-NN/
   agent-prompt.json     # 입력: 정체성 + 장착 문장 [{id, text}]
   transcript.jsonl      # 판단 호출 8건의 요청/응답 원문 + 엔진 이벤트
   timeline-report.md    # §3.3 규격
@@ -193,7 +193,7 @@ demos/dday-simulation/poc/runs/run-NN/
 
 ## 5. 실행 스택 (07-28 갱신: 코드 하네스 대신 세션-오퍼레이터 방식)
 
-- **전용 Claude Code 세션이 하네스다.** 지침: `demos/dday-simulation/poc/PAPER-TEST.md`,
+- **전용 Claude Code 세션이 하네스다.** 지침: `planning/dday-poc/poc/PAPER-TEST.md`,
   세계 데이터: 같은 폴더 `slice.json`. 실행 커맨드: `/poc-paper-test [E1...]`.
 - **오염 방지가 핵심 규칙:** 오퍼레이터 세션은 함정 위치를 알므로 판단을 직접
   하지 않는다 — 판단마다 새 서브에이전트(model: sonnet, 도구 사용 금지, §3.1
@@ -215,8 +215,8 @@ demos/dday-simulation/poc/runs/run-NN/
 
 ## 7. v1 결과와 v2 어젠다 (07-28)
 
-**v1 실측 결과는 [RESULTS.md](../demos/dday-simulation/poc/RESULTS.md)와
-[DIVERGENCE.md](../demos/dday-simulation/poc/DIVERGENCE.md)에 있다.** 요지:
+**v1 실측 결과는 [RESULTS.md](../dday-poc/poc/RESULTS.md)와
+[DIVERGENCE.md](../dday-poc/poc/DIVERGENCE.md)에 있다.** 요지:
 
 - H1 문장 축 반증, **기질 축 성립**(E9 — 기질 교체만으로 J4 선택지 전 영역 재현).
 - H2 **부정** — 귀속 역전 관측(E1c). §6의 대비책대로 because는 연출 전용으로 격하.

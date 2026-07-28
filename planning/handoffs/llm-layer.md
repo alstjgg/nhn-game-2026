@@ -2,7 +2,7 @@
 
 > Implementation plan for the concept-agnostic runtime LLM layer, built **before**
 > the bake-off completes. Architecture follows the merged
-> [AWS/Bedrock research note](../llm-backend-aws-bedrock.md); this document adds
+> [AWS/Bedrock research note](../research/llm-backend-aws-bedrock.md); this document adds
 > the verified account state, the binding decisions, and the build order.
 > Project-wide state remains in `docs/status.md`.
 

@@ -271,4 +271,4 @@ the source of truth; streamed events are sanitized presentation telemetry.
 
 For the complete capabilities → run → loadout → turn → SSE/polling →
 compact/clear integration flow, see
-[`docs/agent-arena-api-usage.md`](../../docs/agent-arena-api-usage.md).
+[`docs/agent-arena-api-usage.md`](../../planning/research/agent-arena-api-usage.md).

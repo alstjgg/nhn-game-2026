@@ -29,9 +29,9 @@ change here.
 
 | Track | Demo location | Merged from | Demo state |
 |---|---|---|---|
-| Darkest Context (구 agent arena) — build an LLM agent party from cards, watch it journey a tile map | `demos/darkest-context/` | [agent-roguelike](./game-concept-agent-roguelike.md) + [autobattler](./game-concept-autobattler.md) → [concept spec](./game-concept-darkest-context.md) | concept spec done; demo not started |
-| Apothecary — read what customers *actually* ail from and prescribe | `demos/apothecary/` | [apothecary](./game-concept-apothecary.md), absorbing [blacksmith](./game-concept-blacksmith.md) | not started |
-| Doodle Life — read residents' requests and draw living solutions | `demos/doodle-life/` | [doodle-life](./game-concept-doodle-life.md), absorbing [placement](./game-concept-placement.md) | playable full-AI prototype evaluated; redesigning around three bounded generation stages and clue-driven NPC puzzles |
+| Darkest Context (구 agent arena) — build an LLM agent party from cards, watch it journey a tile map | `demos/darkest-context/` | [agent-roguelike](../planning/concepts/game-concept-agent-roguelike.md) + [autobattler](../planning/concepts/game-concept-autobattler.md) → [concept spec](../planning/concepts/game-concept-darkest-context.md) | concept spec done; demo not started |
+| Apothecary — read what customers *actually* ail from and prescribe | `demos/apothecary/` | [apothecary](../planning/concepts/game-concept-apothecary.md), absorbing [blacksmith](../planning/concepts/game-concept-blacksmith.md) | not started |
+| Doodle Life — read residents' requests and draw living solutions | `demos/doodle-life/` | [doodle-life](../planning/concepts/game-concept-doodle-life.md), absorbing [placement](../planning/concepts/game-concept-placement.md) | playable full-AI prototype evaluated; redesigning around three bounded generation stages and clue-driven NPC puzzles |
 
 ## Next steps (priority order)
 
