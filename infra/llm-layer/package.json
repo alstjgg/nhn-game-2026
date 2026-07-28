@@ -1,0 +1,36 @@
+{
+  "name": "@nan2026/llm-layer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm test",
+    "sam:validate": "sam validate --lint --template-file template.yaml",
+    "bootstrap:validate": "sam validate --lint --template-file deploy/github-actions-bootstrap.yaml && node -e \"JSON.parse(require('node:fs').readFileSync('deploy/application-stack-policy.json', 'utf8'))\"",
+    "sam:build": "sam build --template-file template.yaml",
+    "sam:smoke": "node scripts/bundle-smoke.cjs",
+    "aws:preflight": "node scripts/aws-preflight.mjs",
+    "warmup": "tsx scripts/dialogue-warmup.ts",
+    "smoke": "node scripts/dialogue-smoke.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "3.1095.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.0",
+    "@types/node": "^24.0.0",
+    "esbuild": "0.28.1",
+    "tsx": "^4.0.0",
+    "typescript": "~6.0.2",
+    "vitest": "^4.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
+  }
+}

@@ -1,191 +1,123 @@
-# Handoff — Common LLM layer (Lambda + Bedrock)
+# Decision Record — Apothecary LLM Layer
 
-> Implementation plan for the concept-agnostic runtime LLM layer, built **before**
-> the bake-off completes. Architecture follows the merged
-> [AWS/Bedrock research note](../llm-backend-aws-bedrock.md); this document adds
-> the verified account state, the binding decisions, and the build order.
-> Project-wide state remains in `docs/status.md`.
+> Historical handoff. This file records the decisions that survived
+> implementation and live testing; it is not an operating runbook.
+>
+> For current resource values, commands, deployment checks, and troubleshooting,
+> use [the Lambda/Bedrock operating guide](./llm-lambda-runtime.md).
 
-## AWS infrastructure — current state (verified live 2026-07-25)
+## Final outcome
 
-Everything below was exercised with real calls, not just configured.
+The project adopted a thin, stateless runtime path:
 
-- **Account**: `141840355276` (alias `alstjgg`) — a personal account dedicated
-  to this project.
-- **Humans**: IAM Identity Center (start URL
-  `https://d-9b675be251.awsapps.com/start`, region `ap-northeast-2`); both team
-  members are enrolled.
-- **CLI**: profile **`nhn-game`** (SSO session `claude`). Re-auth when the token
-  expires (~8h): `aws sso login --sso-session claude --use-device-code`.
-  ⚠️ The default AWS profile on a dev machine may target a non-project
-  account — always pass `--profile nhn-game` for project commands.
-- **Budgets**: $10 and $30 monthly alert budgets. These only *alert*; the actual
-  spend ceiling is throttling + reserved concurrency (see guardrails below).
-- **Bedrock**: the model-access page is retired; models auto-enable on first
-  invoke. Both candidate models are already enabled account-wide and answered
-  live `Converse` calls from Seoul via **Global inference profiles**:
-
-  | Model | Inference profile ID | First-call latency |
-  |---|---|---|
-  | Claude Haiku 4.5 | `global.anthropic.claude-haiku-4-5-20251001-v1:0` | 936 ms |
-  | Nova 2 Lite | `global.amazon.nova-2-lite-v1:0` | 469 ms |
-
-- **Not yet deployed**: no Lambda, no API Gateway, no execution role, no IaC.
-  That is exactly the work this handoff describes.
-
-Smoke test for any future session:
-
-```bash
-aws sts get-caller-identity --profile nhn-game
-aws bedrock-runtime converse --region ap-northeast-2 --profile nhn-game \
-  --model-id global.anthropic.claude-haiku-4-5-20251001-v1:0 \
-  --messages '[{"role":"user","content":[{"text":"Reply with exactly: OK"}]}]' \
-  --inference-config '{"maxTokens":16}'
+```text
+GitHub Pages
+  -> API Gateway HTTP API
+  -> Node.js Lambda
+  -> Amazon Bedrock Converse
 ```
 
-## Binding decisions
+The deployed product contract contains only:
 
-1. **Architecture**: GitHub Pages (static client) → API Gateway HTTP API →
-   Lambda → Bedrock `Converse`. Stateless — the client sends full context per
-   request; no sessions, no DB, no SSE, no always-on server.
-2. **Infrastructure as code** — the stack is defined in a committed template,
-   never console-clicked. The template *is* the backend documentation (repo
-   history is a competition deliverable). Tool choice (SAM vs CDK) is the first
-   implementation decision; SAM is the recommended default for one function +
-   one API.
-3. **No real-time image generation** (decided 2026-07-25). NPCs — appearance,
-   problems, portraits — are **pre-generated asset sets** (each entry manifested
-   in `assets-manifest.json` per CLAUDE.md rule 5). Only speech/dialogue text is
-   generated at runtime. Consequence: the runtime layer is **single-provider
-   (Bedrock only)** — no OpenAI key, no gpt-image-1 path, no second vendor
-   integration. Apothecary's portrait endpoint (PR #46) becomes dev-time asset
-   tooling, never deployed.
-4. **Region & routing**: Seoul (`ap-northeast-2`) as the calling region, Global
-   inference profiles for model routing.
-5. **Model**: Haiku 4.5 is the working default; final `MODEL_ID` is decided by
-   the benchmark (research note §10: same schema, ~100 runs, p50/p95 latency,
-   schema-validity rate, cost per run) and recorded in the research note's
-   최종 결정 기록 section.
-6. **Failure policy**: server-side model timeout 7 s, **no retries**;
-   any timeout or schema-validation failure returns the **deterministic
-   fallback** so the game never blocks. Latency targets p50 ≤ 3 s / p95 ≤ 6 s.
-7. **Least-privilege execution role**: the Lambda role allows
-   `bedrock:InvokeModel` only, resource-scoped to a **template-defined
-   allowlist of inference profiles** plus the foundation-model ARNs in every
-   region those Global profiles can route to, with an
-   `aws:InferenceProfileArn` condition. While the benchmark runs, the
-   allowlist contains **both** candidates; after the model decision, redeploy
-   with it narrowed to the winner. Corollary: switching `MODEL_ID` by env var
-   works only between profiles the deployed policy already authorizes — any
-   other model change is a stack redeploy, not a config flip. The role never
-   needs Marketplace permissions (models are already account-enabled).
-8. **Cost/abuse guardrails** (deploy-time, in the template): CORS locked to
-   `https://alstjgg.github.io`, API Gateway stage throttling, low Lambda
-   reserved concurrency, request-body size cap, output-token cap. Post-judging:
-   disable the stage or set reserved concurrency to 0.
-9. **Membrane rule**: request payloads are composed from structured game
-   elements only — IDs, cards, telemetry. No free-text field from the player
-   reaches the model. The model selects among server-validated candidates; the
-   game engine stays the authority.
-10. **Config via env vars**: `MODEL_ID`, `MAX_TOKENS`, `MODEL_TIMEOUT_MS`,
-    `ALLOWED_ORIGIN` — tuning is configuration, not code. The handler
-    validates `MODEL_ID` against the template's inference-profile allowlist at
-    cold start and fails closed on mismatch (decision 7 covers the IAM side).
-11. **Prior art**: PR #15 (`services/agent-arena-api/`) is merged as a
-    **superseded reference** — salvage its closed-action validation
-    (`src/validation.ts`), turn-contract shapes, and fail-closed config
-    validation. PR #46 (`demos/apothecary/server/`) has transport-agnostic
-    handlers (`(request) → {status, body}`) that port to a Lambda wrapper
-    nearly unchanged, plus a keyless-test pattern worth copying.
-12. **Structured output enforcement is per-model** — the response *contract*
-    is shared; the enforcement *mechanism* is not:
-    - **Haiku path**: forced tool use via Converse `toolConfig` with a
-      `strict: true` tool definition — forcing `toolChoice` alone does **not**
-      guarantee schema-conformant output. First use of a strict schema
-      compiles a grammar server-side (cached ~24 h), so a cold schema can
-      exceed the 7 s timeout and cause a spurious fallback. Therefore an
-      explicit **warm-up call with the exact production schema** precedes
-      benchmarks, every deploy, and the judging window.
-    - **Nova path**: no structured-output support — ordinary (non-strict)
-      tool use, with Lambda-side validation doing the enforcement.
-    - **Both paths**: dynamic values (action IDs, card IDs, target IDs) stay
-      **out of schema enums** — they are plain strings validated in Lambda
-      against the request's candidate list. Enum-encoding them would make
-      every game state a new schema and defeat the grammar cache.
+- `POST /ai/dialogue` — generate one validated Apothecary dialogue beat.
+- `GET /ai/health` — report runtime capabilities without invoking Bedrock.
 
-## Open questions (resolve during implementation, in this order)
+There is no runtime portrait endpoint. Portraits are generated before release,
+recorded in the asset manifest, and shipped with the static game.
 
-- **SAM vs CDK** — blocks phase 0 only.
-- **Endpoint shape**: one generic `/v1/turn` (research note's contract) vs
-  per-concept routes. Interim answer: build the plumbing concept-agnostically
-  and treat the request/response schema as swappable data; the bake-off winner
-  fixes the final contract. Apothecary's dialogue shape is a thin variant of
-  the same "structured state in → validated structured decision out" pattern.
-- **Grammar-cache behavior under real traffic**: decision 12 assumes the ~24 h
-  strict-schema cache holds; measure actual cold-vs-warm latency during the
-  benchmark and adjust the warm-up cadence if needed.
+## Decisions retained after implementation
 
-## Implementation plan
+| Area | Final decision |
+|---|---|
+| Runtime shape | One stateless Lambda behind one HTTP API |
+| State ownership | The client owns game state and sends bounded context per request |
+| Model API | Bedrock Runtime `Converse` with a forced tool response |
+| Current model | `global.amazon.nova-2-lite-v1:0` |
+| Region | Lambda calls Bedrock from `ap-northeast-2` through a Global inference profile |
+| Dialogue scope | One Bedrock call produces one opening dialogue beat and four choices |
+| Images | Pre-generated, manifested assets only |
+| Failure behavior | Valid requests degrade to a deterministic playable response |
+| Credentials | AWS credentials remain server-side; the browser receives none |
 
-Each phase is a mergeable unit with its own verification.
+Nova 2 Lite operates on live verification of access and schema behavior, not on
+the model-selection benchmark the earlier plan required. That benchmark targeted
+a different concept and was dropped here — see "Open decision — model selection"
+in [the decision record](../llm-backend-aws-bedrock.md). Other models may remain
+template-allowlisted for controlled evaluation, but changing the operating model
+requires an explicit access, schema, IAM, latency, and quality check.
 
-### Phase 0 — IaC scaffold
-Pick SAM or CDK. Create `infra/llm-layer/` with the template skeleton:
-one function, one HTTP API, the scoped execution role (decision 7), guardrail
-settings (decision 8), env-var wiring (decision 10). Verify: template
-lints/synthesizes; `sam validate` or `cdk synth` in CI-runnable form.
+## Validation and fallback boundary
 
-### Phase 1 — Turn-decision Lambda handler
-Handler flow: parse + size-cap → validate request against schema → compose
-prompt from structured elements → Bedrock `Converse` with a strict forced
-tool (decision 12) + 7 s timeout → validate output (including dynamic IDs
-against the request's candidate list) → deterministic fallback on any
-failure.
-Port PR #15's validation patterns and PR #46's handler/keyless-test structure.
-Verify: keyless unit tests (no AWS needed — fallback paths and validation),
-plus one live invoke behind an explicit gate.
+Lambda is the trust boundary for model input and output. It:
 
-### Phase 2 — Deploy + smoke
-Deploy the stack to the account (`--profile nhn-game`), then run the schema
-warm-up call (decision 12). Verify: `curl` the API Gateway URL — happy path,
-oversized body (413-class rejection), wrong origin (CORS rejection), throttle
-behavior; confirm CloudWatch logs record model/tokens/latency/fallback only
-(no prompt/response bodies).
+- accepts structured game data only, with no player free-text field. The
+  customer identity is registry-checked: persona traits and the
+  `problem`/`hiddenCause` pair must match the server's own tables. The
+  remaining fields — `history[].npcLine`, `history[].playerChoiceLabel`, and
+  `availableClues[].text` — are client-supplied strings bounded only by length
+  and count (roughly 9 KB in total), because procedural clues have no
+  server-side roster to check against. They reach the prompt verbatim, so this
+  is an accepted, mitigated residual risk rather than an absence of free text;
+  the mitigations are the rate limit, the output-token cap, the system-prompt
+  rule that data is state and not instruction, and the output validation below;
+- rejects unknown fields and unregistered customer traits or ailment pairs;
+- enforces request-size and history limits;
+- validates the returned dialogue schema, choice verbs, and clue identifiers;
+- replaces model-supplied patience costs with server-owned values; and
+- converts timeouts, provider errors, and invalid model output into a
+  deterministic fallback.
 
-### Phase 3 — Model benchmark
-Prerequisite: the deployed IAM allowlist authorizes **both** candidate
-profiles (decision 7). Harness: same prompt and same logical response
-contract — enforcement differs per model (decision 12) — ~100 runs each
-against Haiku 4.5 and Nova 2 Lite through the deployed endpoint, preceded by
-a warm-up call per model (warm-up excluded from stats but reported). Measure
-p50/p95, validity rate, cost/run. Record the `MODEL_ID` decision in the
-research note, flip the env var, then redeploy with the IAM allowlist
-narrowed to the winner.
+A validated Bedrock result and a fallback both return a playable dialogue
+response. The `x-llm-fallback` response header distinguishes them, while
+`x-request-id` supports tracing.
 
-### Phase 4 — First live client (apothecary)
-Real integration work, not a config flip. The adapter's base-URL seam
-(`VITE_AI_BASE_URL`) lands with PR #46; on top of it:
+## Responsibility boundary
 
-- adapt the client to the final endpoint contract (today it speaks
-  `/ai/dialogue` to the dev proxy);
-- align the client to the server failure policy — replace the current 35 s
-  timeout and one-retry-on-invalid-schema behavior with
-  7 s / no retries / deterministic fallback (decision 6);
-- remove the runtime portrait path (decision 3);
-- wire live/stub adapter selection into the built app;
-- make the boot health probe cold-start-aware — today's 800 ms probe against
-  a cold Lambda would lock the session into stub mode (PR #46 review §5):
-  lengthen the probe timeout with backoff and/or allow per-call live retry
-  after a stub boot, on top of the decision-12 warm-up before benchmarks and
-  the judging window;
-- end-to-end verification from the GitHub Pages origin: real cross-origin
-  calls and a fallback-under-failure play-through (research note §11.4
-  checklist).
+Lambda owns:
 
-This phase is also the template for wiring whichever concept wins the
-bake-off.
+- Origin and content-type checks;
+- prompt assembly and Bedrock invocation;
+- request and response validation;
+- deterministic fallback;
+- restricted telemetry; and
+- least-privilege Bedrock access.
 
-### Non-goals
-Real-time image generation, sessions/DB, SSE streaming, MCP, always-on
-servers, multi-provider abstraction. If a future need appears, it gets its own
-decision — do not grow this layer speculatively.
+The client owns:
+
+- customer progression and game state;
+- authored dialogue outside the bounded live opening;
+- final gameplay rules and outcomes;
+- prefetch timing and UI degradation; and
+- bundled portraits and authored fallback data.
+
+The runtime deliberately has no session database, RAG layer, streaming
+transport, persistent memory, or image-generation provider.
+
+## Cost and operational guardrails
+
+The public demo uses several layers of protection:
+
+- an exact allowed browser Origin;
+- API Gateway stage rate and burst limits;
+- Lambda timeout, plus a concurrency kill switch that is deployed unset
+  (`ReservedConcurrency=-1`). The effective spend ceiling today is therefore the
+  1 rps / burst 2 stage throttle plus a manual redeploy at `0`, not a reserved
+  concurrency guardrail. Set a small positive value once account quota allows;
+- a bounded request body and output-token limit;
+- no automatic SDK retry;
+- an IAM allowlist for Bedrock inference profiles; and
+- CloudWatch logs that omit customer content, prompts, clues, and model text.
+
+CORS and Origin checks are not authentication, and throttling is not a hard
+spending ceiling. Long-term public operation requires a separate decision on
+authentication, stronger quotas, and shutdown policy.
+
+## Superseded assumptions
+
+Early planning considered a concept-agnostic multi-agent decision service,
+runtime image generation, persistent sessions, and broader orchestration.
+None of those assumptions is part of the final Apothecary runtime.
+
+The source code and SAM template are authoritative for implementation details.
+The [operating guide](./llm-lambda-runtime.md) is authoritative for deployment
+and support procedures.
