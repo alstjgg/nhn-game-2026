@@ -3,15 +3,16 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
-## Status (2026-07-28)
+## Status (2026-07-29)
 
-**New track candidate: D-Day 시뮬레이션** (`concept/dday-simulation` branch) — proposed
-replacement for the darkest-context track after its demo exposed the forced-mapping
-problem. Two paper tests passed (v1 sonnet/원자로, v2 haiku/테러리스트의 전화); the
-three control axes (기질·사실·구조) are each empirically verified. Two human judgments
-(V3, E5′) pending at the 07-28 team meeting. **Track SoT: [dday-sot.md](./dday-sot.md)**
-— start there; it maps every document, result, and open decision. Whether this track
-officially replaces darkest-context is a meeting agenda item.
+**DDAY 컨셉 확정** — the 07-28 team meeting confirmed the D-Day 시뮬레이션 track
+(replacing darkest-context as the main line). Scenario: 테러리스트의 전화 **축소
+버전**; runtime model: haiku; presentation: text-detective, no spatial movement.
+Compact/합성 and prompt-length limits are deferred to Phase-2. Work split
+(~07-29 18:30): 윤석 = 기획 문서 (real project spec format), 민서 = 시나리오 축소
++ repo cleanup. **Track SoT: [dday-sot.md](./dday-sot.md)** — start there; it maps
+every document, test result, and open decision. Branch `concept/dday-simulation`,
+PR #85 open to main.
 
 ## Status (2026-07-22)
 
