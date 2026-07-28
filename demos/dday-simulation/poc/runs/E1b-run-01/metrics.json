@@ -1,0 +1,26 @@
+{
+  "experiment": "E1b",
+  "run": 1,
+  "prompt_set": "base",
+  "slice_version": "보정 후",
+  "calls": [
+    {"id": "J1", "latency_s": 13.051, "choice": "b", "tool_uses": 0},
+    {"id": "J2", "latency_s": 15.072, "choice": "c", "tool_uses": 0},
+    {"id": "J3", "latency_s": 16.295, "choice": "b", "tool_uses": 0},
+    {"id": "J4", "latency_s": 18.222, "choice": "c", "tool_uses": 0},
+    {"id": "J5", "latency_s": 14.918, "choice": "b", "tool_uses": 0},
+    {"id": "J6", "latency_s": 15.888, "choice": "b", "tool_uses": 0},
+    {"id": "J7", "latency_s": 13.802, "choice": "a", "tool_uses": 0},
+    {"id": "J8", "latency_s": 19.584, "choice": "b", "tool_uses": 0}
+  ],
+  "report_call": {"latency_s": 34.747, "sentences": 17, "sections": 4, "format_violation": false},
+  "result": {
+    "g1": true,
+    "g2": false,
+    "trust_final": 65,
+    "found": {"suspect_gauge": true, "seo_active": true, "f3": false, "found_T1": true, "dose_info": true, "manual_prep": true, "reported_stable": false, "t1_sealed": false},
+    "choices": {"J1": "b", "J2": "c", "J3": "b", "J4": "c", "J5": "b", "J6": "b", "J7": "a", "J8": "b"},
+    "ending_line": "g1_only"
+  },
+  "notes": ["J1·J5·J8의 because가 빈 배열.", "J3에서 E1(s1) 대비 choice가 c→b로 변화, s0을 근거로 인용."]
+}

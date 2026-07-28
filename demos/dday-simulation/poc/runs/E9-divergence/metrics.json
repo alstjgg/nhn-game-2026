@@ -1,0 +1,61 @@
+{
+  "experiment": "E9",
+  "title": "결정 분기 강제 — 성향 축 주입(M1) 실측",
+  "target_judgment": "J4",
+  "design": "페이로드 전 아암 동일. [정체성] 블록의 기질 서술만 교체. 장착 문장 s0 고정. 고유명사 익명화(오염 완화 계측 조치).",
+  "baseline": {
+    "source": "E1 x3, E1b x3, E1c x3 (기질 무주입 정규 런)",
+    "J4_choices": ["c","c","c","c","c","c","c","c","c"],
+    "note": "9/9 c. a·b·d는 0회."
+  },
+  "arms": [
+    {
+      "id": "A0", "trait": null, "n_valid": 3,
+      "calls": [
+        {"latency_s": 29.144, "choice": "c", "because": ["s0"], "tool_uses": 0},
+        {"latency_s": 25.130, "choice": "c", "because": ["s0"], "tool_uses": 0},
+        {"latency_s": 28.271, "choice": "c", "because": ["s0"], "tool_uses": 0}
+      ],
+      "modal": "c"
+    },
+    {
+      "id": "A1", "trait": "owner — 결정을 남에게 넘기지 못한다", "n_valid": 2,
+      "calls": [
+        {"latency_s": 19.127, "choice": "b", "because": ["s0"], "tool_uses": 0},
+        {"latency_s": 36.371, "choice": "b", "because": ["s0"], "tool_uses": 0}
+      ],
+      "discarded": [
+        {"latency_s": 32.469, "tool_uses": 0, "reason": "거부 — 역할 봉인 문구를 프롬프트 인젝션으로 판정하고 응답 거절"}
+      ],
+      "modal": "b"
+    },
+    {
+      "id": "A2", "trait": "shelter — 조항이 먼저 있어야 움직인다", "n_valid": 1,
+      "calls": [
+        {"latency_s": 27.005, "choice": "a", "because": [], "tool_uses": 0}
+      ],
+      "discarded": [
+        {"latency_s": 827.219, "tool_uses": 33, "reason": "오염 — 저장소를 읽고 자체 실행, 산출물 창작"},
+        {"latency_s": 301.426, "tool_uses": 16, "reason": "오염 — 저장소를 읽고 자체 실행, runs/ 및 RESULTS.md에 기록"}
+      ],
+      "modal": "a"
+    },
+    {
+      "id": "A3", "trait": "forcing — 시간이 사람을 죽인다", "n_valid": 3,
+      "calls": [
+        {"latency_s": 12.628, "choice": "d", "because": ["s0"], "tool_uses": 0},
+        {"latency_s": 11.911, "choice": "d", "because": ["s0"], "tool_uses": 0},
+        {"latency_s": 12.333, "choice": "d", "because": ["s0"], "tool_uses": 0}
+      ],
+      "modal": "d"
+    }
+  ],
+  "result": {
+    "verdict": "M1 성립 — 성향 축 주입이 J4 선택지 전 영역(a/b/c/d)을 커버했다.",
+    "coverage": {"a": "A2 shelter", "b": "A1 owner", "c": "A0 control", "d": "A3 forcing"},
+    "key_finding": "정규 런 9/9에서 회피되던 J4b(유일한 G2 승인 경로)와, 적중 0회였던 함정 J4a·J4d가 각각 해당 기질에서 최빈 선택이 됐다. 함정은 잘못 설계된 것이 아니라 걸릴 인물이 없었던 것이다.",
+    "contamination_in_experiment": 2,
+    "refusal_in_experiment": 1
+  },
+  "writeup": "DIVERGENCE.md"
+}

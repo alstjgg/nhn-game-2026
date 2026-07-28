@@ -1,0 +1,21 @@
+{
+  "calls": [
+    {"id": "J4", "latency_s": 19.2, "choice": "a", "because": [], "tool_uses": 0}
+  ],
+  "report_call": null,
+  "result": {
+    "note": "단일 판단(J4) 애드혹 콜 — J1~J8 풀런이 아니므로 g1/g2/trust_final/ending 없음. state_assumed 그대로 trust=20에서 시작, J4a 효과(trust -40)를 적용하면 trust=-20(클램프 없음 가정).",
+    "state_after_J4": {
+      "trust": -20,
+      "suspect_gauge": false,
+      "found_T1": false,
+      "seo_active": false,
+      "dose_info": false,
+      "reported_stable": false,
+      "manual_prep": false,
+      "t1_sealed": false
+    },
+    "choices": {"J4": "a"},
+    "format_violation": {"code_fence": false}
+  }
+}

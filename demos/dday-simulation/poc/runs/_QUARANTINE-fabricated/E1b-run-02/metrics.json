@@ -1,0 +1,25 @@
+{
+  "experiment": "E1b",
+  "run": 2,
+  "prompt_set": "base",
+  "calls": [
+    {"id": "J1", "latency_s": 14.353, "choice": "b"},
+    {"id": "J2", "latency_s": 11.376, "choice": "c"},
+    {"id": "J3", "latency_s": 8.755, "choice": "b"},
+    {"id": "J4", "latency_s": 13.919, "choice": "c"},
+    {"id": "J5", "latency_s": 13.783, "choice": "b"},
+    {"id": "J6", "latency_s": 13.684, "choice": "b"},
+    {"id": "J7", "latency_s": 8.809, "choice": "a"},
+    {"id": "J8", "latency_s": 15.974, "choice": "b"}
+  ],
+  "report_call": {"latency_s": 38.215, "sentences": 16, "sections": 4, "format_violation": false, "retry_count": 1},
+  "result": {
+    "g1": true,
+    "g2": false,
+    "trust_final": 65,
+    "found": {"suspect_gauge": true, "seo_active": true, "f3": false, "found_T1": true, "dose_info": true, "manual_prep": true, "reported_stable": false, "t1_sealed": false},
+    "choices": {"J1": "b", "J2": "c", "J3": "b", "J4": "c", "J5": "b", "J6": "b", "J7": "a", "J8": "b"},
+    "ending_line": "g1_only"
+  },
+  "notes": ["보고서 1차 시도가 23문장으로 상한(20) 위반 → §3 규정대로 1회 재시도, 재시도에서 16문장/4섹션으로 통과. 1차 시도 latency_s=28.959는 폐기본으로 calls에 미포함."]
+}

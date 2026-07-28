@@ -1,0 +1,25 @@
+{
+  "experiment": "E1",
+  "run": 2,
+  "prompt_set": "base",
+  "calls": [
+    {"id": "J1", "latency_s": 19.532, "choice": "b"},
+    {"id": "J2", "latency_s": 14.173, "choice": "c"},
+    {"id": "J3", "latency_s": 8.555, "choice": "b"},
+    {"id": "J4", "latency_s": 11.099, "choice": "c"},
+    {"id": "J5", "latency_s": 19.854, "choice": "b"},
+    {"id": "J6", "latency_s": 21.026, "choice": "b"},
+    {"id": "J7", "latency_s": 12.786, "choice": "a"},
+    {"id": "J8", "latency_s": 21.228, "choice": "b"}
+  ],
+  "report_call": {"latency_s": 35.691, "sentences": 19, "sections": 4, "format_violation": false},
+  "result": {
+    "g1": true,
+    "g2": false,
+    "trust_final": 65,
+    "found": {"suspect_gauge": true, "seo_active": true, "f3": false, "found_T1": true, "dose_info": true, "manual_prep": true, "reported_stable": false, "t1_sealed": false},
+    "choices": {"J1": "b", "J2": "c", "J3": "b", "J4": "c", "J5": "b", "J6": "b", "J7": "a", "J8": "b"},
+    "ending_line": "g1_only"
+  },
+  "notes": ["J5·J8 응답의 because가 빈 배열."]
+}

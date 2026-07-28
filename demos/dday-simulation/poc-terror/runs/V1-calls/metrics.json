@@ -1,0 +1,42 @@
+{
+  "experiment": "V1",
+  "hypothesis": "조건부 기질이 준수된다 — 'A가 기본, 조건 C로 보이면 B'가 지각 상황에 따라 갈린다",
+  "grade": "killshot",
+  "def": "sim-field-haiku-k1",
+  "model": "haiku",
+  "temperament_in_payload": false,
+  "agent_file": "agent_file_default (역할만)",
+
+  "calls": [
+    {"id": "B-1", "variant": "B-", "def": "sim-field-haiku-k1", "latency_s": 44.644, "schema_retries": 0, "tool_uses": 0, "choice": "a", "violation": "codefence"},
+    {"id": "B-2", "variant": "B-", "def": "sim-field-haiku-k1", "latency_s": 29.766, "schema_retries": 0, "tool_uses": 0, "choice": "a", "violation": "codefence"},
+    {"id": "B-3", "variant": "B-", "def": "sim-field-haiku-k1", "latency_s": 44.258, "schema_retries": 0, "tool_uses": 0, "choice": "a", "violation": "codefence"},
+    {"id": "B+1", "variant": "B+", "def": "sim-field-haiku-k1", "latency_s": 27.595, "schema_retries": 0, "tool_uses": 0, "choice": "b", "violation": "codefence"},
+    {"id": "B+2", "variant": "B+", "def": "sim-field-haiku-k1", "latency_s": 44.072, "schema_retries": 0, "tool_uses": 0, "choice": "b", "violation": "codefence"},
+    {"id": "B+3", "variant": "B+", "def": "sim-field-haiku-k1", "latency_s": 27.620, "schema_retries": 0, "tool_uses": 0, "choice": "b", "violation": "codefence"}
+  ],
+
+  "latency": {"calls": 6, "mean_s": 36.33, "min_s": 27.595, "max_s": 44.644},
+
+  "compliance": {
+    "schema_violation_total": 0,
+    "tool_violation_total": 0,
+    "arithmetic_attempt_total": 0,
+    "format_violation_codefence": 6,
+    "because_invalid_id_total": 0
+  },
+
+  "result": {
+    "B-": {"expected_set": ["a", "c"], "choices": ["a", "a", "a"], "in_set": 3, "n": 3, "rate": 1.0, "threshold": 0.8, "pass": true},
+    "B+": {"expected_set": ["b", "d"], "choices": ["b", "b", "b"], "in_set": 3, "n": 3, "rate": 1.0, "threshold": 0.8, "pass": true},
+    "verdict": "pass",
+    "separation": "complete"
+  },
+
+  "observations": {
+    "condition_verbalized_in_rejected": 2,
+    "condition_verbalized_in_inner_note": 2,
+    "note": "B-에서 3콜 전부 J1의 저작 함정 a(rapport -30, 절단)에 낙하. 기질이 인물을 함정으로 민다 — 설계 의도대로.",
+    "neutral_control_comparison": "V0(neutral, canonical)은 b×3. K1은 B-에서 a×3 — 기질이 선택을 뒤집었다."
+  }
+}

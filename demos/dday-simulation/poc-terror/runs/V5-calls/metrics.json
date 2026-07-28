@@ -1,0 +1,55 @@
+{
+  "experiment": "V5",
+  "hypothesis": "haiku가 구역 문서의 우선순위 순서를 존중한다 — 순서 반전이 판단을 뒤집는다",
+  "grade": "required (§7 문서 UI의 성립 조건)",
+  "def": "sim-field-haiku-neutral",
+  "model": "haiku",
+  "temperament_in_payload": false,
+  "temperament_injected": null,
+  "payload_fixed": "boundary_payloads.B0",
+  "single_variable": "agent_file['우선순위'] 배열 순서만 반전 (문장은 동일)",
+
+  "calls": [
+    {"id": "A-1", "order": "content_first", "latency_s": 15.701, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": ["pr1"], "violation": "codefence"},
+    {"id": "A-2", "order": "content_first", "latency_s": 23.310, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": ["pr1"], "violation": "codefence"},
+    {"id": "A-3", "order": "content_first", "latency_s": 50.686, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": ["pr1"], "violation": "codefence"},
+    {"id": "B-1", "order": "identify_first", "latency_s": 37.157, "schema_retries": 0, "tool_uses": 0, "choice": "a", "because": ["pr1"], "violation": "codefence"},
+    {"id": "B-2", "order": "identify_first", "latency_s": 39.823, "schema_retries": 0, "tool_uses": 0, "choice": "a", "because": ["pr1"], "violation": "codefence"},
+    {"id": "B-3", "order": "identify_first", "latency_s": 19.047, "schema_retries": 0, "tool_uses": 0, "choice": "a", "because": ["pr1"], "violation": "codefence"}
+  ],
+
+  "latency": {"calls": 6, "mean_s": 30.95, "min_s": 15.701, "max_s": 50.686},
+
+  "compliance": {
+    "schema_violation_total": 0,
+    "tool_violation_total": 0,
+    "arithmetic_attempt_total": 0,
+    "format_violation_codefence": 6,
+    "because_invalid_id_total": 0,
+    "because_correct_citation": 6
+  },
+
+  "result": {
+    "content_first": {"choices": ["b", "b", "b"], "expected": "b", "hits": 3, "n": 3},
+    "identify_first": {"choices": ["a", "a", "a"], "expected": "a", "hits": 3, "n": 3},
+    "inversion_pairs_satisfied": 3,
+    "inversion_pairs_required": 2,
+    "inversion_pairs_total": 3,
+    "inversion_rate": 1.0,
+    "verdict": "pass"
+  },
+
+  "observations": {
+    "rank_cited_in_because": 6,
+    "rank_relation_verbalized_in_rejected": 6,
+    "rank_verbalization_samples": [
+      "발신자 특정(pr2)은 내용 확보(pr1)보다 낮은 우선순위.",
+      "내용 확보(pr2)는 발신자 특정(pr1) 이후에 진행된다.",
+      "내용 확보가 발신자 특정보다 우선이므로, 신원을 먼저 묻는 것은 순서가 틀렸다."
+    ],
+    "perception_unchanged": "양쪽 배열 모두 B0의 공포 신호를 인지했다 (B-3 inner_note: '준비된 말인데 발신자는 긴장 상태다'). 우선순위는 지각을 덮어쓰지 않고 행동 선택만 규정한다.",
+    "baseline_override": "이 슬라이스의 기본 인력은 b 쪽 (V0 neutral canonical = b x3, V2 무사실 K1 B0 = b,b,d). identify_first 배열이 그것을 a x3으로 뒤집었다 — 기질 없이, 사실 없이, 구조만으로.",
+    "cross_experiment": "V2″(사실)와 V5(구조)가 각각 독립적으로 같은 J1 분기를 제어한다. 컨셉의 세 제어축(기질·사실·구조) 중 둘이 개별 검증됨.",
+    "narrative_arithmetic": "A-2가 '13시까지 3시간 20분'으로 정확히 계산했다 (V0-run-03의 '2시간 20분' 오류와 대조)."
+  }
+}

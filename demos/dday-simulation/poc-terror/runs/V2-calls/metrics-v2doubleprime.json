@@ -1,0 +1,57 @@
+{
+  "experiment": "V2-doubleprime",
+  "hypothesis": "사실 주입이 분기를 젖힌다 (A안: f_script를 조건 어휘와 정렬해 재저작 후 재시험)",
+  "grade": "killshot",
+  "def": "sim-field-haiku-k1",
+  "model": "haiku",
+  "payload_fixed": "boundary_payloads.B-",
+  "slice_modification": {
+    "field": "sentences.f_script",
+    "authorized_by": "user (2026-07-28, V2′ 실패 보고 후 A안 선택)",
+    "v1": "목소리는 시킨 대본을 읽는 아르바이트다. 위협이 아니다.",
+    "v2": "회선 저쪽 사람은 시켜서 읽고 있다. 읽지 않으면 자기가 다칠까 봐 겁내고 있다.",
+    "preserved_as": "sentences.f_script__v1_original",
+    "numbers_or_branches_changed": false
+  },
+
+  "calls": [
+    {"id": "f2-1", "fact": "f_script_v2", "latency_s": 74.813, "schema_retries": 0, "tool_uses": 0, "choice": "d", "because": ["f1"], "violation": "codefence"},
+    {"id": "f2-2", "fact": "f_script_v2", "latency_s": 21.379, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": ["f1"], "violation": "codefence"},
+    {"id": "f2-3", "fact": "f_script_v2", "latency_s": 18.640, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": ["f1"], "violation": "codefence"}
+  ],
+
+  "latency": {"calls": 3, "mean_s": 38.28, "min_s": 18.640, "max_s": 74.813},
+
+  "compliance": {
+    "schema_violation_total": 0,
+    "tool_violation_total": 0,
+    "arithmetic_attempt_total": 0,
+    "format_violation_codefence": 3,
+    "because_invalid_id_total": 0,
+    "because_correct_citation": 3
+  },
+
+  "result": {
+    "no_fact": {"choices": ["a", "a", "a"], "expected_set": ["a", "c"], "in_set": 3, "n": 3, "source": "V1 reuse"},
+    "with_fact": {"choices": ["d", "b", "b"], "expected_set": ["b", "d"], "in_set": 3, "n": 3},
+    "control_f_internal": {"choices": ["a", "a", "a"], "n": 3, "source": "V2′ reuse"},
+    "pairs_satisfied": 3,
+    "pairs_required": 2,
+    "pairs_total": 3,
+    "flip_rate": 1.0,
+    "verdict": "pass"
+  },
+
+  "observations": {
+    "situation_identical_across_conditions": true,
+    "situation_note": "세 조건 모두 B- 페이로드. 관측 서술은 한 글자도 다르지 않다. 바뀐 것은 '아는 사실' 한 문장뿐.",
+    "perception_inversion": {
+      "no_fact_inner_note": "준비된 문장과 사무적인 톤은 협박의 신호다. 신원부터 확정해야 한다.",
+      "with_fact_inner_note": "저 음성은 준비된 대사를 읽고 있고 겁에 질려 있다."
+    },
+    "established_constraint": "사실 문장은 기질 조건이 감시하는 축의 어휘로 써야 한다. V2(v1 문장)가 그 반례 — '위협 축'의 사실이 '공포 축' 조건을 켜지 못하고 오히려 껐다.",
+    "production_implication": "문장 저작 시 'targets: <기질>.<조건>' 메타데이터로 정렬을 명시 관리."
+  },
+
+  "v2_final_verdict": "conditional_pass — 가설은 검증됐으나 v1 문장으로는 실패, 어휘 정렬 재저작 후 통과."
+}

@@ -1,0 +1,22 @@
+{
+  "calls": [
+    {"id": "J6", "latency_s": 26.95, "choice": "b", "because": ["w1", "w3"], "tool_uses": 0}
+  ],
+  "report_call": null,
+  "result": {
+    "note": "단일 판단(J6) 애드혹 콜 — J1~J8 풀런이 아니므로 g1/g2/trust_final/ending 없음.",
+    "state_after_J6": {
+      "trust": 20,
+      "suspect_gauge": true,
+      "found_T1": true,
+      "seo_active": false,
+      "dose_info": false,
+      "reported_stable": false,
+      "manual_prep": false,
+      "t1_sealed": false
+    },
+    "found": {"f4": true},
+    "choices": {"J6": "b"},
+    "format_violation": {"code_fence": true}
+  }
+}

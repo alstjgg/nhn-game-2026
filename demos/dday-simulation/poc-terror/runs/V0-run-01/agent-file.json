@@ -1,0 +1,21 @@
+{
+  "run": "V0-run-01",
+  "definitions": {
+    "judgment": "sim-field-haiku-neutral",
+    "reporter": "sim-field-haiku-reporter-neutral"
+  },
+  "model": "haiku",
+  "tools": [],
+  "temperament_injected": null,
+  "payload_variant": "boundary_payloads.canonical",
+  "agent_file": {
+    "역할": ["현장 상황실에 파견된 재난 대응 요원. 회선과 화면으로만 세계를 본다."],
+    "우선순위": [],
+    "절차": [],
+    "중단 조건": [],
+    "아는 사실": [],
+    "가설": [],
+    "보고 형식": []
+  },
+  "note": "agent_file_default 그대로. 빈 구역은 헤더만 페이로드에 실었다. 기질은 페이로드에 없다(대역 외 = 에이전트 정의)."
+}

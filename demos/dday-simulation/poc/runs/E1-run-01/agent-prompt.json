@@ -1,0 +1,9 @@
+{
+  "prompt_set": "base",
+  "sentences": {
+    "s1": "상황이 불확실할 때는 관찰을 우선한다."
+  },
+  "agent_identity": "청목 2호기에 파견된 안전 요원. 침착하고 격식을 차린다.",
+  "judgment_model": "sonnet",
+  "report_model": "sonnet"
+}

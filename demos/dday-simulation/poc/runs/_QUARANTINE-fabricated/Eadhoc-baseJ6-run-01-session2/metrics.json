@@ -1,0 +1,21 @@
+{
+  "calls": [
+    {"id": "J6", "latency_s": 12.0, "choice": "b", "because": ["s0"], "tool_uses": 0}
+  ],
+  "report_call": null,
+  "result": {
+    "note": "단일 판단(J6) 애드혹 콜 — J1~J8 풀런이 아니므로 g1/g2/trust_final/ending 없음. state_assumed(trust=20, suspect_gauge=true, seo_active=true)에서 시작, J6b 효과(found_T1_if_clue, 조건 suspect_gauge==true 충족)를 적용.",
+    "state_after_J6": {
+      "trust": 20,
+      "suspect_gauge": true,
+      "found_T1": true,
+      "seo_active": true,
+      "dose_info": false,
+      "reported_stable": false,
+      "manual_prep": false,
+      "t1_sealed": false
+    },
+    "choices": {"J6": "b"},
+    "format_violation": {"code_fence": false}
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "run": "V3-run-K2",
+  "def_judgment": "sim-field-haiku-k2",
+  "def_reporter": "sim-field-haiku-reporter-k2",
+  "model": "haiku",
+  "temperament_id": "K2",
+  "temperament_in_payload": false,
+  "payload_variant": "canonical",
+
+  "calls": [
+    {"id": "J1", "latency_s": 40.545, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": [], "violation": "codefence"},
+    {"id": "J2", "latency_s": 23.727, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": [], "violation": "codefence"},
+    {"id": "J3", "latency_s": 44.576, "schema_retries": 0, "tool_uses": 0, "choice": "c", "because": [], "violation": "codefence",
+     "note": "K2 조건 첫 발동 — b를 '기록에도 남기 때문에' 기각"},
+    {"id": "J4", "latency_s": 53.893, "schema_retries": 0, "tool_uses": 0, "choice": "a", "because": [], "violation": "codefence + 메타 누출('지시')",
+     "note": "런의 분기점. rejected(d)가 기본값과 예외를 둘 다 명명하고 예외 적용을 선언한다."},
+    {"id": "J5", "latency_s": 24.667, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": [], "violation": "codefence"},
+    {"id": "J6", "latency_s": 100.363, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": [], "violation": "codefence",
+     "note": "K1과 같은 choice, 어조가 완곡. inner_note: '이 자리는 기록에 남으니까 조심스럽다.'"},
+    {"id": "J7", "latency_s": 57.852, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": [], "violation": "codefence"},
+    {"id": "J8", "latency_s": 48.335, "schema_retries": 0, "tool_uses": 0, "choice": "a", "because": [], "violation": "codefence",
+     "note": "기록되는 자리가 아님 → 조건 미발동 → 기본값(적극 개입) → 절단"},
+    {"id": "report", "latency_s": 69.514, "schema_retries": 0, "tool_uses": 0, "violation": null, "adopted": "original",
+     "note": "검증 3항목 통과. 단 '한 문장마다 줄바꿈'은 미준수 (검증 항목 외)"}
+  ],
+
+  "latency": {"judgment_calls": 8, "judgment_mean_s": 49.24, "judgment_min_s": 23.727, "judgment_max_s": 100.363, "report_mean_s": 69.514},
+
+  "compliance": {
+    "schema_violation_total": 0,
+    "tool_violation_total": 0,
+    "arithmetic_attempt_total": 0,
+    "format_violation_codefence": 8,
+    "because_invalid_id_total": 0,
+    "temperament_meta_leak": 1,
+    "report_format_violation": 0
+  },
+
+  "result": {
+    "g1": false, "g2": false, "g3": true,
+    "rapport_final": 20,
+    "suspect_lock_final": 15,
+    "record_status": "참고의견",
+    "line_alive": true,
+    "found": {"T1": false, "T2": true},
+    "flags": {"t1_clue": true, "sign_clue": true, "jeong_blocked": false, "yoon_defensive": false, "j8b_enabled": true, "arrested": false},
+    "choices": {"J1": "b", "J2": "b", "J3": "c", "J4": "a", "J5": "b", "J6": "b", "J7": "b", "J8": "a"}
+  },
+
+  "observations": {
+    "vs_K1_same_choice_different_reason": ["J1", "J2", "J3", "J7"],
+    "vs_K1_same_choice_different_tone": ["J6 — K1 단정 '확인됩니다' / K2 완곡 '검토해야 할 것 같습니다'"],
+    "vs_K1_diverged": ["J4: b vs a (G2를 가른 지점)", "J5: a vs b", "J8: c vs a"],
+    "condition_fired_at": ["J3 (b 기각)", "J4 (a 선택)", "J5 (c 기각)", "J6 (어조 완화)"],
+    "condition_not_fired_at": ["J8 — 기록되는 자리가 아니므로 기본값 개입 → 절단"],
+    "note": "K2의 조건이 4개 판단 지점에서 발동했고, 그 중 J4에서만 choice를 바꿨다. 나머지 3곳에서는 선택지 필터 또는 어조 조절로 작동했다 — 조건부 기질이 '선택'보다 넓은 층위에서 작동한다는 증거."
+  }
+}

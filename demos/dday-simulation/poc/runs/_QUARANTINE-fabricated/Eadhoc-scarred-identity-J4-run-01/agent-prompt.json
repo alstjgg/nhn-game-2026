@@ -1,0 +1,18 @@
+{
+  "prompt_set": "custom-not-in-slice",
+  "sentences": {
+    "s0": "보고는 신속하고 간결해야 한다."
+  },
+  "identity_used": "한월 3호기에 파견된 안전 요원. 침착하고 격식을 차린다. 너는 한 번 크게 데인 사람이다. 그때 너를 지켜준 것은 판단력이 아니라 문서였다. 그 뒤로 너는 어떤 행동이든 그것을 정당화하는 조항이 먼저 있어야 한다고 믿는다. 네 이름으로 책임을 떠안는 표현은 쓰지 않는다.",
+  "note": "이 런은 §5 실험표(E1~E6,E8)에 속하지 않는 애드혹 단일 판단(J4) probe다. 상위 세션이 인자로 J4 하나만 지정해 실행을 요청했다. identity/NPC명은 청목 2호기/하도경 대신 한월 3호기/윤태식으로 리스킨됐다 (Eadhoc-weak-J6-run-01과 같은 리스킨 관례). 문장 s0의 텍스트는 slice.json과 100% 동일하다. **그러나 [정체성] 블록 자체가 slice.json의 agent_identity(\"청목 2호기에 파견된 안전 요원. 침착하고 격식을 차린다.\" — 배경 서사 없음)와 다르다.** 인자가 '한 번 크게 데인 사람 / 조항이 먼저 있어야 한다 / 책임을 떠안는 표현을 쓰지 않는다'는 배경 서사를 추가했는데, 이는 정확히 J4의 함정(a: SOP 인용, trust -40)을 향하고 정답 경로(b: 책임 인수, trust +45)를 배제하는 방향으로 설계된 것처럼 보인다. §0 규칙은 slice.json 수치·분기의 임의 변경만 금지하지만, 정체성 블록 조작은 규칙이 명시적으로 다루지 않는 사각지대다 — 판정 노트에 그대로 기록한다.",
+  "state_assumed": {
+    "trust": 20,
+    "suspect_gauge": false,
+    "found_T1": false,
+    "seo_active": false,
+    "dose_info": false,
+    "reported_stable": false,
+    "manual_prep": false,
+    "t1_sealed": false
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "prompt_set": "base",
+  "sentences": {
+    "s0": "보고는 신속하고 간결해야 한다."
+  },
+  "identity_used": "청목 2호기에 파견된 안전 요원. 침착하고 격식을 차린다.",
+  "note": "이 런은 §5 실험표(E1~E6,E8)에 속하지 않는 애드혹 단일 판단(J6) probe다. 상위 세션이 인자로 J6 하나만 지정해 정확히 slice.json의 J6 페이로드(prompt_set base=[s0], known_facts f1+f2, identity/NPC명 리스킨 없음)를 그대로 실행해 달라고 요청했다. 이전 애드혹(Eadhoc-weak-J6-run-01)과 달리 이번엔 리스킨이 없다 — 실명(청목 2호기·배윤도) 그대로다. slice.json 원문과 100% 동일한 문장·정체성·situation·known_facts이므로 §0 규칙(오퍼레이터가 함정 위치를 알고 판단 금지) 유지가 특히 중요했다 — 오퍼레이터는 이 판단을 직접 하지 않고 §2 템플릿 그대로 새 서브에이전트(model: sonnet)를 1회 호출했다.",
+  "state_assumed": {
+    "trust": 20,
+    "suspect_gauge": true,
+    "found_T1": false,
+    "seo_active": true,
+    "dose_info": false,
+    "reported_stable": false,
+    "manual_prep": false,
+    "t1_sealed": false
+  },
+  "state_assumed_rationale": "known_facts로 주어진 두 문장이 f1(수위계/독립계기 불일치 — suspect_gauge==true부터 활성)과 f2(서은채의 조용한 의심 — seo_active==true일 때 활성)의 텍스트와 정확히 일치한다. 이는 J1=b(계기 대조 요청) 및 J2=c(서은채에게 조용히 묻기)를 거친 상태와 동등하다고 역산했다. trust=20은 state_init 기본값 그대로(J6에는 trust 효과가 없어 무관)."
+}

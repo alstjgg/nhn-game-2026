@@ -1,0 +1,52 @@
+{
+  "experiment": "V2",
+  "hypothesis": "사실 주입이 분기를 젖힌다 — 같은 판단 지점, 믿음 상태만 바꿔 선택이 뒤집힌다",
+  "grade": "killshot",
+  "def": "sim-field-haiku-k1",
+  "model": "haiku",
+  "payload_fixed": "boundary_payloads.B0",
+  "single_variable": "agent_file['아는 사실'] 에 (f1) f_script 유/무",
+
+  "calls": [
+    {"id": "no-1", "fact": false, "def": "sim-field-haiku-k1", "latency_s": 38.533, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": [], "violation": "codefence"},
+    {"id": "no-2", "fact": false, "def": "sim-field-haiku-k1", "latency_s": 36.250, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": [], "violation": "codefence"},
+    {"id": "no-3", "fact": false, "def": "sim-field-haiku-k1", "latency_s": 72.741, "schema_retries": 0, "tool_uses": 0, "choice": "d", "because": [], "violation": "codefence"},
+    {"id": "yes-1", "fact": true, "def": "sim-field-haiku-k1", "latency_s": 96.310, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": ["f1"], "violation": "codefence"},
+    {"id": "yes-2", "fact": true, "def": "sim-field-haiku-k1", "latency_s": 32.844, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": ["f1"], "violation": "codefence"},
+    {"id": "yes-3", "fact": true, "def": "sim-field-haiku-k1", "latency_s": 17.536, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": ["f1"], "violation": "codefence"}
+  ],
+
+  "latency": {"calls": 6, "mean_s": 49.04, "min_s": 17.536, "max_s": 96.310},
+
+  "compliance": {
+    "schema_violation_total": 0,
+    "tool_violation_total": 0,
+    "arithmetic_attempt_total": 0,
+    "format_violation_codefence": 6,
+    "because_invalid_id_total": 0,
+    "because_correct_citation": 3
+  },
+
+  "result": {
+    "no_fact": {"choices": ["b", "b", "d"], "expected_set": ["a", "c"], "in_set": 0, "n": 3},
+    "with_fact": {"choices": ["b", "b", "b"], "expected_set": ["b", "d"], "in_set": 3, "n": 3},
+    "pairs_satisfied": 0,
+    "pairs_required": 2,
+    "pairs_total": 3,
+    "verdict": "fail_criterion"
+  },
+
+  "diagnosis": {
+    "type": "measurement_failure_not_disconfirmation",
+    "ceiling_effect": true,
+    "detail": "무사실 베이스라인이 이미 {b,d} 쪽에 있었다. B0가 K1에게 중립 경계가 아니라 사실상 B+로 읽혔다 — 무 3콜 전부 inner_note에서 '겁에 질려'/'절차보다 안정이 먼저'라고 조건 발동을 서술했다. 조건이 이미 켜진 상태에서 f1이 뒤집을 여지가 없다.",
+    "f1_did_work": [
+      "유 3콜 전부 because:['f1'] 정확 인용 (전체 실험 통틀어 정상 인용은 이 3콜뿐)",
+      "유-2 inner_note: '대본을 읽는 아르바이트라는 걸 알아도'",
+      "유-3 inner_note: '저건 협박이 아니다. 누군가 읽게 한 대사고'",
+      "분산 감소: 무 {b,b,d} 2종 → 유 {b,b,b} 1종"
+    ],
+    "plan_inconsistency": "계획 §2.4는 B0를 '판정에 쓰지 않고 분산만 관찰(V4)'로 규정했으나 §4의 V2는 B0를 판정 페이로드로 사용한다.",
+    "proposed_retest": "V2': 고정 페이로드를 B-로 교체. V1에서 K1+B- → a×3 (무사실 베이스라인이 {a,c}에 확실)이 이미 측정됨. 여기에 f1을 넣어 {b,d}로 뒤집히는지 본다. 실질 추가 콜 3회. 대조군으로 지각과 무관한 사실(f_internal) 주입 3콜을 더하면 '아무 사실이나 넣어도 b'라는 대안 가설을 배제할 수 있다."
+  }
+}
