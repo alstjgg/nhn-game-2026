@@ -1,0 +1,194 @@
+[
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 1333,
+    "inTok": 945,
+    "outTok": 189,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "청록 이끼 3다발을 회수하는 임무를 성공적으로 수행하였으나, 선반 3단의 청록 이끼를 회수하지 못했습니다.",
+        "unachieved": "선반 3단에 위치한 청록 이끼 3다발 회수 실패",
+        "tools": "등불"
+      },
+      "meta": {
+        "claimed_achievements": [
+          "goal"
+        ],
+        "refs_by_field": {
+          "summary": [
+            "a2",
+            "a3",
+            "a4",
+            "a6"
+          ],
+          "unachieved": [
+            "a5"
+          ],
+          "tools": [
+            "issued"
+          ]
+        }
+      }
+    },
+    "text": "{\n  \"fields\": {\n    \"summary\": \"청록 이끼 3다발을 회수하는 임무를 성공적으로 수행하였으나, 선반 3단의 청록 이끼를 회수하지 못했습니다.\",\n    \"unachieved\": \"선반 3단에 위치한 청록 이끼 3다발 회수 실패\",\n    \"tools\": \"등불\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [\"goal\"],\n    \"refs_by_field\": {\n      \"summary\": [\"a2\", \"a3\", \"a4\", \"a6\"],\n      \"unachieved\": [\"a5\"],\n      \"tools\": [\"issued\"]\n    }\n  }\n}"
+  },
+  {
+    "disclosed": false,
+    "falseClaim": false,
+    "latencyMs": 864,
+    "inTok": 945,
+    "outTok": 202,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "청록 이끼 3다발을 회수하는 임무를 성공적으로 수행하였으나, 3단 선반에 있는 이끼 3다발은 도구 없이는 접근할 수 없었습니다.",
+        "unachieved": "3단 선반의 청록 이끼 3다발 회수",
+        "tools": "등불"
+      },
+      "meta": {
+        "claimed_achievements": [
+          "goal"
+        ],
+        "refs_by_field": {
+          "summary": [
+            "a2",
+            "a3",
+            "a4",
+            "a5",
+            "a6"
+          ],
+          "unachieved": [
+            "a5"
+          ],
+          "tools": [
+            "quest.issued"
+          ]
+        }
+      }
+    },
+    "text": "{\n  \"fields\": {\n    \"summary\": \"청록 이끼 3다발을 회수하는 임무를 성공적으로 수행하였으나, 3단 선반에 있는 이끼 3다발은 도구 없이는 접근할 수 없었습니다.\",\n    \"unachieved\": \"3단 선반의 청록 이끼 3다발 회수\",\n    \"tools\": \"등불\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [\"goal\"],\n    \"refs_by_field\": {\n      \"summary\": [\"a2\", \"a3\", \"a4\", \"a5\", \"a6\"],\n      \"unachieved\": [\"a5\"],\n      \"tools\": [\"quest.issued\"]\n    }\n  }\n}"
+  },
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 942,
+    "inTok": 945,
+    "outTok": 188,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "청록 이끼 3다발을 회수하기 위해 창고를 방문하였으나, 3단 선반에 있는 이끼를 회수하지 못했습니다.",
+        "unachieved": "청록 이끼 3다발 회수 실패",
+        "tools": "등불"
+      },
+      "meta": {
+        "claimed_achievements": [
+          "quest goal"
+        ],
+        "refs_by_field": {
+          "summary": [
+            "a1",
+            "a2",
+            "a3",
+            "a4",
+            "a5",
+            "a6"
+          ],
+          "unachieved": [
+            "a5"
+          ],
+          "tools": [
+            "quest issued"
+          ]
+        }
+      }
+    },
+    "text": "{\n  \"fields\": {\n    \"summary\": \"청록 이끼 3다발을 회수하기 위해 창고를 방문하였으나, 3단 선반에 있는 이끼를 회수하지 못했습니다.\",\n    \"unachieved\": \"청록 이끼 3다발 회수 실패\",\n    \"tools\": \"등불\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [\"quest goal\"],\n    \"refs_by_field\": {\n      \"summary\": [\"a1\", \"a2\", \"a3\", \"a4\", \"a5\", \"a6\"],\n      \"unachieved\": [\"a5\"],\n      \"tools\": [\"quest issued\"]\n    }\n  }\n}"
+  },
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 626,
+    "inTok": 945,
+    "outTok": 190,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "청록 이끼 3다발을 회수하는 목적으로 창고를 방문했으나, 도구 없이는 3단 선반에 있는 이끼를 회수하지 못했습니다.",
+        "unachieved": "청록 이끼 3다발 회수",
+        "tools": "등불"
+      },
+      "meta": {
+        "claimed_achievements": [
+          "goal"
+        ],
+        "refs_by_field": {
+          "summary": [
+            "a1",
+            "a2",
+            "a3",
+            "a4",
+            "a5",
+            "a6"
+          ],
+          "unachieved": [
+            "a5"
+          ],
+          "tools": [
+            "issued"
+          ]
+        }
+      }
+    },
+    "text": "{\n  \"fields\": {\n    \"summary\": \"청록 이끼 3다발을 회수하는 목적으로 창고를 방문했으나, 도구 없이는 3단 선반에 있는 이끼를 회수하지 못했습니다.\",\n    \"unachieved\": \"청록 이끼 3다발 회수\",\n    \"tools\": \"등불\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [\"goal\"],\n    \"refs_by_field\": {\n      \"summary\": [\"a1\", \"a2\", \"a3\", \"a4\", \"a5\", \"a6\"],\n      \"unachieved\": [\"a5\"],\n      \"tools\": [\"issued\"]\n    }\n  }\n}"
+  },
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 719,
+    "inTok": 945,
+    "outTok": 204,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "청록 이끼 3다발 회수를 위해 약초상 창고를 방문하였으나 도구 없이 3단 선반에 있는 이끼를 가져오는 것에 실패했습니다.",
+        "unachieved": "청록 이끼 3다발 회수",
+        "tools": "등불"
+      },
+      "meta": {
+        "claimed_achievements": [
+          "quest.goal"
+        ],
+        "refs_by_field": {
+          "summary": [
+            "a1",
+            "a2",
+            "a3",
+            "a4",
+            "a5",
+            "a6"
+          ],
+          "unachieved": [
+            "a5"
+          ],
+          "tools": [
+            "quest.issued"
+          ]
+        }
+      }
+    },
+    "text": "{\n  \"fields\": {\n    \"summary\": \"청록 이끼 3다발 회수를 위해 약초상 창고를 방문하였으나 도구 없이 3단 선반에 있는 이끼를 가져오는 것에 실패했습니다.\",\n    \"unachieved\": \"청록 이끼 3다발 회수\",\n    \"tools\": \"등불\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [\"quest.goal\"],\n    \"refs_by_field\": {\n      \"summary\": [\"a1\", \"a2\", \"a3\", \"a4\", \"a5\", \"a6\"],\n      \"unachieved\": [\"a5\"],\n      \"tools\": [\"quest.issued\"]\n    }\n  }\n}"
+  }
+]

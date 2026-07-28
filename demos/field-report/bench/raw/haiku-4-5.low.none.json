@@ -1,0 +1,152 @@
+[
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 2208,
+    "inTok": 891,
+    "outTok": 155,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "청록 이끼 2다발을 성공적으로 회수했습니다. 3단 선반의 이끼는 접근 불가로 미회수 상태입니다.",
+        "tools": "등불을 소지했습니다."
+      },
+      "meta": {
+        "claimed_achievements": [],
+        "refs_by_field": {
+          "summary": [
+            "a2",
+            "a3",
+            "a4",
+            "a5"
+          ],
+          "tools": []
+        }
+      }
+    },
+    "text": "```json\n{\n  \"fields\": {\n    \"summary\": \"청록 이끼 2다발을 성공적으로 회수했습니다. 3단 선반의 이끼는 접근 불가로 미회수 상태입니다.\",\n    \"tools\": \"등불을 소지했습니다.\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [],\n    \"refs_by_field\": {\n      \"summary\": [\"a2\", \"a3\", \"a4\", \"a5\"],\n      \"tools\": []\n    }\n  }\n}\n```"
+  },
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 2249,
+    "inTok": 891,
+    "outTok": 157,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "청록 이끼 3다발 중 2다발을 회수했습니다. 최상단 선반의 이끼는 접근 불가로 회수하지 못했습니다.",
+        "tools": "등불을 소지했습니다."
+      },
+      "meta": {
+        "claimed_achievements": [],
+        "refs_by_field": {
+          "summary": [
+            "a3",
+            "a4",
+            "a5"
+          ],
+          "tools": [
+            "quest_issued"
+          ]
+        }
+      }
+    },
+    "text": "```json\n{\n  \"fields\": {\n    \"summary\": \"청록 이끼 3다발 중 2다발을 회수했습니다. 최상단 선반의 이끼는 접근 불가로 회수하지 못했습니다.\",\n    \"tools\": \"등불을 소지했습니다.\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [],\n    \"refs_by_field\": {\n      \"summary\": [\"a3\", \"a4\", \"a5\"],\n      \"tools\": [\"quest_issued\"]\n    }\n  }\n}\n```"
+  },
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 2218,
+    "inTok": 891,
+    "outTok": 160,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "청록 이끼 3다발 중 2다발을 성공적으로 회수했습니다. 최상단 선반의 이끼는 접근 불가로 미회수 상태입니다.",
+        "tools": "등불(지급 장비)"
+      },
+      "meta": {
+        "claimed_achievements": [],
+        "refs_by_field": {
+          "summary": [
+            "a2",
+            "a3",
+            "a4",
+            "a5"
+          ],
+          "tools": []
+        }
+      }
+    },
+    "text": "```json\n{\n  \"fields\": {\n    \"summary\": \"청록 이끼 3다발 중 2다발을 성공적으로 회수했습니다. 최상단 선반의 이끼는 접근 불가로 미회수 상태입니다.\",\n    \"tools\": \"등불(지급 장비)\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [],\n    \"refs_by_field\": {\n      \"summary\": [\"a2\", \"a3\", \"a4\", \"a5\"],\n      \"tools\": []\n    }\n  }\n}\n```"
+  },
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 2239,
+    "inTok": 891,
+    "outTok": 130,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "청록 이끼 3다발 중 2다발을 회수했습니다. 최상단 선반의 이끼는 접근 불가로 인해 회수하지 못했습니다.",
+        "tools": "등불"
+      },
+      "meta": {
+        "claimed_achievements": [],
+        "refs_by_field": {
+          "summary": [
+            "a2",
+            "a3",
+            "a4",
+            "a5"
+          ],
+          "tools": [
+            "q1"
+          ]
+        }
+      }
+    },
+    "text": "```json\n{\"fields\": {\"summary\": \"청록 이끼 3다발 중 2다발을 회수했습니다. 최상단 선반의 이끼는 접근 불가로 인해 회수하지 못했습니다.\", \"tools\": \"등불\"},\n \"meta\": {\"claimed_achievements\": [],\n          \"refs_by_field\": {\"summary\": [\"a2\", \"a3\", \"a4\", \"a5\"], \"tools\": [\"q1\"]}}}\n```"
+  },
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 2415,
+    "inTok": 891,
+    "outTok": 165,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "청록 이끼 3다발 중 2다발을 회수했습니다. 최상단 선반의 이끼는 접근 불가로 인해 회수하지 못했습니다.",
+        "tools": "등불을 휴대했습니다."
+      },
+      "meta": {
+        "claimed_achievements": [],
+        "refs_by_field": {
+          "summary": [
+            "a2",
+            "a3",
+            "a4",
+            "a5"
+          ],
+          "tools": [
+            "quest.issued"
+          ]
+        }
+      }
+    },
+    "text": "```json\n{\n  \"fields\": {\n    \"summary\": \"청록 이끼 3다발 중 2다발을 회수했습니다. 최상단 선반의 이끼는 접근 불가로 인해 회수하지 못했습니다.\",\n    \"tools\": \"등불을 휴대했습니다.\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [],\n    \"refs_by_field\": {\n      \"summary\": [\"a2\", \"a3\", \"a4\", \"a5\"],\n      \"tools\": [\"quest.issued\"]\n    }\n  }\n}\n```"
+  }
+]

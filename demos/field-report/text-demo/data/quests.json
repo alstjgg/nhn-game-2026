@@ -1,0 +1,205 @@
+[
+  {
+    "id": "q1",
+    "no": "01",
+    "title": "약초상의 재고",
+    "goal": "청록 이끼 3다발 회수",
+    "goalKey": "moss3",
+    "site": "약초상 창고, 3단 선반",
+    "issued": ["등불 ×1"],
+    "rules": [],
+    "reward": 40,
+    "retryCost": 20,
+    "pointRule": "any",
+    "nextKeyword": "종탑 — 높이 · 부식 · 시간",
+    "fallout": {
+      "a5": { "from": "약초상", "text": "이끼가 두 다발뿐입니다. 세 다발 값을 치렀는데요.", "token": -40, "trust": -5 },
+      "왜곡": { "from": "사무소 감사역", "text": "보고서에는 '무리 없이 진행되었다'고 적혀 있는데, 회수품 장부에는 두 다발입니다.", "token": 0, "trust": -5 }
+    },
+    "draft": [
+      { "skill": "timeline", "version": "v1", "label": "시각 기록 (새 양식)" },
+      { "skill": "tools", "version": "v2", "label": "사용한 도구 v2" },
+      { "skill": "unachieved", "version": "v3", "label": "미달성 항목 v3" }
+    ],
+    "start": "T1a",
+    "onCorrectPoint": "T1b",
+    "onWrongPoint": "T1a",
+    "variants": {
+      "T1a": {
+        "achievements": [],
+        "evidence": {
+          "소지품": "등불 ×1 (사용)",
+          "체류": "9분",
+          "회수품": "청록 이끼 ×2"
+        },
+        "log": [
+          { "id": "a1", "action": "ENTER", "target": "창고", "result": "ok" },
+          { "id": "a2", "action": "OBSERVE", "target": "선반", "result": "ok", "note": "이끼 3다발 확인 — 1단·2단·3단(최상단)" },
+          { "id": "a3", "action": "TAKE", "target": "청록 이끼", "result": "ok", "note": "1단" },
+          { "id": "a4", "action": "TAKE", "target": "청록 이끼", "result": "ok", "note": "2단" },
+          { "id": "a5", "action": "REACH", "target": "선반 3단", "result": "FAIL", "note": "손이 닿지 않음 — 도구 없음", "major": true, "coveredBy": "unachieved" },
+          { "id": "a6", "action": "LEAVE", "target": "창고", "result": "ok" }
+        ]
+      },
+      "T1b": {
+        "achievements": ["moss3"],
+        "evidence": {
+          "소지품": "등불 ×1 (사용)",
+          "체류": "14분",
+          "회수품": "청록 이끼 ×3"
+        },
+        "log": [
+          { "id": "a1", "action": "ENTER", "target": "창고", "result": "ok" },
+          { "id": "a2", "action": "OBSERVE", "target": "선반", "result": "ok", "note": "이끼 3다발 확인" },
+          { "id": "a3", "action": "TAKE", "target": "청록 이끼", "result": "ok", "note": "1단" },
+          { "id": "a4", "action": "TAKE", "target": "청록 이끼", "result": "ok", "note": "2단" },
+          { "id": "a5", "action": "OBSERVE", "target": "벽면", "result": "ok", "note": "정비용 사다리 발견" },
+          { "id": "a6", "action": "USE", "target": "사다리", "result": "ok", "note": "현장 조달" },
+          { "id": "a7", "action": "TAKE", "target": "청록 이끼", "result": "ok", "note": "3단 최상단" },
+          { "id": "a8", "action": "LEAVE", "target": "창고", "result": "ok" }
+        ]
+      }
+    }
+  },
+  {
+    "id": "q2",
+    "no": "02",
+    "title": "종탑의 기록부",
+    "goal": "종탑 꼭대기 기록실의 출입 기록부 회수",
+    "goalKey": "ledger",
+    "site": "폐종탑. 계단 부식 심각",
+    "issued": ["갈고리 장대 ×1", "등불 ×1"],
+    "rules": ["부식 구간은 갈고리 장대로 우회 등반이 가능하다."],
+    "reward": 70,
+    "retryCost": 25,
+    "pointRule": "any",
+    "nextKeyword": "금고 — 이중봉인 · 관리인 · 각인",
+    "fallout": {
+      "b3": { "from": "의뢰인", "text": "종탑에 올라가긴 하신 겁니까? 반납된 갈고리 장대가 새것입니다.", "token": -35, "trust": -5 },
+      "b6": { "from": "보급계", "text": "등불이 반납되지 않았습니다. 파손이면 파손이라고 적으셨어야죠.", "token": -15, "trust": 0 }
+    },
+    "draft": [
+      { "skill": "losses", "version": "v2", "label": "입은 손실 v2 (새 양식)" },
+      { "skill": "summary", "version": "v3", "label": "결과 요약 v3" },
+      { "skill": "encounters", "version": "v1", "label": "조우 기록 (새 양식)" }
+    ],
+    "start": "T2a",
+    "onCorrectPoint": "T2b",
+    "onWrongPoint": "T2a2",
+    "variants": {
+      "T2a": {
+        "achievements": [],
+        "evidence": {
+          "소지품": "갈고리 장대 ×1 (미사용) · 등불 ×1",
+          "체류": "6분",
+          "회수품": "없음",
+          "부상": "없음"
+        },
+        "log": [
+          { "id": "b1", "action": "ENTER", "target": "종탑", "result": "ok" },
+          { "id": "b2", "action": "OBSERVE", "target": "계단", "result": "ok", "note": "3층 구간 부식 심함" },
+          { "id": "b3", "action": "DECIDE", "target": "철수", "result": "ok", "note": "위험하다고 판단하여 등반을 시도하지 않음 — 실패가 아니라 미시도", "major": true, "coveredBy": "summary" },
+          { "id": "b4", "action": "LEAVE", "target": "종탑", "result": "ok" }
+        ]
+      },
+      "T2a2": {
+        "achievements": [],
+        "evidence": {
+          "소지품": "갈고리 장대 ×1 (미사용) · 등불 ×1",
+          "체류": "8분",
+          "회수품": "없음",
+          "부상": "없음"
+        },
+        "log": [
+          { "id": "b1", "action": "ENTER", "target": "종탑", "result": "ok" },
+          { "id": "b2", "action": "OBSERVE", "target": "계단 하단", "result": "ok", "note": "지적에 따라 하단부를 재점검" },
+          { "id": "b3", "action": "DECIDE", "target": "철수", "result": "ok", "note": "다시 위험하다고 판단하여 등반을 시도하지 않음", "major": true, "coveredBy": "summary" },
+          { "id": "b4", "action": "LEAVE", "target": "종탑", "result": "ok" }
+        ]
+      },
+      "T2b": {
+        "achievements": ["ledger"],
+        "evidence": {
+          "소지품": "갈고리 장대 ×1 (사용) · 등불 — 파손",
+          "체류": "24분",
+          "회수품": "출입 기록부 ×1",
+          "부상": "없음"
+        },
+        "log": [
+          { "id": "b1", "action": "ENTER", "target": "종탑", "result": "ok" },
+          { "id": "b2", "action": "OBSERVE", "target": "계단", "result": "ok", "note": "3층 구간 부식 심함" },
+          { "id": "b3", "action": "USE", "target": "갈고리 장대", "result": "ok", "note": "부식 구간 우회" },
+          { "id": "b4", "action": "CLIMB", "target": "기록실", "result": "ok", "note": "꼭대기 도달" },
+          { "id": "b5", "action": "TAKE", "target": "출입 기록부", "result": "ok" },
+          { "id": "b6", "action": "LOSS", "target": "등불", "result": "ok", "note": "하강 중 낙하하여 파손 — 지급품 손실", "major": true, "coveredBy": "losses", "severity": "low" },
+          { "id": "b7", "action": "LEAVE", "target": "종탑", "result": "ok" }
+        ]
+      }
+    }
+  },
+  {
+    "id": "q3",
+    "no": "03",
+    "title": "관리인의 금고",
+    "goal": "금고 안의 「사서의 열쇠」 회수",
+    "goalKey": "key",
+    "site": "기록관 지하 금고실",
+    "issued": ["절단기 ×1 (1회용)", "등불 ×1"],
+    "rules": [
+      "금고는 이중 봉인이다 — 인장 봉인 + 사슬 자물쇠.",
+      "인장 봉인은 3층 관리인 집무실의 인장 원본으로만 풀린다.",
+      "사슬 자물쇠는 절단기로만 절단할 수 있다.",
+      "관리인은 밤에만 자리를 비운다.",
+      "사서의 열쇠에는 각인 3열이 있다."
+    ],
+    "reward": 120,
+    "retryCost": 40,
+    "pointRule": "all",
+    "nextKeyword": null,
+    "draft": [],
+    "start": "T3a",
+    "onCorrectPoint": "T3b",
+    "onWrongPoint": "T3a",
+    "final": true,
+    "variants": {
+      "T3a": {
+        "achievements": [],
+        "evidence": {
+          "소지품": "절단기 ×1 (미사용) · 등불 ×1",
+          "체류": "75분",
+          "회수품": "열쇠 형태의 물체 ×1",
+          "동행": "없음",
+          "조우": "0건"
+        },
+        "log": [
+          { "id": "c1", "action": "ENTER", "target": "기록관", "result": "ok", "note": "14:20 — 주간" },
+          { "id": "c2", "action": "OBSERVE", "target": "3층 집무실", "result": "FAIL", "note": "관리인 재실 — 진입 불가, 인장 원본 미확보", "major": true, "coveredBy": "unachieved" },
+          { "id": "c3", "action": "MOVE", "target": "지하 금고실", "result": "ok" },
+          { "id": "c4", "action": "OBSERVE", "target": "금고", "result": "ok", "note": "인장 봉인·사슬 자물쇠 모두 온전함 — 금고는 열리지 않음" },
+          { "id": "c5", "action": "TAKE", "target": "열쇠 형태의 물체", "result": "ok", "note": "금고실 바닥에서 습득. 각인 대조 미실시 — 목표물 동일성 미검증", "major": true, "coveredBy": "summary" },
+          { "id": "c6", "action": "LEAVE", "target": "기록관", "result": "ok", "note": "15:35" }
+        ]
+      },
+      "T3b": {
+        "achievements": ["key"],
+        "evidence": {
+          "소지품": "절단기 ×1 (사용·소모) · 등불 ×1",
+          "체류": "52분",
+          "회수품": "사서의 열쇠 ×1 (각인 3열 대조 완료)",
+          "동행": "없음",
+          "조우": "1건"
+        },
+        "log": [
+          { "id": "c1", "action": "ENTER", "target": "기록관", "result": "ok", "note": "23:40 — 야간" },
+          { "id": "c2", "action": "MOVE", "target": "3층 집무실", "result": "ok", "note": "관리인 부재" },
+          { "id": "c3", "action": "TAKE", "target": "인장 원본", "result": "ok" },
+          { "id": "c4", "action": "USE", "target": "인장 원본", "result": "ok", "note": "인장 봉인 해제" },
+          { "id": "c5", "action": "USE", "target": "절단기", "result": "ok", "note": "사슬 절단" },
+          { "id": "c6", "action": "TRACE", "target": "절단면", "result": "ok", "note": "절단면과 소음 흔적이 현장에 남음 — 추적 가능", "major": true, "coveredBy": "losses", "severity": "low" },
+          { "id": "c7", "action": "TAKE", "target": "사서의 열쇠", "result": "ok", "note": "각인 3열 대조 완료" },
+          { "id": "c8", "action": "LEAVE", "target": "기록관", "result": "ok" }
+        ]
+      }
+    }
+  }
+]
