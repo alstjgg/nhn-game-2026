@@ -2,8 +2,10 @@
 
 Probe runner for DDAY test programs. Zero dependencies, plain Node ≥24.
 
-First consumer is the [mechanism deep-test plan](../../docs/dday-mechanism-deep-test.md).
-It is built to outlive that program — see [Adding a test type](#adding-a-test-type).
+First consumer is the [mechanism deep-test plan](../../docs/dday-mechanism-deep-test.md)
+— see its §8 for the operating procedure. The harness is built to outlive that
+program: [**EXTENDING.md**](./EXTENDING.md) covers pointing it at other tests,
+with worked recipes and what each planned test still needs.
 
 ## Why not subagents
 
@@ -128,6 +130,8 @@ the diff check polices — so an arm may only override slots its channel owns
 (`CHANNEL_SLOTS` in `lib/calltypes.mjs`, mirroring plan §7.2).
 
 ## Adding a test type
+
+Summary below; the full guide with worked recipes is [EXTENDING.md](./EXTENDING.md).
 
 A test type is a **(call type × suite)** pair. Suites are data and need no code.
 A new *call type* is one entry in `lib/calltypes.mjs` plus a `templates/<dir>/`:

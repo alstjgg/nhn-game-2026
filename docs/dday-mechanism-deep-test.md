@@ -620,38 +620,156 @@ advisory-log entries (§5.3).
 - Raw artifacts are never edited after the fact. Discarded and failed runs stay
   in place, quarantined, not deleted (§3 rule 5).
 
-## 8. Work order
+## 8. Running the program
 
-| Step | Work | Deliverable | State |
-|---|---|---|---|
-| 1 | Confirm inventory (§4) | Channel and effect tables agreed by team | Draft done — awaiting team confirmation |
-| 2 | Confirm shared test frame (§2, §5, §6, §7, §9) | This document | Draft done — awaiting team confirmation |
-| 3 | Fix the call shape, then author test suites (§8.1) | Tool-use schema; per-channel/effect suites; pre-registration sheet and reachability audit per probe | Runner + schema built (`infra/test-harness`, schema in `lib/calltypes.mjs`), `E0` suite authored; remaining suites pending. Not blocked on backend ownership — see §8.1 |
-| 4 | Shape re-validation, pipeline calibration, then screening | (a) Re-run one verified probe under the production call shape (§2) — suite `E0-shape-revalidation`, which ports V2-doubleprime onto template v0.4 (baseline + live, 3 each, K1 fixture); (b) run the C-BLOCK placebo (§4.1); (c) run the negative-control mechanism through the complete pipeline (§2); (d) screen E-DISC and E-CONT; (e) once the D-task A/B freezes template v1: **re-baseline convergence at N≥10 on v1** — every prior boundary law was derived under the old base, and if the baseline is no longer degenerate (e.g. 7/10 where the old base gave 21/21), resize N per arm and the stopping rule (§5.4) before step 5; the re-baseline also records **output tokens per schema field**, feeding the §7.1 demotion rule | Pending — (a)–(c) gate everything downstream; (e) gates step 5 |
-| 5 | Deep-test surviving channels and effects × Tier A axes (§5.1); gate candidates additionally through Tier B (§5.2) | Boundary-law lists, stance-distribution data, per-effect recipes, verdict cards (§9.2) | Pending |
-| 6 | Compile the mechanism spec | Boundary laws + authoring guidelines + difficulty variables + gate recipes + verdict cards with human gate/texture/drop decisions — the input for scenario generation and the agent default-prompt spec | Pending |
+§7 defines what a probe is made of. This section is how one gets authored, run,
+and read, and it absorbs the former work order (now §8.7). Runner:
+[`infra/test-harness`](../infra/test-harness/README.md); extending it to other
+test programs: [EXTENDING.md](../infra/test-harness/EXTENDING.md).
 
-### 8.1 Step 3 in detail
+### 8.1 Setup (once per machine)
 
-1. **Fix the tool-use schema**, mirroring the architecture spec's full judgment
-   schema — stance selection plus the free output fields (§1). Not blocked on
-   backend ownership: if no call-shape owner is assigned by the time suites are
-   ready to run, the mechanism owner fixes a provisional schema as a testing
-   prerequisite, and the proxy implementation later conforms to it or raises
-   objections before its own build starts. The schema must be fixed before the
-   first step-4 call. **Done** — the provisional schema is
-   `CALL_TYPES.judgment.buildTool` in `infra/test-harness/lib/calltypes.mjs`,
-   field order `inner_note → stance → because → rejected → utterance`, forced
-   via `tool_choice`. The proxy conforms to it or objects before its build.
-2. **Author the gates**, each with its own stance set — behavior orientations,
-   never canned utterances (§1).
-3. **Author the probe payloads**: live and placebo arms per probe (§2).
-4. **Author the temperament fixtures** out-of-band under
-   `infra/test-harness/templates/judgment/temperament/` (§1, §3) — one per probe
-   as pre-registered, identical across that probe's arms.
-5. **Write the pre-registration sheet** (§9.1) and **run the reachability
-   audit** (§5.2 B1) for every probe. Both are part of authoring, not
-   afterthoughts.
+Node ≥24. No install — the harness has no dependencies.
+
+```bash
+cd infra/test-harness
+node lib/selftest.mjs           # offline checks; must pass before anything else
+export ANTHROPIC_API_KEY=...    # env only (CLAUDE.md rule 6) — never a file, never a suite field
+```
+
+One thing to confirm before the first measured call, and only once: that the
+transport grants no tool other than the output schema. This is §3 rule 1, and it
+is the rule the previous harness failed silently. It is satisfied by reading
+`lib/transport.mjs` rather than by running anything — the point is that a bare
+API call has no repository to reach.
+
+### 8.2 Authoring a probe
+
+1. **The gate** — one question and its stance set. Labels are behavior
+   orientations, never canned utterances (§1).
+2. **The arms** — baseline (no injection), live, placebo (§2). Only the injected
+   element differs; the runner diff-checks the rest.
+3. **The temperament fixture** — one per probe, byte-identical across arms
+   (§7.1). Not a probe surface in this program.
+4. **The pre-registration sheet** (§9.1), drop condition and contingencies
+   included. The suite file *is* the sheet: without those fields the runner
+   refuses to spend a call.
+5. **The reachability audit** (§5.2 B1) — paper, zero calls.
+
+Steps 1–4 are the suite JSON. Step 5 is not, and is the step an operator in a
+hurry skips — it is also the one that catches the isolation-passes /
+full-run-fails class before it costs a run.
+
+The tool-use schema is fixed in code (`CALL_TYPES.judgment.buildTool`, field
+order `inner_note → stance → because → rejected → utterance`, forced via
+`tool_choice`) and is **not blocked on backend ownership**: the mechanism owner
+fixed it as a testing prerequisite, and the proxy conforms to it or objects
+before its own build starts.
+
+### 8.3 Executing
+
+Cheapest first. Each step can fail a probe before the next one costs anything.
+
+```bash
+node lib/selftest.mjs                          # the harness itself
+node run.mjs <suite> --print-prompt=live       # read the composed prompt — free
+node run.mjs <suite> --dry-run --out=/tmp/dry  # whole pipeline, no charge
+node run.mjs <suite>                           # spends calls
+```
+
+`--print-prompt` is the highest-yield check available: most authoring mistakes
+are visible in the composed text, and looking costs nothing.
+
+The ordered discipline is §7.3; the runner enforces the parts it can. It refuses
+to start on an incomplete pre-registration, an unpinned model alias, a missing
+baseline arm, or a dirty arm diff. Per call it verifies tool forcing and foreign
+tool use, wall-clocks latency, counts schema retries, and writes the response
+verbatim before computing anything. A hard failure is discarded, re-called, and
+kept in place flagged (§3 rules 2, 5); a hallucinated block id is recorded but
+**not** retried, because it is data about the mechanism.
+
+### 8.4 Deliverables
+
+| Scope | Artifact | Where |
+|---|---|---|
+| per arm | `calls-<arm>.md` (primary, verbatim) + `metrics-<arm>.json` (derived) | `planning/dday-mechanism/runs/<EXP>-calls/` (§7.4) |
+| per probe | pre-registration sheet | the suite JSON (§9.1) |
+| per probe | reachability audit note | filed with the suite (§5.2 B1) |
+| per mechanism | blind-coding recovery x/y | §5.2 B3 |
+| per mechanism | **verdict card** | §9.2 |
+| per program | boundary laws, authoring guidelines, difficulty variables, gate recipes | the mechanism spec (§8.7 step 6) |
+
+### 8.5 What a human has to read
+
+In this order. Reading it out of order is how a program talks itself into a
+result.
+
+1. **The composed prompt** (`--print-prompt`), before spending anything. Is an
+   axis leaking into the base (§7.1 registry)? Is the injected block actually in
+   the slot you think it is?
+2. **`calls-<arm>.md`, verbatim** — the responses themselves, not a summary.
+   This is the primary record; the JSON is derived from it.
+3. **The arm table** — `stance` beside `because_referent`. The referent is what
+   separates token-matching from referent bleed on a flipped placebo (§2).
+4. **The compliance block** — discards, schema retries, foreign tool uses,
+   invalid block ids. A clean distribution sitting on a dirty compliance block is
+   not a result.
+5. **Latency per call**, against the hiding budget (§1).
+6. **The blind-coding packet** — arm labels stripped, coder ≠ probe author
+   (§5.2 B3).
+
+Do not start at `metrics-*.json`. Aggregates exist for recomputation and
+comparison, not for forming the first impression.
+
+### 8.6 Assessing a result
+
+Read the arms as a set, as sequences, never as rates:
+
+| Reading | Pattern | What it means |
+|---|---|---|
+| Credited | baseline stable · live moves · placebo stable | The mechanism moved the judgment. Tier A evidence — texture unless Tier B follows (§5.2) |
+| Placebo flipped | baseline stable · live moves · **placebo moves** | Discriminate on `because_referent`: content misattributed to the live referent ⇒ token-matching; bystander named correctly while the stance still shifts ⇒ referent bleed (§2). Different laws, different fixes |
+| No movement | baseline ≈ live | Diagnose before re-authoring (§6). A legible failure earns one rewrite; an illegible one is an immediate drop |
+| Baseline unstable | baseline disperses on its own | Not a probe result at all. The stopping rule was sized against a convergent baseline — resize N first (§5.4) |
+
+Then apply the pre-registered drop condition **as written**, record any
+contingency that fired, and take the verdict card to §9.3 for gate / texture /
+drop. Ambiguity defaults to texture.
+
+What a result does not license: 3/3 is consistent with a true rate as low as
+~37% (§5.4), so three calls never yield "verified". `inner_note`, `because`, and
+`rejected` are post-hoc self-reports — admissible as the placebo discriminator
+and the traceability check, never as the evidence itself. The distribution
+carries the claim.
+
+### 8.7 Program order
+
+Frame confirmation (inventory, shared test frame) is roadmap MS1 and is not
+repeated here, which is why the numbering starts at 3.
+
+| Step | Work | State |
+|---|---|---|
+| 3 | Fix the call shape; author suites (§8.2) | Runner and schema built (`infra/test-harness`); `E0` authored, remaining suites pending |
+| 4 | Shape re-validation, pipeline calibration, screening — below | (a)–(c) gate everything downstream; (e) gates step 5 |
+| 5 | Deep-test survivors × Tier A axes (§5.1); gate candidates also through Tier B (§5.2) | Pending |
+| 6 | Compile the mechanism spec (§8.4) | Pending |
+
+Step 4, in order:
+
+- **(a)** Re-run one verified probe under the production call shape (§2) — suite
+  `E0-shape-revalidation`, porting V2-doubleprime onto template v0.4 (baseline +
+  live, 3 each, K1 fixture).
+- **(b)** The C-BLOCK placebo (§4.1) — the first real mechanism question in the
+  program.
+- **(c)** The negative-control mechanism through the complete pipeline (§2). If
+  it returns "verified", stop: the pipeline cannot produce a negative, and
+  everything it has blessed is suspect.
+- **(d)** Screen E-DISC and E-CONT (§6).
+- **(e)** Once the D-task A/B freezes template v1: **re-baseline convergence at
+  N≥10 on v1.** Every prior boundary law was derived under the old base; if the
+  baseline is no longer degenerate (e.g. 7/10 where the old base gave 21/21),
+  resize N per arm and the stopping rule (§5.4) before step 5. This run also
+  records output tokens per schema field, feeding the §7.1 demotion rule.
 
 ## 9. Decision procedure
 
