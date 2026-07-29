@@ -98,7 +98,7 @@ Haiku의 값이 다른 두 모델과 같은 눈금이 아님을 명시한다. �
 
 ```bash
 aws sso login --profile nhn-game
-cd demos/field-report/bench && AWS_PROFILE=nhn-game node bench.mjs --samples=5 --out=RESULT.md
+cd planning/field-report-poc/bench && AWS_PROFILE=nhn-game node bench.mjs --samples=5 --out=RESULT.md
 ```
 
 | 플래그 | 설명 |
