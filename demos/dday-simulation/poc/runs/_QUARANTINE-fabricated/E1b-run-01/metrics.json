@@ -1,0 +1,25 @@
+{
+  "experiment": "E1b",
+  "run": 1,
+  "prompt_set": "base",
+  "calls": [
+    {"id": "J1", "latency_s": 15.311, "choice": "b"},
+    {"id": "J2", "latency_s": 14.632, "choice": "c"},
+    {"id": "J3", "latency_s": 9.084, "choice": "b"},
+    {"id": "J4", "latency_s": 12.872, "choice": "c"},
+    {"id": "J5", "latency_s": 11.447, "choice": "b"},
+    {"id": "J6", "latency_s": 7.877, "choice": "b"},
+    {"id": "J7", "latency_s": 10.426, "choice": "a"},
+    {"id": "J8", "latency_s": 33.354, "choice": "b"}
+  ],
+  "report_call": {"latency_s": 52.662, "sentences": 17, "sections": 4, "format_violation": false},
+  "result": {
+    "g1": true,
+    "g2": false,
+    "trust_final": 65,
+    "found": {"suspect_gauge": true, "seo_active": true, "f3": false, "found_T1": true, "dose_info": true, "manual_prep": true, "reported_stable": false, "t1_sealed": false},
+    "choices": {"J1": "b", "J2": "c", "J3": "b", "J4": "c", "J5": "b", "J6": "b", "J7": "a", "J8": "b"},
+    "ending_line": "g1_only"
+  },
+  "notes": ["J8 응답이 도구 호출 2회 + JSON 뒤 부연설명을 동반해 도착 (프롬프트는 '도구 사용 금지·즉시 답' 지시). 파싱에는 지장 없음 — 형식 이탈로 기록."]
+}

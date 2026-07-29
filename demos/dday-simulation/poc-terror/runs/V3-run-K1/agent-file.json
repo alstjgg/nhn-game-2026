@@ -1,0 +1,15 @@
+{
+  "run": "V3-run-K1",
+  "definitions": {"judgment": "sim-field-haiku-k1", "reporter": "sim-field-haiku-reporter-k1"},
+  "model": "haiku",
+  "tools": [],
+  "temperament_id": "K1",
+  "temperament_in_payload": false,
+  "temperament_location": ".claude/agents/sim-field-haiku-k1.md (대역 외)",
+  "payload_variant": "boundary_payloads.canonical",
+  "agent_file": {
+    "역할": ["현장 상황실에 파견된 재난 대응 요원. 회선과 화면으로만 세계를 본다."],
+    "우선순위": [], "절차": [], "중단 조건": [], "아는 사실": [], "가설": [], "보고 형식": []
+  },
+  "note": "V0과 동일한 페이로드·문서. 차이는 정의 파일의 기질 산문뿐이다."
+}

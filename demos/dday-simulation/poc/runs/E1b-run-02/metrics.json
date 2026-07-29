@@ -1,0 +1,29 @@
+{
+  "experiment": "E1b",
+  "run": 2,
+  "prompt_set": "base",
+  "slice_version": "보정 후",
+  "calls": [
+    {"id": "J1", "latency_s": 12.114, "choice": "b", "tool_uses": 0},
+    {"id": "J2", "latency_s": 12.816, "choice": "c", "tool_uses": 0},
+    {"id": "J3", "latency_s": 18.895, "choice": "b", "tool_uses": 0},
+    {"id": "J4", "latency_s": 16.326, "choice": "c", "tool_uses": 0},
+    {"id": "J5", "latency_s": 18.803, "choice": "b", "tool_uses": 0},
+    {"id": "J6", "latency_s": 14.861, "choice": "b", "tool_uses": 0, "note": "오염 폐기 후 재호출"},
+    {"id": "J7", "latency_s": 11.622, "choice": "a", "tool_uses": 0},
+    {"id": "J8", "latency_s": 23.622, "choice": "b", "tool_uses": 0}
+  ],
+  "discarded_calls": [
+    {"id": "J6", "latency_s": 956.376, "tool_uses": 57, "reason": "§0-1·2·3 위반 — 서브에이전트가 판단 대신 저장소를 읽고 페이퍼 테스트를 자체 실행. 응답 폐기, 산출물은 runs/_QUARANTINE-fabricated/로 격리."}
+  ],
+  "report_call": {"latency_s": 39.217, "sentences": 18, "sections": 4, "format_violation": false, "retries": 1, "first_attempt": {"latency_s": 30.555, "sentences": 22, "reason": "상한 20 초과"}},
+  "result": {
+    "g1": true,
+    "g2": false,
+    "trust_final": 65,
+    "found": {"suspect_gauge": true, "seo_active": true, "f3": false, "found_T1": true, "dose_info": true, "manual_prep": true, "reported_stable": false, "t1_sealed": false},
+    "choices": {"J1": "b", "J2": "c", "J3": "b", "J4": "c", "J5": "b", "J6": "b", "J7": "a", "J8": "b"},
+    "ending_line": "g1_only"
+  },
+  "notes": ["J1·J2·J5·J8의 because가 빈 배열.", "보고서 재시도본이 존댓말 레지스터로 이동."]
+}

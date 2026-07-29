@@ -1,0 +1,63 @@
+{
+  "run": "V0-run-03",
+  "def_judgment": "sim-field-haiku-neutral",
+  "def_reporter": "sim-field-haiku-reporter-neutral",
+  "model": "haiku",
+  "payload_variant": "canonical",
+
+  "calls": [
+    {"id": "J1", "def": "sim-field-haiku-neutral", "latency_s": 26.193, "schema_retries": 1, "tool_uses": 0, "choice": "b",
+     "violation": "codefence", "retry_result": {"choice": "b", "latency_s": 23.285, "tool_uses": 0, "violation": "codefence"},
+     "adopted": "original", "note": "rejected 서술에 시간 산술 오류 ('13시까지 2시간 20분' — 실제 3시간 20분)"},
+    {"id": "J2", "def": "sim-field-haiku-neutral", "latency_s": 18.735, "schema_retries": 0, "tool_uses": 0, "choice": "b", "violation": "codefence"},
+    {"id": "J3", "def": "sim-field-haiku-neutral", "latency_s": 31.833, "schema_retries": 0, "tool_uses": 0, "choice": "a", "violation": "codefence"},
+    {"id": "J4", "def": "sim-field-haiku-neutral", "latency_s": 24.379, "schema_retries": 0, "tool_uses": 0, "choice": "b", "violation": "codefence"},
+    {"id": "J5", "def": "sim-field-haiku-neutral", "latency_s": 25.219, "schema_retries": 0, "tool_uses": 0, "choice": "b", "violation": "codefence"},
+    {"id": "J6", "def": "sim-field-haiku-neutral", "latency_s": 51.419, "schema_retries": 0, "tool_uses": 0, "choice": "b", "violation": "codefence"},
+    {"id": "J7", "def": "sim-field-haiku-neutral", "latency_s": 58.527, "schema_retries": 0, "tool_uses": 0, "choice": "b",
+     "violation": "codefence + because_invalid_id", "because": ["역할", "recent_events"]},
+    {"id": "J8", "def": "sim-field-haiku-neutral", "latency_s": 16.287, "schema_retries": 0, "tool_uses": 0, "choice": "c",
+     "violation": "codefence", "note": "utterance가 발화가 아니라 행동 서술 — 침묵 옵션에서의 저작 미규정"},
+    {"id": "report", "def": "sim-field-haiku-reporter-neutral", "latency_s": 59.196, "schema_retries": 1, "tool_uses": 0,
+     "violation": "문장 수 47 (상한 20 초과)", "retry_result": {"latency_s": 100.241, "tool_uses": 0, "violation": null}, "adopted": "retry"}
+  ],
+
+  "latency": {
+    "judgment_calls": 8,
+    "judgment_mean_s": 31.57,
+    "judgment_min_s": 16.287,
+    "judgment_max_s": 58.527,
+    "report_mean_s": 79.72
+  },
+
+  "compliance": {
+    "schema_violation_total": 0,
+    "tool_violation_total": 0,
+    "arithmetic_attempt_total": 0,
+    "narrative_arithmetic_error": 1,
+    "format_violation_codefence": 8,
+    "format_violation_codefence_after_retry": 1,
+    "because_invalid_id_total": 1,
+    "report_format_violation": 1,
+    "report_format_violation_after_retry": 0
+  },
+
+  "result": {
+    "g1": false, "g2": true, "g3": true,
+    "rapport_final": 55,
+    "suspect_lock_final": 35,
+    "record_status": "상황실판단",
+    "line_alive": true,
+    "found": {"T1": false, "T2": false},
+    "flags": {"background_heard": false, "t1_clue": true, "sign_clue": true,
+              "jeong_blocked": false, "yoon_defensive": false, "j8b_enabled": true, "arrested": false},
+    "choices": {"J1": "b", "J2": "b", "J3": "a", "J4": "b", "J5": "b", "J6": "b", "J7": "b", "J8": "c"}
+  },
+
+  "observations": {
+    "j1_trap_fall": false,
+    "trajectory_identical_to": "V0-run-02",
+    "j8b_visible": false,
+    "j6b_gate_open": false
+  }
+}

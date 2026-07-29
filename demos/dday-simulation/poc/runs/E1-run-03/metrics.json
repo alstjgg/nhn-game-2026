@@ -1,0 +1,25 @@
+{
+  "experiment": "E1",
+  "run": 3,
+  "prompt_set": "base",
+  "calls": [
+    {"id": "J1", "latency_s": 20.589, "choice": "b"},
+    {"id": "J2", "latency_s": 17.117, "choice": "c"},
+    {"id": "J3", "latency_s": 11.107, "choice": "c"},
+    {"id": "J4", "latency_s": 11.040, "choice": "c"},
+    {"id": "J5", "latency_s": 23.634, "choice": "b"},
+    {"id": "J6", "latency_s": 9.913, "choice": "b"},
+    {"id": "J7", "latency_s": 16.942, "choice": "a"},
+    {"id": "J8", "latency_s": 46.091, "choice": "b"}
+  ],
+  "report_call": {"latency_s": 29.043, "sentences": 20, "sections": 4, "format_violation": false},
+  "result": {
+    "g1": true,
+    "g2": false,
+    "trust_final": 60,
+    "found": {"suspect_gauge": true, "seo_active": true, "f3": true, "found_T1": true, "dose_info": true, "manual_prep": true, "reported_stable": false, "t1_sealed": false},
+    "choices": {"J1": "b", "J2": "c", "J3": "c", "J4": "c", "J5": "b", "J6": "b", "J7": "a", "J8": "b"},
+    "ending_line": "g1_only"
+  },
+  "notes": ["J8 응답의 because가 빈 배열.", "보고서가 정확히 20문장 — 상한선."]
+}

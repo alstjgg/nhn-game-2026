@@ -1,0 +1,25 @@
+{
+  "experiment": "E1",
+  "run": 1,
+  "prompt_set": "base",
+  "calls": [
+    {"id": "J1", "latency_s": 13.267, "choice": "b"},
+    {"id": "J2", "latency_s": 6.479, "choice": "c"},
+    {"id": "J3", "latency_s": 12.416, "choice": "c"},
+    {"id": "J4", "latency_s": 15.011, "choice": "c"},
+    {"id": "J5", "latency_s": 33.219, "choice": "b"},
+    {"id": "J6", "latency_s": 10.782, "choice": "b"},
+    {"id": "J7", "latency_s": 10.998, "choice": "a"},
+    {"id": "J8", "latency_s": 23.965, "choice": "b"}
+  ],
+  "report_call": {"latency_s": 43.880, "sentences": 18, "sections": 4, "format_violation": false},
+  "result": {
+    "g1": true,
+    "g2": false,
+    "trust_final": 60,
+    "found": {"suspect_gauge": true, "seo_active": true, "f3": true, "found_T1": true, "dose_info": true, "manual_prep": true, "reported_stable": false, "t1_sealed": false},
+    "choices": {"J1": "b", "J2": "c", "J3": "c", "J4": "c", "J5": "b", "J6": "b", "J7": "a", "J8": "b"},
+    "ending_line": "g1_only"
+  },
+  "notes": ["J4 응답이 코드펜스로 감싸여 도착 (프롬프트는 코드펜스 금지). 내용 파싱에는 지장 없음."]
+}

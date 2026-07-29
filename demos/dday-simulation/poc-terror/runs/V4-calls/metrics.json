@@ -1,0 +1,61 @@
+{
+  "experiment": "V4",
+  "hypothesis": "경계 상황·조건 충돌에서 드라마가 나온다 (분산·서열 관찰)",
+  "grade": "observation_only",
+  "verdict": "no_judgment (계획 §4대로 판정 없음)",
+
+  "part_A_boundary": {
+    "def": "sim-field-haiku-k1",
+    "payload": "boundary_payloads.B0",
+    "source": "V2 본시험 무사실 3콜 재사용",
+    "choices": ["b", "b", "d"],
+    "distinct": 2,
+    "observation": "B0는 K1에게 경계가 아니었다. 3콜 모두 조건이 발동했고 분산은 {b,d}(안정 우선 계열) 안에서만 발생했다. 개입 강도 차이일 뿐 게이트 판정 층위의 분산은 아니다."
+  },
+
+  "part_B_conflict": {
+    "def": "sim-field-haiku-k3",
+    "payload": "conflict_payload_J4c",
+    "calls": [
+      {"id": "C-1", "latency_s": 73.210, "schema_retries": 0, "tool_uses": 0, "choice": "d", "because": [], "violation": "codefence"},
+      {"id": "C-2", "latency_s": 114.732, "schema_retries": 0, "tool_uses": 0, "choice": "d", "because": [], "violation": "codefence + 메타 누출('지침')"},
+      {"id": "C-3", "latency_s": 50.708, "schema_retries": 0, "tool_uses": 0, "choice": "d", "because": [], "violation": "codefence"}
+    ],
+    "latency": {"calls": 3, "mean_s": 79.55, "min_s": 50.708, "max_s": 114.732},
+    "choices": ["d", "d", "d"],
+    "distinct": 1,
+    "unanimous": true
+  },
+
+  "conflict_resolution": {
+    "winner": "neither — 제3의 길",
+    "detail": "옵션 d가 두 절을 동시에 만족시킨다(기록 회피 + 겁에 질린 사람 우선). 진짜 충돌이 발생하지 않았다.",
+    "rejection_mapping": {
+      "a": "절1 (안정) — '부정적 판단을 기록하면 공포 상태를 악화'",
+      "b": "절2 (기록) — \"'겁에 질려 있다'는 단정이 기록에 남아\"",
+      "c": "절1 (안정) — '유보는 기록을 피하지만 발신자의 불안을 해결하지 못한다'"
+    },
+    "key_evidence": "b가 절2로 기각된 것. b는 절1만 있는 기질(K1)이라면 골랐을 선택인데, K3는 기록 회피 조항으로 잘랐다 — 두 절이 실제로 함께 작동했다.",
+    "implicit_ranking": {
+      "direction": "절1(사람의 안정) > 절2(기록 회피)",
+      "evidence": ["C-2 inner_note: '절차보다 신뢰가 먼저다.'", "C-3 inner_note: '그 숨소리는 신고다. 기록보다 안정이 먼저다.'"],
+      "note": "미저작 서열이 haiku 안에서 자발적으로 채워졌고 방향은 사람 쪽이었다. 단 행동은 회피(d)였으므로 서열은 내면 서술에서만 드러났다."
+    }
+  },
+
+  "design_observations": [
+    "옵션 d가 '둘 다 만족' 탈출구로 존재하는 한 서열 시험이 성립하지 않는다. d를 제거하고 a·b·c만 주면 b(절1 우선) vs c(절2 우선)의 양자택일이 되어 선택이 곧 서열이 된다.",
+    "분산 0은 기질이 강해서가 아니라 선택지 구조가 답을 하나로 만들었기 때문이다.",
+    "conflict_payload_J4c에는 effects가 없다. 실제 판단 지점으로 승격하려면 d의 엔진 효과 저작이 필요하다."
+  ],
+
+  "compliance": {
+    "schema_violation_total": 0,
+    "tool_violation_total": 0,
+    "arithmetic_attempt_total": 0,
+    "format_violation_codefence": 3,
+    "because_invalid_id_total": 0,
+    "temperament_meta_leak": 1,
+    "temperament_meta_leak_cumulative": 5
+  }
+}

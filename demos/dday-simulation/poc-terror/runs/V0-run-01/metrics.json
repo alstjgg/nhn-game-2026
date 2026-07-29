@@ -1,0 +1,63 @@
+{
+  "run": "V0-run-01",
+  "def_judgment": "sim-field-haiku-neutral",
+  "def_reporter": "sim-field-haiku-reporter-neutral",
+  "model": "haiku",
+  "payload_variant": "canonical",
+
+  "calls": [
+    {"id": "J1", "def": "sim-field-haiku-neutral", "latency_s": 38.388, "schema_retries": 1, "tool_uses": 0, "choice": "b",
+     "violation": "codefence", "retry_result": {"choice": "b", "latency_s": 19.445, "tool_uses": 0, "violation": "codefence"},
+     "adopted": "original"},
+    {"id": "J2", "def": "sim-field-haiku-neutral", "latency_s": 23.300, "schema_retries": 0, "tool_uses": 0, "choice": "b", "violation": "codefence"},
+    {"id": "J3", "def": "sim-field-haiku-neutral", "latency_s": 23.660, "schema_retries": 0, "tool_uses": 0, "choice": "a", "violation": "codefence"},
+    {"id": "J4", "def": "sim-field-haiku-neutral", "latency_s": 17.642, "schema_retries": 0, "tool_uses": 0, "choice": "b", "violation": "codefence"},
+    {"id": "J5", "def": "sim-field-haiku-neutral", "latency_s": 22.003, "schema_retries": 0, "tool_uses": 0, "choice": "b", "violation": "codefence"},
+    {"id": "J6", "def": "sim-field-haiku-neutral", "latency_s": 49.458, "schema_retries": 0, "tool_uses": 0, "choice": "b", "violation": "codefence"},
+    {"id": "J7", "def": "sim-field-haiku-neutral", "latency_s": 16.852, "schema_retries": 0, "tool_uses": 0, "choice": "b", "violation": "codefence"},
+    {"id": "J8", "def": "sim-field-haiku-neutral", "latency_s": 18.991, "schema_retries": 0, "tool_uses": 0, "choice": "a", "violation": "codefence"},
+    {"id": "report", "def": "sim-field-haiku-reporter-neutral", "latency_s": 113.127, "schema_retries": 1, "tool_uses": 0,
+     "violation": "3박자 미분리", "retry_result": {"latency_s": 93.569, "tool_uses": 0, "violation": null}, "adopted": "retry"}
+  ],
+
+  "latency": {
+    "judgment_calls": 8,
+    "judgment_mean_s": 26.29,
+    "judgment_min_s": 16.852,
+    "judgment_max_s": 49.458,
+    "report_mean_s": 103.35,
+    "note": "서브에이전트 벽시계 = API 지연의 상한 근사 (v1과 동일한 한계)"
+  },
+
+  "compliance": {
+    "schema_violation_total": 0,
+    "tool_violation_total": 0,
+    "arithmetic_attempt_total": 0,
+    "format_violation_codefence": 8,
+    "format_violation_codefence_after_retry": 1,
+    "because_invalid_id_total": 0,
+    "report_format_violation": 1,
+    "report_format_violation_after_retry": 0,
+    "note": "코드펜스는 JSON 필드·타입 위반이 아니므로 schema_violation과 분리 집계. J1 1회 재호출로 교정 실패 확인 후 동일 유형은 카운트만 함."
+  },
+
+  "result": {
+    "g1": false, "g2": true, "g3": true,
+    "rapport_final": 20,
+    "suspect_lock_final": 35,
+    "record_status": "상황실판단",
+    "line_alive": true,
+    "found": {"T1": false, "T2": false},
+    "flags": {"background_heard": false, "t1_clue": true, "sign_clue": true,
+              "jeong_blocked": false, "yoon_defensive": false, "j8b_enabled": true, "arrested": false},
+    "choices": {"J1": "b", "J2": "b", "J3": "a", "J4": "b", "J5": "b", "J6": "b", "J7": "b", "J8": "a"}
+  },
+
+  "observations": {
+    "j1_trap_fall": false,
+    "j8b_visible": false,
+    "j8b_blocked_by": "found_T1 == false (J2에서 b를 골라 t1_clue만 얻고 found_T1은 못 얻음)",
+    "j6b_gate_open": false,
+    "j6b_blocked_by": "probe_shared == false && found_T2 == false (J3 = a)"
+  }
+}

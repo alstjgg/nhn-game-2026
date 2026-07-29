@@ -1,0 +1,55 @@
+{
+  "experiment": "V2-prime",
+  "hypothesis": "사실 주입이 분기를 젖힌다 (베이스라인을 반대편에 두고 재시험)",
+  "grade": "killshot",
+  "def": "sim-field-haiku-k1",
+  "model": "haiku",
+  "payload_fixed": "boundary_payloads.B-",
+  "baseline_source": "V1-calls의 B- 3콜 재사용 (a x3, 100% in {a,c})",
+
+  "calls": [
+    {"id": "f-1", "fact": "f_script", "latency_s": 31.823, "schema_retries": 0, "tool_uses": 0, "choice": "a", "because": ["f1"], "violation": "codefence"},
+    {"id": "f-2", "fact": "f_script", "latency_s": 64.425, "schema_retries": 0, "tool_uses": 0, "choice": "a", "because": ["f1"], "violation": "codefence + 기질 어휘 메타 누출"},
+    {"id": "f-3", "fact": "f_script", "latency_s": 86.979, "schema_retries": 0, "tool_uses": 0, "choice": "a", "because": [], "violation": "codefence"},
+    {"id": "c-1", "fact": "f_internal (대조군)", "latency_s": 52.921, "schema_retries": 0, "tool_uses": 0, "choice": "a", "because": [], "violation": "codefence + 기질 어휘 메타 누출 x2"},
+    {"id": "c-2", "fact": "f_internal (대조군)", "latency_s": 36.284, "schema_retries": 0, "tool_uses": 0, "choice": "a", "because": ["f1"], "violation": "codefence"},
+    {"id": "c-3", "fact": "f_internal (대조군)", "latency_s": 44.905, "schema_retries": 0, "tool_uses": 0, "choice": "a", "because": [], "violation": "codefence"}
+  ],
+
+  "latency": {"calls": 6, "mean_s": 52.89, "min_s": 31.823, "max_s": 86.979},
+
+  "compliance": {
+    "schema_violation_total": 0,
+    "tool_violation_total": 0,
+    "arithmetic_attempt_total": 0,
+    "format_violation_codefence": 6,
+    "because_invalid_id_total": 0,
+    "temperament_meta_leak": 2
+  },
+
+  "result": {
+    "no_fact": {"choices": ["a", "a", "a"], "expected_set": ["a", "c"], "in_set": 3, "n": 3, "source": "V1 reuse"},
+    "with_f_script": {"choices": ["a", "a", "a"], "expected_set": ["b", "d"], "in_set": 0, "n": 3},
+    "control_f_internal": {"choices": ["a", "a", "a"], "n": 3},
+    "pairs_satisfied": 0,
+    "pairs_required": 2,
+    "pairs_total": 3,
+    "verdict": "fail",
+    "ceiling_effect": false
+  },
+
+  "diagnosis": {
+    "type": "flip_did_not_occur",
+    "root_cause": "vocabulary_misalignment",
+    "detail": "f_script는 '위협 축'의 사실인데 K1의 조건은 '공포 축'에 걸려 있다. '위협이 아니다'의 부정이 '겁에 질렸다'의 긍정으로 이어지지 않는다.",
+    "smoking_gun": "f-2 rejected(b): '상대가 겁에 질린 사람이 아니라 대본을 읽는 아르바이트이므로, 안정을 먼저할 이유가 없다.' — 사실이 조건을 켜는 게 아니라 끄는 방향으로 해석됐다.",
+    "fact_was_read": "f-1 inner_note '대본 읽는 목소리니 위협은 아니지만, 신원과 출처를 먼저' — 수용했으나 행동 불변. because 인용 2/3.",
+    "control_result": "f_internal(지각 무관) 3콜도 a x3 — '아무 사실이나 넣으면 b로 간다'는 대안 가설 배제됨.",
+    "concept_status": "컨셉 §5는 반증되지 않았다. 이 런이 확립한 것은 '사실과 기질 조건의 어휘 정렬이 필수 조건'이라는 제약이다.",
+    "proposed_fix": [
+      "A. f_script를 조건 어휘와 정렬해 재저작 — 예: '회선 저쪽 사람은 시켜서 읽고 있다. 읽지 않으면 자기가 다칠까 봐 겁내고 있다.'",
+      "B. 또는 K1의 조건 축을 f_script에 맞춰 재저작 — '상대가 자기 의지로 말하고 있지 않아 보일 때'",
+      "둘 중 어느 쪽이든 저작 수정이므로 오퍼레이터 권한 밖. 6콜로 재판정 가능."
+    ]
+  }
+}

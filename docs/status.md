@@ -3,6 +3,17 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-07-29)
+
+**DDAY 컨셉 확정** — the 07-28 team meeting confirmed the D-Day 시뮬레이션 track
+(replacing darkest-context as the main line). Scenario: 테러리스트의 전화 **축소
+버전**; runtime model: haiku; presentation: text-detective, no spatial movement.
+Compact/합성 and prompt-length limits are deferred to Phase-2. Work split
+(~07-29 18:30): 윤석 = 기획 문서 (real project spec format), 민서 = 시나리오 축소
++ repo cleanup. **Track SoT: [dday-sot.md](./dday-sot.md)** — start there; it maps
+every document, test result, and open decision. Branch `concept/dday-simulation`,
+PR #85 open to main.
+
 ## Status (2026-07-22)
 
 **Demo phase.** Concept drafting is closed: the 2026-07-22 team meeting consolidated the

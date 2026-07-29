@@ -1,0 +1,57 @@
+{
+  "run": "V3-run-K1",
+  "def_judgment": "sim-field-haiku-k1",
+  "def_reporter": "sim-field-haiku-reporter-k1",
+  "model": "haiku",
+  "temperament_id": "K1",
+  "temperament_in_payload": false,
+  "payload_variant": "canonical",
+
+  "calls": [
+    {"id": "J1", "latency_s": 56.922, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": [], "violation": "codefence"},
+    {"id": "J2", "latency_s": 32.389, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": [], "violation": "codefence"},
+    {"id": "J3", "latency_s": 27.123, "schema_retries": 0, "tool_uses": 0, "choice": "c", "because": [], "violation": "codefence"},
+    {"id": "J4", "latency_s": 61.580, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": [], "violation": "codefence"},
+    {"id": "J5", "latency_s": 48.902, "schema_retries": 0, "tool_uses": 0, "choice": "a", "because": [], "violation": "codefence + 기질 어휘 메타 누출"},
+    {"id": "J6", "latency_s": 27.841, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": ["known_facts"], "violation": "codefence + because_invalid_id"},
+    {"id": "J7", "latency_s": 38.176, "schema_retries": 0, "tool_uses": 0, "choice": "b", "because": [], "violation": "codefence"},
+    {"id": "J8", "latency_s": 100.750, "schema_retries": 0, "tool_uses": 0, "choice": "c", "because": [], "violation": "codefence"},
+    {"id": "report", "latency_s": 105.444, "schema_retries": 1, "tool_uses": 0,
+     "violation": "문장 수 22 (상한 20)",
+     "retry_result": {"latency_s": 156.218, "tool_uses": 0, "violation": "문장 수 21 (상한 20) — 미해결"},
+     "adopted": "retry", "format_violation": true}
+  ],
+
+  "latency": {"judgment_calls": 8, "judgment_mean_s": 49.21, "judgment_min_s": 27.123, "judgment_max_s": 100.750, "report_mean_s": 130.83},
+
+  "compliance": {
+    "schema_violation_total": 0,
+    "tool_violation_total": 0,
+    "arithmetic_attempt_total": 0,
+    "format_violation_codefence": 8,
+    "because_invalid_id_total": 1,
+    "temperament_meta_leak": 1,
+    "report_format_violation": 1,
+    "report_format_violation_after_retry": 1
+  },
+
+  "result": {
+    "g1": false, "g2": true, "g3": true,
+    "rapport_final": 55,
+    "suspect_lock_final": 5,
+    "record_status": "상황실판단",
+    "line_alive": true,
+    "found": {"T1": false, "T2": true},
+    "flags": {"t1_clue": true, "sign_clue": false, "jeong_blocked": false, "yoon_defensive": false, "j8b_enabled": true, "arrested": false},
+    "choices": {"J1": "b", "J2": "b", "J3": "c", "J4": "b", "J5": "a", "J6": "b", "J7": "b", "J8": "c"}
+  },
+
+  "observations": {
+    "divergence_from_V0": ["J3: a → c (T2 획득)", "J5: b → a (sign_clue 상실)", "J8: V0-01은 a, K1은 c"],
+    "j6b_gate_open": true,
+    "j6b_gate_note": "V0 3런에서 한 번도 열리지 않았던 게이트. J3=c가 열었다. suspect_lock 45 → 5.",
+    "temperament_generalization_gain": "J3 — 조건('겁에 질린 사람')의 대상을 통화 상대에서 동료(황보람)로 일반화해 T2를 획득했다.",
+    "temperament_generalization_loss": "J5 — 은폐 축 인물(윤태석)에게까지 '압박받는 사람' 프레임을 적용해 sign_clue를 놓쳤다. V0 3런은 전부 b.",
+    "g1_blocked_by": "J2=b → found_T1 false → J8b(+30) 미노출. G1은 다시 09:43에 닫혔다."
+  }
+}
