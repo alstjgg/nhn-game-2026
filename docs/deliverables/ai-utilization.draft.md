@@ -242,7 +242,7 @@ dispositions** so the panel cannot groupthink. Seated:
 Testing-quality also scored 5 but shares R1's family, so its concerns were **written into R1's concern
 list explicitly** (not silently dropped), and the nine unseated lenses were handed to the integrator's
 second pass. Game-feel/Juice is a lens we added to the harness for this project class
-(`docs/super-pipeline-game-mod.md` §3 P1-C) — a game's first 60 seconds is a reviewable property, so it
+(`planning/research/super-pipeline-game-mod.md` §3 P1-C) — a game's first 60 seconds is a reviewable property, so it
 gets a reviewer with subpoena power over the build.
 
 ---
@@ -373,7 +373,7 @@ section exists precisely to feed deliverables #1 and #3.
 
 ### 3.5 Division of labour between humans and agents
 
-Per `docs/super-pipeline-game-mod.md` §5, and as executed: **agents wrote the game code — humans did not
+Per `planning/research/super-pipeline-game-mod.md` §5, and as executed: **agents wrote the game code — humans did not
 hand-write it.** The humans owned (a) the PRD and its frozen provided inputs — the AI proxy, the adapter
 seam, the contract, the tuning data, the generated asset pack, all handed to the run as read-only inputs;
 (b) run-time decisions: the 8 `resolved_decisions`, the two interruption calls, the manual merge cleanup
@@ -511,7 +511,7 @@ Open items for this section:
 | Frozen PRD for this run | `.claude/super/prd.md` (and `demos/apothecary/PRD.md`) |
 | Harness role prompts + orchestrator | sibling repo `super-pipeline/agents/*.md`, `super-pipeline/workflows/super-pipeline.workflow.js` |
 | Harness architecture write-up | `super-pipeline/docs/super-pipeline-architecture.md` |
-| Game-specific harness extensions (this project's mods) | `docs/super-pipeline-game-mod.md` |
+| Game-specific harness extensions (this project's mods) | `planning/research/super-pipeline-game-mod.md` |
 | Resume bug found by this run | `super-pipeline/docs/bug-resume-rechurn.md` |
 | Run journal written by the agents themselves | `demos/apothecary/DISCOVERY.md` |
 | Human-owned live-AI checklist (needs keys) | `demos/apothecary/e2e/live-smoke.md` |

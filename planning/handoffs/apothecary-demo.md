@@ -86,4 +86,4 @@ A PRD that reads like the 기획서 will make the decomposer generate a week of 
 - Meeting/schedule: `docs/meeting-notes/2026-07-22-concept-review.md`
 - Project state: `docs/status.md` · Rules: `/CLAUDE.md`
 - Harness: `../super-pipeline` (README, `docs/super-pipeline-architecture.md`)
-- Game-mod draft spec: `docs/super-pipeline-game-mod.md`
+- Game-mod draft spec: `planning/research/super-pipeline-game-mod.md`
