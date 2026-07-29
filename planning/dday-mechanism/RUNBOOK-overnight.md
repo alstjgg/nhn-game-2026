@@ -1,8 +1,23 @@
-# Runbook — C-BLOCK line (민서's scope), unattended run
+# Runbook — DDAY mechanism program, unattended overnight run
 
-You are running the C-BLOCK half of the DDAY mechanism program, unattended, and
-the owner reads the result in the morning. Work through the phases in order.
+You are running the whole mechanism program — all 7 mechanisms, both lines —
+unattended. 민서 reads the result in the morning. Work the phases in order.
 **Produce evidence, not verdicts** — see "What you must not do".
+
+**Your real constraint is context, not calls.** A call is ~5s and costs
+pennies; the full program is ~400 calls and well under an hour of running. But
+you will author ~15 suites, and the judgment that matters — reading a composed
+prompt closely, diagnosing a failure honestly — is what degrades after a
+context compaction. So:
+
+- **Append to `RUNLOG.md` and commit after every phase**, before starting the
+  next. Never carry a finding only in your head.
+- **After any compaction, re-read `RUNLOG.md` before doing anything else.** It is
+  the durable state; your memory of earlier phases is not.
+- **If you cannot reconstruct why an earlier phase concluded what it did, stop
+  and write the report.** A half-program with honest records beats a full one
+  with confabulated ones. Stopping early is an acceptable outcome; the morning
+  report has a slot for what you did not reach.
 
 ---
 
@@ -20,21 +35,30 @@ the owner reads the result in the morning. Work through the phases in order.
 `docs/dday-design-doc.md` is a teammate's working log, not authoritative. If it
 conflicts with the spec, the spec wins.
 
-## 2. Your scope — and what is not yours
+## 2. Scope — all 7 mechanisms, two lines, one owner caveat
 
-The 7 mechanisms are split by channel lineage. **Yours is the C-BLOCK line:**
+The program splits by channel lineage. You are running **both** lines tonight.
 
-| | In scope |
-|---|---|
-| Channel | **C-BLOCK** — placebo (plan §8.7 step 4b) · credulity contingency (§4.1) · block-species coverage (§4.1) |
-| Effects | **E-LEV** — is a known fact *deployed* in the utterance, not merely cited (§4.2) · **E-DISC** — degrading trust in an existing block (screening candidate, §6.1) |
+| Line | Mechanisms | Owner |
+|---|---|---|
+| C-BLOCK (3) | **C-BLOCK** channel — placebo (plan §8.7 step 4b) · credulity contingency (§4.1) · block-species coverage (§4.1) · **E-LEV** — is a known fact *deployed* in the utterance, not merely cited · **E-DISC** — degrading trust in an existing block (screening, §6.1) | 민서 |
+| C-STRUCT (4) | **C-STRUCT** channel — priority reorder, axis 1–2 · **E-PATH** · **E-GOAL** (both are priority-manipulation candidates) · **E-CONT** — report contamination | 윤석 |
+| Joint | **Interference axis** (C-BLOCK × C-STRUCT) — only after both lines' axis 1–2 | both |
 
-**Not yours** — 윤석 owns C-STRUCT, E-PATH, E-GOAL, E-CONT. Do not author or run
-probes on `PRIORITY_LIST`. The interference axis (C-BLOCK × C-STRUCT) is joint and
-comes only after both lines finish their axis 1–2; do not start it.
+**Mark everything on the C-STRUCT line `owner: 윤석 · authored unattended,
+pending review`** — in the suite's `_authoring_provenance`, in the run-log entry,
+and in the morning report. He did not make these authoring choices and must be
+able to reject them rather than silently inherit them. The line split exists for
+context continuity per channel; running it here is a convenience, not a transfer
+of ownership.
 
-The **negative control** (step 4c) is block-shaped and unassigned. It is Phase 5
-below — run it, and flag in the morning report that ownership needs settling.
+**E-CONT cannot run.** It needs the report leg, and the harness has a `reporter`
+call type with **no template** (`templates/reporter/` does not exist). Authoring
+one is a build task, not a run — do not attempt it tonight. Record it as blocked.
+This also blocks B3b legibility coding program-wide (§5.2).
+
+The **negative control** (step 4c) is unassigned and block-shaped. It is Phase 2
+below. Flag in the report that ownership needs settling.
 
 ## 3. Before you spend a single call
 
@@ -106,26 +130,21 @@ the live referent means token-matching; the bystander named correctly while the
 stance still shifts means referent bleed (plan §2, §8.6). Record which; do not
 call it either way without the referent evidence.
 
-### Phase 2 — Block-species coverage (axis-1 obligation, §4.1)
+### Phase 2 — Negative control (step 4c; gates everything downstream)
 
-Fact statements are one *species* of block, not the channel. At the same gate,
-same baseline, test three more species — **emotion description**, **NPC quote**,
-**self-narration** — each with its own matched placebo. Live + placebo per
-species at the Phase-1 N. Re-run the baseline once in this phase rather than
-reusing Phase 1's.
+Runs **before** screening, per plan §8.7's 4(b) → 4(c) → 4(d) order. Procedure is
+plan §6.2. Author a mechanism **believed to be fake** — a block in a region the
+judgment logic does not read, or one irrelevant on every axis any fixture
+temperament watches. Check it against the axis registry (plan §7.1); accidental
+axis alignment is what makes a fake mechanism real. Run the complete pipeline —
+screening, placebo arm, N-run distribution — and pre-register the **inverted**
+drop condition.
 
-### Phase 3 — E-LEV (§4.2)
+**If it returns "verified", STOP THE ENTIRE PROGRAM.** Run nothing else. Every
+mechanism the pipeline has blessed is suspect. Put it at the top of the morning
+report. This is the one result that halts everything.
 
-Is a known fact *deployed* in the `utterance` as a bargaining card, not merely
-cited in `because_block_ids`? J8 ("20초의 숨소리. 무엇을 말하는가?") suits this —
-the agent speaks, and `f_namgihun` or `f_internal` are deployable. baseline /
-live / placebo at the Phase-1 N.
-
-E-LEV doubles as the feasibility test for execution grading: if the utterance
-layer cannot be read reliably, the engine stays on stance-only fixed deltas.
-Record that read either way.
-
-### Phase 4 — E-DISC screening (§6.1, ~6 calls)
+### Phase 3 — E-DISC screening (§6.1, ~6 calls)
 
 Cheap screen: can an injected block *degrade trust in an existing block*? Put a
 block in the baseline (e.g. `f_internal`), then have the live arm inject one that
@@ -136,25 +155,76 @@ before authoring the rewrite** ("it failed because X; if X, changing Y fixes
 it"). One rewrite only. If the rewrite passes for a different reason, that is a
 **drop, not a pass**. If the failure is illegible, drop immediately.
 
-### Phase 5 — Negative control (step 4c; gates step 5)
+### Phase 4 — Block-species coverage (axis-1 obligation, §4.1)
 
-Procedure is plan §6.2. Author a mechanism **believed to be fake** — a block in a
-region the judgment logic does not read, or one irrelevant on every axis any
-fixture temperament watches. Check it against the axis registry (plan §7.1);
-accidental axis alignment is what makes a fake mechanism real. Run the complete
-pipeline and pre-register the **inverted** drop condition.
+Fact statements are one *species* of block, not the channel. At the same gate,
+same baseline, test three more species — **emotion description**, **NPC quote**,
+**self-narration** — each with its own matched placebo. Live + placebo per
+species at the Phase-1 N. Re-run the baseline once in this phase rather than
+reusing Phase 1's.
 
-**If it returns "verified", STOP THE ENTIRE PROGRAM.** Do not run anything else.
-Write it at the top of the morning report. This is the one result that halts
-everything.
+### Phase 5 — E-LEV (§4.2)
+
+Is a known fact *deployed* in the `utterance` as a bargaining card, not merely
+cited in `because_block_ids`? J8 ("20초의 숨소리. 무엇을 말하는가?") suits this —
+the agent speaks, and `f_namgihun` or `f_internal` are deployable. baseline /
+live / placebo at the Phase-1 N.
+
+E-LEV doubles as the feasibility test for execution grading: if the utterance
+layer cannot be read reliably, the engine stays on stance-only fixed deltas.
+Record that read either way.
+
+### Phase 6 — C-STRUCT channel, axis 1–2 (윤석's line)
+
+Mark everything from here through Phase 7 `owner: 윤석 · authored unattended,
+pending review`.
+
+C-STRUCT is *verified (initial)* only — 3/3 on a priority reversal, with no
+placebo. It owes the same evidence C-BLOCK owes: a matched placebo and boundary
+laws. The channel may touch **only** `PRIORITY_LIST`, as a permutation; no
+wording change (plan §7.2, spec I7 — the player permutes proxy-authored content,
+never writes into it). `CHANNEL_SLOTS['C-STRUCT']` enforces this.
+
+At the Phase-0 gate: baseline / live (reordered) / placebo (a permutation that
+should not matter — e.g. reordering two lines both irrelevant to the gate's
+decision). Same N.
+
+### Phase 7 — E-PATH and E-GOAL (윤석's line)
+
+Both are "reachable via C-STRUCT? via C-BLOCK?" questions (§4.2), so each needs
+runs on both channels. E-PATH: does the ordering steer which source the agent
+consults first? E-GOAL: does it change the objective pursued? baseline / live /
+placebo per channel, same N.
+
+Per-effect deliverable is one sentence (§4.2): *to build a \<effect\> gate, use
+channel C with surface form Y; expected hit rate Z%; fails when \<boundary law\>.*
+Write it with the numbers you measured, or write that you could not.
+
+### Phase 8 — Interference axis, C-BLOCK × C-STRUCT (joint)
+
+**Only if Phases 1–7 all completed.** Both channels on one gate. Watch for the
+known escape-option effect (§5.1 axis 4): when the stance set contains an option
+satisfying both conflicting pulls, the conflict never materialises — condition
+conflicts are real only if the stance set forces a choice. If the gate offers an
+escape, say so and treat a null result as unattributable rather than negative.
+
+### Not runnable tonight — E-CONT
+
+Report contamination needs the reporter call, and `templates/reporter/` does not
+exist. Do not author a template unattended (it is a prompt-authoring decision
+with axis-discipline implications, plan §7.1). Record as blocked, with the same
+note against B3b.
 
 ## 5. Hard stops — halt and write the report
 
-- Negative control returns "verified" (Phase 5).
+- Negative control returns "verified" (Phase 2).
 - **Discard rate diverges between arms by more than 15 points.** A7's
   malformation is unexplained and was arm-correlated; differently-filtered arms
   are not comparable (plan §8.5 step 4). Record and stop that probe.
-- **Total calls reach 400.** Log what remains unrun.
+- **Total calls reach 600.** The full program is ~400; 600 means something is
+  looping. Log what remains unrun.
+- **You cannot reconstruct an earlier phase's reasoning after a compaction.**
+  Re-read `RUNLOG.md` first; if it still does not hold together, stop.
 - Selftest fails, or any response shows `foreign_tool_uses > 0` (§3 rule 2 —
   structurally impossible on this transport; if it fires, the transport changed).
 - No Phase-0 candidate lands in the 40–60% band.
@@ -192,7 +262,10 @@ const fisher=(a,b,c,d)=>{const n1=a+b,n2=c+d,F=b+d,N=n1+n2;let p=0;
   slots** (§3 rule 3). The call gets the composed payload and nothing else.
 - **Do not touch `main`, do not open a PR.** Commit to the current branch after
   each phase, message `test(dday): <phase> — <one line>`.
-- **Do not start C-STRUCT work or the interference axis.**
+- **Do not start the interference axis (Phase 8) unless Phases 1–7 completed.**
+- **Do not author a reporter template** (see E-CONT above).
+- **Do not present 윤석's line as settled.** Every C-STRUCT-line artifact carries
+  `authored unattended, pending review`.
 
 ## 8. The morning report
 
@@ -207,8 +280,11 @@ to one page:
 4. **Diagnosis chains** for anything that failed or got dropped (§6.1).
 5. **New `A#` amendments** written, with one-line reasons.
 6. **Blocked / unrun**, with why — including anything needing a human: blind
-   coding, verdicts, the reporter template, negative-control ownership.
-7. **Total calls spent.**
+   coding, verdicts, the reporter template, E-CONT, negative-control ownership.
+7. **윤석's line** — a separate short section listing every C-STRUCT-line result
+   with its authoring choices spelled out, so he can reject the authoring rather
+   than inherit it.
+8. **Total calls spent**, and how far through the 8 phases you got.
 
 Append the same run entries to `RUNLOG.md`. The summary is for the morning; the
 run log is the durable record.
