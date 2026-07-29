@@ -8,7 +8,9 @@
 > (never touch `/pipeline`, `/goal`, etc.). Things the game repo must prepare are listed separately in
 > §2 (Prerequisites) and are **not** part of these mods.
 >
-> Status: **draft — priorities to confirm; apothecary v2 is the validating dry-run (§7).**
+> Status: **implemented & archived (2026-07-29).** All five mods (P0-A/B, P1-C/D, P2-E) are live in
+> the super-pipeline repo, verified against source; the apothecary v2 dry-run (§7) validated them.
+> Kept as the design record for competition deliverable #4.
 
 ## 1. Why modify
 

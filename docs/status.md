@@ -10,7 +10,7 @@
 버전**; runtime model: haiku; presentation: text-detective, no spatial movement.
 Compact/합성 and prompt-length limits are deferred to Phase-2. Work split
 (~07-29 18:30): 윤석 = 기획 문서 (real project spec format), 민서 = 시나리오 축소
-+ repo cleanup. **Track SoT: [dday-sot.md](./dday-sot.md)** — start there; it maps
++ repo cleanup. **Track SoT: [dday-sot.md](../planning/dday-sot.md)** — start there; it maps
 every document, test result, and open decision. Branch `concept/dday-simulation`,
 PR #85 open to main.
 

@@ -57,9 +57,10 @@ transitions (planning → demo → production).
 Primary development runs through **super-pipeline**, a multi-agent harness kept in a **separate
 repo cloned alongside this one** (a sibling directory, e.g. `../super-pipeline`): PRD → decompose
 → parallel agents in git worktrees → PR review panels → loop-until-green. Game-specific
-extensions are specced in `docs/super-pipeline-game-mod.md` (P0: deploy-verify step, playtest
-agent, screenshots/GIFs on unit PRs). Manual Claude Code sessions handle setup, docs, and
-anything the harness isn't suited for.
+extensions (deploy-verify step, gameplay capture, game-feel lens, frozen-inputs guard,
+AI-utilization auto-draft) are implemented in that repo; their design record is archived at
+`planning/research/super-pipeline-game-mod.md`. Manual Claude Code sessions handle setup, docs,
+and anything the harness isn't suited for.
 
 ## Layout
 

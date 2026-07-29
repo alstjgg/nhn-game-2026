@@ -52,5 +52,5 @@
 
 ---
 
-관련 자료: [트랙 SoT](../../docs/dday-sot.md) ·
+관련 자료: [트랙 SoT](../dday-sot.md) ·
 [페이퍼 테스트 결과 v2](../dday-poc/poc-terror/RESULTS.md)
