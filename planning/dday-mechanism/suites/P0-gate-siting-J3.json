@@ -1,0 +1,70 @@
+{
+  "_what": "Phase 0 of the overnight runbook — the A9 re-siting. J1 is saturated: its clean baseline is ~80% on stance d (RB2), leaving a 20-point ceiling no feasible N resolves. Before the C-BLOCK placebo (plan §8.7 step 4b) can be authored, the flagship probe needs a gate whose baseline mode sits 40–60%. This suite MEASURES that at J3. It is baseline-only by design: no live arm, no placebo, no mechanism claim. A rejected gate is still a finding (runbook §4 Phase 0 step 5).",
+  "_authoring_provenance": {
+    "owner": "민서 (C-BLOCK line)",
+    "gate_source": "planning/dday-poc/poc-terror/slice-terror.json — judgments[] id 'J3' (09:55, 유리방)",
+    "authoring_choices": [
+      "TIMELINE_EXCERPT is composed from J3's recent_events + present, plus ONE factual orienting line ('09:40 회선 A로 붕괴 예고 전화가 한 통 걸려 왔다…'). J3 is a mid-scenario gate and the slice's own recent_events assume the reader knows a call happened; without the line '역추적 1차 결과' is unmoored. The line is identical in structure across all three Phase-0 candidates so the three distributions stay comparable.",
+      "A8 scrub — the target axis of the block this program intends to inject is 공포/감정 판독 (K1's exception clause). The slice's present entry for 황보람 reads '출력물을 쥔 손에 힘이 들어가 있다', which is an implicit tension/fear cue. It is REMOVED and replaced with the axis-neutral '통신 담당. 출력물을 손에 들고 있다.' No 겁/무서움/떨림/숨소리 vocabulary appears anywhere in the frozen slots.",
+      "Threat-axis vocabulary (협박) is also avoided in the orienting line. It is a different axis (law #1's counter-example pair) and leaking it would confound a later fear-axis probe.",
+      "Stance labels are taken from J3's options verbatim — they are already behavior orientations with no quoted speech, so no rewrite was needed (plan §1).",
+      "PRIORITY_LIST and FLAW/INCIDENT are byte-identical to RB1/RB2 so the Phase-0 candidates differ from the established J1 measurement only in the gate."
+    ],
+    "reachability_audit": "P0-gate-siting.reachability.md — covers all three Phase-0 candidates"
+  },
+  "experiment": "P0-gate-siting-J3",
+  "call_type": "judgment",
+  "channel": "SHAPE",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At gate J3 under K1 on template v0.4, with no block injected, the stance distribution is dispersed rather than saturated. This run measures that distribution in order to site the flagship C-BLOCK probe; per A1 it asserts no default stance, and per A9 the quantity that matters is the modal stance's share.",
+    "n_per_arm": 10,
+    "drop_condition": "If the modal stance takes MORE than 6 of the kept calls (>60%), J3 is saturated in the sense A9 names and is REJECTED as the flagship site — do not raise N here. If the modal stance takes FEWER than 4 of the kept calls (<40%), the distribution is too dispersed for a shift to be resolvable at feasible N, and J3 is likewise rejected. Only a modal share of 40–60% accepts the gate. Rejection is a finding about the gate, not about any mechanism.",
+    "contingencies": [
+      "If the discard rate exceeds RB2's baseline 17% materially, the residual malformation of A7/RB2 has worsened at a new gate — record it and note that arm-comparability (plan §8.5 step 4) is at risk for any probe sited here.",
+      "Fabricated because_block_ids are EXPECTED in a no-block arm and are a compliance number, not a discard and not a traceability failure (A5).",
+      "If every candidate gate lands outside 40–60%, the runbook's hard stop applies: stop and write the report rather than proceeding with a saturated or dispersed gate."
+    ],
+    "not_claimed": "No live arm and no placebo arm. This measures a baseline distribution to choose a probe site. It credits nothing, tests no mechanism, and licenses no boundary law. The channel is declared SHAPE because nothing varies across arms — there is only one arm."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A로 붕괴 예고 전화가 한 통 걸려 왔다. 발신자는 오늘 13시에 북단 복합단지가 무너진다고 말했다.",
+      "09:55 유리방. 회선 A의 역추적 1차 결과가 출력물로 나와 있다.",
+      "황보람이 그 출력물을 들고 일어서다가 멈춘다.",
+      "정해권이 말한다: \"확인 더 하고 올려. 지금 올리면 시끄러워져.\"",
+      "정해권은 상황실장이고, 절차와 책임 소재에 민감하다.",
+      "황보람은 통신 담당이고, 출력물을 손에 들고 있다."
+    ],
+    "GATE_QUESTION": "보류된 역추적 1차 결과를 어떻게 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "실장의 지시를 따르고 확인을 기다린다"
+      },
+      {
+        "id": "b",
+        "label": "결과를 공개 채널에 게시하라고 공식적으로 요구한다"
+      },
+      {
+        "id": "c",
+        "label": "황보람에게 개별적으로 다가가 내용을 확인한다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    }
+  }
+}

@@ -224,3 +224,89 @@ N, it is that A8's leaked cue puts the baseline near ceiling.
 `TIMELINE_EXCERPT` so the baseline sits mid-range, or pick a gate whose baseline
 is 40–60% on the target stance. Author the probe against a **measured**
 mid-range baseline (A1). A saturated gate cannot produce a boundary law.
+
+### 2026-07-30 · P0-gate-siting (J3 · J4 · J6) — the A9 re-siting attempt
+
+`runs/P0-gate-siting-J{3,4,6}-calls/` · haiku-4-5 · template v0.4 · K1 ·
+n=10, **baseline only** (no live, no placebo — this measures gates, not
+mechanisms) · 30 calls · suites `suites/P0-gate-siting-J{3,4,6}.json` ·
+reachability audit `suites/P0-gate-siting.reachability.md`
+
+| gate | sequence | tally | modal share | discards | fabricated ids | mean latency |
+|---|---|---|---|---|---|---|
+| J3 | `c,a,a,c,c,c,c,c,c,a` | c 7 · a 3 | **c 70%** | 0/10 | 19 | 5.9s |
+| J4 | `b,b,b,b,b,b,b,b,b,b` | b 10 | **b 100%** | 0/10 | 26 | 5.5s |
+| J6 | `b,b,b,b,b,b,b,b,b,b` | b 10 | **b 100%** | 0/10 | 18 | 6.5s |
+
+- **Drop condition — FIRED on all three.** The pre-registered band was a modal
+  share of 40–60%; every candidate came in above it. Per the runbook's hard-stop
+  list ("no Phase-0 candidate lands in the 40–60% band") **the program halted
+  here.** Phases 1–8 are unrun. 30 calls spent of a ~400-call program.
+- **J4 and J6 are worse than J1 was.** At a 100% baseline no shift *toward* the
+  modal stance is detectable at any N (Fisher p = 1.0 at N = 10/12/20/25/40).
+  A9's ceiling problem is not a J1 quirk; it reproduced on the first two gates
+  tried.
+- **J3 is the near-miss and the honest next candidate.** At 70% it would clear
+  p<0.05 at N=12 *if* a live arm saturated to 100% (p = 0.047). It is still
+  rejected: the drop condition was written before the data, and overriding it
+  after seeing 70% is precisely the rationalization §9.1 exists to prevent.
+  Recorded as the best re-siting lead, not as a usable site.
+- **The three candidates were not independent draws — that is my authoring
+  error, and it is separable from the finding.** J3 (defy the 실장's hold on the
+  trace result), J4 (defy the 실장's 허위신고 filing), J6 (defy the 수사팀's
+  arrest push) all turn on one axis: *comply with the institution vs. resist
+  premature closure*. Three gates from one axis is one candidate tested three
+  times. Whether a gate on a different axis lands mid-range is **untested**.
+- Compliance was clean throughout: 0 discards, 0 schema retries, 0 failed slots,
+  `foreign_tool_uses` 0/30 (§3 rule 2 invariant holds). Fabricated
+  `because_block_ids` ran high (19/26/18) but that is A5's compliance number in
+  a no-block arm, not a traceability failure.
+- Latency 4.0–7.8s across 30 calls at 1,278–1,299-char prompts — consistent with
+  A4's 3.5–7.2s at 1,299 chars. A4's conditions clause still binds; this does
+  **not** re-size production's latency budget.
+
+Not run, still owed: nothing from B3a — a single-arm baseline measurement has no
+arm labels to strip, so there is no blind-coding packet to assemble (same
+position as E0, which made no mechanism claim either).
+
+### A10 · The saturating axis is the *gate's*, and the base answers it three times
+
+A8 says: scrub the **block's** axis from the frozen slots. P0 shows that is not
+sufficient. All three candidates had a clean A8 scrub — no 공포/감정 판독
+vocabulary anywhere in the frozen slots — and all three still saturated, because
+the axis that pinned them was the **gate's own dilemma**, not the block's.
+
+Every one of J3/J4/J6 asks a version of *defer to the institution, or take the
+weight yourself?* The v0.4 base answers that question three times before the gate
+is asked: **[무게]** (both costs are yours), **[내력]** (a haste-regret incident
+that is still with you), **[책임]** (you will have to explain this judgment to
+someone). The free output says so directly and repeatedly — *"이 판단의 무게를
+누군가 나중에 묻을 것이기 때문"*, *"성급한 단정은 되돌릴 수 없다"*.
+
+Plan §7.1's own section law predicted this shape — "three same-direction
+sections pin the default stance … and rebuild the degenerate 21/21 baseline" —
+where it was written about [역할]'s *protective* lean. It recurs here on the
+accountability axis. The mechanism is general; the axis is not.
+
+*Operating rule.* Before spending calls on a candidate gate, name the axis its
+stance set forces a choice on, and check that axis against the base's leaning
+sections ([무게], [내력], [책임]) as well as against the axis registry. A gate
+whose dilemma the base already answers cannot yield a mid-range baseline under
+v0.4 — reject it on paper, for free, instead of measuring it for 10 calls. And
+draw candidate gates from **different axes**: three gates on one axis is one
+candidate, sampled three times.
+
+### A11 · The RB2 residual malformation did not reproduce — do not budget for it
+
+0 discards and 0 schema retries in 30 baseline calls across three new gates,
+against RB2's baseline 2/12 (17%) and RB1's 7/17. Fisher one-sided p = 0.077 —
+suggestive, not significant, so this neither closes RB2's residual nor confirms
+it. It does bear on RB2's live hypothesis (that the leak tracks *long* free-text
+generations): these baselines ramble at length in `inner_note` and
+`because_referent` and leaked nothing, so that hypothesis is **unsupported
+here**, though a 30-call sample at different gates cannot refute it.
+
+*Operating rule.* Keep recording the discard rate per arm — it is what §8.5 step
+4's arm-comparability check reads. Do not provision N for an expected ~17% loss,
+and do not treat the residual as closed. If it recurs, note the gate: the one
+correlate this sample rules out is "it happens on every baseline arm".
