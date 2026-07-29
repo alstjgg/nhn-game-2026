@@ -4,7 +4,7 @@
 > its backend shape; it is not a deployment guide.
 >
 > For current endpoints, AWS resources, commands, and incident checks, use
-> [the Lambda/Bedrock operating guide](./handoffs/llm-lambda-runtime.md).
+> [the Lambda/Bedrock operating guide](../../docs/handoffs/llm-lambda-runtime.md).
 
 ## Decision
 
@@ -178,4 +178,4 @@ bounded by validation rather than guaranteed by it.
 
 Implementation details belong in the source and SAM template. Operational
 procedures belong in
-[the Lambda/Bedrock operating guide](./handoffs/llm-lambda-runtime.md).
+[the Lambda/Bedrock operating guide](../../docs/handoffs/llm-lambda-runtime.md).

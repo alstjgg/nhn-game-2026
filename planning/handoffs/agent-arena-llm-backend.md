@@ -4,7 +4,7 @@
 > **Superseded (2026-07-25).** This service is retained as a verified reference
 > implementation and will not be deployed. The deployment path is now the
 > stateless turn-decision proxy (API Gateway → Lambda → Bedrock Converse) from
-> [the AWS/Bedrock research note](../llm-backend-aws-bedrock.md). The
+> [the AWS/Bedrock research note](../research/llm-backend-aws-bedrock.md). The
 > [Next work](#next-work-void--superseded) section below is void.
 
 > Backend-only implementation state. Project-wide state remains in
@@ -113,7 +113,7 @@ All live scenarios (core matrix, remote MCP, hosted Skill, MCP-only hardening)
 passed on both providers via server-side command overrides, `.env.local`
 unchanged. Full evidence, per-run usage, and cost breakdown (≈ $0.059 total
 recorded model tokens) live in
-[the live verification record](../agent-arena-api-live-test-2026-07-24.md) —
+[the live verification record](../research/agent-arena-api-live-test-2026-07-24.md) —
 that document is the single source for verification detail.
 
 ## Important behavior
@@ -153,7 +153,7 @@ that document is the single source for verification detail.
 ## Next work (void — superseded)
 
 The items below are void: this service will not be deployed, and deployment
-follows [`docs/llm-backend-aws-bedrock.md`](../llm-backend-aws-bedrock.md)
+follows [`docs/llm-backend-aws-bedrock.md`](../research/llm-backend-aws-bedrock.md)
 instead. What carries forward into the Lambda build: closed-action validation
 (`src/validation.ts`), the turn contract shapes, fail-closed registry/config
 validation, the non-root Docker pattern, and the live-smoke discipline.

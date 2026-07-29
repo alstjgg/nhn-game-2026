@@ -1,8 +1,8 @@
 {
   "meta": {
     "name": "poc-terror-slice",
-    "source": "docs/시나리오_테러리스트의전화.md (09:40~11:34 구간)",
-    "plan": "docs/dday-poc-paper-test-terrorist.md",
+    "source": "planning/dday-scenarios/시나리오_테러리스트의전화.md (09:40~11:34 구간)",
+    "plan": "planning/paper-tests/dday-poc-paper-test-terrorist.md",
     "note": "모든 수치는 튜너블이되 실험 중 변경 금지. 보정 제안은 RESULTS.md '다음 액션'에만."
   },
 

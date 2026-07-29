@@ -23,7 +23,7 @@ registry-checked; `history[].npcLine`, `history[].playerChoiceLabel`, and
 `availableClues[].text` are client-supplied strings bounded only by length and
 count, and reach the prompt verbatim. That is an accepted, mitigated residual
 risk — see the validation boundary in
-[`docs/handoffs/llm-layer.md`](../../docs/handoffs/llm-layer.md).
+[`planning/handoffs/llm-layer.md`](../../planning/handoffs/llm-layer.md).
 
 ## Request flow
 
