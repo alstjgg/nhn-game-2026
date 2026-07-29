@@ -283,13 +283,28 @@ structure is fixed here; its contents are filled by the mechanism spec
   *tilt stances* (fear response, authority posture, bravery) live in
   **temperament** — they are what the player chooses between. Contradictory
   pairs (submits-to-authority vs stands-up-to-power) never both sit in base:
-  a pair in base is a lever the player can no longer pull. The base also
-  carries two direction clauses — "the human element is paramount" (feeds
-  free-output richness, i.e. the mining supply chain) and "never robotic,
-  never always-heroic; embrace the flaws" (the manipulability-preservation
-  clause against assistant-competence drift). Their exact wording is bound
-  by the default-prompt A/B (§9), because performance-style clauses can
-  inflate baseline emotional vocabulary and with it placebo sensitivity.
+  a pair in base is a lever the player can no longer pull.
+- **Axis exclusivity.** No axis vocabulary (fear, authority, …) appears in
+  both the base and any temperament: axis vocabulary is the temperament's
+  **exclusive asset**, and base competence anchors stay axis-neutral. An
+  axis constant across all builds is a lever the player cannot pull *and* a
+  confound every probe inherits (the neutral arm stops being neutral).
+  A temperament is **one unconditional default disposition plus N
+  conditional clauses**; every conditional clause carries a **defeat
+  condition** ("단, 이미 확인된 사실과 어긋날 때는 그렇지 않다"), and a
+  conditional without one fails lint — a rule without a check is a
+  preference. The lint target is the axis registry kept beside the template
+  (test plan §7.1). An unconditional when-X-do-Y clause in the *base* is an
+  undeclared baseline stance and must be either declared and probed, or
+  moved into a temperament, or cut.
+- **Direction/style clauses live in narration and reporter, not judgment.**
+  "The human element is paramount" and "embrace the flaws" are correct for
+  the prose-rendering calls (2, 3) and wrong for the judgment call: there
+  they name axes and instruct variance, inflating baseline emotional
+  vocabulary and with it placebo sensitivity. The judgment call's
+  free-output richness is monitored by the test program's mineability log;
+  if it thins, the recovery is an axis-neutral concreteness clause, never
+  the axis-naming ones.
 - **Canonical axis vocabulary.** One shared dictionary of axis terms (fear,
   authority, threat, …) feeds temperament conditional clauses, priority-list
   items, and block tagging (§9 block-pool row) — so vocabulary-alignment
@@ -363,7 +378,7 @@ be bound implicitly by whoever touches it first.
 
 | Parameter | Bound by | When |
 |---|---|---|
-| Tool-use schemas (final field lists **and generation order** per call type — field order is a tested variable) | L (default: mechanism owner, proxy conforms) | Before the first post-shape test call |
+| Tool-use schemas (final field lists per call type; judgment field order is bound — `inner_note` pre-stance, `because` post-stance — and revalidated, not re-decided, at shape re-validation) | L (default: mechanism owner, proxy conforms) | Before the first post-shape test call |
 | Default prompt v1 (persona expression level × judgment field order, §6 layering rule) | D task (owner: 07-30 discussion) | **Frozen before deep-testing begins** — probes run on this prompt; post-freeze changes only by explicit re-bind |
 | Per-gate stance sets | Scenario authoring (S) | At scenario generation, per gate |
 | State variable list (which stats, which flags) | Scenario authoring (S) | With the winning scenario, drawn from the §3.1 candidate pool under its reduction rules |
