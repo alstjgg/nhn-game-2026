@@ -66,6 +66,19 @@ the player has shaped**.
   branch — a harder path, a lost resource, a different ending — not
   automatically to scenario failure. Dead ends are permitted but must be
   authored deliberately and sparingly, never as the default failure handling.
+  **Demo binding (2026-07-29): the submission demo's topology is bound now,
+  independent of which scenario wins — braided, zero dead ends; a missed gate
+  costs run score or routes to a harder branch, never ends the run.** (The
+  dead-end capability stays in the engine; the demo just doesn't use it.)
+  This bind exists to break a circular dependency: the numeric eligibility
+  floor needs topology as an input, but scenario selection lands after the
+  mechanism spec compiles — so topology is decided here, from this section's
+  own stated preferences.
+- **Gate budget (demo binding, 2026-07-29): 6–8 gates.** Judges play minutes,
+  not hours; each gate is a substantial authoring unit (stance set, delta
+  rows, edge predicates, buckets); and 6–8 is what scenario generation can
+  produce *and verify* inside its window. Demo-scope bind, not an engine
+  limit.
 - **Run ending is a score, not a verdict (preferred model).** The run
   terminates at a fixed scenario clock and reports a **run score**: a
   deterministic function over terminal state, of the shape
@@ -88,6 +101,20 @@ the player has shaped**.
     naturally. Whether the winning scenario binds this model, adapts it,
     or falls back to discrete endings is a §9 parameter, decided at
     scenario selection.
+  - *Deduction recognition (open seam)*: §1 names uncovering the hidden
+    truth as the player's goal, but nothing in this score distinguishes
+    "understood the truth and steered accordingly" from "picked stances
+    that happened to work" — deduction is a player mental state, not a
+    stance. Candidate resolutions, bound at scenario selection (§9):
+    **(a) deduction commit** — before the terminal beat the player pins a
+    set of mined blocks as "the truth of the incident," scored
+    deterministically against author-tagged truth blocks (membrane-safe:
+    composed from blocks, never typed; reuses the mining UI);
+    **(b)** a score term keyed to flags reachable only through
+    truth-dependent gates (implicit recognition, zero new UI);
+    **(c)** reword §1 so truth-understanding is the *means* to steering
+    well, not the scored goal. Default lean: (b)+(c); (a) is the stretch
+    option.
 - **Authoring constraint.** Every gate must be expressible in the gate
   standard form ("At gate G, the agent's default stance is X; injecting block
   F / ordering S / temperament K shifts it to Y") and must instantiate a
@@ -172,6 +199,14 @@ forced through a tool-use schema. Four call types exist; no others.
 | 3 | **Reporter** | Reporter instructions + temperament | Round events **including the judgment call's free output** (utterance, inner_note) and generated NPC dialogue | The agent's self-written report (markdown body) |
 | 4 | **Grader** (dormant) | — | — | Reserved; activated only via the §3 upgrade slot |
 
+- **Call 2 is load-bearing, not decoration.** Its output lands in the
+  timeline and is minable (W2), so bland narration thins the player's supply
+  chain regardless of how valid the mechanisms are — and its hard failure
+  mode is **constraint violation**: narrating past the gate's fixed NPC
+  action splits story from state. Both properties (mineable yield,
+  constraint compliance) are test-program material, measured alongside the
+  in-situ runs.
+
 - **System-prompt ownership**: the proxy owns every system layer. Player-
   manipulable material travels in-band only. This is simultaneously the
   production security boundary and the test harness's out-of-band/in-band
@@ -245,6 +280,14 @@ structure is fixed here; its contents are filled by the mechanism spec
 - **Length is a constrained variable**: a richer default prompt is a larger
   manipulation surface *and* more latency (§4). The mechanism program's
   surface-form findings and the latency budget jointly set the size.
+- **Two §9 parameters live on this surface.** (1) The injectable **slot
+  count** — it sets the combinatorics of play, the prompt length, and
+  therefore the latency spend. (2) The **block-pool shape**: over a run,
+  every timeline/report sentence is minable (I1) while, under
+  vocabulary-alignment-type laws, most blocks are inert — a large pool with
+  a hidden matching rule is the classic unfair-puzzle shape. Any fix must
+  preserve I1/W3: curate **carry capacity** (a pinboard cap), tag blocks
+  with their axes, or age the timeline — never restrict what is minable.
 
 ## 7. Runtime and integrity
 
@@ -302,8 +345,13 @@ be bound implicitly by whoever touches it first.
 | Per-gate stance sets | Scenario authoring (S) | At scenario generation, per gate |
 | State variable list (which stats, which flags) | Scenario authoring (S) | With the winning scenario, drawn from the §3.1 candidate pool under its reduction rules |
 | Repetition count N / call budget | Mechanism program (M) | Before test-suite authoring |
-| Numeric gate-eligibility floor | M + U jointly | After N, retry structure, and topology are known |
+| Numeric gate-eligibility floor | M + U jointly | After N and the retry/pause structure are known — topology input already bound (§2, 2026-07-29) |
 | Latency budget (numeric, per beat) | U (pause structure) | With the UI/UX design |
 | Grader activation (§3 upgrade slot) | M (E-LEV finding) | After E-LEV deep-test |
 | Report cadence (per beat vs per round) | U + L | With the UI/UX design |
 | Ending model / run-score metric | S (scenario selection) | With the winning scenario — score gradient preferred (§2); discrete endings only if the scenario cannot decompose into scoreable units |
+| Deduction recognition (commit / truth-flag score term / goal reword — §2) | S + G | At scenario selection; default lean (b)+(c), commit is the stretch option |
+| Injectable slot count (§6) | M (dose-response finding) + U (latency spend) | After Tier A dose-response, with the UI pause structure |
+| Block-pool curation (pin cap / axis tagging / aging — must preserve I1/W3, §6) | U + M | With the UI design; the axis-tagging half shares one decision with the discoverability exposure default (test program) |
+| Demo topology | — | **Bound 2026-07-29 (§2)**: braided, zero dead ends, missed gate = score cost |
+| Gate count | — | **Bound 2026-07-29 (§2)**: 6–8 gates, demo scope |
