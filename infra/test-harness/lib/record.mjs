@@ -10,7 +10,26 @@ import { join } from 'node:path';
 
 const pad = (n) => String(n).padStart(2, '0');
 
-export function writeArtifacts({ outDir, suite, arm, records, transport, force, coverage }) {
+// Called by the runner BEFORE the call loop: existing artifacts must refuse the
+// run while refusing is still free. writeArtifacts re-checks as a backstop, but
+// by then the calls are paid for — relying on that check alone burns N calls
+// and then loses the responses (§3 rule 4).
+export function preflightArtifacts({ outDir, arms, force }) {
+  if (force) return;
+  for (const arm of arms) {
+    const clash = [join(outDir, `calls-${arm}.md`), join(outDir, `metrics-${arm}.json`)].filter((p) =>
+      existsSync(p),
+    );
+    if (clash.length) {
+      throw new Error(
+        `artifacts already exist for arm "${arm}" in ${outDir} — refusing before any call is spent. ` +
+          'Raw artifacts are never edited after the fact — use a new experiment id, or --force if you mean to replace an aborted run.',
+      );
+    }
+  }
+}
+
+export function writeArtifacts({ outDir, suite, arm, records, transport, force, coverage, nEffective }) {
   mkdirSync(outDir, { recursive: true });
   const md = join(outDir, `calls-${arm}.md`);
   const js = join(outDir, `metrics-${arm}.json`);
@@ -25,7 +44,7 @@ export function writeArtifacts({ outDir, suite, arm, records, transport, force, 
   const sequence = kept.map((r) => r.stance).join(',');
   const latencies = records.filter((r) => r.latency_s != null).map((r) => r.latency_s);
 
-  writeFileSync(md, renderMarkdown({ suite, arm, records, transport, sequence, coverage }));
+  writeFileSync(md, renderMarkdown({ suite, arm, records, transport, sequence, coverage, nEffective }));
   writeFileSync(
     js,
     `${JSON.stringify(
@@ -39,11 +58,16 @@ export function writeArtifacts({ outDir, suite, arm, records, transport, force, 
         transport,
         dry_run: transport === 'dryrun',
         pre_registration: suite.pre_registration,
+        // The N this arm actually ran with. Differs from pre_registration only
+        // under a --n override, which the runner allows on dry runs alone.
+        n_effective: nEffective ?? null,
+        n_overridden: nEffective != null && nEffective !== suite.pre_registration.n_per_arm,
         calls: records,
         sequence,
         distribution: tally(kept.map((r) => r.stance)),
-        // Write-test evidence for the architecture spec's §3.1 variable
-        // qualification: an offered stance never selected has a dead delta row.
+        // Sampled stance-coverage diagnostic. NOT §3.1 write-test evidence:
+        // that test is a static delta-table check plus the B1 reachability
+        // audit; status "unknown" means zero valid calls, not "all dead".
         coverage: coverage ?? null,
         // Human-written, per §5.3. Nulls are deliberate: they make an unfilled
         // log visible instead of absent. Text lives in calls-<arm>.md.
@@ -74,7 +98,7 @@ export function writeArtifacts({ outDir, suite, arm, records, transport, force, 
   return { md, js, sequence };
 }
 
-function renderMarkdown({ suite, arm, records, transport, sequence, coverage }) {
+function renderMarkdown({ suite, arm, records, transport, sequence, coverage, nEffective }) {
   const pre = suite.pre_registration;
   const L = [];
   L.push(`# ${suite.experiment} — arm \`${arm}\``);
@@ -93,6 +117,9 @@ function renderMarkdown({ suite, arm, records, transport, sequence, coverage }) 
   L.push(`| transport | ${transport} |`);
   L.push(`| temperament | ${records[0]?.temperament_id ?? '—'} |`);
   L.push(`| N planned | ${pre.n_per_arm} |`);
+  if (nEffective != null && nEffective !== pre.n_per_arm) {
+    L.push(`| N run | ${nEffective} — \`--n\` override (dry-run only) |`);
+  }
   L.push(`| N kept | ${records.filter((r) => !r.discarded && !r.failed).length} |`);
   L.push('');
   L.push('## Pre-registration');
@@ -134,20 +161,26 @@ function renderMarkdown({ suite, arm, records, transport, sequence, coverage }) 
   L.push(`**Sequence (kept calls):** \`${sequence || '—'}\``);
   L.push('');
   if (coverage) {
-    const never = coverage.never_selected?.length
-      ? `\`${coverage.never_selected.join('`, `')}\``
-      : 'none';
-    L.push(
-      `**Stance coverage:** offered \`${coverage.offered.join('`, `')}\` · ` +
-        `never selected in this arm: ${never}`,
-    );
-    L.push('');
-    L.push(
-      '> A stance never selected across *any* arm has a dead (gate, stance) delta row, ' +
-        'so a state variable written only there fails the architecture spec §3.1 write test. ' +
-        'Carry this to the verdict card (§9.2).',
-    );
-    L.push('');
+    if (coverage.status === 'unknown') {
+      L.push('**Stance coverage:** unknown — no valid calls in this arm.');
+      L.push('');
+    } else {
+      const unobserved = coverage.unobserved?.length
+        ? `\`${coverage.unobserved.join('`, `')}\``
+        : 'none';
+      L.push(
+        `**Stance coverage (sampled diagnostic):** offered \`${coverage.offered.join('`, `')}\` · ` +
+          `unobserved in this arm: ${unobserved}`,
+      );
+      L.push('');
+      L.push(
+        '> Diagnostic only — absence at this N is not a dead delta row. The architecture ' +
+          'spec §3.1 write test is a static check on the delta table plus the reachability ' +
+          'audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, ' +
+          'not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.',
+      );
+      L.push('');
+    }
   }
   L.push('## Advisory logs (§5.3)');
   L.push('');

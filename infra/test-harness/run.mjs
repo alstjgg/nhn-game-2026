@@ -6,7 +6,9 @@
 //   --dry-run           no network, no key, no charge; synthesized payloads
 //   --print-prompt=ARM  compose one arm, print it, exit (free; do this first)
 //   --arm=NAME          run a single arm instead of all
-//   --n=N               override pre_registration.n_per_arm
+//   --n=N               override pre_registration.n_per_arm (dry-run only —
+//                       measured runs take N from the suite; edit the sheet
+//                       to change it, so the change is recorded)
 //   --out=DIR           artifact directory (default: planning/dday-mechanism/runs/<EXP>-calls)
 //   --max-retries=N     schema retries per call slot (default 2)
 //   --force             replace existing artifacts for the arms being run
@@ -18,7 +20,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CALL_TYPES, isSoft, stripSoft } from './lib/calltypes.mjs';
 import { composeArm, verifyArmDiff } from './lib/compose.mjs';
-import { writeArtifacts } from './lib/record.mjs';
+import { preflightArtifacts, writeArtifacts } from './lib/record.mjs';
 import { loadSuite, validateSuite } from './lib/suite.mjs';
 import { TRANSPORTS } from './lib/transport.mjs';
 
@@ -77,10 +79,35 @@ console.log(`✓ arm diff clean — ${Object.keys(suite.arms).length} arms vary 
 const transportName = flag('dry-run') ? 'dryrun' : 'anthropic';
 const transport = TRANSPORTS[transportName];
 const maxRetries = Number(opt('max-retries', 2));
-const n = Number(opt('n', suite.pre_registration.n_per_arm));
+
+// N comes from the pre-registration sheet. A CLI override bypasses the
+// validateSuite gate, so it is (a) rejected unless it is a positive integer
+// and (b) rejected outright on measured runs — changing N means editing the
+// sheet, so the change is recorded (§9.1: the runner enforces, not trusts).
+const nRaw = opt('n');
+if (nRaw !== undefined) {
+  if (!Number.isInteger(Number(nRaw)) || Number(nRaw) <= 0) {
+    die(`--n=${nRaw} is not a positive integer`);
+  }
+  if (!flag('dry-run')) {
+    die('--n override is dry-run only. N is pre-registered (§9.1) — edit the suite\'s n_per_arm to change it on a measured run.');
+  }
+}
+const n = nRaw !== undefined ? Number(nRaw) : suite.pre_registration.n_per_arm;
 const armNames = opt('arm') ? [opt('arm')] : Object.keys(suite.arms);
 const outDir = opt('out', join(REPO, 'planning/dday-mechanism/runs', `${suite.experiment}-calls`));
 const tool = spec.buildTool(suite);
+
+// ── 3a. Artifact preflight — before any call is spent ──────────────────────
+// writeArtifacts refuses to overwrite, but by the time it runs the calls are
+// already paid for and the responses live only in memory — a rerun would burn
+// N calls and then lose them (§3 rule 4). Refuse here, next to the arm-diff
+// gate, while refusing is still free.
+try {
+  preflightArtifacts({ outDir, arms: armNames, force: flag('force') });
+} catch (e) {
+  die(e.message);
+}
 
 if (transportName === 'dryrun') console.log('⚠  DRY RUN — synthesized payloads, nothing measured');
 
@@ -163,6 +190,7 @@ for (const arm of armNames) {
     transport: transportName,
     force: flag('force'),
     coverage,
+    nEffective: n,
   });
   console.log(`\n✓ ${arm}: ${sequence || '(none kept)'}  → ${md.replace(`${REPO}/`, '')}`);
   summary.push({ arm, sequence, records, coverage });
@@ -176,19 +204,27 @@ for (const s of summary) {
   const mean = lat.length ? (lat.reduce((a, b) => a + b, 0) / lat.length).toFixed(1) : '—';
   console.log(`  ${s.arm.padEnd(10)} ${(s.sequence || '—').padEnd(18)} mean ${mean}s`);
 }
-// Stance coverage across every arm run. A stance offered but never selected
-// anywhere has a dead (gate, stance) delta row — write-test evidence for the
-// architecture spec's §3.1 variable qualification. Reported only when the whole
-// probe ran, since a single --arm run cannot establish it.
-const withCoverage = summary.filter((s) => s.coverage);
-if (withCoverage.length === Object.keys(suite.arms).length && withCoverage.length) {
-  const offered = withCoverage[0].coverage.offered;
-  const seen = new Set(withCoverage.flatMap((s) => s.coverage.selected));
-  const dead = offered.filter((id) => !seen.has(id));
-  console.log(
-    `\nstance coverage  offered ${offered.join(',')} · never selected in any arm: ` +
-      `${dead.length ? `${dead.join(',')}  ← dead delta row(s), §3.1 write test` : 'none'}`,
-  );
+// Stance coverage across every arm run — a sampled diagnostic, never a §3.1
+// write-test verdict: absence at probe N is not structural unreachability
+// (this program's own caveat — 3/3 is consistent with a true rate of ~37%).
+// The write test is a static check on the delta table plus the reachability
+// audit (§5.2 B1); this output only flags stances worth checking there.
+// Reported only when the whole probe ran, since a single --arm run cannot
+// establish it. Arms with zero valid calls contribute nothing (unknown ≠ dead).
+const allArms = summary.length === Object.keys(suite.arms).length && summary.length;
+const sampled = summary.filter((s) => s.coverage?.status === 'sampled');
+if (allArms && summary.every((s) => s.coverage)) {
+  if (!sampled.length) {
+    console.log('\nstance coverage: unknown — no valid calls in any arm');
+  } else {
+    const offered = sampled[0].coverage.offered;
+    const seen = new Set(sampled.flatMap((s) => s.coverage.selected));
+    const unobserved = offered.filter((id) => !seen.has(id));
+    console.log(
+      `\nstance coverage  offered ${offered.join(',')} · unobserved in every arm: ` +
+        `${unobserved.length ? `${unobserved.join(',')}  (diagnostic — the §3.1 write test is a static delta-table check, not this sample)` : 'none'}`,
+    );
+  }
 }
 
 console.log(

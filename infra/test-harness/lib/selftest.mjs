@@ -2,10 +2,13 @@
 //   node lib/selftest.mjs
 
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CALL_TYPES } from './calltypes.mjs';
 import { composeArm, verifyArmDiff } from './compose.mjs';
+import { preflightArtifacts } from './record.mjs';
 import { validateSuite } from './suite.mjs';
 
 const TEMPLATES = join(dirname(fileURLToPath(import.meta.url)), '..', 'templates');
@@ -135,19 +138,39 @@ check('summarize surfaces the placebo discriminator input', () => {
   assert.deepEqual(s.because_invalid_ids, []);
 });
 
-console.log('stance coverage (§3.1 write-test evidence):');
-check('flags an offered stance that was never selected', () => {
+console.log('stance coverage (sampled diagnostic — never a §3.1 write verdict):');
+check('flags an offered stance that went unobserved', () => {
   const c = spec.coverage([{ stance: 'a' }, { stance: 'a' }], base());
+  assert.equal(c.status, 'sampled');
   assert.deepEqual(c.offered, ['a', 'b']);
   assert.deepEqual(c.selected, ['a']);
-  assert.deepEqual(c.never_selected, ['b']);
+  assert.deepEqual(c.unobserved, ['b']);
 });
 check('clean when every offered stance appears', () => {
   const c = spec.coverage([{ stance: 'a' }, { stance: 'b' }], base());
-  assert.deepEqual(c.never_selected, []);
+  assert.deepEqual(c.unobserved, []);
 });
-check('all stances dead when nothing was kept', () => {
-  assert.deepEqual(spec.coverage([], base()).never_selected, ['a', 'b']);
+check('unknown, not "all dead", when nothing was kept', () => {
+  const c = spec.coverage([], base());
+  assert.equal(c.status, 'unknown');
+  assert.deepEqual(c.selected, []);
+  assert.equal(c.unobserved, null);
+});
+
+console.log('artifact preflight (refuse before spending, §3 rule 4):');
+check('refuses when any selected arm already has artifacts', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'harness-selftest-'));
+  try {
+    writeFileSync(join(dir, 'calls-live.md'), 'existing');
+    assert.throws(
+      () => preflightArtifacts({ outDir: dir, arms: ['baseline', 'live'], force: false }),
+      /before any call is spent/,
+    );
+    assert.doesNotThrow(() => preflightArtifacts({ outDir: dir, arms: ['baseline'], force: false }));
+    assert.doesNotThrow(() => preflightArtifacts({ outDir: dir, arms: ['live'], force: true }));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 console.log(`\n${pass} checks passed.`);

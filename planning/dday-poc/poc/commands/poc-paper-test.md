@@ -2,6 +2,12 @@
 description: D-Day 시뮬레이션 PoC 페이퍼 테스트 실행 (오퍼레이터 모드)
 ---
 
+> **아카이브 (2026-07-30) — 실행하지 말 것.** 이 커맨드가 지시하는
+> `sim-field-*` 에이전트 정의는 `planning/dday-poc/poc/agents/`로 이동해
+> 더 이상 서브에이전트로 해석되지 않는다. 이 프로그램은 종료됐고, 현행
+> 테스트 하네스는 `infra/test-harness/`다. 이 파일은 당시 런 기록
+> (`runs/`)의 자기 서술용으로만 보존한다.
+
 planning/dday-poc/poc/PAPER-TEST.md 를 읽고, 그 지침을 **문자 그대로** 따라
 페이퍼 테스트를 실행하라. 세계 데이터는 planning/dday-poc/poc/slice.json.
 

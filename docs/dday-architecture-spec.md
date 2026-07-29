@@ -196,8 +196,8 @@ actually runs them:
 
 | Test | Evidence source | State |
 |---|---|---|
-| Write | Stance coverage from the mechanism program: a stance never selected in any arm has a dead (gate, stance) delta row, so a variable written only there fails. Reported on the verdict card (mechanism plan §9.2) | Instrumented — computed by the test runner |
-| Read | The reachability audit (mechanism plan §5.2 B1) — it asks *is this reachable, and does anything read it* at graph level, so it also covers test 1, redundantly with stance coverage | Instrumented — paper, zero calls |
+| Write | **Static check on the delta table** — does any whitelisted actuator row ((gate, stance) delta or scripted event) write this variable? Readable at authoring time, zero calls; the reachability audit (mechanism plan §5.2 B1) supplies the *is that row reachable* half. The runner's stance-coverage output is a **sampled diagnostic only** — a stance unobserved at probe N is a lead for this check, never evidence of a dead row (the program's own caveat: 3/3 is consistent with a true rate of ~37%) | Static — decided at authoring; runner supplies leads |
+| Read | The reachability audit (mechanism plan §5.2 B1) — it asks *is this reachable, and does anything read it* at graph level; the same audit carries the write test's reachability half | Instrumented — paper, zero calls |
 | Visible | A narration-call probe (mechanism plan §5.5): render a beat from a moved variable, ask a reader who has not seen the state to name the direction of change | **Owner unassigned.** Must run before the variable list binds (§9) |
 
 **Numbers never enter prompts.** NPC-internal state conditions the narration
@@ -249,9 +249,10 @@ forced through a tool-use schema. Four call types exist; no others.
   in-situ runs.
 
 - **System-prompt ownership**: the proxy owns every system layer. Player-
-  manipulable material travels in-band only. This is simultaneously the
-  production security boundary and the test harness's out-of-band/in-band
-  separation — tests mirror this shape.
+  composed material travels in-band only; the one system-layer control the
+  player has is a permutation of the proxy-authored priority list (I7). This
+  is simultaneously the production security boundary and the test harness's
+  out-of-band/in-band separation — tests mirror this shape.
 - **Latency hiding (six rules).** Measured judgment latency is ~19–75s on
   haiku, mean ~38s, rising as the payload fills (mechanism plan §1 — the
   30–49s of earlier drafts was a mid-range reading, not the ceiling). The game
@@ -315,7 +316,11 @@ structure is fixed here; its contents are filled by the mechanism spec
 ### 6.1 Sections and persona layering
 
 Two layers, and the split *is* the security boundary of §4: the system layer is
-proxy-owned, and player material travels in-band only.
+proxy-owned, and player-composed material travels in-band only. The one
+system-layer control the player has is the priority list, and it is a
+**permutation of proxy-authored content, never player bytes** — the player
+reorders entries the proxy wrote and enumerated; nothing the player composes
+enters the system layer (I7).
 
 | Layer | Sections | Player-reachable |
 |---|---|---|
@@ -438,7 +443,9 @@ it works.
 - **I5** Stance sets are per-gate content; only the output *format* is
   global.
 - **I6** Edges are deterministic: same stance + same state ⇒ same routing.
-- **I7** System layers are proxy-owned; player material is in-band only.
+- **I7** System layers are proxy-owned; player-composed bytes travel
+  in-band only. The player may *select and permute* proxy-authored system
+  content (the priority list) but never writes into it.
 - **I8** The judgment call never sees the hidden truth or the graph.
 - **I9** Every gate is gate-standard-form expressible and instantiates a
   verified mechanism.

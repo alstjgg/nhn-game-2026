@@ -40,7 +40,9 @@ data flows, and invariants, read the architecture spec — do not restate them.
   the call's system layer, composed with the base (in this harness:
   `infra/test-harness/templates/judgment/temperament/<id>.md`, one file per
   temperament, merged into the system prompt at compose time);
-  player-manipulable material — blocks, ordering — travels in-band. The
+  player-composed material — blocks — travels in-band, while the priority
+  list sits in the system base as **proxy-authored content the player may
+  only permute**, never write into (spec I7). The
   separation is also an integrity control (§3). Temperament is **hidden and
   immutable to the player** (spec I13), so swapping it is an
   authoring/experimenter lever, not a player mechanism: in this program each
@@ -887,7 +889,7 @@ refuses to spend a call on an incomplete one.
 |---|---|---|
 | `pre_registration.hypothesis` | refuses | the gate-standard-form sentence (§1) |
 | `arms` | refuses without a `baseline`; warns on a missing `placebo` | baseline / live / placebo, plus in-situ for gate candidates (§2) |
-| `pre_registration.n_per_arm` | refuses | follows from the call budget (§5.4), not from preference |
+| `pre_registration.n_per_arm` | refuses; a CLI `--n` override is rejected on measured runs (dry-run only) and rejected unless a positive integer | follows from the call budget (§5.4), not from preference — changing N on a measured run means editing this sheet, so the change is recorded |
 | `pre_registration.drop_condition` | refuses | **the load-bearing field** — the result that would make us drop this mechanism |
 | `pre_registration.contingencies` | not checked | probe-specific; the C-BLOCK sheet carries the credulity contingency (§4.1) |
 | `model` | refuses a bare alias | the pinned id, never `"haiku"` (§7.4) |
@@ -912,11 +914,13 @@ It presents the case, not the conclusion:
 - discoverability where run: x/y players, median attempts, first thing tried —
   or the inherited UI requirement (§5.2 B4);
 - latency per call;
-- **stance coverage** — which stances the gate offered and which were never
-  selected in any arm. A stance never chosen has a dead (gate, stance) delta
-  row, so a state variable written only there fails the architecture spec's
-  §3.1 **write** test. The runner computes this; it is qualification evidence
-  the program produces anyway and used to be discarded;
+- **stance coverage** — which stances the gate offered and which went
+  unobserved in every arm. A **sampled diagnostic, not a write-test verdict**:
+  absence at probe N is not a dead delta row (this document's own caveat —
+  3/3 is consistent with a true rate of ~37%). The §3.1 **write** test is a
+  static check on the delta table plus the B1 reachability audit; an
+  unobserved stance is a lead for that check, and zero valid calls report
+  `unknown`, not "all dead";
 - each boundary law paired with the sentence that violates it — a law without
   its counter-example is not usable by an author; the vocabulary-alignment
   pair (§2) is the model;

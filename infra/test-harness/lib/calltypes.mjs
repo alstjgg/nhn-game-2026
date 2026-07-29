@@ -114,18 +114,23 @@ const judgment = {
     return problems;
   },
 
-  // Stance coverage. A stance never selected in any arm has a dead (gate, stance)
-  // delta row, so any state variable written only by that row fails the
-  // architecture spec's §3.1 write test. The program produces this evidence
-  // whether or not anyone reads it; computing it here means it reaches the
-  // verdict card instead of being discarded.
+  // Stance coverage — a sampled diagnostic, not a write-test verdict. Absence
+  // at probe N is not structural unreachability (the program's own sampling
+  // caveat: 3/3 is consistent with a true rate of ~37%). The architecture
+  // spec's §3.1 write test is a static check on the delta table plus the
+  // reachability audit (§5.2 B1); this output only flags stances worth
+  // checking there. Zero valid calls means unknown, not "all dead".
   coverage(keptRecords, suite) {
     const offered = stanceIds(suite);
+    if (!keptRecords.length) {
+      return { status: 'unknown', offered, selected: [], unobserved: null };
+    }
     const observed = new Set(keptRecords.map((r) => r.stance));
     return {
+      status: 'sampled',
       offered,
       selected: offered.filter((id) => observed.has(id)),
-      never_selected: offered.filter((id) => !observed.has(id)),
+      unobserved: offered.filter((id) => !observed.has(id)),
     };
   },
 
