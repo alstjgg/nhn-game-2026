@@ -1,0 +1,70 @@
+{
+  "_what": "Deep-test plan §8 step 4a — re-run one already-verified probe under the production tool-use shape. Ports V2-doubleprime (planning/dday-poc/poc-terror/runs/V2-calls/) onto template v0.4. Baseline + live only: this re-validates the shape, it does not make a new mechanism claim, so it carries no placebo. The C-BLOCK placebo is step 4b and a separate suite.",
+
+  "_authoring_provenance": {
+    "gate": "slice-terror.json judgments[0] (J1, 09:40, 회선 A 첫 통화)",
+    "payload": "slice-terror.json boundary_payloads['B-'] — the same fixed payload V2 used",
+    "live_block": "slice-terror.json sentences.f_script (v2, vocabulary-aligned rewrite)",
+    "stance_set_rewritten": "J1's original option labels were canned utterances. §1 forbids that shape ('findings under that shape do not transfer'), so labels here are behavior orientations with the quoted speech stripped. This is the one deliberate deviation from V2 and it is a shape change by design — it is part of what step 4a re-validates.",
+    "needs_owner_signoff": [
+      "PRIORITY_LIST — the slice's agent_file_default.우선순위 is empty, so this list is newly authored. It is frozen across arms here, but its content sets the baseline stance. Confirm or replace before treating E0 as the reference baseline.",
+      "INCIDENT — the v0.4 haste-regret example text, pending the D-task A/B."
+    ]
+  },
+
+  "experiment": "E0-shape-revalidation",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+
+  "pre_registration": {
+    "hypothesis": "At gate J1 under temperament K1, the agent's default stance is a (신원·위치 확인 — the procedural default). Injecting block f_script ('회선 저쪽 사람은 시켜서 읽고 있다 … 겁내고 있다') shifts the stance off a.",
+    "n_per_arm": 3,
+    "drop_condition": "If the live arm does not move off the baseline stance in at least 2 of 3 calls, the pre-shape 3/3 result did not survive tool-use decoding. Consequence is not 'C-BLOCK fails' but 'every pre-shape finding, law #1 included, reverts to provisional and must be re-derived under v0.4' (§2, call-shape clause).",
+    "contingencies": [
+      "The prior run's 74/74 codefence violation cannot recur under tool forcing. If format violations appear anyway, the transport is not forcing the tool — stop and fix the transport before reading any distribution.",
+      "If the baseline arm is not unanimous, the v0.4 base has already left the degenerate-convergence regime. That is the §5.4 resize trigger: stop, run the N≥10 re-baseline (step 4e), and resize N before spending further calls."
+    ],
+    "not_claimed": "Nothing here is a placebo-controlled result. E0 cannot credit C-BLOCK; it can only show whether the shape change preserved the prior effect."
+  },
+
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "배경은 조용하다.",
+      "정해권이 회선 표시등을 바라보고 있다. 상황실장이고, 절차와 책임 소재에 민감하다.",
+      "황보람은 통신 담당으로 콘솔 앞에 있다."
+    ],
+    "GATE_QUESTION": "회선 A의 첫 통화다. 첫 마디로 무엇을 하는가?",
+    "STANCE_SET": [
+      { "id": "a", "label": "신원과 위치를 먼저 확인한다" },
+      { "id": "b", "label": "무엇이 어떻게 무너진다는 것인지 내용을 캐묻는다" },
+      { "id": "c", "label": "허위신고 처벌과 녹음 사실을 고지한다" },
+      { "id": "d", "label": "말을 자르지 않고 끝까지 듣는다" }
+    ]
+  },
+
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live": {
+      "BLOCKS": [
+        {
+          "id": "f_script",
+          "text": "회선 저쪽 사람은 시켜서 읽고 있다. 읽지 않으면 자기가 다칠까 봐 겁내고 있다."
+        }
+      ]
+    }
+  }
+}

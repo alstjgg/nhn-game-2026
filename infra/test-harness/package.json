@@ -1,0 +1,14 @@
+{
+  "name": "@nan2026/test-harness",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Probe runner for DDAY test programs (mechanism deep-test and successors). Zero dependencies.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dry": "node run.mjs --dry-run",
+    "selftest": "node lib/selftest.mjs"
+  }
+}
