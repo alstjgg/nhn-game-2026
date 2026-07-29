@@ -148,7 +148,7 @@ function renderMarkdown({ suite, arm, records, transport, sequence, coverage, nE
   });
   L.push('## Arm table');
   L.push('');
-  L.push('| # | stance | rejected | because.referent | because.block_ids |');
+  L.push('| # | stance | rejected_stance | because_referent | because_block_ids |');
   L.push('|---|---|---|---|---|');
   records.forEach((r, i) => {
     const cell = (v) => String(v ?? '—').replace(/\|/g, '\\|').replace(/\n/g, ' ');

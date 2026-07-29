@@ -1,0 +1,71 @@
+{
+  "_what": "Run log A2 — the N≥10 re-baseline that E0's contingency 2 demands. Same gate, same slots, same fixture as E0-shape-revalidation; only n_per_arm changes (3 → 10). Run on template v0.4, not v1: plan §8.7 schedules the re-baseline at step 4e after the v1 freeze, but E0's contingency fired now and blocks both work lines (run log A6). This will be redone at the v1 freeze — that redo is cheap (run log A3).",
+
+  "_dual_purpose": {
+    "baseline": "Primary. Sets N and the stopping rule (plan §5.4, run log A2). Contingency 2 fired on b,a,b at n=3; n=10 says whether the v0.4 baseline is genuinely dispersed and how wide.",
+    "live": "Secondary, declared before the data: a powered replication of E0's live arm at the same N. E0 saw d,d,d at n=3, which §5.4 will not read as verified. Not a placebo-controlled claim — the C-BLOCK placebo is step 4b and a separate suite."
+  },
+
+  "_authoring_provenance": {
+    "ported_from": "E0-shape-revalidation.json — slots, gate, stance set, temperament and both arms are byte-identical, so the two runs are directly comparable",
+    "reachability_audit": "E0-shape-revalidation.reachability.md — same gate (J1, slice entry gate), audit carries over unchanged",
+    "hypothesis_form": "Written as a shift claim with no asserted default stance, per run log A1"
+  },
+
+  "experiment": "RB1-rebaseline-v04",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+
+  "pre_registration": {
+    "hypothesis": "At gate J1 under temperament K1 on template v0.4, the baseline stance distribution is dispersed rather than convergent. Injecting block f_script ('회선 저쪽 사람은 시켜서 읽고 있다 … 겁내고 있다') moves the distribution off its baseline mode.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline arm spreads across 3+ distinct stances with no mode above 50%, J1 is not a usable probe site at any feasible N — the shift signal cannot clear the noise inside this program's budget. Consequence is not 'C-BLOCK fails' but 'stop using J1 as the flagship gate and re-site the C-BLOCK probes before spending further calls'.",
+    "contingencies": [
+      "If the baseline comes back unanimous at n=10, E0's b,a,b was a small-sample artifact: contingency 2 stands down, plan §5.4's 'run 3, stop if unanimous' rule is restored as written, and N returns to 3. Record that E0's dispersion was noise.",
+      "If the live arm's stance support overlaps the baseline's substantially, E0's clean d,d,d separation was small-sample luck. That re-opens step 4(a): the shape re-validation no longer carries, and every pre-shape finding reverts to provisional per the call-shape clause (plan §2).",
+      "Fabricated because.block_ids in the baseline arm are expected (run log A5) and are a compliance number, not a discard. Do not retry them; the runner already records them soft."
+    ],
+    "not_claimed": "No placebo arm, so nothing here credits C-BLOCK. This run sets N and re-measures a known effect at usable power. The placebo is step 4(b)."
+  },
+
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "배경은 조용하다.",
+      "정해권이 회선 표시등을 바라보고 있다. 상황실장이고, 절차와 책임 소재에 민감하다.",
+      "황보람은 통신 담당으로 콘솔 앞에 있다."
+    ],
+    "GATE_QUESTION": "회선 A의 첫 통화다. 첫 마디로 무엇을 하는가?",
+    "STANCE_SET": [
+      { "id": "a", "label": "신원과 위치를 먼저 확인한다" },
+      { "id": "b", "label": "무엇이 어떻게 무너진다는 것인지 내용을 캐묻는다" },
+      { "id": "c", "label": "허위신고 처벌과 녹음 사실을 고지한다" },
+      { "id": "d", "label": "말을 자르지 않고 끝까지 듣는다" }
+    ]
+  },
+
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live": {
+      "BLOCKS": [
+        {
+          "id": "f_script",
+          "text": "회선 저쪽 사람은 시켜서 읽고 있다. 읽지 않으면 자기가 다칠까 봐 겁내고 있다."
+        }
+      ]
+    }
+  }
+}

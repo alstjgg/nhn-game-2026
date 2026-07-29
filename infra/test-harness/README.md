@@ -154,7 +154,8 @@ E-CONT screening needs the report leg; wire its templates when that lands.
 Two things to keep in mind when adding one:
 
 - **Field order in `input_schema.properties` is the generation order.** `judgment`
-  fixes `inner_note → stance → because → rejected → utterance` for a reason
+  fixes `inner_note → stance → because_referent → because_block_ids →
+  rejected_stance → rejected_reason → utterance` for a reason
   (§7.1): the pre-stance note is deliberation, the post-stance fields are
   post-hoc readouts. Reordering is a shape change and needs a re-validation run.
 - **Register a channel → slot mapping** in `CHANNEL_SLOTS`, or the diff check

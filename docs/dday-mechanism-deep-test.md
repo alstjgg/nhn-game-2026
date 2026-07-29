@@ -11,6 +11,10 @@ Self-contained for execution: a session given this document can author probes,
 run them, and record results — provided it applies the run integrity protocol
 (§3), which is a precondition for every call, and follows the run sheet (§7).
 
+**Read [`planning/dday-mechanism/RUNLOG.md`](../planning/dday-mechanism/RUNLOG.md)
+first.** Measured results amend this plan there rather than being edited in;
+where the run log carries an `A#` amendment for a section, the run log wins.
+
 ## 1. Facts that shape a probe
 
 DDAY is a text deduction game set in a situation room: no spatial movement,
