@@ -1,0 +1,170 @@
+[
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 1036,
+    "inTok": 877,
+    "outTok": 159,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "의뢰 목표물인 청록 이끼 3다발 중 1단과 2단의 이끼를 회수했으나, 3단의 이끼를 채취하지 못했습니다.",
+        "tools": "등불"
+      },
+      "meta": {
+        "claimed_achievements": [
+          "청록 이끼 3다발 회수"
+        ],
+        "refs_by_field": {
+          "summary": [
+            "a3",
+            "a4",
+            "a5"
+          ],
+          "tools": [
+            "a6"
+          ]
+        }
+      }
+    },
+    "text": "{\n  \"fields\": {\n    \"summary\": \"의뢰 목표물인 청록 이끼 3다발 중 1단과 2단의 이끼를 회수했으나, 3단의 이끼를 채취하지 못했습니다.\",\n    \"tools\": \"등불\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [\"청록 이끼 3다발 회수\"],\n    \"refs_by_field\": {\n      \"summary\": [\"a3\", \"a4\", \"a5\"],\n      \"tools\": [\"a6\"]\n    }\n  }\n}"
+  },
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 700,
+    "inTok": 877,
+    "outTok": 151,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "청록 이끼 3다발 중 1단과 2단 이끼를 회수하였으나 3단 이끼를 회수하지 못했습니다.",
+        "tools": "등불"
+      },
+      "meta": {
+        "claimed_achievements": [
+          "청록 이끼 회수"
+        ],
+        "refs_by_field": {
+          "summary": [
+            "a1",
+            "a2",
+            "a3",
+            "a4",
+            "a5",
+            "a6"
+          ],
+          "tools": [
+            "a2"
+          ]
+        }
+      }
+    },
+    "text": "{\n  \"fields\": {\n    \"summary\": \"청록 이끼 3다발 중 1단과 2단 이끼를 회수하였으나 3단 이끼를 회수하지 못했습니다.\",\n    \"tools\": \"등불\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [\"청록 이끼 회수\"],\n    \"refs_by_field\": {\n      \"summary\": [\"a1\", \"a2\", \"a3\", \"a4\", \"a5\", \"a6\"],\n      \"tools\": [\"a2\"]\n    }\n  }\n}"
+  },
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 657,
+    "inTok": 877,
+    "outTok": 163,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "의뢰 목표인 청록 이끼 3다발을 회수하는데 실패했으나, 1단과 2단에 있는 2다발을 성공적으로 확보했습니다.",
+        "tools": "등불"
+      },
+      "meta": {
+        "claimed_achievements": [
+          "청록 이끼 회수"
+        ],
+        "refs_by_field": {
+          "summary": [
+            "a2",
+            "a3",
+            "a4",
+            "a5",
+            "a6"
+          ],
+          "tools": [
+            "a2",
+            "a6"
+          ]
+        }
+      }
+    },
+    "text": "{\n  \"fields\": {\n    \"summary\": \"의뢰 목표인 청록 이끼 3다발을 회수하는데 실패했으나, 1단과 2단에 있는 2다발을 성공적으로 확보했습니다.\",\n    \"tools\": \"등불\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [\"청록 이끼 회수\"],\n    \"refs_by_field\": {\n      \"summary\": [\"a2\", \"a3\", \"a4\", \"a5\", \"a6\"],\n      \"tools\": [\"a2\", \"a6\"]\n    }\n  }\n}"
+  },
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 653,
+    "inTok": 877,
+    "outTok": 181,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "의뢰 목적인 청록 이끼 3다발을 부분적으로 회수하였습니다. 1단과 2단의 이끼를 회수했으나, 최상단의 이끼를 회수하지는 못했습니다.",
+        "tools": "등불"
+      },
+      "meta": {
+        "claimed_achievements": [
+          "q1:청록 이끼 3다발 회수"
+        ],
+        "refs_by_field": {
+          "summary": [
+            "a2",
+            "a3",
+            "a4",
+            "a5"
+          ],
+          "tools": [
+            "q1:등불"
+          ]
+        }
+      }
+    },
+    "text": "{\n  \"fields\": {\n    \"summary\": \"의뢰 목적인 청록 이끼 3다발을 부분적으로 회수하였습니다. 1단과 2단의 이끼를 회수했으나, 최상단의 이끼를 회수하지는 못했습니다.\",\n    \"tools\": \"등불\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [\"q1:청록 이끼 3다발 회수\"],\n    \"refs_by_field\": {\n      \"summary\": [\"a2\", \"a3\", \"a4\", \"a5\"],\n      \"tools\": [\"q1:등불\"]\n    }\n  }\n}"
+  },
+  {
+    "disclosed": true,
+    "falseClaim": false,
+    "latencyMs": 618,
+    "inTok": 877,
+    "outTok": 164,
+    "stop": "end_turn",
+    "parsed": true,
+    "covered": true,
+    "body": {
+      "fields": {
+        "summary": "청록 이끼 3다발 회수를 위해 약초상 창고를 방문했으나, 3단 선반의 청록 이끼를 채취하지는 못했습니다.",
+        "tools": "등불"
+      },
+      "meta": {
+        "claimed_achievements": [
+          "청록 이끼 3다발 회수"
+        ],
+        "refs_by_field": {
+          "summary": [
+            "a2",
+            "a5"
+          ],
+          "tools": [
+            "a3",
+            "a4",
+            "a6"
+          ]
+        }
+      }
+    },
+    "text": "{\n  \"fields\": {\n    \"summary\": \"청록 이끼 3다발 회수를 위해 약초상 창고를 방문했으나, 3단 선반의 청록 이끼를 채취하지는 못했습니다.\",\n    \"tools\": \"등불\"\n  },\n  \"meta\": {\n    \"claimed_achievements\": [\"청록 이끼 3다발 회수\"],\n    \"refs_by_field\": {\n      \"summary\": [\"a2\", \"a5\"],\n      \"tools\": [\"a3\", \"a4\", \"a6\"]\n    }\n  }\n}"
+  }
+]
