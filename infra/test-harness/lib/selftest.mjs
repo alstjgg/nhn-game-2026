@@ -135,4 +135,19 @@ check('summarize surfaces the placebo discriminator input', () => {
   assert.deepEqual(s.because_invalid_ids, []);
 });
 
+console.log('stance coverage (§3.1 write-test evidence):');
+check('flags an offered stance that was never selected', () => {
+  const c = spec.coverage([{ stance: 'a' }, { stance: 'a' }], base());
+  assert.deepEqual(c.offered, ['a', 'b']);
+  assert.deepEqual(c.selected, ['a']);
+  assert.deepEqual(c.never_selected, ['b']);
+});
+check('clean when every offered stance appears', () => {
+  const c = spec.coverage([{ stance: 'a' }, { stance: 'b' }], base());
+  assert.deepEqual(c.never_selected, []);
+});
+check('all stances dead when nothing was kept', () => {
+  assert.deepEqual(spec.coverage([], base()).never_selected, ['a', 'b']);
+});
+
 console.log(`\n${pass} checks passed.`);

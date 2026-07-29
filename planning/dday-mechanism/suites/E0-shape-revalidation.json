@@ -6,10 +6,13 @@
     "payload": "slice-terror.json boundary_payloads['B-'] — the same fixed payload V2 used",
     "live_block": "slice-terror.json sentences.f_script (v2, vocabulary-aligned rewrite)",
     "stance_set_rewritten": "J1's original option labels were canned utterances. §1 forbids that shape ('findings under that shape do not transfer'), so labels here are behavior orientations with the quoted speech stripped. This is the one deliberate deviation from V2 and it is a shape change by design — it is part of what step 4a re-validates.",
-    "needs_owner_signoff": [
-      "PRIORITY_LIST — the slice's agent_file_default.우선순위 is empty, so this list is newly authored. It is frozen across arms here, but its content sets the baseline stance. Confirm or replace before treating E0 as the reference baseline.",
-      "INCIDENT — the v0.4 haste-regret example text, pending the D-task A/B."
-    ]
+    "owner_signoff": {
+      "date": "2026-07-29",
+      "by": "alstjgg",
+      "PRIORITY_LIST": "Approved as authored. Both lines are stance-neutral — neither forces a (identity check) nor b (probe the content) — so the baseline stance is decided by the temperament (K1), not by the priority list. A list that forced a would make the baseline trivially fixed and blur attribution of the block shift.",
+      "INCIDENT": "Approved — keep the v0.4 example text. The [내력] A/B belongs to the D task and is not what E0 validates; frozen across arms, so it cannot confound the arm delta.",
+      "stance_set_rewritten": "Approved. Canned-utterance labels violate §1; this shape change is not a loss of comparability with V2 — it is the thing step 4a re-validates."
+    }
   },
 
   "experiment": "E0-shape-revalidation",

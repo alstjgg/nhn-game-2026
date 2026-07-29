@@ -114,6 +114,21 @@ const judgment = {
     return problems;
   },
 
+  // Stance coverage. A stance never selected in any arm has a dead (gate, stance)
+  // delta row, so any state variable written only by that row fails the
+  // architecture spec's §3.1 write test. The program produces this evidence
+  // whether or not anyone reads it; computing it here means it reaches the
+  // verdict card instead of being discarded.
+  coverage(keptRecords, suite) {
+    const offered = stanceIds(suite);
+    const observed = new Set(keptRecords.map((r) => r.stance));
+    return {
+      offered,
+      selected: offered.filter((id) => observed.has(id)),
+      never_selected: offered.filter((id) => !observed.has(id)),
+    };
+  },
+
   // Offline stand-in used only by the dryrun transport. A generic schema filler
   // cannot know that rejected.stance must differ from stance, so the call type
   // that owns the constraint owns the stand-in.

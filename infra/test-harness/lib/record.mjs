@@ -10,7 +10,7 @@ import { join } from 'node:path';
 
 const pad = (n) => String(n).padStart(2, '0');
 
-export function writeArtifacts({ outDir, suite, arm, records, transport, force }) {
+export function writeArtifacts({ outDir, suite, arm, records, transport, force, coverage }) {
   mkdirSync(outDir, { recursive: true });
   const md = join(outDir, `calls-${arm}.md`);
   const js = join(outDir, `metrics-${arm}.json`);
@@ -25,7 +25,7 @@ export function writeArtifacts({ outDir, suite, arm, records, transport, force }
   const sequence = kept.map((r) => r.stance).join(',');
   const latencies = records.filter((r) => r.latency_s != null).map((r) => r.latency_s);
 
-  writeFileSync(md, renderMarkdown({ suite, arm, records, transport, sequence }));
+  writeFileSync(md, renderMarkdown({ suite, arm, records, transport, sequence, coverage }));
   writeFileSync(
     js,
     `${JSON.stringify(
@@ -42,6 +42,12 @@ export function writeArtifacts({ outDir, suite, arm, records, transport, force }
         calls: records,
         sequence,
         distribution: tally(kept.map((r) => r.stance)),
+        // Write-test evidence for the architecture spec's §3.1 variable
+        // qualification: an offered stance never selected has a dead delta row.
+        coverage: coverage ?? null,
+        // Human-written, per §5.3. Nulls are deliberate: they make an unfilled
+        // log visible instead of absent. Text lives in calls-<arm>.md.
+        advisory_logs: { state_variable_shadow: null, mineability: null },
         latency: latencies.length
           ? {
               calls: latencies.length,
@@ -68,7 +74,7 @@ export function writeArtifacts({ outDir, suite, arm, records, transport, force }
   return { md, js, sequence };
 }
 
-function renderMarkdown({ suite, arm, records, transport, sequence }) {
+function renderMarkdown({ suite, arm, records, transport, sequence, coverage }) {
   const pre = suite.pre_registration;
   const L = [];
   L.push(`# ${suite.experiment} — arm \`${arm}\``);
@@ -126,6 +132,34 @@ function renderMarkdown({ suite, arm, records, transport, sequence }) {
   });
   L.push('');
   L.push(`**Sequence (kept calls):** \`${sequence || '—'}\``);
+  L.push('');
+  if (coverage) {
+    const never = coverage.never_selected?.length
+      ? `\`${coverage.never_selected.join('`, `')}\``
+      : 'none';
+    L.push(
+      `**Stance coverage:** offered \`${coverage.offered.join('`, `')}\` · ` +
+        `never selected in this arm: ${never}`,
+    );
+    L.push('');
+    L.push(
+      '> A stance never selected across *any* arm has a dead (gate, stance) delta row, ' +
+        'so a state variable written only there fails the architecture spec §3.1 write test. ' +
+        'Carry this to the verdict card (§9.2).',
+    );
+    L.push('');
+  }
+  L.push('## Advisory logs (§5.3)');
+  L.push('');
+  L.push('_Operator-written. Observation only — these never affect distributions,');
+  L.push('boundary laws, or pass/drop judgments._');
+  L.push('');
+  L.push('**State-variable shadow log** — which candidate variables (architecture spec');
+  L.push('§3.1 pool) would this run have moved, and which payload symptom mapped to which?');
+  L.push('');
+  L.push('**Mineability log** — would `utterance` / `inner_note` survive as mining');
+  L.push('material? Block count, specificity (names, quantities, referents), and whether');
+  L.push('it says anything the payload did not already say.');
   L.push('');
   L.push('## Pairing verdict');
   L.push('');

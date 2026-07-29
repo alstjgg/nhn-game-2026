@@ -153,6 +153,8 @@ for (const arm of armNames) {
     }
   }
 
+  const kept = records.filter((r) => !r.discarded && !r.failed);
+  const coverage = spec.coverage?.(kept, suite) ?? null;
   const { md, sequence } = writeArtifacts({
     outDir,
     suite,
@@ -160,9 +162,10 @@ for (const arm of armNames) {
     records,
     transport: transportName,
     force: flag('force'),
+    coverage,
   });
   console.log(`\n✓ ${arm}: ${sequence || '(none kept)'}  → ${md.replace(`${REPO}/`, '')}`);
-  summary.push({ arm, sequence, records });
+  summary.push({ arm, sequence, records, coverage });
 }
 
 // ── 4. Summary — the shape the verdict card wants ──────────────────────────
@@ -173,6 +176,21 @@ for (const s of summary) {
   const mean = lat.length ? (lat.reduce((a, b) => a + b, 0) / lat.length).toFixed(1) : '—';
   console.log(`  ${s.arm.padEnd(10)} ${(s.sequence || '—').padEnd(18)} mean ${mean}s`);
 }
+// Stance coverage across every arm run. A stance offered but never selected
+// anywhere has a dead (gate, stance) delta row — write-test evidence for the
+// architecture spec's §3.1 variable qualification. Reported only when the whole
+// probe ran, since a single --arm run cannot establish it.
+const withCoverage = summary.filter((s) => s.coverage);
+if (withCoverage.length === Object.keys(suite.arms).length && withCoverage.length) {
+  const offered = withCoverage[0].coverage.offered;
+  const seen = new Set(withCoverage.flatMap((s) => s.coverage.selected));
+  const dead = offered.filter((id) => !seen.has(id));
+  console.log(
+    `\nstance coverage  offered ${offered.join(',')} · never selected in any arm: ` +
+      `${dead.length ? `${dead.join(',')}  ← dead delta row(s), §3.1 write test` : 'none'}`,
+  );
+}
+
 console.log(
   `\nNo verdict is computed here. Sequences go on the verdict card (§9.2);\n` +
     `blind coding (§5.2 B3) happens before any pass/drop call.\n`,

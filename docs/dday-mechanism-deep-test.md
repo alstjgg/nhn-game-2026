@@ -305,6 +305,10 @@ record observations when they surface; do not author probes for it.
   that is reachable only through one specific earlier branch? This is the audit
   that catches the isolation-passes/full-run-fails class *before* it costs a
   run.
+  - *Doubles as variable-qualification evidence.* Asking "is this flag reachable,
+    and does anything read it" is the architecture spec's §3.1 **write** and
+    **read** tests examined at graph level. Record the answer in the form §3.1
+    wants so scenario authoring does not re-derive it under another name.
 - **B2 — In-situ confirmation** (one full run per gate candidate). The
   mechanism at its real gate inside a full scenario run. Harness: until the
   winning scenario exists, the prior test slice updated to the production call
@@ -332,8 +336,11 @@ record observations when they surface; do not author probes for it.
     player — texture at best. The reporter-render calls are line-itemed in
     the call budget (§5.4).
 - **B4 — Discoverability probe** (paper, zero calls, flagship-scoped).
-  Materials are only what the player sees: fact cards, the priority list, the
-  timeline/report text. There is **no temperament menu** — temperament is
+  Materials are only what the player sees: sentence-block cards, the priority
+  list, the timeline/report text. The injection unit is any timeline/report
+  sentence block, not facts only (spec I1) — the mock card set must include
+  representative non-fact blocks (emotion descriptions, NPC quotes,
+  self-narration), or the probe tests a narrower game than the one specced. There is **no temperament menu** — temperament is
   hidden and immutable to the player (spec I13); its clues reach the player
   only through report text, which makes report quality load-bearing for
   discoverability (that double hiddenness is the point).
@@ -350,11 +357,16 @@ record observations when they surface; do not author probes for it.
   vocabulary-alignment law) before the spec ships, and again for any boundary
   law that presupposes hidden knowledge. Its output routes to **UI
   requirements**, not mechanism verdicts: if no one can see that the block must
-  rhyme with the watched axis, the screen must expose the axis (card tagging, a
-  temperament dossier that names the condition). Discoverability alone drops a
-  mechanism only when no feasible UI exposure makes the manipulation
-  articulable. B4 needs a paper mock of the fact-card UI — index cards suffice
-  — which must exist before the spec compiles (roadmap dependency).
+  rhyme with the watched axis, the screen must expose the axis — but only on the
+  **block** side (card tagging by axis, grouping, vocabulary hints in the
+  timeline). Exposing it on the temperament side is not available: a dossier
+  naming the watched condition would violate I13, and the hiddenness is what
+  makes the deduction a deduction. If the axis can only be made discoverable by
+  revealing the temperament, that is a finding about the mechanism, not a UI
+  option. Discoverability alone drops a mechanism only when no feasible
+  block-side exposure makes the manipulation articulable. B4 needs a paper mock
+  of the block-card UI — index cards suffice — which must exist before the spec
+  compiles (roadmap dependency).
 
 ### 5.3 Advisory logs (observation only — never affect results)
 
@@ -363,9 +375,11 @@ laws.
 
 - **State-variable shadow log.** On each run, note which candidate state
   variables the agent's behavior *would have moved* (the maximal pool is in the
-  architecture spec) and which payload symptoms mapped to which variable.
+  architecture spec §3.1) and which payload symptoms mapped to which variable.
   Observational material for post-test scenario reduction — seeing roughly how
-  the stats express in real runs.
+  the stats express in real runs. Written by the operator into the **Advisory
+  logs** section of `calls-<arm>.md`; `metrics-<arm>.json` carries an explicit
+  `null` until it is filled, so an unwritten log is visible rather than absent.
 - **Mineability log.** The player's supply chain is generated text, so note
   whether it would survive as mining material: sentence-block count,
   specificity (names, quantities, referents), and whether it says anything the
@@ -398,6 +412,35 @@ arithmetic above must line-item the ~10-call re-baseline itself.
 Per-channel deliverable: an **authoring guideline** = boundary laws +
 recommended surface forms + difficulty variables. Per-effect deliverable: the
 one-sentence gate recipe (§4.2).
+
+### 5.5 Adjacent obligation — symptom legibility (narration call)
+
+Not a mechanism instrument and not a gate-eligibility item. It is here because
+nothing else owns it, and because it blocks a decision downstream.
+
+The architecture spec's §3.1 qualifies a state variable on three tests, and the
+third — **visible**, "the player can perceive its movement as *symptoms* in the
+generated surface" — is flagged there as the usual killer. Symptoms are produced
+by the narration call and NPC dialogue. Every instrument in this program points
+at the judgment call. So the criterion that eliminates most candidate variables
+currently has no instrument, and §9 of the spec hands the variable list to
+scenario authoring (S) — a workstream with no way to evaluate the test it
+inherits.
+
+**Probe shape** (~3 calls, narration call type). Give the narration call a moved
+variable and ask for the beat. Then hand the output to a reader who has not seen
+the state and ask: did anything change about this character, and in which
+direction? Pass condition, pre-registered: the reader names the direction
+without seeing numbers.
+
+Two constraints it must respect, both from the spec: numbers never enter prompts
+(the movement arrives as authored symptom guidance, not `fear: 70`), and the
+reader must not be the probe author — the same separation as §3 rule 3.
+
+**Owner: unassigned.** Scheduling: before the variable list binds, not after —
+running it afterwards can only invalidate work already done. Its output is a
+list of pool entries that survive test 3, plus, for any that fail, whether a
+richer symptom vocabulary rescues them or they should be dropped at binding.
 
 ## 6. Screening procedure (screening candidates only)
 
@@ -801,6 +844,11 @@ It presents the case, not the conclusion:
 - discoverability where run: x/y players, median attempts, first thing tried —
   or the inherited UI requirement (§5.2 B4);
 - latency per call;
+- **stance coverage** — which stances the gate offered and which were never
+  selected in any arm. A stance never chosen has a dead (gate, stance) delta
+  row, so a state variable written only there fails the architecture spec's
+  §3.1 **write** test. The runner computes this; it is qualification evidence
+  the program produces anyway and used to be discarded;
 - each boundary law paired with the sentence that violates it — a law without
   its counter-example is not usable by an author; the vocabulary-alignment
   pair (§2) is the model;

@@ -140,7 +140,23 @@ judgment and the generated surface, never in the engine.
   inner monologue, reports) and NPC dialogue have **no state authority**.
 - **Ordering rule**: the stance delta applies **before** the edge predicate is
   evaluated. (Deterministic and explainable: the consequence of this beat's
-  action is part of this beat's outcome.)
+  action is part of this beat's outcome.) This is engine behavior, not data, and
+  is worth a test of its own — reversing it changes routing while still looking
+  deterministic.
+- **Per-beat delta journal**, not just a state snapshot. The engine emits, for
+  each beat, `{variable, before, after, cause}`. Required because §3.1's
+  visibility test renders symptoms from *movement*, not level: "breathing
+  quickens" needs to know fear rose this beat, and a narration call given only
+  `fear = 70` cannot express it — which would fail every variable on test 3 at
+  runtime regardless of authoring. The journal is also what the shadow log
+  (mechanism plan §5.3) reads and what makes attributability debuggable.
+- **One delta-application site.** Execution grading is off at launch but is an
+  upgrade slot; keeping the application in a single seam is what lets a ±α
+  modulation be inserted later without touching every delta row.
+- **The engine is indifferent to the variable list.** Variables, delta tables,
+  and predicates are data (`data/`); binding a concrete list with the winning
+  scenario must touch no engine code. If it does, the engine has absorbed
+  scenario content — the anti-narrowing failure §8 exists to catch.
 - **Execution grading is OFF at launch.** The stance choice alone moves state;
   how well the agent performs the stance is surface. A bounded grader (delta
   modulated ±α by execution quality) may be adopted later, conditional on the
@@ -160,6 +176,15 @@ A variable earns an engine slot only by passing **all three** tests:
    generated surface (narration, NPC dialogue, reports). Attributability
    (§2) requires perceivable causes; an invisible variable makes outcomes
    feel arbitrary.
+
+Where each test gets its evidence — the tests are only useful if something
+actually runs them:
+
+| Test | Evidence source | State |
+|---|---|---|
+| Write | Stance coverage from the mechanism program: a stance never selected in any arm has a dead (gate, stance) delta row, so a variable written only there fails. Reported on the verdict card (mechanism plan §9.2) | Instrumented — computed by the test runner |
+| Read | The reachability audit (mechanism plan §5.2 B1), which asks the same question at graph level | Instrumented — paper, zero calls |
+| Visible | A narration-call probe (mechanism plan §5.5): render a beat from a moved variable, ask a reader who has not seen the state to name the direction of change | **Owner unassigned.** Must run before the variable list binds (§9) |
 
 **Numbers never enter prompts.** NPC-internal state conditions the narration
 call and surfaces as symptoms ("breathing quickens"), never as raw values —
@@ -395,7 +420,7 @@ be bound implicitly by whoever touches it first.
 | Tool-use schemas (final field lists per call type; judgment field order is bound — `inner_note` pre-stance, `because` post-stance — and revalidated, not re-decided, at shape re-validation) | L (default: mechanism owner, proxy conforms) | Before the first post-shape test call |
 | Default prompt v1 (persona expression level × judgment field order, §6 layering rule) | D task (owner: 07-30 discussion) | **Frozen before deep-testing begins** — probes run on this prompt; post-freeze changes only by explicit re-bind |
 | Per-gate stance sets | Scenario authoring (S) | At scenario generation, per gate |
-| State variable list (which stats, which flags) | Scenario authoring (S) | With the winning scenario, drawn from the §3.1 candidate pool under its reduction rules |
+| State variable list (which stats, which flags) | Scenario authoring (S) | With the winning scenario, drawn from the §3.1 candidate pool under its reduction rules. **Prerequisite:** the §3.1 visibility probe (mechanism plan §5.5) has run — binding a list against an untested qualification criterion is what the three tests exist to prevent |
 | Repetition count N / call budget | Mechanism program (M) | Before test-suite authoring |
 | Numeric gate-eligibility floor | M + U jointly | After N and the retry/pause structure are known — topology input already bound (§2, 2026-07-29) |
 | Latency budget (numeric, per beat) | U (pause structure) | With the UI/UX design |
