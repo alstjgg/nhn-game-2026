@@ -273,6 +273,28 @@ structure is fixed here; its contents are filled by the mechanism spec
   priority list (**player-reorderable**) · known blocks (**player-injectable
   slots**) · procedures/constraints. Temperament is *not* a section — it
   lives out-of-band in the system layer (§4).
+- **Persona layering rule (doorway vs lever).** The base identity is written
+  as **named categories** (mission · perception · strengths · flaws ·
+  judgment · direction principles), and temperament definitions **extend
+  those categories** with their own entries rather than replacing prose.
+  What goes where: flaws that are a manipulation channel's *doorway*
+  (susceptibility to misinformation — C-BLOCK must work under every build)
+  plus generic fallibility live in the **base**; flaws and strengths that
+  *tilt stances* (fear response, authority posture, bravery) live in
+  **temperament** — they are what the player chooses between. Contradictory
+  pairs (submits-to-authority vs stands-up-to-power) never both sit in base:
+  a pair in base is a lever the player can no longer pull. The base also
+  carries two direction clauses — "the human element is paramount" (feeds
+  free-output richness, i.e. the mining supply chain) and "never robotic,
+  never always-heroic; embrace the flaws" (the manipulability-preservation
+  clause against assistant-competence drift). Their exact wording is bound
+  by the default-prompt A/B (§9), because performance-style clauses can
+  inflate baseline emotional vocabulary and with it placebo sensitivity.
+- **Canonical axis vocabulary.** One shared dictionary of axis terms (fear,
+  authority, threat, …) feeds temperament conditional clauses, priority-list
+  items, and block tagging (§9 block-pool row) — so vocabulary-alignment
+  interactions between reordering and temperament clauses are *authored*,
+  never accidental.
 - **Player-facing controls map 1:1 onto prompt operations**: inject block →
   a line in *known blocks*; reorder → permutation of the *priority list*;
   temperament choice → system-layer swap. Nothing else on the prompt is
@@ -341,7 +363,8 @@ be bound implicitly by whoever touches it first.
 
 | Parameter | Bound by | When |
 |---|---|---|
-| Tool-use schemas (final field lists per call type) | L (default: mechanism owner, proxy conforms) | Before the first post-shape test call |
+| Tool-use schemas (final field lists **and generation order** per call type — field order is a tested variable) | L (default: mechanism owner, proxy conforms) | Before the first post-shape test call |
+| Default prompt v1 (persona expression level × judgment field order, §6 layering rule) | D task (owner: 07-30 discussion) | **Frozen before deep-testing begins** — probes run on this prompt; post-freeze changes only by explicit re-bind |
 | Per-gate stance sets | Scenario authoring (S) | At scenario generation, per gate |
 | State variable list (which stats, which flags) | Scenario authoring (S) | With the winning scenario, drawn from the §3.1 candidate pool under its reduction rules |
 | Repetition count N / call budget | Mechanism program (M) | Before test-suite authoring |
