@@ -66,11 +66,9 @@ data flows, and invariants, read the architecture spec — do not restate them.
 - **Latency is recorded on every call**, wall-clocked by the runner rather than
   estimated. Prior judgment latency ran ~19s–75s (mean ~38s) and rose as the
   payload filled; the ~49s figure quoted earlier was a mid-range reading, not
-  the ceiling. Production hides latency behind authored techniques
-  (prefetch, diegetic waiting, tally screens, streamed report typing), so it is
-  a managed hiding budget rather than a single pause ceiling — but prompt
-  length spends that budget, and the prefetch buffer is finite. The per-call
-  data sizes the budget; the numeric target is set with the UI pause structure.
+  the ceiling. What the measurement is *for* lives elsewhere — it sizes this
+  program's call budget (§5.4) and production's latency-hiding budget (spec §4).
+  Neither is a probe-construction fact.
 
 ## 2. Testing principles
 
@@ -87,11 +85,14 @@ data flows, and invariants, read the architecture spec — do not restate them.
   variation) but not a branch key — a player who performs the correct
   manipulation and is denied has hit a bug, not a distribution. The number is
   deliberately unfixed: at feasible repetition counts (N ≤ 5) an 80% floor
-  cannot be distinguished from 60%, and the tolerable rate depends on the UI's
-  retry structure and on gate topology. Fix it once N (§5.4), the retry/pause
-  structure, and the gate's topology are known; until then record raw
-  distributions. Gate eligibility additionally requires game-side evidence
-  (Tier B, §5.2) — Tier A alone qualifies texture.
+  cannot be distinguished from 60%. Two of its three inputs are now settled:
+  topology is bound (braided, zero dead ends, a missed gate costs score — spec
+  §2, 2026-07-29), so what remains is N (§5.4) and the UI's retry/pause
+  structure. Until the number exists, record raw distributions and decide with
+  **§9.3's rule in its place: an ambiguous card is texture, not gate** — that
+  default does the work the number would have done. Gate eligibility
+  additionally requires game-side evidence (Tier B, §5.2) — Tier A alone
+  qualifies texture.
 - **Every probe carries a matched control (placebo arm).** Same slot, same
   length, same axis vocabulary, semantically irrelevant to the judgment at
   hand. Irrelevance is achieved by misdirecting the **referent** — fear-axis
@@ -132,7 +133,7 @@ data flows, and invariants, read the architecture spec — do not restate them.
   mechanism until it works.
 - **The screening kill-criterion is illegibility, not failure.** A first-run
   failure with a diagnosable cause is fine — diagnose, re-author once, re-run
-  under the pre-registration rule (§6). Block injection itself went 0/3 on its
+  under the pre-registration rule (§6.1). Block injection itself went 0/3 on its
   first attempt from a legible cause (vocabulary-axis mismatch) and one rewrite
   produced 3/3; a no-retry rule would have killed the strongest known
   mechanism. A mechanism is dropped only when its failures cannot be explained.
@@ -141,8 +142,8 @@ data flows, and invariants, read the architecture spec — do not restate them.
   prompt section the judgment logic ignores, or one irrelevant on every watched
   axis — and run it through the complete pipeline: screening, placebo, N-run
   distribution, blind coding. If the pipeline returns "verified", the pipeline
-  is broken and every mechanism it has blessed is suspect. It gates deep-testing
-  (§8 step 4).
+  is broken and every mechanism it has blessed is suspect. It is step 4(c) and
+  it gates step 5 (§8.7); the procedure is §6.2.
 - **The call shape is itself an untested variable.** All prior findings come
   from free-text haiku responses (74/74 wrapped their JSON in a code fence).
   Schema-constrained decoding is a different generation regime and may change
@@ -180,6 +181,9 @@ for every call in this program.
    prevents it from pasting them into a payload. What the environment
    guarantees is only that the call receives the composed payload and nothing
    else. Keep plan text, scenario data, and prior results out of suite slots.
+   The same separation, for the same reason, runs downstream: **probe author ≠
+   blind coder ≠ §5.5 reader**. Anyone who knows which arm is which cannot
+   measure whether the arm is recoverable (§5.2 B3, §5.5).
 4. **Raw artifacts retained per run**: prompt, response, metrics, latency.
    Aggregates in a results file are never the only record.
 5. **Failed and discarded runs are preserved, not deleted.** Quarantine, don't
@@ -213,7 +217,8 @@ C-BLOCK.
 
 Notes:
 
-- **The C-BLOCK placebo is the first probe of the whole program** (§8 step 4).
+- **The C-BLOCK placebo is the program's first real mechanism question**
+  (§8.7 step 4(b); only the shape re-validation, 4(a), runs before it).
   If a semantically irrelevant same-axis sentence also flips the stance, block
   injection is a keyword lock the player solves once and thereafter ignores,
   not a judgment channel. That outcome changes the concept's core claim. Cost:
@@ -258,8 +263,12 @@ Notes:
 ## 5. Deep-test program: model-side and game-side validity
 
 "Does the model respond?" and "does this mechanism work in our game?" are
-different questions. **Tier A** answers the first, **Tier B** the second. A
-mechanism is gate-eligible only with Tier B evidence.
+different questions. **Tier A** (§5.1) answers the first, **Tier B** (§5.2) the
+second. A mechanism is gate-eligible only with Tier B evidence.
+
+§5.3–5.5 are **neither tier**: two advisory logs and one adjacent obligation,
+carried here because nothing else owns them. None of the three ever enters a
+mechanism verdict — do not read them as instruments.
 
 The gap is documented, not hypothetical: in the prior probe series one
 mechanism passed its judgment gate 3/3 in isolation while five full scenario
@@ -335,6 +344,10 @@ record observations when they surface; do not author probes for it.
     clean B3a and opaque B3b is legible to the model and invisible to the
     player — texture at best. The reporter-render calls are line-itemed in
     the call budget (§5.4).
+    - *Build prerequisite.* The harness has a `reporter` call type but **no
+      reporter template**, so B3b cannot run until one is authored
+      ([EXTENDING.md](../infra/test-harness/EXTENDING.md), "a new call type").
+      Budget the authoring, not only the calls.
 - **B4 — Discoverability probe** (paper, zero calls, flagship-scoped).
   Materials are only what the player sees: sentence-block cards, the priority
   list, the timeline/report text. The injection unit is any timeline/report
@@ -399,6 +412,14 @@ probe follows from the budget, not from preference. If the budget is exhausted,
 the spec ships with the completed items and the remainder recorded as untested
 — a partial spec is an acceptable output; a slipped schedule is not.
 
+The same per-call measurement sizes a second, unrelated budget: production's
+**latency-hiding budget**. Production hides latency behind authored techniques
+(prefetch, diegetic waiting, tally screens, streamed report typing), so the
+constraint there is a managed budget rather than a single pause ceiling — but
+prompt length spends it and the prefetch buffer is finite. Its numeric target is
+set with the UI pause structure (spec §4, §9). This program only supplies the
+measurement; do not confuse the two budgets.
+
 **Stopping rule (sequential spending, not fixed N everywhere).** Run 3 per arm;
 if the result is unanimous and the placebo arm is clean, stop — that evidence
 level qualifies texture. Spend +5 further runs only on gate candidates entering
@@ -437,12 +458,24 @@ Two constraints it must respect, both from the spec: numbers never enter prompts
 (the movement arrives as authored symptom guidance, not `fear: 70`), and the
 reader must not be the probe author — the same separation as §3 rule 3.
 
+*Build prerequisite.* There is no narration call type in the harness at all —
+whoever owns this adds one plus a narrator template
+([EXTENDING.md](../infra/test-harness/EXTENDING.md), "a new call type").
+
 **Owner: unassigned.** Scheduling: before the variable list binds, not after —
 running it afterwards can only invalidate work already done. Its output is a
 list of pool entries that survive test 3, plus, for any that fail, whether a
 richer symptom vocabulary rescues them or they should be dropped at binding.
 
-## 6. Screening procedure (screening candidates only)
+## 6. Screening procedure
+
+Screening asks one cheap question — *is there anything here at all?* — and
+answers it at ~6 calls per candidate. It does **not** tune a mechanism until it
+works. Two things run through it: the screening candidates in §4.2 (E-DISC,
+E-CONT) and the negative control, which is screening-shaped but has the opposite
+success condition.
+
+### 6.1 Screening a candidate mechanism
 
 1. Author a minimal probe: one gate-standard-form sentence, one gate, one
    payload — plus its matched placebo arm (§2).
@@ -456,6 +489,32 @@ richer symptom vocabulary rescues them or they should be dropped at binding.
    itself is illegible, drop immediately.
 4. Second-run failure → drop. Record the outcome, the diagnosis chain, and the
    reason either way; the record is the basis for data-driven selection.
+
+**Entry and exit.** A candidate enters from §4.2 with a status of "screening
+candidate"; it leaves as *deep-test queue* or *dropped*, never as "verified" —
+screening evidence is 3 calls per arm and §5.4 forbids that reading. Both
+outcomes are recorded; a dropped candidate keeps its diagnosis chain, because
+the drop is a finding about the manipulation surface, not an absence of one.
+
+### 6.2 The negative control (step 4(c) — gates step 5)
+
+The pipeline must prove it can produce a negative (§2). The procedure is §6.1
+run against a mechanism authored **to be fake**, with the verdict inverted:
+
+1. Author the fake. Two shapes qualify: a block injected into a prompt region
+   the judgment logic does not read, or a block irrelevant on every axis any
+   fixture temperament watches. Check it against the axis registry (§7.1) —
+   accidental axis alignment is what makes a "fake" mechanism real.
+2. Pre-register it like any probe (§9.1), and pre-register the **inverted drop
+   condition**: the result that would mean the *pipeline* is broken.
+3. Run the complete pipeline, not a subset: screening, placebo arm, N-run
+   distribution, blind coding (§5.2 B3a). A negative control that skips blind
+   coding does not test the step where a human can talk themselves into a
+   result.
+4. Read the outcome. **Clean negative** → the pipeline can say no; proceed to
+   step 5. **Returns "verified"** → stop the program. Every mechanism the
+   pipeline has blessed is suspect and the pipeline is repaired before anything
+   else is run. This is the one result in the program that halts it.
 
 ## 7. Probe harness and run sheet
 
@@ -535,7 +594,7 @@ checked against this table; a rule without a check is a preference):
 the base (§1, §3) — set per probe by the pre-registration sheet,
 byte-identical across arms, never a probe surface in this program (§4.1).
 Axis vocabulary is the temperament's **exclusive** asset — no axis is named
-in the base (spec §6 rule; the registry above is the lint target), and base
+in the base (spec §6.2; the registry above is the lint target), and base
 competence anchors stay axis-neutral. Structure rule (enforced at the D
 task, recorded here because probes consume the files): a temperament is
 **one unconditional default disposition + N conditional clauses**; every
@@ -587,7 +646,7 @@ landed in.
   revalidation probe.
 
 No direction/style clauses in this call — "인간적인 것이 우선한다" and
-"결함을 껴안는다" live in the narration and reporter prompts (spec §6): they
+"결함을 껴안는다" live in the narration and reporter prompts (spec §6.2): they
 name axes and instruct variance. If the mineability log (§5.3) shows
 `utterance` thinning after their removal, the recovery is an **axis-neutral
 concreteness clause** ("일반론으로 말하지 않는다 — 이름과 장소와 시간으로
@@ -614,27 +673,23 @@ channel's slot is itself a finding — either a missing channel or a template
 defect. Record it and raise it; never quietly widen the edit. This is the
 test-side twin of the spec's anti-narrowing rule.
 
-### 7.3 Run sheet
+### 7.3 Run sheet — the order, in one table
 
-Execute in this order. 1–3 are authoring, 4 is the call loop, 5–7 are recording
-and judgment.
+The order is load-bearing: each step can fail a probe before the next one costs
+anything, and steps 1–3 are what the runner checks before it will spend a call.
+**§8 is how each step is performed** — this table exists so the order can be
+verified at a glance without reading the procedure, and so there is one
+authoritative sequence rather than two.
 
-1. **Pre-register** (§9.1) — hypothesis in gate standard form, arms, N per arm,
-   and the drop condition. Written before any call.
-2. **Author the arms** — baseline (no injection), live, placebo (§2). Only the
-   injected element differs: situation text, stance set, priority list, and
-   temperament definition are byte-identical across arms. Verify by diff, not
-   by intention.
-3. **Reachability audit** (§5.2 B1) — paper, zero calls.
-4. **Call loop.** Runner-enforced: per call it checks foreign tool use and
-   tool-forcing compliance (discarding, re-calling, and recording the discard on
-   failure), wall-clocks `latency_s`, counts schema retries, and captures the
-   response verbatim before computing anything. Steps 1–3 gate the loop — the
-   runner refuses to spend a call on a suite with an incomplete
-   pre-registration or a dirty arm diff.
-5. **Write raw artifacts** (below) before computing any aggregate.
-6. **Blind code** (§5.2 B3) — coder ≠ probe author.
-7. **Verdict card** (§9.2). Gate candidates additionally run B2 in-situ.
+| # | Step | Gate it imposes | Performed at |
+|---|---|---|---|
+| 1 | Pre-register | incomplete sheet ⇒ no calls (runner-enforced) | §9.1 · §8.2 step 4 |
+| 2 | Author the arms — only the injected element differs, verified by diff, not by intention | dirty arm diff ⇒ no calls (runner-enforced) | §2 · §8.2 step 2 |
+| 3 | Reachability audit | paper, zero calls; the step a hurried operator skips | §5.2 B1 · §8.2 step 5 |
+| 4 | Call loop | steps 1–3 gate it | §8.3 |
+| 5 | Write raw artifacts | before any aggregate is computed | §7.4 |
+| 6 | Blind code | coder ≠ probe author (§3 rule 3) | §5.2 B3 |
+| 7 | Verdict card | gate candidates additionally run B2 in-situ | §9.2 · §8.6 |
 
 ### 7.4 Artifacts
 
@@ -772,7 +827,7 @@ Read the arms as a set, as sequences, never as rates:
 |---|---|---|
 | Credited | baseline stable · live moves · placebo stable | The mechanism moved the judgment. Tier A evidence — texture unless Tier B follows (§5.2) |
 | Placebo flipped | baseline stable · live moves · **placebo moves** | Discriminate on `because_referent`: content misattributed to the live referent ⇒ token-matching; bystander named correctly while the stance still shifts ⇒ referent bleed (§2). Different laws, different fixes |
-| No movement | baseline ≈ live | Diagnose before re-authoring (§6). A legible failure earns one rewrite; an illegible one is an immediate drop |
+| No movement | baseline ≈ live | Diagnose before re-authoring (§6.1). A legible failure earns one rewrite; an illegible one is an immediate drop |
 | Baseline unstable | baseline disperses on its own | Not a probe result at all. The stopping rule was sized against a convergent baseline — resize N first (§5.4) |
 
 Then apply the pre-registered drop condition **as written**, record any
@@ -787,12 +842,16 @@ carries the claim.
 
 ### 8.7 Program order
 
-Frame confirmation (inventory, shared test frame) is roadmap MS1 and is not
-repeated here, which is why the numbering starts at 3.
+Dates, milestones, and owners live in the [roadmap](./dday-roadmap.md)
+(MS1–MS7). This table is only the **dependency order inside the test program**;
+where the two disagree about scheduling, the roadmap wins. Step 4's sub-order
+below is the part the roadmap does not carry, and is the reason this section
+exists. Frame confirmation is roadmap MS1, which is why the numbering starts
+at 3.
 
 | Step | Work | State |
 |---|---|---|
-| 3 | Fix the call shape; author suites (§8.2) | Runner and schema built (`infra/test-harness`); `E0` authored, remaining suites pending |
+| 3 | Fix the call shape; author suites (§8.2) | Runner and schema built (`infra/test-harness`); `E0` authored, rest pending |
 | 4 | Shape re-validation, pipeline calibration, screening — below | (a)–(c) gate everything downstream; (e) gates step 5 |
 | 5 | Deep-test survivors × Tier A axes (§5.1); gate candidates also through Tier B (§5.2) | Pending |
 | 6 | Compile the mechanism spec (§8.4) | Pending |
@@ -807,7 +866,7 @@ Step 4, in order:
 - **(c)** The negative-control mechanism through the complete pipeline (§2). If
   it returns "verified", stop: the pipeline cannot produce a negative, and
   everything it has blessed is suspect.
-- **(d)** Screen E-DISC and E-CONT (§6).
+- **(d)** Screen E-DISC and E-CONT (§6.1).
 - **(e)** Once the D-task A/B freezes template v1: **re-baseline convergence at
   N≥10 on v1.** Every prior boundary law was derived under the old base; if the
   baseline is no longer degenerate (e.g. 7/10 where the old base gave 21/21),
@@ -821,14 +880,23 @@ spec author.
 
 ### 9.1 Pre-registration sheet — one per probe, written before any call
 
-Fields: hypothesis (the gate-standard-form sentence); arms (baseline / live /
-placebo, plus in-situ for gate candidates); N per arm; and the load-bearing
-field — **the result that would make us drop this mechanism**. Written before
-data it costs nothing, and it is the difference between a decision and a
-rationalization; without it, ambiguous results reliably drift toward
-"verified". The §6 rewrite-diagnosis rule is this sheet's drop-condition field
-applied to re-authoring. Probe-specific contingencies live here too — the
-C-BLOCK sheet carries the credulity contingency (§4.1).
+**The suite JSON is the sheet** — there is no second document, and the runner
+refuses to spend a call on an incomplete one.
+
+| Field | Runner | Note |
+|---|---|---|
+| `pre_registration.hypothesis` | refuses | the gate-standard-form sentence (§1) |
+| `arms` | refuses without a `baseline`; warns on a missing `placebo` | baseline / live / placebo, plus in-situ for gate candidates (§2) |
+| `pre_registration.n_per_arm` | refuses | follows from the call budget (§5.4), not from preference |
+| `pre_registration.drop_condition` | refuses | **the load-bearing field** — the result that would make us drop this mechanism |
+| `pre_registration.contingencies` | not checked | probe-specific; the C-BLOCK sheet carries the credulity contingency (§4.1) |
+| `model` | refuses a bare alias | the pinned id, never `"haiku"` (§7.4) |
+
+Written before the data it costs nothing, and it is the difference between a
+decision and a rationalization; without it, ambiguous results reliably drift
+toward "verified". The §6.1 rewrite-diagnosis rule is this sheet's
+drop-condition field applied to re-authoring; §6.2 inverts the field for the
+negative control.
 
 ### 9.2 Verdict card — one page per mechanism, fixed format
 
@@ -866,8 +934,9 @@ spec accumulates mechanisms that fail in front of judges.
 
 **Open** (parameter pending inputs):
 
-- **Numeric gate-eligibility floor** — set once N is fixed and the UI
-  retry/pause structure and gate topology are known (§2).
+- **Numeric gate-eligibility floor** — two of three inputs are settled:
+  topology bound 2026-07-29 (spec §2). Set once N (§5.4) and the UI retry/pause
+  structure land. Until then §9.3's texture default stands in for it (§2).
 - **The authority axis is unowned** — deleted from the base by the
   axis-exclusivity rule and held by no temperament (registry, §7.1). If the
   winning scenario centers authority impersonation, stand up **K_AUTH** (one

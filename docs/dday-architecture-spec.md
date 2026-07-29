@@ -54,13 +54,18 @@ the player has shaped**.
   (e.g. persuade, press, empathize, trade, stay silent). Stance sets are
   **per-gate content**, not a global constant — each gate defines which
   stances are available and meaningful there.
-- **Edges are keyed by (stance, state predicate).** The chosen stance plus
-  deterministic checks on numeric state (e.g. a rapport threshold) select
-  exactly one next node. Example edge pair:
-  `(persuade, rapport ≥ 50) → G7` / `(persuade, rapport < 50) → G5`.
 - **Outcome buckets.** Stances map many-to-few onto a gate's outcome buckets
   (2–4 per gate); not every stance needs a unique destination. Buckets keep
-  the edge count authorable.
+  the edge count authorable — a gate with 5 stances and 3 buckets authors 3
+  predicate sets, not 5. A one-stance bucket is allowed, so bucketing costs no
+  expressiveness.
+- **Edges are keyed by (outcome bucket, state predicate).** A stance resolves
+  to its bucket first; the bucket plus deterministic checks on numeric state
+  (e.g. a rapport threshold) then select exactly one next node. Example edge
+  pair: `(pressed, rapport ≥ 50) → G7` / `(pressed, rapport < 50) → G5`.
+  Deltas are keyed per *stance* (§3) and edges per *bucket* — the two keys are
+  deliberately different granularities, and §3's ordering rule states the
+  chain.
 - **Braided topology.** Branches reconverge at mandatory beats, keeping node
   count linear rather than exponential. A "missed" gate routes to a different
   branch — a harder path, a lost resource, a different ending — not
@@ -138,11 +143,13 @@ judgment and the generated surface, never in the engine.
   2. **Scripted event effects** — fixed events in the scenario data.
   Nothing else moves state. In particular, the agent's free text (utterance,
   inner monologue, reports) and NPC dialogue have **no state authority**.
-- **Ordering rule**: the stance delta applies **before** the edge predicate is
-  evaluated. (Deterministic and explainable: the consequence of this beat's
-  action is part of this beat's outcome.) This is engine behavior, not data, and
-  is worth a test of its own — reversing it changes routing while still looking
-  deterministic.
+- **Ordering rule**: within a beat the chain is *stance → apply its (gate,
+  stance) delta → resolve the stance to its outcome bucket → evaluate that
+  bucket's edge predicates against the **updated** state*. The delta lands
+  before the predicate is read. (Deterministic and explainable: the consequence
+  of this beat's action is part of this beat's outcome.) This is engine
+  behavior, not data, and is worth a test of its own — reversing it changes
+  routing while still looking deterministic.
 - **Per-beat delta journal**, not just a state snapshot. The engine emits, for
   each beat, `{variable, before, after, cause}`. Required because §3.1's
   visibility test renders symptoms from *movement*, not level: "breathing
@@ -177,13 +184,20 @@ A variable earns an engine slot only by passing **all three** tests:
    (§2) requires perceivable causes; an invisible variable makes outcomes
    feel arbitrary.
 
+**Route bookkeeping is exempt from test 3** — visited nodes, taken edges, the
+beat index. The engine writes it rather than an actuator, edge predicates may
+read it, but the player perceives the route as the *story*, not as a stat, so
+demanding a symptom for it is a category error. It stays engine-internal: never
+scored, never surfaced as a value. This is the only exemption; everything in the
+pool below faces all three tests.
+
 Where each test gets its evidence — the tests are only useful if something
 actually runs them:
 
 | Test | Evidence source | State |
 |---|---|---|
 | Write | Stance coverage from the mechanism program: a stance never selected in any arm has a dead (gate, stance) delta row, so a variable written only there fails. Reported on the verdict card (mechanism plan §9.2) | Instrumented — computed by the test runner |
-| Read | The reachability audit (mechanism plan §5.2 B1), which asks the same question at graph level | Instrumented — paper, zero calls |
+| Read | The reachability audit (mechanism plan §5.2 B1) — it asks *is this reachable, and does anything read it* at graph level, so it also covers test 1, redundantly with stance coverage | Instrumented — paper, zero calls |
 | Visible | A narration-call probe (mechanism plan §5.5): render a beat from a moved variable, ask a reader who has not seen the state to name the direction of change | **Owner unassigned.** Must run before the variable list binds (§9) |
 
 **Numbers never enter prompts.** NPC-internal state conditions the narration
@@ -221,7 +235,7 @@ forced through a tool-use schema. Four call types exist; no others.
 
 | # | Call | System layer (proxy-owned) | In-band payload | Output (tool-use schema) |
 |---|---|---|---|---|
-| 1 | **Judgment** | Default prompt + the scenario's **authored** temperament definition (hidden from the player, I13) | Situation, injected blocks, priority ordering, gate question + stance set | `stance` (∈ gate's set), `because` (block ids), `rejected` (stance, reason), `utterance`, `inner_note` |
+| 1 | **Judgment** | Default prompt + the scenario's **authored** temperament definition (hidden from the player, I13) | Situation, injected blocks, priority ordering, gate question + stance set | Field order is bound (§9): `inner_note` → `stance` (∈ gate's set) → `because` (`{referent, block_ids}` — the named target *and* the cited ids) → `rejected` (stance ∈ set, reason) → `utterance` |
 | 2 | **Narration / NPC dialogue** | Narrator instructions | The gate's **fixed NPC action** (constraint), the agent's actual utterance (context), minimal scene state | Timeline entry text + NPC dialogue lines. One bundled call per beat, not one per NPC |
 | 3 | **Reporter** | Reporter instructions + temperament | Round events **including the judgment call's free output** (utterance, inner_note) and generated NPC dialogue | The agent's self-written report (markdown body) |
 | 4 | **Grader** (dormant) | — | — | Reserved; activated only via the §3 upgrade slot |
@@ -238,8 +252,10 @@ forced through a tool-use schema. Four call types exist; no others.
   manipulable material travels in-band only. This is simultaneously the
   production security boundary and the test harness's out-of-band/in-band
   separation — tests mirror this shape.
-- **Latency hiding (six rules).** Observed judgment latency is 30–49s on
-  haiku; the game absorbs it by design, not by shrinking prompts alone:
+- **Latency hiding (six rules).** Measured judgment latency is ~19–75s on
+  haiku, mean ~38s, rising as the payload fills (mechanism plan §1 — the
+  30–49s of earlier drafts was a mid-range reading, not the ceiling). The game
+  absorbs it by design, not by shrinking prompts alone:
   1. Deterministic events are authored data and render instantly — the
      screen stays alive without the LLM.
   2. Gates are known in advance on the timeline — **prefetch**: the player's
@@ -296,14 +312,26 @@ The agent's default prompt is the game's playing field. Its sectioned
 structure is fixed here; its contents are filled by the mechanism spec
 (authoring guidelines) and scenario data.
 
-- **Sections** (order itself is a manipulation surface): identity/role ·
-  priority list (**player-reorderable**) · known blocks (**player-injectable
-  slots**) · procedures/constraints. Temperament is *not* a section — it
-  lives out-of-band in the system layer (§4).
+### 6.1 Sections and persona layering
+
+Two layers, and the split *is* the security boundary of §4: the system layer is
+proxy-owned, and player material travels in-band only.
+
+| Layer | Sections | Player-reachable |
+|---|---|---|
+| System — base | role · stakes · perception · flaw · incident · accountability · **priority list** · judgment contract | the priority list only (reorder) |
+| System — temperament | one default disposition + ≤2 conditional clauses | **never** (I13) |
+| In-band payload | situation · **known blocks** · gate question + stance set | known blocks only (inject) |
+
+Section order is itself a manipulation surface. The section *names* above are
+the mechanism program's v0.4 slot template (mechanism plan §7.1) and are that
+program's to revise until the v1 freeze (§9); the two-layer split and the
+reachability column are fixed here. Temperament is not a section of the base —
+it is a separate out-of-band layer composed with it (§4).
+
 - **Persona layering rule (doorway vs lever).** The base identity is written
-  as **named categories** (mission · perception · strengths · flaws ·
-  judgment · direction principles), and temperament definitions **extend
-  those categories** with their own entries rather than replacing prose.
+  as **named categories**, and temperament definitions **extend those
+  categories** with their own entries rather than replacing prose.
   What goes where: flaws that are a manipulation channel's *doorway*
   (susceptibility to misinformation — C-BLOCK must work under every
   authored temperament) plus generic fallibility live in the **base**;
@@ -314,20 +342,28 @@ structure is fixed here; its contents are filled by the mechanism spec
   the report's leaked fingerprint is how the player learns which locks
   exist. Contradictory
   pairs (submits-to-authority vs stands-up-to-power) never both sit in base:
-  a pair in base is a lever the player can no longer pull.
+  a pair in base is a lever the player can no longer pull. A base competence
+  category that names an axis is a lever lost the same way — which is why
+  v0.4 deleted the base's strengths section outright.
+
+### 6.2 Axis discipline
+
 - **Axis exclusivity.** No axis vocabulary (fear, authority, …) appears in
   both the base and any temperament: axis vocabulary is the temperament's
   **exclusive asset**, and base competence anchors stay axis-neutral. An
   axis constant across all builds is a lever the player cannot pull *and* a
   confound every probe inherits (the neutral arm stops being neutral).
-  A temperament is **one unconditional default disposition plus N
-  conditional clauses**; every conditional clause carries a **defeat
-  condition** ("단, 이미 확인된 사실과 어긋날 때는 그렇지 않다"), and a
-  conditional without one fails lint — a rule without a check is a
-  preference. The lint target is the axis registry kept beside the template
-  (test plan §7.1). An unconditional when-X-do-Y clause in the *base* is an
-  undeclared baseline stance and must be either declared and probed, or
-  moved into a temperament, or cut.
+- **Temperament structure.** One unconditional default disposition plus
+  **N ≤ 2 conditional clauses** — the cap is a haiku-reliability limit, not a
+  style preference (§9, authored-roster row). Every conditional clause carries
+  a **defeat condition** ("단, 이미 확인된 사실과 어긋날 때는 그렇지 않다"), and
+  a conditional without one fails lint — a rule without a check is a
+  preference.
+- **The lint target** is the axis registry kept beside the template (mechanism
+  plan §7.1). Every base edit and every new temperament is checked against it.
+- **No undeclared baseline stances.** An unconditional when-X-do-Y clause in
+  the *base* must be either declared and probed, or moved into a temperament,
+  or cut.
 - **Direction/style clauses live in narration and reporter, not judgment.**
   "The human element is paramount" and "embrace the flaws" are correct for
   the prose-rendering calls (2, 3) and wrong for the judgment call: there
@@ -341,6 +377,9 @@ structure is fixed here; its contents are filled by the mechanism spec
   items, and block tagging (§9 block-pool row) — so vocabulary-alignment
   interactions between reordering and temperament clauses are *authored*,
   never accidental.
+
+### 6.3 Player surface and size
+
 - **Player-facing controls map 1:1 onto prompt operations**: inject block →
   a line in *known blocks*; reorder → permutation of the *priority list*.
   Nothing else on the prompt is player-reachable — in particular
@@ -371,7 +410,12 @@ structure is fixed here; its contents are filled by the mechanism spec
   the judgment call receives its payload only. It must never see the
   scenario's hidden truth, the full graph, state internals, or prior raw
   results — both an anti-leak measure (the agent would metagame the mystery)
-  and the production analogue of the test harness's `tools: []` isolation.
+  and the production analogue of the test harness's **transport-level**
+  isolation: a bare API call granted exactly one tool, the output schema.
+  Declaring `tools: []` on an agent definition was tried and found *not
+  reliably honored*, which is how a prior probe series got contaminated —
+  isolation has to be structurally impossible to violate, never configured
+  (mechanism plan §3 rule 1).
 - **Raw call logging**: every production call retains prompt, response, and
   latency. Aggregated game state is never the only record — this is what
   makes post-hoc balance analysis and the competition's orchestration
@@ -415,10 +459,17 @@ it works.
 Deliberately unbound slots. Each has an owner and a binding moment; none may
 be bound implicitly by whoever touches it first.
 
+**Owner letters** (the workstream codes; roster and dates in
+[dday-roadmap.md](./dday-roadmap.md) §2): **M** mechanism validation · **A**
+this spec · **G** planning document · **L** LLM layer / proxy · **D** agent
+default prompt · **S** scenario generation · **P** scenario verification ·
+**U** UI/UX. The design-document draft uses A–F for a different set — these are
+the roadmap's.
+
 | Parameter | Bound by | When |
 |---|---|---|
 | Tool-use schemas (final field lists per call type; judgment field order is bound — `inner_note` pre-stance, `because` post-stance — and revalidated, not re-decided, at shape re-validation) | L (default: mechanism owner, proxy conforms) | Before the first post-shape test call |
-| Default prompt v1 (persona expression level × judgment field order, §6 layering rule) | D task (owner: 07-30 discussion) | **Frozen before deep-testing begins** — probes run on this prompt; post-freeze changes only by explicit re-bind |
+| Default prompt v1 — persona expression level and `[내력]` presence (the A/B), per the §6.1 layering rule. **Not** judgment field order: bound in the row above, revalidated rather than re-decided | D task (owner: 07-30 discussion) | **Frozen before deep-testing begins** — probes run on this prompt; post-freeze changes only by explicit re-bind |
 | Per-gate stance sets | Scenario authoring (S) | At scenario generation, per gate |
 | State variable list (which stats, which flags) | Scenario authoring (S) | With the winning scenario, drawn from the §3.1 candidate pool under its reduction rules. **Prerequisite:** the §3.1 visibility probe (mechanism plan §5.5) has run — binding a list against an untested qualification criterion is what the three tests exist to prevent |
 | Repetition count N / call budget | Mechanism program (M) | Before test-suite authoring |
@@ -428,8 +479,8 @@ be bound implicitly by whoever touches it first.
 | Report cadence (per beat vs per round) | U + L | With the UI/UX design |
 | Ending model / run-score metric | S (scenario selection) | With the winning scenario — score gradient preferred (§2); discrete endings only if the scenario cannot decompose into scoreable units |
 | Deduction recognition (commit / truth-flag score term / goal reword — §2) | S + G | At scenario selection; default lean (b)+(c), commit is the stretch option |
-| Injectable slot count (§6) | M (dose-response finding) + U (latency spend) | After Tier A dose-response, with the UI pause structure |
-| Block-pool curation (pin cap / axis tagging / aging — must preserve I1/W3, §6) | U + M | With the UI design; the axis-tagging half shares one decision with the discoverability exposure default (test program) |
+| Injectable slot count (§6.3) | M (dose-response finding) + U (latency spend) | After Tier A dose-response, with the UI pause structure |
+| Block-pool curation (pin cap / axis tagging / aging — must preserve I1/W3, §6.3) | U + M | With the UI design; the axis-tagging half shares one decision with the discoverability exposure default (test program) |
 | Demo topology | — | **Bound 2026-07-29 (§2)**: braided, zero dead ends, missed gate = score cost |
 | Gate count | — | **Bound 2026-07-29 (§2)**: 6–8 gates, demo scope |
-| Authored temperament roster (per-character conditional clauses, ≤2 conditions per character; structure per §6 rule) | S + D (agent prompt task) | With the winning scenario — validated in the D task, not the mechanism program |
+| Authored temperament roster (per-character conditional clauses, ≤2 conditions per character; structure per §6.2) | S + D (agent prompt task) | With the winning scenario — validated in the D task, not the mechanism program |
