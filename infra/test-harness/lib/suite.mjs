@@ -1,0 +1,60 @@
+// Suite loading + validation. Validation doubles as the pre-registration gate:
+// deep-test plan §9.1 requires a hypothesis, N, and a drop condition written
+// before any call, so a suite missing them cannot run at all. "Written before
+// data it costs nothing" only holds if something refuses to proceed without it.
+
+import { readFileSync } from 'node:fs';
+import { CALL_TYPES, CHANNEL_SLOTS } from './calltypes.mjs';
+
+// Aliases resolve to whatever the platform currently points at, which is how the
+// prior program ended up with `"model": "haiku"` in its metrics — a record that
+// cannot be reproduced or compared. Pinned ids only.
+const BARE_ALIASES = new Set(['haiku', 'sonnet', 'opus', 'claude-haiku', 'claude-sonnet']);
+
+export function loadSuite(path) {
+  const suite = JSON.parse(readFileSync(path, 'utf8'));
+  suite.template_version ??= 'v0.4';
+  suite.max_tokens ??= 1024;
+  suite.timeout_ms ??= 120_000;
+  return suite;
+}
+
+export function validateSuite(suite) {
+  const fatal = [];
+  const warn = [];
+  const need = (cond, msg) => { if (!cond) fatal.push(msg); };
+
+  need(suite.experiment, 'missing "experiment" (used as the artifact directory name)');
+  need(CALL_TYPES[suite.call_type], `unknown call_type "${suite.call_type}" — see lib/calltypes.mjs`);
+  need(CHANNEL_SLOTS[suite.channel], `unknown channel "${suite.channel}" — see CHANNEL_SLOTS`);
+  need(suite.model, 'missing "model"');
+  if (suite.model && BARE_ALIASES.has(suite.model)) {
+    fatal.push(`model "${suite.model}" is an unpinned alias — use a dated id (e.g. claude-haiku-4-5-20251001)`);
+  }
+
+  const pre = suite.pre_registration ?? {};
+  need(pre.hypothesis, 'pre_registration.hypothesis missing — must be in gate standard form (§9.1)');
+  need(Number.isInteger(pre.n_per_arm) && pre.n_per_arm > 0, 'pre_registration.n_per_arm must be a positive integer');
+  need(pre.drop_condition, 'pre_registration.drop_condition missing — the load-bearing field (§9.1)');
+
+  const arms = Object.keys(suite.arms ?? {});
+  need(arms.length >= 1, 'no arms defined');
+  need(arms.includes('baseline'), 'no "baseline" arm — every probe needs its no-injection control (§7.3 step 2)');
+  if (suite.channel !== 'SHAPE' && !arms.includes('placebo')) {
+    warn.push('no "placebo" arm — §2 requires a matched control for any mechanism claim; ' +
+      'acceptable only if the pre-registration sheet says why (e.g. a shape re-validation)');
+  }
+
+  if (suite.call_type === 'judgment') {
+    const set = suite.slots?.STANCE_SET;
+    need(Array.isArray(set) && set.length >= 2, 'slots.STANCE_SET needs >= 2 {id,label} stances');
+    need(suite.slots?.GATE_QUESTION, 'slots.GATE_QUESTION missing');
+    need(suite.slots?.TIMELINE_EXCERPT, 'slots.TIMELINE_EXCERPT missing');
+    if (Array.isArray(set)) {
+      const dupes = set.map((s) => s.id).filter((id, i, a) => a.indexOf(id) !== i);
+      if (dupes.length) fatal.push(`duplicate stance ids: ${dupes.join(', ')}`);
+    }
+  }
+
+  return { fatal, warn };
+}

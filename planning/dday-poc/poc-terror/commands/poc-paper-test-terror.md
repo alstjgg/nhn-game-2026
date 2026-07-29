@@ -2,6 +2,13 @@
 description: D-Day 시뮬레이션 PoC v2 페이퍼 테스트 실행 — 테러리스트의 전화 슬라이스, haiku (오퍼레이터 모드)
 ---
 
+> **아카이브 (2026-07-30) — 실행하지 말 것.** 이 커맨드가 §0에서 강제하는
+> `sim-field-haiku-*` 에이전트 정의는 `planning/dday-poc/poc-terror/agents/`로
+> 이동해 더 이상 서브에이전트로 해석되지 않는다. 해석 실패 상태로 실행하면
+> 임의 대체 호출이 일어날 수 있고, 그것이 정확히 §0/현행 §3이 막는 오염
+> 경로다. 이 프로그램은 종료됐고, 현행 테스트 하네스는 `infra/test-harness/`다.
+> 이 파일은 당시 런 기록(`runs/`)의 자기 서술용으로만 보존한다.
+
 planning/dday-poc/poc-terror/PAPER-TEST.md 를 읽고, 그 지침을 **문자 그대로**
 따라 페이퍼 테스트를 실행하라. 세계 데이터는
 planning/dday-poc/poc-terror/slice-terror.json.
