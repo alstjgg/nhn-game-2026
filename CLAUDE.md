@@ -68,7 +68,7 @@ and anything the harness isn't suited for.
 src/            game source (placeholder render loop for now)
 demos/          playable demos, own stacks — each deployed at /<slug>/ by the Pages workflow
 planning/       planning-phase archive (concepts, scenarios, paper tests, meetings) — see planning/README.md
-services/       superseded reference implementation (agent-arena-api, never deployed)
+services/       superseded reference implementations (agent-arena-api · apothecary-llm-layer)
 public/assets/  static assets (each one manifested — see rule 5)
 data/           balance-as-data
 docs/           living docs — project status, competition requirements, deliverable drafts

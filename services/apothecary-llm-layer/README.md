@@ -1,5 +1,11 @@
 # Apothecary LLM layer
 
+> **Archived reference (2026-07-29).** Built for the apothecary demo; the DDAY
+> decision retired it from active development. The stack stays deployable
+> (manual `workflow_dispatch` only) and its thin Lambda→Bedrock shape is the
+> template for the DDAY runtime layer, which will be built fresh at
+> `infra/llm-layer/`.
+
 This AWS SAM application generates one runtime dialogue beat for the Apothecary
 game.
 
@@ -45,16 +51,16 @@ output.
 
 | Responsibility | File |
 |---|---|
-| API Gateway, Lambda, and runtime IAM | `infra/llm-layer/template.yaml` |
-| Environment configuration validation | `infra/llm-layer/src/config.ts` |
-| HTTP routing and CORS | `infra/llm-layer/src/handler.ts` |
-| Bedrock Converse call | `infra/llm-layer/src/dialogue-provider.ts` |
-| Prompt and tool schema | `infra/llm-layer/src/dialogue-prompt.ts`, `infra/llm-layer/src/dialogue-schema.ts` |
-| Request and response validation | `infra/llm-layer/src/dialogue-validation.ts` |
-| Deterministic fallback | `infra/llm-layer/src/dialogue-fallback.ts` |
-| Server allowlisted game data | `infra/llm-layer/data/apothecary.ts` |
-| GitHub OIDC roles and artifact bucket | `infra/llm-layer/deploy/github-actions-bootstrap.yaml` |
-| Application stack replacement/deletion protection | `infra/llm-layer/deploy/application-stack-policy.json` |
+| API Gateway, Lambda, and runtime IAM | `services/apothecary-llm-layer/template.yaml` |
+| Environment configuration validation | `services/apothecary-llm-layer/src/config.ts` |
+| HTTP routing and CORS | `services/apothecary-llm-layer/src/handler.ts` |
+| Bedrock Converse call | `services/apothecary-llm-layer/src/dialogue-provider.ts` |
+| Prompt and tool schema | `services/apothecary-llm-layer/src/dialogue-prompt.ts`, `services/apothecary-llm-layer/src/dialogue-schema.ts` |
+| Request and response validation | `services/apothecary-llm-layer/src/dialogue-validation.ts` |
+| Deterministic fallback | `services/apothecary-llm-layer/src/dialogue-fallback.ts` |
+| Server allowlisted game data | `services/apothecary-llm-layer/data/apothecary.ts` |
+| GitHub OIDC roles and artifact bucket | `services/apothecary-llm-layer/deploy/github-actions-bootstrap.yaml` |
+| Application stack replacement/deletion protection | `services/apothecary-llm-layer/deploy/application-stack-policy.json` |
 | CI/CD workflow | `.github/workflows/llm-layer.yml` |
 
 ## Local validation
@@ -63,7 +69,7 @@ Prerequisites are Node.js 24+, npm, and AWS SAM CLI. These checks do not require
 AWS credentials or invoke Bedrock:
 
 ```bash
-cd infra/llm-layer
+cd services/apothecary-llm-layer
 npm ci
 npm run check
 npm run sam:validate
@@ -91,7 +97,7 @@ npm run sam:smoke
 }
 ```
 
-See `infra/llm-layer/scripts/dialogue-smoke.mjs` for a complete request using
+See `services/apothecary-llm-layer/scripts/dialogue-smoke.mjs` for a complete request using
 registered game data.
 
 Response:
@@ -124,7 +130,7 @@ Contract rules:
 
 ## Current deployment configuration
 
-Deployment defaults live in `infra/llm-layer/samconfig.toml`.
+Deployment defaults live in `services/apothecary-llm-layer/samconfig.toml`.
 
 | Setting | Current value |
 |---|---|
@@ -148,7 +154,7 @@ Deployment defaults live in `infra/llm-layer/samconfig.toml`.
 SSO is required only for local AWS operations:
 
 ```bash
-cd infra/llm-layer
+cd services/apothecary-llm-layer
 aws sso login --profile nhn-game --use-device-code
 npm run aws:preflight
 npm run check

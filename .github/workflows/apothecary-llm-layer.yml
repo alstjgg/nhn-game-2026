@@ -1,4 +1,4 @@
-name: LLM layer
+name: Apothecary LLM layer
 
 on:
   workflow_dispatch:
@@ -6,20 +6,20 @@ on:
     branches:
       - main
     paths:
-      - "infra/llm-layer/**"
+      - "services/apothecary-llm-layer/**"
       - "demos/apothecary/data/customers.json"
       - "demos/apothecary/data/fallback-npcs.json"
       - "demos/apothecary/data/generation.json"
-      - ".github/workflows/llm-layer.yml"
+      - ".github/workflows/apothecary-llm-layer.yml"
   push:
     branches:
       - main
     paths:
-      - "infra/llm-layer/**"
+      - "services/apothecary-llm-layer/**"
       - "demos/apothecary/data/customers.json"
       - "demos/apothecary/data/fallback-npcs.json"
       - "demos/apothecary/data/generation.json"
-      - ".github/workflows/llm-layer.yml"
+      - ".github/workflows/apothecary-llm-layer.yml"
 
 permissions: {}
 
@@ -30,14 +30,14 @@ jobs:
       contents: read
     defaults:
       run:
-        working-directory: infra/llm-layer
+        working-directory: services/apothecary-llm-layer
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: infra/llm-layer/package-lock.json
+          cache-dependency-path: services/apothecary-llm-layer/package-lock.json
       - uses: aws-actions/setup-sam@v2
       - run: npm ci
       - run: npm run check
@@ -49,9 +49,11 @@ jobs:
   deploy:
     name: Deploy to AWS
     needs: verify
+    # Archived reference (apothecary retired after the DDAY decision): deploys
+    # are manual-only so doc/link edits to the archive never redeploy the stack.
     if: >-
       github.ref == 'refs/heads/main' &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     concurrency:
@@ -66,7 +68,7 @@ jobs:
       api_id: ${{ steps.stack.outputs.api_id }}
     defaults:
       run:
-        working-directory: infra/llm-layer
+        working-directory: services/apothecary-llm-layer
     env:
       AWS_REGION: ap-northeast-2
       AWS_ACCOUNT_ID: "141840355276"
@@ -80,7 +82,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: infra/llm-layer/package-lock.json
+          cache-dependency-path: services/apothecary-llm-layer/package-lock.json
       - uses: aws-actions/setup-sam@v2
       - run: npm ci
       - run: npm run sam:build
