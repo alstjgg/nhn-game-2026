@@ -20,7 +20,7 @@ never controls the agent's actions; the player shapes the agent's **judgment**.
 ```
 observe (timeline: calls, CCTV, NPC dialogue)
   → mine sentence blocks (from timeline + the agent's self-written reports)
-    → compose the agent prompt (inject blocks, reorder priorities, pick temperament)
+    → compose the agent prompt (inject blocks, reorder priorities)
       → the agent judges at the next gate (chooses a stance)
         → the world advances deterministically (§2, §3)
           → new material is generated (narration, NPC dialogue, reports)
@@ -116,10 +116,12 @@ the player has shaped**.
     well, not the scored goal. Default lean: (b)+(c); (a) is the stretch
     option.
 - **Authoring constraint.** Every gate must be expressible in the gate
-  standard form ("At gate G, the agent's default stance is X; injecting block
-  F / ordering S / temperament K shifts it to Y") and must instantiate a
-  verified mechanism from the mechanism spec. A gate that needs a new
-  mechanism type is a cost, not a flourish.
+  standard form ("At gate G, the authored temperament yields default stance
+  X; injecting block F / ordering S shifts it to Y") and must instantiate a
+  verified mechanism from the mechanism spec. Temperament is not a shift
+  lever — it is the authored source of the default X and of the conditions
+  blocks trip (I13). A gate that needs a new mechanism type is a cost, not a
+  flourish.
 
 ## 3. State engine
 
@@ -194,7 +196,7 @@ forced through a tool-use schema. Four call types exist; no others.
 
 | # | Call | System layer (proxy-owned) | In-band payload | Output (tool-use schema) |
 |---|---|---|---|---|
-| 1 | **Judgment** | Default prompt + selected temperament definition | Situation, injected blocks, priority ordering, gate question + stance set | `stance` (∈ gate's set), `because` (block ids), `rejected` (stance, reason), `utterance`, `inner_note` |
+| 1 | **Judgment** | Default prompt + the scenario's **authored** temperament definition (hidden from the player, I13) | Situation, injected blocks, priority ordering, gate question + stance set | `stance` (∈ gate's set), `because` (block ids), `rejected` (stance, reason), `utterance`, `inner_note` |
 | 2 | **Narration / NPC dialogue** | Narrator instructions | The gate's **fixed NPC action** (constraint), the agent's actual utterance (context), minimal scene state | Timeline entry text + NPC dialogue lines. One bundled call per beat, not one per NPC |
 | 3 | **Reporter** | Reporter instructions + temperament | Round events **including the judgment call's free output** (utterance, inner_note) and generated NPC dialogue | The agent's self-written report (markdown body) |
 | 4 | **Grader** (dormant) | — | — | Reserved; activated only via the §3 upgrade slot |
@@ -278,10 +280,14 @@ structure is fixed here; its contents are filled by the mechanism spec
   judgment · direction principles), and temperament definitions **extend
   those categories** with their own entries rather than replacing prose.
   What goes where: flaws that are a manipulation channel's *doorway*
-  (susceptibility to misinformation — C-BLOCK must work under every build)
-  plus generic fallibility live in the **base**; flaws and strengths that
-  *tilt stances* (fear response, authority posture, bravery) live in
-  **temperament** — they are what the player chooses between. Contradictory
+  (susceptibility to misinformation — C-BLOCK must work under every
+  authored temperament) plus generic fallibility live in the **base**;
+  flaws and strengths that *tilt stances* (fear response, authority
+  posture, bravery) live in **temperament** — authored per scenario, hidden
+  and immutable to the player (I13). The player pulls those levers
+  indirectly: blocks whose vocabulary trips the clauses are the keys, and
+  the report's leaked fingerprint is how the player learns which locks
+  exist. Contradictory
   pairs (submits-to-authority vs stands-up-to-power) never both sit in base:
   a pair in base is a lever the player can no longer pull.
 - **Axis exclusivity.** No axis vocabulary (fear, authority, …) appears in
@@ -311,9 +317,12 @@ structure is fixed here; its contents are filled by the mechanism spec
   interactions between reordering and temperament clauses are *authored*,
   never accidental.
 - **Player-facing controls map 1:1 onto prompt operations**: inject block →
-  a line in *known blocks*; reorder → permutation of the *priority list*;
-  temperament choice → system-layer swap. Nothing else on the prompt is
-  player-reachable.
+  a line in *known blocks*; reorder → permutation of the *priority list*.
+  Nothing else on the prompt is player-reachable — in particular
+  **temperament**: hidden and immutable to the player (I13). The player
+  reaches its clauses only indirectly, by injecting vocabulary-aligned
+  blocks that trip their conditions, and reads it only through the clues
+  the self-written report leaks (the deduction layer).
 - **Length is a constrained variable**: a richer default prompt is a larger
   manipulation surface *and* more latency (§4). The mechanism program's
   surface-form findings and the latency budget jointly set the size.
@@ -370,6 +379,11 @@ it works.
 - **I12** NPC-internal state reaches prompts and player-facing text only as
   narrated symptoms, never as raw numbers (diegetic instrument readouts
   excepted).
+- **I13** Temperament is **hidden and immutable to the player** — never a
+  player-facing selection, menu, or prompt section. The player reaches its
+  clauses only through belief supply (blocks) and reads it only through
+  report clues. (This drift happened once — docs briefly made temperament a
+  player pick — and was caught in PR review.)
 
 ## 9. Open parameters (binding schedule)
 
@@ -393,3 +407,4 @@ be bound implicitly by whoever touches it first.
 | Block-pool curation (pin cap / axis tagging / aging — must preserve I1/W3, §6) | U + M | With the UI design; the axis-tagging half shares one decision with the discoverability exposure default (test program) |
 | Demo topology | — | **Bound 2026-07-29 (§2)**: braided, zero dead ends, missed gate = score cost |
 | Gate count | — | **Bound 2026-07-29 (§2)**: 6–8 gates, demo scope |
+| Authored temperament roster (per-character conditional clauses, ≤2 conditions per character; structure per §6 rule) | S + D (agent prompt task) | With the winning scenario — validated in the D task, not the mechanism program |

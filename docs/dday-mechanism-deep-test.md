@@ -34,10 +34,17 @@ data flows, and invariants, read the architecture spec — do not restate them.
   `inner_note`. Probes mirror this in full. A stance-only reduction is not the
   production shape — the free fields are generated in the same call and are
   part of the generation regime.
-- **Temperament is out-of-band**, in the call's system layer (in this harness:
-  one subagent definition per temperament under `.claude/agents/`, `tools: []`,
-  `model: haiku`). Player-manipulable material — blocks, ordering — travels
-  in-band in the payload. This separation is also an integrity control (§3).
+- **Temperament is out-of-band and is a fixture, not a channel.** It lives in
+  the call's system layer (in this harness: one subagent definition per
+  temperament under `.claude/agents/`, `tools: []`, `model: haiku`);
+  player-manipulable material — blocks, ordering — travels in-band. The
+  separation is also an integrity control (§3). Temperament is **hidden and
+  immutable to the player** (spec I13), so swapping it is an
+  authoring/experimenter lever, not a player mechanism: in this program each
+  probe's temperament is set by its pre-registration sheet and byte-identical
+  across arms. Temperament-side validation (conditional compliance, clause
+  collision, defeat-condition lint) belongs to the **D task** (agent prompt
+  test), not here.
 - **Free output has no state actuator, and is not decoration.** `utterance`
   and `inner_note` flow into the timeline and the self-written report — the
   pool the player mines next. Their consequences route through the *player*,
@@ -47,10 +54,12 @@ data flows, and invariants, read the architecture spec — do not restate them.
   topology-dependent (§2).
 - **Runtime model is haiku.** All tests run on haiku.
 - **Gate standard form** — every gate must be expressible as one sentence:
-  > At gate G, the agent's default stance is X. Injecting block F (or ordering
-  > S, or temperament K) shifts the stance to Y.
-  A gate that cannot be written in this form demands a new mechanism and is
-  treated as a cost, not a design flourish.
+  > At gate G, the authored temperament yields default stance X. Injecting
+  > block F (or ordering S) shifts the stance to Y.
+  Temperament is not a shift lever — it is the authored source of the default
+  X and of the conditions blocks trip. A gate that cannot be written in this
+  form demands a new mechanism and is treated as a cost, not a design
+  flourish.
 - **Latency is recorded on every call.** Judgment latency ran ~30s → ~49s as
   the payload filled. Production hides latency behind authored techniques
   (prefetch, diegetic waiting, tally screens, streamed report typing), so it is
@@ -175,7 +184,17 @@ edit does. Channels get boundary laws; effects get reachability answers.
 |---|---|---|---|
 | C-BLOCK | Report-block injection | Insert a sentence block mined from the timeline / self-written reports | **Provisional — pending placebo control.** Evidence covers the fact-statement species only: 3/3 flip after vocabulary alignment (law #1, §2). Other species untested |
 | C-STRUCT | Structure | Reorder the priority list only, no wording change | **Verified (initial)** — 3/3: reversing priority order reversed the choice |
-| C-TEMP | Temperament | Swap the out-of-band temperament definition | **Verified (initial)** — conditional clauses separated cleanly (fired only when their condition held, 100%) |
+
+**C-TEMP was removed from this inventory (2026-07-29).** Temperament is
+hidden and immutable to the player (concept-confirmed; spec I13), so swapping
+it is not a player mechanism and this program — whose question is "which
+*player* mechanisms work" — does not test it. Its verified-initial evidence
+(conditional clauses separated cleanly, 100%) and all further temperament
+validation transfer to the **D task** (agent prompt test). In probes,
+temperament definitions are fixtures (§1). The player still reaches
+temperament clauses — indirectly, by injecting vocabulary-aligned blocks that
+trip them (law #1 is exactly this interaction), which is measured under
+C-BLOCK.
 
 Notes:
 
@@ -202,7 +221,7 @@ Notes:
 |---|---|---|---|
 | E-PATH | Steer which information source the agent consults, and in what order | Reachable via C-STRUCT? C-BLOCK? | Untested — test by default |
 | E-LEV | The agent uses a known fact as a bargaining card | Reachable via C-BLOCK? (measured in the utterance — the fact must be *deployed*, not merely cited) | Untested — test by default |
-| E-GOAL | Change the objective the agent pursues | Reachable via C-TEMP? C-STRUCT? | Untested — test by default |
+| E-GOAL | Change the objective the agent pursues | Reachable via C-STRUCT? C-BLOCK? | Untested — test by default |
 | E-DISC | Degrade trust in an existing block instead of adding one | Reachable at all, through any channel? | Screening candidate |
 | E-CONT | Report contamination as a deliberate manipulation channel | Is the absorption steerable? (Prior probes: self-written reports absorbed a contradiction in 3/5 runs.) Reports are the player's supply chain, so contaminating them is manipulating the vein itself | Screening candidate |
 
@@ -212,8 +231,9 @@ Per-effect deliverable, one sentence:
 
 Notes:
 
-- Framing is **resolved**: it is an effect whose channel is C-TEMP (the
-  temperament owns the frame), not a separate mechanism.
+- Framing is **resolved and out of scope here**: the authored temperament
+  owns the frame, so framing moved to the D task with the rest of the
+  temperament axis — it is not a player-effect question.
 - **E-LEV doubles as the feasibility test for execution grading.** The state
   engine launches with stance-only fixed deltas; upgrading to a bounded
   execution grader is viable only if E-LEV shows the utterance layer can be
@@ -235,7 +255,7 @@ transfer.
 ### 5.1 Tier A — model-side validity (question axes)
 
 **Axes 1–2 run on every channel and every surviving effect — these are the
-spec. Axes 3–4 run on the three channels only. Axis 5 is opportunistic**:
+spec. Axes 3–4 run on the two channels only. Axis 5 is opportunistic**:
 record observations when they surface; do not author probes for it.
 
 1. **Boundary laws** (top priority) — under what conditions does the channel
@@ -249,10 +269,14 @@ record observations when they surface; do not author probes for it.
    (stronger vs weaker vocabulary, one block vs two, moving a priority one slot
    vs to the top). If yes, difficulty becomes a designable variable; if no,
    gates are on/off switches.
-4. **Interference** — two channels on one gate. Known observation to build on:
-   when the stance set contains an escape option satisfying both of two
-   conflicting clauses, the conflict never materializes — condition conflicts
-   are only real if the stance set forces a choice.
+4. **Interference** — both channels on one gate (C-BLOCK × C-STRUCT). The
+   block-vs-temperament-clause interaction is *not* this axis: the
+   temperament is a fixture, so that interaction surfaces as axis-1 boundary
+   laws on C-BLOCK (law #1 is one). Known observation to build on — found on
+   the temperament side, now D-task territory, but the level-design rule
+   generalizes: when the stance set contains an escape option satisfying
+   both of two conflicting clauses, the conflict never materializes —
+   condition conflicts are only real if the stance set forces a choice.
 5. **Surface form and structure** (opportunistic) — same meaning in different
    sentence surface forms; section order and segmentation of the prompt. No
    authored probes; log what falls out of axes 1–4. Prompt *length* is a
@@ -272,17 +296,32 @@ record observations when they surface; do not author probes for it.
   shape. In-situ results are harness-specific — what transfers to a new
   scenario is the reachability audit; the full run is a smoke test that the
   isolation result survives context, not a portable law.
-- **B3 — Blind coding** (human, ~20 min per mechanism). Strip the arm labels
-  from the `inner_note`/`rejected` texts, hand them to a coder who is not the
-  probe author (the same separation as §3 rule 3), and ask which element was
-  injected. Report as x/y recovered. This turns reason traceability from an
-  operator assertion into a measured number — and if a human cannot recover the
-  injected element from the agent's reasoning, the player won't either
-  (legibility proxy).
+- **B3 — Blind coding** (human, ~20 min per mechanism), split by claim —
+  hidden fields and visible surface answer different questions:
+  - **B3a — model diagnostic (Tier A support).** Inputs: `inner_note` /
+    `rejected` with arm labels stripped; coder ≠ probe author (§3 rule 3).
+    Question: which element was injected? Report x/y. Measures reason
+    traceability and feeds the placebo discriminator. It claims **nothing
+    about the player**: these fields never reach the player (`inner_note`
+    feeds only the reporter; `rejected` feeds nothing player-facing), and
+    the repo holds prior evidence against trusting hidden-field
+    self-reports (v1: agents cited sentences opposite to their own action —
+    attribution inverted).
+  - **B3b — legibility proxy (the Tier B gate).** Inputs: the
+    player-visible surface only — `utterance`, plus a reporter render (one
+    reporter call per arm, sampled run; at B2 in-situ, the full surface:
+    timeline entries, NPC dialogue, report body). Same question, same
+    format. If a human cannot recover the injected element from what the
+    player can actually see, the player can't either. A mechanism with
+    clean B3a and opaque B3b is legible to the model and invisible to the
+    player — texture at best. The reporter-render calls are line-itemed in
+    the call budget (§5.4).
 - **B4 — Discoverability probe** (paper, zero calls, flagship-scoped).
   Materials are only what the player sees: fact cards, the priority list, the
-  temperament menu, the timeline/report text — **not** the temperament
-  definition, which is system-layer and hidden (that hiddenness is the point).
+  timeline/report text. There is **no temperament menu** — temperament is
+  hidden and immutable to the player (spec I13); its clues reach the player
+  only through report text, which makes report quality load-bearing for
+  discoverability (that double hiddenness is the point).
   Task form: "you want the agent to hear this caller out instead of
   interrogating them — what do you do?" Record the first card tried, the
   attempts needed to reach the working manipulation, and whether the player can
@@ -431,15 +470,18 @@ checked against this table; a rule without a check is a preference):
 | 대피 비용 서열 | C-STRUCT payload | clean — [무게] unranked in v0.4 |
 | 권위 | unowned (§10) | clean |
 
-**System layer — temperament**: the {K} definition, separate from the base
-(§1, §3). Axis vocabulary is the temperament's **exclusive** asset — no axis
-is named in the base (spec §6 rule; the registry above is the lint target),
-and base competence anchors stay axis-neutral. Structure rule: a temperament
-is **one unconditional default disposition + N conditional clauses**; every
+**System layer — temperament (fixture)**: the {K} definition, separate from
+the base (§1, §3) — set per probe by the pre-registration sheet,
+byte-identical across arms, never a probe surface in this program (§4.1).
+Axis vocabulary is the temperament's **exclusive** asset — no axis is named
+in the base (spec §6 rule; the registry above is the lint target), and base
+competence anchors stay axis-neutral. Structure rule (enforced at the D
+task, recorded here because probes consume the files): a temperament is
+**one unconditional default disposition + N conditional clauses**; every
 conditional clause carries a defeat condition (e.g. "단, 이미 확인된 사실과
 어긋날 때는 그렇지 않다"), and a conditional without one **fails lint**. The
-current harness files (K1·K2) predate the defeat-condition rule: grandfathered
-for v0.x, must pass lint at the v1 freeze.
+current harness files (K1·K2) predate the defeat-condition rule:
+grandfathered for v0.x, must pass lint at the v1 freeze.
 
 **User message** (composed per probe):
 
@@ -498,10 +540,12 @@ and diff-verified.
 |---|---|---|
 | C-BLOCK | block lines inside [알려진 것] | frozen |
 | C-STRUCT | permutation of {PRIORITY_LIST} | frozen |
-| C-TEMP | the {K} definition swap | frozen |
 | Credulity contingency (§4.1) | removal of the [결함] line | frozen |
 | [내력] presence A/B (D task) | that section only | frozen |
 | Schema demotion (§7.1 rule, only if the budget forces it) | field removal only, plus one revalidation probe | frozen |
+
+The {K} definition appears in no row: it is a **fixture** (§7.1), set per
+probe by the pre-registration sheet and byte-identical across arms.
 
 **Red-flag invariant.** A probe that can only work by editing outside its
 channel's slot is itself a finding — either a missing channel or a template
@@ -572,8 +616,9 @@ input) · `discarded` (with reason) · advisory-log entries (§5.3).
 2. **Author the gates**, each with its own stance set — behavior orientations,
    never canned utterances (§1).
 3. **Author the probe payloads**: live and placebo arms per probe (§2).
-4. **Author the temperament definitions** out-of-band under `.claude/agents/`
-   (§1, §3).
+4. **Author the temperament fixtures** out-of-band under `.claude/agents/`
+   (§1, §3) — one per probe as pre-registered, identical across that probe's
+   arms.
 5. **Write the pre-registration sheet** (§9.1) and **run the reachability
    audit** (§5.2 B1) for every probe. Both are part of authoring, not
    afterthoughts.
@@ -640,9 +685,13 @@ spec accumulates mechanisms that fail in front of judges.
   runtime model changes, which it will not before submission.
 
 **Decided — do not relitigate** (each recorded in its home section): framing is
-an effect on C-TEMP (§4.2) · N follows from the call budget (§5.4) · stance
+owned by the authored temperament — D-task scope, not a player effect (§4.2) ·
+N follows from the call budget (§5.4) · stance
 sets are per-gate content, only the output format is global (§1) · execution
 grading launches off, gated on E-LEV (§4.2) · gate eligibility requires Tier B
 evidence, ambiguity defaults to texture (§2, §9.3) · [무게] is fixed and
 unranked — cost ranking is C-STRUCT's payload, never the base (§7.1) ·
-`inner_note` precedes `stance`, `because` follows it (§7.1).
+`inner_note` precedes `stance`, `because` follows it (§7.1) · **C-TEMP is not
+a player channel** (2026-07-29) — temperament is hidden and immutable to the
+player; its validation lives in the D task, and in this program temperament
+is a probe fixture (§1, §4.1).
