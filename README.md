@@ -5,7 +5,8 @@ The game is still unnamed and the engine/genre is not yet chosen; this repo curr
 engine-agnostic Vite + TypeScript skeleton that renders a placeholder so the deploy pipeline can
 be verified end-to-end.
 
-**Status:** demo phase — see [docs/status.md](./docs/status.md) for current state.
+**Status:** DDAY concept confirmed (2026-07-28) — see [docs/status.md](./docs/status.md)
+for current state.
 
 **Live (placeholder):** https://alstjgg.github.io/nhn-game-2026/
 
@@ -27,9 +28,12 @@ npm run preview  # preview the production build locally
 
 ```
 src/            app source (placeholder render loop for now)
+demos/          playable demos, own stacks — each deployed at /<slug>/ by the Pages workflow
+planning/       planning-phase archive (concepts, scenarios, paper tests, meetings) — see planning/README.md
+services/       superseded reference implementation (agent-arena-api, never deployed)
 public/assets/  static assets served as-is
 data/           balance-as-data (future)
-docs/           competition + design deliverable drafts
+docs/           living docs — project status, competition requirements, deliverable drafts
 .github/        CI/CD (GitHub Pages deploy)
 ```
 

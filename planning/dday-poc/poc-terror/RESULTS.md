@@ -1,7 +1,7 @@
 # PoC v2 페이퍼 테스트 — 결과 (테러리스트의 전화, haiku)
 
 > 실행: 2026-07-28. 오퍼레이터 = Claude Code 세션.
-> 계획 [docs/dday-poc-paper-test-terrorist.md](../../../docs/dday-poc-paper-test-terrorist.md) /
+> 계획 [docs/dday-poc-paper-test-terrorist.md](../../paper-tests/dday-poc-paper-test-terrorist.md) /
 > 지침 [PAPER-TEST.md](./PAPER-TEST.md) / 세계 [slice-terror.json](./slice-terror.json).
 > **slice와 시나리오는 결과에 맞춰 수정하지 않았다.** 유일한 예외는 V2′ 실패 후
 > **사용자 승인 하에** 교체한 `sentences.f_script` 한 문장이며, v1 원본은 파일에 보존돼 있다.

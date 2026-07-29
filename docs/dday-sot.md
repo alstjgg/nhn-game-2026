@@ -2,7 +2,7 @@
 
 > **문서 상태:** 2026-07-28 작성, **07-28 팀 미팅에서 컨셉 확정** (07-29 반영).
 > 이 트랙의 **단일 진입점(SoT)** — 흩어진 문서들의 지도이자 현재 상태의 요약.
-> 컨셉 자체의 설명은 [컨셉 문서](./game-concept-dday-simulation.md)에 있고,
+> 컨셉 자체의 설명은 [컨셉 문서](../planning/concepts/game-concept-dday-simulation.md)에 있고,
 > 이 문서는 **확정 사항 / 테스트로 증명된 것 / 걱정과 개선점 / 할 일**을 다룬다.
 
 ---
@@ -42,13 +42,13 @@
 
 | 무엇 | 어디 |
 |---|---|
-| 컨셉 문서 (설계 결정 전부) | [game-concept-dday-simulation.md](./game-concept-dday-simulation.md) |
-| 시나리오 초안 5편 | [테러 전화](./시나리오_테러리스트의전화.md) · [병원](./시나리오_정전된_병원의_밤.md) · [원자로](./시나리오_원자로사고제어실_청목2호기.md) · [쓰나미](./시나리오_쓰나미대피_물마루.md) · [화산](./화산대피_시나리오_초안.md) (+ [집필 브리프](./dday-scenario-brief.md)) |
-| 페이퍼 테스트 계획 | v1: [dday-poc-paper-test.md](./dday-poc-paper-test.md) / v2: [dday-poc-paper-test-terrorist.md](./dday-poc-paper-test-terrorist.md) |
-| **실측 결과** | v1: [RESULTS](../demos/dday-simulation/poc/RESULTS.md) · [DIVERGENCE](../demos/dday-simulation/poc/DIVERGENCE.md) / v2: [RESULTS](../demos/dday-simulation/poc-terror/RESULTS.md) |
-| 세계 데이터 (슬라이스) | v1: [slice.json](../demos/dday-simulation/poc/slice.json) / v2: [slice-terror.json](../demos/dday-simulation/poc-terror/slice-terror.json) |
+| 컨셉 문서 (설계 결정 전부) | [game-concept-dday-simulation.md](../planning/concepts/game-concept-dday-simulation.md) |
+| 시나리오 초안 5편 | [테러 전화](../planning/dday-scenarios/시나리오_테러리스트의전화.md) · [병원](../planning/dday-scenarios/시나리오_정전된_병원의_밤.md) · [원자로](../planning/dday-scenarios/시나리오_원자로사고제어실_청목2호기.md) · [쓰나미](../planning/dday-scenarios/시나리오_쓰나미대피_물마루.md) · [화산](../planning/dday-scenarios/화산대피_시나리오_초안.md) (+ [집필 브리프](../planning/dday-scenarios/dday-scenario-brief.md)) |
+| 페이퍼 테스트 계획 | v1: [dday-poc-paper-test.md](../planning/paper-tests/dday-poc-paper-test.md) / v2: [dday-poc-paper-test-terrorist.md](../planning/paper-tests/dday-poc-paper-test-terrorist.md) |
+| **실측 결과** | v1: [RESULTS](../planning/dday-poc/poc/RESULTS.md) · [DIVERGENCE](../planning/dday-poc/poc/DIVERGENCE.md) / v2: [RESULTS](../planning/dday-poc/poc-terror/RESULTS.md) |
+| 세계 데이터 (슬라이스) | v1: [slice.json](../planning/dday-poc/poc/slice.json) / v2: [slice-terror.json](../planning/dday-poc/poc-terror/slice-terror.json) |
 | 실험 하네스 | `.claude/agents/sim-field-*.md` (기질별 서브에이전트 정의) + `/poc-paper-test`, `/poc-paper-test-terror` 커맨드 + 각 폴더의 PAPER-TEST.md |
-| 런 원자료 (재현 불가 실측) | `demos/dday-simulation/poc/runs/` · `poc-terror/runs/` |
+| 런 원자료 (재현 불가 실측) | `planning/dday-poc/poc/runs/` · `poc-terror/runs/` |
 
 ## 3. 페이퍼 테스트가 증명한 것
 
@@ -73,7 +73,7 @@
 | V5 | 우선순위 **순서**를 존중한다 (문서 UI 성립 조건) | **통과** | 순서만 반전 → 선택 반전 3/3 |
 | V3 | 숨겨진 기질이 보고서로 샌다 | **사람 판정 대기** | §0의 질문지 |
 | V4 | 경계·충돌 관찰 | 판정 없음 | "둘 다 만족" 옵션이 충돌을 무효화 — 레벨 디자인 규칙 획득 |
-| E5′ | 자필 보고서 품질 | **사람 판정 대기** | [채점표 5편](../demos/dday-simulation/poc-terror/runs/E5-report-scoring.md) |
+| E5′ | 자필 보고서 품질 | **사람 판정 대기** | [채점표 5편](../planning/dday-poc/poc-terror/runs/E5-report-scoring.md) |
 
 **세 조종간의 독립 검증 (전부 같은 판단 지점 J1에서):**
 
@@ -138,7 +138,7 @@
 
 | 안건 | 결과 |
 |---|---|
-| V3·E5′ 사람 판정 | 별도 판정 기록 없이 **컨셉 확정으로 수용** (블라인드 [질문지](../demos/dday-simulation/poc-terror/runs/V3-blind-questionnaire.md)·[채점표](../demos/dday-simulation/poc-terror/runs/E5-report-scoring.md)는 이력으로 보존) |
+| V3·E5′ 사람 판정 | 별도 판정 기록 없이 **컨셉 확정으로 수용** (블라인드 [질문지](../planning/dday-poc/poc-terror/runs/V3-blind-questionnaire.md)·[채점표](../planning/dday-poc/poc-terror/runs/E5-report-scoring.md)는 이력으로 보존) |
 | 시나리오 확정 | **확정 — 테러 전화 축소 버전.** 축소판 초안 작성됨 (별도 PR 예정), 열린 결정 3건은 그 문서 §9 |
 | 채집 = 사실 id / 보고서 분량 정책 | 미결 → **TODO 3 (PRD/spec)** 에서 결정 |
 | 트랙 지위 | **확정 트랙** — status.md 갱신됨 |

@@ -1,7 +1,7 @@
 # Darkest Context — 통합 게임 컨셉 명세
 
 > **문서 상태:** 트랙 C(구 에이전트 아레나)의 확정 컨셉 명세.
-> [통합 브리프](./agent-arena-brief.md)(PR #11)와 [예시 스펙](./agent-arena-examples.md)
+> [통합 브리프](./agent-arena-brief.md)(PR #11)와 [예시 스펙](../research/agent-arena-examples.md)
 > (PR #28)을 하나의 캐논으로 합치고, PR #28 리뷰와 07/25 결정을 반영했다:
 > 전투·이동 뷰 = 횡스크롤 확정 · 카드 3분류(Prompt/Skill/MCP) · 토큰은 화폐 전용 ·
 > 탈옥은 담당 1기. 앞 문서들과 어긋나는 부분은 이 문서가 우선한다.
@@ -53,7 +53,7 @@ Prompt·Skill·MCP 카드를 드래프트해 **3–4기의 AI 에이전트 파�
 **로스터.** 런 시작 시 영웅 명단에서 3–4기 선발. 전원 같은 베이스 모델 — 모델 티어는
 파워 축이 아니다. 각 영웅은 저작된 default prompt(성격)와 직업·능력치(포인트 바이
 총합 60)·기본 Skill로 갈리고, 시작 파워는 동등하다. 파티 구축의 결정은 티어표가 아니라
-**구성**이다. 로스터 4기와 default prompt 전문: [예시 스펙 §2](./agent-arena-examples.md).
+**구성**이다. 로스터 4기와 default prompt 전문: [예시 스펙 §2](../research/agent-arena-examples.md).
 
 **카드 3분류 — Prompt · Skill · MCP (07/25 확정).** 구현은 셋 다 같다 — 캐릭터 시트
 (시스템 프롬프트)에 문장이 추가된다. 게임 내 정의가 다르다:
@@ -101,7 +101,7 @@ Skill·MCP 삭제·재배치, 담당 변경. ③ **Clear** — 게이지 0 초�
 ## 5. 타일 카탈로그
 
 상세 예시(호출 스키마, 턴 워크스루, 문지기 프롬프트, 회의 엔진)는
-[예시 스펙 §4](./agent-arena-examples.md). 요약:
+[예시 스펙 §4](../research/agent-arena-examples.md). 요약:
 
 | 타일 | 참여 | LLM 호출 | 보상 | 강제 배분 |
 |---|---|---|---|---|

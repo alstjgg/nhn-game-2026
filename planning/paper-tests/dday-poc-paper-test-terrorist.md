@@ -1,9 +1,9 @@
 # D-Day 시뮬레이션 — PoC v2 페이퍼 테스트 계획 (테러리스트의 전화)
 
 > **문서 상태:** 2026-07-28. [v1 계획](./dday-poc-paper-test.md)의 후속.
-> 시나리오를 원자로 → [테러리스트의 전화](./시나리오_테러리스트의전화.md)로,
+> 시나리오를 원자로 → [테러리스트의 전화](../dday-scenarios/시나리오_테러리스트의전화.md)로,
 > 모델을 sonnet → **haiku**로 교체한 2차 검증. 검증 대상은
-> [컨셉 문서](./game-concept-dday-simulation.md) §5(기질·믿음), §7(구역 문서),
+> [컨셉 문서](../concepts/game-concept-dday-simulation.md) §5(기질·믿음), §7(구역 문서),
 > §9(haiku 아키텍처). 플레이어·UI 없음 — 세션-오퍼레이터가 런을 돌리고 사람이
 > 산출물을 평가한다.
 
@@ -26,7 +26,7 @@
 - **모든 v1 수치와 기준선.** 24/24 수렴, 함정 회피율, 지연 실측 — 전부 sonnet
   측정치다. haiku 세계는 V0에서 다시 잰다.
 - 청목 2호기 슬라이스. 폐기가 아니라 회귀 기준선으로 보관
-  (`demos/dday-simulation/poc/`).
+  (`planning/dday-poc/poc/`).
 
 **신규 전제:**
 
@@ -193,15 +193,15 @@ V1 · V2 → V5 → V3 → V4 → E5'. V1·V2는 같은 페이로드 계열이�
 
 - **전용 세션에서 실행** (haiku 에이전트 정의는 세션 시작 시 로드). 이 문서가 계획,
   오퍼레이터 지침과 세계 데이터는 다음 산출물이다:
-  - `demos/dday-simulation/poc-terror/slice-terror.json` — §2가 스펙 (상태 변수,
+  - `planning/dday-poc/poc-terror/slice-terror.json` — §2가 스펙 (상태 변수,
     J1~J8 효과 수치, 기질 풀, 경계 페이로드 3종, NPC 대사, 엔딩 라인)
-  - `demos/dday-simulation/poc-terror/PAPER-TEST.md` — v1 오퍼레이터 지침 개정판
+  - `planning/dday-poc/poc-terror/PAPER-TEST.md` — v1 오퍼레이터 지침 개정판
     (절대 규칙 승계 + haiku 정의 + V 실험 절차)
   - `.claude/agents/sim-field-haiku-*.md` — 판단용 4종(neutral · k1 · k2 · k3) +
     보고서용 3종(reporter-neutral · reporter-k1 · reporter-k2). 전부 `tools: []`,
     `model: haiku`. 기질은 여기(대역 외)에 산다
   - `/poc-paper-test-terror [V0...]` 커맨드
-- 결과 기입: `demos/dday-simulation/poc-terror/RESULTS.md` append + 이 문서에
+- 결과 기입: `planning/dday-poc/poc-terror/RESULTS.md` append + 이 문서에
   결과 섹션 추가. **slice·시나리오를 결과에 맞춰 수정하지 않는다** — 보정 제안은
   "다음 액션"까지만.
 - 지연 계측은 v1과 동일한 한계 인지: 서브에이전트 벽시계 = API 지연의 상한 근사.

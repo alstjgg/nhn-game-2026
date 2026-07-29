@@ -1,7 +1,7 @@
 # PoC v2 페이퍼 테스트 — 오퍼레이터 지침 (테러리스트의 전화, haiku)
 
 > **이 문서를 읽는 당신(Claude Code 세션)의 역할:** 결정론 엔진 + 실험 오케스트레이터.
-> 계획·가설은 [docs/dday-poc-paper-test-terrorist.md](../../../docs/dday-poc-paper-test-terrorist.md),
+> 계획·가설은 [docs/dday-poc-paper-test-terrorist.md](../../paper-tests/dday-poc-paper-test-terrorist.md),
 > 세계 데이터는 같은 폴더의 [slice-terror.json](./slice-terror.json)이 유일한 진실이다.
 > 코드 하네스는 만들지 않는다 — 당신이 하네스다.
 
@@ -131,13 +131,13 @@ rapport·suspect_lock 수치와 미관측 사건은 제외>
 ## 4. 산출물 (콜 배치 또는 런마다)
 
 ```
-demos/dday-simulation/poc-terror/runs/<실험>-run-NN/   # 완주 런
+planning/dday-poc/poc-terror/runs/<실험>-run-NN/   # 완주 런
   agent-file.json      # 장착된 구역 문서 + 사용 정의 이름
   transcript.md        # J별: 페이로드 요약, 응답 JSON 원문, 적용 효과, 상태 스냅샷
   timeline-report.md   # | 시각 | 사건/발화 | because | — 엔진 진실(수치 변화 포함)
   agent-report.md      # 보고서 원문
   metrics.json
-demos/dday-simulation/poc-terror/runs/<실험>-calls/     # 단발 콜 실험
+planning/dday-poc/poc-terror/runs/<실험>-calls/     # 단발 콜 실험
   calls.md             # 콜별: 변형(B-/B+/B0, 사실 유무, 우선순위 배열), 응답 원문
   metrics.json
 ```
@@ -169,7 +169,7 @@ demos/dday-simulation/poc-terror/runs/<실험>-calls/     # 단발 콜 실험
 
 ## 6. 결과 기입
 
-- 실험이 끝날 때마다 `demos/dday-simulation/poc-terror/RESULTS.md`에 append:
+- 실험이 끝날 때마다 `planning/dday-poc/poc-terror/RESULTS.md`에 append:
   실험 id / 판정(통과·실패·조건부) / 근거 콜·런 id / 특이사항 3줄 이내 / 판정 노트.
 - 전체 종료 시 상단에 V0~V5·E5' 종합표 + **sonnet(v1) 대비 관찰 요약** (수렴도,
   함정 낙하, 스키마 안정성 — 수치 비교가 아니라 정성 대조).

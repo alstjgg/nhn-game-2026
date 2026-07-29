@@ -13,7 +13,7 @@ Prompt·Skill·Context·MCP의 개념을 게임 규칙으로 번역하는 방향
 연동은 빼고, 필요하면 "열쇠 MCP" 같은 게임적 개념만 남긴다. 전투는 턴제 관전형, 맵은 분기형
 자동 전진, 카드는 덱빌딩보다 가벼운 증강 선택 방식이 합의된 방향이다. 다만 실제
 Prompt·Skill·Task·전투 응답 예시가 아직 얇아 두 사람의 상상이 조금씩 다르므로, 이를 먼저
-구체화해야 한다(일부는 이미 [agent-arena-brief.md](../agent-arena-brief.md) 초안과
+구체화해야 한다(일부는 이미 [agent-arena-brief.md](../concepts/agent-arena-brief.md) 초안과
 `docs/agent-arena-examples.md` 작업에 반영 중). 민서는 Apothecary 데모와 확정된 Agent
 Arena PRD·super-pipeline 실행을, 윤석은 LLM 백엔드·AWS/Bedrock 가능성 조사를 맡는 흐름으로
 정리됐다. 대표 컨셉은 07-25 선택을 목표로 하되, Agent Arena 데모가 아직 없어 일정은 빠듯하다.
@@ -115,7 +115,7 @@ Arena PRD·super-pipeline 실행을, 윤석은 LLM 백엔드·AWS/Bedrock 가능
   게임 규칙으로 모사하는 방향이 현실적이라는 쪽으로 수렴했다.
 - 현재 가장 큰 결손은 실제 예시다. 기본 Prompt, 추가 Prompt, Skill, Task, 턴제 전투 응답 형식이
   아직 얇아 두 사람이 서로 다른 게임을 상상한다. 이 방향의 상당 부분은 이미
-  [agent-arena-brief.md](../agent-arena-brief.md) 초안과 `docs/agent-arena-examples.md`
+  [agent-arena-brief.md](../concepts/agent-arena-brief.md) 초안과 `docs/agent-arena-examples.md`
   작업에 잡혀 있으므로, 데모보다 먼저 그 예시와 Brief를 함께 확정해야 한다.
 
 ### 2.6 배포와 LLM 인프라
@@ -159,7 +159,7 @@ Arena PRD·super-pipeline 실행을, 윤석은 LLM 백엔드·AWS/Bedrock 가능
 | 해야 할 일 | 담당자 | 기한 |
 |---|---|---|
 | Agent Arena의 기본 Prompt, 추가 Prompt, Skill, Task, 턴제 전투 응답 형식 등 **실제 예시**를 확정한다(기존 `agent-arena-examples.md` 초안 기반). | 민서·윤석 | 가능한 한 07-24 중; 늦어도 데모/PRD 시작 전 |
-| Agent Arena Brief를 예시 기준으로 확정하고 PR로 공유한다([agent-arena-brief.md](../agent-arena-brief.md) 갱신). | 윤석 중심, 민서 리뷰 | 07-24 중 목표 (마감 시각 확인 필요) |
+| Agent Arena Brief를 예시 기준으로 확정하고 PR로 공유한다([agent-arena-brief.md](../concepts/agent-arena-brief.md) 갱신). | 윤석 중심, 민서 리뷰 | 07-24 중 목표 (마감 시각 확인 필요) |
 | Apothecary 데모를 완료한다. | 민서 | 두 트랙 비교 전; 07-25 목표 |
 | 확정된 Agent Arena Brief로 PRD를 만들고 super-pipeline을 돌려 플레이 데모를 만든다. | 민서 | Brief 확정 직후. 실행에 약 10–12시간 예상 |
 | LLM 백엔드를 계속 둘지, 얇은 API 계층으로 줄일지, 서버 없이 호출할지 비교한다. | 윤석 | Agent Arena 데모 구현 전 |

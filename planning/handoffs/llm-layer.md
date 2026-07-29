@@ -4,7 +4,7 @@
 > implementation and live testing; it is not an operating runbook.
 >
 > For current resource values, commands, deployment checks, and troubleshooting,
-> use [the Lambda/Bedrock operating guide](./llm-lambda-runtime.md).
+> use [the Lambda/Bedrock operating guide](../../docs/handoffs/llm-lambda-runtime.md).
 
 ## Final outcome
 
@@ -42,7 +42,7 @@ recorded in the asset manifest, and shipped with the static game.
 Nova 2 Lite operates on live verification of access and schema behavior, not on
 the model-selection benchmark the earlier plan required. That benchmark targeted
 a different concept and was dropped here — see "Open decision — model selection"
-in [the decision record](../llm-backend-aws-bedrock.md). Other models may remain
+in [the decision record](../research/llm-backend-aws-bedrock.md). Other models may remain
 template-allowlisted for controlled evaluation, but changing the operating model
 requires an explicit access, schema, IAM, latency, and quality check.
 
@@ -119,5 +119,5 @@ runtime image generation, persistent sessions, and broader orchestration.
 None of those assumptions is part of the final Apothecary runtime.
 
 The source code and SAM template are authoritative for implementation details.
-The [operating guide](./llm-lambda-runtime.md) is authoritative for deployment
+The [operating guide](../../docs/handoffs/llm-lambda-runtime.md) is authoritative for deployment
 and support procedures.

@@ -24,7 +24,7 @@ identity in a request is registry-checked, but `history[].npcLine`,
 `history[].playerChoiceLabel`, and `availableClues[].text` are client-supplied
 strings bounded only by length and count, and they reach the prompt verbatim —
 an accepted, mitigated residual risk, not an absence of free text. See the
-validation boundary in [`llm-layer.md`](./llm-layer.md).
+validation boundary in [`llm-layer.md`](../../planning/handoffs/llm-layer.md).
 
 ## Production inventory
 
@@ -224,7 +224,7 @@ automatic application deployment path.
 `AllowedProfileMode` controls which Bedrock inference profiles the execution
 role may invoke. It stays `both` while the operating-model decision is open —
 see "Open decision — model selection" in
-[`docs/llm-backend-aws-bedrock.md`](../llm-backend-aws-bedrock.md). Narrow it
+[`planning/research/llm-backend-aws-bedrock.md`](../../planning/research/llm-backend-aws-bedrock.md). Narrow it
 once that decision is recorded.
 
 Changing it rewrites the inline policy on `LlmExecutionRole`, so CloudFormation

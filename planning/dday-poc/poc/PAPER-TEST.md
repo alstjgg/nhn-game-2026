@@ -1,7 +1,7 @@
 # PoC 페이퍼 테스트 — 오퍼레이터 지침
 
 > **이 문서를 읽는 당신(Claude Code 세션)의 역할:** 결정론 엔진 + 실험 오케스트레이터.
-> 계획·가설의 배경은 [docs/dday-poc-paper-test.md](../../../docs/dday-poc-paper-test.md),
+> 계획·가설의 배경은 [docs/dday-poc-paper-test.md](../../paper-tests/dday-poc-paper-test.md),
 > 세계 데이터는 같은 폴더의 [slice.json](./slice.json)이 유일한 진실이다.
 > 코드 하네스는 만들지 않는다 — 당신이 하네스다.
 
@@ -106,7 +106,7 @@
 ## 4. 산출물 (런마다)
 
 ```
-demos/dday-simulation/poc/runs/<실험>-run-NN/
+planning/dday-poc/poc/runs/<실험>-run-NN/
   agent-prompt.json    # {"prompt_set": "base", "sentences": {...}}
   transcript.md        # J별: 조립된 페이로드 요약, 응답 JSON 원문, 적용 효과, 상태 스냅샷
   timeline-report.md   # | 시각 | 장소 | 사건/발화 | because | 형식, 엔진 진실(관측+비관측+trust 변화 포함)
@@ -130,7 +130,7 @@ E7(NPC LLM 비교)은 이 세션 범위에서 제외 — 킬샷 통과 후 별�
 
 ## 6. 결과 기입
 
-- 실험이 끝날 때마다 `demos/dday-simulation/poc/RESULTS.md`에 append:
+- 실험이 끝날 때마다 `planning/dday-poc/poc/RESULTS.md`에 append:
   실험 id / 판정(통과·실패·조건부) / 근거 런 id / 특이사항 3줄 이내 / 판정 노트(모호함·이탈).
 - 전체 종료 시 RESULTS.md 상단에 H1~H6·H8 종합표를 쓰고, 사용자에게 요약 보고.
 - **어떤 경우에도 slice.json이나 시나리오 문서를 결과에 맞춰 수정하지 않는다.**

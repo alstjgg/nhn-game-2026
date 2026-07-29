@@ -65,10 +65,12 @@ anything the harness isn't suited for.
 
 ```
 src/            game source (placeholder render loop for now)
-demos/          three concept demos, own stacks — see docs/status.md
+demos/          playable demos, own stacks — each deployed at /<slug>/ by the Pages workflow
+planning/       planning-phase archive (concepts, scenarios, paper tests, meetings) — see planning/README.md
+services/       superseded reference implementation (agent-arena-api, never deployed)
 public/assets/  static assets (each one manifested — see rule 5)
 data/           balance-as-data
-docs/           competition requirements + design docs + deliverable drafts
+docs/           living docs — project status, competition requirements, deliverable drafts
 .github/        Pages deploy workflow
 ```
 
