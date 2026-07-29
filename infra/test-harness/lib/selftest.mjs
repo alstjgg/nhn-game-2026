@@ -2,7 +2,7 @@
 //   node lib/selftest.mjs
 
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -155,6 +155,30 @@ check('unknown, not "all dead", when nothing was kept', () => {
   assert.equal(c.status, 'unknown');
   assert.deepEqual(c.selected, []);
   assert.equal(c.unobserved, null);
+});
+
+console.log('composer follows the call type\'s slot declaration:');
+check('reporter call type composes without any judgment slot', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'harness-selftest-'));
+  try {
+    const tdir = join(dir, 'reporter');
+    mkdirSync(join(tdir, 'temperament'), { recursive: true });
+    writeFileSync(join(tdir, 'base-v0.1.md'), '{TEMPERAMENT}');
+    writeFileSync(join(tdir, 'user-v0.1.md'), '{EXPERIENCED}');
+    writeFileSync(join(tdir, 'temperament', 'neutral.md'), '(무주입)');
+    const suite = {
+      call_type: 'reporter',
+      template_version: 'v0.1',
+      temperament: 'neutral',
+      slots: { EXPERIENCED: '09:40 회선 A 착신을 겪었다.' },
+      arms: { baseline: {} },
+    };
+    const { system, user } = composeArm(suite, 'baseline', { templatesRoot: dir });
+    assert.equal(system, '(무주입)');
+    assert.equal(user, '09:40 회선 A 착신을 겪었다.');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 console.log('artifact preflight (refuse before spending, §3 rule 4):');

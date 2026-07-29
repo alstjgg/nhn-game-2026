@@ -60,8 +60,14 @@ const reporter = {
 };
 ```
 
-3. Nothing else changes. `--dry-run` works immediately; add `dryRunPayload` only
-   if the generic filler produces something your validator rejects.
+3. Nothing else changes. The composer fills whatever `slots` declares — it has
+   no per-call-type knowledge. `--dry-run` works immediately; add
+   `dryRunPayload` only if the generic filler produces something your
+   validator rejects.
+
+One honest exception: a slot whose value has *structure* (a list that needs
+numbering, blocks that need ids in front) needs one renderer entry in
+`RENDERERS` (`lib/compose.mjs`). Plain string slots need nothing.
 
 **Field order is load-bearing** for tool-output call types. `judgment` fixes
 `inner_note → stance → because → rejected → utterance` because the pre-stance
