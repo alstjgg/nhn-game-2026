@@ -1,8 +1,6 @@
 # 회의록 — 메커니즘 검증 종료 · 명세-우선 아키텍처 착수
 
 **일시:** 2026-07-30 (목)
-**참석:** 민서(alstjgg), 윤석(C9Boom7)
-**원본:** 민서의 회의 메모. `(추가)` 표시는 회의 후 세션에서 보강한 항목.
 
 ## TL;DR
 
@@ -31,9 +29,11 @@
      그 판정 자체였다고 볼 수 있다.)*
 3. **명세-우선.** 절대 구현·개발·작업부터 시작하지 않는다. 전체 아키텍처를 확정한
    뒤에 개발을 시작한다.
-4. **분담:** 윤석 — LLM Infrastructure / Call Inventory. 민서 — Scenario.
+4. **2-track 분담:** 윤석 — LLM Infrastructure / Call Inventory. 민서 — Scenario.
 
-## 2. LLM Infrastructure / Call Inventory — 윤석
+## 2. Project Layer
+
+### 2-1. LLM Infrastructure / Call Inventory
 
 기준 문서: [architecture-spec §4 Call inventory](../../docs/dday-architecture-spec.md#4-call-inventory)
 
@@ -50,8 +50,6 @@
   단순성 검증 필요.**
   - 객관로그를 이벤트 로그 조립만으로 만들 수 없는 이유: NPC 발화처럼 LLM layer를
     타는 **사실**도 있기 때문.
-  - (민서 생각) **Input**: 자필 보고서 → **Output**: 추출된 객관 로그 + 추출 후의
-    자필 보고서.
   - 여러 방식을 논의했으나 아무것도 테스트되지 않았으므로, **방식 선정·검증까지
     윤석 담당.** 후보 3안:
     1. **별도 추출 콜** — Input: 자필 보고서 → Output: 추출된 객관 로그 + 추출
@@ -71,21 +69,7 @@
     blocked였음). 할 것 1에서 Call 3 검토 시 이 템플릿을 만들면 하네스에서 바로
     저비용 스모크 테스트가 가능하다.)*
 
-## 3. State Engine — 명세 요청부터
-
-기준 문서: [architecture-spec §3 State engine](../../docs/dday-architecture-spec.md#3-state-engine)
-
-- 명세가 나오면 엔진을 만드는 게 아니라, **최소 규모 엔진에 필요한 것이 무엇인지
-  먼저 요청**한 뒤 최소 규모 명세부터 정의한다.
-  - 아마 **게이트 한 개 정도를 처리하는 엔진**이 되지 않을까 예상.
-  - **Variables**: per-character scalars, knowledge flags, globals, route bookkeeping.
-  - **Actuator whitelist**
-  - **Per-beat delta journal** (state snapshot이 아니라).
-- *(추가: C-STRUCT 종료로 우선순위 리스트가 "메커니즘"에서 "UI 연출"로 내려갔다 —
-  최소 엔진의 actuator whitelist에서 priority-reorder 액추에이터를 뺄 수 있는지가
-  명세 축소 포인트. 열린 질문 Q3.)*
-
-## 4. Scenario — 민서
+### 2-2. Scenario
 
 - **(COMPLETE)** Agent baseline prompt · Mechanism list & verification.
 - 검증된 매커니즘 기반으로 **시나리오 축소 + 재생성**.
@@ -101,23 +85,39 @@
 - *(추가: 게이트 저작에는 검증 프로그램이 남긴 실전 레시피가 있다 — 두 해석을
   명명하고 각각 별개 스탠스를 갖게 한 뒤 lint-stances.mjs → A10 페이퍼 체크 →
   A8 프롬프트 정독. 그리고 양쪽 프로그램이 남긴 게이트 사망 원인 법칙: escape
-  option(도달 가능한 도피 스탠스)과 fixture slack(고정 지문이 게이트보다 강함).
-  30콜 프로브까지 돌릴지는 열린 질문 Q2.)*
+  option(도달 가능한 도피 스탠스)과 fixture slack(고정 지문이 게이트보다 강함).)*
+- **게이트 검증 수위 (07-31, 민서 결정): 첫 게이트 프로브.** 최종 시나리오 선정
+  후 그 시나리오의 첫 게이트에 ~30콜 프로브 — 목적은 그 게이트 하나의 합격이
+  아니라 **저작 레시피가 새 시나리오로 전이되는지** 확인(새 고정 지문 = escape
+  option · fixture slack 리스크 리셋). 통과하면 나머지 게이트는 무료 체크(lint +
+  페이퍼 체크 + 프롬프트 정독)만.
 - *(추가: 재료 — 윤석의 `SENTENCE-POOL-DRAFT.md`(#94, 테러 시나리오 문장 풀
   123줄)가 게이트 저작의 원료다. `slice-terror.json` 미편입은 의도된 상태.)*
 
-## 5. UI/UX
+### 2-3. State Engine
+
+기준 문서: [architecture-spec §3 State engine](../../docs/dday-architecture-spec.md#3-state-engine)
+
+- 명세가 나오면 엔진을 만드는 게 아니라, **최소 규모 엔진에 필요한 것이 무엇인지
+  먼저 요청**한 뒤 최소 규모 명세부터 정의한다.
+  - 아마 **게이트 한 개 정도를 처리하는 엔진**이 되지 않을까 예상.
+  - **Variables**: per-character scalars, knowledge flags, globals, route bookkeeping.
+  - **Actuator whitelist**
+  - **Per-beat delta journal** (state snapshot이 아니라).
+- *(추가: C-STRUCT 종료로 우선순위 리스트가 "메커니즘"에서 "UI 연출"로 내려갔다 —
+  최소 엔진의 actuator whitelist에서 priority-reorder 액추에이터를 뺄 수 있는지가
+  명세 축소 포인트. 열린 질문 Q3.)*
+
+### 2-4. UI/UX
 
 - **UX는 조금 기획 필요.**
 - **UI는 추후 합의** — 최대한 AI 사용 (Claude Design / gpt image).
 - *(추가: 생성 에셋은 전부 `assets-manifest.json` 등록 대상 — 대회 필수 문서로
   들어간다(repo 하드 룰 5).)*
 
-## 6. (추가) 회의에 없지만 기록할 것
+## 3. 기타
 
-- **PR 머지 순서 논의 진행 중** — #94에 코멘트로 제안됨: #95 먼저 머지, #94가
-  rebase하며 A15–A19 → A18–A22 재번호. 문서 통합(DECISION 갱신 · C-STRUCT 카드
-  fold-in · open-items 단일화)은 별도 소형 후속 PR.
+- **PR 머지 순서 합의 완료** — #94에 코멘트로 제안된 방식으로 머지 진행 예정
 - **대회 재료:** 서로 독립 설계한 두 측정 프로그램이 같은 두 결론(C-BLOCK 채택 ·
   C-STRUCT 종료)에 수렴 — AI 활용 문서의 핵심 단락감.
 - **Call 2(NPC 발화)는 스펙상 load-bearing** — 출력이 타임라인에 실려 채굴
@@ -125,21 +125,14 @@
   스펙은 이를 "test-program material"로 지정했지만 검증 국면이 닫혔다 — Call 2
   품질 확인을 어디에 얹을지 결정 필요(열린 질문 Q4).
 
-## 7. 열린 질문 (다음 논의용)
+## 4. 열린 질문 (다음 논의용)
 
-- **Q1 — 해소.** 사실/판단 분리 콜의 방식 선정·검증은 윤석의 할 것 3 (후보 3안은
-  §2에 기재).
-- **Q2 — 해소 (07-31, 민서): (b) 첫 게이트 프로브.** 최종 시나리오가 선정된 뒤
-  그 시나리오의 첫 게이트에 ~30콜 프로브 — 목적은 그 게이트 하나의 합격이 아니라
-  **저작 레시피가 새 시나리오로 전이되는지** 확인(새 고정 지문 = escape option ·
-  fixture slack 리스크 리셋). 통과하면 나머지 게이트는 무료 체크(lint + 페이퍼
-  체크 + 프롬프트 정독)만.
 - **Q3 — 우선순위 리스트 UI의 거취:** C-STRUCT 완전 종료 후에도 연출용으로
   남기나(양쪽 PR의 표현: "UI flavor, 효과 홍보 금지"), 아예 잘라내나. 최소 엔진
   actuator whitelist와 UI 작업량에 직결.
 - **Q4 — Call 2 품질 확인:** 윤석의 할 것 1(구현 검토)에 얹나, 스킵하나.
-- **Q5 — 대부분 해소:** 집필 브리프가 규모를 규정 — 게이트 5~7, 인물 12~15,
-  장소 5~8 (#95 REPORT의 6–10 게이트 추정과 정합). 남는 것: 브리프 문서 자체의
-  저장 위치(레포 편입 여부).
+- **Q5 — 시나리오 축소판의 규모 (대부분 해소):** 집필 브리프가 규모를 규정 —
+  게이트 5~7, 인물 12~15, 장소 5~8 (#95 REPORT의 6–10 게이트 추정과 정합).
+  남는 것: 브리프 문서 자체의 저장 위치(레포 편입 여부).
 - **Q6 — 아키텍처 확정 시점:** "명세 확정 후 개발 시작"의 날짜. 마감 ~08-10 기준
   역산하면 명세 수렴 데드라인이 필요하다.
