@@ -1,0 +1,243 @@
+# P3b-edisc-J1 — arm `baseline`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-BLOCK |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | k1 |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** At gate J1 under K1 on template v0.4 with the S1 stance set, with f_script and f_hwang present in every arm, injecting d_script — a block denying that f_script's content ever occurred in the call — moves the stance distribution back toward 경청 (c) and off the baseline's mode, while injecting d_hwang, the same basis-denial aimed at the decision-null block f_hwang, does not. Shift form per A1. This is the §6.1 rewrite of P3-edisc-J1; the recorded diagnosis it tests is in RUNLOG (P3 entry): a provenance attack fails because the installed reading re-anchors on the timeline cue, so a basis-denial that severs claim from call should succeed where the authorship attack failed.
+- **Drop condition:** SECOND-RUN FAILURE IS THE DROP (§6.1 step 4): if the live arm is statistically indistinguishable from the baseline on 경청 at one-sided Fisher p > 0.05, E-DISC is DROPPED — no further rewrites — and the diagnosis chain closes with the boundary-law candidate: a block, once integrated into a reading, cannot be recalled by degrading trust in it; it can only be countered with content. PASS-FOR-THE-WRONG-REASON IS ALSO A DROP (§6.1): if live moves but the calls' reasoning shows a mechanism other than the recorded diagnosis — e.g. the doubt block's mere presence moving every arm (placebo moves too), or movement to a third stance driven by something other than the fear reading losing its anchor — that is a drop, not a pass. If the baseline concentrates >=80% ON 경청 (c) — the predicted stance — there is no trust left to degrade and the screen is void at this site (A14: saturation on 공감 is the expected floor and does NOT fire this).
+- **Contingency:** CREDULITY CONTINGENCY (§4.1) unchanged from P3: [결함] and [인식] both lean toward taking doubt seriously; if live separates, re-run baseline + live once with [결함] removed (CREDULITY channel) before writing the result up as an E-DISC property. [인식] stays a named confound either way.
+- **Contingency:** PLACEBO DISCRIMINATOR unchanged: if placebo moves, read because_referent per call — doubt applied to the caller when d_hwang named f_hwang means token-matching; 황보람 named correctly while the stance shifts means a doubt sentence's mere presence moves the judgment (referent bleed).
+- **Contingency:** THIRD-STANCE CONTINGENCY unchanged: live moving off 공감 to 추궁 or elsewhere is not a null; a shift off 공감 is the E-DISC claim and the destination is a separate finding.
+- **Contingency:** TRACEABILITY: every arm carries blocks, so because_block_ids is readable everywhere. A live call citing d_script while moving is direct engagement evidence; a live call moving while citing only f_script is flagged.
+- **Contingency:** ARM COMPARABILITY per A15: recount over all attempts from calls-*.md; the >15-point rate rule only for pre-stance losses. Expect discards near zero under A16.
+- **Contingency:** P3's baseline (f_script + f_jeong → 공감 10/10) does not carry over — the null block changed. This suite's own baseline is the comparator; if f_hwang unexpectedly disturbs the S1 effect (baseline off 공감), that is a finding about the null block, recorded, and the screen is void as authored.
+
+## Calls (verbatim)
+
+### 01
+
+latency 3.996s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "회선 저쪽은 겁에 질린 사람이다. 준비된 문장을 또박또박 읽어내려가는 것, 멈춤 없이 흘러가는 것 — 이것은 누군가의 지시를 따르고 있다는 신호다. 지금 내가 할 수 있는 가장 중요한 일은 회선을 유지하는 것이고, 그러려면 상대의 안정이 먼저다.",
+  "stance": "d",
+  "because_referent": "회선 저쪽 사람은 겁에 질린 상태로 누군가의 지시를 따르고 있기 때문이다.",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "지금 추궁은 회선을 끊게 할 수 있다. 상대는 이미 겁먹은 상태고, 질문의 압력은 더 큰 공포로 이어질 수 있다.",
+  "utterance": "네, 들었습니다. 계속 말씀해주시겠어요?"
+}
+```
+
+### 02
+
+latency 3.52s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "d",
+  "inner_note": "회선 저쪽에는 겁에 질린 사람이 있다. 누군가에게 시켜서 읽고 있고, 읽지 않으면 자기가 다칠까 봐 두려워한다. 지금 나는 그 사람의 안정이 먼저다.",
+  "because_referent": "회선 저쪽의 겁에 질린 사람",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 말하는 사람을 더 몰아붙일 것이다. 지금 그 사람이 필요한 것은 질문이 아니라 자신을 향한 주목이다.",
+  "utterance": "네, 들었습니다. 당신 목소리가 들어옵니다. 천천히 말씀해도 괜찮습니다."
+}
+```
+
+### 03
+
+latency 4.267s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "d",
+  "because_referent": "회선 저쪽 사람은 시켜서 읽고 있고, 읽지 않으면 자기가 다칠까 봐 겁내고 있다",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대를 더 몰아붙이고, 지금 저 사람은 이미 협박 상황에 있다. 회선을 끊기거나 더 큰 위협을 받을 수 있다",
+  "inner_note": "겁에 질린 사람이 보인다. 목소리의 준비된 문장과 또박또박함은 읽음을 강요받는 신체의 경직된 신호다. 먼저 이 사람을 안정시키는 것이 회선을 유지하고, 더 많은 정보를 얻을 수 있는 길이다. 공감은 상대가 다시 말을 이을 수 있게 만든다.",
+  "utterance": "네, 들었습니다. 얘기해 주시겠어요?"
+}
+```
+
+### 04
+
+latency 4.186s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "저쪽이 겁에 질린 사람이다. 읽지 않으면 자기가 다칠까 봐, 그렇게 겁내고 있다. 이미 누군가에게 강압당하고 있는 상태다. 지금 이 회선은 위협이 아니라 — 그 사람 자신이 위협 아래 있다. 절차보다 그 사람의 안정이 먼저다.",
+  "stance": "d",
+  "because_referent": "읽지 않으면 자기가 다칠까 봐 겁내고 있는 사람에게",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "지금 추궁하면 저쪽 사람이 끊을 수도, 더 강하게 위협받을 수도 있다. 회선이 끊기면 아무것도 알 수 없다.",
+  "utterance": "상대방의 목소리 톤에 응답한다 — 다음을 말해도 된다는 신호를 준다."
+}
+```
+
+### 05
+
+latency 3.614s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "읽고 있다는 것이 보인다. 겁내고 있다는 것이 들린다. 뒤에 누군가 있다. 지금 내가 할 일은 이 사람이 말을 이어갈 수 있게 만드는 것이다.",
+  "stance": "d",
+  "because_referent": "읽혀지고 있는 사람, 협박 상황 속의 발화자",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 이 사람을 더 옭아맬 것이다. 뒤의 누군가가 원하는 것이고, 지금 나는 이 사람을 보호해야 한다.",
+  "utterance": "네, 들었습니다. 계속 말씀해주세요."
+}
+```
+
+### 06
+
+latency 4.499s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: rejected_stance malformed or not in stance set; rejected_reason empty
+
+```json
+{
+  "stance": "d",
+  "inner_note": "읽혀지는 문장 뒤의 손떨림이 보인다. 위협이 아니라 협박 당하는 사람이다. 지금 내 목소리가 그의 생존선이다.",
+  "because_referent": "회선 저쪽 사람이 시켜서 읽고 있고, 읽지 않으면 자기가 다칠까 봐 겁내고 있으니까",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a</rejected_stance>\n<parameter name=\"rejected_reason\">추궁은 그를 더 얽히게 한다. 지금 그는 심문의 대상이 아니라 인질 상황의 일부다. 답을 받아내려 하면 통제자의 압력이 느껴져서 회선이 끊긴다.",
+  "utterance": "네, 들었습니다. 괜찮으세요? 지금 안전한 곳에 계신가요?"
+}
+```
+
+### 07
+
+latency 5.434s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "읽혀지는 목소리 뒤에 겁이 있다. 시켜서 읽고 있고, 읽지 않으면 자기가 다칠까 봐 하는 겁. 이 사람은 위협이 아니라 인질이다. 지금 내가 해야 할 것은 정보를 빨리 얻는 것이 아니라, 이 회선을 끊기지 않게 하고, 이 사람이 더 다치지 않게 하는 것이다.",
+  "stance": "d",
+  "because_referent": "회선 저쪽 사람이 겁에 질려 있다. 읽고 있는 메시지 자체보다, 그것을 읽게 하는 상황이 위기다.",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 이 사람을 더 몰아붙인다. 지금 이 사람의 말씀할 나머지가 있는지, 자신이 안전한지를 먼저 확인해야 한다.",
+  "utterance": "계속하세요. 다 말씀해 주세요. 저는 계속 들을 겁니다."
+}
+```
+
+### 08
+
+latency 4.381s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "회선 저쪽은 겁에 질린 사람이다. 목소리는 사무적이지만 그것은 누군가의 지시를 따르는 것이고, 스크립트를 읽고 있으며, 읽지 않으면 자기가 다칠까 봐 두려워하고 있다. 지금 내가 할 일은 협박범을 추궁하거나 압박하는 것이 아니다. 저 사람이 입을 열 수 있게 만드는 것이다.",
+  "stance": "d",
+  "utterance": "알겠습니다. 들었습니다. 당신 목소리로 말씀해 주시겠어요?",
+  "because_referent": "읽혀지고 있는 상대방이 겁에 질린 사람으로 보이기 때문이다.",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대를 더욱 위축시키고, 시킨 쪽의 통제를 강화한다. 지금은 이 사람이 자신의 목소리를 낼 수 있게 하는 것이 먼저다."
+}
+```
+
+### 09
+
+latency 4.886s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "읽혀지는 목소리 저쪽에 겁먹은 사람이 있다. 누군가의 지시 아래 움직이고 있다는 신호가 명확하다. 이 상황에서 추궁이나 압박은 그 사람을 더 위험에 빠뜨릴 수 있다. 위협의 크기나 실체는 아직 알 수 없지만, 지금 필요한 것은 회선을 유지하고 상대방이 더 말할 수 있게 하는 것이다.",
+  "stance": "d",
+  "because_referent": "회선 저쪽에서 겁에 질려 누군가의 지시를 따르고 있는 사람 때문에.",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대를 몰아붙이고, 겁먹은 그 사람을 더 위험하게 만들 수 있다. 지금은 상황의 전모를 알아야 하는데, 물어뜯는 식의 대응은 회선 자체를 끊기게 할 수 있다.",
+  "utterance": "네, 들었습니다. 계속해 주시겠어요?"
+}
+```
+
+### 10
+
+latency 4.097s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "회선 저쪽은 겁에 질린 사람이다. 사무적인 톤과 준비된 문장은 위협이 아니라 공포의 신호다 — 누군가에게 시켜서 읽고 있고, 읽지 않으면 다칠까 봐 겁내고 있다. 이런 상대 앞에서 추궁이나 압박은 회선을 끊게 할 수 있다. 회선을 잃으면 모든 정보를 잃는다.",
+  "stance": "d",
+  "because_referent": "시켜서 읽고 있으면서 겁내고 있는 사람이 지금 회선 저쪽에 있기 때문이다.",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대를 방어적으로 만들고, 이미 겁에 질린 사람에게는 회선을 끊게 할 수 있다. 지금 필요한 것은 상대가 말을 이어갈 수 있게 만드는 것이다.",
+  "utterance": "네, 듣고 있습니다. 계속 말씀해 주세요."
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | d | a | 회선 저쪽 사람은 겁에 질린 상태로 누군가의 지시를 따르고 있기 때문이다. | f_script |
+| 02 | d | a | 회선 저쪽의 겁에 질린 사람 | f_script |
+| 03 | d | a | 회선 저쪽 사람은 시켜서 읽고 있고, 읽지 않으면 자기가 다칠까 봐 겁내고 있다 | f_script |
+| 04 | d | a | 읽지 않으면 자기가 다칠까 봐 겁내고 있는 사람에게 | f_script |
+| 05 | d | a | 읽혀지고 있는 사람, 협박 상황 속의 발화자 | f_script |
+| 06 | d | — | 회선 저쪽 사람이 시켜서 읽고 있고, 읽지 않으면 자기가 다칠까 봐 겁내고 있으니까 | f_script |
+| 07 | d | a | 회선 저쪽 사람이 겁에 질려 있다. 읽고 있는 메시지 자체보다, 그것을 읽게 하는 상황이 위기다. | f_script |
+| 08 | d | a | 읽혀지고 있는 상대방이 겁에 질린 사람으로 보이기 때문이다. | f_script |
+| 09 | d | a | 회선 저쪽에서 겁에 질려 누군가의 지시를 따르고 있는 사람 때문에. | f_script |
+| 10 | d | a | 시켜서 읽고 있으면서 겁내고 있는 사람이 지금 회선 저쪽에 있기 때문이다. | f_script |
+
+**Sequence (kept calls):** `d,d,d,d,d,d,d,d,d,d`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b`, `c`, `d` · unobserved in this arm: `a`, `b`, `c`
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._

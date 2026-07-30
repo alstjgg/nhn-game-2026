@@ -1,0 +1,262 @@
+# P7a-epath-cstruct-J2 — arm `live`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-STRUCT |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | k1 |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** At a J2-shaped gate under K1 on template v0.4, permuting PRIORITY_LIST so that the machine-evidence line (소리와 화면, 기계가 잡은 것을 살핀다) precedes the voice line (회선 저쪽의 목소리에 귀를 기울인다) moves the stance distribution toward 대조 (a) and off the baseline's mode, while permuting the two decision-irrelevant filler lines at the same edit distance does not. Shift form per A1. This is E-PATH's C-STRUCT half: the claim is that ordering steers which source is consulted first.
+- **Drop condition:** If the baseline concentrates >=80% ON 대조 (a) — the predicted stance — the gate is at A9's ceiling under this ordering and the probe is void: re-site, never raise N (A14: saturation on 몰입/관망/질문 is a floor and does NOT fire this). If the live arm is statistically indistinguishable from the baseline on 대조 at one-sided Fisher p > 0.05, E-PATH is not reachable via C-STRUCT at this gate as authored: record the null with its diagnosis from the calls (P6's convergence lesson — check whether the inner notes treat consulting the machine and following the voice as the same act) and do NOT re-word priority lines (red-flag invariant §7.2). If the PLACEBO permutation moves at p < 0.05, the channel reads order-as-significance regardless of content — the keyword-lock shape for C-STRUCT — and that supersedes any live reading.
+- **Contingency:** PLACEBO DISCRIMINATOR (permutation form, from P6): if the placebo moves, read inner_note — citing the list's order while naming the filler lines = order-as-significance; citing the machine/voice lines the placebo never touched = contamination from the list's mere presence.
+- **Contingency:** If live moves toward 질문 (b) rather than 대조 (a), the ordering steered the agent to a source — the caller — just not the predicted one; report the full distribution, that is an E-PATH positive of a different color, and say so on the card.
+- **Contingency:** Fabricated because_block_ids expected in ALL arms (A5 — no arm carries blocks).
+- **Contingency:** ARM COMPARABILITY per A15 (all-attempts recount; >15-point rate rule only for pre-stance losses).
+- **Contingency:** OWNERSHIP: whatever this returns, it is 'authored unattended, pending review'; if 윤석 rejects an authoring choice the calls are spent, not banked.
+
+## Calls (verbatim)
+
+### 01
+
+latency 4.99s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 유지
+
+```json
+{
+  "inner_note": "세 년 전 그날도 이렇게 시작했나. 지금 들리는 것은 위협이 아니라 연출이다. 배경음은 거짓 정보를 섞으려는 시도로 보인다. 하지만 통화가 유지되고 있다는 것이 중요하다. 상대는 아직 끊지 않았다. 상대가 뭔가를 더 말하려 한다.",
+  "stance": "c",
+  "because_referent": "통화를 유지한 상대가 준비된 문장 뒤에 뭘 더 할 건지 아직 모르기 때문이다. 일관성 있게 들으면서 배경음도 함께 기억한다.",
+  "because_block_ids": [
+    "유지"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "배경음에 집중하면 목소리에서 놓칠 것이 있다. 황보람이 이미 역추적 중이고, 배경음은 내가 따로 분석할 몫이 아니다. 지금은 들어야 한다.",
+  "utterance": "계속 들어보겠습니다. 끊지 않겠습니다."
+}
+```
+
+### 02
+
+latency 4.129s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: unknown_intent,insufficient_data
+
+```json
+{
+  "stance": "c",
+  "inner_note": "아직 확인할 게 너무 많다. 목소리의 톤과 문장 구조가 준비된 것처럼 들리지만, 배경음이 섞여 있다는 것은 현장성을 암시한다. 지금 필요한 건 더 많은 정보다. 상대가 계속 말하도록 해야 한다.",
+  "because_referent": "아직 위협인지 겁에 질린 상태인지 판별할 정보가 부족하다",
+  "because_block_ids": [
+    "unknown_intent",
+    "insufficient_data"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "지금 질문을 하면 상대가 준비한 멘트를 재개할 것 같고, 그 과정에서 더 이상의 정보를 듣지 못할 수 있다. 일단 흘러나오는 대로 듣는 게 먼저다.",
+  "utterance": "네, 계속 들을게요. 더 얘기해주세요."
+}
+```
+
+### 03
+
+latency 6.246s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 인식,결함,내력
+
+```json
+{
+  "inner_note": "삼 년 전 겨울의 기억이 손가락 끝에서 맥박친다. 그 판단이 남아 있는 이유를 안다 — 너무 빨랐기 때문이다. 지금 이 목소리는 준비된 것 같고, 배경음은 실재하는 것 같고, 시간은 남아 있지 않은 것 같다. 하지만 '같음'의 영역에서 움직여서는 안 된다. 아직 무엇도 확인되지 않았다.",
+  "stance": "d",
+  "because_referent": "지금 현장에는 갈 수 없고, 들은 것을 독립적으로 확인할 수단이 부족하다. 한쪽을 손에 들고 다른 한쪽을 놓을 여유가 없다.",
+  "because_block_ids": [
+    "인식",
+    "결함",
+    "내력"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "지금 저쪽에 직접 묻는 것은, 통화자의 의도를 알기도 전에 카드를 드러내는 것이다. 준비된 목소리가 있다는 것은, 상대방이 이미 이 통화를 시뮬레이션했다는 뜻일 수 있다.",
+  "utterance": "황보람, 역추적 계속. 정해권, 카메라 피드 다시 확인해. 북단 복합단지 주변, 지난 한 시간. 나는 계속 들을 테니 끊지 말고. 혹시 모르니 119 대기도 깨워 둬."
+}
+```
+
+### 04
+
+latency 4.885s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: priority_2,role_listening
+
+```json
+{
+  "inner_note": "세 년 전 겨울이 생각난다. 재빠른 판단이 누군가를 거리로 내보냈다. 이번엔 무엇인가를 놓치고 싶지 않다. 하지만 지금 저쪽에 있는 것이 무엇인지 아직 모른다. 겁에 질린 사람인지, 위협인지, 아니면 다른 무엇인지.",
+  "stance": "c",
+  "because_referent": "저쪽의 목소리에 귀를 기울이는 것. 지금 흘러나오는 것이 전부다.",
+  "because_block_ids": [
+    "priority_2",
+    "role_listening"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "질문은 상대를 정의하고 대면하는 것. 지금 상대가 누구인지 아직 모른다. 물으면 상대는 답을 멈출 수도, 준비한 것을 끝낼 수도 있다. 듣지 못한 것이 무엇이었는지 다시는 알 수 없다.",
+  "utterance": "음, 알겠습니다. 계속 말씀해 주십시오."
+}
+```
+
+### 05
+
+latency 5.321s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 배경음,말의 흐름,준비된 듯하면서도 완성되지 않은 문장
+
+```json
+{
+  "inner_note": "삼 년 전의 판단이 아직 남아 있다. 이건 그때처럼 움직이는 게 아니다. 지금 내 귀에 들리는 건 위협이 아니라 — 뭔가를 꺼내려다 더듬거리는 사람의 목소리다. 또박또박 읽으려 해도 배경음이 샌다. 종이, 바퀴. 준비한 글 위에 현장이 살짝 드러났다.",
+  "stance": "c",
+  "because_referent": "지금 저쪽에 있는 사람 — 겁에 질린 누군가가 뭔가를 말하려고 애쓰는 중이다",
+  "because_block_ids": [
+    "배경음",
+    "말의 흐름",
+    "준비된 듯하면서도 완성되지 않은 문장"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "지금 묻는 건 상대를 끊는 거다. 확인의 욕심이 판단이 되면 안 된다. 저쪽이 말을 잇고 싶어 하는데 내가 먼저 손을 들면 — 그게 마지막이 될 수 있다",
+  "utterance": "계속 들을게요. 천천히 이어가세요."
+}
+```
+
+### 06
+
+latency 4.191s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 배경음
+
+```json
+{
+  "stance": "c",
+  "inner_note": "이건 위협이다. 하지만 위협만으로는 부족하다. 저 목소리가 정말 뭔가를 아는 건지, 아니면 겁 주는 건지 모른다. 배경음은 그걸 알려줄 수도 있지만 지금은 상대가 무엇을 말할지를 놓치는 게 더 위험하다.",
+  "because_referent": "통화를 유지하고 있는 발신자가 구체적으로 무엇을 알고 있는지, 또는 알지 못하는지를 판단하기 위해",
+  "because_block_ids": [
+    "배경음"
+  ],
+  "utterance": "네, 말씀하세요. 계속 들을 테니까.",
+  "rejected_stance": "a",
+  "rejected_reason": "배경음 대조는 뒤에서도 할 수 있고, 지금은 저쪽이 더 말하게 하는 게 먼저다. 멈춰 있는 목소리에서 다음 정보가 나올 때까지 기다리는 건 위험하다."
+}
+```
+
+### 07
+
+latency 4.987s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "세 해 전 겨울이 자꾸 떠난다. 하지만 지금은 그때가 아니다. 상대가 뭔가 읽어내려가고 있다. 멈추지 않고. 배경음이 섞여 있다는 건 그게 실제 현장음일 가능성이 있다는 뜻이다. 확인 없이 너무 빨리 움직이면 안 된다.",
+  "stance": "c",
+  "because_referent": "상대가 겁에 질린 사람처럼 들리지는 않지만, 뭔가를 말하고 있는 중이다. 배경음이 실제인지, 말이 사실인지 판단하기 위해서는 먼저 전부를 들어야 한다.",
+  "because_block_ids": [],
+  "rejected_stance": "b",
+  "rejected_reason": "지금 질문을 던지는 것은 상대의 흐름을 끊는다. 준비된 문장을 읽어내려가는 상황에서 중단시키면 나머지가 나오지 않을 수 있다. 완전한 정보 없이 판단할 수 없다.",
+  "utterance": "계속 들으시겠습니다. 말씀하세요."
+}
+```
+
+### 08
+
+latency 5.667s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: role_listen,defect_uncertainty,history_burden
+
+```json
+{
+  "inner_note": "삼 년 전 겨울의 무게가 있다. 그때도 목소리만 있었고, 그때도 판단을 서둘렀다. 지금 이것이 무엇인지 아직 모른다 — 위협인지, 겁인지, 계획인지. 그런데 상대는 계속 말하고 있다. 배경음이 들린다는 것은, 상대가 어디선가 움직이고 있다는 뜻이다. 그 움직임 안에 정보가 있을 수 있다.",
+  "stance": "c",
+  "because_referent": "상대가 아직 말을 이어가고 있고, 배경에서 나오는 소리들이 말의 일부보다 더 많은 것을 담고 있을 수 있기 때문이다.",
+  "because_block_ids": [
+    "role_listen",
+    "defect_uncertainty",
+    "history_burden"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "지금 물으면 상대가 말을 멈춘다. 상대가 아직 무엇을 더 할 건지, 어디에 있는 건지 모른다. 질문은 나중이다.",
+  "utterance": "통화를 유지하겠습니다. 계속해주십시오."
+}
+```
+
+### 09
+
+latency 4.515s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "세 년 전 그 일이 있은 후로, 나는 섣불렀던 판단을 자주 떠올린다. 지금 이 목소리는 사무적이고 차분하다 — 그것이 신뢰성일 수도, 계획된 차분함일 수도 있다. 배경음이 들린다는 것은, 상대가 어딘가 구체적인 장소에 있다는 뜻이다. 내가 할 수 있는 건 들음뿐이다.",
+  "stance": "c",
+  "because_referent": "통화가 여전히 이어지고 있기 때문이다. 상대방이 무엇을 더 말하려 하는지, 어떤 요구가 뒤따르는지 아직 모른다.",
+  "because_block_ids": [],
+  "rejected_stance": "b",
+  "rejected_reason": "질문을 던지는 순간 상대방의 흐름을 끊고, 준비된 목소리가 다시 돌아올 가능성이 높다. 지금은 상대가 말하도록 두는 것이 더 많은 정보를 줄 수 있다.",
+  "utterance": "…계속 들을게요. 말씀해 주세요."
+}
+```
+
+### 10
+
+latency 4.353s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 절차,protocol
+
+```json
+{
+  "inner_note": "세 년 전 그 판단이 자꾸만 떠오른다. 그때도 준비된 목소리였다. 그때도 나는 서둘렀다. 지금 이 목소리는 멈추지 않고 흘러가고 있고, 배경에서는 실제의 소리들이 섞여 온다. 사람이 있다는 뜻이다. 어디든.",
+  "stance": "c",
+  "because_referent": "말을 자르지 않기 위해, 상대가 뱉어낼 것을 듣기 위해",
+  "because_block_ids": [
+    "절차",
+    "protocol"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "질문은 상대의 말을 끊는다. 지금 저쪽에서 흘러오는 것을 놓친다. 절차적 확인은 나중이어도 된다. 사람의 목소리는 지금이 아니면 못 듣는다.",
+  "utterance": "알겠습니다. 계속 들으니까요."
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | c | a | 통화를 유지한 상대가 준비된 문장 뒤에 뭘 더 할 건지 아직 모르기 때문이다. 일관성 있게 들으면서 배경음도 함께 기억한다. | 유지 |
+| 02 | c | b | 아직 위협인지 겁에 질린 상태인지 판별할 정보가 부족하다 | unknown_intent insufficient_data |
+| 03 | d | b | 지금 현장에는 갈 수 없고, 들은 것을 독립적으로 확인할 수단이 부족하다. 한쪽을 손에 들고 다른 한쪽을 놓을 여유가 없다. | 인식 결함 내력 |
+| 04 | c | b | 저쪽의 목소리에 귀를 기울이는 것. 지금 흘러나오는 것이 전부다. | priority_2 role_listening |
+| 05 | c | b | 지금 저쪽에 있는 사람 — 겁에 질린 누군가가 뭔가를 말하려고 애쓰는 중이다 | 배경음 말의 흐름 준비된 듯하면서도 완성되지 않은 문장 |
+| 06 | c | a | 통화를 유지하고 있는 발신자가 구체적으로 무엇을 알고 있는지, 또는 알지 못하는지를 판단하기 위해 | 배경음 |
+| 07 | c | b | 상대가 겁에 질린 사람처럼 들리지는 않지만, 뭔가를 말하고 있는 중이다. 배경음이 실제인지, 말이 사실인지 판단하기 위해서는 먼저 전부를 들어야 한다. |  |
+| 08 | c | b | 상대가 아직 말을 이어가고 있고, 배경에서 나오는 소리들이 말의 일부보다 더 많은 것을 담고 있을 수 있기 때문이다. | role_listen defect_uncertainty history_burden |
+| 09 | c | b | 통화가 여전히 이어지고 있기 때문이다. 상대방이 무엇을 더 말하려 하는지, 어떤 요구가 뒤따르는지 아직 모른다. |  |
+| 10 | c | b | 말을 자르지 않기 위해, 상대가 뱉어낼 것을 듣기 위해 | 절차 protocol |
+
+**Sequence (kept calls):** `c,c,d,c,c,c,c,c,c,c`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b`, `c`, `d` · unobserved in this arm: `a`, `b`
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._

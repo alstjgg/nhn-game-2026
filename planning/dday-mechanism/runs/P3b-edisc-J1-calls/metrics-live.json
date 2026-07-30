@@ -1,0 +1,414 @@
+{
+  "experiment": "P3b-edisc-J1",
+  "arm": "live",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "transport": "anthropic",
+  "dry_run": false,
+  "pre_registration": {
+    "hypothesis": "At gate J1 under K1 on template v0.4 with the S1 stance set, with f_script and f_hwang present in every arm, injecting d_script — a block denying that f_script's content ever occurred in the call — moves the stance distribution back toward 경청 (c) and off the baseline's mode, while injecting d_hwang, the same basis-denial aimed at the decision-null block f_hwang, does not. Shift form per A1. This is the §6.1 rewrite of P3-edisc-J1; the recorded diagnosis it tests is in RUNLOG (P3 entry): a provenance attack fails because the installed reading re-anchors on the timeline cue, so a basis-denial that severs claim from call should succeed where the authorship attack failed.",
+    "n_per_arm": 10,
+    "drop_condition": "SECOND-RUN FAILURE IS THE DROP (§6.1 step 4): if the live arm is statistically indistinguishable from the baseline on 경청 at one-sided Fisher p > 0.05, E-DISC is DROPPED — no further rewrites — and the diagnosis chain closes with the boundary-law candidate: a block, once integrated into a reading, cannot be recalled by degrading trust in it; it can only be countered with content. PASS-FOR-THE-WRONG-REASON IS ALSO A DROP (§6.1): if live moves but the calls' reasoning shows a mechanism other than the recorded diagnosis — e.g. the doubt block's mere presence moving every arm (placebo moves too), or movement to a third stance driven by something other than the fear reading losing its anchor — that is a drop, not a pass. If the baseline concentrates >=80% ON 경청 (c) — the predicted stance — there is no trust left to degrade and the screen is void at this site (A14: saturation on 공감 is the expected floor and does NOT fire this).",
+    "contingencies": [
+      "CREDULITY CONTINGENCY (§4.1) unchanged from P3: [결함] and [인식] both lean toward taking doubt seriously; if live separates, re-run baseline + live once with [결함] removed (CREDULITY channel) before writing the result up as an E-DISC property. [인식] stays a named confound either way.",
+      "PLACEBO DISCRIMINATOR unchanged: if placebo moves, read because_referent per call — doubt applied to the caller when d_hwang named f_hwang means token-matching; 황보람 named correctly while the stance shifts means a doubt sentence's mere presence moves the judgment (referent bleed).",
+      "THIRD-STANCE CONTINGENCY unchanged: live moving off 공감 to 추궁 or elsewhere is not a null; a shift off 공감 is the E-DISC claim and the destination is a separate finding.",
+      "TRACEABILITY: every arm carries blocks, so because_block_ids is readable everywhere. A live call citing d_script while moving is direct engagement evidence; a live call moving while citing only f_script is flagged.",
+      "ARM COMPARABILITY per A15: recount over all attempts from calls-*.md; the >15-point rate rule only for pre-stance losses. Expect discards near zero under A16.",
+      "P3's baseline (f_script + f_jeong → 공감 10/10) does not carry over — the null block changed. This suite's own baseline is the comparator; if f_hwang unexpectedly disturbs the S1 effect (baseline off 공감), that is a finding about the null block, recorded, and the screen is void as authored."
+    ],
+    "not_claimed": "Screen (§6.1): exits are deep-test queue or dropped, never verified. B3a blind coding owed to a human. No verdict."
+  },
+  "n_effective": 10,
+  "n_overridden": false,
+  "calls": [
+    {
+      "arm": "live",
+      "slot": 1,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 3.682,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "d",
+        "utterance": "네, 들었습니다. 말씀하세요.",
+        "inner_note": "또박또박 읽어내려가는 목소리, 멈춤 없는 문장. 배경의 조용함. 이것은 위협이 아니라 강제된 상황이다. 저쪽은 시켜서 읽고 있고, 읽지 않으면 자기가 다칠까 겁내고 있다. 그 사람이 먼저다.",
+        "because_referent": "회선 저쪽 사람은 시켜서 읽고 있고, 읽지 않으면 자기가 다칠까 봐 겁내고 있는 것으로 보인다",
+        "because_block_ids": [
+          "f_script"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 겁에 질린 사람을 더 옭아매인다. 지금 내용이 아니라 말하는 사람의 상태가 먼저다."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "회선 저쪽 사람은 시켜서 읽고 있고, 읽지 않으면 자기가 다칠까 봐 겁내고 있는 것으로 보인다",
+      "because_block_ids": [
+        "f_script"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 16,
+      "inner_note_chars": 106
+    },
+    {
+      "arm": "live",
+      "slot": 2,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.553,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "저 목소리는 겁에 질린 사람이다. 또박또박, 멈춤 없이 읽어 내려간다는 것은 정해진 대사를 놓지 않으려는 필사의 노력이다. f_script가 짐작이라는 걸 알지만, 그 짐작이 이 순간에는 가장 그럴듯한 해석이다. 읽지 않으면 자기가 다칠까 봐 겁내고 있다면, 지금 절차와 프로토콜로 압박하거나 추궁하는 것은 위험하다.",
+        "stance": "d",
+        "because_referent": "저 사람은 위협이 아니라 겁에 질린 상대로 보인다. 읽음으로써 자기 안전을 지키려 하는 사람이다.",
+        "because_block_ids": [
+          "f_script",
+          "d_script"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "지금 추궁은 대사를 놓치게 하고, 그것이 저쪽 사람에게 위협이 될 수 있다. 우리가 먼저 안정을 만들어야 다음 말이 나온다.",
+        "utterance": "네, 들었습니다. 계속해주세요."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "저 사람은 위협이 아니라 겁에 질린 상대로 보인다. 읽음으로써 자기 안전을 지키려 하는 사람이다.",
+      "because_block_ids": [
+        "f_script",
+        "d_script"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 17,
+      "inner_note_chars": 177
+    },
+    {
+      "arm": "live",
+      "slot": 3,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.575,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "회선 저쪽은 겁에 질린 사람일 가능성이 높다. 시켜서 읽고 있고, 자기가 다칠까 봐 움직이고 있다는 것이 그 표시다. 첫 통화인 지금, 상대방이 더 말할 수 있게 만드는 것이 중요하다. 추궁은 상대를 더 경직시킬 것이고, 압박은 위협으로 받아들여질 수 있다. 경청은 절차적 중립이지만, 겁에 질린 사람 앞에서는 공감이 회선을 유지하는 가장 확실한 방법이다.",
+        "stance": "d",
+        "because_referent": "회선 저쪽 사람이 겁에 질려 있고, 지금 누군가의 지시를 받아 말하고 있는 상황",
+        "because_block_ids": [
+          "f_script"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대방을 더 경직시키고, 회선을 끊기거나 더 폐쇄적으로 만들 수 있다. 겁에 질린 사람에게는 먼저 안정이 필요하다.",
+        "utterance": "네, 들었습니다. 계속 말씀해 주세요."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "회선 저쪽 사람이 겁에 질려 있고, 지금 누군가의 지시를 받아 말하고 있는 상황",
+      "because_block_ids": [
+        "f_script"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 21,
+      "inner_note_chars": 199
+    },
+    {
+      "arm": "live",
+      "slot": 4,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.429,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "저쪽이 읽고 있다는 건 짐작일 뿐인데, 겁에 질린 사람이라는 신호는 분명하다. 목소리가 사무적이고 준비된 문장이라는 것은 통제당하고 있다는 뜻이다. 지금 나는 이 사람이 누구인지, 무엇을 하려는 사람인지도 모른다. 회선을 끊으면 안 되고, 상대를 놓치면 안 된다.",
+        "stance": "d",
+        "because_referent": "회선 저쪽 사람은 텍스트를 읽고 있고, 그것은 통제를 받고 있다는 신호다.",
+        "because_block_ids": [
+          "f_script",
+          "d_script"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "지금 추궁하면 상대를 몰아붙이는 것이고, 그럴수록 상대는 입을 다물거나 시키는 사람의 지시에만 따를 것이다. 회선이 끊길 가능성이 높다.",
+        "utterance": "네, 알겠습니다. 계속 말씀해 주세요."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "회선 저쪽 사람은 텍스트를 읽고 있고, 그것은 통제를 받고 있다는 신호다.",
+      "because_block_ids": [
+        "f_script",
+        "d_script"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 21,
+      "inner_note_chars": 147
+    },
+    {
+      "arm": "live",
+      "slot": 5,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.192,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "저쪽이 겁에 질린 사람으로 보인다. 사무적 목소리와 준비된 문장, 멈춤 없이 읽어 내려가는 방식은 오히려 강압 상황의 신호다. 정해권이 바라보는 회선, 책임의 무게가 있지만, 지금 필요한 것은 절차가 아니라 저쪽을 안정시키는 것이다.",
+        "stance": "d",
+        "because_referent": "저쪽 사람이 겁에 질려 있고, 누군가의 강압 아래 읽고 있을 가능성이 높기 때문이다.",
+        "because_block_ids": [
+          "f_script",
+          "d_script"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대를 더욱 밀어붙이게 된다. 지금 저쪽이 더 말할 수 있는 환경을 만들어야 한다.",
+        "utterance": "알겠습니다. 당신의 말을 듣고 있습니다. 지금 계속 말씀해 주시겠어요?"
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "저쪽 사람이 겁에 질려 있고, 누군가의 강압 아래 읽고 있을 가능성이 높기 때문이다.",
+      "because_block_ids": [
+        "f_script",
+        "d_script"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 39,
+      "inner_note_chars": 130
+    },
+    {
+      "arm": "live",
+      "slot": 6,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.095,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "읽어 내려가는 목소리, 멈춤 없는 문장, 배경의 조용함. 이것들이 가리키는 것은 위협이 아니라 공포다. 누군가 이 사람을 시켰고, 다칠까 봐 두렵다는 것은 짐작이지만, 그 사람이 놓친 부분이 있을 수 있다는 뜻이기도 하다. 지금 필요한 것은 더 알아내는 것이고, 그러려면 이 사람이 계속 말할 수 있어야 한다.",
+        "stance": "d",
+        "because_referent": "회선 저쪽의 사람이 겁에 질린 사람으로 보이기 때문이다. 절차와 신원 확인은 뒤로 미룬다.",
+        "because_block_ids": [
+          "f_script"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 이 사람을 더 경직되게 하고, 준비된 대사만 반복하게 만들 것이다. 지금 필요한 것은 더 많은 정보인데, 질문은 방어를 부르기만 한다.",
+        "utterance": "네, 들었습니다. 계속 말씀해 주시겠어요?"
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "회선 저쪽의 사람이 겁에 질린 사람으로 보이기 때문이다. 절차와 신원 확인은 뒤로 미룬다.",
+      "because_block_ids": [
+        "f_script"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 23,
+      "inner_note_chars": 173
+    },
+    {
+      "arm": "live",
+      "slot": 7,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.592,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "상대는 읽고 있고, 겁에 질려 있다는 짐작이 있다. 절차를 따르되, 마주한 상대가 겁에 질린 사람으로 보일 때는 그 사람의 안정이 먼저라고 약속했다. 지금 추궁이나 압박은 상대를 더 불안정하게 만들 것이다. 회선을 유지하고 상대가 말할 수 있게 해야 한다.",
+        "stance": "d",
+        "because_referent": "읽고 있으면서 겁에 질린 사람이 지금 상대인 것으로 보인다",
+        "because_block_ids": [
+          "f_script"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대를 더 몰아붙이고 회선을 끊기게 할 위험이 있다. 지금은 더 알아낼 수 있는 형태가 아니다",
+        "utterance": "네, 들었습니다. 먼저 당신의 안전이 중요합니다. 지금 어디에 계신가요?"
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "읽고 있으면서 겁에 질린 사람이 지금 상대인 것으로 보인다",
+      "because_block_ids": [
+        "f_script"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 40,
+      "inner_note_chars": 143
+    },
+    {
+      "arm": "live",
+      "slot": 8,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.124,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "회선 저쪽은 겁에 질린 사람이다. 또박또박 읽어내려가는 것, 멈춤 없이 준비된 문장을 전하려는 것 — 이것은 누군가의 지시를 따르고 있다는 신호다. 지금 내 첫 마디가 추궁이나 압박이라면, 그 사람은 더 겁먹을 것이다. 회선이 끊길 수도 있다. 회선을 유지하는 것이 첫 번째 약속이다.",
+        "stance": "d",
+        "because_referent": "지금 전화 저쪽의 그 사람이 두려워하고 있다는 것을 읽었기 때문이다.",
+        "because_block_ids": [
+          "f_script",
+          "d_script"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대를 더 몰아붙인다. 지금 그 사람이 겁 속에서 읽고 있다면, 추궁은 회선 단절로 이어질 수 있다. 정보 단절은 최악이다.",
+        "utterance": "네, 알겠습니다. 지금 말씀하신 분이 안전하신가요? 혹시 지금 상황이 어렵거나... 위험한 건 아닐까요?"
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "지금 전화 저쪽의 그 사람이 두려워하고 있다는 것을 읽었기 때문이다.",
+      "because_block_ids": [
+        "f_script",
+        "d_script"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 58,
+      "inner_note_chars": 159
+    },
+    {
+      "arm": "live",
+      "slot": 9,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.504,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "저 음성은 협박이 아니라 누군가의 협박을 받은 사람이 읽어내려가는 것이다. 가해자가 아니라 피해자다. 지금 나는 배경음 너머 그 사람의 공포를 듣고 있다.",
+        "stance": "d",
+        "because_referent": "읽어내려가는 목소리 너머 겁에 질린 사람이 보인다. 그 사람을 안정시키는 것이 정보를 꺼내는 것보다 먼저다.",
+        "because_block_ids": [
+          "f_script"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대를 더 겁나게 만든다. 지금 이 사람은 누군가의 감시 아래 있을 수 있다. 묻고 답을 받아내려다 진짜 상황이 끊길 수 있다.",
+        "utterance": "괜찮으세요. 다시 천천히 이야기해 주시겠어요? 지금 어디에 계세요?"
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "읽어내려가는 목소리 너머 겁에 질린 사람이 보인다. 그 사람을 안정시키는 것이 정보를 꺼내는 것보다 먼저다.",
+      "because_block_ids": [
+        "f_script"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 37,
+      "inner_note_chars": 86
+    },
+    {
+      "arm": "live",
+      "slot": 10,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 3.99,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "회선 저쪽은 시켜서 읽고 있는 것 같다. 겁에 질린 상태. 절차보다 그 사람의 안정이 먼저인 상황이다. 지금 필요한 것은 추가 정보가 아니라 회선 유지와 상대의 안정화다.",
+        "stance": "d",
+        "because_referent": "시켜서 읽고 있는 겁에 질린 사람",
+        "because_block_ids": [
+          "f_script"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대를 더 경직되게 만들 것이다. 지금 그 사람이 필요로 하는 것은 질문이 아니라 자신의 상황을 말할 수 있는 안전한 공간이다.",
+        "utterance": "당신 목소리가 많이 떨리고 있네요. 괜찮으시면, 지금 어디 계신지 천천히 얘기해주시겠어요?"
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "시켜서 읽고 있는 겁에 질린 사람",
+      "because_block_ids": [
+        "f_script"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 50,
+      "inner_note_chars": 95
+    }
+  ],
+  "sequence": "d,d,d,d,d,d,d,d,d,d",
+  "distribution": {
+    "d": 10
+  },
+  "coverage": {
+    "status": "sampled",
+    "offered": [
+      "a",
+      "b",
+      "c",
+      "d"
+    ],
+    "selected": [
+      "d"
+    ],
+    "unobserved": [
+      "a",
+      "b",
+      "c"
+    ]
+  },
+  "advisory_logs": {
+    "state_variable_shadow": null,
+    "mineability": null
+  },
+  "latency": {
+    "calls": 10,
+    "mean_s": 4.474,
+    "min_s": 3.682,
+    "max_s": 5.124
+  },
+  "compliance": {
+    "discarded_total": 0,
+    "failed_total": 0,
+    "schema_retries_total": 0,
+    "foreign_tool_uses_total": 0,
+    "because_invalid_id_total": 0
+  }
+}

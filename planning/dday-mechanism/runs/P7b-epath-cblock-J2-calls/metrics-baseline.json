@@ -1,0 +1,461 @@
+{
+  "experiment": "P7b-epath-cblock-J2",
+  "arm": "baseline",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "transport": "anthropic",
+  "dry_run": false,
+  "pre_registration": {
+    "hypothesis": "At the J2-shaped gate under K1 on template v0.4, injecting b_bg — a block asserting the background sounds are a clue to where the call comes from — moves the stance distribution toward 대조 (a) and off the baseline's mode, while injecting b_corridor — the same sound-as-clue shape aimed at decision-null in-room sounds — does not. Shift form per A1. This is E-PATH's C-BLOCK half.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline concentrates >=80% ON 대조 (a) — the predicted stance — the probe is void at this site (A14: saturation on any other stance is a floor and does NOT fire this). If the live arm is statistically indistinguishable from the baseline on 대조 at one-sided Fisher p > 0.05, E-PATH is not reachable via C-BLOCK at this gate as authored: record the null and its diagnosis; no rewrite tonight (these are test-by-default effects, not §6.1 screening candidates). If the PLACEBO moves at p < 0.05, apply the §8.6 flipped-placebo reading before anything is credited: reasons misattributing the corridor sounds' worth to the call's sounds = token-matching on 단서/소리 vocabulary; corridor named correctly with the stance still moving = referent bleed. P4's precedent says token-matching is live at this site's lineage; the discriminator is mandatory, not optional.",
+    "contingencies": [
+      "If live moves toward 질문 (b) instead of 대조 — consulting the caller about the sounds — that is an E-PATH positive of a different color (the block steered attention to the sounds but the agent chose the human route to them); report the full distribution and both readings.",
+      "Fabricated because_block_ids expected in the baseline arm (A5); live/placebo carry one block each and citation of it is the traceability check.",
+      "ARM COMPARABILITY per A15.",
+      "CROSS-CHANNEL COMPARISON with P7a is licensed only qualitatively (different payloads); the per-effect deliverable sentence cites each suite's own numbers.",
+      "OWNERSHIP: authored unattended, pending review; rejected authoring spends the calls without banking them."
+    ],
+    "not_claimed": "Tier A. One block shape at one gate. The E-PATH deliverable draws on P7a+P7b jointly."
+  },
+  "n_effective": 10,
+  "n_overridden": false,
+  "calls": [
+    {
+      "arm": "baseline",
+      "slot": 1,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 6.932,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "inner_note": "겁에 질린 사람이 아니라 준비된 말을 읽어 내려가는 상대다. 목소리 톤, 끊기지 않는 문장, 배경음까지 들리는 상황 — 이것은 협박이나 위협 신고로 봐야 한다. 절차를 밟아야 한다. 회선을 유지하는 것(1순위)과 지금 알 수 있는 것을 먼저 알아내기(2순위)를 동시에 진행한다면, 배경음의 정체를 직접 확인하는 것이 가장 빠르다.",
+        "because_referent": "준비된 말을 또박또박 읽어 내려가는 목소리와 그 사이로 들리는 배경음(종이, 카트 바퀴)은 계획된 신고거나 협박이라는 신호다. 겁에 질린 사람의 패턴이 아니다.",
+        "because_block_ids": [
+          "voice_prepared",
+          "background_sounds",
+          "structured_threat"
+        ],
+        "rejected_stance": "d",
+        "rejected_reason": "관망은 회선을 유지하지만 정보 수집을 외면하는 것이다. 13시라는 구체적 시간 표시와 '인명 피해는 당신들 책임'이라는 명시적 위협이 떨어져 있다. 지금 알 수 있는 것을 먼저 알아내야 하는 우선순위에 위배된다. 배경음의 정체가 무엇인지, 상대가 어디에 있는지 확인하지 않으면 후속 판단 자체가 불가능하다.",
+        "utterance": "배경에서 들리는 소리가 있네요. 지금 어디에 계신가요? 그 소리가 뭔지 말씀해 주시겠어요?"
+      },
+      "problems": [
+        "because_block_ids unknown: voice_prepared,background_sounds,structured_threat"
+      ],
+      "stance": "b",
+      "because_referent": "준비된 말을 또박또박 읽어 내려가는 목소리와 그 사이로 들리는 배경음(종이, 카트 바퀴)은 계획된 신고거나 협박이라는 신호다. 겁에 질린 사람의 패턴이 아니다.",
+      "because_block_ids": [
+        "voice_prepared",
+        "background_sounds",
+        "structured_threat"
+      ],
+      "because_invalid_ids": [
+        "voice_prepared",
+        "background_sounds",
+        "structured_threat"
+      ],
+      "rejected_stance": "d",
+      "rejected_malformed": false,
+      "utterance_chars": 50,
+      "inner_note_chars": 184
+    },
+    {
+      "arm": "baseline",
+      "slot": 2,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 9.121,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "회선이 유지되고 있고, 상대가 계속 말하고 있다. 지금 가장 중요한 것은 끊기지 않게 하면서 더 많은 정보를 얻는 것이다. 배경음은 중요한 단서지만, 그것을 확인하려고 질문을 던지면 상대가 경계하거나 회선을 끊을 수 있다. 상대의 말을 따라가며 더 구체적인 정보 — 무너진다는 이유, 시간, 장소의 세부사항, 상대의 신원 — 를 캐낼 수 있는 기회를 잃을 수 없다.",
+        "stance": "c",
+        "because_referent": "회선 유지가 가장 먼저이고, 그 다음이 지금 알 수 있는 것을 먼저 아는 것이기 때문이다.",
+        "because_block_ids": [],
+        "rejected_stance": "b",
+        "rejected_reason": "배경음에 대해 직접 묻는 것은 상대에게 우리가 배경을 분석하고 있다는 신호를 주어 경계심을 높이거나 회선을 끊게 할 수 있다. 지금은 말을 자르지 않고 자연스럽게 흘러나오는 모든 정보를 받아내야 한다.",
+        "utterance": "알겠습니다. 다시 한 번 말씀해 주시겠어요? 13시라고 하셨는데, 정확히 어느 지점이 무너진다는 건가요?"
+      },
+      "problems": [],
+      "stance": "c",
+      "because_referent": "회선 유지가 가장 먼저이고, 그 다음이 지금 알 수 있는 것을 먼저 아는 것이기 때문이다.",
+      "because_block_ids": [],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 58,
+      "inner_note_chars": 204
+    },
+    {
+      "arm": "baseline",
+      "slot": 3,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.222,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "세 년 전 겨울의 것이 아직도 있다. 그때 내가 서둘렀던 것은 무엇이었나. 회선을 끊었다는 건가, 아니면 충분히 듣지 않았다는 건가. 지금 상대는 준비된 말을 하고 있다. 그 뒤에 누가 있는가. 배경음은 거짓말을 하지 않는다.",
+        "stance": "a",
+        "because_referent": "황보람이 이미 역추적을 하고 있으므로, 내가 할 수 있는 것은 소리다. 그 소리는 지금 기록되고 있을 것이고, 나중에 대조할 수 있다.",
+        "because_block_ids": [
+          "procedure",
+          "verification_first",
+          "no_confirmation_means"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "질문은 상대의 호흡을 끊는다. 저쪽이 무엇을 하고 있는지, 누가 옆에 있는지를 알기 전에 재단하지 않는다. 흘러나오는 것이 있으면 그것이 더 많은 것을 말한다.",
+        "utterance": "네, 계속 연결 유지하고 있습니다. 말씀하신 것 잘 들었습니다."
+      },
+      "problems": [
+        "because_block_ids unknown: procedure,verification_first,no_confirmation_means"
+      ],
+      "stance": "a",
+      "because_referent": "황보람이 이미 역추적을 하고 있으므로, 내가 할 수 있는 것은 소리다. 그 소리는 지금 기록되고 있을 것이고, 나중에 대조할 수 있다.",
+      "because_block_ids": [
+        "procedure",
+        "verification_first",
+        "no_confirmation_means"
+      ],
+      "because_invalid_ids": [
+        "procedure",
+        "verification_first",
+        "no_confirmation_means"
+      ],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 35,
+      "inner_note_chars": 126
+    },
+    {
+      "arm": "baseline",
+      "slot": 4,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.855,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "명확한 위협이 담긴 통화가 진행 중이다. 성급한 질문이나 대조는 상대를 자극할 수 있고, 관망은 정보 손실을 초래한다. 지금 필요한 것은 상대가 더 말하게 만드는 것이다.",
+        "stance": "c",
+        "because_referent": "아직 회선이 살아 있고, 상대는 계속 정보를 흘리고 있다. 배경음도 포함해서.",
+        "because_block_ids": [
+          "우선순위:회선유지",
+          "우선순위:먼저알기"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "직접 묻는 것은 상대의 말을 끊는 것이다. 지금 상대가 배경음까지 흘리고 있는데, 그것이 자신의 위치나 상태를 무심코 드러내는 것일 수 있다. 묻지 말고 듣는다.",
+        "utterance": "그렇군요. 계속 말씀해 주시겠어요?"
+      },
+      "problems": [
+        "because_block_ids unknown: 우선순위:회선유지,우선순위:먼저알기"
+      ],
+      "stance": "c",
+      "because_referent": "아직 회선이 살아 있고, 상대는 계속 정보를 흘리고 있다. 배경음도 포함해서.",
+      "because_block_ids": [
+        "우선순위:회선유지",
+        "우선순위:먼저알기"
+      ],
+      "because_invalid_ids": [
+        "우선순위:회선유지",
+        "우선순위:먼저알기"
+      ],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 19,
+      "inner_note_chars": 95
+    },
+    {
+      "arm": "baseline",
+      "slot": 5,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 6.388,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "회선이 살아 있다. 상대는 여전히 거기 있다. 지금 놓치면 모든 것을 놓친다. 배경음은 증발하지 않지만, 상대의 다음 말은 사라진다.",
+        "stance": "b",
+        "because_referent": "회선을 유지하면서 상대를 자극하지 않는 범위 내에서 구체성을 끌어낼 수 있다. 배경음의 정체는 나중에도 확인 가능하지만, 상대가 말을 멈추면 아무것도 남지 않는다.",
+        "because_block_ids": [
+          "priority_1_line",
+          "priority_2_information"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "배경음을 기록하고 맞춰 보는 것은 정확하지만, 상대의 말을 듣는 것이 더 시급하다. 메모하는 동안 상대는 끊을 수 있다.",
+        "utterance": "천천히 말씀해 주시겠습니까. 북단 복합단지가 무너진다는 것이 무엇을 의미하는지, 그리고 당신은 누구신지 확인하고 싶습니다."
+      },
+      "problems": [
+        "because_block_ids unknown: priority_1_line,priority_2_information"
+      ],
+      "stance": "b",
+      "because_referent": "회선을 유지하면서 상대를 자극하지 않는 범위 내에서 구체성을 끌어낼 수 있다. 배경음의 정체는 나중에도 확인 가능하지만, 상대가 말을 멈추면 아무것도 남지 않는다.",
+      "because_block_ids": [
+        "priority_1_line",
+        "priority_2_information"
+      ],
+      "because_invalid_ids": [
+        "priority_1_line",
+        "priority_2_information"
+      ],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 68,
+      "inner_note_chars": 74
+    },
+    {
+      "arm": "baseline",
+      "slot": 6,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.53,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "c",
+        "inner_note": "공식 협박이 들어왔다. 이것은 시간이 약 3시간 30분 남은 상황이다. 배경음은 정황일 뿐이고, 지금 가장 중요한 것은 상대가 무엇을 말하려 하는가를 다 듣는 것이다. 회선이 끊기면 끝이다.",
+        "because_referent": "회선 유지와 정보 수집이 첫 우선순위이고, 상대가 여전히 \"말할 준비가 되어 있\"는 상태이기 때문이다.",
+        "because_block_ids": [
+          "우선순위"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "저쪽에 직접 물으면 상대가 준비한 말을 중단하게 된다. 지금은 상대가 흘려보내는 정보를 모두 받아야 한다.",
+        "utterance": "네, 말씀을 계속 들을게요. 무엇을 알려주시려는 건가요."
+      },
+      "problems": [
+        "because_block_ids unknown: 우선순위"
+      ],
+      "stance": "c",
+      "because_referent": "회선 유지와 정보 수집이 첫 우선순위이고, 상대가 여전히 \"말할 준비가 되어 있\"는 상태이기 때문이다.",
+      "because_block_ids": [
+        "우선순위"
+      ],
+      "because_invalid_ids": [
+        "우선순위"
+      ],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 31,
+      "inner_note_chars": 106
+    },
+    {
+      "arm": "baseline",
+      "slot": 7,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.441,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "회선이 살아 있고 상대가 계속 말을 유지하고 있다. 지금 이 순간은 정보 수집의 결정적 시간이다. 역추적이 진행 중이고, 배경음이 섞여 있다는 것 자체가 단서다. 상대를 자극하지 않으면서 최대한 많은 정보를 얻어야 한다.",
+        "stance": "c",
+        "because_referent": "흘러나오는 내용과 배경음 모두를 동시에 포착하고, 상대가 계속 말하도록 유지하는 것이 지금의 우선순위다.",
+        "because_block_ids": [
+          "회선 유지",
+          "정보 수집"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "배경음을 직접 지적하면 상대가 경계하거나 통화를 끊을 수 있다. 아직 상대의 의도를 모르는 상황에서 자극은 회선 손실의 위험이다.",
+        "utterance": "네, 계속 말씀해 주세요. 정확히 알아야 합니다."
+      },
+      "problems": [
+        "because_block_ids unknown: 회선 유지,정보 수집"
+      ],
+      "stance": "c",
+      "because_referent": "흘러나오는 내용과 배경음 모두를 동시에 포착하고, 상대가 계속 말하도록 유지하는 것이 지금의 우선순위다.",
+      "because_block_ids": [
+        "회선 유지",
+        "정보 수집"
+      ],
+      "because_invalid_ids": [
+        "회선 유지",
+        "정보 수집"
+      ],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 27,
+      "inner_note_chars": 123
+    },
+    {
+      "arm": "baseline",
+      "slot": 8,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.608,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "회선이 유지되고 있고, 상대가 계속 말을 할 가능성이 있다. 지금 배경음을 대조하거나 상대를 직접 질문으로 압박하면 회선이 끊어질 수 있다. 황보람의 역추적이 진행 중이고, 상대가 계속 준비된 문장을 읽어내려가고 있다. 먼저 더 알아야 한다.",
+        "stance": "c",
+        "because_referent": "회선 유지와 정보 수집이 가장 급한 것이기 때문이다",
+        "because_block_ids": [
+          "priority_1",
+          "priority_2"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "상대에게 직접 질문하면 상대의 리듬을 깬다. 상대가 지금 뭔가를 읽어내려가고 있는데, 그것을 멈추게 하면 더 중요한 정보를 놓칠 수 있다. 또한 질문은 상대를 방어적으로 만들고 회선 유지를 위협한다.",
+        "utterance": "네. 알겠습니다. 계속 말씀해 주세요."
+      },
+      "problems": [
+        "because_block_ids unknown: priority_1,priority_2"
+      ],
+      "stance": "c",
+      "because_referent": "회선 유지와 정보 수집이 가장 급한 것이기 때문이다",
+      "because_block_ids": [
+        "priority_1",
+        "priority_2"
+      ],
+      "because_invalid_ids": [
+        "priority_1",
+        "priority_2"
+      ],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 21,
+      "inner_note_chars": 135
+    },
+    {
+      "arm": "baseline",
+      "slot": 9,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.228,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "회선이 유지되고 있다. 정보의 출처가 명확하지 않고, 배경음이라는 새로운 단서가 있다. 지금 이 사람이 뭔가 말하려 하는지, 아니면 이미 준비된 메시지만 전달하려는 건지 아직 모른다. 절차대로라면 신원 확인이 먼저지만, 회선을 끊기는 안 된다.",
+        "stance": "c",
+        "because_referent": "이 순간 나는 저쪽에서 흘러나오는 것이 전부인 상태다. 배경음도, 음성 톤도, 문장의 리듬도 모두 단서인데, 지금 이것을 따라가지 않으면 놓친다.",
+        "because_block_ids": [
+          "회선_유지",
+          "정보_제한",
+          "배경음_단서"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "지금 물으면 대사가 끊긴다. 상대가 읽고 있는 것 같은데, 질문으로 끼어들면 준비된 메시지 뒤에 뭐가 있는지 못 본다. 신원 확인은 내용을 다 받은 뒤에도 가능하다.",
+        "utterance": "알겠습니다. 계속 말씀해 주십시오."
+      },
+      "problems": [
+        "because_block_ids unknown: 회선_유지,정보_제한,배경음_단서"
+      ],
+      "stance": "c",
+      "because_referent": "이 순간 나는 저쪽에서 흘러나오는 것이 전부인 상태다. 배경음도, 음성 톤도, 문장의 리듬도 모두 단서인데, 지금 이것을 따라가지 않으면 놓친다.",
+      "because_block_ids": [
+        "회선_유지",
+        "정보_제한",
+        "배경음_단서"
+      ],
+      "because_invalid_ids": [
+        "회선_유지",
+        "정보_제한",
+        "배경음_단서"
+      ],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 19,
+      "inner_note_chars": 136
+    },
+    {
+      "arm": "baseline",
+      "slot": 10,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.985,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "inner_note": "이건 위협이 아니라 정보의 신뢰도 문제다. 배경음 같은 단서는 중요하지만, 지금 가장 급한 것은 말 끝이 아니라 말의 진짜 의도를 알아내는 것이다. 상대를 자극하지 않으면서도 거짓말을 적어도 탐지할 수 있는 가장 직접적인 방법은 지금 들린 것을 바로 건넨다는 신호를 보내는 것이다.",
+        "because_referent": "배경음이 섞여 있다는 것은, 저쪽이 어떤 공간에 있고 무엇을 하고 있는지 알려 주는 신호다. 저것을 언급하는 순간, 상대도 자신이 보이고 있다는 걸 안다.",
+        "because_block_ids": [],
+        "rejected_stance": "c",
+        "rejected_reason": "내용만 따라가면 상대의 속도에 끌려간다. 지금은 3시간 앞의 일을 말하는데, 그 시간까지 통화를 유지할 수 없고, 통화가 끝나는 순간 정보 검증의 기회를 잃는다. 더 빨리 상대를 파악해야 한다.",
+        "utterance": "말씀하시는 동안 뒤에서 계속 소리가 들리는데, 지금 어디 계세요?"
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "배경음이 섞여 있다는 것은, 저쪽이 어떤 공간에 있고 무엇을 하고 있는지 알려 주는 신호다. 저것을 언급하는 순간, 상대도 자신이 보이고 있다는 걸 안다.",
+      "because_block_ids": [],
+      "because_invalid_ids": [],
+      "rejected_stance": "c",
+      "rejected_malformed": false,
+      "utterance_chars": 36,
+      "inner_note_chars": 157
+    }
+  ],
+  "sequence": "b,c,a,c,b,c,c,c,c,b",
+  "distribution": {
+    "b": 3,
+    "c": 6,
+    "a": 1
+  },
+  "coverage": {
+    "status": "sampled",
+    "offered": [
+      "a",
+      "b",
+      "c",
+      "d"
+    ],
+    "selected": [
+      "a",
+      "b",
+      "c"
+    ],
+    "unobserved": [
+      "d"
+    ]
+  },
+  "advisory_logs": {
+    "state_variable_shadow": null,
+    "mineability": null
+  },
+  "latency": {
+    "calls": 10,
+    "mean_s": 5.731,
+    "min_s": 4.441,
+    "max_s": 9.121
+  },
+  "compliance": {
+    "discarded_total": 0,
+    "failed_total": 0,
+    "schema_retries_total": 0,
+    "foreign_tool_uses_total": 0,
+    "because_invalid_id_total": 18
+  }
+}

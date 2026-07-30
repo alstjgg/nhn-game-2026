@@ -124,12 +124,20 @@ const good = {
 check('accepts a well-formed judgment', () => assert.deepEqual(spec.validate(good, ctx), []));
 check('rejects a stance outside the set', () =>
   assert.ok(spec.validate({ ...good, stance: 'z' }, ctx).some((p) => /not in stance set/.test(p))));
-check('rejects rejected===stance', () =>
-  assert.ok(spec.validate({ ...good, rejected_stance: 'b' }, ctx).some((p) => /equals stance/.test(p))));
 check('rejects an empty referent', () =>
   assert.ok(spec.validate({ ...good, because_referent: ' ' }, ctx).some((p) => /because_referent empty/.test(p))));
-check('rejects an empty rejected_reason', () =>
-  assert.ok(spec.validate({ ...good, rejected_reason: '' }, ctx).some((p) => /rejected_reason empty/.test(p))));
+// The rejected pair is diagnostic-only and where the A16 boundary leak lands:
+// soft — recorded, never retried, call kept. Enacted 2026-07-30.
+check('rejected===stance is soft (recorded, not retried)', () => {
+  const p = spec.validate({ ...good, rejected_stance: 'b' }, ctx);
+  assert.equal(p.length, 1);
+  assert.match(p[0], /^__soft__.*equals stance/);
+});
+check('empty rejected_reason is soft', () => {
+  const p = spec.validate({ ...good, rejected_reason: '' }, ctx);
+  assert.equal(p.length, 1);
+  assert.match(p[0], /^__soft__.*rejected_reason empty/);
+});
 check('treats a hallucinated block id as soft (recorded, not retried)', () => {
   const p = spec.validate({ ...good, because_block_ids: ['ghost'] }, ctx);
   assert.equal(p.length, 1);
@@ -152,10 +160,36 @@ check('rejects the RB1 nested-object malformation', () => {
     block_ids: ['f1'],
     utterance: '…',
   };
-  const p = spec.validate(malformed, ctx).filter((x) => !x.startsWith('__soft__'));
-  assert.ok(p.some((x) => /because_referent empty/.test(x)));
-  assert.ok(p.some((x) => /because_block_ids not an array/.test(x)));
-  assert.ok(p.some((x) => /rejected_stance not in stance set/.test(x)));
+  const all = spec.validate(malformed, ctx);
+  const hard = all.filter((x) => !x.startsWith('__soft__'));
+  assert.ok(hard.some((x) => /because_referent empty/.test(x)));
+  assert.ok(hard.some((x) => /because_block_ids not an array/.test(x)));
+  // The rejected-field damage is still reported, but soft (A16).
+  assert.ok(all.some((x) => /^__soft__.*rejected_stance malformed/.test(x)));
+});
+
+// The A16 boundary leak, frozen as a regression: rejected_stance swallows the
+// closing tag and the next parameter's opening tag, rejected_reason vanishes —
+// but stance/inner_note/referent/utterance all survive. The call must be KEPT
+// (soft problems only), because hard-discarding it is what made arms
+// differently-filtered samples across RB1/RB2/P1a/P1b.
+check('the A16 boundary leak yields only soft problems — call is kept', () => {
+  const leaked = {
+    ...good,
+    rejected_stance: 'a</rejected_stance>\n<parameter name="rejected_reason">확인이 먼저면 끊긴다.',
+    rejected_reason: undefined,
+  };
+  const p = spec.validate(leaked, ctx);
+  assert.ok(p.length >= 1, 'the leak must still be recorded');
+  assert.ok(p.every((x) => x.startsWith('__soft__')), `hard problem would discard the call: ${p}`);
+});
+
+check('summarize nulls a leaked rejected_stance and flags it', () => {
+  const leaked = { ...good, rejected_stance: 'a</rejected_stance>\n<parameter name="rejected_reason">…' };
+  const s = spec.summarize(leaked, ctx);
+  assert.equal(s.rejected_stance, null);
+  assert.equal(s.rejected_malformed, true);
+  assert.equal(spec.summarize(good, ctx).rejected_malformed, false);
 });
 
 check('no nested objects survive in the judgment schema', () => {

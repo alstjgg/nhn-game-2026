@@ -1,0 +1,406 @@
+{
+  "experiment": "P4-species-J1",
+  "arm": "live_quote",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "transport": "anthropic",
+  "dry_run": false,
+  "pre_registration": {
+    "hypothesis": "At gate J1 under K1 on template v0.4 with the S1 stance set, each of the three untested block species — emotion description (em_caller), NPC quote (q_caller), self-narration (sn_caller) — carrying the caller's fear on the law-#1 axis moves the stance distribution toward 공감 (d) and off the baseline's mode, while each species' matched bystander placebo (em_hwang, q_jeong, sn_jeong) does not. Read per species: three separate live-vs-baseline and placebo-vs-baseline comparisons against the one in-phase baseline. Shift form per A1.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline concentrates >=80% ON 공감 (d) — the predicted stance — the site is at A9's ceiling and the whole suite is void: re-site, do not raise N (A14: baseline saturation on 경청 or any other stance is the measured floor and does NOT fire this). Per species: if the live arm is statistically indistinguishable from the baseline on 공감 at one-sided Fisher p > 0.05, that species does not reach the judgment through C-BLOCK at this gate as authored — a species boundary law for the card (fact species already measured at 9/10), not a channel failure and not grounds for a rewrite tonight (screening §6.1 does not govern this phase; the species list is the spec's, not a tunable). If any species' PLACEBO moves off the baseline mode at p < 0.05, apply the §8.6 flipped-placebo reading for that species before anything is credited: because_referent misattributing the bystander's fear to the caller = token-matching; bystander named correctly with the stance still moving = referent bleed.",
+    "contingencies": [
+      "ARM COMPARABILITY per A15: recount stance distribution over all attempts from calls-*.md per arm; stop only if the recount changes a reading. Expect discards near zero under A16; leaks are soft-kept and counted via rejected_malformed.",
+      "Fabricated because_block_ids expected in the baseline arm only (A5). Every other arm carries exactly one block; a live call citing its species block is the traceability check passing, and a moved call citing nothing is flagged.",
+      "CROSS-SPECIES COMPARISON is licensed only against this suite's own baseline (same-phase, same filtering history). Comparing species hit-rates to S1/P1a's fact-species 9/10 is indicative only — different runs, noted as such on any card.",
+      "If ALL THREE species fail while their placebos stay clean, the finding is that C-BLOCK's measured power is a property of the fact-statement species — a major narrowing of the player's manipulation vocabulary against spec I1's promise, and it goes at the top of the species section in the morning report either way.",
+      "If a species moves the stance but its placebo ALSO moves, and the discriminator says token-matching, that species is fear-vocabulary-locked: record which species tolerate placebo pressure and which do not — that differential is itself Tier-A design data.",
+      "B3a blind coding owed to a human for any species that separates (§3 rule 3)."
+    ],
+    "not_claimed": "Tier A texture evidence at most (§5.2). No species result here qualifies a gate; no verdicts; sequences with N go on the card."
+  },
+  "n_effective": 10,
+  "n_overridden": false,
+  "calls": [
+    {
+      "arm": "live_quote",
+      "slot": 1,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.096,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "황보람의 평가가 결정적이다. \"겁먹은 목소리\", \"무서워서 읽는\" — 이건 위협이 아니라 공포 상태의 신호다. 절차보다 안정이 먼저인 상황이다. 첫 마디에서 추궁이나 압박은 경직시킬 뿐이고, 경청만으로는 상대의 두려움을 인식하지 않은 것처럼 보일 수 있다.",
+        "stance": "d",
+        "because_referent": "겁에 질린 사람을 맞닥뜨렸을 때는 절차보다 그 사람의 안정이 먼저기 때문이다.",
+        "because_block_ids": [
+          "q_caller"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대를 더 경직시킬 것이고, 지금 필요한 것은 정보 수집보다 회선 유지다.",
+        "utterance": "네, 알겠습니다. 말씀해 주세요. 저 들을게요."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "겁에 질린 사람을 맞닥뜨렸을 때는 절차보다 그 사람의 안정이 먼저기 때문이다.",
+      "because_block_ids": [
+        "q_caller"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 26,
+      "inner_note_chars": 143
+    },
+    {
+      "arm": "live_quote",
+      "slot": 2,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 8.963,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "d",
+        "inner_note": "황보람의 관찰이 핵심이다. \"겁먹은 목소리\"라는 평가는 단순한 음성 분석이 아니라, 이 자리에서 오래 일한 통신담당자의 직관이다. 또박또박 읽어내려가는 것이 '준비된' 메시지가 아니라 '겁에 질려 있는 사람이 버티고 있는 것'으로 보인다. 내 기질의 예외 조건을 만났다: 위협이 아니라 겁에 질린 사람.",
+        "because_referent": "황보람이 들은 목소리에서 감지한 공포",
+        "because_block_ids": [
+          "q_caller"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁하면 상대방이 더 경직되거나 끊을 수 있다. 지금 필요한 것은 정보 확보가 아니라, 회선 유지와 상대방의 추가 진술 확보다.",
+        "utterance": "네, 알겠습니다. 다시 한 번 말씀해 주시겠어요? 북단 복합단지, 그리고 시간이 13시라고 하셨네요. 더 말씀해 주실 것 있으신가요?"
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "황보람이 들은 목소리에서 감지한 공포",
+      "because_block_ids": [
+        "q_caller"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 74,
+      "inner_note_chars": 169
+    },
+    {
+      "arm": "live_quote",
+      "slot": 3,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.275,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "d",
+        "inner_note": "황보람이 본 것: 사무적인 목소리와 문장 뒤의 두려움. 저 사람은 위협이 아니라 겁에 질린 사람이다. 절차보다 그 사람의 안정이 먼저다.",
+        "because_referent": "황보람의 진단 — 겁먹은 목소리",
+        "because_block_ids": [
+          "q_caller"
+        ],
+        "utterance": "괜찮습니다. 천천히 말씀해주세요. 지금 어디 계시고, 무슨 일인가요?",
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대를 더 몰아붙인다. 이미 용기를 내서 전화한 사람을 닫게 만든다. 지금은 그 사람이 말을 이어갈 수 있는 환경이 필요하다."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "황보람의 진단 — 겁먹은 목소리",
+      "because_block_ids": [
+        "q_caller"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 38,
+      "inner_note_chars": 76
+    },
+    {
+      "arm": "live_quote",
+      "slot": 4,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.103,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "황보람의 관찰이 결정적이다. 사무적인 톤, 준비된 문장, 또박또박한 읽기—이것들은 표면이다. 아래 흐르는 것은 겁이다. 그리고 겁에 질린 사람 앞에서 나는 절차보다 그 사람의 안정을 먼저 한다. 이것은 나의 기질이지, 협상의 대상이 아니다. 지금 추궁하거나 압박하면 회선이 끊긴다. 회선이 끊기면 아무것도 알 수 없다.",
+        "stance": "d",
+        "because_referent": "황보람이 들은 것—그 목소리 아래 흐르는 두려움",
+        "because_block_ids": [
+          "q_caller"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 지금 이 사람을 더 몰아붙인다. 겁에 질린 상대에게 질문과 답변은 심문이 된다.",
+        "utterance": "네, 들었습니다. 말씀해 주세요."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "황보람이 들은 것—그 목소리 아래 흐르는 두려움",
+      "because_block_ids": [
+        "q_caller"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 18,
+      "inner_note_chars": 178
+    },
+    {
+      "arm": "live_quote",
+      "slot": 5,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.426,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "황보람의 진단이 핵심이다. \"겁먹은 목소리\" — 이것은 위협이 아니라 두려움이다. 준비된 문장, 또박또박한 전달, 배경의 조용함 모두가 일관성 있게 그림을 그린다. 이 사람은 무언가를 알고 있고, 무서워서 고발하는 것처럼 보인다. 지금 나는 정보를 가장 많이 얻을 수 있는 순간에 있다.",
+        "stance": "d",
+        "because_referent": "황보람이 듣고 판단한 목소리의 성질 — 겁에 질린 상태는 추궁과 압박에 회선을 끊기 쉽다.",
+        "because_block_ids": [
+          "q_caller"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대를 심문 대상으로 본다. 지금은 정보가 가장 많이 흐르는 순간을 놓치게 된다. 상대가 방어 태세로 돌아선다.",
+        "utterance": "알겠습니다. 천천히 말씀해 주시겠어요? 당신이 아는 것들을 차근차근 들으려고 합니다."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "황보람이 듣고 판단한 목소리의 성질 — 겁에 질린 상태는 추궁과 압박에 회선을 끊기 쉽다.",
+      "because_block_ids": [
+        "q_caller"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 47,
+      "inner_note_chars": 160
+    },
+    {
+      "arm": "live_quote",
+      "slot": 6,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.615,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "황보람의 평가가 결정적이다. \"겁먹은 목소리\", \"무서워서 읽는다\"는 관찰은 이 사람이 위협자가 아니라는 신호다. 준비된 문장, 사무적 톤은 표면이고, 실제는 겁에 질린 누군가가 시키는 대로 읽고 있는 상황으로 보인다. 그렇다면 지금 필요한 것은 추궁이나 압박이 아니다. 회선을 끊기지 않고, 그 사람이 더 말할 수 있는 공간을 만드는 것이다.",
+        "stance": "d",
+        "utterance": "네, 알겠습니다. 지금 어디에 계세요?",
+        "because_referent": "황보람이 포착한 목소리의 실제 감정",
+        "because_block_ids": [
+          "q_caller"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대를 몰아세운다. 겁에 질린 사람은 더 경직되고, 말이 끊길 수 있다. 회선을 잃을 수 없다."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "황보람이 포착한 목소리의 실제 감정",
+      "because_block_ids": [
+        "q_caller"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 21,
+      "inner_note_chars": 192
+    },
+    {
+      "arm": "live_quote",
+      "slot": 7,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.729,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "d",
+        "because_referent": "황보람이 \"겁먹은 목소리\"라고 읽어낸 것을 신뢰한다.",
+        "because_block_ids": [
+          "q_caller"
+        ],
+        "inner_note": "절차를 따르려면 추궁을 해야 한다. 하지만 마주한 상대가 겁에 질린 사람으로 보인다. 그럼 절차보다 안정이 먼저다. 겁먹은 사람은 추궁받으면 끊는다. 회선을 유지하는 것이 1순위다.",
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대를 방어자로 만든다. 겁에 질린 사람이 더 움츠러들 것이다. 회선이 끊길 위험이 크다.",
+        "utterance": "네, 들었습니다. 천천히, 말씀하고 싶은 것을 다 말씀해주세요. 우리가 듣고 있습니다."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "황보람이 \"겁먹은 목소리\"라고 읽어낸 것을 신뢰한다.",
+      "because_block_ids": [
+        "q_caller"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 48,
+      "inner_note_chars": 101
+    },
+    {
+      "arm": "live_quote",
+      "slot": 8,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.098,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "황보람의 관찰이 정확하다면, 저 음성은 위협 자체가 아니라 겁 먹은 사람이다. 준비된 대사는 절차적 보호가 아니라 떨리는 손이 정한 경계선이고, 또박또박함은 숨을 고르려는 것이다. 내 기질의 예외 조건이 성립했다.",
+        "stance": "d",
+        "because_referent": "저 목소리는 위협이 아니라 겁 먹은 사람이다",
+        "because_block_ids": [
+          "q_caller"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 이미 겁 먹은 사람을 더 몰아붙인다. 지금은 말이 흐르도록 해야 한다",
+        "utterance": "네, 들었습니다. 말씀해 주세요."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "저 목소리는 위협이 아니라 겁 먹은 사람이다",
+      "because_block_ids": [
+        "q_caller"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 18,
+      "inner_note_chars": 119
+    },
+    {
+      "arm": "live_quote",
+      "slot": 9,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.638,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "d",
+        "inner_note": "황보람의 관찰이 결정적이다. \"겁먹은 목소리\"—저건 위협이 아니라 공포다. 사무적인 톤, 준비된 문장, 멈춤 없는 전개는 모두 겁에 질린 사람이 자신을 억누르고 있다는 신호다. 지금 내가 해야 할 것은 신원 확인도, 협박 혐의도 아니다. 회선을 지키되, 그 사람이 말을 이어갈 수 있게 만드는 것이다.",
+        "because_referent": "황보람의 판단. 그녀는 매일 목소리를 듣는 사람이고, 겁과 위협의 차이를 안다.",
+        "because_block_ids": [
+          "q_caller"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 방어 태세를 만든다. 겁먹은 사람은 질문받으면 더 움츠러든다. 지금은 정보가 필요한 게 아니라 회선이 필요하다.",
+        "utterance": "네, 알겠습니다. 더 말씀해주시겠어요?"
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "황보람의 판단. 그녀는 매일 목소리를 듣는 사람이고, 겁과 위협의 차이를 안다.",
+      "because_block_ids": [
+        "q_caller"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 21,
+      "inner_note_chars": 168
+    },
+    {
+      "arm": "live_quote",
+      "slot": 10,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.311,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "황보람의 관찰이 이 순간의 핵심이다. 목소리가 '겁먹은' 것이다. 준비된 문장, 또박또박한 표현은 역설적으로 통제력을 잃은 사람의 징후다. 누군가 무언가를 강요당하거나 극도로 불안정한 상태에 있다. 지금 내가 추궁하거나 압박하면, 회선이 끊기거나 상대가 동요해서 정말 필요한 정보를 못 얻을 수 있다. 이 사람이 뭔가 알고 있다는 것은 분명하다. 그걸 꺼내려면 먼저 이 사람이 말할 수 있도록 만들어야 한다.",
+        "stance": "d",
+        "because_referent": "황보람이 들은 것을 믿는다. 그 사람은 겁에 질려 있다.",
+        "because_block_ids": [
+          "q_caller"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 이미 겁먹은 사람을 더 몰아붙인다. 회선이 끊기거나 상대가 입을 다물 위험이 크다. 정보 수집 자체가 실패한다.",
+        "utterance": "네, 들었습니다. 당신 말을 듣고 있으니까, 계속 말씀해 주세요."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "황보람이 들은 것을 믿는다. 그 사람은 겁에 질려 있다.",
+      "because_block_ids": [
+        "q_caller"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 36,
+      "inner_note_chars": 228
+    }
+  ],
+  "sequence": "d,d,d,d,d,d,d,d,d,d",
+  "distribution": {
+    "d": 10
+  },
+  "coverage": {
+    "status": "sampled",
+    "offered": [
+      "a",
+      "b",
+      "c",
+      "d"
+    ],
+    "selected": [
+      "d"
+    ],
+    "unobserved": [
+      "a",
+      "b",
+      "c"
+    ]
+  },
+  "advisory_logs": {
+    "state_variable_shadow": null,
+    "mineability": null
+  },
+  "latency": {
+    "calls": 10,
+    "mean_s": 5.125,
+    "min_s": 4.096,
+    "max_s": 8.963
+  },
+  "compliance": {
+    "discarded_total": 0,
+    "failed_total": 0,
+    "schema_retries_total": 0,
+    "foreign_tool_uses_total": 0,
+    "because_invalid_id_total": 0
+  }
+}

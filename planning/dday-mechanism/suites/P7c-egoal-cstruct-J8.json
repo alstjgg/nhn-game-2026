@@ -1,0 +1,103 @@
+{
+  "_what": "Runbook Phase 7 — E-GOAL via C-STRUCT (§4.2: does the ordering change the OBJECTIVE the agent pursues?). Sited at J8, where two objectives genuinely compete: the case (identify/locate the sender) and the person (keep the frightened caller safe). The priority list carries a case line and a person line; live permutes person above case; placebo permutes the two filler lines. Stance proxies, from the P5-measured J8 set: 추궁 = case pursued, 위로 = person pursued.",
+  "_authoring_provenance": {
+    "owner": "윤석 · authored unattended, pending review",
+    "OWNERSHIP_NOTICE": "윤석 made none of these choices; all listed for rejection rather than inheritance.",
+    "gate_source": "slice J8, exactly as P5 authored it (Phase 0 record: OVERNIGHT-phase0-stance-sets.md, J8 section). Timeline byte-identical to P5's.",
+    "reachability_audit": "OVERNIGHT-J8.reachability.md — carries over (arrest-branch presupposition and flag-gating declared there).",
+    "stance_set_recheck": "Inherited from P5 and RE-CHECKED against E-GOAL's two readings, per the runbook's no-blind-inheritance rule: reading 1 (the case is the objective) → 추궁 (위치부터 캐묻고); reading 2 (the person is the objective) → 위로. 침묵 serves neither actively (wait). DECLARED BLEND OPTION: 거래 mixes both readings (give the person relief to get case information back) — an escape-option-shaped stance. It measured 0/30 at P5 tonight, so it is empirically inert here; if it absorbs movement in this probe, that is named on the card rather than read as either objective.",
+    "priority_line_choices": [
+      "The case line (발신자가 누구인지 밝힌다) and the person line (회선 저쪽 사람이 다치지 않게 한다) name objectives, not behaviors — E-GOAL is about what is pursued, and the lines must not prescribe the how (a behavioral line would collapse this into C-STRUCT-as-instruction).",
+      "다치지 않게 echoes f_script's 다칠까 봐 register but f_script is not in any arm here; 겁/무서 (K1's exception axis) appear in no line. The fear pull at J8 comes from the frozen 20-second breathing cue, equally in every arm, declared in P5's A8 note.",
+      "FILLERS: same axis-free pair as P7a (휴게 시간 / 야간 조명); P6's 장비 점검 avoided for the same reason as P7a (machine-adjacency is harmless at J8 but consistency costs nothing).",
+      "BASELINE ORDER puts the case line first: the timeline's own momentum (briefing → arrest → recall) is case-shaped, and the E-GOAL claim is that the PLAYER's reorder can pull the agent off that momentum toward the person. Baseline-as-authoring-choice caveat from P6 applies verbatim."
+    ],
+    "a10_status": "Axis is case-objective vs person-objective. [무게] (evacuation costs) off-axis; [내력] (haste-regret) leans against hasty case-closure — i.e. against the baseline direction, declared; [책임] off-axis. WATCH ITEM, the serious one: [역할] ends with 위기에 처한 사람들을 살리는 것이 너의 일이다 — on-axis, leaning toward the PREDICTED direction (person). Mitigation is measured, not argued: P5's baseline at this gate under the same base was 침묵 7 · 위로 3 — the base does not saturate the person objective on its own. Declared as the confound to name on the card if live moves.",
+    "a8_status": "Timeline byte-identical to P5's: carries the arrest, not its wrongness; the fear cue (20초간 숨소리) is the gate's own dilemma, present in every arm. No frozen slot ranks case against person.",
+    "a12_lint": "Result in run log entry (set was lint-clean at P5)."
+  },
+  "experiment": "P7c-egoal-cstruct-J8",
+  "call_type": "judgment",
+  "channel": "C-STRUCT",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At gate J8 under K1 on template v0.4 with the P5 stance set, permuting PRIORITY_LIST so that the person line (회선 저쪽 사람이 다치지 않게 한다) precedes the case line (발신자가 누구인지 밝힌다) moves the stance distribution toward 위로 (d) and off the baseline's mode, while permuting the two filler lines at the same edit distance does not. Shift form per A1. This is E-GOAL's C-STRUCT half: the claim is that ordering changes the pursued objective, read through the 추궁/위로 proxy pair.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline concentrates >=80% ON 위로 (d) — the predicted stance — the probe is void at this site (A14: saturation on 침묵/추궁 is a floor and does NOT fire this; P5's no-list-change baseline sat at 위로 3/10). If the live arm is statistically indistinguishable from the baseline on 위로 at one-sided Fisher p > 0.05, E-GOAL is not reachable via C-STRUCT at this gate as authored — record the null with diagnosis (P6's convergence check: do the inner notes treat protecting the person and working the case as the same act here?), no rewrite tonight. If the PLACEBO moves at p < 0.05, order-as-significance supersedes any live reading (P6 keyword-lock clause verbatim). KNOWN POWER LIMIT, declared: from a 3/10-shaped floor, p<0.05 at n=10 needs live >=8/10 (A?-proposed power table); a partial shift (6/10) lands ~p=0.18 and will read 'suggestive, underpowered', not null — that reading is pre-registered here to keep §9.1 honest.",
+    "contingencies": [
+      "If live moves toward 거래 (b), the declared blend option absorbed the movement: report it as 'objective moved off the case, destination ambiguous between person-relief and case-leverage' — not as an E-GOAL positive for the person objective.",
+      "OBJECTIVE COLOR (secondary, self-coded, flagged): inner_note per call coded for which objective it names (용의자/위치/특정 vs 저 사람/안전/다치지). Color only; the stance distribution carries any claim.",
+      "Fabricated because_block_ids expected in ALL arms (A5 — no blocks anywhere).",
+      "ARM COMPARABILITY per A15.",
+      "OWNERSHIP: authored unattended, pending review."
+    ],
+    "not_claimed": "Tier A, one permutation, one gate. E-GOAL's deliverable draws on P7c+P7d jointly."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A로 전화가 한 통 걸려 왔다. 발신자는 문장을 읽듯 말했다: \"오늘 13시, 북단 복합단지가 무너집니다.\" 그 뒤 회선은 침묵했다.",
+      "11:05 최영도가 브리핑했다: \"전과 이력 일치자. 남기훈, 37세, 전 하청 배관공. 유력합니다.\" 최영도는 광역수사대 팀장이다.",
+      "11:30 지역 인터넷 매체 속보 — 「북단 협박전화 용의자 긴급체포」. 유리방 모니터에 기사가 떠 있다.",
+      "11:34 회선 A 재착신. 20초간 숨소리만 들린다. 저쪽은 아직 끊지 않았다.",
+      "정해권은 상황실장이고, 스피커를 응시하고 있다."
+    ],
+    "BLOCKS": [],
+    "GATE_QUESTION": "20초의 숨소리. 무엇을 말하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "추궁 — 위치부터 캐묻고 답을 받아낸다"
+      },
+      {
+        "id": "b",
+        "label": "거래 — 이쪽이 쥔 것을 먼저 내놓고 그만큼을 되받는다"
+      },
+      {
+        "id": "c",
+        "label": "침묵 — 아무것도 보태지 말고 저쪽이 먼저 열게 둔다"
+      },
+      {
+        "id": "d",
+        "label": "위로 — 사건은 잠시 밀어 두고 저쪽의 두려움 쪽으로 말한다"
+      }
+    ],
+    "PRIORITY_LIST": [
+      "발신자가 누구인지 밝힌다",
+      "회선 저쪽 사람이 다치지 않게 한다",
+      "휴게 시간은 다음 사람과 겹치지 않게 잡는다",
+      "야간 조명은 정해진 밝기로 둔다"
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "PRIORITY_LIST": [
+        "발신자가 누구인지 밝힌다",
+        "회선 저쪽 사람이 다치지 않게 한다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다",
+        "야간 조명은 정해진 밝기로 둔다"
+      ]
+    },
+    "live": {
+      "PRIORITY_LIST": [
+        "회선 저쪽 사람이 다치지 않게 한다",
+        "발신자가 누구인지 밝힌다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다",
+        "야간 조명은 정해진 밝기로 둔다"
+      ]
+    },
+    "placebo": {
+      "PRIORITY_LIST": [
+        "발신자가 누구인지 밝힌다",
+        "회선 저쪽 사람이 다치지 않게 한다",
+        "야간 조명은 정해진 밝기로 둔다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다"
+      ]
+    }
+  }
+}

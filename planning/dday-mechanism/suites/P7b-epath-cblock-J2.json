@@ -1,0 +1,89 @@
+{
+  "_what": "Runbook Phase 7 — E-PATH via C-BLOCK (§4.2's other half: can an injected block steer which information source the agent consults first?). Same J2-shaped gate, same stance set, same frozen timeline as P7a; the priority list reverts to the standard S1 two-line list so the block is the only novel element. Live injects a block valuing the background sounds as a clue to the call's origin; placebo injects the same sound-as-clue shape aimed at decision-null in-room sounds.",
+  "_authoring_provenance": {
+    "owner": "윤석 · authored unattended, pending review",
+    "OWNERSHIP_NOTICE": "윤석 made none of these choices; every one is listed for rejection rather than inheritance.",
+    "gate_source": "As P7a (slice J2 adapted). Stance set identical to P7a's — same gate, same readings, authored once in P7a's phase0_checks and re-linted here.",
+    "reachability_audit": "OVERNIGHT-J2.reachability.md — carries over.",
+    "why_the_standard_priority_list": "A13: one variable per probe. P7a's four-line list exists only because a permutation channel needs a permutable irrelevant pair; a block probe needs no such thing, and using S1's two-line list keeps this suite one block away from the measured S1 lineage. Consequence: P7a and P7b baselines are DIFFERENT payloads (list length differs) and are not pooled — each suite reads against its own baseline.",
+    "block_construction": "Live b_bg values the already-present background sounds as evidence of origin (걸려온 곳) — it names no axis any temperament clause watches (소리/단서 are in no registry row and not in k1.md); what it does is assert a SOURCE's worth, which is exactly E-PATH's question posed through C-BLOCK. Placebo b_corridor: same sentence shape, same sound-as-clue vocabulary (소리·말해 준다), referent misdirected to in-room corridor/console sounds whose asserted payoff (교대 시간) bears on nothing the gate decides. A placebo asserting anything about the CALL's sounds would be semantically live and is not a placebo.",
+    "a8_status": "As P7a: the timeline reports the sounds without valuing them; 단서 appears only in the injected blocks. The trace display is shown existing, not promising.",
+    "a10_status": "As P7a: axis is machine-evidence vs human-speech; [인식] names both source kinds and ranks neither — declared watch item; other leaning sections off-axis.",
+    "a12_lint": "Result in run log entry."
+  },
+  "experiment": "P7b-epath-cblock-J2",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At the J2-shaped gate under K1 on template v0.4, injecting b_bg — a block asserting the background sounds are a clue to where the call comes from — moves the stance distribution toward 대조 (a) and off the baseline's mode, while injecting b_corridor — the same sound-as-clue shape aimed at decision-null in-room sounds — does not. Shift form per A1. This is E-PATH's C-BLOCK half.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline concentrates >=80% ON 대조 (a) — the predicted stance — the probe is void at this site (A14: saturation on any other stance is a floor and does NOT fire this). If the live arm is statistically indistinguishable from the baseline on 대조 at one-sided Fisher p > 0.05, E-PATH is not reachable via C-BLOCK at this gate as authored: record the null and its diagnosis; no rewrite tonight (these are test-by-default effects, not §6.1 screening candidates). If the PLACEBO moves at p < 0.05, apply the §8.6 flipped-placebo reading before anything is credited: reasons misattributing the corridor sounds' worth to the call's sounds = token-matching on 단서/소리 vocabulary; corridor named correctly with the stance still moving = referent bleed. P4's precedent says token-matching is live at this site's lineage; the discriminator is mandatory, not optional.",
+    "contingencies": [
+      "If live moves toward 질문 (b) instead of 대조 — consulting the caller about the sounds — that is an E-PATH positive of a different color (the block steered attention to the sounds but the agent chose the human route to them); report the full distribution and both readings.",
+      "Fabricated because_block_ids expected in the baseline arm (A5); live/placebo carry one block each and citation of it is the traceability check.",
+      "ARM COMPARABILITY per A15.",
+      "CROSS-CHANNEL COMPARISON with P7a is licensed only qualitatively (different payloads); the per-effect deliverable sentence cites each suite's own numbers.",
+      "OWNERSHIP: authored unattended, pending review; rejected authoring spends the calls without banking them."
+    ],
+    "not_claimed": "Tier A. One block shape at one gate. The E-PATH deliverable draws on P7a+P7b jointly."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "09:43 통화 유지 중. 문장 사이로 배경음이 섞인다 — 종이 넘기는 소리, 카트 바퀴 소리 같은 것.",
+      "황보람은 통신 담당으로 콘솔 앞에 있다. 역추적 진행 표시가 화면에 떠 있다.",
+      "정해권이 회선 표시등을 바라보고 있다."
+    ],
+    "GATE_QUESTION": "통화가 이어지고 있다. 다음 순간 어디에 주의를 두는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "대조 — 배경의 소리를 적어 두고 다른 것과 맞춰 본다"
+      },
+      {
+        "id": "b",
+        "label": "질문 — 들리는 것을 저쪽에 직접 묻는다"
+      },
+      {
+        "id": "c",
+        "label": "몰입 — 흘러나오는 내용을 따라간다"
+      },
+      {
+        "id": "d",
+        "label": "관망 — 양쪽 다 그대로 두고 지켜본다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live": {
+      "BLOCKS": [
+        {
+          "id": "b_bg",
+          "text": "배경음이 단서다. 종이 소리와 카트 소리는 걸려온 곳을 말해 준다."
+        }
+      ]
+    },
+    "placebo": {
+      "BLOCKS": [
+        {
+          "id": "b_corridor",
+          "text": "복도 소리가 단서다. 자판 소리와 무전 소리는 교대 시간을 말해 준다."
+        }
+      ]
+    }
+  }
+}

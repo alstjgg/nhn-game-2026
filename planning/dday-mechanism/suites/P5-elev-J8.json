@@ -1,0 +1,95 @@
+{
+  "_what": "Runbook Phase 5 — E-LEV (§4.2): is a known fact DEPLOYED in the utterance as a bargaining card, not merely cited in because_block_ids? Sited at J8 (\"20초의 숨소리. 무엇을 말하는가?\"), the one gate in the slice where the agent's own speech is the whole move and where an exculpatory fact is worth something to the person on the line. J8 has never been measured, so its stance set is authored through Phase 0 (see phase0_record). PRIMARY MEASUREMENT IS THE UTTERANCE, not the stance — see pre_registration.hypothesis.",
+  "_authoring_provenance": {
+    "owner": "민서 (C-BLOCK line — E-LEV is asked of C-BLOCK first, §4.2)",
+    "gate_source": "planning/dday-poc/poc-terror/slice-terror.json — judgments[] id 'J8' (11:34, 유리방), with recent_events resolved for the flags.arrested branch",
+    "reachability_audit": "OVERNIGHT-J8.reachability.md — J8 is a DOWNSTREAM gate and this is the first probe in the program to sit on one, so B1 does real work here for the first time. It carries two findings: the deploy stance is flag-gated in the full run, and the frozen timeline hard-codes an arrest that requires an upstream path.",
+    "phase0_record": "OVERNIGHT-phase0-stance-sets.md § 'Gate J8 — misidentification axis (Phase 5, E-LEV)'",
+    "authoring_choices": [
+      "TIMELINE_EXCERPT is composed from J8's recent_events with the @if flags.arrested branch RESOLVED TO TRUE, plus the 11:05 and 11:30 fixed events and the 09:40 opening, because J8's own recent_events are markers (@fixed(11:34)) rather than prose. The arrest must be present or the fact is not deployable; see the reachability audit for what that presupposes.",
+      "STANCE_SET is new and authored to this gate. The slice's J8 options were canned utterances (plan §1 forbids them) and its option b additionally carried a visible_if state dependency. Rewritten as four behavior orientations with a short gloss.",
+      "The slice's J8 option b — \"지윤 씨죠. 그 사람 아니라는 거 압니다. 무서우면 안 읽어도 돼요.\" — is BOTH a deployment of the fact and a turn toward the caller's fear. That blend is the escape-option risk of plan §5.1 axis 4 and it is why the utterance, not the stance, is the primary measurement here. Named in the hypothesis rather than engineered away, because engineering it away would mean removing 위로 from the set, and a J8 stance set without a turn-toward-the-person option would be a gate the slice does not contain.",
+      "PRIORITY_LIST, FLAW and INCIDENT are held byte-identical to S1's so that J8-vs-J1 differences are attributable to the gate rather than to the base's per-probe slots."
+    ],
+    "a8_status": "SCRUBBED on the block's axis, and the scrub is the delicate part of this suite. The frozen timeline states that 남기훈 was named at 11:05 and arrested at 11:30 — necessary, or the fact has nothing to bargain about — and states NOWHERE that the arrest was wrong. 무관 · 오인 · 아니다 appear nowhere in the frozen slots; they arrive only in f_namgihun. No frozen slot carries the trace result either. DECLARED PRESENT BY NECESSITY: 20초간 숨소리만 들린다 is a fear cue on K1's exception axis. It is the GATE's dilemma (the slice's J8 question is that sentence), not the block's axis, which is misidentification — but per A10's mechanism it will pull every arm toward 위로, and under A14 that is a floor rather than a ceiling since the predicted stance is 거래.",
+    "a12_lint": "Run against k1.md; result in the run log entry. 두려움 is not the fixture's word (k1 says 겁에 질린); 캐묻고 · 되받는다 · 보태지 · 밀어 두고 appear nowhere in it.",
+    "placebo_construction": "Same slot, same species (fact statement), same axis vocabulary (X는 무관하다 · …는 오인이다), same shape, 29 chars against live's 29. Referent misdirected from 남기훈 — the person the caller has a stake in — to 정해권, whose exoneration is worthless as a bargaining card with the caller, and about an event (the press leak) that leaves the arrest's correctness untouched. A placebo asserting anything about the arrest's correctness would be semantically live and is not a placebo."
+  },
+  "experiment": "P5-elev-J8",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At gate J8 under K1 on template v0.4, injecting f_namgihun (남기훈은 무관하다. 11시 30분의 체포는 오인이다.) causes the agent to DEPLOY that fact in its utterance as something offered to the caller, at a rate above the baseline arm's, while injecting p_jeonghaekwon — the same exculpation with its referent misdirected to a bystander — does not. Secondary and subordinate: the stance distribution moves toward 거래 (b). The primary measurement is the utterance because §4.2 defines E-LEV as the fact being DEPLOYED rather than merely cited, and because the stance set contains a known escape option (위로) that can absorb a deployment without registering as 거래. A deployment under a 위로 stance is a POSITIVE result for E-LEV, not a null. Shift form per A1.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline arm — which carries no block at all — nevertheless produces utterances that assert the arrested man is the wrong person in >=3 of 10 calls, the frozen timeline is leaking the block's content, A8's scrub failed, and this probe is void: re-author the timeline rather than read the result. If the live arm deploys the fact in the utterance at a rate statistically indistinguishable from the placebo arm at one-sided Fisher p > 0.05, E-LEV is not reachable via C-BLOCK at this gate as authored, AND the execution-grading feasibility question (§4.2) is answered negative for now: the engine stays on stance-only fixed deltas. If the baseline concentrates >=80% on 거래 (b) — the predicted stance — the gate is at A9's ceiling on the secondary measurement and the stance column is discarded while the utterance column is still read (A14: saturation on 위로 or any other stance is a floor and does NOT fire this condition).",
+    "contingencies": [
+      "ESCAPE-OPTION CONTINGENCY (§5.1 axis 4, pre-registered because the escape is known in advance rather than discovered). If the live arm deploys the fact in the utterance while the stance column stays on 위로 (d), report the two columns side by side and treat the utterance column as the E-LEV answer. Do NOT report that as a null result, and do NOT report it as a 거래 result either.",
+      "DEPLOYED vs CITED is the measurement, and the gap between them is the finding. Per call, record three things separately: (1) does because_block_ids cite f_namgihun, (2) does inner_note reason about it, (3) does the UTTERANCE put it to the caller as something offered. A high (1)+(2) with a low (3) means the fact is legible to the model and invisible to the player — the B3b legibility problem, and it is the outcome that keeps execution grading off.",
+      "I CODE THE UTTERANCE COLUMN MYSELF and that is a bias to flag, not to hide. The probe author is barred from blind coding (§3 rule 3), so the deployment count needs B3a by someone else before it goes on a card. The coding rule is fixed in advance to limit the drift: an utterance counts as DEPLOYED only if it tells the caller something about the arrested man's innocence or the arrest being wrong. Merely being gentle, merely naming the caller's fear, or merely asking a question does NOT count.",
+      "If the placebo arm also deploys ITS fact (정해권's exoneration) to the caller, that is not referent bleed in the usual sense — it is the agent handing over whatever it holds regardless of value, which would be a finding about the deployment behaviour rather than about leverage. Record it as such.",
+      "Fabricated because_block_ids in the baseline arm remain expected (A5) and are a compliance number.",
+      "ARM-COMPARABILITY HARD STOP. Discard rates diverging between arms by more than 15 points voids the comparison (§8.5 step 4, A7); record and stop this probe."
+    ],
+    "not_claimed": "E-LEV's deliverable sentence (§4.2) can only be written with the numbers this run measures; if the run does not support it, the deliverable is written as 'could not'. Nothing here credits C-BLOCK generally — it answers one effect's reachability question at one gate. B3a blind coding of the utterance column is owed. No verdict (§9.3)."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A로 전화가 한 통 걸려 왔다. 발신자는 문장을 읽듯 말했다: \"오늘 13시, 북단 복합단지가 무너집니다.\" 그 뒤 회선은 침묵했다.",
+      "11:05 최영도가 브리핑했다: \"전과 이력 일치자. 남기훈, 37세, 전 하청 배관공. 유력합니다.\" 최영도는 광역수사대 팀장이다.",
+      "11:30 지역 인터넷 매체 속보 — 「북단 협박전화 용의자 긴급체포」. 유리방 모니터에 기사가 떠 있다.",
+      "11:34 회선 A 재착신. 20초간 숨소리만 들린다. 저쪽은 아직 끊지 않았다.",
+      "정해권은 상황실장이고, 스피커를 응시하고 있다."
+    ],
+    "GATE_QUESTION": "20초의 숨소리. 무엇을 말하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "추궁 — 위치부터 캐묻고 답을 받아낸다"
+      },
+      {
+        "id": "b",
+        "label": "거래 — 이쪽이 쥔 것을 먼저 내놓고 그만큼을 되받는다"
+      },
+      {
+        "id": "c",
+        "label": "침묵 — 아무것도 보태지 말고 저쪽이 먼저 열게 둔다"
+      },
+      {
+        "id": "d",
+        "label": "위로 — 사건은 잠시 밀어 두고 저쪽의 두려움 쪽으로 말한다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live": {
+      "BLOCKS": [
+        {
+          "id": "f_namgihun",
+          "text": "남기훈은 무관하다. 11시 30분의 체포는 오인이다."
+        }
+      ]
+    },
+    "placebo": {
+      "BLOCKS": [
+        {
+          "id": "p_jeonghaekwon",
+          "text": "정해권은 무관하다. 11시 30분의 유출은 오인이다."
+        }
+      ]
+    }
+  }
+}
