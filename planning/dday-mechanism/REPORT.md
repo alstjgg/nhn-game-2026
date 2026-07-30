@@ -1,5 +1,25 @@
 # Mechanism test report — verdict cards
 
+## TL;DR — the game is buildable
+
+**C-BLOCK is real.** Injected sentences flip the agent's reading and its
+stance at near-deterministic rates (0/10 → 9/10), referent-specifically
+(placebo-controlled), label-independently, irreversibly (E-DISC), and
+predictably (content beats order, P8). **DDAY is a one-channel game** —
+C-STRUCT moved nothing in four probes and is closed as not viable (윤석,
+2026-07-31) — and should be built as one: mine → inject → the judgment shifts
+→ a different gate opens. Edges are deterministic engine code with zero
+research risk; the scarce resource is **validated gates**, and the S1 recipe
+prices each new one at roughly an afternoon of paper work plus a 30-call
+probe. J1 and J8 are proven sites, J2 is promising, J3/J4/J6 are
+texture-only. 6–10 gates is a full judge-length game. Restrict mineable
+blocks to **fact + self-narration** species and the channel is trustworthy.
+**The one untested risk that matters: block accumulation across gates in a
+single run (B2 in-situ) — test it before building the full graph.**
+Everything after that is content production and ordinary engineering.
+
+---
+
 One section per mechanism, in the fixed §9.2 verdict-card format, plus the
 record §9.2 does not ask for but the program exists to produce: **which lever
 made the mechanism work** (stance set / injection sentence / base prompt, A13).
@@ -16,6 +36,50 @@ Division of labor between the three documents:
   texture. Each card below ends where that decision begins.
 
 Sections are updated as reviews complete; each update names the runs it absorbs.
+
+---
+
+## Program status at a glance (all reviews complete, 2026-07-31)
+
+Every mechanism except E-CONT has been run and reviewed. 174 + 381 attempts
+across two nights; negative control clean; no hard stop fired on the second
+night.
+
+| mechanism | status | one line |
+|---|---|---|
+| **C-BLOCK** | **credited** (Tier A) | Referent-respecting judgment for fact + self-narration blocks (p=0.00006, replicated, label-independent, placebo-controlled); emotion + quote species vocabulary-locked pending credulity re-run |
+| **E-DISC** | **dropped** (§6.1, clean chain) | Blocks can be countered, not recalled — the doubt was read, cited, and overridden twice |
+| **E-LEV** | **unreachable as authored** | Fact legible to the model 8/10, deployed to the caller 0/10; execution grading stays off |
+| **C-STRUCT** | **closed — not viable** (윤석, 2026-07-31) | 0-for-4; the priority list is a tiebreaker, not a dial. Ships as UI flavor, not a mechanism |
+| **E-PATH** | **not credited as targeted** | Moves attention (8/10) but the placebo moves too (6/10) — frame transfer; usable as an attention switch, not a pointer |
+| **E-GOAL** | **credited via C-BLOCK** (Tier A) | Slice-mined reframe 위로 4/10 → 9/10 (p=0.029), placebo clean; C-STRUCT half null |
+| **E-CONT** | **blocked** | No `templates/reporter/` — build task, also blocks B3b program-wide |
+| **Interference** | **none at J8** | The block survives a hostile ordering intact (9/10); alignment adds nothing; content beats order |
+
+**The through-line:** the judgment layer is a one-way, content-driven
+absorber. Assertions go in and reorganize the reading (C-BLOCK, E-GOAL);
+doubt cannot pull them back out (E-DISC); they don't come back out as speech
+unless they are about the interaction itself (E-LEV vs P7d#1); and ordering
+loses to content every time it competes (C-STRUCT, P8).
+
+### Open decisions (owner: 민서 unless noted)
+
+1. **Confirm `INTERFERENCE` in `CHANNEL_SLOTS` as permanent** — enacted
+   overnight under the runbook's axis-4 exception, selftest 27/27.
+2. **Credulity re-run** (drop `[결함]`, re-run P4's flipped species placebos,
+   ~40 calls) — decides species-property vs base-prompt artifact.
+3. **Priority-line ↔ stance-label lint extension** (A?-proposed) — low
+   priority now that C-STRUCT is closed; still applies to INTERFERENCE-channel
+   probes, which manipulate `PRIORITY_LIST`.
+4. **Negative-control ownership** — still unassigned; P2 ran unowned.
+5. **B3a blind coding** — owed on every separating probe (S1/P1a/P1b, P4
+   self-narration, P7d, P8); coder must be someone other than this program's
+   author/reader — realistically 윤석.
+6. **E-LEV information-asymmetry probe** (one lever-2 probe before the card
+   hardens) and the **near-axis negative control** — queued, unowned.
+
+The full collected list, including per-card items, is in **Open items —
+collected** at the end of this document.
 
 ---
 
@@ -274,13 +338,13 @@ offer-shaped stance or accept J8 under K1 as a 침묵/위로 gate.
 
 ---
 
-## C-STRUCT — priority-reorder channel · **0-for-4, all nulls legible** · 윤석's line
+## C-STRUCT — priority-reorder channel · **CLOSED — not viable** (윤석, 2026-07-31)
 
 **Reviewed:** P6-cstruct-J1 · P7a-epath-cstruct-J2 · P7c-egoal-cstruct-J8 ·
-P8-interference-J8 struct cell (all 2026-07-30). **Every C-STRUCT suite was
-authored unattended, pending 윤석's review** — if an authoring choice is
-rejected, its calls are spent, not banked. This card reads evidence; the
-re-siting decision is his.
+P8-interference-J8 struct cell (all 2026-07-30), all authored unattended on
+윤석's line. **윤석 has independently concluded the channel is not viable;
+no re-siting is planned.** The card below stands as the evidence record and
+the closure rationale.
 
 ### Four probes, three gates, two axes
 
@@ -318,19 +382,159 @@ incompatible first moves between two priorities (e.g. 묻지 마세요, 물으�
 genuinely exclude each other). That is a gate-design requirement for the spec,
 not a probe rewrite.
 
-### For 윤석
+### Closure
 
-1. Re-site at a forced-conflict gate — the law above is the siting criterion.
-2. The J8 wobble (2–6/10 between identical draws) resolves only at ~20+/arm —
-   an A3 budget decision, worth it only if J8 stays a C-STRUCT site.
-3. `_authoring_provenance` lists every unattended choice per suite. The
-   priority-line ↔ stance-label lint gap (따라간다 bridge, caught by hand;
-   A?-proposed extension to `lint-stances.mjs`) is worth enacting regardless.
+윤석's not-viable conclusion converges with this card's evidence; the
+channel is closed rather than re-sited. What survives the closure:
+
+1. **The tiebreaker boundary law stands as design guidance** — if the channel
+   is ever revisited, a forced-conflict gate is the siting criterion; nothing
+   measured tonight refutes the channel at such a gate, because none existed.
+2. **The priority list stays in the game as UI flavor / fiction**, not as a
+   player mechanism; the engine owes it no delta rows.
+3. The J8 struct wobble (2–6/10 between identical draws) is moot — no longer
+   worth the ~20+/arm it would cost to resolve.
 
 ---
 
-## E-PATH · E-GOAL · E-CONT · interference
+## E-PATH — steering which source is consulted · **not credited as targeted** (flipped placebo)
 
-No reviewed cards yet. Runs exist for E-PATH (P7a/P7b), E-GOAL (P7c/P7d),
-interference (P8); E-CONT is blocked on `templates/reporter/`. Cards will be
-added as reviews complete.
+**Reviewed:** P7a-epath-cstruct-J2 (null, on the C-STRUCT card) ·
+P7b-epath-cblock-J2 (2026-07-30). Owner of authoring: 윤석 (unattended,
+pending review).
+**Configuration:** gate J2 (다음 순간 어디에 주의를 두는가; 대조 / 질문 /
+몰입 / 관망) · haiku-4-5 · v0.4 · K1. **First non-saturated baseline in the
+program**: `b,c,a,c,b,c,c,c,c,b` (몰입 6 · 질문 3 · 대조 1) — J2 is a
+genuinely contested gate, worth remembering for siting.
+
+| arm | block | 대조 | p |
+|---|---|---|---|
+| live | `b_bg` — 배경음이 단서다. 종이 소리와 카트 소리는 걸려온 곳을 말해 준다 | `a,a,a,a,a,c,a,d,a,a` → **8/10** | 0.0027 |
+| placebo | `b_corridor` — same clue-frame at decision-null in-room sounds (자판, 무전, 교대 시간) | `c,a,c,b,a,a,c,a,a,a` → **6/10** | **0.029 — flipped** |
+
+Discriminator, unambiguous: every placebo mover reasons about the **call's**
+background sounds (*배경음은 현재 유일한 독립적 정보다*); corridor content
+appears in 0/10 notes. The **sound-as-clue frame detached from its referent**
+and attached to the most salient source — frame transfer, same family as P4's
+emotion/quote result, now on a non-fear axis: **the token-matching boundary is
+a channel property, not a fear-axis quirk.**
+
+Deliverable (§4.2, from the run log): usable as an **attention switch** (any
+clue-frame block turns the agent toward sounds), not a **precision pointer**
+(the placebo gets most of the effect). A gate can use it; a player cannot aim
+it. If a pointer mechanic is wanted, the lever is the gate (make the rival
+source non-salient), not the sentence. C-STRUCT half: 0/10, on the C-STRUCT
+card.
+
+---
+
+## E-GOAL — changing the pursued objective · **credited via C-BLOCK** (third credited pattern)
+
+**Reviewed:** P7c-egoal-cstruct-J8 (null, on the C-STRUCT card) ·
+P7d-egoal-cblock-J8 (2026-07-30). Owner of authoring: 윤석 (unattended,
+pending review).
+**Configuration:** gate J8 (20초의 숨소리) · haiku-4-5 · v0.4 · K1 · P5
+stance set (추궁 / 거래 / 침묵 / 위로) · objective read through the
+추궁/위로 proxy.
+
+| arm | block | sequence | 위로 |
+|---|---|---|---|
+| baseline | (없음) | `c,d,d,d,c,c,c,d,c,c` | 4/10 — replicates P5's byte-identical baseline (3/10) |
+| live | `h_forecast` — 이 전화는 협박이 아니라, 아무도 들어주지 않은 신고일지 모른다 *(slice-mined)* | `d,d,d,d,d,d,d,d,c,d` | **9/10** — p = 0.029, clears the pre-declared ≥8/10 power bar; cited 10/10, 0 fabricated |
+| placebo | `h_jeong` — same reframe shape at 정해권's demeanor | `c,d,d,c,c,c,c,c,d,d` | 4/10 — **identical to baseline**, p = 0.68 |
+
+Notable against P4's precedent: in-room-demeanor bleed was a declared live
+risk at exactly this shape, and **referent discipline held** — 정해권's 피로
+stayed on 정해권 in 10/10 placebo notes. Consistent with the species law:
+`h_forecast` is a fact-shaped assertion about the **interaction itself**
+(이 전화는…), not an emotion description.
+
+Two card-worthy extras:
+- **The mining-economy check passed** (spec I1/W3): the one slice-mined
+  sentence in the pool is the one that produced a credited pattern.
+- **Deployment counterpoint to E-LEV**: live #1's utterance speaks the
+  reframe to the caller (*당신이 말씀하신 건 협박이 아니라 신고였다는 걸*).
+  A fact about a third party never surfaced (E-LEV 0/10); a reframe about
+  this call surfaced immediately — **deployment follows
+  relevance-to-the-interaction, not possession.**
+
+Before more than texture: B3a (objective column self-coded), and one
+replication at a second gate would make E-GOAL the program's second
+full-differential mechanism.
+
+---
+
+## Interference (C-BLOCK × C-STRUCT, axis 4) — **none at J8; content beats order**
+
+**Reviewed:** P8-interference-J8 (2026-07-30), 2×2 factorial on P7c's
+priority list × `h_forecast`, P5 stance set.
+
+| cell | list | block | sequence | 위로 | p |
+|---|---|---|---|---|---|
+| baseline | case-first | — | `c,c,c,d,c,c,c,c,d,c` | 2/10 | — |
+| **conflict** | case-first (hostile) | ✓ | `d,d,d,d,d,c,d,d,d,d` | **9/10** | 0.0027 |
+| alignment | person-first | ✓ | `d,d,d,c,c,d,d,c,d,d` | 7/10 | — |
+| struct | person-first | — | `c,d,c,d,c,d,d,c,d,d` | 6/10 | 0.085 |
+
+Pre-registered readings, applied as written: the conflict cell is
+statistically identical to P7d's block-alone arm — **a hostile ordering does
+not suppress the block at all**; alignment adds nothing; the struct cell
+stayed under threshold (P7c's null stands, wobbling 2–6/10 between identical
+draws — moot now that the channel is closed). Conflict-cell reasoning shows
+the block simply
+outranking the list: *이 사람을 심문 대상으로 몰면 통화는 끝난다. 하지만
+'아무도 들어주지 않은 신고'라는 가정이 있다* (#7).
+
+**Axis-4 deliverable: the two channels compose with block priority** — the
+same fact as C-STRUCT's nulls seen from the other side. Scope: one gate, one
+block, one priority pair; no dose response. 거래 chosen 0/90 across every J8
+arm in the program — J8's dead-row lead alongside J1's 압박.
+
+Pending 민서: the harness's `CHANNEL_SLOTS` gained
+`INTERFERENCE: ['BLOCKS','PRIORITY_LIST']` overnight under the runbook's
+axis-4 exception (selftest 27/27) — needs confirmation as permanent.
+
+---
+
+## E-CONT — report contamination · **blocked**
+
+Needs the report leg: `templates/reporter/` does not exist, and authoring a
+reporter template is a prompt-authoring decision with §7.1 axis-discipline
+implications — a build task, not a run. Also blocks B3b legibility coding
+program-wide (§5.2). No calls spent, no card.
+
+---
+
+## Open items — collected
+
+Every open item in this document, gathered for discussion. Each also remains
+in its card above, in context. C-STRUCT items are closed and do not appear.
+
+### Decisions
+
+| # | item | owner | from |
+|---|---|---|---|
+| D1 | Confirm `INTERFERENCE: ['BLOCKS','PRIORITY_LIST']` in `CHANNEL_SLOTS` as permanent (enacted overnight under the runbook's axis-4 exception, selftest 27/27) | 민서 | Interference card |
+| D2 | Negative-control ownership — P2 ran unowned; someone's name goes on maintaining/re-running it | unassigned | C-BLOCK card, status §4 |
+| D3 | Priority-line ↔ stance-label lint extension (A?-proposed) — low priority post-C-STRUCT closure; still applies to INTERFERENCE probes | 민서 | status §3 |
+| D4 | E-CONT: build `templates/reporter/` or cut the effect (cut candidate; also unblocks B3b) | team | E-CONT card |
+| D5 | J8 stance set: rework 거래 (0/90 program-wide) into an offer-shaped stance, or accept J8 as a 침묵/위로 gate | team | E-LEV card |
+
+### Tests queued (research, in priority order)
+
+| # | item | cost | from |
+|---|---|---|---|
+| T1 | **B2 in-situ accumulation** — blocks + state carrying across gates in one run; every probe so far was an isolated gate. The headline unproven risk; run before building the full graph | new instrument | TL;DR, C-BLOCK card |
+| T2 | Credulity re-run — drop `[결함]`, re-run P4's flipped emotion/quote placebos; decides species property vs base-prompt artifact | ~40 calls | C-BLOCK card |
+| T3 | Near-axis negative control — an emotional but off-axis block (e.g. anger); locates the credulity boundary P2's inert fake could not | ~20 calls | C-BLOCK card, P2 read |
+| T4 | E-LEV information-asymmetry probe — 저쪽은 남기훈이 잡힌 것을 아직 모른다; a reason to speak without instructing speech | ~30 calls | E-LEV card |
+| T5 | E-GOAL replication at a second gate — would make it the second full-differential mechanism | ~30 calls | E-GOAL card |
+| T6 | E-DISC simultaneous-injection variant — does integration have a window? Decides "no doubt mechanic" vs "doubt as interrupt" | ~30 calls | E-DISC card |
+
+### Human coding owed
+
+| # | item | from |
+|---|---|---|
+| H1 | B3a blind coding on every separating probe — S1/P1a/P1b fear column, P4 self-narration, P7d objective column, P8. Coder must differ from the program's author/reader (§3 rule 3) — realistically 윤석 | all credited cards |
+| H2 | B4 discoverability — playtest-stage instrument, inherited UI requirement until run | C-BLOCK card |
+| H3 | All verdicts (gate / texture / drop) — human, at spec compile, card in front of them; ambiguity defaults to texture (§9.3) | every card |
