@@ -4,25 +4,29 @@
 > 이 폴더는 계획 문서가 아니라 **측정 기록**이다. 실험 계획은
 > [`docs/dday-mechanism-deep-test.md`](../../docs/dday-mechanism-deep-test.md)에 있다.
 
-## 지금 상태 (2026-07-30)
+## 지금 상태 (2026-07-31 · 검증 프로그램 종료)
 
-**C-BLOCK 채택 · C-STRUCT 중단.** 문장 블록 한 줄을 넣으면 에이전트의 stance가
-`경청 → 공감`으로 9/10 이동했다 (S1, one-sided Fisher `p=0.0000595`). 우선순위
-목록의 **순서**를 바꾸는 조작은 7개 구성·180개 유효 응답에서 목표 방향의 효과가
-없어 중단했다.
+**C-BLOCK 채택 · C-STRUCT 완전 제거 (UI 포함).** 문장 블록 한 줄을 넣으면
+에이전트의 stance가 `경청 → 공감`으로 9/10 이동했다 (S1, one-sided Fisher
+`p=0.0000595`; placebo-controlled·label-independent·negative control clean).
+우선순위 목록 조작은 두 독립 프로그램 — 이 계열 8개 구성·190개 유효 응답,
+overnight 프로그램의 placebo-controlled 4개 probe — 모두에서 목표 방향의
+효과가 없었다.
 
-C-BLOCK은 **채택**됐지만 **검증 완료가 아니다.** placebo control, program-wide
-negative control, blind coding, player-visible 확인이 남아 있다. 대외 문구는
+placebo control(P1a)과 program-wide negative control(P2)은 완료됐다. blind
+coding과 player-visible 확인은 07-30 회의에서 생략을 결정했다
+([회의록](../meetings/2026-07-30-mechanism-close-spec-first.md)). 대외 문구는
 "현재 가장 강한 실측 근거를 가진 기본 메커니즘"까지만 쓴다.
 
 ## 무엇부터 읽나
 
-| 순서 | 문서 | 줄 | 언제 읽나 |
-|---:|---|---:|---|
-| 1 | [MECHANISM-DIRECTION-DECISION.md](MECHANISM-DIRECTION-DECISION.md) | 102 | **여기부터.** 무엇을 만들고 무엇을 안 만드나 |
-| 2 | [MECHANISM-DIRECTION-EVIDENCE.md](MECHANISM-DIRECTION-EVIDENCE.md) | ~450 | 그 결정의 수치·raw·한계. §5는 C-STRUCT 실험 계보 부록 |
-| 3 | [RUNLOG.md](RUNLOG.md) | 611 | 운영 규칙(A#)과 append-only 실행 로그 |
-| 4 | [RUNBOOK-overnight.md](RUNBOOK-overnight.md) | 335 | 직접 run을 돌릴 때의 절차와 명령 |
+| 순서 | 문서 | 언제 읽나 |
+|---:|---|---|
+| 1 | [REPORT.md](REPORT.md) | **여기부터.** 두 프로그램을 통합한 최종 판정 카드 — 메커니즘별 결론·경계 법칙·open item disposition |
+| 2 | [MECHANISM-DIRECTION-DECISION.md](MECHANISM-DIRECTION-DECISION.md) | 방향 결정문 — 무엇을 만들고 무엇을 안 만드나 |
+| 3 | [MECHANISM-DIRECTION-EVIDENCE.md](MECHANISM-DIRECTION-EVIDENCE.md) | 그 결정의 수치·raw·한계. §5는 C-STRUCT 실험 계보 부록 |
+| 4 | [RUNLOG.md](RUNLOG.md) | 운영 규칙(A#)과 append-only 실행 로그 |
+| 5 | [RUNBOOK-overnight.md](RUNBOOK-overnight.md) | 직접 run을 돌릴 때의 절차와 명령 |
 
 `suites/`와 `runs/`는 사람이 읽는 문서가 아니다. suite JSON은 사전등록,
 `runs/*/calls-*.md`와 `metrics-*.json`은 하네스가 생성한 원자료다. 판독은
