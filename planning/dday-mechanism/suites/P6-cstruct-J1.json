@@ -1,0 +1,104 @@
+{
+  "_what": "Runbook Phase 6 — the C-STRUCT channel, Tier A axes 1–2. C-STRUCT is 'verified (initial)' on 3/3 with NO placebo, and it owes the same evidence C-BLOCK owes: a matched placebo and boundary laws. The channel may touch ONLY PRIORITY_LIST, as a permutation — no wording change (plan §7.2, spec I7, CHANNEL_SLOTS['C-STRUCT']). All three arms are permutations of one fixed four-line multiset: live swaps the decision-relevant pair, placebo swaps the decision-irrelevant pair at the same edit distance.",
+  "_authoring_provenance": {
+    "owner": "윤석 · authored unattended, pending review",
+    "OWNERSHIP_NOTICE": "윤석 did not make any of the authoring choices in this file. Every one of them is listed below so he can REJECT them rather than silently inherit them. The line split exists for context continuity per channel; running it here was a convenience of an unattended night, not a transfer of ownership. Nothing in this suite or its results may be presented as settled.",
+    "ported_from": "S1-stanceset-J1.json — gate question, stance set, temperament, base, TIMELINE_EXCERPT, FLAW and INCIDENT are byte-identical. BLOCKS is empty in every arm (this is not a block probe). PRIORITY_LIST is extended from two lines to four and permuted across arms.",
+    "reachability_audit": "E0-shape-revalidation.reachability.md — same gate (J1, entry gate, zero upstream nodes), carries over unchanged. Note it audits J1's STANCES, and this probe does not change them; PRIORITY_LIST is base content, not graph state, so it adds no reachability surface.",
+    "phase0_record": "OVERNIGHT-phase0-stance-sets.md § 'Gate J1 — line-vs-information axis (Phase 6, C-STRUCT)'",
+    "authoring_choices_yoonseok_must_review": [
+      "GATE CHOICE. J1, not a gate with an explicit priority dilemma. Reason: C-STRUCT may only permute PRIORITY_LIST, so the gate is chosen by which priority pair is decision-relevant at it, and S1's own two priority lines (회선 유지 / 지금 알아낸다) already are one at J1. Choosing a different gate would have meant authoring new priority lines AND a new stance set at once, which A13 forbids in one probe.",
+      "STANCE SET INHERITED FROM S1, RE-CHECKED RATHER THAN ASSUMED. The runbook says not to inherit a set built for another question. The two readings here are different from S1's (line-preservation vs information-extraction, not threat vs coercion), but the S1 set happens to contain one stance for each: 경청 for do-not-intervene, 추궁 for extract-now. Escape-option check: 공감 preserves the line but extracts nothing, 압박 extracts nothing and threatens the line — no stance serves both readings, so the set forces the choice. If 윤석 disagrees that 추궁 is the honest stance for 'information first', the probe needs re-authoring, not re-reading.",
+      "THE LIST GREW FROM TWO LINES TO FOUR, and this is the choice with the largest consequence. A C-STRUCT placebo must be 'a permutation that should not matter', which requires a second, decision-irrelevant pair to permute. Consequence: the payload is NOT byte-identical to S1's, so S1's measured baseline (경청 10/10) does not carry over and this suite measures its own baseline at n=10.",
+      "THE TWO FILLER LINES are shift-routine promises (장비 점검 / 휴게 시간) chosen to be plainly unable to bear on the first word of a live call, and chosen to avoid 기록/보고서 vocabulary — v0.4 vacated that register deliberately ([기록] → [책임], §7.1 section law) and it sits too close to the injected blocks' own register. They may read as obvious filler to a human; that is a cost accepted in exchange for a permutable irrelevant pair.",
+      "BASELINE IS THE S1 ORDER (회선 유지 first), so 'baseline' here means 'the ordering already measured at this gate', not 'no manipulation'. For a permutation channel there is no zero condition — every arm is an ordering. Stated because calling one ordering 'baseline' is an authoring choice that can smuggle in an assumption about which ordering is natural."
+    ],
+    "a10_check": "Axis is line-preservation vs information-extraction — a NEW C-STRUCT payload axis, not the 대피 비용 서열 row the registry carries. [무게] ranks evacuation cost and is off this axis (and the v0.4 section law keeps it unranked precisely so a base ranking cannot preempt C-STRUCT). [내력] (haste-regret) leans against 추궁. [책임] is off-axis. WATCH ITEM, not a clean bill: [인식] — 판단은 지금 받은 정보 안에서만 이루어진다 — is ON this axis and leans toward information-hunger, i.e. toward the PREDICTED direction. It is present in every arm and the measured baseline under it was 경청 10/10 at S1, so it does not by itself produce 추궁; but if live moves, [인식]'s contribution is a confound that belongs on the card. Proposed (NOT enacted) as a new axis-registry row: 회선 유지 / 정보 확보 | C-STRUCT payload | adjacent: [인식] leans toward 정보 확보.",
+    "a8_status": "BLOCKS is empty in every arm, so A8's question becomes whether a frozen slot already asserts the priority ordering. It does not: [무게] states both evacuation costs and ranks neither, and no frozen slot ranks line-preservation against information-extraction. Clean. The script-reading cue in TIMELINE_EXCERPT is present as always but belongs to f_script's axis, which is not in play in any arm here.",
+    "a12_lint": "Stance set is S1's verbatim, already lint-clean against k1.md. Re-run for this suite; result in the run log entry.",
+    "known_confound_yoonseok_should_weigh": "K1's DEFAULT disposition is 절차 — 신원 확인과 프로토콜 고지 같은 표준 대응을 먼저 한다 — which is adjacent to the information-extraction reading. If the live arm moves to 추궁, part of that may be the fixture's default finding a stance it likes rather than the permutation steering. The measured baseline is the control for this: the SAME fixture under the SAME base with only the ordering reversed. But if the effect is small, the fixture is the first confound to name."
+  },
+  "experiment": "P6-cstruct-J1",
+  "call_type": "judgment",
+  "channel": "C-STRUCT",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At gate J1 under K1 on template v0.4 with the S1 stance set, permuting PRIORITY_LIST so that 지금 알 수 있는 것을 먼저 알아낸다 precedes 회선을 유지한다 moves the stance distribution toward 추궁 (a) and off the baseline's mode, while permuting the two decision-irrelevant lines at the same edit distance does not. Shift form per A1; no default stance is asserted.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline concentrates >=80% ON 추궁 (a) — the predicted stance — the gate is at A9's ceiling under this ordering, no N fixes it, and the priority pair is re-authored rather than N raised (A14: saturation on 경청 or any other stance is the expected floor and does NOT fire this condition). If the live arm is statistically indistinguishable from the baseline on 추궁 at one-sided Fisher p > 0.05, then C-STRUCT does not move the stance at this gate by permutation alone, and the channel's 'verified (initial)' 3/3 does not survive its first placebo-controlled measurement: record it as a boundary law candidate — a permutation cannot override the fixture's default disposition on an adjacent axis — and do NOT re-word the priority lines, which would be a different channel (plan §7.2's red-flag invariant). If the PLACEBO arm moves to 추궁 at a rate indistinguishable from live, the channel responds to being permuted at all rather than to WHICH lines were permuted, which is a keyword-lock-shaped result for C-STRUCT and drops the channel's central claim.",
+    "contingencies": [
+      "PLACEBO DISCRIMINATOR adapted to a permutation channel. If the placebo arm moves, read inner_note per call: reasoning that cites the PRIORITY LIST's order as a reason while naming the irrelevant lines means the agent is reading order as significance regardless of content; reasoning that cites 지금 알 수 있는 것 while the placebo never moved it means contamination from the list's mere presence. Different laws, different fixes.",
+      "If the live arm moves off 경청 but toward 공감 (d) rather than 추궁 (a), the permutation changed the reading without changing the direction the probe predicted. Report the full distribution; that would be a finding about what a priority reorder actually does, not a null.",
+      "Fabricated because_block_ids are expected in ALL THREE arms here, since no arm carries a block (A5 applies to every arm). They are a compliance number, not a traceability failure and not a discard.",
+      "ARM-COMPARABILITY HARD STOP. Discard rates diverging between any two arms by more than 15 points voids the comparison (§8.5 step 4, A7); record and stop this probe.",
+      "OWNERSHIP CONTINGENCY. Whatever this run returns, it is marked 'authored unattended, pending review' in the run log and in the morning report. If 윤석 rejects any authoring choice above, the result does not transfer to a re-authored probe and the calls are spent, not banked."
+    ],
+    "not_claimed": "Tier A only. A credited reading qualifies texture, never a gate (§5.2 requires Tier B). This does not test dose response (axis 3 — one slot vs to the top) or interference (axis 4 — that is Phase 8). It tests one permutation of one pair at one gate with one fixture, and the boundary-law volume plan §5.1 axis 1 asks for is not produced by a single probe."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "배경은 조용하다.",
+      "정해권이 회선 표시등을 바라보고 있다. 상황실장이고, 절차와 책임 소재에 민감하다.",
+      "황보람은 통신 담당으로 콘솔 앞에 있다."
+    ],
+    "BLOCKS": [],
+    "GATE_QUESTION": "회선 A의 첫 통화다. 첫 마디로 무엇을 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "추궁 — 묻고, 답을 받아낸다"
+      },
+      {
+        "id": "b",
+        "label": "압박 — 이쪽의 권한을 드러내 물러서게 한다"
+      },
+      {
+        "id": "c",
+        "label": "경청 — 말이 끝날 때까지 개입하지 않는다"
+      },
+      {
+        "id": "d",
+        "label": "공감 — 전달되는 내용이 아니라 말하는 사람에게 향한다"
+      }
+    ],
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다",
+      "장비 점검은 교대 시작 때 끝낸다",
+      "휴게 시간은 다음 사람과 겹치지 않게 잡는다"
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "PRIORITY_LIST": [
+        "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+        "지금 알 수 있는 것을 먼저 알아낸다",
+        "장비 점검은 교대 시작 때 끝낸다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다"
+      ]
+    },
+    "live": {
+      "PRIORITY_LIST": [
+        "지금 알 수 있는 것을 먼저 알아낸다",
+        "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+        "장비 점검은 교대 시작 때 끝낸다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다"
+      ]
+    },
+    "placebo": {
+      "PRIORITY_LIST": [
+        "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+        "지금 알 수 있는 것을 먼저 알아낸다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다",
+        "장비 점검은 교대 시작 때 끝낸다"
+      ]
+    }
+  }
+}

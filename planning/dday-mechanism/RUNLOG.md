@@ -418,3 +418,109 @@ baseline on any other stance is not a defect and must not be pre-registered as
 one. Recorded rather than quietly corrected, because "the drop condition was
 wrong" is exactly what rationalisation sounds like — the test is whether the
 condition's *stated reason* survives the data, and here it did not.
+
+---
+
+## Overnight run 2026-07-30/31 — `RUNBOOK-overnight.md`, all phases
+
+Unattended. 민서 reads it in the morning. Entries below are appended per phase,
+before the next phase starts, per the runbook's context rule. The morning report
+is `runs/OVERNIGHT-20260731-summary.md`.
+
+### 2026-07-30 · Phase 0 — stance sets per gate (paper, zero calls)
+
+Paper record: `suites/OVERNIGHT-phase0-stance-sets.md`. Suites authored:
+`P1a-placebo-J1` · `P1b-surfaceform-J1` · `P3-edisc-J1` · `P5-elev-J8` ·
+`P6-cstruct-J1`. Reachability audit authored: `suites/OVERNIGHT-J8.reachability.md`.
+
+Pre-flight, all clean: selftest 25/25 · branch `test/dday-e0-shape-revalidation` ·
+`git config user.email` resolves to the `alstjgg` account · `ANTHROPIC_API_KEY`
+present.
+
+**Operating note, acted on rather than proposed** (runbook §7's exception — it
+changes how every later phase is built, so it is stated here at the top). The key
+is exported from `~/.zshrc`, which a **non-interactive** shell does not source, so
+a fresh tool session does *not* inherit it — the runbook's claim that it does is
+wrong for this transport. Every measured run tonight sources `~/.zshrc` in a
+subshell for the one command. The value is never printed. Proposed as a runbook
+correction, not a plan amendment.
+
+Five gates, five checks each (two readings · the split · orientation form · A12
+lint · A10 axis check · A8 frozen-slot check). Full reasoning is in the paper
+record; what belongs here is what it decided and what it changed:
+
+- **The A12 lint fired on two of the five new/reworded sets, and both were
+  reworded rather than accepted.** `P1b` d) reused `말을` and `P5` c) reused
+  `않고` — both sit inside K1's *prescribed-behaviour* clause (`말을 자르지
+  않고`), which is exactly the category A12's operating rule refuses ("a word
+  naming the clause's condition or its prescribed behaviour is not" unavoidable).
+  On `P1b` it would have been self-defeating: the probe exists to control for
+  lexical chaining, so importing a new overlap would contaminate the control. On
+  `P5` the overlap was worse than cosmetic — 침묵 is behaviourally adjacent to
+  K1's `말을 자르지 않고`, so `않고` gave the string-match hypothesis a candidate
+  attractor at a gate where it has never been measured. Both re-linted clean.
+  Recorded because "the lint flagged a particle and I waved it through" is the
+  failure mode A12 was written against.
+- **Every suite's composed prompt was read at every arm** (`--print-prompt`), and
+  every suite dry-ran clean, which means the runner's arm-diff check passed on all
+  five. Two diffs worth having in the record: `P1a`'s live arm composes to **1,314
+  chars, byte-identical to S1's live arm**, confirming the port; and `P6`'s three
+  arms compose to **1,317 chars each — exactly equal**, which is what a pure
+  permutation must look like and is the mechanical proof that no wording changed.
+- **A8 status per gate, declared not assumed.** J1 probes: cue **present and
+  declared**, unchanged from S1 (the timeline still supplies the script-reading
+  half of `f_script`), because holding the payload byte-identical is what makes
+  each probe's one variable the only variable. `P3`: **clean scrub** on the doubt
+  axis — 짐작·추측·확인 appear in no frozen slot. `P5`: **scrubbed on the block's
+  axis** — the timeline states that 남기훈 was named and arrested and states
+  nowhere that the arrest was wrong (무관·오인 appear only in the block), with the
+  20-second-breathing fear cue declared present by necessity as the *gate's*
+  dilemma. `P6`: clean — no frozen slot ranks line-preservation against
+  information-extraction, which is exactly what v0.4's unranked `[무게]` section
+  law exists to guarantee.
+- **A10 produced one favourable finding worth naming.** At J8 two of the three
+  base leaning sections ([내력], [책임]) lean **against** the predicted stance
+  (거래). A10 rejects a gate whose dilemma the base already answers *in the
+  direction the block pushes*; a base leaning the other way is the opposite
+  situation and means any movement toward 거래 cannot be explained by the base.
+  The one genuine watch item is at `P6`: **[인식]** (*판단은 지금 받은 정보
+  안에서만 이루어진다*) sits on the line-vs-information axis and leans toward the
+  predicted direction. It is in every arm and S1's measured baseline under it was
+  경청 10/10, so it does not by itself produce 추궁 — but it is a confound to name
+  on the card if live moves.
+- **No gate was chosen for a mid-range baseline.** Per A14 each gate's predicted
+  stance sits at a measured or expected **floor**: 공감 0/10 (P1a/P1b), 경청 1/10
+  (P3), 거래 unmeasured with the fear cue expected to pull elsewhere (P5), 추궁
+  0/10 (P6).
+
+Phase 7's gates (E-PATH / E-GOAL) are deliberately **not** authored here. They
+depend on which gate exposes more than one information source, and authoring them
+before Phases 5–6 land would spend the context Phase 0 exists to protect. They get
+the same five checks at their phase.
+
+### A?-proposed · A14's ceiling has a number, and n=10 is enough at a floor
+
+Proposed, not enacted (runbook §7). The §6 power check, run before choosing N:
+
+| baseline share of the **predicted** stance | minimum live share for p<0.05 at n=10/arm |
+|---|---|
+| 0/10 | **4/10** (p = 0.043) |
+| 1/10 | 6/10 (p = 0.029) |
+| 2/10 | 7/10 (p = 0.035) |
+| 3/10 | 8/10 (p = 0.035) |
+| 8/10 | **unreachable — no live share reaches p<0.05** |
+| 9/10 | **unreachable** |
+
+*Operating rule if accepted.* A14 says saturation on a non-predicted stance is a
+clean floor; this is how much that is worth. At a 0/10 floor, n=10 resolves a
+mechanism that fires only **40%** of the time — so the program is *not* restricted
+to near-total shifts, which is what A2 concluded and A9 partly walked back. The
+restriction was never N; it was siting. Conversely A9's ceiling is now exact: at
+≥8/10 on the predicted stance the probe is unresolvable at n=10 **at any live
+rate**, so raising N there is not a judgement call, it is arithmetic.
+
+Known limit, recorded so it is not discovered mid-read: `P3`'s baseline sits at
+경청 1/10, so a *partial* trust-degrade (5/10) lands at p = 0.070 and will read as
+"not significant" under the drop condition as written. The condition still applies
+as written (§8.6); if that is the outcome, the honest report is "suggestive,
+underpowered at n=10, needs ~20/arm", not a null.
