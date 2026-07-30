@@ -1284,3 +1284,21 @@ priority ordering in both directions — orderings neither veto nor amplify it;
 condition conflict between the channels does not materialize at the stance
 level, and not because an escape option absorbed it (거래 0/40).* One gate,
 one block, one pair — generality untested.
+
+### A17 · A12's lexical-chain worry is closed; its operating rule stays in force
+
+Enacted by 민서, 2026-07-31, in review session — accepting the P1b entry's
+proposal. The evidence: P1b reworded all four stance labels (추궁→심문,
+압박→위압, 경청→청취, 공감→교감; neither winning word appears in K1's file) and
+the effect neither weakened nor moved — 교감 0/14 → 16/20, p = 2.2 × 10⁻⁶,
+statistically indistinguishable from the old labels (p = 0.53). Together with
+S1's own argument (공감 absent from K1; the string-match prediction was 경청),
+the three-step lexical-chain hypothesis is refuted, not merely unsupported.
+
+What stays in force from A12, unchanged: labels are behavior orientations with
+glosses, never completed action descriptions; no label reuses the fixture
+temperament's vocabulary (`lint-stances.mjs`); the two competing readings must
+have different stances available. Those are authoring rules, not the refuted
+causal worry — and P1b adds a reason to keep them: label wording measurably
+tunes the baseline and the near-miss structure even when it cannot produce the
+effect (RUNLOG P1b entry; report, "which lever" section).
