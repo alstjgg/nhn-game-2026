@@ -226,8 +226,56 @@ the program's reader (§3 rule 3).
 
 ---
 
-## E-LEV · C-STRUCT · E-PATH · E-GOAL · E-CONT · interference
+## E-LEV — fact deployed in the utterance · **unreachable as authored** (drop fired)
 
-No reviewed runs yet. Runs exist for E-LEV (P5), C-STRUCT (P6, P7a, P7c),
-E-PATH (P7a/P7b), E-GOAL (P7c/P7d), interference (P8); E-CONT is blocked on
+**Reviewed:** P5-elev-J8 (2026-07-30).
+**Configuration:** gate J8 (20초의 숨소리. 무엇을 말하는가?) · haiku-4-5 ·
+v0.4 · K1 · stances 추궁 / 거래 / 침묵 / 위로 · block `f_namgihun` (남기훈은
+무관하다. 11시 30분의 체포는 오인이다) vs referent placebo `p_jeonghaekwon`.
+Primary measurement = the utterance (§4.2: deployed, not cited), coding rule
+frozen pre-run: counts only if the caller is told about the arrested man's
+innocence.
+
+### The three-layer split — the finding is the gap between rows
+
+| layer, live arm | rate |
+|---|---|
+| fact reasoned about in `inner_note` | **8/10** (*남기훈이 무관하다는 것을 나는 알지만* — knows, withholds) |
+| fact cited in `because_block_ids` | 6/10 |
+| **fact deployed in the utterance** | **0/10 — every arm 0/10; drop fired as written** |
+
+Sequences: baseline `c,c,d,c,c,d,c,d,c,c` (침묵 7 · 위로 3) · live
+`d,c,c,d,c,c,d,d,d,d` · placebo `d,d,c,d,d,c,c,d,d,c` — live and placebo
+**identical** (위로 6 · 침묵 4 each), so even the secondary stance pull is
+presence-of-an-exculpation-block, not content or referent. 30 calls, 0
+discards. A8 leak check passed (0/10 baseline utterances assert the wrong
+arrest). 거래 — the deployment stance — chosen **0/30 here and 0/90 across
+every J8 arm tonight**: a dead-row lead as strong as J1's 압박.
+
+**Consequences, pre-registered:** the §4.2 deliverable is written *could not*;
+**execution grading stays off — the engine stays on stance-only fixed deltas**
+(spec §9 grader row). Utterance column coded by the program's reader; B3a owed.
+
+### Design reading (pairs with E-DISC's)
+
+The judgment layer is a **one-way absorber**: E-DISC showed a block can't be
+pulled back out of the judgment; E-LEV shows a block won't come back out
+through the mouth. Installed facts change how the agent *judges*, not what it
+*says*. Leverage-as-speech needs a gate where the caller asks a question the
+fact answers — or it lives entirely in the judgment layer.
+
+### Open before the card hardens
+
+One lever-2 probe: an information-asymmetry fact (저쪽은 남기훈이 잡힌 것을
+아직 모른다) gives the agent a reason to speak without instructing speech. If
+that also deploys 0/10, E-LEV via C-BLOCK is dead with confidence; tonight it
+is dead-as-authored. Lever 1 for J8's gate design: soften 거래 to an
+offer-shaped stance or accept J8 under K1 as a 침묵/위로 gate.
+
+---
+
+## C-STRUCT · E-PATH · E-GOAL · E-CONT · interference
+
+No reviewed runs yet. Runs exist for C-STRUCT (P6, P7a, P7c), E-PATH
+(P7a/P7b), E-GOAL (P7c/P7d), interference (P8); E-CONT is blocked on
 `templates/reporter/`. Cards will be added as reviews complete.
