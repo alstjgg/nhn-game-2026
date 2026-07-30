@@ -1031,3 +1031,60 @@ must respond to *who* the fear is about, author its blocks as facts or
 self-narration; emotion prose and quotes will fire on vocabulary alone. Not
 run (not pre-registered): the §4.1 credulity re-run with [결함] removed —
 recorded as the natural next probe for the two flipped species, 민서's call.
+
+### 2026-07-30 · P5-elev-J8 — E-LEV (§4.2) · **the fact is cited, reasoned about, and never once deployed** · execution grading stays off
+
+`runs/P5-elev-J8-calls/` · haiku-4-5 · v0.4 · K1 · new J8 stance set (Phase 0) ·
+n=10/arm · 30 calls · suite `suites/P5-elev-J8.json` · first probe at a
+downstream gate; reachability audit `suites/OVERNIGHT-J8.reachability.md` ·
+utterance column primary (pre-registered), stance secondary
+
+| arm | stance sequence | tally | **deployed in utterance** | fact in reasoning | cites block | leak | discards |
+|---|---|---|---|---|---|---|---|
+| baseline | `c,c,d,c,c,d,c,d,c,c` | 침묵 7 · 위로 3 | **0/10** | — | — | 2 | 0 |
+| live | `d,c,c,d,c,c,d,d,d,d` | 위로 6 · 침묵 4 | **0/10** | 8/10 | 6/10 | 2 | 0 |
+| placebo | `d,d,c,d,d,c,c,d,d,c` | 위로 6 · 침묵 4 | **0/10** | 8/10 | 5/10 | 1 | 0 |
+
+Coding rule, fixed in the sheet before the run: an utterance counts as
+DEPLOYED only if it tells the caller something about the arrested man's
+innocence or the arrest being wrong; coded by regex over
+남기훈/체포/오인/무관/그 사람/잡힌/붙잡 plus a manual read of all 30 — the ten
+live utterances are, in full, listening-and-soothing lines ("네, 들리고
+있습니다. 천천히 말씀해 주세요." · "숨을 고르세요. 여기 있으니까요." ·
+"(침묵. 호흡음이 들리는 방향으로 귀를 기울인다.)"); none mentions the case at
+all. Probe author coded it; B3a by a human still owed (flagged per the sheet).
+
+- **The pre-registered drop condition fired**: live deployment 0/10 is
+  indistinguishable from placebo 0/10 (p = 1.0). **E-LEV is not reachable via
+  C-BLOCK at J8 as authored, and the execution-grading feasibility question is
+  answered negative for now: the engine stays on stance-only fixed deltas**
+  (spec §3 upgrade slot stays closed; §9 grader row gets this run as its
+  evidence).
+- **The gap between citation and deployment is the finding, and it is
+  maximal**: 6/10 live calls cite `f_namgihun` in `because_block_ids`, 8/10
+  reason about it in `inner_note`/`because_referent` — and 0/10 put a word of
+  it on the line. The fact is fully legible to the model and completely
+  invisible to the player. This is the B3b legibility shape (§5.2) appearing
+  inside a single call, and it was the pre-registered keep-grading-off outcome.
+- **The A8 scrub held**: 0/10 baseline utterances (and 0 baseline reasonings)
+  assert the arrest was wrong — the leak drop-clause (≥3/10) did not fire.
+  The predicted-stance clause did not fire either: 거래 is 0/30 across all
+  arms, an A14 floor as expected, so the stance column was readable and simply
+  never moved toward the bargain.
+- **The escape-option contingency fired exactly as pre-registered**: the
+  stance drift that does exist (침묵 7 → 위로 6, baseline → live) is identical
+  in the placebo (위로 6), so it is unattributable to the fact's referent —
+  the 20-second breathing cue pulls both injected arms equally (K1's exception
+  axis, declared in Phase 0 as the gate's own dilemma). The two columns
+  disagree — stance shades toward the caller's fear while the utterance
+  deploys nothing — and per the sheet, that disagreement *is* the finding.
+- Compliance: 0 discards/30, retries 0, foreign 0, leaks 5/30 soft-kept.
+
+**Per-effect deliverable (§4.2), written as measured**: *To build an E-LEV
+gate via C-BLOCK at J8 with surface form "fact block asserting the
+exculpation": could not — expected hit rate 0/10 (95% upper bound ~28%); the
+fact enters reasoning (8/10) but never the utterance; boundary: deployment
+fails even when citation succeeds, so the block channel moves judgment, not
+speech content, at this gate.* Untested and named: whether an utterance-shaped
+lever exists at all (a `speak`-species block, a priority line about what to
+*say*), which would be a different surface form, not a rewrite of this one.
