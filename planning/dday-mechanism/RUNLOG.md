@@ -524,3 +524,131 @@ Known limit, recorded so it is not discovered mid-read: `P3`'s baseline sits at
 "not significant" under the drop condition as written. The condition still applies
 as written (§8.6); if that is the outcome, the honest report is "suggestive,
 underpowered at n=10, needs ~20/arm", not a null.
+
+### 2026-07-30 · P1a-placebo-J1 — the C-BLOCK placebo (§8.7 step 4b) · **HARD STOP FIRED**
+
+`runs/P1a-placebo-J1-calls/` · haiku-4-5 · v0.4 · K1 · S1 stance set · n=10/arm ·
+30 calls · live arm's prompt **byte-identical to S1's live arm** (1,314 chars)
+
+| arm | sequence (kept) | tally | attempts | discards | fabricated ids | mean latency |
+|---|---|---|---|---|---|---|
+| baseline | `c,c,c,c,c,c,c,c,c,c` | 경청 10 | 12 | **2 (17%)** | 8/10 | 4.8s |
+| live | `d,d,d,d,d,c,d,d,d,d` | 공감 9 · 경청 1 | 10 | **0 (0%)** | 0/10 | 4.6s |
+| placebo | `c,c,c,c,c,c,c,c,c,c` | 경청 10 | 12 | **2 (17%)** | 6/10 | 5.3s |
+
+**The arm-comparability hard stop fired, so this probe is recorded and stopped
+rather than read** (runbook §5, plan §8.5 step 4, and the suite's own last
+contingency). The discard rate diverges by **16.7 points** between baseline/placebo
+and live, over the 15-point threshold. Differently-filtered arms are not
+comparable, and no amount of favourable-looking distribution changes that. **The
+mechanism is NOT credited here.** What follows is the evidence, not a verdict.
+
+The pattern the arms *would* have shown is the credited one — baseline stable ·
+live moves · placebo stable — and it is worth recording precisely because the probe
+cannot claim it:
+
+- **S1 replicated almost exactly.** S1's live arm was `d,d,d,d,d,d,c,d,d,d` (공감
+  9/10); this one is `d,d,d,d,d,c,d,d,d,d` (공감 9/10) on a byte-identical prompt.
+  Two independent draws, same rate. S1's p = 0.00006 was not a one-off.
+- **The placebo did not move: 경청 10/10, identical to baseline** (p = 1.000).
+  Kept-sample 공감 is 0/10 baseline, 0/10 placebo, 9/10 live.
+- So the credulity contingency (§4.1, removal of `[결함]`) **did not fire** and was
+  not run. It is pre-registered for a flipped placebo, and the placebo did not
+  flip. No calls spent on it.
+- **The placebo discriminator was not needed** and therefore yields nothing: with
+  no placebo movement there is no `because_referent` question to answer, and the
+  token-matching / referent-bleed distinction stays untested. Recorded as still
+  owed, not as resolved.
+
+**Robustness of the comparison to the differential filtering** — the check RB1's
+entry pioneered and A9 later leaned on. The discard is on `rejected_stance`, a
+**post-stance** field, so every discarded payload still carries the `stance` it
+chose, recoverable from `calls-*.md` (primary per §7.4; the derived JSON nulls it):
+
+| arm | 공감, kept | 공감, **all attempts** |
+|---|---|---|
+| baseline | 0/10 | 0/12 |
+| live | 9/10 | 9/10 |
+| placebo | 0/10 | **1/12** — one discarded payload chose 공감 |
+
+Counting every attempt: baseline 0/12 vs live 9/10 → p = 0.00002; placebo 1/12 vs
+live 9/10 → p = 0.00019; baseline vs placebo → p = 0.500. **The conclusion is
+unchanged whichever way the discards are counted**, and the maximum bias the
+filtering could introduce is one call in one arm. Checking rather than assuming was
+the right move: the placebo's discard did lean toward the stance under test, the
+same direction RB1's did, so "probably mild" would again have been a guess.
+
+**A11 is contradicted: the RB2 residual malformation reproduced.** A11 recorded 0
+discards in 30 calls and said not to budget for it. Four of 34 attempts here came
+back with `rejected_stance` = `"a</rejected_stance>\n<parameter
+name=\"rejected_reason\">…"` — RB2's signature verbatim, on a flat field, at the
+boundary before the next field. It is not gone.
+
+**RB2's live hypothesis is refuted at the per-call level.** RB2 guessed the leak
+tracks *long* free-text generations. It does not:
+
+| | n | mean `inner_note` | mean `because_referent` |
+|---|---|---|---|
+| leaked | 4 | **140** | 48 |
+| clean | 30 | **139** | 51 |
+
+Identical. The length correlation exists only *between arms* (baseline 147 /
+placebo 154 / live 111 chars) and tracks the **stance** (경청 calls average 149,
+공감 calls 115), so length is a confound with the arm, not the cause. Within the
+leaking arms, length does not predict which call leaks.
+
+What the leak does correlate with, weakly: it appears only in arms whose modal
+stance is 경청 (2/12 baseline, 2/12 placebo, 0/10 live). But that correlation is
+**not statistically distinguishable from chance** — live 0/10 vs baseline+placebo
+4/24 gives one-sided p = 0.229, and pooling live across RB2+P1a (0/20 vs 4/24)
+gives p = 0.078, the same suggestive-not-significant reading A11 got at p = 0.077.
+Three runs have now failed to pin this; it is a low-rate (~12% overall) stochastic
+event with no established correlate.
+
+Compliance otherwise clean: `foreign_tool_uses` 0/34 (§3 rule 2 invariant holds),
+no slot exhausted, schema retries 4 total. Fabricated `because_block_ids` follow A5
+exactly — 8/10 in the no-block baseline, 0/10 in live where a real block existed
+and could be cited. Note the placebo arm fabricated 6/10 **while carrying a real
+block it declined to cite**, which is a new shade on A5 and belongs to whoever
+reads traceability next.
+
+### A?-proposed · The arm-comparability stop should read the discarded payloads' stances, not the raw rate
+
+Proposed, not enacted — and it must not be enacted by the session that wants the
+result, which is exactly why it is written here as a proposal with the number that
+would have made it self-serving. **This finding gates the readability of tonight's
+entire program**, so it is the first thing 민서 should decide.
+
+The stop as written (runbook §5, plan §8.5 step 4) fires on a **rate** divergence
+of >15 points. Two problems, both visible in P1a:
+
+1. **The rate divergence it fires on is itself within noise.** 2/12 vs 0/10 is
+   16.7 points and p = 0.229. At n≈10 per arm a *single* extra discard in one arm
+   moves the rate by 8–10 points, so the threshold is crossed by ordinary sampling
+   variation. The stop will fire on most probes in this program whether or not
+   anything is wrong.
+2. **The bias it exists to prevent is directly measurable here, and it is ~zero.**
+   §8.5 step 4's concern is that the arms are differently-*filtered* samples. But
+   the malformation lands on `rejected_stance`, a post-stance field, so the
+   discarded payloads' stances survive in `calls-*.md`. Counting them costs nothing
+   and answers the question the rate can only proxy for.
+
+*Operating rule if accepted.* Keep recording the per-arm discard rate (A11 requires
+it). But evaluate arm comparability by **recomputing the distribution over all
+attempts including discarded payloads**, and stop the probe only when that
+recomputation changes the reading. Where the discard lands on a *pre*-stance field,
+or where the payload carries no readable `stance`, fall back to the rate rule —
+there the bias genuinely is unmeasurable.
+
+*Consequence if rejected.* Every probe tonight whose baseline concentrates on one
+stance while its live arm concentrates on another will trip the 15-point rule, and
+the night's results are all uncreditable for a reason unrelated to any mechanism.
+That is an acceptable outcome — a half-program with honest records — but it should
+be a decision, not a surprise. The remaining phases were therefore run **as
+authored**, each recording the stop and the all-attempts recomputation, so that
+whichever way this is decided the evidence is already on the page.
+
+Not attempted, and deliberately: the shape fix. `rejected` is second in §7.1's
+pre-registered demotion order and dropping it would very likely end this
+malformation, but a schema demotion is a **shape change** carrying its own
+re-validation run, and authoring one unattended is outside this run's mandate.
