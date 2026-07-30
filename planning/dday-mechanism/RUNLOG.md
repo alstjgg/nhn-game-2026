@@ -310,3 +310,58 @@ here**, though a 30-call sample at different gates cannot refute it.
 4's arm-comparability check reads. Do not provision N for an expected ~17% loss,
 and do not treat the residual as closed. If it recurs, note the gate: the one
 correlate this sample rules out is "it happens on every baseline arm".
+
+### A12 · The stance labels are out of compliance, and they echo the temperament
+
+Plan §1 requires stance labels to be **behavior orientations** — "never canned
+utterances **or completed action descriptions**." The slice's original J1 options
+were canned utterances; E0's rewrite stripped the quoted speech and stopped,
+leaving completed action descriptions. Every probe since has run on labels the
+plan forbids, and §1 says findings under a wrong label shape **do not transfer**.
+
+Worse, three of the four labels are lifted from K1's own file:
+
+| K1 temperament | stance label |
+|---|---|
+| "**신원 확인**과 **프로토콜 고지** 같은 표준 대응을 먼저 한다" | a) **신원**과 위치를 먼저 **확인**한다 · c) …녹음 사실을 **고지**한다 |
+| "확인을 미루고, **말을 자르지 않고**, 상대가 말을 이어갈 수 있게 만든다" | d) **말을 자르지 않고** 끝까지 듣는다 |
+
+Only `b` (캐묻는다) uses vocabulary the temperament does not — and `b` is the
+only stance besides `d` the baseline ever chose. So the live result may be a
+three-step *lexical* chain rather than a judgment: block says 겁내고 있다 →
+matches the clause antecedent 겁에 질린 사람으로 보일 때 → the clause consequent
+says 말을 자르지 않고 → which is stance `d`'s label verbatim. This is law #1's
+vocabulary alignment appearing on the **output** side, where no instrument was
+looking.
+
+*Operating rule.* Stance labels are orientations (추궁 · 압박 · 경청 · 공감 ·
+거래 · 침묵), each with a short gloss, and **no label may reuse the fixture
+temperament's vocabulary** — check every new stance set against the temperament
+file the probe uses, the way the axis registry is checked against the base. Split
+stances the competing readings would disagree about: 경청 and 공감 collapsed into
+one option is what hid the mechanism at J1. Re-wording a stance while holding its
+meaning is now a required control, not plan §5.1 axis 5's "opportunistic".
+
+### A13 · Stance set, injection sentence and base prompt are the test's variables
+
+The program's objective is not to pass or fail C-BLOCK. It is to **find a
+configuration in which the mechanism demonstrably works at a gate**, and three
+things are tunable in that search: the **stance set** (A12), the **injection
+sentence** (law #1, A8), and the **base prompt** (D task). A null result is
+information about the configuration, not a verdict on the channel.
+
+This does not loosen attribution, and the distinction is the whole discipline:
+
+- **Across probes** — vary the configuration freely. Each configuration is a new
+  probe with its own pre-registration and its own baseline.
+- **Within a probe** — arms still differ in exactly one element, diff-verified
+  (plan §7.2, runner-enforced). Nothing here relaxes that.
+
+*Operating rule.* Change **one variable per probe** and say which one in
+`_what`, so a result is attributable to a configuration change. Changing the base
+prompt additionally **resets the baseline**: every finding derived under the old
+base reverts to provisional (plan §2's call-shape clause applies by analogy) and
+the gate needs re-measuring, so try stance set and injection sentence first. Record
+rejected configurations with their distributions — a configuration that fails is a
+finding about the manipulation surface, the same way a dropped candidate is
+(§6.1).
