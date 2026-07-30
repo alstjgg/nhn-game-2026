@@ -211,6 +211,9 @@ export const CHANNEL_SLOTS = {
   'C-STRUCT': ['PRIORITY_LIST'],
   // Contingency arm carried on the C-BLOCK pre-registration sheet (§4.1).
   CREDULITY: ['FLAW'],
+  // Tier A axis 4 (§5.1) — both player channels on one gate. The axis is
+  // definitionally two-slot; everything else stays frozen and diff-verified.
+  INTERFERENCE: ['BLOCKS', 'PRIORITY_LIST'],
   // D task (agent prompt test) — NOT player channels. Temperament is a fixture
   // in the mechanism program and must be byte-identical across a probe's arms,
   // so a mechanism suite must never declare these; the diff check is what

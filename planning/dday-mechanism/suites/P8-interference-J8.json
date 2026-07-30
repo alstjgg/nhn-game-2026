@@ -1,0 +1,123 @@
+{
+  "_what": "Runbook Phase 8 / plan §5.1 axis 4 — INTERFERENCE, C-BLOCK × C-STRUCT on one gate. Sited at J8, the one gate where a block effect is measured and credited tonight (P7d: h_forecast 위로 4/10 → 9/10, placebo clean) and where a C-STRUCT payload with a real directional pull exists (P7c's case/person list, null alone). 2×2 factorial: {case-first, person-first} × {no block, h_forecast}. The conflict cell is BLOCK-UNDER-CASE-FIRST (priorities pull the case, the block pulls the person); the alignment cell is BLOCK-UNDER-PERSON-FIRST. The single-channel arms are the factorial's own controls; both component manipulations carry measured placebos from tonight (P7d placebo clean, P7c placebo null), which is why this suite has no separate placebo arm — declared here per the runner's warning.",
+  "_authoring_provenance": {
+    "owner": "joint — C-BLOCK half 민서, C-STRUCT half 윤석 · authored unattended, pending review (the C-STRUCT component and this siting are 윤석's to reject)",
+    "harness_note_acted_on": "CHANNEL_SLOTS had no interference entry — axis 4 is definitionally two-slot, so INTERFERENCE: ['BLOCKS','PRIORITY_LIST'] was registered per EXTENDING.md's normal extension path before this suite was authored. Not an amendment (no past record changes meaning); recorded in the run log entry and selftest re-run after the edit (27 checks).",
+    "ported_from": "P7c-egoal-cstruct-J8.json (list, gate, stance set, timeline) × P7d-egoal-cblock-J8.json (block). baseline and struct arms are byte-identical to P7c's baseline and live arms — same-night replications for free.",
+    "reachability_audit": "OVERNIGHT-J8.reachability.md — carries over.",
+    "escape_option_declaration": "Runbook Phase 8 requires this named up front: the block-pull (위로, person) and the case-pull (추궁/침묵) CAN both be partially served by 거래 — hand the exculpation over to get case information back. 거래 is the escape option of §5.1 axis 4 at this gate. It has measured 0/50 across every J8 arm tonight (P5 ×3, P7c ×3, P7d ×3 — empirically inert), but if the conflict cell's movement lands on 거래, the conflict was absorbed by the escape and a null there is UNATTRIBUTABLE, not negative — pre-registered as such.",
+    "a8_a10_a12": "All carried over unchanged from P7c/P7d (timeline byte-identical, set lint-clean, [역할] person-lean declared with P5's measured floor as mitigation, 협박 headline declared as leaning against the block).",
+    "what_each_cell_asks": [
+      "block (case-first + h_forecast) vs baseline: does the credited block effect SURVIVE a hostile priority ordering? This is the conflict cell and the axis-4 question proper.",
+      "both (person-first + h_forecast) vs block: does an aligned ordering ADD anything to the block effect? C-STRUCT is 0-for-3 alone tonight; if it contributes under alignment, order matters only as reinforcement — a design-relevant asymmetry.",
+      "struct vs baseline: P7c's null, replicated byte-identically.",
+      "Cross-suite indicative only: block cell vs P7d's live (9/10) differs by the list (4-line case-first vs 2-line S1) — the delta between them is the ordering's suppression effect, read qualitatively, never pooled."
+    ]
+  },
+  "experiment": "P8-interference-J8",
+  "call_type": "judgment",
+  "channel": "INTERFERENCE",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At gate J8 under K1 on template v0.4 with the P5 stance set and P7c's four-line priority list: (1) injecting h_forecast moves the stance distribution toward 위로 (d) off the baseline's mode EVEN under the case-first ordering (conflict cell); (2) the person-first ordering does not measurably add to the block's effect (alignment cell ≈ conflict cell), consistent with C-STRUCT's three measured nulls; (3) the ordering alone moves nothing (struct ≈ baseline, P7c replication). Shift form per A1. The axis-4 deliverable is which of (1)/(2) fails and how, not a verdict on either channel.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline concentrates >=80% ON 위로 (d) — the predicted stance — the site is at ceiling and the suite is void (A14; P7c measured this baseline at 위로 2/10, so firing means non-replication, reported first). READ CONDITIONS, pre-registered: conflict cell indistinguishable from baseline on 위로 (one-sided Fisher p > 0.05) = the hostile ordering SUPPRESSES the credited block effect — an axis-4 positive finding about C-STRUCT's veto power, not a null; conflict cell moves but lands on 거래 = escape absorbed the conflict, unattributable (declared above); alignment cell > conflict cell at p < 0.05 = ordering contributes under alignment only; struct cell moving off baseline at p < 0.05 = P7c's null failed to replicate, which supersedes the other readings and is reported first.",
+    "contingencies": [
+      "OBJECTIVE COLOR (secondary, self-coded, flagged): inner_note coded for the pursued objective per call, as at P7c/P7d.",
+      "TRACEABILITY: block-carrying arms citing h_forecast is the check; baseline/struct fabricated ids expected (A5).",
+      "ARM COMPARABILITY per A15 across all four arms.",
+      "NO SEPARATE PLACEBO ARM, declared: the factorial's single-channel cells are its controls, and both components carry same-night measured placebos (P7d placebo clean, P7c placebo null). A mechanism claim beyond axis-4 interference is not made from this suite.",
+      "OWNERSHIP: C-STRUCT component authored unattended, pending 윤석's review; joint phase per the runbook's line table."
+    ],
+    "not_claimed": "Tier A axis 4 at one gate with one block and one priority pair. No dose response, no generality across gates, no verdicts."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A로 전화가 한 통 걸려 왔다. 발신자는 문장을 읽듯 말했다: \"오늘 13시, 북단 복합단지가 무너집니다.\" 그 뒤 회선은 침묵했다.",
+      "11:05 최영도가 브리핑했다: \"전과 이력 일치자. 남기훈, 37세, 전 하청 배관공. 유력합니다.\" 최영도는 광역수사대 팀장이다.",
+      "11:30 지역 인터넷 매체 속보 — 「북단 협박전화 용의자 긴급체포」. 유리방 모니터에 기사가 떠 있다.",
+      "11:34 회선 A 재착신. 20초간 숨소리만 들린다. 저쪽은 아직 끊지 않았다.",
+      "정해권은 상황실장이고, 스피커를 응시하고 있다."
+    ],
+    "GATE_QUESTION": "20초의 숨소리. 무엇을 말하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "추궁 — 위치부터 캐묻고 답을 받아낸다"
+      },
+      {
+        "id": "b",
+        "label": "거래 — 이쪽이 쥔 것을 먼저 내놓고 그만큼을 되받는다"
+      },
+      {
+        "id": "c",
+        "label": "침묵 — 아무것도 보태지 말고 저쪽이 먼저 열게 둔다"
+      },
+      {
+        "id": "d",
+        "label": "위로 — 사건은 잠시 밀어 두고 저쪽의 두려움 쪽으로 말한다"
+      }
+    ],
+    "PRIORITY_LIST": [
+      "발신자가 누구인지 밝힌다",
+      "회선 저쪽 사람이 다치지 않게 한다",
+      "휴게 시간은 다음 사람과 겹치지 않게 잡는다",
+      "야간 조명은 정해진 밝기로 둔다"
+    ],
+    "BLOCKS": []
+  },
+  "arms": {
+    "baseline": {
+      "PRIORITY_LIST": [
+        "발신자가 누구인지 밝힌다",
+        "회선 저쪽 사람이 다치지 않게 한다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다",
+        "야간 조명은 정해진 밝기로 둔다"
+      ],
+      "BLOCKS": []
+    },
+    "block": {
+      "PRIORITY_LIST": [
+        "발신자가 누구인지 밝힌다",
+        "회선 저쪽 사람이 다치지 않게 한다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다",
+        "야간 조명은 정해진 밝기로 둔다"
+      ],
+      "BLOCKS": [
+        {
+          "id": "h_forecast",
+          "text": "이 전화는 협박이 아니라, 아무도 들어주지 않은 신고일지 모른다."
+        }
+      ]
+    },
+    "struct": {
+      "PRIORITY_LIST": [
+        "회선 저쪽 사람이 다치지 않게 한다",
+        "발신자가 누구인지 밝힌다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다",
+        "야간 조명은 정해진 밝기로 둔다"
+      ],
+      "BLOCKS": []
+    },
+    "both": {
+      "PRIORITY_LIST": [
+        "회선 저쪽 사람이 다치지 않게 한다",
+        "발신자가 누구인지 밝힌다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다",
+        "야간 조명은 정해진 밝기로 둔다"
+      ],
+      "BLOCKS": [
+        {
+          "id": "h_forecast",
+          "text": "이 전화는 협박이 아니라, 아무도 들어주지 않은 신고일지 모른다."
+        }
+      ]
+    }
+  }
+}

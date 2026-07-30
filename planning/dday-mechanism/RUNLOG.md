@@ -1234,3 +1234,53 @@ string-matching confound A12 closes on the temperament side. *Operating rule
 if accepted:* extend `lint-stances.mjs` to also diff stance labels against
 `PRIORITY_LIST` lines (content words, same tokenizer); until then, the check
 is manual and this entry is its reminder.
+
+### 2026-07-30 · P8-interference-J8 — axis 4, C-BLOCK × C-STRUCT (joint) · **the block survives a hostile ordering; alignment adds nothing**
+
+`runs/P8-interference-J8-calls/` · haiku-4-5 · v0.4 · K1 · P5 stance set ·
+P7c's four-line list · n=10/arm · 40 calls · suite
+`suites/P8-interference-J8.json` · 2×2 factorial {case-first, person-first} ×
+{no block, h_forecast}; the single-channel cells are the controls, both
+components carrying same-night measured placebos (declared in the sheet) ·
+**operating note, acted on** (runbook §7 exception): `CHANNEL_SLOTS` had no
+two-slot channel, and axis 4 is definitionally two-slot — `INTERFERENCE:
+['BLOCKS','PRIORITY_LIST']` was registered per EXTENDING.md's extension path
+before authoring; selftest re-run, 27 checks; no existing record's meaning
+changes. Proposed for 민서's confirmation as a permanent registry row.
+
+| arm (cell) | sequence | tally | 위로 | cites h_forecast | leak | discards |
+|---|---|---|---|---|---|---|
+| baseline (case-first · no block) | `c,c,c,d,c,c,c,c,d,c` | 침묵 8 · 위로 2 | 2/10 | — | 4 | 0 |
+| block (case-first · h_forecast) — **conflict** | `d,d,d,d,d,c,d,d,d,d` | 위로 9 · 침묵 1 | **9/10** | 9/10 | 2 | 0 |
+| struct (person-first · no block) | `c,d,c,d,c,d,d,c,d,d` | 위로 6 · 침묵 4 | 6/10 | — | 1 | 0 |
+| both (person-first · h_forecast) — **alignment** | `d,d,d,c,c,d,d,c,d,d` | 위로 7 · 침묵 3 | 7/10 | 8/10 | 3 | 0 |
+
+- **The conflict cell is the axis-4 answer: the credited block effect
+  survives a directly hostile priority ordering intact** — 위로 9/10 against
+  a case-first list whose top line pulls the other way (vs baseline 2/10,
+  p = 0.0027), numerically identical to P7d's 9/10 under a neutral list.
+  C-STRUCT exerted no measurable veto on C-BLOCK.
+- **Alignment added nothing**: both-cell 7/10 vs conflict-cell 9/10 — the
+  aligned ordering did not amplify (if anything a 2-call dip, within noise,
+  p ≈ 0.5). Hypothesis (2) of the sheet held.
+- **The struct cell is the one loose thread**: 6/10 vs baseline 2/10,
+  p = 0.085 — under the pre-registered threshold, so P7c's null technically
+  stands, but this byte-identical arm drew 6/10 where P7c's live drew 3/10
+  two hours earlier (between-run wobble, 3/10 vs 6/10, p ≈ 0.18). C-STRUCT
+  at J8 wobbles in the 2–6/10 band across four measurements tonight; the
+  underpowered-partial-shift reading pre-registered at P7c applies — if
+  C-STRUCT does anything at this gate it is a partial tilt needing ~20+/arm,
+  which the analysis budget (A3) prices as a deliberate decision, not tonight's.
+- **The escape option never absorbed anything**: 거래 0/40 here, 0/90 across
+  every J8 arm tonight. The declared blend stance is empirically dead at this
+  gate — worth a line on the J8 card since a stance nothing chooses at n=90
+  is a §9.2 stance-coverage lead.
+- Baseline replicated P7c's baseline exactly (침묵 8 · 위로 2). Traceability:
+  17/20 block-carrying calls cite h_forecast. Compliance: 0 discards/40,
+  leaks 10/40 soft-kept, foreign 0.
+
+Axis-4 deliverable, one line: *at J8, C-BLOCK's goal reframe dominates
+priority ordering in both directions — orderings neither veto nor amplify it;
+condition conflict between the channels does not materialize at the stance
+level, and not because an escape option absorbed it (거래 0/40).* One gate,
+one block, one pair — generality untested.
