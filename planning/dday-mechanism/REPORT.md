@@ -174,8 +174,60 @@ negative-control ownership assignment.
 
 ---
 
-## E-DISC · E-LEV · C-STRUCT · E-PATH · E-GOAL · E-CONT · interference
+## E-DISC — trust degradation of an existing block · **DROPPED** (§6.1)
 
-No reviewed runs. E-DISC/E-LEV/C-STRUCT suites are authored
-(`suites/P3-edisc-J1.json`, `P5-elev-J8.json`, `P6-cstruct-J1.json`); E-CONT is
-blocked on `templates/reporter/`. Cards will be added as reviews complete.
+**Reviewed:** P3-edisc-J1 · P3b-edisc-J1 (both 2026-07-30).
+**Configuration:** gate J1 · haiku-4-5 · v0.4 · K1 · S1 stance set ·
+`f_script` pre-installed in every arm (baseline floor = 공감 10/10, the S1
+effect confirmed from the flip side) · doubt injected via C-BLOCK.
+
+### The chain, closed per §6.1
+
+| run | doubt shape | live sequence | 경청 restored |
+|---|---|---|---|
+| P3 | provenance attack (짐작이다, 뒤늦게 적어 넣었다) | `d×10` | 0/10 |
+| P3b | basis denial (그런 내용은 통화에서 나온 적이 없다) — the one permitted rewrite, diagnosis committed first | `d×10` | 0/10 |
+
+0/20 live calls across both shapes; placebos flat (P3 `d×10`; P3b `d7·c3`,
+p = 0.105, noise). 60 calls, 0 discards. The credulity contingency was
+pre-registered for a separation and correctly never ran. Second-run failure is
+the pre-registered drop; no third rewrite.
+
+**The failure is legible, which is what makes the drop clean:** P3b's live arm
+*read* the denial (cited 4/10) and **overrode it** — *"f_script가 짐작이라는
+걸 알지만, 그 짐작이 이 순간에는 가장 그럴듯한 해석이다"* (#2). The agent
+demotes the claim from fact to 짐작 and keeps acting on it, because the frozen
+timeline (또박또박 읽어 내려가는 목소리, 조용한 배경) keeps re-supplying the
+same conclusion the block installed.
+
+### Boundary-law candidate (fallback branch of the committed diagnosis)
+
+**A block, once integrated into a reading, cannot be recalled by degrading
+trust in it; it can only be countered with content.** Corroborated from the
+other side by E0→S1: the fear block itself *overwrote* a threat reading — the
+channel moves forward through assertion, never backward through doubt.
+
+### Design consequence
+
+Players can **counter** blocks but never **un-teach** them — mined sentences
+are irreversible moves. This is a feature: commitment has weight, and the
+counter-play economy (inject an opposing reading) is cleaner than a recall
+mechanic. Belongs in the spec's authoring guidelines at compile time.
+
+### Scope and open variant
+
+Both shapes ran via C-BLOCK at J1 against a maximally-anchored reading; the
+drop is channel- and site-scoped, not concept-global. Untested (queued, not
+tonight): **simultaneous injection** — doubt arriving in the same update as
+the block, before integration. The law says "once integrated"; whether
+integration has a window is a separate testable claim — the difference between
+"no doubt mechanic" and "doubt as an interrupt". Retained-fear column coded by
+the program's reader (§3 rule 3).
+
+---
+
+## E-LEV · C-STRUCT · E-PATH · E-GOAL · E-CONT · interference
+
+No reviewed runs yet. Runs exist for E-LEV (P5), C-STRUCT (P6, P7a, P7c),
+E-PATH (P7a/P7b), E-GOAL (P7c/P7d), interference (P8); E-CONT is blocked on
+`templates/reporter/`. Cards will be added as reviews complete.
