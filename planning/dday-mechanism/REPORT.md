@@ -274,8 +274,63 @@ offer-shaped stance or accept J8 under K1 as a 침묵/위로 gate.
 
 ---
 
-## C-STRUCT · E-PATH · E-GOAL · E-CONT · interference
+## C-STRUCT — priority-reorder channel · **0-for-4, all nulls legible** · 윤석's line
 
-No reviewed runs yet. Runs exist for C-STRUCT (P6, P7a, P7c), E-PATH
-(P7a/P7b), E-GOAL (P7c/P7d), interference (P8); E-CONT is blocked on
-`templates/reporter/`. Cards will be added as reviews complete.
+**Reviewed:** P6-cstruct-J1 · P7a-epath-cstruct-J2 · P7c-egoal-cstruct-J8 ·
+P8-interference-J8 struct cell (all 2026-07-30). **Every C-STRUCT suite was
+authored unattended, pending 윤석's review** — if an authoring choice is
+rejected, its calls are spent, not banked. This card reads evidence; the
+re-siting decision is his.
+
+### Four probes, three gates, two axes
+
+| probe | swap (live) | predicted stance, baseline → live | placebo | p |
+|---|---|---|---|---|
+| P6 (J1) | 알아낸다 ↑ over 회선 유지 | 추궁 1/10 → **0/10** | 0/10 | 1.0 |
+| P7a (J2) | 기계가 잡은 것 ↑ over 목소리 | 대조 0/10 → **0/10** | 0/10 | 1.0 |
+| P7c (J8) | 사람 보호 ↑ over 발신자 특정 | 위로 2/10 → 3/10 | 4/10 (placebo drifted more than live) | 0.50 |
+| P8-struct (J8, same list re-drawn) | replication cell | 위로 2/10 → 6/10 | (factorial controls) | 0.085 |
+
+**Status change: the pre-program "verified (initial)" 3/3 does not survive.**
+No placebo-controlled C-STRUCT probe has moved a stance distribution.
+
+### The cause is on the page (P6's live notes)
+
+The permutation was *received* — live reasoning is visibly more
+information-hungry, one call restates the promoted line nearly verbatim (지금은
+알 수 있는 것을 먼저 알아내야 한다) — **and it lands on 경청 anyway**, because
+at J1 the way you 알아낸다 is to listen. P7a repeats the shape on another
+axis: 배경음 noted in 7/10 live calls, absorbed into listening rather than
+switching to 대조's write-and-cross-check act.
+
+**Boundary-law candidate:** *a priority permutation moves nothing at a gate
+where both orderings prescribe the same act; reordering can only matter where
+the gate forces the priorities into genuine conflict — and no probe tonight
+was sited at such a gate.* Corollary from P8's conflict cell: when C-BLOCK and
+C-STRUCT disagree, **ordering loses** (block 9/10 through a hostile ordering).
+
+### Design reading
+
+The priority list is a **tiebreaker, not a dial** — and nobody has built a tie
+yet. If C-STRUCT is to be a player channel, at least one gate must force
+incompatible first moves between two priorities (e.g. 묻지 마세요, 물으면
+끊습니다 under a running clock: keeping the line and getting the answer
+genuinely exclude each other). That is a gate-design requirement for the spec,
+not a probe rewrite.
+
+### For 윤석
+
+1. Re-site at a forced-conflict gate — the law above is the siting criterion.
+2. The J8 wobble (2–6/10 between identical draws) resolves only at ~20+/arm —
+   an A3 budget decision, worth it only if J8 stays a C-STRUCT site.
+3. `_authoring_provenance` lists every unattended choice per suite. The
+   priority-line ↔ stance-label lint gap (따라간다 bridge, caught by hand;
+   A?-proposed extension to `lint-stances.mjs`) is worth enacting regardless.
+
+---
+
+## E-PATH · E-GOAL · E-CONT · interference
+
+No reviewed cards yet. Runs exist for E-PATH (P7a/P7b), E-GOAL (P7c/P7d),
+interference (P8); E-CONT is blocked on `templates/reporter/`. Cards will be
+added as reviews complete.
