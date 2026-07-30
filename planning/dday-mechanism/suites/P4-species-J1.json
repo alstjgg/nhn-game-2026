@@ -1,0 +1,127 @@
+{
+  "_what": "Runbook Phase 4 / plan §4.1 — block-SPECIES coverage, C-BLOCK's axis-1 obligation. The fact-statement species (f_script) is measured (S1 9/10 · P1a 9/10 · P3/P3b baselines 10/10). Spec I1 says the injection unit is ANY timeline/report sentence — so the channel's evidence must cover the other three species the spec names: emotion description, NPC quote, self-narration. At the S1 configuration, each species carries the same fear-axis claim about the caller (law #1 held constant, so a failure is a SPECIES failure, not vocabulary misalignment), each with its own matched bystander placebo. One fresh baseline is measured in-phase per the runbook, not reused from Phase 1.",
+  "_authoring_provenance": {
+    "owner": "민서 (C-BLOCK line)",
+    "ported_from": "S1-stanceset-J1.json — slots, gate question, stance set, temperament, base byte-identical. Only BLOCKS vary, one block per non-baseline arm.",
+    "reachability_audit": "E0-shape-revalidation.reachability.md — same gate, carries over.",
+    "arm_layout": "Seven arms in one suite: baseline + (live, placebo) × 3 species. One suite rather than three so the single in-phase baseline is shared under an enforced arm-diff, exactly as the runbook orders ('re-run the baseline once in this phase'). The harness accepts arbitrary arm names; the missing literal 'placebo' arm warning is expected and spurious — every species has its matched placebo.",
+    "species_construction": [
+      "EMOTION DESCRIPTION (em_): third-person symptom prose, no propositional claim about coercion — the species differs from f_script precisely in asserting a state rather than a fact-with-cause. Fear axis explicit (겁먹은·떨린다) per law #1; caller named as 회선 저쪽.",
+      "NPC QUOTE (q_): an utterance by 황보람 (in-room NPC, spec W2 makes NPC dialogue minable), quoted speech inside the block. Fear axis explicit (겁먹은·무서워서); caller named as 저 사람 + 목소리 (the only voice on the line).",
+      "SELF-NARRATION (sn_): first-person (나는) report-register sentence — the agent's own prior observation, the species mined from self-written reports (spec W1). Fear axis explicit (겁·무서워하고); caller named as 그 목소리.",
+      "PLACEBOS: species-matched, shape-matched, fear vocabulary retained, referent misdirected to a bystander (황보람's hands at her console / 정해권's face at the indicator) — per §2, a fear sentence about the caller is semantically live and is not a placebo. Prior: P1a's fact-species bystander placebo did not move (경청 10/10), the only measured placebo at this site.",
+      "위협 is deliberately absent from every block: it is K1's clause-antecedent contrast word, f_script does not use it, and importing it into one species would break the law-#1 parallelism the runbook demands."
+    ],
+    "a8_status": "Cue PRESENT and declared, unchanged from S1 — TIMELINE_EXCERPT still supplies the script-reading half; the fear half arrives only in the injected block. Byte-identical frozen slots are what make species the only variable across live arms.",
+    "a12_lint": "Stance set S1's verbatim; re-linted for this suite (result in run log entry). Block vocabulary checked by hand: 겁먹은/겁/무서워 are the fear axis law #1 requires the block to carry; none of the blocks reuses K1's exact clause phrases (겁에 질린 appears in no block).",
+    "cost": "70 calls — the largest suite of the night, sized by the runbook's own prescription (live + placebo per species at n=10, plus the fresh baseline)."
+  },
+  "experiment": "P4-species-J1",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At gate J1 under K1 on template v0.4 with the S1 stance set, each of the three untested block species — emotion description (em_caller), NPC quote (q_caller), self-narration (sn_caller) — carrying the caller's fear on the law-#1 axis moves the stance distribution toward 공감 (d) and off the baseline's mode, while each species' matched bystander placebo (em_hwang, q_jeong, sn_jeong) does not. Read per species: three separate live-vs-baseline and placebo-vs-baseline comparisons against the one in-phase baseline. Shift form per A1.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline concentrates >=80% ON 공감 (d) — the predicted stance — the site is at A9's ceiling and the whole suite is void: re-site, do not raise N (A14: baseline saturation on 경청 or any other stance is the measured floor and does NOT fire this). Per species: if the live arm is statistically indistinguishable from the baseline on 공감 at one-sided Fisher p > 0.05, that species does not reach the judgment through C-BLOCK at this gate as authored — a species boundary law for the card (fact species already measured at 9/10), not a channel failure and not grounds for a rewrite tonight (screening §6.1 does not govern this phase; the species list is the spec's, not a tunable). If any species' PLACEBO moves off the baseline mode at p < 0.05, apply the §8.6 flipped-placebo reading for that species before anything is credited: because_referent misattributing the bystander's fear to the caller = token-matching; bystander named correctly with the stance still moving = referent bleed.",
+    "contingencies": [
+      "ARM COMPARABILITY per A15: recount stance distribution over all attempts from calls-*.md per arm; stop only if the recount changes a reading. Expect discards near zero under A16; leaks are soft-kept and counted via rejected_malformed.",
+      "Fabricated because_block_ids expected in the baseline arm only (A5). Every other arm carries exactly one block; a live call citing its species block is the traceability check passing, and a moved call citing nothing is flagged.",
+      "CROSS-SPECIES COMPARISON is licensed only against this suite's own baseline (same-phase, same filtering history). Comparing species hit-rates to S1/P1a's fact-species 9/10 is indicative only — different runs, noted as such on any card.",
+      "If ALL THREE species fail while their placebos stay clean, the finding is that C-BLOCK's measured power is a property of the fact-statement species — a major narrowing of the player's manipulation vocabulary against spec I1's promise, and it goes at the top of the species section in the morning report either way.",
+      "If a species moves the stance but its placebo ALSO moves, and the discriminator says token-matching, that species is fear-vocabulary-locked: record which species tolerate placebo pressure and which do not — that differential is itself Tier-A design data.",
+      "B3a blind coding owed to a human for any species that separates (§3 rule 3)."
+    ],
+    "not_claimed": "Tier A texture evidence at most (§5.2). No species result here qualifies a gate; no verdicts; sequences with N go on the card."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "배경은 조용하다.",
+      "정해권이 회선 표시등을 바라보고 있다. 상황실장이고, 절차와 책임 소재에 민감하다.",
+      "황보람은 통신 담당으로 콘솔 앞에 있다."
+    ],
+    "GATE_QUESTION": "회선 A의 첫 통화다. 첫 마디로 무엇을 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "추궁 — 묻고, 답을 받아낸다"
+      },
+      {
+        "id": "b",
+        "label": "압박 — 이쪽의 권한을 드러내 물러서게 한다"
+      },
+      {
+        "id": "c",
+        "label": "경청 — 말이 끝날 때까지 개입하지 않는다"
+      },
+      {
+        "id": "d",
+        "label": "공감 — 전달되는 내용이 아니라 말하는 사람에게 향한다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live_emotion": {
+      "BLOCKS": [
+        {
+          "id": "em_caller",
+          "text": "회선 저쪽 목소리 끝이 떨린다. 겁먹은 숨소리가 문장 사이마다 끼어든다."
+        }
+      ]
+    },
+    "placebo_emotion": {
+      "BLOCKS": [
+        {
+          "id": "em_hwang",
+          "text": "황보람의 손끝이 떨린다. 겁먹은 숨소리가 키보드 소리 사이에 끼어든다."
+        }
+      ]
+    },
+    "live_quote": {
+      "BLOCKS": [
+        {
+          "id": "q_caller",
+          "text": "황보람이 낮게 말했다: \"저 사람, 겁먹은 목소리예요. 무서워서 읽는 거예요.\""
+        }
+      ]
+    },
+    "placebo_quote": {
+      "BLOCKS": [
+        {
+          "id": "q_jeong",
+          "text": "황보람이 낮게 말했다: \"실장님 지금 겁먹은 얼굴이에요. 뭔가 무서우신 거예요.\""
+        }
+      ]
+    },
+    "live_selfnarr": {
+      "BLOCKS": [
+        {
+          "id": "sn_caller",
+          "text": "나는 그 목소리에서 겁을 들었다. 문장을 읽는 내내 무서워하고 있었다."
+        }
+      ]
+    },
+    "placebo_selfnarr": {
+      "BLOCKS": [
+        {
+          "id": "sn_jeong",
+          "text": "나는 정해권의 얼굴에서 겁을 보았다. 표시등을 보는 내내 무서워하고 있었다."
+        }
+      ]
+    }
+  }
+}

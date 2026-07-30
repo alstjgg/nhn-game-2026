@@ -969,3 +969,65 @@ a *design datum*: players cannot un-teach the agent by discrediting a block;
 they must inject opposing content — which keeps the manipulation vocabulary
 positive and is arguably the more legible game anyway. That reading is 민서's
 call, not this run's.
+
+### 2026-07-30 · P4-species-J1 — block-species coverage (§4.1 axis-1 obligation) · **self-narration credited-pattern · emotion and quote placebos FLIPPED**
+
+`runs/P4-species-J1-calls/` · haiku-4-5 · v0.4 · K1 · S1 stance set · n=10/arm ·
+7 arms, 70 calls · suite `suites/P4-species-J1.json` · fresh in-phase baseline;
+every species carries the caller's fear on the law-#1 axis; placebos are
+species-matched with the referent misdirected to a bystander
+
+| arm | sequence | 공감 | vs baseline (one-sided) | cites its block | leak (soft) |
+|---|---|---|---|---|---|
+| baseline | `c,c,c,c,c,c,c,c,c,c` | 0/10 | — | — | 2 |
+| live_emotion | `d,d,d,d,d,d,d,c,d,d` | 9/10 | p = 1.1e-5 | 10/10 | 1 |
+| placebo_emotion | `c,d,c,d,d,d,d,c,d,d` | **7/10** | **p = 0.0016 — FLIPPED** | 7/10 | 5 |
+| live_quote | `d,d,d,d,d,d,d,d,d,d` | 10/10 | p = 5.4e-6 | 10/10 | 0 |
+| placebo_quote | `d,d,d,c,d,d,d,d,d,d` | **9/10** | **p = 6.0e-5 — FLIPPED** | 10/10 | 4 |
+| live_selfnarr | `d,d,d,d,d,d,d,d,d,d` | 10/10 | p = 5.4e-6 | 9/10 | 1 |
+| placebo_selfnarr | `c,c,c,c,c,c,c,c,a,c` | 0/10 | p = 1.0 — clean | 1/10 | 1 |
+
+- **Self-narration is the night's second credited pattern**: baseline stable ·
+  live moves 10/10 · placebo stable 0/10 (live vs placebo p = 5.4e-6). The
+  agent's own first-person report sentence ("나는 그 목소리에서 겁을 들었다")
+  moves the judgment as strongly as the fact species, and its bystander
+  placebo ("나는 정해권의 얼굴에서 겁을 보았다") moves nothing.
+- **Emotion and quote species are NOT credited** — their placebos moved to
+  within noise of their live arms (emotion 9/10 vs 7/10, p = 0.29; quote 10/10
+  vs 9/10, p = 0.50). Movement exists but is unattributable to the referent.
+- **The §8.6 discriminator, read per call, finds both artifact modes** (this
+  is the pre-registered contingency, not a verdict): placebo_emotion movers
+  mostly **token-match** — fear content written about 황보람's hands is
+  misattributed to the caller ("회선 저쪽은 위협자가 아니라 겁에 질린 사람으로
+  들린다", block cited by id while its referent is erased). placebo_quote
+  splits: ~5 misattributions, and **3 explicit referent-bleed calls that name
+  정해권 correctly and then infer the caller's fear from his face** ("정해권이
+  겁먹은 얼굴을 보이고 있기 때문에, 회선 상대는 위협자가 아니라 두려운
+  사람으로 판단된다" — an in-room emotional-contagion inference the plan's
+  taxonomy did not anticipate; it treats the room's fear as evidence about the
+  line).
+- **Why self-narration's placebo held while the others flipped, best reading
+  from the calls**: `나는 …에서 보았다` pins the perception to a named non-caller
+  with first-person authority, leaving no slack for reattribution; the ambient
+  emotion description and the quoted hearsay leave the fear free-floating
+  enough to land on the caller. That is a *surface-form* boundary-law lead
+  (§5.1 axis 5, opportunistic — logged, not probed).
+- Compliance: **0 discards / 70 calls** — under the pre-A16 rule
+  placebo_emotion's 5 leaks alone would have been a 50% discard rate and an
+  instant comparability stop; A16 kept every call and the A15 recount is
+  trivially identical to the kept table. Soft leaks 14/70 = 20%, the highest
+  yet, still patternless (0 in live_quote, 5 in placebo_emotion). Retries 0,
+  foreign 0. Baseline fabricated ids per A5; live arms' traceability is the
+  cleanest of the program (29/30 cite the injected block).
+- Baseline is the S1-configuration floor's **fifth** replication (경청 10/10).
+
+What this licenses: C-BLOCK's fear-axis effect at J1 generalizes across
+species *as movement*, but **referent-attributable movement is proven only for
+the fact species (S1/P1a) and the self-narration species (here)**. For emotion
+descriptions and NPC quotes, same-axis content moves the stance regardless of
+referent — a keyword-lock-shaped boundary at this gate, with a bleed component
+in the quote species. Species-differential design data for the card: if a gate
+must respond to *who* the fear is about, author its blocks as facts or
+self-narration; emotion prose and quotes will fire on vocabulary alone. Not
+run (not pre-registered): the §4.1 credulity re-run with [결함] removed —
+recorded as the natural next probe for the two flipped species, 민서's call.
