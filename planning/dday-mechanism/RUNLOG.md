@@ -764,3 +764,49 @@ happened here: P1b's live arm delivered 9 kept calls against a pre-registered n=
 because one slot exhausted its retries (`14 — FAILED`, no payload), and that shortfall
 is recorded rather than back-filled — §3 rule 5 keeps failed slots in place, and
 re-running to top up would give the arm a different filtering history than its peers.
+
+### A15 · Arm comparability is judged by the all-attempts recount, not the discard rate (plan §8.5 step 4, runbook §5)
+
+Enacted by 민서, 2026-07-30, in session — accepting the first P1a proposal above
+unchanged. The proposing session did not enact it; the numbers that would have
+made it self-serving are recorded in that proposal.
+
+Keep recording the per-arm discard rate (A11 requires it). But evaluate arm
+comparability by **recomputing the stance distribution over all attempts,
+including discarded payloads' stances** (recoverable from `calls-*.md`, primary
+per §7.4), and stop the probe only when the recount changes the reading. Where a
+discard lands on a *pre*-stance field, or the payload carries no readable
+`stance`, fall back to the >15-point rate rule — there the bias genuinely is
+unmeasurable.
+
+Consequence for the record: **P1a and P1b are creditable.** Both recounts are
+already in their entries and both leave every conclusion unchanged (P1a: 0/12 vs
+9/10, p = 0.00002; P1b: 0/14 vs 16/20, p = 2.2 × 10⁻⁶). Their entries stay as
+written — the stop fired under the rule in force at the time, and that is part
+of the record.
+
+### A16 · Rejected-field problems are `__soft__` — record, do not retry, keep the call
+
+Enacted by 민서, 2026-07-30, in session — accepting the second P1a/P1b proposal
+above. Harness change: `CALL_TYPES.judgment.validate` now marks all three
+`rejected_stance` / `rejected_reason` problems `__soft__` (the mechanism already
+used for hallucinated block ids, on the same reasoning); `summarize` nulls a
+malformed `rejected_stance` and sets `rejected_malformed: true` so the leak
+stays countable. Two regression checks freeze the boundary-leak payload
+(selftest now 27 checks): the leak must yield only soft problems, and the call
+must be kept.
+
+Grounds, from P1b's binary failure mode: the leak destroys only the `rejected`
+pair, which §7.1 designates diagnostic-only; `stance`, `inner_note`,
+`because_referent`, `because_block_ids` and `utterance` always survive.
+Hard-discarding the whole call threw away valid stances, which is what made
+arms differently-filtered samples and tripped the comparability stop.
+
+Boundaries: **past runs stay as recorded** — no artifact is recomputed or
+re-keyed. Runs before and after this amendment differ in what counts as a
+discard, so **never pool their discard/compliance rates across the boundary**;
+the A?-proposed rate-history table above is the closed pre-A16 series. This is
+a validation-severity change, not a schema change — the wire schema, field
+order and prompts are byte-identical, so no shape re-validation run is owed and
+S1/P1a/P1b baselines still carry (§7.2). The leak itself remains open: A16
+changes what a leaked call costs, not why it leaks.

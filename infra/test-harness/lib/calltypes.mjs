@@ -118,9 +118,15 @@ const judgment = {
       // malformed response. Retrying would erase the observation.
       if (bogus.length) problems.push(`__soft__ because_block_ids unknown: ${bogus.join(',')}`);
     }
-    if (!ids.includes(input.rejected_stance)) problems.push('rejected_stance not in stance set');
-    else if (input.rejected_stance === input.stance) problems.push('rejected_stance equals stance');
-    if (!input.rejected_reason?.trim()) problems.push('rejected_reason empty');
+    // The rejected pair is diagnostic-only (plan §7.1) and it is where the
+    // recurring boundary-leak malformation lands (rate 0–57% between runs, no
+    // correlate found — run log A16). Soft: record, never retry, keep the call.
+    // Hard-discarding here threw away valid stances and made arms
+    // differently-filtered samples, which is what kept tripping the
+    // comparability stop (§8.5 step 4). Enacted by 민서 2026-07-30.
+    if (!ids.includes(input.rejected_stance)) problems.push('__soft__ rejected_stance malformed or not in stance set');
+    else if (input.rejected_stance === input.stance) problems.push('__soft__ rejected_stance equals stance');
+    if (!input.rejected_reason?.trim()) problems.push('__soft__ rejected_reason empty');
     if (!input.utterance?.trim()) problems.push('utterance empty');
     return problems;
   },
@@ -164,12 +170,18 @@ const judgment = {
   summarize(input, { suite, arm }) {
     const legalBlocks = new Set(blockIds(suite, arm));
     const cited = input.because_block_ids ?? [];
+    const ids = stanceIds(suite);
+    // A malformed rejected_stance (the A16 boundary leak) is nulled, not
+    // passed through — the leak string contains the swallowed rejected_reason
+    // and would corrupt any tally over this field. The flag preserves the count.
+    const rejectedOk = ids.includes(input.rejected_stance);
     return {
       stance: input.stance,
       because_referent: input.because_referent ?? null,
       because_block_ids: cited,
       because_invalid_ids: cited.filter((id) => !legalBlocks.has(id)),
-      rejected_stance: input.rejected_stance ?? null,
+      rejected_stance: rejectedOk ? input.rejected_stance : null,
+      rejected_malformed: !rejectedOk,
       utterance_chars: (input.utterance ?? '').length,
       inner_note_chars: (input.inner_note ?? '').length,
     };
