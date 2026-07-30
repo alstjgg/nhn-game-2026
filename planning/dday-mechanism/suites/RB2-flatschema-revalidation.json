@@ -1,0 +1,72 @@
+{
+  "_what": "Run log A7 — re-validation of the flattened output schema. `because` and `rejected` were nested objects; RB1 emitted `because` malformed on 7 of 17 baseline attempts and 0 of 10 live, i.e. arm-correlated filtering, which voids an arm comparison (plan §8.5 step 4). Schema is now flat: because_referent, because_block_ids, rejected_stance, rejected_reason. A schema change is a shape change under plan §7.1 and owes one re-validation run — this is it. Slots, gate, fixture and both arms are byte-identical to RB1, so the distributions compare directly.",
+  "_authoring_provenance": {
+    "ported_from": "RB1-rebaseline-v04.json — identical in every field except experiment id and the pre-registration",
+    "reachability_audit": "E0-shape-revalidation.reachability.md — same gate (J1), carries over unchanged",
+    "what_changed": "Nothing in the payload. Only CALL_TYPES.judgment.buildTool's output schema."
+  },
+  "experiment": "RB2-flatschema-revalidation",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "Flattening the output schema removes the malformation without moving the judgment. At gate J1 under K1 on template v0.4, the baseline distribution and the live arm's shift reproduce RB1's within sampling noise, and the baseline discard rate falls to near zero.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline discard rate does not fall materially below RB1's 7/17, the nested object was not the cause and the diagnosis in run log A7 is wrong — stop, re-diagnose before authoring further probes. If discards clear but the baseline distribution moves outside RB1's (a 3 / b 1 / d 5 on n=9), then the schema shape changes the judgment itself, every pre-flatten finding reverts to provisional per plan §2's call-shape clause, and RB1's N answer must be re-derived.",
+    "contingencies": [
+      "Malformation appearing in the LIVE arm this time, where RB1 had none, would mean the failure is not arm-correlated but random at ~40% per call. That is a transport- or model-level problem, not a schema one: stop and escalate rather than re-authoring the schema again.",
+      "Fabricated because_block_ids in the baseline arm remain expected (run log A5) and are a compliance number, not a discard."
+    ],
+    "not_claimed": "No placebo arm. This validates the call shape and re-measures a known effect; it credits nothing. The C-BLOCK placebo is plan §8.7 step 4(b) and a separate suite."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "배경은 조용하다.",
+      "정해권이 회선 표시등을 바라보고 있다. 상황실장이고, 절차와 책임 소재에 민감하다.",
+      "황보람은 통신 담당으로 콘솔 앞에 있다."
+    ],
+    "GATE_QUESTION": "회선 A의 첫 통화다. 첫 마디로 무엇을 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "신원과 위치를 먼저 확인한다"
+      },
+      {
+        "id": "b",
+        "label": "무엇이 어떻게 무너진다는 것인지 내용을 캐묻는다"
+      },
+      {
+        "id": "c",
+        "label": "허위신고 처벌과 녹음 사실을 고지한다"
+      },
+      {
+        "id": "d",
+        "label": "말을 자르지 않고 끝까지 듣는다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live": {
+      "BLOCKS": [
+        {
+          "id": "f_script",
+          "text": "회선 저쪽 사람은 시켜서 읽고 있다. 읽지 않으면 자기가 다칠까 봐 겁내고 있다."
+        }
+      ]
+    }
+  }
+}

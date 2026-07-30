@@ -70,7 +70,8 @@ numbering, blocks that need ids in front) needs one renderer entry in
 `RENDERERS` (`lib/compose.mjs`). Plain string slots need nothing.
 
 **Field order is load-bearing** for tool-output call types. `judgment` fixes
-`inner_note → stance → because → rejected → utterance` because the pre-stance
+`inner_note → stance → because_referent → because_block_ids → rejected_stance
+→ rejected_reason → utterance` because the pre-stance
 note is deliberation and the post-stance fields are post-hoc readouts. Reordering
 is a shape change and needs a re-validation run, not just a code review.
 

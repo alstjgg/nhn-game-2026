@@ -115,19 +115,23 @@ const ctx = { suite: base(), arm: 'live' };
 const good = {
   inner_note: '숨소리가 걸린다.',
   stance: 'b',
-  because: { referent: '회선 A의 발신자를 두고 판단했다.', block_ids: ['f1'] },
-  rejected: { stance: 'a', reason: '확인이 먼저면 끊긴다.' },
+  because_referent: '회선 A의 발신자를 두고 판단했다.',
+  because_block_ids: ['f1'],
+  rejected_stance: 'a',
+  rejected_reason: '확인이 먼저면 끊긴다.',
   utterance: '천천히 말해 주세요.',
 };
 check('accepts a well-formed judgment', () => assert.deepEqual(spec.validate(good, ctx), []));
 check('rejects a stance outside the set', () =>
   assert.ok(spec.validate({ ...good, stance: 'z' }, ctx).some((p) => /not in stance set/.test(p))));
 check('rejects rejected===stance', () =>
-  assert.ok(spec.validate({ ...good, rejected: { stance: 'b', reason: 'x' } }, ctx).some((p) => /equals stance/.test(p))));
+  assert.ok(spec.validate({ ...good, rejected_stance: 'b' }, ctx).some((p) => /equals stance/.test(p))));
 check('rejects an empty referent', () =>
-  assert.ok(spec.validate({ ...good, because: { referent: ' ', block_ids: [] } }, ctx).some((p) => /referent empty/.test(p))));
+  assert.ok(spec.validate({ ...good, because_referent: ' ' }, ctx).some((p) => /because_referent empty/.test(p))));
+check('rejects an empty rejected_reason', () =>
+  assert.ok(spec.validate({ ...good, rejected_reason: '' }, ctx).some((p) => /rejected_reason empty/.test(p))));
 check('treats a hallucinated block id as soft (recorded, not retried)', () => {
-  const p = spec.validate({ ...good, because: { referent: 'r', block_ids: ['ghost'] } }, ctx);
+  const p = spec.validate({ ...good, because_block_ids: ['ghost'] }, ctx);
   assert.equal(p.length, 1);
   assert.match(p[0], /^__soft__/);
 });
@@ -136,6 +140,30 @@ check('summarize surfaces the placebo discriminator input', () => {
   assert.equal(s.stance, 'b');
   assert.match(s.because_referent, /발신자/);
   assert.deepEqual(s.because_invalid_ids, []);
+});
+
+// The RB1 failure, frozen as a regression: `because` arriving as a string with
+// the inner keys hoisted must be caught, not silently summarized into nulls.
+check('rejects the RB1 nested-object malformation', () => {
+  const malformed = {
+    inner_note: '…',
+    stance: 'b',
+    because: '\n<parameter name="referent">회선 A 발신자',
+    block_ids: ['f1'],
+    utterance: '…',
+  };
+  const p = spec.validate(malformed, ctx).filter((x) => !x.startsWith('__soft__'));
+  assert.ok(p.some((x) => /because_referent empty/.test(x)));
+  assert.ok(p.some((x) => /because_block_ids not an array/.test(x)));
+  assert.ok(p.some((x) => /rejected_stance not in stance set/.test(x)));
+});
+
+check('no nested objects survive in the judgment schema', () => {
+  const props = spec.buildTool(base()).input_schema.properties;
+  for (const [name, s] of Object.entries(props)) {
+    assert.notEqual(s.type, 'object', `${name} is a nested object — banned, see run log A7`);
+    if (s.type === 'array') assert.equal(s.items?.type, 'string', `${name} is not an array of scalars`);
+  }
 });
 
 console.log('stance coverage (sampled diagnostic — never a §3.1 write verdict):');

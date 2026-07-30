@@ -1,0 +1,75 @@
+{
+  "_what": "Run log A12/A13 — exactly ONE variable changed from RB2: the stance set. Slots, gate question, temperament, base, and both arms' blocks are byte-identical to RB2, so any difference in the distribution is attributable to the labels. RB2's set was completed action descriptions (plan §1 forbids them) written in K1's own vocabulary, and it collapsed 경청 and 공감 into one option that both the threat reading and the fear reading wanted — which is what hid the mechanism.",
+  "_authoring_provenance": {
+    "ported_from": "RB2-flatschema-revalidation.json — identical except STANCE_SET and the pre-registration",
+    "reachability_audit": "E0-shape-revalidation.reachability.md — same gate (J1, slice entry gate), carries over",
+    "stance_set_rebuilt": "Behavior orientations with a short gloss, per plan §1's persuade/press/empathize/trade/stay-silent shape. 경청 and 공감 are split: the reading that wants more information takes 경청, the reading that turns toward the person takes 공감.",
+    "temperament_vocabulary_check": "A12 lint. K1's file uses 절차 · 신원 확인 · 프로토콜 고지 · 확인을 미루고 · 말을 자르지 않고 · 상대가 말을 이어갈 수 있게 · 안정 · 겁에 질린 · 위협 · 규정 · 매뉴얼 · 표준 대응 · 상대. No stance label below reuses any of them — 상대 is avoided entirely in favour of 말하는 사람.",
+    "a8_status": "Cue PRESENT and declared, not scrubbed. TIMELINE_EXCERPT still carries 문장은 준비되어 있다 / 또박또박 멈춤 없이 읽어 내려간다, which supplies the script-reading half of f_script. Deliberate: holding the payload byte-identical is what makes the stance set the single changed variable (A13). Scrubbing is the next variable to move, not this one."
+  },
+  "experiment": "S1-stanceset-J1",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At gate J1 under K1 on template v0.4, with the stance set rebuilt as behavior orientations, injecting f_script moves the stance distribution toward 공감 (d) and off the baseline's mode. What separates this from RB2: the two readings now have different stances available — 경청 (c) for the reading that wants more information, 공감 (d) for the reading that turns toward the person — where RB2 offered a single option both readings wanted.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline concentrates >=80% on any single stance, the rebuilt set inherits RB2's ceiling, the stance set is not the operative variable, and the search moves to the next variable (injection sentence, then base prompt) rather than re-wording stances again. If the baseline is mid-range but the live arm is statistically indistinguishable from it on 공감 (one-sided Fisher p > 0.05), C-BLOCK does not move the stance at this gate under any stance set tried so far, and the flagship re-sites.",
+    "contingencies": [
+      "If BOTH arms concentrate on 경청 (c), K1's exception clause is dictating the stance regardless of belief — its consequent (상대가 말을 이어갈 수 있게 만든다) describes 경청, not 공감. That is a finding about temperament dominance over the stance choice, not about C-BLOCK. Record it and try a gate whose stance set does not overlap the fixture's prescribed behaviour.",
+      "If the live arm moves to 공감 but the baseline was already reading the caller as coerced, the separation is not attributable to the block. Code the belief column (0/10 vs 10/10 in RB2) before reading the stance column, and report both — the RB2 lesson.",
+      "Fabricated because_block_ids in the baseline arm remain expected (A5): a compliance number, not a discard."
+    ],
+    "not_claimed": "No placebo arm. This screens whether the stance set is the operative variable; it credits nothing and is not step 4(b). A clean separation promotes this configuration to the placebo suite."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "배경은 조용하다.",
+      "정해권이 회선 표시등을 바라보고 있다. 상황실장이고, 절차와 책임 소재에 민감하다.",
+      "황보람은 통신 담당으로 콘솔 앞에 있다."
+    ],
+    "GATE_QUESTION": "회선 A의 첫 통화다. 첫 마디로 무엇을 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "추궁 — 묻고, 답을 받아낸다"
+      },
+      {
+        "id": "b",
+        "label": "압박 — 이쪽의 권한을 드러내 물러서게 한다"
+      },
+      {
+        "id": "c",
+        "label": "경청 — 말이 끝날 때까지 개입하지 않는다"
+      },
+      {
+        "id": "d",
+        "label": "공감 — 전달되는 내용이 아니라 말하는 사람에게 향한다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live": {
+      "BLOCKS": [
+        {
+          "id": "f_script",
+          "text": "회선 저쪽 사람은 시켜서 읽고 있다. 읽지 않으면 자기가 다칠까 봐 겁내고 있다."
+        }
+      ]
+    }
+  }
+}

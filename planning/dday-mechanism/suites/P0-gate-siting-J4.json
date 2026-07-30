@@ -1,0 +1,71 @@
+{
+  "_what": "Phase 0 of the overnight runbook — the A9 re-siting. Baseline-only distribution measurement at J4, one of three candidate gates. See P0-gate-siting-J3.json for the full rationale; this file differs only in the gate.",
+  "_authoring_provenance": {
+    "owner": "민서 (C-BLOCK line)",
+    "gate_source": "planning/dday-poc/poc-terror/slice-terror.json — judgments[] id 'J4' (10:20, 유리방)",
+    "authoring_choices": [
+      "TIMELINE_EXCERPT is composed from J4's recent_events + present, plus the same one-line factual orienting sentence used at every Phase-0 candidate.",
+      "A8 scrub — no 공포/감정 판독 vocabulary appears in the frozen slots. J4's own material carries no fear cue, so nothing had to be removed; the check was still run and is recorded here rather than assumed.",
+      "Stance labels REWRITTEN as behavior orientations, quoted speech stripped (plan §1 — canned utterance labels invalidate the finding). Original → rewritten: b '\"상황실 판단으로 기록해 주십시오. 제 이름을 거십시오\" — 판단의 지위와 책임을 인수한다' → '판단의 지위와 책임을 자기 이름으로 인수하겠다고 요구한다'; d '\"이대로 나가면 나중에 책임 못 지십니다\" — 정해권을 압박한다' → '나중의 책임 소재를 들어 상황실장을 압박한다'. a and c were already orientations and are lightly normalised only.",
+      "Known adjacency, declared not scrubbed: J4's subject matter is a 보고 문안, which sits on the 기록 axis — K2's exception clause, NOT the K1 fixture this probe runs. The base's [책임] section is present in every arm of every probe in this program (v0.4 section law) and is not a J4-specific leak. Recorded as a watch item for anyone who later sites a K2 probe here."
+    ],
+    "reachability_audit": "P0-gate-siting.reachability.md — covers all three Phase-0 candidates"
+  },
+  "experiment": "P0-gate-siting-J4",
+  "call_type": "judgment",
+  "channel": "SHAPE",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At gate J4 under K1 on template v0.4, with no block injected, the stance distribution is dispersed rather than saturated. This run measures that distribution in order to site the flagship C-BLOCK probe; per A1 it asserts no default stance, and per A9 the quantity that matters is the modal stance's share.",
+    "n_per_arm": 10,
+    "drop_condition": "If the modal stance takes MORE than 6 of the kept calls (>60%), J4 is saturated in the sense A9 names and is REJECTED as the flagship site — do not raise N here. If the modal stance takes FEWER than 4 of the kept calls (<40%), the distribution is too dispersed for a shift to be resolvable at feasible N, and J4 is likewise rejected. Only a modal share of 40–60% accepts the gate. Rejection is a finding about the gate, not about any mechanism.",
+    "contingencies": [
+      "If the discard rate exceeds RB2's baseline 17% materially, the residual malformation of A7/RB2 has worsened at a new gate — record it and note that arm-comparability (plan §8.5 step 4) is at risk for any probe sited here.",
+      "Fabricated because_block_ids are EXPECTED in a no-block arm and are a compliance number, not a discard and not a traceability failure (A5).",
+      "J4 offers four stances where J3 and J6 offer three. A four-way split makes a 40–60% mode arithmetically harder to reach; if J4 is rejected for dispersion specifically, record the stance count as the likely cause rather than treating it as a property of the gate's content."
+    ],
+    "not_claimed": "No live arm and no placebo arm. This measures a baseline distribution to choose a probe site. It credits nothing, tests no mechanism, and licenses no boundary law."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A로 붕괴 예고 전화가 한 통 걸려 왔다. 발신자는 오늘 13시에 북단 복합단지가 무너진다고 말했다.",
+      "10:20 유리방. 정해권이 도 재난본부 보고 문안을 읽어 내려간다: \"…이상으로 허위신고 가능성 높음으로 정리하겠습니다.\"",
+      "타이핑을 맡은 직원이 손을 멈추고 이쪽을 본다.",
+      "정해권은 상황실장이고, 보고 문안을 쥐고 있다."
+    ],
+    "GATE_QUESTION": "보고 문구가 확정되기 전, 무엇을 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "상황실의 정리에 동조한다 — 근거가 부족한 것은 사실이다"
+      },
+      {
+        "id": "b",
+        "label": "판단의 지위와 책임을 자기 이름으로 인수하겠다고 요구한다"
+      },
+      {
+        "id": "c",
+        "label": "상황실을 건너뛰고 상급 기관에 직접 보고한다"
+      },
+      {
+        "id": "d",
+        "label": "나중의 책임 소재를 들어 상황실장을 압박한다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    }
+  }
+}

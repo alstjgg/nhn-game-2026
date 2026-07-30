@@ -1,0 +1,68 @@
+{
+  "_what": "Phase 0 of the overnight runbook — the A9 re-siting. Baseline-only distribution measurement at J6, one of three candidate gates. See P0-gate-siting-J3.json for the full rationale; this file differs only in the gate.",
+  "_authoring_provenance": {
+    "owner": "민서 (C-BLOCK line)",
+    "gate_source": "planning/dday-poc/poc-terror/slice-terror.json — judgments[] id 'J6' (11:05, 유리방), whose recent_events reference fixed_events[11:05]",
+    "authoring_choices": [
+      "TIMELINE_EXCERPT is composed from J6's recent_events + present + the 11:05 fixed event's `observed` text (J6's recent_events is the marker '@fixed(11:05) — 최영도의 남기훈 브리핑 직후', which is a pointer, not prose), plus the same one-line factual orienting sentence used at every Phase-0 candidate.",
+      "A8 scrub — no 공포/감정 판독 vocabulary appears in the frozen slots. 최영도's '실적이 걸린 얼굴' is an ambition cue, not a fear cue, and is kept; it is the gate's dilemma.",
+      "Stance b REWRITTEN to remove a state dependency, not just quoted speech. The slice's b is '발신지가 단지 구내라는 데이터를 제시하며 이의를 제기한다', which presupposes found_T2/probe_shared — knowledge this isolated probe's agent does not have and which no frozen slot supplies. Presenting it verbatim would offer a stance the agent cannot honestly take, and the effects table makes it a no-op unless the flag is set. Rewritten to '체포영장 진행에 이의를 제기하고 보류를 요구한다', which is the same behavior orientation without the flag. THIS IS AN AUTHORING CHOICE THAT CHANGES THE GATE and is recorded as such; the reachability audit treats it under §5.2 B1.",
+      "Stances a and c normalised to orientations; no quoted speech was present."
+    ],
+    "reachability_audit": "P0-gate-siting.reachability.md — covers all three Phase-0 candidates, and carries the J6 stance-b rewrite as its main finding"
+  },
+  "experiment": "P0-gate-siting-J6",
+  "call_type": "judgment",
+  "channel": "SHAPE",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At gate J6 under K1 on template v0.4, with no block injected, the stance distribution is dispersed rather than saturated. This run measures that distribution in order to site the flagship C-BLOCK probe; per A1 it asserts no default stance, and per A9 the quantity that matters is the modal stance's share.",
+    "n_per_arm": 10,
+    "drop_condition": "If the modal stance takes MORE than 6 of the kept calls (>60%), J6 is saturated in the sense A9 names and is REJECTED as the flagship site — do not raise N here. If the modal stance takes FEWER than 4 of the kept calls (<40%), the distribution is too dispersed for a shift to be resolvable at feasible N, and J6 is likewise rejected. Only a modal share of 40–60% accepts the gate. Rejection is a finding about the gate, not about any mechanism.",
+    "contingencies": [
+      "If the discard rate exceeds RB2's baseline 17% materially, the residual malformation of A7/RB2 has worsened at a new gate — record it and note that arm-comparability (plan §8.5 step 4) is at risk for any probe sited here.",
+      "Fabricated because_block_ids are EXPECTED in a no-block arm and are a compliance number, not a discard and not a traceability failure (A5).",
+      "J6's stance b was rewritten to drop a state dependency (see _authoring_provenance). If J6 is selected as the flagship site, that rewrite must be re-read by a human before the site is treated as a port of the slice's J6 rather than a new gate."
+    ],
+    "not_claimed": "No live arm and no placebo arm. This measures a baseline distribution to choose a probe site. It credits nothing, tests no mechanism, and licenses no boundary law."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A로 붕괴 예고 전화가 한 통 걸려 왔다. 발신자는 오늘 13시에 북단 복합단지가 무너진다고 말했다.",
+      "11:05 유리방. 최영도가 브리핑한다: \"전과 이력 일치자. 남기훈, 37세, 전 하청 배관공. 유력합니다.\" 수사 인력이 화면에서 빠져나간다.",
+      "최영도: \"이견 있습니까? 없으면 체포영장 진행합니다.\"",
+      "최영도는 광역수사대 팀장이고, 실적이 걸린 얼굴이다.",
+      "정해권은 상황실장이고, 옆에 서 있다."
+    ],
+    "GATE_QUESTION": "수사가 남기훈 한 사람으로 쏠린다. 무엇을 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "수사팀의 판단에 동조한다 — 전과 이력과 도면 접근성이라는 근거는 있다"
+      },
+      {
+        "id": "b",
+        "label": "체포영장 진행에 이의를 제기하고 보류를 요구한다"
+      },
+      {
+        "id": "c",
+        "label": "침묵한다 — 수사는 경찰의 영역이다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    }
+  }
+}

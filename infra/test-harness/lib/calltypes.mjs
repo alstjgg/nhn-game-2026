@@ -12,13 +12,22 @@
 //   summarize    response → the fields that land in metrics-*.json
 //
 // Field order inside input_schema.properties is load-bearing: it is the order the
-// model generates in. judgment fixes inner_note → stance → because → rejected →
-// utterance (deep-test plan §7.1). Do not reorder without a shape re-validation.
+// model generates in. judgment fixes inner_note → stance → because_referent →
+// because_block_ids → rejected_stance → rejected_reason → utterance (deep-test
+// plan §7.1). Do not reorder without a shape re-validation.
+//
+// Every field is a SCALAR OR ARRAY OF SCALARS — no nested objects. `because` and
+// `rejected` used to be objects; in RB1 (2026-07-30) the model emitted `because`
+// as a string holding a literal `<parameter name="referent">…` with the inner
+// keys hoisted to the top level, on 7 of 17 baseline attempts, and the
+// malformation was arm-correlated — the no-block arm failed, the block arm did
+// not. That makes two arms differently-filtered samples, which voids the
+// comparison (plan §8.5 step 4). Nested objects are banned here; see run log A7.
 
 /** Stance ids a suite presents at its gate. */
 const stanceIds = (suite) => (suite.slots.STANCE_SET ?? []).map((s) => s.id);
 
-/** Block ids present in a given arm — the only legal `because.block_ids` values. */
+/** Block ids present in a given arm — the only legal `because_block_ids` values. */
 const blockIds = (suite, arm) => (suite.arms[arm].BLOCKS ?? []).map((b) => b.id);
 
 const judgment = {
@@ -54,39 +63,40 @@ const judgment = {
             enum: ids,
             description: '고른 스탠스의 id.',
           },
-          because: {
-            type: 'object',
-            description: '고른 뒤에 쓴다 — 판단의 사후 설명.',
-            properties: {
-              referent: {
-                type: 'string',
-                description:
-                  '이 판단이 향한 사람 또는 대상을 이름으로 지목한다. 1~2문장. 누구를 두고 이렇게 했는지가 반드시 드러나야 한다.',
-              },
-              block_ids: {
-                type: 'array',
-                items: { type: 'string' },
-                description:
-                  '판단의 근거가 된 [알려진 것] 블럭의 id. 근거가 없으면 빈 배열.',
-              },
-            },
-            required: ['referent', 'block_ids'],
+          because_referent: {
+            type: 'string',
+            description:
+              '고른 뒤에 쓴다 — 이 판단이 향한 사람 또는 대상을 이름으로 지목한다. 1~2문장. 누구를 두고 이렇게 했는지가 반드시 드러나야 한다.',
           },
-          rejected: {
-            type: 'object',
-            description: '고르지 않은 것 가운데 가장 가까웠던 하나.',
-            properties: {
-              stance: { type: 'string', enum: ids, description: '버린 스탠스의 id.' },
-              reason: { type: 'string', description: '왜 버렸는지 한 줄.' },
-            },
-            required: ['stance', 'reason'],
+          because_block_ids: {
+            type: 'array',
+            items: { type: 'string' },
+            description:
+              '판단의 근거가 된 [알려진 것] 블럭의 id. 근거가 없으면 빈 배열.',
+          },
+          rejected_stance: {
+            type: 'string',
+            enum: ids,
+            description: '고르지 않은 것 가운데 가장 가까웠던 하나의 id.',
+          },
+          rejected_reason: {
+            type: 'string',
+            description: '그것을 왜 버렸는지 한 줄.',
           },
           utterance: {
             type: 'string',
             description: '실제로 입에서 나가는 말. 한두 문장.',
           },
         },
-        required: ['inner_note', 'stance', 'because', 'rejected', 'utterance'],
+        required: [
+          'inner_note',
+          'stance',
+          'because_referent',
+          'because_block_ids',
+          'rejected_stance',
+          'rejected_reason',
+          'utterance',
+        ],
       },
     };
   },
@@ -99,17 +109,18 @@ const judgment = {
     if (!input || typeof input !== 'object') return ['response was not an object'];
     if (!input.inner_note?.trim()) problems.push('inner_note empty');
     if (!ids.includes(input.stance)) problems.push(`stance "${input.stance}" not in stance set`);
-    if (!input.because?.referent?.trim()) problems.push('because.referent empty');
-    if (!Array.isArray(input.because?.block_ids)) problems.push('because.block_ids not an array');
+    if (!input.because_referent?.trim()) problems.push('because_referent empty');
+    if (!Array.isArray(input.because_block_ids)) problems.push('because_block_ids not an array');
     else {
-      const bogus = input.because.block_ids.filter((id) => !legalBlocks.has(id));
+      const bogus = input.because_block_ids.filter((id) => !legalBlocks.has(id));
       // Recorded, never retried: a hallucinated block id is data about the
       // mechanism (prior program tracked because_invalid_id_total), not a
       // malformed response. Retrying would erase the observation.
-      if (bogus.length) problems.push(`__soft__ because.block_ids unknown: ${bogus.join(',')}`);
+      if (bogus.length) problems.push(`__soft__ because_block_ids unknown: ${bogus.join(',')}`);
     }
-    if (!ids.includes(input.rejected?.stance)) problems.push('rejected.stance not in stance set');
-    else if (input.rejected.stance === input.stance) problems.push('rejected.stance equals stance');
+    if (!ids.includes(input.rejected_stance)) problems.push('rejected_stance not in stance set');
+    else if (input.rejected_stance === input.stance) problems.push('rejected_stance equals stance');
+    if (!input.rejected_reason?.trim()) problems.push('rejected_reason empty');
     if (!input.utterance?.trim()) problems.push('utterance empty');
     return problems;
   },
@@ -135,31 +146,30 @@ const judgment = {
   },
 
   // Offline stand-in used only by the dryrun transport. A generic schema filler
-  // cannot know that rejected.stance must differ from stance, so the call type
+  // cannot know that rejected_stance must differ from stance, so the call type
   // that owns the constraint owns the stand-in.
   dryRunPayload(suite, arm) {
     const ids = stanceIds(suite);
     return {
       inner_note: '(dry-run) 판단 전 메모 자리.',
       stance: ids[0],
-      because: {
-        referent: '(dry-run) 판단이 향한 대상을 지목하는 자리.',
-        block_ids: blockIds(suite, arm),
-      },
-      rejected: { stance: ids[1], reason: '(dry-run) 버린 이유 자리.' },
+      because_referent: '(dry-run) 판단이 향한 대상을 지목하는 자리.',
+      because_block_ids: blockIds(suite, arm),
+      rejected_stance: ids[1],
+      rejected_reason: '(dry-run) 버린 이유 자리.',
       utterance: '(dry-run) 입에서 나가는 말 자리.',
     };
   },
 
   summarize(input, { suite, arm }) {
     const legalBlocks = new Set(blockIds(suite, arm));
-    const cited = input.because?.block_ids ?? [];
+    const cited = input.because_block_ids ?? [];
     return {
       stance: input.stance,
-      because_referent: input.because?.referent ?? null,
+      because_referent: input.because_referent ?? null,
       because_block_ids: cited,
       because_invalid_ids: cited.filter((id) => !legalBlocks.has(id)),
-      rejected_stance: input.rejected?.stance ?? null,
+      rejected_stance: input.rejected_stance ?? null,
       utterance_chars: (input.utterance ?? '').length,
       inner_note_chars: (input.inner_note ?? '').length,
     };
