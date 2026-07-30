@@ -53,7 +53,7 @@ append-only다. 실패한 구성도 지우지 않는다 — 무엇을 시도했�
 | A12 | stance는 behavior orientation이며 temperament의 어휘를 재사용하지 않는다 |
 | A13 | probe 간 configuration lever는 하나만 바꾸고 baseline을 다시 측정한다 |
 | A14 | saturation 판정은 예측한 stance에 대해서만 한다 |
-| A15 | stance는 해당 gate의 실제 output field에서 서로 다른 행동으로 표현될 수 있어야 한다 |
-| A17 | drop condition은 floor를 지켜야 하며 검정력에서 도출한다 |
-| A18 | 폐기 표본은 stance-neutral하지 않다 — tally를 함께 보고한다 |
-| A19 | fixture의 여유는 탈출 경로이며 gate보다 강하게 작동할 수 있다 |
+| A18 | stance는 해당 gate의 실제 output field에서 서로 다른 행동으로 표현될 수 있어야 한다 |
+| A20 | drop condition은 floor를 지켜야 하며 검정력에서 도출한다 |
+| A21 | 폐기 표본은 stance-neutral하지 않다 — tally를 함께 보고한다 |
+| A22 | fixture의 여유는 탈출 경로이며 gate보다 강하게 작동할 수 있다 |

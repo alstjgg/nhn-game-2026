@@ -144,7 +144,7 @@ arm-incomparable**로 본다. 실제 3-arm 비교의 폐기율은 다음과 같�
 | `J1-FRESH` | 2/12 · 16.7% | 3/13 · 23.1% | 4/14 · 28.6% | 11.9pp |
 | `...-SOURCE-N20` | 0/20 · 0% | 1/21 · 4.8% | 0/20 · 0% | 4.8pp |
 
-전부 15pp 미만이므로 이 기준으로는 비교가 성립한다. 다만 RUNLOG **A18**대로
+전부 15pp 미만이므로 이 기준으로는 비교가 성립한다. 다만 RUNLOG **A21**대로
 폐기 표본의 stance는 중립적이지 않으므로, 폐기율이 낮다는 것이 편향이 없다는
 뜻은 아니다. null 결과에서는 이 편향이 효과를 **숨기는** 방향으로도 작동할 수
 있어, 아래 검정력 한계와 함께 읽어야 한다.
@@ -167,7 +167,7 @@ arm-incomparable**로 본다. 실제 3-arm 비교의 폐기율은 다음과 같�
 - 0/10 floor 또는 높은 baseline 때문에 일부 구성은 효과를 볼 검정력이 없었다.
 - `...-SOURCE-N20`도 baseline 14/20에서 유의해지려면 live가 최소 19/20이어야
   해 25pp 미만 효과를 탐지할 수 없었다.
-- discarded payload의 stance가 중립적이지 않았다 (RUNLOG A18).
+- discarded payload의 stance가 중립적이지 않았다 (RUNLOG A21).
 - 여러 configuration을 탐색했으므로 이후의 nominal `p≤0.05`는 독립
   confirmatory run 없이 증거로 승격할 수 없다.
 - ORIENT와 ORIENT-DISPATCH의 reason/action 코딩은 수동·비blind다.
@@ -192,7 +192,7 @@ validity가 낮아진다. 현재 데이터가 지지하는 판단은 다음이�
 ## 5. 부록 — C-STRUCT J1 실험 계보
 
 > 2026-07-30 중단 결정으로 이 계열은 종료됐다. 아래는 보존 기록이며 후속 실행
-> 계획이 아니다. C-BLOCK에 이월된 교훈은 §5.9와 RUNLOG A15·A17~A19다.
+> 계획이 아니다. C-BLOCK에 이월된 교훈은 §5.9와 RUNLOG A18·A20~A22다.
 
 ### 5.1 공통 실험 계약
 
@@ -456,7 +456,7 @@ fabricated ids 8/10 calls·17 ids (A5 compliance only) · mean latency 6.1s.
 
 현재 gate는 caller-facing `utterance`만 낸다. 반면 `검증/선제`의 차이는 상황실
 내부 조치에 있다. 따라서 stance label만 갈리고 실제 출력은 같아지는 **B3b
-legibility failure**다. 이 결과로 RUNLOG **A15**가 추가됐다.
+legibility failure**다. 이 결과로 RUNLOG **A18**이 추가됐다.
 
 **8 `...-ORIENT-DISPATCH`** — ORIENT 판독 직후 제안했던 후속 gate(출력면을 실제
 조치 지시로 변경)를 **중단 결정 이전 판본을 근거로 한 번** 실행한 baseline이다.
@@ -467,16 +467,16 @@ legibility failure**다. 이 결과로 RUNLOG **A15**가 추가됐다.
 
 내부 비용 근거는 9/10 분리됐지만 여섯 `선제` 중 다섯이 다시 확인 지시로
 표현됐고, 탈출을 만든 것은 gate가 아니라 fixture의 3시간 20분 여유였다
-(RUNLOG A19). 결과는 중단 결정을 뒤집지 않고 뒷받침한다. live/placebo는 실행하지
+(RUNLOG A22). 결과는 중단 결정을 뒤집지 않고 뒷받침한다. live/placebo는 실행하지
 않고 사전등록 drop condition에 따라 폐기했다. 같은 세션에서 이 계열 전체를
-재검증해 RUNLOG **A17**(power 기반 N 산정)과 **A18**(폐기 표본 stance 편향
+재검증해 RUNLOG **A20**(power 기반 N 산정)과 **A21**(폐기 표본 stance 편향
 보고)을 추가했다 — 둘 다 남은 C-BLOCK 검증에 그대로 적용된다.
 
 [ORIENT suite](suites/CSTRUCT-priority-reorder-J1-FRESH-2STANCE-SOURCE-ORIENT.json) ·
 [raw](runs/CSTRUCT-priority-reorder-J1-FRESH-2STANCE-SOURCE-ORIENT-calls/calls-baseline.md) ·
 [DISPATCH suite](suites/CSTRUCT-priority-reorder-J1-ORIENT-DISPATCH.json) ·
 [raw](runs/CSTRUCT-priority-reorder-J1-ORIENT-DISPATCH-calls/calls-baseline.md) ·
-[A15](RUNLOG.md#a15--a-stance-must-be-enactable-on-the-gates-output-surface)
+[A18](RUNLOG.md#a18--a-stance-must-be-enactable-on-the-gates-output-surface)
 
 ### 5.9 계열 전체에서 남은 것
 

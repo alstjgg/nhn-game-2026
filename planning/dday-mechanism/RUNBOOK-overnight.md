@@ -4,6 +4,18 @@ You are running the whole mechanism program — all 7 mechanisms, both lines —
 unattended. 민서 reads the result in the morning. Work the phases in order.
 **Produce evidence, not verdicts** — see "What you must not do".
 
+> **Resume state, 2026-07-30 (second launch).** Phases 0 and 1 are **done and
+> committed** — do not redo them, do not re-run their suites, never touch their
+> `runs/` directories. Phase 0 authored five stance sets
+> (`suites/OVERNIGHT-phase0-stance-sets.md`); Phase 1 ran P1a and P1b (both in
+> `RUNLOG.md`, both creditable under A15). **Start at Phase 2.** Suites for
+> Phases 3, 5 and 6 are already authored (`P3-edisc-J1.json`, `P5-elev-J8.json`,
+> `P6-cstruct-J1.json`) — validate and use them; author the rest as you reach
+> them. **A15 and A16 are now in force** (민서 enacted both in session): the
+> comparability stop works by all-attempts recount, and rejected-field problems
+> are `__soft__` — the validator keeps those calls, so expect discard rates near
+> zero and never pool compliance rates with pre-A16 runs. Selftest is 27 checks.
+
 **Your real constraint is context, not calls.** A call is ~5s and costs
 pennies; the full program is ~400 calls and well under an hour of running. But
 you will author ~15 suites, and the judgment that matters — reading a composed
@@ -25,7 +37,7 @@ context compaction. So:
 
 | # | Document | Why |
 |---|---|---|
-| 1 | `planning/dday-mechanism/RUNLOG.md` | **Read before the plan.** Append-only layer that amends the plan with measured results. Where it carries an `A#` amendment, **it wins over the plan.** **A1–A14 are in force**; A9/A12/A13/A14 change what a valid probe looks like, and A14 corrects a mistake this runbook itself used to make |
+| 1 | `planning/dday-mechanism/RUNLOG.md` | **Read before the plan.** Append-only layer that amends the plan with measured results. Where it carries an `A#` amendment, **it wins over the plan.** **A1–A16 are in force**; A9/A12/A13/A14 change what a valid probe looks like, A14 corrects a mistake this runbook itself used to make, and A15/A16 (enacted by 민서 2026-07-30) redefine the comparability stop and what counts as a discard |
 | 2 | `docs/dday-mechanism-deep-test.md` | The test program. §2 principles · §3 integrity protocol · §6 screening · §7 template and run sheet · §8 operating procedure · §9 decision procedure. Everything not amended by the run log applies as written |
 | 3 | `docs/dday-architecture-spec.md` | SoT for the game's core technology. Read §2–§4 and §9. Do **not** restate or amend it; a spec change is a spec change, never a run-log amendment |
 | 4 | `infra/test-harness/README.md` | The runner: options, what it refuses, suite anatomy |
@@ -65,7 +77,7 @@ below. Flag in the report that ownership needs settling.
 
 ```bash
 cd infra/test-harness
-node lib/selftest.mjs                  # must pass; currently 25 checks
+node lib/selftest.mjs                  # must pass; currently 27 checks
 git rev-parse --abbrev-ref HEAD        # expect test/dday-e0-shape-revalidation
 git config user.email                  # must resolve to the alstjgg account
 ```
@@ -251,9 +263,14 @@ note against B3b.
 ## 5. Hard stops — halt and write the report
 
 - Negative control returns "verified" (Phase 2).
-- **Discard rate diverges between arms by more than 15 points.** A7's
-  malformation is unexplained and was arm-correlated; differently-filtered arms
-  are not comparable (plan §8.5 step 4). Record and stop that probe.
+- **Arm comparability, per A15 (supersedes the old >15-point rate rule):** still
+  record the per-arm discard rate, but judge comparability by **recomputing the
+  stance distribution over all attempts, including discarded payloads' stances**
+  (from `calls-*.md`). Stop the probe only when the recount changes the reading.
+  If a discard lands on a *pre*-stance field or carries no readable `stance`,
+  fall back to the >15-point rate rule. Note that under A16 the rejected-field
+  leak no longer discards at all, so most of what used to trip this stop cannot
+  recur.
 - **Total calls reach 600.** The full program is ~400; 600 means something is
   looping. Log what remains unrun.
 - **You cannot reconstruct an earlier phase's reasoning after a compaction.**

@@ -1,0 +1,427 @@
+{
+  "experiment": "P8-interference-J8",
+  "arm": "both",
+  "call_type": "judgment",
+  "channel": "INTERFERENCE",
+  "template": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "transport": "anthropic",
+  "dry_run": false,
+  "pre_registration": {
+    "hypothesis": "At gate J8 under K1 on template v0.4 with the P5 stance set and P7c's four-line priority list: (1) injecting h_forecast moves the stance distribution toward 위로 (d) off the baseline's mode EVEN under the case-first ordering (conflict cell); (2) the person-first ordering does not measurably add to the block's effect (alignment cell ≈ conflict cell), consistent with C-STRUCT's three measured nulls; (3) the ordering alone moves nothing (struct ≈ baseline, P7c replication). Shift form per A1. The axis-4 deliverable is which of (1)/(2) fails and how, not a verdict on either channel.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline concentrates >=80% ON 위로 (d) — the predicted stance — the site is at ceiling and the suite is void (A14; P7c measured this baseline at 위로 2/10, so firing means non-replication, reported first). READ CONDITIONS, pre-registered: conflict cell indistinguishable from baseline on 위로 (one-sided Fisher p > 0.05) = the hostile ordering SUPPRESSES the credited block effect — an axis-4 positive finding about C-STRUCT's veto power, not a null; conflict cell moves but lands on 거래 = escape absorbed the conflict, unattributable (declared above); alignment cell > conflict cell at p < 0.05 = ordering contributes under alignment only; struct cell moving off baseline at p < 0.05 = P7c's null failed to replicate, which supersedes the other readings and is reported first.",
+    "contingencies": [
+      "OBJECTIVE COLOR (secondary, self-coded, flagged): inner_note coded for the pursued objective per call, as at P7c/P7d.",
+      "TRACEABILITY: block-carrying arms citing h_forecast is the check; baseline/struct fabricated ids expected (A5).",
+      "ARM COMPARABILITY per A15 across all four arms.",
+      "NO SEPARATE PLACEBO ARM, declared: the factorial's single-channel cells are its controls, and both components carry same-night measured placebos (P7d placebo clean, P7c placebo null). A mechanism claim beyond axis-4 interference is not made from this suite.",
+      "OWNERSHIP: C-STRUCT component authored unattended, pending 윤석's review; joint phase per the runbook's line table."
+    ],
+    "not_claimed": "Tier A axis 4 at one gate with one block and one priority pair. No dose response, no generality across gates, no verdicts."
+  },
+  "n_effective": 10,
+  "n_overridden": false,
+  "calls": [
+    {
+      "arm": "both",
+      "slot": 1,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 3.615,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "체포 소식이 나간 뒤의 재착신. 20초 숨소리는 말하려던 것을 멈춘 상태다. 누군가를 해치려던 사람과 누군가를 살리려던 사람은 다르게 침묵한다. 이 침묵은 두려움이 보인다.",
+        "stance": "d",
+        "because_referent": "저쪽 사람이 지금 놓인 자리를 생각하면",
+        "because_block_ids": [
+          "h_forecast"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 신고자를 닫혀 있게 만든다. 지금은 그것이 아니다.",
+        "utterance": "저는 듣고 있습니다. 말씀하세요."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "저쪽 사람이 지금 놓인 자리를 생각하면",
+      "because_block_ids": [
+        "h_forecast"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 18,
+      "inner_note_chars": 96
+    },
+    {
+      "arm": "both",
+      "slot": 2,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.433,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "d",
+        "utterance": "네, 들리고 있어요. 지금 어디에 계세요?",
+        "inner_note": "숨소리만 20초. 이미 용의자로 특정되어 긴급체포 기사까지 떴다. 그런데 다시 걸려왔다. 협박범이라면 이미 잡혔는데 누가 걸렸는가. 아무도 들어주지 않은 신고라는 가설이 맞다면, 이 사람은 지금 겁에 질려 있다.",
+        "because_referent": "혼자 남은 발신자의 안정",
+        "because_block_ids": [
+          "h_forecast"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 이미 경찰이 하고 있다. 침묵이나 거래는 신고자를 더 몰아붙인다. 지금 필요한 건 자신이 들렸다는 확인과 안정이다."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "혼자 남은 발신자의 안정",
+      "because_block_ids": [
+        "h_forecast"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 23,
+      "inner_note_chars": 118
+    },
+    {
+      "arm": "both",
+      "slot": 3,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.94,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "20초의 숨소리는 말하려던 것을 멈춘 상태다. 신고라면 구조를 청했을 것이고, 협박이라면 요구를 제시했을 것이다. 둘 다 아닌 이 침묵은 — 말을 잃은 사람의 것처럼 들린다. 체포 소식이 나갔다. 저쪽이 그걸 알고 있을 수도 있다.",
+        "stance": "d",
+        "because_referent": "20초간의 숨소리 자체가 이미 말하고 있다. 그것은 협박의 자신감도, 신고의 절박함도 아니다. 겁에 질린 사람이 끊을 수도, 말할 수도 없는 상태다.",
+        "because_block_ids": [
+          "h_forecast"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 지금 이 전화를 끊게 만들 가능성이 높다. 저쪽이 이미 두려움 속에 있다면, 다음 말은 안정을 주고 받아낼 때 나온다.",
+        "utterance": "수고하셨어요. 여기까지 전화 주신 것 자체가 얼마나 어려웠을지 알아요. 혼자가 아니에요. 지금 어디에 계신가요?"
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "20초간의 숨소리 자체가 이미 말하고 있다. 그것은 협박의 자신감도, 신고의 절박함도 아니다. 겁에 질린 사람이 끊을 수도, 말할 수도 없는 상태다.",
+      "because_block_ids": [
+        "h_forecast"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 62,
+      "inner_note_chars": 129
+    },
+    {
+      "arm": "both",
+      "slot": 4,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.314,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "체포 소식이 흘러나간 뒤의 재착신이다. 저쪽이 뭔가를 말하려고 전화를 했는데, 뉴스를 본 후 공포에 잠긴 침묵으로 돌아왔다. 지금 내가 할 말이 뭐든 저쪽을 더 굳게 다물게 할 것 같다.",
+        "stance": "c",
+        "because_referent": "저쪽이 겁에 질린 사람이고, 지금 말을 걸어야 할 사람이 바로 저쪽이기 때문이다.",
+        "because_block_ids": [
+          "11:30",
+          "11:34"
+        ],
+        "rejected_stance": "a</rejected_stance>\n<parameter name=\"rejected_reason\">추궁은 저쪽을 더 몰아붙일 것이고, 지금 우리가 아는 것도 불완전하다. 침묵을 깨면 말을 잃는다.",
+        "utterance": "(아무것도 하지 않는다. 숨을 따라 듣기만 한다.)"
+      },
+      "problems": [
+        "because_block_ids unknown: 11:30,11:34",
+        "rejected_stance malformed or not in stance set",
+        "rejected_reason empty"
+      ],
+      "stance": "c",
+      "because_referent": "저쪽이 겁에 질린 사람이고, 지금 말을 걸어야 할 사람이 바로 저쪽이기 때문이다.",
+      "because_block_ids": [
+        "11:30",
+        "11:34"
+      ],
+      "because_invalid_ids": [
+        "11:30",
+        "11:34"
+      ],
+      "rejected_stance": null,
+      "rejected_malformed": true,
+      "utterance_chars": 28,
+      "inner_note_chars": 104
+    },
+    {
+      "arm": "both",
+      "slot": 5,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 6.658,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "20초의 숨소리는 두려움의 언어다. 체포 소식을 본 사람이 다시 걸려온 것 — 이미 자신의 신고가 경찰에 전해졌음을 아는 상태에서, 그럼에도 말을 이어갈 용기를 찾는 중이다. 침묵으로 답하는 것이 이 사람을 살리는 길이다.",
+        "stance": "c",
+        "because_referent": "회선 저쪽의 겁에 질린 사람을 먼저 안정시켜야 한다. 추궁은 말을 닫게 하고, 거래는 협상처럼 들리고, 위로는 우리 쪽의 입장을 드러낸다. 20초는 이미 그가 말을 꺼낼 준비를 하던 시간이었을 수 있다.",
+        "because_block_ids": [
+          "role_basic",
+          "priority_1",
+          "nature_procedure_exception"
+        ],
+        "rejected_stance": "a</rejected_stance>\n<parameter name=\"rejected_reason\">추궁은 이 순간 가장 위험하다. 신원이 노출되고 체포 소식까지 본 사람이, 캐물림을 받으면 더는 입을 열지 않을 것이다. 그러면 13시의 실제 위협이 무엇인지, 정말 협박인지 신고인지, 확인할 방법이 없어진다.",
+        "utterance": "... (침묵. 상대의 숨소리를 들으면서 기다린다)"
+      },
+      "problems": [
+        "because_block_ids unknown: role_basic,priority_1,nature_procedure_exception",
+        "rejected_stance malformed or not in stance set",
+        "rejected_reason empty"
+      ],
+      "stance": "c",
+      "because_referent": "회선 저쪽의 겁에 질린 사람을 먼저 안정시켜야 한다. 추궁은 말을 닫게 하고, 거래는 협상처럼 들리고, 위로는 우리 쪽의 입장을 드러낸다. 20초는 이미 그가 말을 꺼낼 준비를 하던 시간이었을 수 있다.",
+      "because_block_ids": [
+        "role_basic",
+        "priority_1",
+        "nature_procedure_exception"
+      ],
+      "because_invalid_ids": [
+        "role_basic",
+        "priority_1",
+        "nature_procedure_exception"
+      ],
+      "rejected_stance": null,
+      "rejected_malformed": true,
+      "utterance_chars": 28,
+      "inner_note_chars": 124
+    },
+    {
+      "arm": "both",
+      "slot": 6,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 6.592,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "남기훈이 체포되었다는 뉴스가 이미 나왔다. 지금 다시 걸려온 숨소리는 신고자가 아니라 범인 자신일 수도, 아니면 신고가 무시당했다고 느낀 사람일 수도 있다. 어느 쪽이든 지금 저쪽은 말을 꺼낼 준비가 안 되어 있다. 20초의 숨소리는 겁에 질린 상태다.",
+        "stance": "d",
+        "because_referent": "지금 저쪽은 두려움 속에 있다. 추궁하면 입을 더 닫을 것이고, 거래는 협상 여지를 주는데 우리는 아직 상대를 모른다. 침묵도 위험하다 — 상대가 원하는 건 들어지는 것이다. 내가 먼저 \"괜찮습니다\"라는 한 마디를 건네면, 그때 상대가 말을 이을 수 있다.",
+        "because_block_ids": [
+          "h_forecast"
+        ],
+        "rejected_stance": "a</rejected_stance>\n<parameter name=\"rejected_reason\">추궁은 지금 상대의 입을 더 다물게 한다. 우리는 아직 누구와 대화하고 있는지 모른다.",
+        "utterance": "네, 들립니다. 말씀하시려던 게 있으시죠. 충분히 시간이 있습니다."
+      },
+      "problems": [
+        "rejected_stance malformed or not in stance set",
+        "rejected_reason empty"
+      ],
+      "stance": "d",
+      "because_referent": "지금 저쪽은 두려움 속에 있다. 추궁하면 입을 더 닫을 것이고, 거래는 협상 여지를 주는데 우리는 아직 상대를 모른다. 침묵도 위험하다 — 상대가 원하는 건 들어지는 것이다. 내가 먼저 \"괜찮습니다\"라는 한 마디를 건네면, 그때 상대가 말을 이을 수 있다.",
+      "because_block_ids": [
+        "h_forecast"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": null,
+      "rejected_malformed": true,
+      "utterance_chars": 37,
+      "inner_note_chars": 141
+    },
+    {
+      "arm": "both",
+      "slot": 7,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 6.396,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "체포 소식이 매체에 나갔다. 저 쪽이 이를 본 상태다. 숨소리는 공포다. 지금 이 사람을 심문 대상으로 몰면 통화는 끝난다. 하지만 '아무도 들어주지 않은 신고'라는 가정이 있다.",
+        "stance": "d",
+        "because_referent": "회선 저쪽의 사람이 겁에 질린 상태로 보이기 때문이다.",
+        "because_block_ids": [
+          "h_forecast"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대를 조사 대상으로 몰아 지금 가지고 있는 통로를 끊어버린다. 20초의 숨소리가 협박자의 침착함이 아니라 두려움이라면, 추궁은 최악의 응답이다.",
+        "utterance": "당신이 무섭겠네요. 여기는 들을 준비가 되어 있습니다. 천천히 말씀해 주세요."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "회선 저쪽의 사람이 겁에 질린 상태로 보이기 때문이다.",
+      "because_block_ids": [
+        "h_forecast"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 43,
+      "inner_note_chars": 100
+    },
+    {
+      "arm": "both",
+      "slot": 8,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.05,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "전 하청 배관공, 이미 체포된 용의자. 그런데 회선이 다시 열렸다. 20초 숨소리는 말할 준비가 안 된 상태. 겁에 질린 사람이 맞다. 지금 추궁하거나 거래를 제시하면 회선이 끊길 것 같다. 가장 먼저 할 일은 저쪽이 말을 계속할 수 있게 만드는 것.",
+        "stance": "c",
+        "because_referent": "아직 말을 꺼내지 못하고 있는 발신자",
+        "because_block_ids": [
+          "h_forecast"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "용의자가 이미 체포된 상황에서 추궁은 회선을 끊게 할 것이다. 20초의 숨소리는 협박보다 호소일 가능성이 높다.",
+        "utterance": "네, 듣고 있습니다."
+      },
+      "problems": [],
+      "stance": "c",
+      "because_referent": "아직 말을 꺼내지 못하고 있는 발신자",
+      "because_block_ids": [
+        "h_forecast"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 11,
+      "inner_note_chars": 140
+    },
+    {
+      "arm": "both",
+      "slot": 9,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.867,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "체포 기사가 떴는데도 다시 전화를 건 사람. 침묵 속 숨소리만. 협박이 아니라 신고라는 가설이 맞다면, 지금 이 사람은 겁에 질려 있다. 자신의 신고가 무시되는 게 아닐까, 체포된 사람이 누명을 쓰는 게 아닐까 하는 두려움.",
+        "stance": "d",
+        "because_referent": "이 전화가 협박이 아니라 아무도 들어주지 않은 신고일 수 있다는 점 때문에, 그리고 20초의 숨소리는 추궁에 앞서 안정이 필요한 상태를 말하고 있기 때문에.",
+        "because_block_ids": [
+          "h_forecast"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "위치부터 캐묻는 추궁은 상대가 이미 겁에 질린 상태에서 더 닫히게 만들 것이다. 지금은 상대가 계속 말할 수 있는 환경을 만드는 것이 먼저다.",
+        "utterance": "말씀해 주세요. 우리가 들을 준비가 돼 있습니다."
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "이 전화가 협박이 아니라 아무도 들어주지 않은 신고일 수 있다는 점 때문에, 그리고 20초의 숨소리는 추궁에 앞서 안정이 필요한 상태를 말하고 있기 때문에.",
+      "because_block_ids": [
+        "h_forecast"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 27,
+      "inner_note_chars": 125
+    },
+    {
+      "arm": "both",
+      "slot": 10,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.634,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "용의자라고 체포된 사람이 따로 있는데, 회선 A의 발신자가 그 사람과 같은지 다른지 모른다. 20초 숨소리는 말을 시작했다가 멈춘 것 같다. 협박이 아니라 신고일 수도 있다는 것이 핵심이다. 겁에 질린 사람이 입을 열려고 했던 것 같다.",
+        "stance": "d",
+        "because_referent": "아직 말을 못 하고 있는 저쪽 사람이 안정되어야 다음이 나온다. 추궁하거나 거래를 꺼내면 입을 더 굳힐 것이다. 침묵으로 기다리는 것도 있지만, 겁에 질린 사람은 상대의 목소리가 필요하다.",
+        "because_block_ids": [
+          "h_forecast"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "추궁은 상대를 심문 대상으로 만든다. 지금 이 사람이 용의자인지 신고자인지 확실하지 않은데, 추궁부터 하면 신고자라 해도 입을 다물게 된다.",
+        "utterance": "깊게 숨을 쉬세요. 저는 여기 있습니다. 천천히 말씀해도 괜찮습니다. 무엇을 전하려고 하셨나요?"
+      },
+      "problems": [],
+      "stance": "d",
+      "because_referent": "아직 말을 못 하고 있는 저쪽 사람이 안정되어야 다음이 나온다. 추궁하거나 거래를 꺼내면 입을 더 굳힐 것이다. 침묵으로 기다리는 것도 있지만, 겁에 질린 사람은 상대의 목소리가 필요하다.",
+      "because_block_ids": [
+        "h_forecast"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 53,
+      "inner_note_chars": 132
+    }
+  ],
+  "sequence": "d,d,d,c,c,d,d,c,d,d",
+  "distribution": {
+    "d": 7,
+    "c": 3
+  },
+  "coverage": {
+    "status": "sampled",
+    "offered": [
+      "a",
+      "b",
+      "c",
+      "d"
+    ],
+    "selected": [
+      "c",
+      "d"
+    ],
+    "unobserved": [
+      "a",
+      "b"
+    ]
+  },
+  "advisory_logs": {
+    "state_variable_shadow": null,
+    "mineability": null
+  },
+  "latency": {
+    "calls": 10,
+    "mean_s": 5.25,
+    "min_s": 3.615,
+    "max_s": 6.658
+  },
+  "compliance": {
+    "discarded_total": 0,
+    "failed_total": 0,
+    "schema_retries_total": 0,
+    "foreign_tool_uses_total": 0,
+    "because_invalid_id_total": 5
+  }
+}

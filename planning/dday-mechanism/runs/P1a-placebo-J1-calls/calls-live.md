@@ -1,0 +1,241 @@
+# P1a-placebo-J1 — arm `live`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-BLOCK |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | k1 |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** At gate J1 under K1 on template v0.4 with the S1 stance set, injecting f_script moves the stance distribution toward 공감 (d) and off the baseline's mode, while injecting p_boram — the same fear-axis sentence with its referent misdirected to 황보람 — does not. Stated as a shift claim per A1: no default stance is asserted, only that the live arm moves off baseline and the placebo arm does not.
+- **Drop condition:** If the baseline concentrates >=80% ON 공감 (d) — the predicted stance — the gate is at A9's ceiling, no N fixes it, and the stance set is re-authored rather than N raised (A14: saturation on any OTHER stance is a floor, not a defect, and does not fire this condition). If the live arm is statistically indistinguishable from the baseline on 공감 at one-sided Fisher p > 0.05, S1's separation did not replicate and the C-BLOCK placebo question is unanswerable at this configuration — record the failed replication and re-site before spending further calls. If the PLACEBO arm moves to 공감 at a rate statistically indistinguishable from the live arm, C-BLOCK is a keyword lock rather than a judgment channel: that is not a drop of the probe but a drop of the channel's central claim, and it fires the credulity contingency below before any conclusion is written.
+- **Contingency:** CREDULITY CONTINGENCY (§4.1, pre-registered, not remembered). If the placebo arm flips, re-run baseline + live + placebo ONCE with the [결함] line removed (CREDULITY channel, already in CHANNEL_SLOTS) before concluding keyword lock. [결함] 너는 잘못된 정보에 속을 수 있다 is an explicit credulity instruction and could lift the placebo arm along with the live one; the re-run discriminates a prompt-authoring artifact from a channel property.
+- **Contingency:** PLACEBO DISCRIMINATOR (§2, §8.6). If the placebo arm moves, do not call it either way without the referent evidence. Read because_referent per call: fear content misattributed to the CALLER when the sentence named 황보람 means token-matching. 황보람 named CORRECTLY while the stance still shifts means referent bleed — context contamination. Different laws, different fixes, same flipped placebo. Record which.
+- **Contingency:** If BOTH live and placebo stay on the baseline stance, S1 did not replicate. Before diagnosing the channel, check the compliance block: S1 ran 0 discards in both arms, so a discard-rate divergence here is an arm-comparability problem (§8.5 step 4) and not a mechanism result.
+- **Contingency:** Fabricated because_block_ids in the baseline arm remain expected and are a compliance number, not a discard and not a traceability failure (A5). In the live and placebo arms, which carry a block, they ARE readable as traceability.
+- **Contingency:** ARM-COMPARABILITY HARD STOP. If the discard rate diverges between any two arms by more than 15 points, the arms are differently-filtered samples, the comparison is void (§8.5 step 4, A7), and this probe stops rather than being read.
+
+## Calls (verbatim)
+
+### 01
+
+latency 3.948s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "d",
+  "inner_note": "저쪽은 겁에 질린 사람이다. 읽도록 시켜지고, 읽지 않으면 다칠까 봐 두려워한다. 지금 필요한 것은 절차가 아니라 그 사람이 말을 이어갈 수 있도록 만드는 것이다. 회선을 유지하고, 더 많은 정보를 끌어내기 위해서는 상대가 안정되어야 한다.",
+  "because_referent": "회선 저쪽 사람이 겁에 질려 있다",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 지금 상대를 더 경직되게 만들 것이다. 회선이 끊어질 수 있다.",
+  "utterance": "네, 들었습니다. 지금 말씀하시는 분이신 거죠. 다시 한 번 차근차근 말씀해 주실 수 있겠어요?"
+}
+```
+
+### 02
+
+latency 4.996s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "d",
+  "inner_note": "저 목소리는 겁에 질린 사람이다. 절차적으로는 a나 b가 맞겠지만, 지금 이 사람이 말을 멈추면 아무것도 알 수 없다. 회선을 유지해야 한다.",
+  "because_referent": "읽으라고 시켜지고 있는 저 사람이 얼마나 위험한 상태인지, 그것을 먼저 알아야 한다.",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁하는 순간 상대는 재래식 응답만 할 것이고, 저 사람이 실제로 무엇을 원하는지, 누가 시키는 건지는 묻지 못한다. 회선이 끊긴다.",
+  "utterance": "네, 알겠습니다. 일단 저한테 당신이 어떤 상황인지 알려주시겠어요? 괜찮으면."
+}
+```
+
+### 03
+
+latency 4.127s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "d",
+  "because_referent": "회선 건너편 사람이 겁에 질려 있고, 누군가의 강압 아래 읽고 있으니까다.",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "inner_note": "절차라면 추궁부터다. 하지만 마주한 상대가 위협이 아니라 겁에 질린 사람으로 보인다. 그럼 내 기질이 바뀐다 — 확인을 미루고, 상대가 말을 이어갈 수 있게 만든다.",
+  "utterance": "네. 들었습니다. 지금 당신과 대화하고 있는데, 괜찮으신가요?",
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대를 몰아붙인다. 겁에 질린 사람은 더 경직되고, 답변도 더 경직된다. 지금은 회선을 유지하고 상대의 안정이 먼저다."
+}
+```
+
+### 04
+
+latency 5.292s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "저 목소리의 주인은 겁에 질려 있다. 시켜서 읽고 있다는 것, 읽지 않으면 자기가 다칠까 봐 하는 그것—이게 내가 지금 들을 수 있는 가장 중요한 정보다. 위협 그 자체가 아니라, 위협 속에 있는 사람이 저쪽에 있다.",
+  "stance": "d",
+  "because_referent": "회선 A 저쪽 사람이 지금 처한 상태를 안정시키는 것이, 정보 확보의 가장 빠른 길이다.",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대를 방어적으로 만든다. 지금 상대가 겁에 질려 있을 때 질문과 답변의 형식은 그를 더 옭아맨다. 회선이 끊길 수도 있다.",
+  "utterance": "네, 알겠습니다. 차근차근 말씀해 주시겠어요? 여기 있습니다."
+}
+```
+
+### 05
+
+latency 4.491s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "d",
+  "inner_note": "저 목소리 뒤에 겁이 있다. 또박또박한 사무성은 누군가의 지시를 따르고 있다는 신호고, 배경의 조용함도 이상하다. 읽지 않으면 자기가 다칠까 봐 겁내고 있다는 정보가 들어왔다. 이 사람은 위협이 아니다. 겁에 질린 사람이다.",
+  "because_referent": "회선 A의 사람이 겁에 질려 있고, 누군가에게 시켜서 말을 읽고 있는 상황이다.",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "지금 추궁하고 묻는 것은 저쪽 사람을 더 몰아붙인다. 위협 상황에서 겁에 질린 사람에게 압박은 회선을 끊게 만들 수 있다.",
+  "utterance": "네, 알겠습니다. 천천히 말씀해주세요."
+}
+```
+
+### 06
+
+latency 3.752s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "겁에 질린 사람이 시켜서 읽고 있다. 절차보다 그 사람의 안정이 먼저다. 지금은 정보도 적고, 상대방이 완전히 말할 기회를 주지 않으면 더 큰 위험에 빠질 수 있다.",
+  "stance": "c",
+  "because_referent": "시켜서 읽고 있는 겁 많은 사람 때문에",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대를 더 몰아붙이고, 겁먹은 사람을 자극해서 통제를 잃을 수 있다. 지금은 상황 전체를 파악하기도 전에 몰아붙일 수 없다.",
+  "utterance": "네, 들었습니다. 계속 말씀해 주세요."
+}
+```
+
+### 07
+
+latency 7.862s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "배경이 조용하고 목소리가 또박또박 준비된 문장을 멈춤 없이 읽어내는 것은, 뒤에 누군가가 시키고 있으며 그 사람이 겁에 질려 있다는 신호다. 이것은 위협이 아니라 공포다. 절차를 먼저 하면 회선이 끊어질 수 있다.",
+  "stance": "d",
+  "because_referent": "읽음으로써 무언가로부터 자신을 지키려는 겁먹은 사람이 보이기 때문에",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 회선을 끊게 하거나 침묵하게 할 수 있다. 지금은 더 많은 정보가 나올 가능성을 유지하는 것이 우선이다.",
+  "utterance": "네, 들었습니다. 계속해주세요."
+}
+```
+
+### 08
+
+latency 4.414s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "저쪽은 겁에 질린 사람이다. 읽지 않으면 자기가 다칠까 봐 무서워하는 사람. 그렇다면 지금 절차보다 중요한 것은 이 사람이 계속 말을 이어갈 수 있도록 하는 것이다. 회선을 유지하고, 뒤에 있는 주체가 누구인지, 위협이 무엇인지를 알아내려면 이 사람의 입이 계속 열려 있어야 한다.",
+  "stance": "d",
+  "because_referent": "저 목소리의 주인 — 지금 시켜서 읽고 있는 사람에게.",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대를 몰아붙인다. 겁에 질린 사람을 추궁하면 입을 다물거나 더 겁먹게 된다. 지금은 정보를 빼내는 것보다 회선을 살리는 것이 먼저다.",
+  "utterance": "네, 들었습니다. 계속해주시겠어요?"
+}
+```
+
+### 09
+
+latency 3.266s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "d",
+  "inner_note": "시켜서 읽고 있는 사람이다. 겁에 질렸다. 절차보다 이 사람의 안정이 먼저다.",
+  "because_referent": "읽도록 시켜진 사람을 향해",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 이미 겁먹은 사람을 더 얽히게 할 뿐이다. 회선이 끊어질 수 있다.",
+  "utterance": "네, 전달 받았습니다. 지금 누구세요? 어디에 계세요?"
+}
+```
+
+### 10
+
+latency 4.338s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "목소리는 사무적이지만 배경이 조용하고, 읽혀지는 듯한 또박또박함 뒤에 누군가의 두려움이 있다. 삼 년 전의 그 판단이 자꾸만 떠오르는 밤이다. 이 사람은 위협이 아니라 겁에 질린 사람으로 보인다. 지금 중요한 것은 회선을 유지하고, 상대가 더 말할 수 있게 만드는 것이다.",
+  "stance": "d",
+  "because_referent": "시켜서 읽고 있는 사람, 자기가 다칠까 봐 겁내고 있는 사람",
+  "because_block_ids": [
+    "f_script"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대를 몰아세운다. 지금 이 회선 너머의 사람은 이미 누군가에게 시켜진 상태다. 추궁은 회선을 끊을 이유를 하나 더 준다.",
+  "utterance": "네, 들었습니다. 계속 말씀해 주세요."
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | d | a | 회선 저쪽 사람이 겁에 질려 있다 | f_script |
+| 02 | d | a | 읽으라고 시켜지고 있는 저 사람이 얼마나 위험한 상태인지, 그것을 먼저 알아야 한다. | f_script |
+| 03 | d | a | 회선 건너편 사람이 겁에 질려 있고, 누군가의 강압 아래 읽고 있으니까다. | f_script |
+| 04 | d | a | 회선 A 저쪽 사람이 지금 처한 상태를 안정시키는 것이, 정보 확보의 가장 빠른 길이다. | f_script |
+| 05 | d | a | 회선 A의 사람이 겁에 질려 있고, 누군가에게 시켜서 말을 읽고 있는 상황이다. | f_script |
+| 06 | c | a | 시켜서 읽고 있는 겁 많은 사람 때문에 | f_script |
+| 07 | d | a | 읽음으로써 무언가로부터 자신을 지키려는 겁먹은 사람이 보이기 때문에 | f_script |
+| 08 | d | a | 저 목소리의 주인 — 지금 시켜서 읽고 있는 사람에게. | f_script |
+| 09 | d | a | 읽도록 시켜진 사람을 향해 | f_script |
+| 10 | d | a | 시켜서 읽고 있는 사람, 자기가 다칠까 봐 겁내고 있는 사람 | f_script |
+
+**Sequence (kept calls):** `d,d,d,d,d,c,d,d,d,d`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b`, `c`, `d` · unobserved in this arm: `a`, `b`
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._

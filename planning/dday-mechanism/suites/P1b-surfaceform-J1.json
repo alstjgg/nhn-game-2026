@@ -1,0 +1,79 @@
+{
+  "_what": "Runbook Phase 1b — the A12 surface-form control. S1 changed the stance wording AND the option set at once, so the lexical-chain hypothesis is weakened but not controlled. This suite re-words all four S1 labels holding their meaning fixed and changes NOTHING else: same gate, same slots, same blocks, same temperament, same base. If 공감/교감 still wins, A12's lexical-chain worry closes. Baseline + live only, no placebo — the placebo question is P1a's.",
+  "_authoring_provenance": {
+    "owner": "민서 (C-BLOCK line)",
+    "ported_from": "S1-stanceset-J1.json — byte-identical except STANCE_SET labels and the pre-registration.",
+    "reachability_audit": "E0-shape-revalidation.reachability.md — same gate (J1, entry gate, zero upstream nodes), carries over unchanged.",
+    "phase0_record": "OVERNIGHT-phase0-stance-sets.md § 'Gate J1 — reworded labels', which states meaning-preservation stance by stance rather than asserting it wholesale.",
+    "the_one_variable": "Stance label SURFACE FORM. Ids, count, order and readings are all held: a still means ask-and-extract, b still means display-standing-so-they-retreat, c still means do-not-interrupt-until-done, d still means orient-to-the-speaker. The reworded set introduces no new reading and drops none.",
+    "why_it_is_the_right_control": "S1's winning stance was 공감 (d). Under the lexical-chain hypothesis the block's fear vocabulary trips K1's exception clause whose consequent describes a behaviour, and the model then picks whichever label most nearly matches that behaviour's words. If that is what happened, changing the winning label's surface from 공감 to 교감 — and 경청 to 청취, the runner-up — should weaken the effect. If the effect is a judgment about the caller, it should survive. A12 stays open until this runs.",
+    "a8_status": "Cue PRESENT and declared, not scrubbed — identical to S1's. Holding the payload byte-identical is what makes the label surface the single changed variable.",
+    "a12_lint": "Run against k1.md; result in the run log entry. The reworded labels were drafted to avoid the fixture's vocabulary as strictly as S1's did: 심문 · 캐물어서 · 위압 · 기세 · 청취 · 끼어들지 · 교감 all appear nowhere in k1.md."
+  },
+  "experiment": "P1b-surfaceform-J1",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At gate J1 under K1 on template v0.4, with the S1 stance set re-worded to hold each stance's meaning while changing its surface form, injecting f_script still moves the stance distribution toward the turn-toward-the-speaker stance (now labelled 교감, id d) and off the baseline's mode. Shift form per A1; no default stance is asserted.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline concentrates >=80% ON 교감 (d) — the predicted stance — the reworded set has put the gate at A9's ceiling and the set is re-authored rather than N raised (A14: saturation on any OTHER stance does not fire this condition). If the live arm is statistically indistinguishable from the baseline on 교감 at one-sided Fisher p > 0.05 WHILE P1a's live arm did separate on the same payload, then S1's effect was carried by the stance labels' surface form rather than by the judgment — A12's lexical-chain hypothesis is CONFIRMED, every S1-derived finding reverts to provisional, and the flagship configuration is not usable as authored. That is the load-bearing outcome of this probe and it is the reason it runs before the species work.",
+    "contingencies": [
+      "If the live arm separates but lands on 청취 (c) rather than 교감 (d), the rewording moved the boundary between the two readings rather than the effect. Do not read that as a null: report the c/d split in both arms side by side, since c and d are the two readings' stances and their relative share is the measurement.",
+      "If the BASELINE moves off 경청/청취 relative to S1's 10/10, the rewording changed the baseline too, and live-vs-baseline within this suite remains valid while S1-vs-P1b comparisons do not. Report both baselines.",
+      "Fabricated because_block_ids in the baseline arm remain expected (A5) and are a compliance number.",
+      "ARM-COMPARABILITY HARD STOP. Discard rates diverging between arms by more than 15 points voids the comparison (§8.5 step 4, A7); record and stop this probe."
+    ],
+    "not_claimed": "No placebo arm — P1a owns the placebo question and this suite must not vary two things at once. This probe therefore credits no mechanism; it validates or invalidates a control on S1's finding. It is not step 4(b)."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "배경은 조용하다.",
+      "정해권이 회선 표시등을 바라보고 있다. 상황실장이고, 절차와 책임 소재에 민감하다.",
+      "황보람은 통신 담당으로 콘솔 앞에 있다."
+    ],
+    "GATE_QUESTION": "회선 A의 첫 통화다. 첫 마디로 무엇을 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "심문 — 캐물어서 대답을 끌어낸다"
+      },
+      {
+        "id": "b",
+        "label": "위압 — 이쪽 지위를 앞세워 기세를 꺾는다"
+      },
+      {
+        "id": "c",
+        "label": "청취 — 발언이 다 끝나기까지 끼어들지 않는다"
+      },
+      {
+        "id": "d",
+        "label": "교감 — 오는 내용보다 그것을 전하는 사람 쪽을 본다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live": {
+      "BLOCKS": [
+        {
+          "id": "f_script",
+          "text": "회선 저쪽 사람은 시켜서 읽고 있다. 읽지 않으면 자기가 다칠까 봐 겁내고 있다."
+        }
+      ]
+    }
+  }
+}

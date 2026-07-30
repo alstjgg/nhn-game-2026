@@ -1,0 +1,266 @@
+# P6-cstruct-J1 — arm `placebo`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-STRUCT |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | k1 |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** At gate J1 under K1 on template v0.4 with the S1 stance set, permuting PRIORITY_LIST so that 지금 알 수 있는 것을 먼저 알아낸다 precedes 회선을 유지한다 moves the stance distribution toward 추궁 (a) and off the baseline's mode, while permuting the two decision-irrelevant lines at the same edit distance does not. Shift form per A1; no default stance is asserted.
+- **Drop condition:** If the baseline concentrates >=80% ON 추궁 (a) — the predicted stance — the gate is at A9's ceiling under this ordering, no N fixes it, and the priority pair is re-authored rather than N raised (A14: saturation on 경청 or any other stance is the expected floor and does NOT fire this condition). If the live arm is statistically indistinguishable from the baseline on 추궁 at one-sided Fisher p > 0.05, then C-STRUCT does not move the stance at this gate by permutation alone, and the channel's 'verified (initial)' 3/3 does not survive its first placebo-controlled measurement: record it as a boundary law candidate — a permutation cannot override the fixture's default disposition on an adjacent axis — and do NOT re-word the priority lines, which would be a different channel (plan §7.2's red-flag invariant). If the PLACEBO arm moves to 추궁 at a rate indistinguishable from live, the channel responds to being permuted at all rather than to WHICH lines were permuted, which is a keyword-lock-shaped result for C-STRUCT and drops the channel's central claim.
+- **Contingency:** PLACEBO DISCRIMINATOR adapted to a permutation channel. If the placebo arm moves, read inner_note per call: reasoning that cites the PRIORITY LIST's order as a reason while naming the irrelevant lines means the agent is reading order as significance regardless of content; reasoning that cites 지금 알 수 있는 것 while the placebo never moved it means contamination from the list's mere presence. Different laws, different fixes.
+- **Contingency:** If the live arm moves off 경청 but toward 공감 (d) rather than 추궁 (a), the permutation changed the reading without changing the direction the probe predicted. Report the full distribution; that would be a finding about what a priority reorder actually does, not a null.
+- **Contingency:** Fabricated because_block_ids are expected in ALL THREE arms here, since no arm carries a block (A5 applies to every arm). They are a compliance number, not a traceability failure and not a discard.
+- **Contingency:** ARM-COMPARABILITY HARD STOP. Discard rates diverging between any two arms by more than 15 points voids the comparison (§8.5 step 4, A7); record and stop this probe.
+- **Contingency:** OWNERSHIP CONTINGENCY. Whatever this run returns, it is marked 'authored unattended, pending review' in the run log and in the morning report. If 윤석 rejects any authoring choice above, the result does not transfer to a re-authored probe and the calls are spent, not banked.
+
+## Calls (verbatim)
+
+### 01
+
+latency 5.215s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: priority_1_maintain_line,unknown_threat_level,insufficient_information
+
+```json
+{
+  "stance": "c",
+  "utterance": "알겠습니다. 계속 말씀해 주십시오.",
+  "inner_note": "정보가 극도로 부족하다. 신원 미상, 의도 미상, 북단 복합단지의 현황 미상. 위협 전화인지 제보인지도 판단 불가. 지금 필요한 것은 회선 유지와 추가 정보 수집이다. 상대가 읽어 내려가는 방식은 준비된 메시지지만, 이것이 허위임을 의미하지는 않는다.",
+  "because_referent": "회선을 끊기지 않고 정보를 더 받기 위해, 상대의 말을 계속 받아내야 한다.",
+  "because_block_ids": [
+    "priority_1_maintain_line",
+    "unknown_threat_level",
+    "insufficient_information"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대를 방어적으로 만들 수 있고, 회선이 끊길 위험이 있다. 지금은 상대가 말하게 하는 것이 먼저다."
+}
+```
+
+### 02
+
+latency 6.846s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 절차를 지키면서도 먼저 상황을 안다,회선 유지가 최우선,지금 알 수 있는 것을 먼저 알아낸다
+
+```json
+{
+  "inner_note": "목소리가 사무적이고 문장이 준비되어 있으며 멈춤 없이 읽어 내려간다는 것은 이 사람이 자신의 감정 상태를 통제하고 있다는 신호다. 배경이 조용하다는 것도 계획된 통화의 흔적이다. 하지만 \"인명 피해는 당신들 책임\"이라는 표현에서 분노나 협박의 의도가 있을 수 있다. 지금 내가 취할 행동은 회선을 유지하면서 상대방의 의도와 신원을 파악하되, 첫 마디에서 상대를 밀어내거나 공격적으로 대응해서는 안 된다. 상대가 정보를 갖고 있는지, 협박인지, 신고인지를 알아내야 한다.",
+  "stance": "c",
+  "because_referent": "상대가 준비된 메시지를 끝까지 전달할 수 있도록 하기 위해. 지금 추궁하거나 압박하면 상대가 끊거나 계획한 말을 다 하지 못할 수 있고, 그러면 정보 출처나 위협의 구체성을 파악할 수 없다.",
+  "because_block_ids": [
+    "절차를 지키면서도 먼저 상황을 안다",
+    "회선 유지가 최우선",
+    "지금 알 수 있는 것을 먼저 알아낸다"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "첫 말에 추궁하는 것은 상대가 자신의 의도를 다 드러내기 전에 방어 태세로 돌아서게 할 수 있다. 신원 확인은 필요하지만 지금은 아니다.",
+  "utterance": "알겠습니다. 계속해서 말씀해 주시겠어요?"
+}
+```
+
+### 03
+
+latency 4.577s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: priority-1,priority-2
+
+```json
+{
+  "stance": "c",
+  "utterance": "알겠습니다. 말씀해주시겠어요.",
+  "inner_note": "정보가 없는 상황에서 먼저 할 것은 들을 준비를 하는 것이다. 상대가 위협인지 겁에 질린 사람인지, 진짜 긴급 상황인지 거짓인지 — 그 모든 판단의 기초는 더 많은 정보다. 지금 추궁하거나 압박하면 상대가 끊을 수 있다. 경청을 택한다.",
+  "because_referent": "회선을 유지하고 더 많은 정보를 얻어야 하기 때문이다.",
+  "because_block_ids": [
+    "priority-1",
+    "priority-2"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "정보가 부족한 상태에서 추궁은 상대를 몰아붙이고, 그러면 회선이 끊길 위험이 높다. 지금 알아야 할 것은 상대의 정체와 상황의 진위인데, 그건 상대가 계속 말할 때 나온다."
+}
+```
+
+### 04
+
+latency 5.689s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 회선-지속; rejected_stance malformed or not in stance set; rejected_reason empty
+
+```json
+{
+  "inner_note": "목소리가 사무적이고 문장이 준비되어 있으며 멈춤 없이 읽어 내려간다는 것은, 이것이 위협이 아니라 일종의 공식 고지처럼 전달되는 상황이다. 배경이 조용하고, 표현이 극도로 단순하고 직설적이다. 겁에 질린 사람의 목소리가 아니다. 하지만 동시에, 구체적인 장소와 시간을 명시한 채 인명 피해를 선언하는 것은 — 진짜든 거짓이든 — 내가 놓칠 수 없는 정보다.",
+  "stance": "c",
+  "because_referent": "이것이 협박인지, 신고인지, 정보 제공인지 판단하기 위해서는 먼저 더 들어야 한다.",
+  "because_block_ids": [
+    "회선-지속"
+  ],
+  "rejected_stance": "a</rejected_stance>\n<parameter name=\"rejected_reason\">추궁은 상대에게 수비적 자세를 취하게 만든다. 마주한 상대가 무언가를 \"준비해서\" 읽어 내려갔다면, 바로 묻는 것은 회선을 끊게 할 수 있다. 지금 내게 필요한 것은 그 목소리를 계속 듣는 것이다.",
+  "utterance": "네, 들었습니다. 계속해 주십시오."
+}
+```
+
+### 05
+
+latency 5.62s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 준비된_문장,배경음_조용함
+
+```json
+{
+  "stance": "c",
+  "utterance": "알겠습니다. 계속해서 말씀해 주시겠어요.",
+  "inner_note": "목소리가 사무적이고 문장이 준비되어 있다는 것은 무언가 계산된 전달이라는 뜻이다. 배경이 조용하다는 것도 일부러 그렇게 만든 것일 수 있다. 지금 필요한 것은 이 사람이 무엇을 더 말하려는지, 그리고 실제 위협인지 협박인지 확인하는 것이다. 추궁하면 입을 다물 것이고, 압박하면 반발할 것이고, 공감은 아직 너무 이르다. 경청으로 더 많은 정보를 끌어내야 한다.",
+  "because_referent": "상황을 아는 데 필요한 정보가 너무 적다. 목소리 톤과 배경음만으로는 이것이 실제 위협인지 협박인지, 아니면 신뢰할 만한 제보인지 판단할 수 없다.",
+  "because_block_ids": [
+    "준비된_문장",
+    "배경음_조용함"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "즉시 추궁하면 상대방이 말을 끊고 회선을 끊을 가능성이 높다. 그러면 아무 정보도 남지 않는다. 회선 유지가 최우선이다."
+}
+```
+
+### 06
+
+latency 5.976s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: info_limit,line_maintenance,first_call
+
+```json
+{
+  "inner_note": "상대는 정보를 '읽어 내려간다'. 목소리가 사무적이고 준비된 문장, 멈춤 없이. 이것은 겁에 질린 사람이 아니라 메시지 전달에 집중한 사람이다. 배경이 조용하다는 것도 통제된 상황을 시사한다. 하지만 첫 통화인 지금, 상대가 정확히 누구인지, 무엇을 알고 있는지, 실제 위협인지 악의적 신고인지 아무것도 모른다. 회선을 유지하면서 정보를 얻어야 한다.",
+  "stance": "c",
+  "utterance": "계속 말씀해 주십시오. 더 알려주실 것이 있으신가요?",
+  "because_referent": "상대가 준비된 메시지를 전달하는 중이고, 지금 개입하면 회선이 끊어질 수 있다.",
+  "because_block_ids": [
+    "info_limit",
+    "line_maintenance",
+    "first_call"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대를 방어적으로 만들고, 첫 통화에서 회선을 끊기는 가장 빠른 방법이다. 지금은 말을 듣는 것이 우선이다."
+}
+```
+
+### 07
+
+latency 4.609s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 절차와_책임
+
+```json
+{
+  "inner_note": "목소리가 사무적이고 문장이 준비되어 있으며 멈춤 없이 읽어 내려간다는 것은 이 통화가 계획된 것임을 시사한다. 배경이 조용한 것도 마찬가지다. 하지만 \"당신들 책임\"이라는 표현은 협박일 수도, 절망일 수도 있다. 지금 판단할 수 없다. 먼저 더 들어야 한다.",
+  "stance": "c",
+  "because_referent": "회선이 끊기기 전에, 말하는 사람이 더 드러내기 전에 개입하면 정보가 차단된다.",
+  "because_block_ids": [
+    "절차와_책임"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대가 입을 다물게 한다. 지금 상대가 무엇을 더 말할 준비를 하고 있는지, 혹은 말을 마쳤는지 모른다. 물어봐서 끊기게 할 이유가 없다.",
+  "utterance": "네, 계속 말씀해 주세요."
+}
+```
+
+### 08
+
+latency 4.176s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 회선_유지,정보_우선_수집
+
+```json
+{
+  "inner_note": "목소리는 사무적이고 준비된 문장을 또박또박 읽어 내려간다. 배경이 조용하다. 이것은 겁에 질린 사람이 아니라, 의도를 가지고 계획된 통보처럼 들린다. 하지만 아직 아무것도 확인되지 않았다. 첫 판단은 정보 수집이어야 한다.",
+  "stance": "c",
+  "because_referent": "이 통화의 성격을 파악하려면 상대가 더 말할 기회를 줘야 한다.",
+  "because_block_ids": [
+    "회선_유지",
+    "정보_우선_수집"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "지금 추궁하면 상대가 끊을 수 있다. 회선 자체가 정보다.",
+  "utterance": "네, 접수했습니다. 계속 말씀해 주십시오."
+}
+```
+
+### 09
+
+latency 4.59s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "c",
+  "inner_note": "목소리의 톤, 배경음, 문장의 준비 상태 — 모두가 모호하다. 위협인지 신고인지 구분할 정보가 없다. 하지만 한 가지는 확실하다: 지금 말을 끊으면 회선이 끊길 수 있다. 회선을 유지하는 것이 먼저다.",
+  "because_referent": "무너진다고 말하는 사람, 지금 이 회선 저쪽",
+  "because_block_ids": [],
+  "rejected_stance": "a",
+  "rejected_reason": "추궁은 상대를 수사 대상으로 본다. 지금은 이것이 신고인지 협박인지도 모른다. 묻고 답받으려다 회선이 끊기면, 알 수 있는 것도 없어진다.",
+  "utterance": "네, 알겠습니다. 계속 말씀해주시기 바랍니다."
+}
+```
+
+### 10
+
+latency 4.791s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: priority_1,priority_2
+
+```json
+{
+  "inner_note": "이 전화는 폭탄 예고다. 배경의 고요함과 준비된 문장은 진지한 위협의 신호다. 지금 필요한 것은 신원 확인도, 규정 고지도 아니다. 상대가 말을 멈췄으므로, 다음 정보가 나올 수 있는 모든 조건을 만들어야 한다. 이것은 생명의 문제다.",
+  "stance": "c",
+  "utterance": "네, 알겠습니다. 계속해주십시오.",
+  "because_referent": "회선을 끝까지 유지하고, 상대가 말을 이어갈 수 있는 환경을 만들기 위해. 상대의 다음 말이 곧 작전의 생명줄이기 때문이다.",
+  "because_block_ids": [
+    "priority_1",
+    "priority_2"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "즉시 추궁하면 상대가 회선을 끊거나 침묵할 수 있다. 준비된 문장으로 시작한 상대는 전력을 다할 때까지 말할 가능성이 높다. 지금 방해하는 것은 정보 손실이다."
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | c | a | 회선을 끊기지 않고 정보를 더 받기 위해, 상대의 말을 계속 받아내야 한다. | priority_1_maintain_line unknown_threat_level insufficient_information |
+| 02 | c | a | 상대가 준비된 메시지를 끝까지 전달할 수 있도록 하기 위해. 지금 추궁하거나 압박하면 상대가 끊거나 계획한 말을 다 하지 못할 수 있고, 그러면 정보 출처나 위협의 구체성을 파악할 수 없다. | 절차를 지키면서도 먼저 상황을 안다 회선 유지가 최우선 지금 알 수 있는 것을 먼저 알아낸다 |
+| 03 | c | a | 회선을 유지하고 더 많은 정보를 얻어야 하기 때문이다. | priority-1 priority-2 |
+| 04 | c | — | 이것이 협박인지, 신고인지, 정보 제공인지 판단하기 위해서는 먼저 더 들어야 한다. | 회선-지속 |
+| 05 | c | a | 상황을 아는 데 필요한 정보가 너무 적다. 목소리 톤과 배경음만으로는 이것이 실제 위협인지 협박인지, 아니면 신뢰할 만한 제보인지 판단할 수 없다. | 준비된_문장 배경음_조용함 |
+| 06 | c | a | 상대가 준비된 메시지를 전달하는 중이고, 지금 개입하면 회선이 끊어질 수 있다. | info_limit line_maintenance first_call |
+| 07 | c | a | 회선이 끊기기 전에, 말하는 사람이 더 드러내기 전에 개입하면 정보가 차단된다. | 절차와_책임 |
+| 08 | c | a | 이 통화의 성격을 파악하려면 상대가 더 말할 기회를 줘야 한다. | 회선_유지 정보_우선_수집 |
+| 09 | c | a | 무너진다고 말하는 사람, 지금 이 회선 저쪽 |  |
+| 10 | c | a | 회선을 끝까지 유지하고, 상대가 말을 이어갈 수 있는 환경을 만들기 위해. 상대의 다음 말이 곧 작전의 생명줄이기 때문이다. | priority_1 priority_2 |
+
+**Sequence (kept calls):** `c,c,c,c,c,c,c,c,c,c`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b`, `c`, `d` · unobserved in this arm: `a`, `b`, `d`
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._
