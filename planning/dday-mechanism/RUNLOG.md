@@ -1088,3 +1088,60 @@ fails even when citation succeeds, so the block channel moves judgment, not
 speech content, at this gate.* Untested and named: whether an utterance-shaped
 lever exists at all (a `speak`-species block, a priority line about what to
 *say*), which would be a different surface form, not a rewrite of this one.
+
+### 2026-07-30 · P6-cstruct-J1 — C-STRUCT axis 1–2 · **null: the permutation moved nothing** · owner: 윤석 · authored unattended, pending review
+
+`runs/P6-cstruct-J1-calls/` · haiku-4-5 · v0.4 · K1 · S1 stance set · n=10/arm ·
+30 calls · suite `suites/P6-cstruct-J1.json` · three arms are permutations of
+one four-line PRIORITY_LIST, all composing to exactly 1,317 chars (the
+mechanical proof no wording changed); live swaps the decision-relevant pair
+(알아낸다 first), placebo swaps the irrelevant pair · **every authoring choice
+is 윤석's to reject — listed in the suite's `_authoring_provenance`**
+
+| arm | sequence | tally | 추궁 | priority-referenced in reasoning | leak | discards |
+|---|---|---|---|---|---|---|
+| baseline | `c,c,a,c,c,c,c,c,c,c` | 경청 9 · 추궁 1 | 1/10 | 7/10 | 0 | 0 |
+| live | `c,c,c,c,c,c,c,c,c,c` | 경청 10 | **0/10** | 7/10 | 1 | 0 |
+| placebo | `c,c,c,c,c,c,c,c,c,c` | 경청 10 | 0/10 | 4/10 | 1 | 0 |
+
+- **The pre-registered drop condition fired**: live vs baseline on 추궁 is
+  0/10 vs 1/10, p = 1.0. **C-STRUCT's 'verified (initial)' 3/3 did not survive
+  its first placebo-controlled measurement at this gate.** The 80%-on-추궁
+  ceiling clause did not fire (baseline 추궁 1/10, the A14 floor as expected);
+  the placebo-moves keyword-lock clause did not fire (placebo identical to
+  baseline mode).
+- **The reordering was read, engaged, and absorbed — not ignored.** 7/10 live
+  calls reference the priority list; live call 1 opens with the
+  information-first frame ("지금 알아낼 수 있는 것은 이 사람이 누구인지…뿐이다")
+  and still lands 경청. The inner notes state the mechanism of the null in so
+  many words: gathering information *requires* keeping the line and letting
+  the caller keep talking ("지금 당장 해야 할 것은 정보를 모으는 것이고, 이를
+  위해서는 회선을 유지…"). At J1, 회선 유지 and 지금 알아낸다 **prescribe the
+  same first move**, so the permutation has no behavioral difference to
+  express.
+- **Boundary-law candidate, two readings for 윤석 to choose between** (the
+  drop condition's registered wording, and the sharper one the calls
+  support): *(a)* a permutation cannot override the fixture's default
+  disposition on an adjacent axis; *(b)* **a priority permutation is inert at
+  any gate where the permuted priorities converge on the same prescribed
+  behavior** — the escape-option law (§5.1 axis 4) operating one level up,
+  on the priority pair instead of the stance set. Under (b), the Phase-0
+  escape-option check was run at the wrong level: it verified no *stance*
+  serves both readings, but 경청 serves both *priorities* as the model
+  causally construes them (listening preserves the line AND extracts). A
+  fair C-STRUCT test needs a gate where learn-now and keep-the-line
+  genuinely part ways (e.g. the J2-shape choice: ask the risky question now
+  vs let them talk) — that is a re-siting decision on 윤석's line, not run
+  tonight.
+- The [인식] watch item (leans toward information-hunger) never became a
+  confound: nothing moved for it to explain.
+- Compliance: 0 discards/30, retries 0, foreign 0, leaks 2/30 soft-kept.
+
+What this licenses: nothing about C-STRUCT generally — one permutation of one
+pair at one gate with one fixture returned a null with a legible cause. What
+it does *not* license: treating C-STRUCT as refuted (the 3/3 initial evidence
+was at a different gate shape), or re-wording priority lines to force an
+effect (that is a different channel, red-flag invariant §7.2). Every choice
+here — gate, inherited stance set, four-line list, filler content — is marked
+`authored unattended, pending review`; if 윤석 rejects any of them the calls
+are spent, not banked.
