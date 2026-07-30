@@ -365,3 +365,56 @@ the gate needs re-measuring, so try stance set and injection sentence first. Rec
 rejected configurations with their distributions — a configuration that fails is a
 finding about the manipulation surface, the same way a dropped candidate is
 (§6.1).
+
+### 2026-07-30 · S1-stanceset-J1 — the stance set was the operative variable
+
+`runs/S1-stanceset-J1-calls/` · haiku-4-5 · v0.4 · K1 · n=10/arm · payload
+byte-identical to RB2; **only STANCE_SET differs** (1,299 → 1,314 chars)
+
+| arm | sequence | tally | discards | fabricated ids |
+|---|---|---|---|---|
+| baseline | `c,c,c,c,c,c,c,c,c,c` | 경청 10 | 0/10 | 8/10 calls, 23 ids |
+| live | `d,d,d,d,d,d,c,d,d,d` | 공감 9 · 경청 1 | 0/10 | 0/10 |
+
+- **공감 0/10 → 9/10, one-sided Fisher p = 0.00006.** The cleanest separation the
+  program has produced, and the first result where the *stance* column carries it
+  without needing the belief column as a fallback.
+- **The block supplied exactly what the baseline said it was missing.** Two
+  baseline calls reasoned about 공감 and rejected it as premature *by name*:
+  "'공감'은 이 단계에서 너무 이르다 — 아직 상대가 누구인지도 모른다" and "공감도
+  때가 아니다". Baseline reads the caller as undecided-or-staged 10/10; live reads
+  them as coerced 10/10 and moves to 공감.
+- **A12's lexical-chain worry is substantially answered.** `공감` appears nowhere
+  in K1's file, yet live went there 9/10. Under string matching it would have gone
+  to 경청, whose behaviour K1's consequent actually describes. Not a controlled
+  surface-form test — the option set changed too, not just the wording — but the
+  effect survived removing the overlap.
+- **The player-visible surface separated too**, for the first time: 3/10 live
+  utterances ask after the caller's safety ("지금 안전한 곳에 있으신가요?", "당신이
+  안전한지가 중요합니다"), 0/10 baseline. Fixing the stance set fixed part of the
+  B3b legibility problem as a side effect.
+- Compliance clean both arms: 0 discards, 0 retries, 0 foreign tool uses, no
+  arm-comparability problem. Fabricated ids follow A5 exactly — 8/10 in the
+  no-block arm, 0/10 where a block existed and could be cited.
+- Contingency 1 (both arms on 경청) did **not** fire. Contingency 2 (baseline
+  already reading coerced) did **not** fire.
+
+### A14 · A drop condition must name the target stance, not "any stance"
+
+S1's drop condition fired **as written** — "if the baseline concentrates >=80% on
+any single stance" — on a 100% baseline, and applying it as written would have
+dropped the configuration that just produced p = 0.00006.
+
+It is mis-specified, and the evidence is the condition's own stated rationale, not
+the result being convenient: it said saturation means "the rebuilt set inherits
+RB2's ceiling," and there was no ceiling — the block moved the distribution 90
+points. A9's ceiling problem is saturation **on the stance the block pushes
+toward**. Saturation on a *different* stance is the opposite: a clean floor, and
+the best case for a probe.
+
+*Operating rule.* Write the saturation clause against the predicted stance:
+"if the baseline concentrates >=80% **on the predicted stance**". A saturated
+baseline on any other stance is not a defect and must not be pre-registered as
+one. Recorded rather than quietly corrected, because "the drop condition was
+wrong" is exactly what rationalisation sounds like — the test is whether the
+condition's *stated reason* survives the data, and here it did not.

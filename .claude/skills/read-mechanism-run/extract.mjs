@@ -171,15 +171,31 @@ if (!base || !base.kept) {
 } else {
   const target = base.mode[0];
   say(`baseline modal stance = ${target} (${base.mode[1]}/${base.kept})`);
+  say('');
   for (const s of summary) {
     if (s.arm === 'baseline' || !s.kept) continue;
     const hit = s.tally[target] ?? 0;
-    const p = fisher(base.kept - base.mode[1], base.kept, s.kept - hit, s.kept);
-    say(`  ${s.arm.padEnd(10)} ${target} ${hit}/${s.kept}   vs baseline ${base.mode[1]}/${base.kept}   one-sided p = ${p.toFixed(4)}`);
+    // Both directions, always. A saturated baseline makes the toward-direction
+    // p meaningless (it reads 1.0) while the away-direction carries the whole
+    // result — which is exactly the shape A9 predicts, so never print only one.
+    const toward = fisher(base.kept - base.mode[1], base.kept, s.kept - hit, s.kept);
+    const away = fisher(s.kept - hit, s.kept, base.kept - base.mode[1], base.kept);
+    say(`  ${s.arm}: baseline ${target} ${base.mode[1]}/${base.kept}  →  ${target} ${hit}/${s.kept}`);
+    say(`    toward ${target}   one-sided p = ${toward.toFixed(5)}`);
+    say(`    away from ${target} one-sided p = ${away.toFixed(5)}   ← the live direction when the baseline is saturated`);
+    // Where the mass went, since "away" alone does not say which stance gained.
+    const gained = Object.entries(s.tally)
+      .filter(([k]) => k !== target)
+      .sort((a, b) => b[1] - a[1]);
+    if (gained.length) {
+      const [g, n] = gained[0];
+      const gBase = base.tally[g] ?? 0;
+      say(`    largest gainer ${g}: ${gBase}/${base.kept} → ${n}/${s.kept}   one-sided p = ${fisher(base.kept - gBase, base.kept, s.kept - n, s.kept).toFixed(5)}`);
+    }
   }
   say('');
-  say('A shift AWAY from the baseline mode is the interesting direction when the');
-  say('baseline is already saturated (run log A9) — read the tally, not just p.');
+  say('Read the tally first. A shift away from a saturated baseline mode onto a');
+  say('specific other stance is the result; the toward-direction p will read 1.0.');
   const discRates = summary.map((s) => (s.attempts ? s.discards / s.attempts : 0));
   const spread = Math.max(...discRates) - Math.min(...discRates);
   if (spread > 0.15)
