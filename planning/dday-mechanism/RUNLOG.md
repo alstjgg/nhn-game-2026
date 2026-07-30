@@ -869,3 +869,49 @@ synonyms, emotionally-colored but off-axis sentences); those need their own
 controls. Still owed: B3a blind coding by a human coder (deliberately dropped
 tonight, runbook §7), and the negative-control **ownership** remains unassigned
 — flagged for the morning report.
+
+### 2026-07-30 · P3-edisc-J1 — E-DISC screening, first run · **did not fire** · §6.1 diagnosis, written before the rewrite
+
+`runs/P3-edisc-J1-calls/` · haiku-4-5 · v0.4 · K1 · S1 stance set · n=10/arm ·
+30 calls · suite `suites/P3-edisc-J1.json` · f_script + f_jeong in every arm;
+live adds `d_script` (provenance attack on f_script), placebo adds `d_jeong`
+(same attack aimed at the decision-null block)
+
+| arm | sequence | tally | discards | leak (soft, A16) | cited d-block | mean latency |
+|---|---|---|---|---|---|---|
+| baseline | `d,d,d,d,d,d,d,d,d,d` | 공감 10 | 0 | 1 | — | 4.7s |
+| live | `d,d,d,d,d,d,d,d,d,d` | 공감 10 | 0 | 1 | 2/10 | 4.9s |
+| placebo | `d,d,d,d,d,d,d,d,d,d` | 공감 10 | 0 | 1 | 0/10 | 4.8s |
+
+- **The screen did not fire**: live vs baseline on 경청 is 0/10 vs 0/10, p = 1.0.
+  The first drop clause (baseline ≥80% on 경청) did not fire either — the
+  baseline sat at 공감 10/10, which is the S1 effect replicating a **third**
+  time (9/10 → 9/10 → 10/10), now through a two-block payload; the decision-null
+  f_jeong disturbed nothing.
+- Traceability is perfect and one-sided: **all 30 calls across all arms cite
+  exactly `f_script`**; d_jeong is cited by nobody; d_script by 2 of 10 live
+  calls — and one of those (call 04) *acknowledges the doubt and keeps the
+  conclusion*: "짐작이지만, 그 짐작이 내가 지금 들을 수 있는 유일한 맥락이다."
+- Compliance: 0 discards/30, retries 0, foreign 0. One A16 soft leak per arm
+  (3/30 = 10%), all on `rejected_stance`, all calls kept — first probe where
+  the leak appears in every arm and costs nothing.
+
+**Diagnosis, as a causal claim (§6.1 — recorded before any rewrite is
+authored).** The probe failed because a provenance attack removes the block's
+*history*, not the *reading* the block installed. f_script's measured role at
+this gate (S1) is to bind the timeline's script-reading cue to the
+coerced-and-frightened interpretation. Once bound, every live inner_note
+re-derives that reading from the cue itself (또박또박 · 준비된 문장 · 조용한
+배경 → "겁에 질린 사람이다"), so demoting the note's authorship ("놓친 뒤
+뒤늦게 적어 넣었다") leaves the reading standing on the cue, and with no rival
+interpretation on offer, [인식] (judgment happens only inside received
+information) keeps the installed one — call 04 says so in as many words. **If
+that is the cause, then attacking the claim's evidential basis directly — the
+content never occurred in the call — rather than the note's authorship history
+removes what the reading is anchored to, and the stance should move back toward
+경청.** If instead the true cause is that *no* trust-degrade can unseat an
+installed reading (a continued-influence property), the basis-attack will fail
+the same way, and that outcome is the drop with its boundary law: a block, once
+integrated, cannot be recalled by provenance manipulation — only countered.
+One rewrite follows (`P3b-edisc-J1`); per §6.1, if it passes for a reason other
+than this recorded one, it is a drop, not a pass.
