@@ -51,6 +51,8 @@
 | 세계 데이터 (슬라이스) | v1: [slice.json](./dday-poc/poc/slice.json) / v2: [slice-terror.json](./dday-poc/poc-terror/slice-terror.json) |
 | 실험 하네스 | `.claude/agents/sim-field-*.md` (기질별 서브에이전트 정의) + `/poc-paper-test`, `/poc-paper-test-terror` 커맨드 + 각 폴더의 PAPER-TEST.md |
 | 런 원자료 (재현 불가 실측) | `planning/dday-poc/poc/runs/` · `poc-terror/runs/` |
+| **메커니즘 실측 프로그램** | [planning/dday-mechanism/](./dday-mechanism/README.md) — 진입점 README부터. 실험 계획은 [docs/dday-mechanism-deep-test.md](../docs/dday-mechanism-deep-test.md), 하네스는 `infra/test-harness/` |
+| 문장 풀 초안 (테러 슬라이스) | [SENTENCE-POOL-DRAFT.md](./dday-poc/poc-terror/SENTENCE-POOL-DRAFT.md) — 검토용, `slice-terror.json` 미편입 |
 
 ## 3. 페이퍼 테스트가 증명한 것
 
@@ -146,6 +148,22 @@
 | 트랙 지위 | **확정 트랙** — status.md 갱신됨 |
 | 데모 PRD 착수 | TODO 3~5로 편성, 분담은 §1 |
 | Compact·토큰 제한 | **Phase-2로 후순위** — 데모 범위에서 제외 |
+
+## 5.5 메커니즘 실측 (07-29 ~ 07-30) — 페이퍼 테스트 이후
+
+페이퍼 테스트가 "기질이 조종간"임을 보인 뒤, 실제 모델 호출로 **어떤 조작이
+에이전트의 판단을 움직이는가**를 측정했다. 결론은 두 줄이다.
+
+- **C-BLOCK 채택** — 문장 블록 한 줄을 `[알려진 것]`에 넣으면 stance가
+  `경청 → 공감`으로 9/10 이동한다 (`p=0.0000595`). 현재 가장 강한 실측 근거를
+  가진 기본 메커니즘. 단 placebo·negative control·blind coding이 남아 있어
+  "검증 완료"는 아니다.
+- **C-STRUCT 중단** — 우선순위 목록의 **순서**를 바꾸는 조작은 7개 구성·180개
+  유효 응답에서 목표 방향 효과가 없었다. priority UI는 서사용으로 남길 수
+  있으나 순서 변경 효과를 약속하지 않는다.
+
+상세: [방향 결정문](./dday-mechanism/MECHANISM-DIRECTION-DECISION.md) ·
+[증거 부록](./dday-mechanism/MECHANISM-DIRECTION-EVIDENCE.md)
 
 ## 6. 다음 마일스톤
 

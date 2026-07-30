@@ -3,6 +3,22 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-07-30)
+
+**DDAY 기본 메커니즘 확정 — C-BLOCK.** 실제 haiku 호출로 메커니즘 후보를
+측정한 결과, 문장 블록 한 줄을 `[알려진 것]`에 주입하면 에이전트의 stance가
+`경청 → 공감`으로 9/10 이동했다 (one-sided Fisher `p=0.0000595`). 이것이 게임의
+core loop다 — 블록 선택 → 상황 해석 변화 → stance/행동 변화 → 플레이어가 확인.
+우선순위 **순서** 조작(C-STRUCT)은 7개 구성·180개 유효 응답에서 목표 방향 효과가
+없어 중단했다. **주의: C-BLOCK은 채택됐지만 검증 완료가 아니다** — placebo
+control, program-wide negative control, blind coding이 남아 있다. 대외 문구는
+"현재 가장 강한 실측 근거를 가진 기본 메커니즘"까지만 쓴다. 프로그램 진입점:
+[planning/dday-mechanism/README.md](../planning/dday-mechanism/README.md).
+
+**다음은 측정이 아니라 구현.** 만들 것이 무엇인지는 확정됐다. `demos/dday/`
+스캐폴딩과 첫 60초 플레이 루프가 우선이고, 남은 검증 중 게임에 직접 영향을 주는
+것은 placebo control 하나다.
+
 ## Status (2026-07-29)
 
 **DDAY 컨셉 확정** — the 07-28 team meeting confirmed the D-Day 시뮬레이션 track
@@ -48,6 +64,20 @@ change here.
 
 ## Decision log
 
+- 2026-07-30 — DDAY 기본 메커니즘은 **C-BLOCK**(문장 블록 주입 → 해석 변화 →
+  stance/행동 변화 → 확인 가능한 결과). C-STRUCT(우선순위 순서 재배열) 테스트는
+  중단 — 8개 구성·190개 유효 응답 보존, 근거 표본 7개 구성·180개에서 목표 방향
+  효과 없음. priority UI는 서사용으로 남길 수 있으나 순서 변경 효과를 약속하지
+  않는다. C-STRUCT의 보편적 실패 판정이 아니라 program pause이며, 재개 조건은
+  결정문 §6에 고정했다. 근거·한계·실험 계보:
+  [MECHANISM-DIRECTION-DECISION.md](../planning/dday-mechanism/MECHANISM-DIRECTION-DECISION.md) ·
+  [EVIDENCE](../planning/dday-mechanism/MECHANISM-DIRECTION-EVIDENCE.md).
+- 2026-07-30 — 메커니즘 실측 문서 체계를 4단(DECISION / EVIDENCE / HANDOFF /
+  RUNLOG)에서 3단(DECISION / EVIDENCE / RUNLOG) + 진입점 README로 통합.
+  `CSTRUCT-J1-TEST-HANDOFF.md`는 중단된 계열의 handoff라 대상이 없어졌고,
+  유일본이던 실험 계보는 EVIDENCE §5로 흡수했다. **raw artifact(`suites/`,
+  `runs/`)와 RUNLOG의 append-only 성질은 손대지 않는다** — 재현성과 사후
+  구성 변경 방지가 이 프로그램 신뢰도의 근거다.
 - 2026-07-25 — No real-time image generation, in any concept: NPCs (appearance, problems,
   portraits) ship as pre-generated, manifested asset sets; only speech/dialogue text is
   generated at runtime. The runtime LLM layer is therefore single-provider (Bedrock only) —

@@ -93,10 +93,10 @@ C-BLOCK은 제품 방향으로 채택했지만 아직 “공식 검증 완료”
 
 ## 7. 문서 체계
 
+0. [README](README.md) — 폴더 진입점과 SoT 우선순위
 1. 이 문서 — 현재 결정과 작업 범위
-2. [증거 부록](MECHANISM-DIRECTION-EVIDENCE.md) — 핵심 수치·해석·한계
-3. [C-STRUCT 상세 handoff](CSTRUCT-J1-TEST-HANDOFF.md) — 190개 호출의 실험
-   계보와 raw index
-4. [RUNLOG](RUNLOG.md) — append-only 운영 규칙과 source of truth
+2. [증거 부록](MECHANISM-DIRECTION-EVIDENCE.md) — 핵심 수치·해석·한계.
+   §5는 190개 호출의 C-STRUCT 실험 계보와 raw index
+3. [RUNLOG](RUNLOG.md) — append-only 운영 규칙과 source of truth
 
 이 문서는 raw 결과나 RUNLOG를 대체하지 않는다.
