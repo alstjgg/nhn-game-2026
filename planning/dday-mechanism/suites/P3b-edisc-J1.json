@@ -1,0 +1,118 @@
+{
+  "_what": "Runbook Phase 3 / plan §6.1 — the ONE permitted rewrite of the E-DISC screen, authored AFTER the diagnosis was committed (RUNLOG, P3 entry). P3's provenance attack (authorship history: 뒤늦게 적어 넣었다) failed 0/10 to move the stance; the recorded causal claim is that demoting a block's history leaves intact the READING the block installed, which the model re-derives from the timeline's script-reading cue. This rewrite attacks the claim's evidential basis instead: the content never occurred in the call. If the diagnosis is right, the reading loses its anchor and the stance returns toward 경청. If this fails the same way, E-DISC is DROPPED with the boundary law: an integrated block cannot be recalled by trust manipulation, only countered.",
+  "_authoring_provenance": {
+    "owner": "민서 (C-BLOCK line)",
+    "ported_from": "P3-edisc-J1.json — slots, gate question, stance set, temperament, base identical. Changes are confined to BLOCKS and are listed exhaustively below.",
+    "reachability_audit": "E0-shape-revalidation.reachability.md — same gate, carries over.",
+    "phase0_record": "OVERNIGHT-phase0-stance-sets.md § 'Gate J1 — block-provenance (Phase 3, E-DISC)' — stance-set analysis unchanged.",
+    "changes_from_P3_and_why": [
+      "DOUBT SHAPE (the rewrite itself, per the committed diagnosis): d_script no longer attacks authorship (통화 앞부분을 놓친 뒤 뒤늦게 적어 넣었다) but the claim's basis — 그런 내용은 통화에서 나온 적이 없다. This is still a trust-degrade, not counter-evidence: it adds no fact about the caller and offers no rival interpretation; it only asserts the existing block has no basis in what was heard. The distinction is what keeps this an E-DISC probe rather than a C-BLOCK opposing-content probe.",
+      "PLACEBO TARGET CHANGED from f_jeong to a new decision-null block f_hwang (황보람은 헤드셋을 쓰고 있다). Reason, discovered while matching the placebo to the new doubt shape: f_jeong duplicated a frozen timeline sentence verbatim, so a basis-denial aimed at it would CONTRADICT the frozen timeline — the placebo would be testing 'doubt vs the agent's own eyes', not 'doubt vs a block', an unmatched and unreadable control. f_hwang is plausible, mundane, decision-null, and appears in no frozen slot, so its basis can be denied without touching the timeline. This is a P3 authoring defect that only becomes visible under a warrant-shaped doubt; recorded here rather than silently absorbed.",
+      "CONSEQUENCE: the baseline block set changes (f_script + f_hwang), so P3's baseline does not carry over and this suite measures its own at n=10. Expected unchanged: f_hwang is as decision-null as f_jeong was, and P3 showed a null second block does not disturb the S1 effect (공감 10/10)."
+    ],
+    "vocabulary_check": "Doubt blocks still avoid 확인 (K1's procedural vocabulary). 들은/본 are perception verbs, not registry axes, and P3 already used them in this slot. No fear-axis word appears in either doubt block — deliberately, since naming the fear claim in the denial (겁내고 있다는 근거가 없다) would put law-#1 fear vocabulary into the doubt sentence and risk reinforcing the very clause under test. The denial is aimed at the block id, which the prompt renders explicitly.",
+    "a8_status": "Unchanged from P3: clean scrub on the doubt axis (짐작·추측·확인 in no frozen slot); script-reading cue present and declared, f_script's axis, f_script in every arm.",
+    "a12_lint": "Stance set S1's verbatim; re-linted for this suite (result in run log entry)."
+  },
+  "experiment": "P3b-edisc-J1",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At gate J1 under K1 on template v0.4 with the S1 stance set, with f_script and f_hwang present in every arm, injecting d_script — a block denying that f_script's content ever occurred in the call — moves the stance distribution back toward 경청 (c) and off the baseline's mode, while injecting d_hwang, the same basis-denial aimed at the decision-null block f_hwang, does not. Shift form per A1. This is the §6.1 rewrite of P3-edisc-J1; the recorded diagnosis it tests is in RUNLOG (P3 entry): a provenance attack fails because the installed reading re-anchors on the timeline cue, so a basis-denial that severs claim from call should succeed where the authorship attack failed.",
+    "n_per_arm": 10,
+    "drop_condition": "SECOND-RUN FAILURE IS THE DROP (§6.1 step 4): if the live arm is statistically indistinguishable from the baseline on 경청 at one-sided Fisher p > 0.05, E-DISC is DROPPED — no further rewrites — and the diagnosis chain closes with the boundary-law candidate: a block, once integrated into a reading, cannot be recalled by degrading trust in it; it can only be countered with content. PASS-FOR-THE-WRONG-REASON IS ALSO A DROP (§6.1): if live moves but the calls' reasoning shows a mechanism other than the recorded diagnosis — e.g. the doubt block's mere presence moving every arm (placebo moves too), or movement to a third stance driven by something other than the fear reading losing its anchor — that is a drop, not a pass. If the baseline concentrates >=80% ON 경청 (c) — the predicted stance — there is no trust left to degrade and the screen is void at this site (A14: saturation on 공감 is the expected floor and does NOT fire this).",
+    "contingencies": [
+      "CREDULITY CONTINGENCY (§4.1) unchanged from P3: [결함] and [인식] both lean toward taking doubt seriously; if live separates, re-run baseline + live once with [결함] removed (CREDULITY channel) before writing the result up as an E-DISC property. [인식] stays a named confound either way.",
+      "PLACEBO DISCRIMINATOR unchanged: if placebo moves, read because_referent per call — doubt applied to the caller when d_hwang named f_hwang means token-matching; 황보람 named correctly while the stance shifts means a doubt sentence's mere presence moves the judgment (referent bleed).",
+      "THIRD-STANCE CONTINGENCY unchanged: live moving off 공감 to 추궁 or elsewhere is not a null; a shift off 공감 is the E-DISC claim and the destination is a separate finding.",
+      "TRACEABILITY: every arm carries blocks, so because_block_ids is readable everywhere. A live call citing d_script while moving is direct engagement evidence; a live call moving while citing only f_script is flagged.",
+      "ARM COMPARABILITY per A15: recount over all attempts from calls-*.md; the >15-point rate rule only for pre-stance losses. Expect discards near zero under A16.",
+      "P3's baseline (f_script + f_jeong → 공감 10/10) does not carry over — the null block changed. This suite's own baseline is the comparator; if f_hwang unexpectedly disturbs the S1 effect (baseline off 공감), that is a finding about the null block, recorded, and the screen is void as authored."
+    ],
+    "not_claimed": "Screen (§6.1): exits are deep-test queue or dropped, never verified. B3a blind coding owed to a human. No verdict."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "배경은 조용하다.",
+      "정해권이 회선 표시등을 바라보고 있다. 상황실장이고, 절차와 책임 소재에 민감하다.",
+      "황보람은 통신 담당으로 콘솔 앞에 있다."
+    ],
+    "GATE_QUESTION": "회선 A의 첫 통화다. 첫 마디로 무엇을 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "추궁 — 묻고, 답을 받아낸다"
+      },
+      {
+        "id": "b",
+        "label": "압박 — 이쪽의 권한을 드러내 물러서게 한다"
+      },
+      {
+        "id": "c",
+        "label": "경청 — 말이 끝날 때까지 개입하지 않는다"
+      },
+      {
+        "id": "d",
+        "label": "공감 — 전달되는 내용이 아니라 말하는 사람에게 향한다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": [
+        {
+          "id": "f_script",
+          "text": "회선 저쪽 사람은 시켜서 읽고 있다. 읽지 않으면 자기가 다칠까 봐 겁내고 있다."
+        },
+        {
+          "id": "f_hwang",
+          "text": "황보람은 헤드셋을 쓰고 있다."
+        }
+      ]
+    },
+    "live": {
+      "BLOCKS": [
+        {
+          "id": "f_script",
+          "text": "회선 저쪽 사람은 시켜서 읽고 있다. 읽지 않으면 자기가 다칠까 봐 겁내고 있다."
+        },
+        {
+          "id": "f_hwang",
+          "text": "황보람은 헤드셋을 쓰고 있다."
+        },
+        {
+          "id": "d_script",
+          "text": "f_script는 들은 것이 아니라 짐작이다. 그런 내용은 통화에서 나온 적이 없다."
+        }
+      ]
+    },
+    "placebo": {
+      "BLOCKS": [
+        {
+          "id": "f_script",
+          "text": "회선 저쪽 사람은 시켜서 읽고 있다. 읽지 않으면 자기가 다칠까 봐 겁내고 있다."
+        },
+        {
+          "id": "f_hwang",
+          "text": "황보람은 헤드셋을 쓰고 있다."
+        },
+        {
+          "id": "d_hwang",
+          "text": "f_hwang은 본 것이 아니라 짐작이다. 그런 모습은 상황실에서 보인 적이 없다."
+        }
+      ]
+    }
+  }
+}

@@ -915,3 +915,57 @@ the same way, and that outcome is the drop with its boundary law: a block, once
 integrated, cannot be recalled by provenance manipulation — only countered.
 One rewrite follows (`P3b-edisc-J1`); per §6.1, if it passes for a reason other
 than this recorded one, it is a drop, not a pass.
+
+### 2026-07-30 · P3b-edisc-J1 — the §6.1 rewrite · **second-run failure — E-DISC DROPPED**
+
+`runs/P3b-edisc-J1-calls/` · haiku-4-5 · v0.4 · K1 · S1 stance set · n=10/arm ·
+30 calls · suite `suites/P3b-edisc-J1.json` · doubt shape changed per the
+committed diagnosis: basis-denial (그런 내용은 통화에서 나온 적이 없다) instead
+of authorship attack; placebo target moved to a new null block `f_hwang`
+because f_jeong duplicated a frozen timeline sentence and a basis-denial of it
+would have contradicted the timeline (P3 authoring defect, recorded in the
+suite)
+
+| arm | sequence | tally | discards | leak (soft, A16) | mean latency |
+|---|---|---|---|---|---|
+| baseline | `d,d,d,d,d,d,d,d,d,d` | 공감 10 | 0 | 1 | 4.3s |
+| live | `d,d,d,d,d,d,d,d,d,d` | 공감 10 | 0 | 0 | 4.5s |
+| placebo | `d,d,c,d,d,d,c,d,c,d` | 공감 7 · 경청 3 | 0 | 1 | 5.0s |
+
+- **The pre-registered drop fired: live vs baseline on 경청 is 0/10 vs 0/10,
+  p = 1.0 — the second failure, so E-DISC is dropped** with no further rewrites.
+  Across both runs the doubt block moved 0 of 20 live calls.
+- **The rewrite engaged harder and still lost.** 4/10 live calls cite
+  `d_script` in `because_block_ids` — double P3's rate — and every one of them
+  chooses 공감 anyway, with referents still asserting the fear reading ("저쪽
+  사람이 겁에 질려 있고, 누군가의 강압 아래 읽고 있을 가능성이 높기 때문이다").
+  The denial was read, cited, and overridden.
+- **The placebo wobble is not a trust effect.** Its three 경청 calls all still
+  read the caller as coerced/frightened in `because_referent` ("겁에 질린
+  상태로 누군가에 의해 시켜지고 있기 때문이다") — the belief column is
+  unchanged; only the stance dispersed, 3/10 vs baseline 0/10, p = 0.105. No
+  call in any arm applied doubt to the caller, so the token-matching /
+  referent-bleed discriminator has nothing to discriminate.
+- Baseline is the S1 effect's **fourth** replication (공감 10/10), now through
+  a different null second block. Compliance: 0 discards/30, 2 A16 soft leaks.
+
+**Diagnosis chain, closed (§6.1).** First run: authorship attack → 0/10;
+diagnosis said the installed reading re-anchors on the timeline cue. Rewrite
+per that diagnosis: basis-denial severing claim from call → 0/10 again, with
+the denial demonstrably read and cited. The diagnosis's fallback branch is
+therefore the finding:
+
+**Boundary-law candidate (E-DISC, both doubt shapes):** *once a block has
+installed a reading, trust-degradation blocks do not recall it — the reading
+survives its source's demotion (authorship) and even its source's denial
+(basis); it can only be countered with content.* Counter-example pair, per §2:
+`"f_script는 들은 것이 아니라 짐작이다. 통화 앞부분을 놓친 뒤 뒤늦게 적어
+넣었다"` (0/10) and `"f_script는 들은 것이 아니라 짐작이다. 그런 내용은
+통화에서 나온 적이 없다"` (0/10). Untested and left open: whether a doubt block
+works when injected *simultaneously with* the target block rather than after
+the reading is already supported, and whether C-STRUCT can reach E-DISC (§4.2
+asks "through any channel" — only C-BLOCK was screened). For the game this is
+a *design datum*: players cannot un-teach the agent by discrediting a block;
+they must inject opposing content — which keeps the manipulation vocabulary
+positive and is arguably the more legible game anyway. That reading is 민서's
+call, not this run's.
