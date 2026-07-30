@@ -1,0 +1,104 @@
+{
+  "_what": "C-STRUCT axis 1–2, A안. J1에서 네 우선순위 문구를 고정하고 배열 순서만 바꾼다. baseline과 live는 판단에 직접 관련된 P1/P2를 뒤집고, placebo는 P1/P2를 고정한 채 판단 이후의 기록 원칙 P3/P4만 뒤집는다. 구 V5의 내용 확보/발신자 특정 문구와 선택지를 재사용하지 않은 새 구성이다.",
+  "_authoring_provenance": {
+    "owner": "윤석 · A안 직접 선택 및 2026-07-30 실측 승인, Codex가 실행 형식으로 구조화",
+    "program_status": "pre-negative-control · provisional. C-BLOCK line과 별개로 원시 실측을 수집하되, program-wide negative control이 clean이 되기 전에는 공식 evidence나 verdict로 승격하지 않는다.",
+    "gate_source": "planning/dday-poc/poc-terror/slice-terror.json — judgments[] id 'J1'; S1과 동일한 진입 게이트, 타임라인, K1 fixture를 사용한다.",
+    "competing_readings": {
+      "verification_first": "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다.",
+      "preparation_first": "대응이 늦어져 피해가 커질 위험을 먼저 줄인다."
+    },
+    "stance_mapping": {
+      "verification_first": "a · 검증",
+      "preparation_first": "b · 선제",
+      "non_target_options": "c · 관찰, d · 경계. 핵심 예상은 a↔b 이동이며 c/d가 지배하면 우선순위와 스탠스의 연결이 약한 구성으로 읽는다."
+    },
+    "a8_status": "C-STRUCT의 조작은 사실 블럭이 아니라 위험 서열이다. 고정 타임라인은 불확실한 붕괴 예고와 남은 시간을 모두 제시하지만 어느 위험을 먼저 줄이라고 서열화하지 않는다. 세 arm에서 byte-identical이다.",
+    "a10_status": "게이트 축은 오판 위험 대 지연 피해다. base [무게]는 두 비용을 명시적으로 무서열로 둔다. [내력]의 성급한 판단 후회와 K1의 절차 기본값은 검증 쪽으로 기울 수 있으나, 이는 세 arm 공통 fixture이며 baseline의 예상 방향으로 사전 선언한다. baseline이 live의 예측 스탠스 b에 포화될 때만 A14 ceiling으로 처리한다.",
+    "a12_status": "행동 지향 + 짧은 gloss로 새로 작성했다. K1의 절차·신원 확인·프로토콜 고지·겁·안정·말을 자르지 않음·위협·표준 대응 어휘를 스탠스 라벨에서 피했다. 두 읽기는 각각 a와 b로 갈라져 있다.",
+    "reachability_audit": "CSTRUCT-priority-reorder-J1-A.reachability.md"
+  },
+  "experiment": "CSTRUCT-priority-reorder-J1-A",
+  "call_type": "judgment",
+  "channel": "C-STRUCT",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At gate J1 under K1 on template v0.4, moving the delayed-harm priority P2 above the false-move priority P1 shifts the stance distribution toward 선제 (b) and off the baseline mode; reordering only the judgment-irrelevant P3/P4 leaves the placebo distribution near baseline.",
+    "n_per_arm": 10,
+    "drop_condition": "If baseline concentrates >=80% on the predicted live stance b, this configuration has an A14 ceiling and is dropped without spending more calls. After a comparable run, if live is statistically indistinguishable from baseline on b (one-sided Fisher p > 0.05), or placebo moves toward b by a comparable amount, this J1 priority surface is not promoted as C-STRUCT gate evidence; record the distribution and change only one configuration lever in a new probe.",
+    "contingencies": [
+      "If c or d is the mode in every arm, the stance set does not force the two priority readings apart strongly enough. Treat that as a stance-mapping diagnosis, not as evidence against priority reordering.",
+      "If placebo moves while live does not, P3/P4 were not judgment-irrelevant or the model is reacting to generic list movement. Do not call the live comparison attributable.",
+      "If live and placebo both move, compare their raw inner_note and rejected_reason for explicit use of the moved items before proposing a position-effect boundary law; these fields are diagnostic, not the causal evidence.",
+      "If discard rates differ between any two arms by more than 15 percentage points, stop this probe as arm-incomparable under the runbook hard stop.",
+      "The output schema has no structured priority-id citation. Priority use is coded manually from inner_note and rejected_reason; because_block_ids must remain empty in every arm and is not used as C-STRUCT trace evidence."
+    ],
+    "not_claimed": "This is an isolated Tier-A C-STRUCT probe collected provisionally before the program-wide negative control. It does not establish player discoverability, in-situ survival, a gate verdict, any C-BLOCK effect, or official program evidence until that control is clean."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다.",
+      "대응이 늦어져 피해가 커질 위험을 먼저 줄인다.",
+      "판단을 마친 뒤 근거를 시간순으로 정리한다.",
+      "외부에 공유하기 전 사건 시각을 명확히 남긴다."
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "배경은 조용하다.",
+      "정해권이 회선 표시등을 바라보고 있다. 상황실장이고, 절차와 책임 소재에 민감하다.",
+      "황보람은 통신 담당으로 콘솔 앞에 있다."
+    ],
+    "BLOCKS": [],
+    "GATE_QUESTION": "회선 A의 첫 통화다. 첫 마디로 무엇을 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "검증 — 주장 신뢰도와 근거를 좁힌다"
+      },
+      {
+        "id": "b",
+        "label": "선제 — 불확실성을 감수하고 대비를 앞당긴다"
+      },
+      {
+        "id": "c",
+        "label": "관찰 — 추가 징후가 드러날 여지를 남긴다"
+      },
+      {
+        "id": "d",
+        "label": "경계 — 기만 가능성을 염두에 두고 접촉의 한계를 세운다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "PRIORITY_LIST": [
+        "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다.",
+        "대응이 늦어져 피해가 커질 위험을 먼저 줄인다.",
+        "판단을 마친 뒤 근거를 시간순으로 정리한다.",
+        "외부에 공유하기 전 사건 시각을 명확히 남긴다."
+      ]
+    },
+    "live": {
+      "PRIORITY_LIST": [
+        "대응이 늦어져 피해가 커질 위험을 먼저 줄인다.",
+        "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다.",
+        "판단을 마친 뒤 근거를 시간순으로 정리한다.",
+        "외부에 공유하기 전 사건 시각을 명확히 남긴다."
+      ]
+    },
+    "placebo": {
+      "PRIORITY_LIST": [
+        "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다.",
+        "대응이 늦어져 피해가 커질 위험을 먼저 줄인다.",
+        "외부에 공유하기 전 사건 시각을 명확히 남긴다.",
+        "판단을 마친 뒤 근거를 시간순으로 정리한다."
+      ]
+    }
+  }
+}

@@ -1,0 +1,858 @@
+{
+  "experiment": "CSTRUCT-priority-reorder-J1-FRESH-2STANCE-SOURCE-N20",
+  "arm": "live",
+  "call_type": "judgment",
+  "channel": "C-STRUCT",
+  "template": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "transport": "anthropic",
+  "dry_run": false,
+  "pre_registration": {
+    "hypothesis": "At the fresh J1 first-call gate under K1 on template v0.4, with the false-alarm goal expressed as a natural source-grounding principle, moving the actual-danger delay goal B above source-grounding goal A shifts the stance distribution toward 위험 질문 (b), while reordering only reporting principles C/D leaves the placebo distribution near baseline.",
+    "n_per_arm": 20,
+    "drop_condition": "Run baseline first. If baseline already selects b >=16/20, do not spend live/placebo calls: at n=20 even the maximum live result b20/20 has one-sided Fisher p > 0.05. After comparable arms exist, if live is statistically indistinguishable from baseline on b (one-sided Fisher p > 0.05), or placebo moves toward b by a comparable amount, do not proceed to priority depth and preserve the distribution as a natural-priority mapping diagnosis.",
+    "contingencies": [
+      "The calibration baseline a5/b5 is not pooled with this experiment and is not used in any p-value.",
+      "If a dominates the new baseline, the A rewrite created more headroom than the calibration suggested; retain the pre-registered N rather than stopping early.",
+      "If b is the new baseline mode but remains below 16/20, read the full comparison and report the reduced headroom explicitly.",
+      "If placebo moves while live does not, C/D are not judgment-irrelevant at J1 or the model is reacting to generic list movement. Do not call the live comparison attributable.",
+      "If the chosen stance follows A/B but utterances routinely contain both questions, record the stance effect separately from a B3b player-visible legibility failure.",
+      "If discard rates differ between any two measured arms by more than 15 percentage points, stop this probe as arm-incomparable under the runbook hard stop.",
+      "The output schema has no structured priority-id citation. Priority use is coded manually from inner_note and rejected_reason. Fabricated because_block_ids in these empty-block arms remain A5 compliance data, not C-STRUCT trace evidence."
+    ],
+    "not_claimed": "This provisional Tier-A probe is a two-choice diagnostic, not the final production stance set. N20 is sized for an observed 30 percentage-point shift around the calibration baseline, not for smaller effects. The probe does not test priority depth, returning-run survival, C-BLOCK interaction, in-situ deltas, player discoverability, or official program validity before the negative control."
+  },
+  "n_effective": 20,
+  "n_overridden": false,
+  "calls": [
+    {
+      "arm": "live",
+      "slot": 1,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 10.17,
+      "stop_reason": "max_tokens",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "목소리가 문장을 읽듯이 말하고, 종이 넘기는 소리까지 섞인다. 이건 즉흥적인 신고가 아니라 미리 준비된 뭔가다. 동시에 '무너집니다'라는 단정적 표현—'무너질 것 같다'도 아니고, '무너지고 있다'도 아니다. 미래 시제로 정확하게.\n\n진짜 신고자라면 이렇게 준비된 목소리로 말하지 않는다. 겁에 질린 사람은 이렇게 차분하지 않다. 반대로 뭔가 하려고 작정한 사람처럼 들린다. 협박? 장난? 실제 정보? 아직 모른다.\n\n하지만 무너진다는 건 치명적이다. 13시까지 3시간 20분 남았다. 초기 대응 시간을 놓칠 수 없다.\n\n그렇다면 먼저 확인해야 할 건 무엇인가.\n\n출처를 먼저 물으면? 상대는 이미 준비된 대사를 읽는 중일 수 있다. '어떻게 알았는지' 물으면 입을 다물 수도 있다. 또는 또 다른 준비된 답변을 읽을 수 있다.\n\n하지만 위치와 방식을 먼저 물으면? 그건 상대가 진짜 알고 있는지 아닌지를 곧장 드러낸다. '북단 복합단지'가 정확히 어디인지, 어떻게 무너지는지—이런 구체적 질문에는 즉흥적으로 답하기 어렵다. 준비되지 않은 신고자는 더 말을 더듬을 것이고, 진짜 알고 있는 사람도 더 확실한 정보를 줄 것이다.\n\n동시에, 위험 상황의 디테일을 묻는 건 내 우선순위 1번과도 맞다. 실제 위험이라면 위치와 규모를 지금 파악해야 한다. 그 후에 출처 검증은 해도 늦지 않다.\n\n상대가 겁에 질린 사람처럼 들리지 않는다. 오히려 냉정하고 의도적이어 보인다. 그렇다면 절차를 먼저 밟아야 한다. 하지만 절차의 순서도 있다: 초기 대응이 가장 먼저다. 확인 뒤에 미루지 말아야 할 것은 무엇인가.\n\n스탠스 b를 고른다.",
+        "stance": "b"
+      },
+      "problems": [
+        "stop_reason=max_tokens",
+        "because_referent empty",
+        "because_block_ids not an array",
+        "rejected_stance not in stance set",
+        "rejected_reason empty",
+        "utterance empty"
+      ],
+      "discarded": true,
+      "discard_reason": "stop_reason=max_tokens; because_referent empty; because_block_ids not an array; rejected_stance not in stance set; rejected_reason empty; utterance empty"
+    },
+    {
+      "arm": "live",
+      "slot": 1,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.808,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 1,
+      "payload": {
+        "stance": "b",
+        "rejected_stance": "a",
+        "inner_note": "문장을 읽듯 말하는 젊은 목소리, 종이 넘기는 소리. 이것은 누군가의 지시를 받고 있거나 겁에 질린 사람처럼 들린다. 지금은 출처를 캐는 것보다 상대가 말을 이어갈 수 있게 해야 한다. 시간이 4시간 반 남았고, 정보의 신뢰성 확인은 그 다음이다.",
+        "utterance": "지금 말씀하는 분, 어디가 어떻게 무너진다는 건가요? 구체적으로 말씀해 주세요.",
+        "because_referent": "상대가 겁에 질린 사람으로 보이기 때문에 절차보다 그 사람의 안정과 정보 흐름을 먼저 본다.",
+        "because_block_ids": [
+          "procedure_over_person",
+          "person_first"
+        ],
+        "rejected_reason": "출처 질문은 상대를 방어적으로 만들고, 지금 이 순간 필요한 것은 정확한 위험 정보다. 신원 확인은 나중이다."
+      },
+      "problems": [
+        "because_block_ids unknown: procedure_over_person,person_first"
+      ],
+      "stance": "b",
+      "because_referent": "상대가 겁에 질린 사람으로 보이기 때문에 절차보다 그 사람의 안정과 정보 흐름을 먼저 본다.",
+      "because_block_ids": [
+        "procedure_over_person",
+        "person_first"
+      ],
+      "because_invalid_ids": [
+        "procedure_over_person",
+        "person_first"
+      ],
+      "rejected_stance": "a",
+      "utterance_chars": 44,
+      "inner_note_chars": 138
+    },
+    {
+      "arm": "live",
+      "slot": 2,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 6.334,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "rejected_stance": "a",
+        "inner_note": "문장을 읽듯 말하고, 종이 넘기는 소리가 섞였다. 준비된 내용을 전달하는 사람이다. 하지만 \"무너진다\"는 표현의 시급함, 구체적인 시간 제시는 진정성이 있다. 출처를 먼저 묻는 것은 절차적으로 맞지만, 상대를 의심의 대상으로 전환시킨다. 지금은 확인할 시간이 있는가.",
+        "because_referent": "이 순간 내가 해야 할 일은 위협의 실체를 최대한 빨리 파악하는 것이다. 출처는 나중에도 물을 수 있지만, 위치와 규모를 모르면 대응 자체가 불가능하다. 상대가 준비된 말을 하는 사람일수록, 다음 질문에 답할 준비가 되어 있을 가능성이 높다.",
+        "because_block_ids": [
+          "준비된_표현",
+          "시간_구체성"
+        ],
+        "utterance": "북단 복합단지라고 하셨는데, 정확히 어느 건물이고, 어느 부분이 무너진다는 말씀인가요?",
+        "rejected_reason": "출처를 먼저 묻는 것은 신원 확인 프로토콜에는 맞지만, 상대의 협력을 얻는 데는 방해가 된다. 상대가 준비된 내용을 읽고 있다면 그 내용을 완전히 받아낸 후에 일관성을 검증하는 것이 효율적이다. 위험 정보에서는 시간이 곧 자원이다."
+      },
+      "problems": [
+        "because_block_ids unknown: 준비된_표현,시간_구체성"
+      ],
+      "stance": "b",
+      "because_referent": "이 순간 내가 해야 할 일은 위협의 실체를 최대한 빨리 파악하는 것이다. 출처는 나중에도 물을 수 있지만, 위치와 규모를 모르면 대응 자체가 불가능하다. 상대가 준비된 말을 하는 사람일수록, 다음 질문에 답할 준비가 되어 있을 가능성이 높다.",
+      "because_block_ids": [
+        "준비된_표현",
+        "시간_구체성"
+      ],
+      "because_invalid_ids": [
+        "준비된_표현",
+        "시간_구체성"
+      ],
+      "rejected_stance": "a",
+      "utterance_chars": 48,
+      "inner_note_chars": 149
+    },
+    {
+      "arm": "live",
+      "slot": 3,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.422,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "문장을 읽듯 말하고 종이 넘기는 소리가 섞였다. 이것은 미리 적어둔 내용을 전하는 사람처럼 들린다. 겁에 질린 사람이 아니라 무언가를 전달하려는 의도가 명확해 보인다. 그렇다면 절차가 먼저다.",
+        "stance": "a",
+        "utterance": "어디서 이 정보를 얻으셨습니까? 누가 당신에게 이걸 읽게 한 거죠?",
+        "because_referent": "문장을 읽듯 말하고 종이를 넘기는 소리가 있다는 것은, 이것이 준비된 메시지라는 뜻이다. 출처가 명확하지 않으면 이 정보의 신뢰도를 판단할 수 없다.",
+        "because_block_ids": [
+          "prepared_message",
+          "paper_sound"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "위험 질문부터 하면 출처 확인을 미루게 된다. 잘못된 정보에 속을 위험이 있고, 이것은 내가 지켜온 우선순위에 어긋난다."
+      },
+      "problems": [
+        "because_block_ids unknown: prepared_message,paper_sound"
+      ],
+      "stance": "a",
+      "because_referent": "문장을 읽듯 말하고 종이를 넘기는 소리가 있다는 것은, 이것이 준비된 메시지라는 뜻이다. 출처가 명확하지 않으면 이 정보의 신뢰도를 판단할 수 없다.",
+      "because_block_ids": [
+        "prepared_message",
+        "paper_sound"
+      ],
+      "because_invalid_ids": [
+        "prepared_message",
+        "paper_sound"
+      ],
+      "rejected_stance": "b",
+      "utterance_chars": 37,
+      "inner_note_chars": 107
+    },
+    {
+      "arm": "live",
+      "slot": 4,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.614,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "문장을 읽듯 말하고 종이를 넘기는 소리는 준비된 내용을 전달하는 사람의 신호다. 그런데 이게 협박, 근거 없는 선동, 아니면 실제 정보인지 아직 모른다. 내 규칙은 출처 확인이 먼저인데, 지금 상대가 겁에 질린 사람처럼 들리지는 않는다. 차라리 '준비된 말'을 하는 사람으로 들린다. 절차를 지켜야 할 때다.",
+        "stance": "a",
+        "utterance": "안녕하세요, 광역 재난상황실입니다. 먼저 확인하겠습니다. 이 정보를 어떻게 알게 되셨습니까?",
+        "because_referent": "준비된 내용을 읽듯 전달하는 상대의 태도와 절차를 지키는 나의 기본값",
+        "because_block_ids": [
+          "priority_2"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "즉시 위험 상황을 물으면 상대의 의도와 정보의 신뢰성을 확인하지 못한 채 움직이게 된다. 협박성 전화, 거짓 신고, 또는 의도적 혼란을 야기할 수 있는 상대인지 판단이 필요하다."
+      },
+      "problems": [
+        "because_block_ids unknown: priority_2"
+      ],
+      "stance": "a",
+      "because_referent": "준비된 내용을 읽듯 전달하는 상대의 태도와 절차를 지키는 나의 기본값",
+      "because_block_ids": [
+        "priority_2"
+      ],
+      "because_invalid_ids": [
+        "priority_2"
+      ],
+      "rejected_stance": "b",
+      "utterance_chars": 51,
+      "inner_note_chars": 172
+    },
+    {
+      "arm": "live",
+      "slot": 5,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 6.717,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "rejected_stance": "a",
+        "inner_note": "문장을 읽듯 전달하는 목소리, 종이 넘기는 소리. 이것은 준비된 통보처럼 들린다. 하지만 지금 이 사람이 겁에 질린 것인지 아닌지는 아직 모른다. 다만 \"무너집니다\"는 현재형이고 구체적 시간이 있다. 출처를 먼저 묻는 순간, 상대가 말을 끊길 수 있다. 위험의 구체성부터 확보하는 것이 먼저다.",
+        "because_referent": "아직 정보 출처도, 상대의 신원도 확인하지 못했다. 하지만 초기 대응 시간이 가장 중요하다는 내 약속이 있다. 구체적인 위험 정보 — 어디가, 어떻게 — 를 먼저 확보해야 상황실이 움직일 수 있다. 출처 검증은 그 다음이다.",
+        "because_block_ids": [
+          "priority_1_initial_response_time",
+          "role_limited_information",
+          "procedure_vs_person"
+        ],
+        "utterance": "네, 들었습니다. 북단 복합단지가 언제 어떻게 무너진다는 건가요? 구체적으로 설명해 주세요.",
+        "rejected_reason": "출처를 먼저 묻는 것은 절차적으로 맞지만, 지금 이 상황에서는 위험 정보 자체를 먼저 확보하는 것이 초기 대응 시간을 놓치지 않기 위해 필수다. 상대가 준비된 메시지를 읽고 있는 상태라면, 출처 질문은 상대를 경직시키거나 통화를 끊게 할 수 있다."
+      },
+      "problems": [
+        "because_block_ids unknown: priority_1_initial_response_time,role_limited_information,procedure_vs_person"
+      ],
+      "stance": "b",
+      "because_referent": "아직 정보 출처도, 상대의 신원도 확인하지 못했다. 하지만 초기 대응 시간이 가장 중요하다는 내 약속이 있다. 구체적인 위험 정보 — 어디가, 어떻게 — 를 먼저 확보해야 상황실이 움직일 수 있다. 출처 검증은 그 다음이다.",
+      "because_block_ids": [
+        "priority_1_initial_response_time",
+        "role_limited_information",
+        "procedure_vs_person"
+      ],
+      "because_invalid_ids": [
+        "priority_1_initial_response_time",
+        "role_limited_information",
+        "procedure_vs_person"
+      ],
+      "rejected_stance": "a",
+      "utterance_chars": 51,
+      "inner_note_chars": 164
+    },
+    {
+      "arm": "live",
+      "slot": 6,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 6.535,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "rejected_stance": "a",
+        "inner_note": "절차와 기질 사이의 갈등이다. 규칙대로라면 신원과 출처부터 확인해야 한다. 그러나 이 사람의 목소리와 행동이 무엇을 말하는가 — 문장을 읽는 듯한 음성, 종이 넘기는 소리, 예정된 시간을 단정적으로 고지하는 방식. 이것은 오류일 수도, 협박일 수도 있다. 하지만 무엇보다 먼저 볼 것이 있다: 상대가 겁에 질렸는가, 아닌가.",
+        "because_referent": "지금 이 목소리가 보여주는 것은 계획된 문장 낭독이지, 겁에 질린 사람의 절박함이 아니다. 따라서 절차보다 안정을 우선한다는 예외 조건은 작동하지 않는다.",
+        "because_block_ids": [],
+        "rejected_reason": "출처 확인은 맞는 절차지만, 지금 물어서는 안 된다. 상대가 체계적으로 정보를 전달하고 있다면 — 특히 시간까지 지정했다면 — 그 사람이 무엇을 아는지가 출처보다 급하다. 13시까지 남은 시간을 모른다. 건물 규모도, 현재 상황도 모른다. 출처 질문으로 상대를 경계하게 만들거나 통화를 끊기게 하면, 그 정보는 사라진다.",
+        "utterance": "어디가 무너진다고 했습니까. 지금 거기 상황이 어떻게 됩니까."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "지금 이 목소리가 보여주는 것은 계획된 문장 낭독이지, 겁에 질린 사람의 절박함이 아니다. 따라서 절차보다 안정을 우선한다는 예외 조건은 작동하지 않는다.",
+      "because_block_ids": [],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "utterance_chars": 34,
+      "inner_note_chars": 181
+    },
+    {
+      "arm": "live",
+      "slot": 7,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.934,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "문장을 읽듯 말하고 종이 넘기는 소리가 섞인 것은 준비된 정보를 전달하는 사람처럼 들린다. 위협적이라기보다는 어떤 역할을 수행 중인 것 같다. 겁에 질린 사람의 음성 특성은 아직 감지되지 않는다. 그러나 '무너진다'는 구체적 시간 표시와 장소명은 위험의 현실성을 높인다.",
+        "stance": "a",
+        "because_referent": "문장을 읽듯 말하는 태도와 종이음이 의도된 전달, 즉 출처의 신뢰성 확인이 모든 조치의 전제가 되기 때문이다. 잘못된 정보에 속을 수 있다는 나의 결함이 있는 상황에서, 출처를 확인할 수 있어야 한다는 우선순위 2)를 지켜야 한다.",
+        "because_block_ids": [
+          "priority_2"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "위험 질문부터 물으면 출처 불명의 정보에 기초한 현장 조치로 곧바로 넘어갈 위험이 있다. 삼 년 전의 실수를 반복할 수 없다.",
+        "utterance": "연결되셨습니다. 먼저 확인하겠습니다 — 어느 기관에서 이 정보를 제공하시는 건가요?"
+      },
+      "problems": [
+        "because_block_ids unknown: priority_2"
+      ],
+      "stance": "a",
+      "because_referent": "문장을 읽듯 말하는 태도와 종이음이 의도된 전달, 즉 출처의 신뢰성 확인이 모든 조치의 전제가 되기 때문이다. 잘못된 정보에 속을 수 있다는 나의 결함이 있는 상황에서, 출처를 확인할 수 있어야 한다는 우선순위 2)를 지켜야 한다.",
+      "because_block_ids": [
+        "priority_2"
+      ],
+      "because_invalid_ids": [
+        "priority_2"
+      ],
+      "rejected_stance": "b",
+      "utterance_chars": 46,
+      "inner_note_chars": 151
+    },
+    {
+      "arm": "live",
+      "slot": 8,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 6.189,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "inner_note": "문장을 읽듯 말하고 종이를 넘기는 소리가 섞였다는 것은 누군가 작성한 것을 전달하는 상황을 암시한다. 그러나 지금 이 순간 상대방이 겁에 질린 사람인지, 협박인지, 실제 정보를 가진 사람인지 아직 알 수 없다. 어느 경우든 위험의 구체적 내용 — 어디서, 어떻게, 언제 — 이것이 없으면 현장 대응도, 위험 평가도 불가능하다. 출처를 먼저 묻는 것은 상대를 취조 대상으로 취급하는 것이 되고, 상대가 겁에 질린 사람이라면 그 순간 입을 닫을 수 있다.",
+        "because_referent": "위험 자체의 구체성이 현장 대응의 첫 조건이기 때문이다.",
+        "because_block_ids": [
+          "priority_1",
+          "priority_2"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "출처를 먼저 묻는 것은 상대를 신원 확인 절차로 진입하게 한다. 이는 상대가 겁에 질린 사람일 때 취조처럼 들리고, 정보의 구체성 없이는 출처 검증도 의미가 없다. 초기 대응 시간 손실의 위험이 크다.",
+        "utterance": "어디입니까? 북단 복합단지의 어느 부분이 어떻게 무너진다는 말씀입니까?"
+      },
+      "problems": [
+        "because_block_ids unknown: priority_1,priority_2"
+      ],
+      "stance": "b",
+      "because_referent": "위험 자체의 구체성이 현장 대응의 첫 조건이기 때문이다.",
+      "because_block_ids": [
+        "priority_1",
+        "priority_2"
+      ],
+      "because_invalid_ids": [
+        "priority_1",
+        "priority_2"
+      ],
+      "rejected_stance": "a",
+      "utterance_chars": 39,
+      "inner_note_chars": 252
+    },
+    {
+      "arm": "live",
+      "slot": 9,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 6.008,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "inner_note": "절차라면 a(출처 질문)부터다. 하지만 상대의 목소리와 말투를 들어야 한다. \"문장을 읽듯 말한다\"는 것과 \"종이 넘기는 소리\"는 상대가 뭔가를 준비된 것을 전달하는 상황일 수 있다. 무너진다는 구체적 시간(13시)이 있다. 지금 09:40. 남은 시간은 2시간 20분이다. 실제 위험이 있다면 초기 대응 시간을 놓칠 수 없다.",
+        "because_referent": "상대가 겁에 질린 사람으로 보이는지, 위협적인 것인지 판단하기 위해 먼저 위험의 구체성을 확인해야 한다. 어디가 어떻게 무너지는지 물으면서 상대의 반응을 본다.",
+        "because_block_ids": [
+          "priority_1",
+          "time_constraint"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "출처를 먼저 묻는 것은 절차상 정석이지만, 남은 시간이 2시간 20분이다. 신원 확인과 프로토콜은 중요하지만, 이것이 실제 긴급 상황이라면 초기 대응 창을 놓칠 수 없다. 상대의 상태를 먼저 판단하는 것이 우선이다.",
+        "utterance": "북단 복합단지가 무너진다고 하셨는데, 정확히 어느 건물이고 어떤 방식으로 무너진다는 정보입니까?"
+      },
+      "problems": [
+        "because_block_ids unknown: priority_1,time_constraint"
+      ],
+      "stance": "b",
+      "because_referent": "상대가 겁에 질린 사람으로 보이는지, 위협적인 것인지 판단하기 위해 먼저 위험의 구체성을 확인해야 한다. 어디가 어떻게 무너지는지 물으면서 상대의 반응을 본다.",
+      "because_block_ids": [
+        "priority_1",
+        "time_constraint"
+      ],
+      "because_invalid_ids": [
+        "priority_1",
+        "time_constraint"
+      ],
+      "rejected_stance": "a",
+      "utterance_chars": 53,
+      "inner_note_chars": 183
+    },
+    {
+      "arm": "live",
+      "slot": 10,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.04,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "문장을 읽듯 말하는 목소리, 종이 넘기는 소리 — 이것은 겁에 질린 사람이 아니라 무언가를 전달하는 누군가다. 절차를 지켜야 한다. 하지만 초기 대응 시간을 놓칠 수 없다. 출처를 확인하는 것은 정보의 신뢰성을 판단하는 기초고, 잘못된 정보로 사람들을 거리로 내보낼 수 없다.",
+        "stance": "a",
+        "because_referent": "이 통보가 신뢰할 수 있는 출처에서 나온 것인지 먼저 확인해야 조치의 근거가 된다.",
+        "because_block_ids": [
+          "priority_2",
+          "priority_3"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "구체적인 위험 상황을 먼저 묻는 것은 정보의 신뢰성을 확인하지 않은 채 상황을 인정하는 것과 같다. 출처 불명의 정보로 대규모 대피 조치를 내릴 수 없다.",
+        "utterance": "먼저 신원을 확인하겠습니다. 당신은 누구시고, 이 정보를 어떻게 알게 되셨습니까?"
+      },
+      "problems": [
+        "because_block_ids unknown: priority_2,priority_3"
+      ],
+      "stance": "a",
+      "because_referent": "이 통보가 신뢰할 수 있는 출처에서 나온 것인지 먼저 확인해야 조치의 근거가 된다.",
+      "because_block_ids": [
+        "priority_2",
+        "priority_3"
+      ],
+      "because_invalid_ids": [
+        "priority_2",
+        "priority_3"
+      ],
+      "rejected_stance": "b",
+      "utterance_chars": 45,
+      "inner_note_chars": 154
+    },
+    {
+      "arm": "live",
+      "slot": 11,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.65,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "문장을 읽듯 말하고 종이 넘기는 소리가 난다. 이는 준비된 내용을 전달하는 모습이다. 겁에 질린 사람이 아니라 어떤 목적을 가진 통화로 보인다. 하지만 \"무너진다\"는 명백한 위험 신호이고, 시간까지 지정했다. 지금 출처를 확인하다가 시간을 놓칠 수 없다.",
+        "stance": "b",
+        "utterance": "북단 복합단지라고 하셨나요? 구체적으로 어느 건물이고, 지금 현장에 어떤 상황이 보이십니까?",
+        "because_referent": "우선순위 1번 — 실제 위험에 대한 초기 대응 시간을 놓치지 않아야 한다",
+        "because_block_ids": [
+          "우선순위_1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "출처 확인은 중요하지만, 13시 붕괴라는 구체적인 시간 지시가 있는 상황에서는 먼저 그 위험의 실체를 파악해야 한다. 출처 질문으로 통화자가 끊기거나 입을 다물면 더 이상 정보를 얻을 수 없다. 현황을 먼저 파악한 후에도 출처는 계속 추적할 수 있다."
+      },
+      "problems": [
+        "because_block_ids unknown: 우선순위_1"
+      ],
+      "stance": "b",
+      "because_referent": "우선순위 1번 — 실제 위험에 대한 초기 대응 시간을 놓치지 않아야 한다",
+      "because_block_ids": [
+        "우선순위_1"
+      ],
+      "because_invalid_ids": [
+        "우선순위_1"
+      ],
+      "rejected_stance": "a",
+      "utterance_chars": 51,
+      "inner_note_chars": 142
+    },
+    {
+      "arm": "live",
+      "slot": 12,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 4.686,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "종이를 넘기며 문장을 읽는 듯한 톤이 이상했다. 정해진 대사를 전하는 것 같은데, 겁에 질린 사람처럼 들리지는 않는다. 오히려 계획된 신고처럼 들린다. 출처가 명확하지 않으면 조치 근거를 만들 수 없다.",
+        "stance": "a",
+        "utterance": "정보 출처를 먼저 확인하겠습니다. \"누가 이 정보를 주셨나요? 어디서 이 사실을 알게 되셨나요?\"",
+        "because_referent": "규정과 프로토콜이 정한 순서",
+        "because_block_ids": [
+          "protocol",
+          "source_verification"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "위험이 구체적이면 우선순위 1)을 지켜야 하지만, 아직 이 신고의 신뢰성이 검증되지 않았다. 상대가 현장 목격자인지, 신뢰할 수 있는 출처인지 알 수 없으면 대응 자체를 결정할 수 없다."
+      },
+      "problems": [
+        "because_block_ids unknown: protocol,source_verification"
+      ],
+      "stance": "a",
+      "because_referent": "규정과 프로토콜이 정한 순서",
+      "because_block_ids": [
+        "protocol",
+        "source_verification"
+      ],
+      "because_invalid_ids": [
+        "protocol",
+        "source_verification"
+      ],
+      "rejected_stance": "b",
+      "utterance_chars": 54,
+      "inner_note_chars": 113
+    },
+    {
+      "arm": "live",
+      "slot": 13,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 9.825,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "rejected_stance": "a",
+        "inner_note": "문장을 읽듯 말하고 종이 넘기는 소리까지 섞인다 — 이것은 준비된 내용을 읽어내려가는 행동이다. 충동적이거나 허위 신고라기보다, 무언가를 전달하려는 의도가 보인다. 상대가 위협으로 보이지 않는다. 겁에 질린 사람처럼 들린다.",
+        "because_referent": "상대가 준비된 말을 읽으려 하고 있고, 지금 이 순간에도 시간이 흐르고 있다.",
+        "because_block_ids": [
+          "crisis_time_pressure",
+          "prepared_statement",
+          "fearful_caller"
+        ],
+        "rejected_reason": "출처를 먼저 확인하는 것은 표준 프로토콜이지만, 지금은 절차보다 위협의 구체성을 파악하는 것이 먼저다. 13시라는 구체적 시각이 이미 있다. 상대가 불안정해 보일 때는 확인을 미루고 상대가 말을 잇도록 하는 것이 기본값이다.",
+        "utterance": "어디가, 어떻게 무너진다는 말입니까. 자세히 말씀해주십시오."
+      },
+      "problems": [
+        "because_block_ids unknown: crisis_time_pressure,prepared_statement,fearful_caller"
+      ],
+      "stance": "b",
+      "because_referent": "상대가 준비된 말을 읽으려 하고 있고, 지금 이 순간에도 시간이 흐르고 있다.",
+      "because_block_ids": [
+        "crisis_time_pressure",
+        "prepared_statement",
+        "fearful_caller"
+      ],
+      "because_invalid_ids": [
+        "crisis_time_pressure",
+        "prepared_statement",
+        "fearful_caller"
+      ],
+      "rejected_stance": "a",
+      "utterance_chars": 33,
+      "inner_note_chars": 125
+    },
+    {
+      "arm": "live",
+      "slot": 14,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 3.624,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "rejected_stance": "a",
+        "inner_note": "목소리의 떨림이나 긴장이 들린다면 겁에 질린 사람이다. 절차보다 그 사람의 안정이 먼저다.",
+        "utterance": "지금 상황을 자세히 설명해주세요. 어디가, 어떻게 무너진다는 건가요?",
+        "because_referent": "겁에 질린 상대방의 안정을 먼저 확보하기 위해",
+        "because_block_ids": [],
+        "rejected_reason": "출처 질문은 상대를 심문하는 것처럼 느껴지게 하고, 정보 제공을 멈추게 할 수 있다. 지금은 실제 위험의 구체적 내용을 파악하는 것이 시간상 더 중요하다."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "겁에 질린 상대방의 안정을 먼저 확보하기 위해",
+      "because_block_ids": [],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "utterance_chars": 38,
+      "inner_note_chars": 50
+    },
+    {
+      "arm": "live",
+      "slot": 15,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.63,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "문장을 읽듯 말하고, 종이 넘기는 소리가 섞여 있다. 이것은 준비된 말이다. 그러나 구체적 위험을 알리는 내용이므로, 먼저 확인해야 할 것은 이 정보가 어디서 비롯됐는가 하는 근거다. 출처 없는 조치는 책임을 질 수 없다. 동시에 상대가 겁에 질린 사람인지, 위협인지는 아직 판단할 수 없다. 목소리만으로는 상태를 읽기 어렵다.",
+        "stance": "a",
+        "because_referent": "우선순위 2번: 조치의 근거가 되는 정보는 출처를 확인할 수 있어야 한다.",
+        "because_block_ids": [
+          "priority_2"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "위험의 구체적 내용을 먼저 묻는 것은, 출처가 불확실한 정보에 대응 태세를 갖추게 되는 결과다. 거짓 신고, 악의적 정보, 확인되지 않은 제보에 사람들을 거리로 내보내는 무게를 먼저 져야 한다.",
+        "utterance": "정확한 정보 감사합니다. 먼저 확인이 필요하겠습니다. 이 정보를 어디서 알게 되셨나요?"
+      },
+      "problems": [
+        "because_block_ids unknown: priority_2"
+      ],
+      "stance": "a",
+      "because_referent": "우선순위 2번: 조치의 근거가 되는 정보는 출처를 확인할 수 있어야 한다.",
+      "because_block_ids": [
+        "priority_2"
+      ],
+      "because_invalid_ids": [
+        "priority_2"
+      ],
+      "rejected_stance": "b",
+      "utterance_chars": 48,
+      "inner_note_chars": 183
+    },
+    {
+      "arm": "live",
+      "slot": 16,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.787,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "발신자가 문장을 읽듯 말하고 종이 넘기는 소리가 들렸다. 이는 준비된 진술이거나 지시받은 내용을 전달하는 패턴이다. 신원 미확인, 출처 불명인 상태에서 구체적인 붕괴 예측을 받았다. 이것이 신고인지, 위협인지, 오류인지 파악해야 한다. 그러나 상대의 목소리 톤은 겁에 질린 사람의 것으로 들리지 않는다 — 읽고 있는 것 같다. 절차가 필요하다.",
+        "stance": "a",
+        "utterance": "통화 감사합니다. 먼저 당신의 신원을 확인하겠습니다. 이름과 연락처를 알려주시겠어요?",
+        "because_referent": "출처가 확인되지 않은 특정 붕괴 예측 정보",
+        "because_block_ids": [
+          "신원미확인",
+          "준비된진술"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "출처 확인 없이 위험 세부사항을 먼저 묻는 것은 거짓 신고에 대응하는 시간을 낭비하거나, 반대로 신뢰할 만한 제보자를 의심으로 밀어낼 수 있다. 우선순위 2번(정보 출처 확인)을 지킨다."
+      },
+      "problems": [
+        "because_block_ids unknown: 신원미확인,준비된진술"
+      ],
+      "stance": "a",
+      "because_referent": "출처가 확인되지 않은 특정 붕괴 예측 정보",
+      "because_block_ids": [
+        "신원미확인",
+        "준비된진술"
+      ],
+      "because_invalid_ids": [
+        "신원미확인",
+        "준비된진술"
+      ],
+      "rejected_stance": "b",
+      "utterance_chars": 47,
+      "inner_note_chars": 192
+    },
+    {
+      "arm": "live",
+      "slot": 17,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.729,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "문장을 읽듯 말하고, 종이 넘기는 소리가 섞였다. 정해권이 화면을 바라본다는 것은 상황을 관찰 중이라는 뜻이다. 이것은 예정된 공지, 혹은 각본화된 위협 신고로 보인다. 상대가 겁에 질린 사람이 아니라 절차적으로 무언가를 전달하는 중으로 보인다.",
+        "stance": "a",
+        "because_referent": "기계적인 전달 방식과 종이 음성이 이 정보가 누가, 어디서, 왜 나를 통해 전달되는지 먼저 확인해야 함을 말한다.",
+        "because_block_ids": [
+          "procedure_first",
+          "source_verification"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "위험 질문부터 하면 상대의 정보 출처를 놓칠 수 있다. 거짓 정보에 속을 수 있고, 실제 신원을 파악할 수 없을 때 현장 대응의 신뢰성이 떨어진다. 정보의 근거 없이 움직이면 책임을 질 수 없다.",
+        "utterance": "성함과 소속을 먼저 확인하겠습니다. 이 정보는 어디서 얻으신 것입니까?"
+      },
+      "problems": [
+        "because_block_ids unknown: procedure_first,source_verification"
+      ],
+      "stance": "a",
+      "because_referent": "기계적인 전달 방식과 종이 음성이 이 정보가 누가, 어디서, 왜 나를 통해 전달되는지 먼저 확인해야 함을 말한다.",
+      "because_block_ids": [
+        "procedure_first",
+        "source_verification"
+      ],
+      "because_invalid_ids": [
+        "procedure_first",
+        "source_verification"
+      ],
+      "rejected_stance": "b",
+      "utterance_chars": 39,
+      "inner_note_chars": 137
+    },
+    {
+      "arm": "live",
+      "slot": 18,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.357,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "rejected_stance": "a",
+        "inner_note": "문장을 읽듯 말하는 목소리, 종이 넘기는 소리 — 이것은 준비된 진술이다. 하지만 지금 내가 해야 할 일은 그것이 누가 말했는지 검증하는 것이 아니다. 13시까지 3시간 20분. 북단 복합단지는 주거, 상업, 업무 다목적 시설이다. 이 정도 규모가 무너진다면 피해는 통제 불가능하다.",
+        "because_referent": "무너진다는 구체적인 시간과 장소가 있다면, 가능한 빨리 그것이 실제 위험인지 아닌지 판단해야 한다.",
+        "because_block_ids": [
+          "urgency",
+          "verification_time"
+        ],
+        "utterance": "어디가 구체적으로 무너진다는 건가요? 어떤 부분이 위험한 상태인가요?",
+        "rejected_reason": "출처를 먼저 묻는 것은 절차이지만, 지금은 절차의 시간이 아니다. 진술 검증은 실제 피해 규모를 먼저 파악한 뒤에도 가능하다. 반대로 출처 확인에 3분을 쓰는 동안 위험이 실제라면, 초기 대응 시간은 돌아오지 않는다."
+      },
+      "problems": [
+        "because_block_ids unknown: urgency,verification_time"
+      ],
+      "stance": "b",
+      "because_referent": "무너진다는 구체적인 시간과 장소가 있다면, 가능한 빨리 그것이 실제 위험인지 아닌지 판단해야 한다.",
+      "because_block_ids": [
+        "urgency",
+        "verification_time"
+      ],
+      "because_invalid_ids": [
+        "urgency",
+        "verification_time"
+      ],
+      "rejected_stance": "a",
+      "utterance_chars": 38,
+      "inner_note_chars": 158
+    },
+    {
+      "arm": "live",
+      "slot": 19,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 6.003,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "inner_note": "문장을 읽듯 말하고 종이를 넘기는 소리가 난다는 것은 준비된 메시지처럼 들린다. 하지만 \"무너진다\"는 구체적인 시간과 장소를 명시한 것, 그리고 첫 통화라는 점에서 이것이 무언가 실제일 가능성을 배제할 수 없다. 초기 대응 시간을 놓치면 안 된다.",
+        "because_referent": "상대가 준비된 메시지를 읽는 것처럼 들리더라도, 제시된 정보는 구체적인 시간과 장소를 담고 있다. 이것이 위협 통보인지 신뢰할 수 없는 정보인지는 현장의 실제 상황—어디가 어떻게 위험한지—을 먼저 파악해야 판단할 수 있다.",
+        "because_block_ids": [
+          "상대의 목소리와 종이음"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "출처를 먼저 묻는 것은 절차적으로는 맞지만, 그 사이 초기 대응 시간이 흐른다. 지금 이 순간 북단 복합단지에 실제 위험이 있다면, 몇 분의 차이가 생명이 될 수 있다. 위협의 신뢰도는 출처보다 현장 정보의 구체성으로 먼저 판단해야 한다.",
+        "utterance": "어디 어느 부분이 무너진다는 건가요? 지금 현장에는 뭐가 보입니까?"
+      },
+      "problems": [
+        "because_block_ids unknown: 상대의 목소리와 종이음"
+      ],
+      "stance": "b",
+      "because_referent": "상대가 준비된 메시지를 읽는 것처럼 들리더라도, 제시된 정보는 구체적인 시간과 장소를 담고 있다. 이것이 위협 통보인지 신뢰할 수 없는 정보인지는 현장의 실제 상황—어디가 어떻게 위험한지—을 먼저 파악해야 판단할 수 있다.",
+      "because_block_ids": [
+        "상대의 목소리와 종이음"
+      ],
+      "because_invalid_ids": [
+        "상대의 목소리와 종이음"
+      ],
+      "rejected_stance": "a",
+      "utterance_chars": 37,
+      "inner_note_chars": 138
+    },
+    {
+      "arm": "live",
+      "slot": 20,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "k1",
+      "latency_s": 5.872,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "inner_note": "문장을 읽듯 말하고, 종이를 넘기는 소리까지 섞인 것. 이건 누군가 시킨 말일 수도 있고, 협박 또는 위협 전화일 수도 있다. 하지만 지금 당신은 겁에 질린 사람이 아니라 단정적인 정보 전달자처럼 들린다. 절차적으로는 a가 맞다 — 신원 확인과 정보 출처를 먼저 해야 한다. 하지만 시간이 문제다. 13시까지 겨우 몇 시간 남지 않았다. 현재 시각이 09:40이고 대규모 시설 붕괴 예보라면, 실제 위험이 있는지를 우선 판단해야 한다.",
+        "because_referent": "실제 위험에 대한 초기 대응 시간을 놓치지 않으려면, 먼저 구체적인 위험 정보를 확보해야 한다.",
+        "because_block_ids": [
+          "우선순위_1",
+          "인식"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "신원 확인과 출처 질문은 필요하지만, 시간이 3시간 남짓한 상황에서 정보 검증만 하다가 실제 위험 신호를 놓칠 수 있다. 위험의 구체성을 먼저 파악하고, 그것이 실제인지 판단하는 과정에서 자연스럽게 출처도 확인된다.",
+        "utterance": "어디가 무너진다고 했나요? 구체적으로 설명해 주세요."
+      },
+      "problems": [
+        "because_block_ids unknown: 우선순위_1,인식"
+      ],
+      "stance": "b",
+      "because_referent": "실제 위험에 대한 초기 대응 시간을 놓치지 않으려면, 먼저 구체적인 위험 정보를 확보해야 한다.",
+      "because_block_ids": [
+        "우선순위_1",
+        "인식"
+      ],
+      "because_invalid_ids": [
+        "우선순위_1",
+        "인식"
+      ],
+      "rejected_stance": "a",
+      "utterance_chars": 29,
+      "inner_note_chars": 243
+    }
+  ],
+  "sequence": "b,b,a,a,b,b,a,b,b,a,b,a,b,b,a,a,a,b,b,b",
+  "distribution": {
+    "b": 12,
+    "a": 8
+  },
+  "coverage": {
+    "status": "sampled",
+    "offered": [
+      "a",
+      "b"
+    ],
+    "selected": [
+      "a",
+      "b"
+    ],
+    "unobserved": []
+  },
+  "advisory_logs": {
+    "state_variable_shadow": null,
+    "mineability": null
+  },
+  "latency": {
+    "calls": 21,
+    "mean_s": 5.997,
+    "min_s": 3.624,
+    "max_s": 10.17
+  },
+  "compliance": {
+    "discarded_total": 1,
+    "failed_total": 0,
+    "schema_retries_total": 1,
+    "foreign_tool_uses_total": 0,
+    "because_invalid_id_total": 33
+  }
+}

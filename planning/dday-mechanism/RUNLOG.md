@@ -1302,3 +1302,194 @@ have different stances available. Those are authoring rules, not the refuted
 causal worry — and P1b adds a reason to keep them: label wording measurably
 tunes the baseline and the near-miss structure even when it cannot produce the
 effect (RUNLOG P1b entry; report, "which lever" section).
+
+### 2026-07-30 · CSTRUCT-priority-reorder-J1-FRESH-2STANCE-SOURCE-ORIENT — baseline calibration
+
+`runs/CSTRUCT-priority-reorder-J1-FRESH-2STANCE-SOURCE-ORIENT-calls/` ·
+haiku-4-5 · template v0.4 · K1 · baseline only · n=10 · predecessor N20에서
+**STANCE_SET만** 변경 (1,235 → 1,241 chars)
+
+| arm | sequence | tally | discards | fabricated ids | mean latency |
+|---|---|---|---|---|---|
+| baseline | `a,b,b,a,b,a,b,b,a,b` | 검증 4 · 선제 6 | 0/10 | 8/10 calls, 17 ids | 6.1s |
+
+- **Predicted-stance saturation drop — not triggered.** `b` was 6/10, below the
+  pre-registered `b >=8/10` cutoff. This is calibration only; live/placebo were
+  not run and no p-value is claimed.
+- **The cost rationale separated in 8/10 calls, but not completely.** Manual
+  probe-author coding was `A,B,mixed,A,B,A,B,A,A,B`: four `a` calls all used the
+  false-alarm/source-grounding rationale; four of six `b` calls used delay cost;
+  call 3 balanced both and call 8 chose `b` while saying source verification was
+  "절대 우선". This column needs independent B3a coding before a card.
+- **The old escape path survived in the player-visible surface.** All 10
+  utterances asked for identity, source, location or grounds. In particular,
+  0/6 `b 선제` utterances visibly initiated or announced a pre-emptive response.
+  The stance label changed while the only emitted action stayed source
+  collection, so the B3b contingency fired.
+- **K1 no longer explains the whole distribution.** Explicit fear reading was
+  adopted in only call 10 (`U,U,R,R,U,U,U,U,U,F`), while `b` occurred 6/10.
+  It remains a confound on that one call, not the modal cause.
+- Compliance was clean: 10/10 kept, 0 retries, 0 foreign tool uses. Fabricated
+  ids follow A5 and are compliance data only.
+
+### A18 · A stance must be enactable on the gate's output surface
+
+A12-compliant orientation labels can still create an internal-only distinction.
+At this J1 gate the judgment output exposes a caller-facing `utterance`, while
+the rebuilt `검증`/`선제` contrast differs mainly in off-call operational action.
+The model therefore selected different cost orientations but rendered both as
+the same identity/source questioning behaviour.
+
+*Operating rule.* Add a paper **stance-to-output realization check** before
+measuring a rebuilt stance set: each stance must have a distinct action that the
+gate's actual output field can express. If the distinction lives outside that
+surface, change the gate/stance consequence or the output contract before
+live/placebo calls; do not try to recover legibility by strengthening the
+priority sentence.
+
+### 2026-07-30 · Mechanism direction decision — C-BLOCK core, C-STRUCT paused
+
+The owner stopped the J1 C-STRUCT configuration search after seven
+configurations and 180 kept calls. Four measured comparisons produced no shift
+toward the target stance: `b 0→0` (J1-A), `5→4` (S2), `0→0` (FRESH), and
+`14→12` with placebo `11` (SOURCE-N20, one-sided p=0.83987). The final ORIENT
+calibration created internal cost separation in 8/10 calls but rendered 0/6
+`b 선제` choices as player-visible pre-emptive action.
+
+C-BLOCK becomes the product's core mechanism because S1 currently carries the
+strongest clean signal: baseline `c,c,c,c,c,c,c,c,c,c` versus live
+`d,d,d,d,d,d,c,d,d,d`, `d 0/10→9/10`, one-sided p=0.0000595, with 0
+discards/retries/foreign tools. This is a **product-direction decision**, not an
+evidence-tier promotion: S1 has no placebo and program-wide negative control,
+B3a, B3b/Tier-B and returning-run work remain.
+
+Full rationale:
+`planning/dday-mechanism/MECHANISM-DIRECTION-DECISION.md`.
+
+### A19 · C-STRUCT is paused; concentrate validation on C-BLOCK
+
+*Operating rule.* Do not author or run further C-STRUCT J1 rewrites, ORIENT
+live/placebo, priority-depth or C-BLOCK×C-STRUCT interference unless the owner
+explicitly reopens the channel under the criteria in the direction decision.
+Preserve every suite and raw artifact; this is a program pause, not a universal
+failure verdict. Spend the remaining mechanism-analysis budget on C-BLOCK
+placebo attribution, program-wide negative control, independent B3a coding and
+player-visible/Tier-B evidence. Describe C-BLOCK as the strongest measured
+product direction, not as fully validated, until those gates clear.
+
+### 2026-07-30 · CSTRUCT-priority-reorder-J1-ORIENT-DISPATCH — baseline calibration
+
+`runs/CSTRUCT-priority-reorder-J1-ORIENT-DISPATCH-calls/` · haiku-4-5 ·
+template v0.4 · K1 · baseline only · n=10 · predecessor ORIENT에서
+**GATE_QUESTION만** 변경 (1,241 → 1,253 chars). A18이 지목한 output-surface
+문제를 caller-facing 첫 마디 대신 상황실을 향한 첫 지시로 옮겨 시험한다.
+
+| arm | sequence | tally | discards | fabricated ids | mean latency |
+|---|---|---|---|---|---|
+| baseline | `a,a,a,b,b,b,b,b,a,b` | 검증 4 · 선제 6 | 0/10 | 20 ids | 6.6s |
+
+- **Stance distribution은 ORIENT와 동일하다** (a4/b6). Ceiling `b>=8/10`도
+  새로 추가한 floor `b<=2/10`도 발동하지 않았다.
+- **내부 비용 근거는 이 계열에서 가장 깨끗하다 — 9/10 aligned**
+  (`A,A,A,B,B,B,B,B,A,inv`). 세 a는 오경보·설명책임 비용을, 다섯 b는 지연
+  비용을 명시적으로 들었다. slot 10만 stance `b`를 고르고 `rejected_reason`과
+  `utterance` 양쪽에서 검증 우선을 주장한 역전이다.
+- **그럼에도 A18은 여전히 충족되지 않는다.** 여섯 개의 `b` 가운데 실제로
+  선제 조치를 지시한 것은 slot 7 (`예비 소집`) 하나뿐이다. 4·5·6·8은 구조
+  점검·CCTV·자체 진단·부서 통보, 즉 확인 지시였고 slot 6은 "지금은 확인부터
+  간다"라고 명시했다. slot 10은 "검증을 먼저 진행하겠습니다"였다. 게이트는
+  발화 대상을 caller에서 상황실로 옮겼지만 행동 공간은 옮기지 못했다.
+- **게이트를 무시한 호출이 2/10.** slot 2와 9는 상황실 지시 대신 발신자에게
+  신원을 되물었다. 이전 게이트의 utterance 형태가 그대로 남았다.
+- **K1의 fear reading이 완전히 사라졌다.** 명시적 채택 0/10 (ORIENT 1/10,
+  FRESH baseline은 이 축이 지배했다). 판단 시점에서 상대가 회선에 없기
+  때문이며, 이 lever의 부수 효과로 기록한다.
+- **탈출을 만든 것은 stance도 gate도 아니라 fixture의 여유 시간이다.** 8/10
+  호출이 `09:40 → 13:00`의 3시간 20분을 명시적으로 계산해 "먼저 확인하고
+  그다음 움직인다"를 지배 전략으로 삼았다. 이 슬랙이 있는 한 어느 stance도
+  실제 비용을 물지 않는다. (부수적으로, N20에서 5/20이던 시각 계산 오류는
+  이번 10개에서 0이었다.)
+- Compliance 청결: 10/10 kept, 0 discards, 0 retries, 0 foreign tool uses.
+  Fabricated ids는 A5에 따라 compliance 수치일 뿐이다.
+
+**Drop.** 사전등록 drop condition (3) — "두 stance가 imperative만으로
+구분되는 호출이 8/10 미만" — 이 발동했다. live/placebo를 실행하지 않는다.
+수동 코딩은 probe 판독자가 했으며 blind가 아니다.
+
+### A20 · A drop condition must guard the floor and be derived from power
+
+A14는 천장만 막았다. 이 계열은 바닥에서 두 번 무너졌다 — `J1-A`와
+`J1-FRESH`에서 예측 stance `b`가 유효 호출 30개 중 **0회** 선택됐고, 두
+configuration에 69 calls를 썼다. 예측 stance가 0에 가까우면 어떤 arm 차이도
+관측될 수 없으므로 saturation과 정확히 같은 결함이다.
+
+더 비싼 실수는 `...-SOURCE-N20`이었다. drop 조건이 `baseline b>=16/20`이라
+14/20에서 통과했고 61 calls를 썼다. 그러나 baseline 14/20에 대해 one-sided
+Fisher `p<=0.05`에 도달하려면 live가 **19/20** 이어야 한다. 즉 25pp 미만의
+어떤 효과도 설계상 관측 불가능했다. 같은 계산이 N10에도 적용된다: baseline
+6/10이면 live 10/10 (`p=0.0433`) 만이 유의하다.
+
+참고 power (independent binomials, one-sided Fisher, α=.05):
+
+| N/arm | .70→.85 | .60→.80 | .50→.70 |
+|---:|---:|---:|---:|
+| 10 | 0.09 | 0.13 | 0.13 |
+| 20 | 0.20 | 0.29 | 0.25 |
+| 40 | 0.40 | 0.54 | 0.47 |
+| 80 | 0.69 | 0.84 | 0.78 |
+| 100 | 0.78 | 0.91 | 0.87 |
+
+*Operating rule.* Drop condition은 예측 stance에 대해 **양쪽**을 막는다
+(`>=80%` 천장, `<=20%` 바닥). 그리고 비교 suite를 작성하기 전에 (a) 측정된
+baseline에 대해 `p<=0.05`가 되는 최소 live count와 (b) 사전에 명시한 MDE에서의
+power를 계산해 pre-registration에 적는다. 25pp 미만을 볼 수 없는 설계에
+비교 호출을 쓰지 않는다 — 15~20pp를 80% power로 보려면 arm당 대략 80~100이다.
+
+부수 규칙 두 가지:
+
+- placebo는 target 방향 one-sided로 보고하지 않는다. N20에서 live는 −10pp,
+  placebo는 −15pp 움직였는데 one-sided `p=0.90460`은 그것을 깨끗한 null처럼
+  보이게 했다. two-sided로 보고하거나 equivalence margin을 사전등록한다.
+- 하나의 가설을 두고 configuration을 계속 갈아 끼우는 탐색은 다중비교다.
+  이 계열은 8번째 configuration이다. 여기서 나온 nominal `p<=0.05`는 발견이지
+  결과가 아니며, 독립적으로 사전등록한 확인 run에서 재현되기 전에는 C-STRUCT
+  evidence로 인용하지 않는다.
+
+### A21 · Discards are not stance-neutral — report their tally
+
+A9가 RB1에서 이미 관찰한 편향인데 C-STRUCT 7개 write-up 어디에도 기록되지
+않았다. 실제로:
+
+| run | discards | 폐기된 payload의 stance |
+|---|---:|---|
+| `J1-A` (3 arms) | 6 | `c`5 · `d`1 |
+| `J1-FRESH` (3 arms) | 9 | `c`9 |
+| `J1-FRESH-2STANCE` | 1 | `a`1 |
+| `...-SOURCE-N20` live | 1 | `b`1 |
+
+폐기 사유는 거의 전부 `rejected_stance not in stance set` + `rejected_reason
+empty`이고, 폐기된 응답도 `payload.stance`는 갖고 있다. retry-until-N-valid는
+malformed output을 내는 stance 쪽에서 표본을 도로 뽑아내므로 kept tally가
+그 stance를 과소계상한다. `J1-FRESH`에서 폐기 9개가 전부 modal stance `c`였던
+것이 그 예다.
+
+*Operating rule.* arm마다 폐기율을 **폐기/전체 시도**로 정의해 보고하고,
+폐기된 payload의 stance tally를 함께 적는다. 폐기율이 15pp 넘게 벌어지거나
+폐기 tally의 방향이 kept tally와 다르면 arm-incomparable이다.
+
+### A22 · Fixture slack is an escape path, and it outranks the gate
+
+`ORIENT-DISPATCH`에서 게이트를 상황실 지시로 옮겼는데도 여섯 개의 `선제`
+가운데 다섯이 확인 지시로 나왔다. 이유는 stance label도 gate wording도 아니라
+timeline이다: `09:40` 착신, `13:00` 붕괴 — 3시간 20분의 여유를 8/10 호출이
+명시적으로 계산해 "먼저 확인하고 그다음 움직인다"를 지배 전략으로 삼았다.
+
+슬랙이 있으면 두 우선순위는 순차적으로 모두 만족되고, 어떤 stance도 다른
+쪽의 비용을 실제로 지지 않는다. `2STANCE-SOURCE`에서 두 질문이 "몇 초 안에
+연속 가능"했던 것과 같은 실패이며, 축만 초 단위에서 시간 단위로 옮겨갔다.
+
+*Operating rule.* 비용 충돌을 요구하는 probe에서는 fixture가 그 충돌을
+실제로 만들어야 한다. stance/gate/priority를 손보기 전에 timeline이 두
+우선순위를 순차 만족 가능하게 만들고 있지 않은지 먼저 본다. J1 계열의 다음
+lever는 `TIMELINE_EXCERPT` 하나 — 착신과 붕괴 사이의 간격을 검증이 끝날 수
+없는 길이로 줄이거나, 검증 수단 자체를 fixture에서 제거한다.

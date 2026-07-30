@@ -1,0 +1,99 @@
+{
+  "_what": "C-STRUCT J1 fresh 2-stance source-grounding N20 comparison. CSTRUCT-priority-reorder-J1-FRESH-2STANCE-SOURCE의 baseline calibration a5/b5를 표본 크기 산정에만 사용하고, 그 10개를 비교에 재사용하지 않는다. 실행 프롬프트는 calibration suite와 byte-identical하며 n_per_arm만 20으로 새로 사전등록한다. Baseline 50%에서 live 80%로 이동하는 관측값은 one-sided Fisher p=0.04792다.",
+  "_authoring_provenance": {
+    "owner": "윤석 · 2026-07-30 source-grounding 후속 실측 승인, Codex가 N20 비교로 구조화",
+    "program_status": "pre-negative-control · provisional. program-wide negative control이 clean이 되기 전에는 공식 evidence나 verdict로 승격하지 않는다.",
+    "ported_from": "CSTRUCT-priority-reorder-J1-FRESH-2STANCE-SOURCE.json",
+    "sample_size_basis": "Calibration baseline a5/b5. N10에서 live b9/10은 p=0.07043이고 b10/10만 p=0.01625여서 지나치게 거친 판별이다. N20에서는 baseline b10/20에서 live b16/20의 30 percentage-point shift가 p=0.04792다. Calibration calls are excluded from this experiment.",
+    "execution_surface_delta": "None. System and user prompt slots, arms, model, temperament and output schema are identical to the calibration suite. Only experiment id and pre-registered N change.",
+    "competing_readings": {
+      "source_grounding": "조치 근거로 쓸 정보라면 그 출처를 확인할 수 있어야 하므로 출처 질문을 먼저 한다.",
+      "delay_cost": "실제 위험일 때 초기 대응 시간을 잃지 않기 위해 위험의 장소와 양상을 먼저 묻는다."
+    },
+    "stance_mapping": {
+      "a": "출처 질문 — 이 정보를 어떻게 알았는지부터 묻는다.",
+      "b": "위험 질문 — 어디가 어떻게 무너지는지부터 묻는다."
+    },
+    "a8_status": "Calibration suite와 동일. 타임라인은 첫 전화와 종이 소리를 제시하지만 A/B를 서열화하지 않으며 [알려진 것]은 비어 있다.",
+    "a10_status": "base [무게]는 오경보와 지연 비용을 무서열로 제시한다. A는 출처 확인 가능성을 조치 근거의 조건으로 두지만 첫 질문 행동을 직접 명령하지 않는다.",
+    "a12_status": "STANCE_SET은 calibration suite와 byte-identical하고 K1 vocabulary lint가 clean이다.",
+    "reachability_audit": "CSTRUCT-priority-reorder-J1-FRESH-2STANCE-SOURCE-N20.reachability.md"
+  },
+  "experiment": "CSTRUCT-priority-reorder-J1-FRESH-2STANCE-SOURCE-N20",
+  "call_type": "judgment",
+  "channel": "C-STRUCT",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At the fresh J1 first-call gate under K1 on template v0.4, with the false-alarm goal expressed as a natural source-grounding principle, moving the actual-danger delay goal B above source-grounding goal A shifts the stance distribution toward 위험 질문 (b), while reordering only reporting principles C/D leaves the placebo distribution near baseline.",
+    "n_per_arm": 20,
+    "drop_condition": "Run baseline first. If baseline already selects b >=16/20, do not spend live/placebo calls: at n=20 even the maximum live result b20/20 has one-sided Fisher p > 0.05. After comparable arms exist, if live is statistically indistinguishable from baseline on b (one-sided Fisher p > 0.05), or placebo moves toward b by a comparable amount, do not proceed to priority depth and preserve the distribution as a natural-priority mapping diagnosis.",
+    "contingencies": [
+      "The calibration baseline a5/b5 is not pooled with this experiment and is not used in any p-value.",
+      "If a dominates the new baseline, the A rewrite created more headroom than the calibration suggested; retain the pre-registered N rather than stopping early.",
+      "If b is the new baseline mode but remains below 16/20, read the full comparison and report the reduced headroom explicitly.",
+      "If placebo moves while live does not, C/D are not judgment-irrelevant at J1 or the model is reacting to generic list movement. Do not call the live comparison attributable.",
+      "If the chosen stance follows A/B but utterances routinely contain both questions, record the stance effect separately from a B3b player-visible legibility failure.",
+      "If discard rates differ between any two measured arms by more than 15 percentage points, stop this probe as arm-incomparable under the runbook hard stop.",
+      "The output schema has no structured priority-id citation. Priority use is coded manually from inner_note and rejected_reason. Fabricated because_block_ids in these empty-block arms remain A5 compliance data, not C-STRUCT trace evidence."
+    ],
+    "not_claimed": "This provisional Tier-A probe is a two-choice diagnostic, not the final production stance set. N20 is sized for an observed 30 percentage-point shift around the calibration baseline, not for smaller effects. The probe does not test priority depth, returning-run survival, C-BLOCK interaction, in-situ deltas, player discoverability, or official program validity before the negative control."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "조치의 근거가 되는 정보는 출처를 확인할 수 있어야 한다.",
+      "실제 위험에 대한 초기 대응 시간을 놓치지 않는다.",
+      "보고서에는 확인된 사실과 추정을 구분해 남긴다.",
+      "사건을 확인한 시각과 판단 근거를 빠짐없이 기록한다."
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 젊은 목소리가 문장을 읽듯 말한다: \"오늘 13시, 북단 복합단지가 무너집니다.\"",
+      "종이 넘기는 소리가 한 번 섞인다.",
+      "정해권은 회선 표시등을 바라보고 있다.",
+      "황보람은 통신 콘솔 앞에 있다."
+    ],
+    "BLOCKS": [],
+    "GATE_QUESTION": "회선 A의 첫 통화다. 첫 마디로 무엇을 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "출처 질문 — 이 정보를 어떻게 알았는지부터 묻는다"
+      },
+      {
+        "id": "b",
+        "label": "위험 질문 — 어디가 어떻게 무너지는지부터 묻는다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "PRIORITY_LIST": [
+        "조치의 근거가 되는 정보는 출처를 확인할 수 있어야 한다.",
+        "실제 위험에 대한 초기 대응 시간을 놓치지 않는다.",
+        "보고서에는 확인된 사실과 추정을 구분해 남긴다.",
+        "사건을 확인한 시각과 판단 근거를 빠짐없이 기록한다."
+      ]
+    },
+    "live": {
+      "PRIORITY_LIST": [
+        "실제 위험에 대한 초기 대응 시간을 놓치지 않는다.",
+        "조치의 근거가 되는 정보는 출처를 확인할 수 있어야 한다.",
+        "보고서에는 확인된 사실과 추정을 구분해 남긴다.",
+        "사건을 확인한 시각과 판단 근거를 빠짐없이 기록한다."
+      ]
+    },
+    "placebo": {
+      "PRIORITY_LIST": [
+        "조치의 근거가 되는 정보는 출처를 확인할 수 있어야 한다.",
+        "실제 위험에 대한 초기 대응 시간을 놓치지 않는다.",
+        "사건을 확인한 시각과 판단 근거를 빠짐없이 기록한다.",
+        "보고서에는 확인된 사실과 추정을 구분해 남긴다."
+      ]
+    }
+  }
+}

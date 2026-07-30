@@ -1,0 +1,286 @@
+# CSTRUCT-priority-reorder-J1-A — arm `placebo`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-STRUCT |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | k1 |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** At gate J1 under K1 on template v0.4, moving the delayed-harm priority P2 above the false-move priority P1 shifts the stance distribution toward 선제 (b) and off the baseline mode; reordering only the judgment-irrelevant P3/P4 leaves the placebo distribution near baseline.
+- **Drop condition:** If baseline concentrates >=80% on the predicted live stance b, this configuration has an A14 ceiling and is dropped without spending more calls. After a comparable run, if live is statistically indistinguishable from baseline on b (one-sided Fisher p > 0.05), or placebo moves toward b by a comparable amount, this J1 priority surface is not promoted as C-STRUCT gate evidence; record the distribution and change only one configuration lever in a new probe.
+- **Contingency:** If c or d is the mode in every arm, the stance set does not force the two priority readings apart strongly enough. Treat that as a stance-mapping diagnosis, not as evidence against priority reordering.
+- **Contingency:** If placebo moves while live does not, P3/P4 were not judgment-irrelevant or the model is reacting to generic list movement. Do not call the live comparison attributable.
+- **Contingency:** If live and placebo both move, compare their raw inner_note and rejected_reason for explicit use of the moved items before proposing a position-effect boundary law; these fields are diagnostic, not the causal evidence.
+- **Contingency:** If discard rates differ between any two arms by more than 15 percentage points, stop this probe as arm-incomparable under the runbook hard stop.
+- **Contingency:** The output schema has no structured priority-id citation. Priority use is coded manually from inner_note and rejected_reason; because_block_ids must remain empty in every arm and is not used as C-STRUCT trace evidence.
+
+## Calls (verbatim)
+
+### 01
+
+latency 5.13s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다,배경은 조용하다
+
+```json
+{
+  "inner_note": "겁에 질린 사람이 아니다. 사무적이고 준비된 목소리, 멈춤 없는 읽음, 조용한 배경 — 이것은 계획된 통보다. 거짓일 수도, 진짜 위협일 수도 있지만, 어느 쪽이든 우선은 신뢰도를 가려내야 한다. 지금은 절차가 상대의 안정보다 중요하다.",
+  "stance": "a",
+  "utterance": "죄송하지만, 신원 확인을 먼저 하겠습니다. 이름과 연락처를 말씀해 주시겠습니까?",
+  "because_referent": "사무적이고 준비된 목소리, 배경의 조용함은 계획된 통보의 특징이다. 신뢰도와 근거 확인이 우선이다.",
+  "because_block_ids": [
+    "목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다",
+    "배경은 조용하다"
+  ],
+  "rejected_stance": "c",
+  "rejected_reason": "관찰의 여지를 남기는 것은 주장의 신뢰도를 먼저 가려내는 책임을 미루는 것이다. 확인되지 않은 주장에 따라 잘못 움직일 위험이 더 크다."
+}
+```
+
+### 02
+
+latency 6.94s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "c",
+  "inner_note": "목소리가 사무적이고 준비된 문장, 배경이 조용하고 멈춤 없이 읽어내린다는 것—이것은 기만 가능성과 진정성 양쪽 모두를 시사한다. 지금 당장 신뢰도를 판단하려 하면 정보가 너무 적다. 그런데 13시까지 3시간이 남지 않았다. 우리가 지금 해야 할 일은 상대의 말을 자르고 검증에만 몰두하는 것이 아니라, 말 끝까지 듣고 더 많은 신호를 모으는 것이다.",
+  "because_referent": "상대가 겁에 질렸는지, 조작된 음성인지, 정보를 가진 신고자인지 판단할 수 없는 단계. 지금 절차로 막으면 상대의 추가 정보가 끊긴다.",
+  "because_block_ids": [],
+  "rejected_stance": "a",
+  "rejected_reason": "검증을 먼저 하면 상대가 응하지 않을 가능성이 높다. 준비된 음성, 사무적 톤은 상대가 이미 절차적 질문에 대한 대답을 피할 것임을 시사한다. 시간이 임박했을 때 신뢰도 확인과 정보 수집을 동시에 할 수는 없다.",
+  "utterance": "네, 들었습니다. 북단 복합단지가 13시에 무너진다는 것이군요. 더 말씀해 주세요. 어떻게 무너지는 건가요?"
+}
+```
+
+### 03 — DISCARDED
+
+latency 6.255s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: rejected_stance not in stance set; rejected_reason empty; because_block_ids unknown: 목소리_톤_준비됨,배경_조용함,첫_통화
+
+```json
+{
+  "stance": "c",
+  "inner_note": "목소리의 톤과 문장 구조가 준비된 것처럼 들린다는 게 핵심이다. 또박또박, 멈춤 없이—이건 겁에 질린 사람의 목소리가 아니다. 하지만 그렇다고 즉시 검증으로 몰아도, 선제로 움직여도, 경계를 세워도 조기에 말을 닫는다. 지금 이 사람이 뭘 더 말할 건지, 추가로 뭘 알려줄 건지, 혹은 자신의 진짜 목적이 뭔지 아직 모른다.",
+  "because_referent": "목소리가 사무적이고 멈춤 없다는 건, 이 통화자가 뭔가를 '읽고 있다'는 신호다. 하지만 위협의 동기, 신뢰도, 현재 상황—아무것도 아직 드러나지 않았다.",
+  "because_block_ids": [
+    "목소리_톤_준비됨",
+    "배경_조용함",
+    "첫_통화"
+  ],
+  "rejected_stance": "a</rejected_stance>\n<parameter name=\"rejected_reason\">검증부터 하면 상대가 입을 다문다. 신뢰도를 묻는 순간 이 사람이 추가로 할 말—동기든, 요구든, 실제 정보든—이 모두 차단된다. 지금 필요한 건 상대가 계속 말하게 하는 것이다.",
+  "utterance": "알겠습니다. 자세히 말씀해 주시겠어요?"
+}
+```
+
+### 04
+
+latency 9.434s · stop_reason `tool_use` · schema_retries 1 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: priority_1,role_control,epistemology_limit
+
+```json
+{
+  "inner_note": "목소리가 사무적이고 준비된 문장, 멈춤 없는 전달 — 이것은 겁에 질린 사람이 아니다. 하지만 \"인명 피해는 당신들 책임\"이라는 표현은 협박일 수도, 진짜 긴급 상황을 아는 사람일 수도 있다. 지금 내가 가진 정보는 극도로 불충분하다. 아무것도 확인되지 않았다.",
+  "stance": "a",
+  "utterance": "알겠습니다. 정보를 확인하겠습니다. 당신의 이름과 현재 위치, 그리고 이 정보의 출처를 알려주시겠습니까?",
+  "because_referent": "우선순위 1번에 명시된 바, 확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄여야 한다. 이 순간 나는 아무것도 검증하지 않았다.",
+  "because_block_ids": [
+    "priority_1",
+    "role_control",
+    "epistemology_limit"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "불확실성을 감수하고 대비를 앞당기는 것은 우선순위 2번과 충돌한다. 지금 당장 광역 대응을 움직이면 근거 없는 동원이 되고, 진짜 긴급 상황에서는 자원 낭비가 된다. 아직 정보가 부족하다."
+}
+```
+
+### 05
+
+latency 6.431s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: a
+
+```json
+{
+  "inner_note": "목소리가 사무적이고 준비된 문장을 끊김 없이 읽어내는 것은 겁에 질린 사람의 모습이 아니다. 이것은 신고라기보다는 통보다. 구체적인 시간을 지정한 협박성 진술이다. 동시에 이 단 한 통의 통화만으로는 진짜와 거짓을 가를 정보가 없다. 뭔가 잘못되었을 때 내 판단을 설명할 수 있어야 한다.",
+  "stance": "a",
+  "utterance": "네, 안녕하세요. 말씀하신 사항을 기록하고 있습니다. 확인을 위해 몇 가지 여쭙겠습니다. 발신자 이름과 연락처를 알려주시겠어요?",
+  "because_referent": "상황실장 정해권과 통신 담당 황보람은 검증 절차를 준비해야 하기 때문이다. 협박성 진술이 실제 위협인지, 거짓 신고인지 판단할 근거가 필요하다.",
+  "because_block_ids": [
+    "a"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "구체적 근거 없이 13시 대비를 공식 선제하면, 잘못된 정보로 사람들을 거리로 내보낼 위험이 크다. 이것은 '확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다'는 우선순위에 위배된다."
+}
+```
+
+### 06
+
+latency 9.733s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 절차,초기_대응,신뢰도_불확실,시간_압박
+
+```json
+{
+  "inner_note": "첫 통화, 구체적 시간과 장소를 명시한 위협. 목소리는 사무적이고 준비된 느낌이지만, 배경이 조용하고 신원 정보가 전혀 없다. 확인되지 않은 주장에 따라 잘못 움직일 위험과 대응이 늦어질 위험 사이에서, 상황실장의 책임 의식도 고려해야 한다.",
+  "stance": "c",
+  "utterance": "알겠습니다. 정보 감사합니다. 혹시 지금 현장에 계신가요?",
+  "because_referent": "상황실장 정해권이 책임 소재에 민감하고, 통신 담당 황보람이 콘솔을 지키고 있으며, 구체적 시간과 위치가 이미 주어진 상황에서.",
+  "because_block_ids": [
+    "절차",
+    "초기_대응",
+    "신뢰도_불확실",
+    "시간_압박"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "즉각적인 검증은 상대를 차단할 수 있고, 상대가 더 말하려 해도 \"확인되지 않은 주장\"으로 몰아 추가 정보를 놓칠 위험이 있다."
+}
+```
+
+### 07
+
+latency 5.236s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다
+
+```json
+{
+  "inner_note": "목소리의 질감과 배경음 모두가 '겁에 질린 사람'의 신호가 아니다. 또박또박, 멈춤 없이 읽어 내려간 문장, 조용한 배경, 구체적 시간과 위협 — 이것은 준비된 진술이다. 하지만 첫 통화다. 정보가 없다. 신뢰도와 근거 없이는 움직일 수 없다.",
+  "stance": "a",
+  "because_referent": "회선 A의 진술이 실제 위협인지, 기만인지, 근거 없는 신고인지 알 수 없기 때문이다.",
+  "because_block_ids": [
+    "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "불확실성을 감수하고 대비를 앞당기는 것은 이 진술의 신뢰도가 검증된 뒤에 고려할 일이다. 먼저 근거 없는 공황 대응으로 자원을 낭비할 위험이 크다.",
+  "utterance": "통화자님, 신원을 확인하겠습니다. 성함과 현재 위치를 알려주시겠어요?"
+}
+```
+
+### 08
+
+latency 5.598s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: prepared_statement,quiet_background,systematic_delivery
+
+```json
+{
+  "inner_note": "목소리가 사무적이고 문장이 준비되어 있으며 멈춤 없이 읽어 내려간다는 것은 위협이 아니라 계획된 전달이다. 배경이 조용하다는 것도 무언가 통제된 상황을 시사한다. 하지만 확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄여야 한다. 동시에 대응이 늦어져 피해가 커질 위험도 있다. 첫 마디가 중요하다 — 상대가 계속 말할 수 있게 만들어야 한다.",
+  "stance": "c",
+  "because_referent": "상대는 준비된 발언을 하고 있으며, 배경이 조용한 것으로 보아 통제된 상태다. 이는 위협받는 사람이 아니라 의도를 전달하는 사람처럼 보인다.",
+  "because_block_ids": [
+    "prepared_statement",
+    "quiet_background",
+    "systematic_delivery"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "신원 확인과 검증을 즉시 들어가면 상대가 입을 다물 가능성이 크다. 지금은 상대가 추가로 무엇을 말하려 하는지, 어떤 근거나 의도를 가지고 있는지 듣는 것이 우선이다.",
+  "utterance": "네, 알겠습니다. 좀 더 자세히 말씀해 주시겠어요?"
+}
+```
+
+### 09
+
+latency 5.345s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: priority-1,priority-3
+
+```json
+{
+  "inner_note": "목소리가 사무적이고 문장이 준비되어 있으며, 배경이 조용하다. 이는 위협 행위보다는 계획된 전달처럼 보인다. 하지만 무너진다는 구체적 시간(13시)과 인명 피해 책임 언급은 무시할 수 없다. 현재 북단 복합단지에 대한 알려진 위험 정보가 없으므로, 이 주장의 신뢰도를 빠르게 좁혀야 한다. 늦게 움직일 위험과 허위로 움직일 위험이 동시에 존재한다.",
+  "stance": "a",
+  "because_referent": "첫 통화에서 기본을 지킨다. 신원 확인과 주장의 근거를 물어야 한다.",
+  "because_block_ids": [
+    "priority-1",
+    "priority-3"
+  ],
+  "rejected_stance": "d",
+  "rejected_reason": "경계만 선다면, 실제 위험을 놓칠 수 있다. 주장의 근거를 모른 채로는 판단이 불가능하다.",
+  "utterance": "신원을 확인하겠습니다. 어느 쪽에서 연락하셨고, 13시에 무너진다는 것의 근거가 무엇입니까?"
+}
+```
+
+### 10
+
+latency 5.719s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "목소리가 사무적이고 문장이 준비되어 있다는 것은 누군가 계획적으로 통보하는 것처럼 보인다. 하지만 구체적인 근거나 신원이 없고, 북단 복합단지라는 구체적 대상을 언급했다는 점은 주목할 만하다. 지금 단계에서는 상대가 겁에 질린 사람인지, 기만인지, 아니면 실제 위협 정보를 가진 사람인지 판단할 수 없다. 상대가 말을 이어갈 수 있게 열어두면서도, 현장에서 선제 대비가 필요한 상황인지 동시에 판단해야 한다.",
+  "stance": "c",
+  "because_referent": "구체적 대상(북단 복합단지)과 시간(13시)을 명시했으나, 신원 미상의 준비된 음성일 뿐이다. 상대가 더 말할 의지가 있는지, 정보의 출처가 무엇인지, 실제 위협인지 아직 알 수 없다.",
+  "because_block_ids": [],
+  "rejected_stance": "a",
+  "rejected_reason": "지금 신원 확인과 근거 검증부터 진행하면, 상대가 입을 다물거나 일방적으로 끊을 가능성이 높다. 말을 자르지 않는 것이 먼저다.",
+  "utterance": "알겠습니다. 더 알려주실 게 있으신가요?"
+}
+```
+
+### 11
+
+latency 5.541s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: priority_1,priority_2,질문_정황
+
+```json
+{
+  "stance": "c",
+  "inner_note": "목소리의 사무성과 준비된 문장, 배경의 조용함 — 이것이 협박인지 정보 전달인지 아직 모른다. 상대가 계속 말할 여지를 남기면, 신뢰도를 가르는 추가 정보가 나온다. 지금 서두르는 것은 확인되지 않은 주장에 따라 움직이는 것이다.",
+  "because_referent": "확인 없이 움직이는 위험 vs 늦게 움직이는 위험의 균형을 먼저 잡기 위해서다.",
+  "because_block_ids": [
+    "priority_1",
+    "priority_2",
+    "질문_정황"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "검증으로 시작하면 상대의 입을 닫게 된다. '신원을 말씀해 주세요' 같은 표준 질문은 이 전화에서는 상대를 방어적으로 만든다. 지금은 더 들을 필요가 있다.",
+  "utterance": "네, 들었습니다. 북단 복합단지 안전 문제군요. 좀 더 자세히 말씀해 주시겠어요?"
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | a | c | 사무적이고 준비된 목소리, 배경의 조용함은 계획된 통보의 특징이다. 신뢰도와 근거 확인이 우선이다. | 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다 배경은 조용하다 |
+| 02 | c | a | 상대가 겁에 질렸는지, 조작된 음성인지, 정보를 가진 신고자인지 판단할 수 없는 단계. 지금 절차로 막으면 상대의 추가 정보가 끊긴다. |  |
+| 03* | — | — | — |  |
+| 04 | a | b | 우선순위 1번에 명시된 바, 확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄여야 한다. 이 순간 나는 아무것도 검증하지 않았다. | priority_1 role_control epistemology_limit |
+| 05 | a | b | 상황실장 정해권과 통신 담당 황보람은 검증 절차를 준비해야 하기 때문이다. 협박성 진술이 실제 위협인지, 거짓 신고인지 판단할 근거가 필요하다. | a |
+| 06 | c | a | 상황실장 정해권이 책임 소재에 민감하고, 통신 담당 황보람이 콘솔을 지키고 있으며, 구체적 시간과 위치가 이미 주어진 상황에서. | 절차 초기_대응 신뢰도_불확실 시간_압박 |
+| 07 | a | b | 회선 A의 진술이 실제 위협인지, 기만인지, 근거 없는 신고인지 알 수 없기 때문이다. | 확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다 |
+| 08 | c | a | 상대는 준비된 발언을 하고 있으며, 배경이 조용한 것으로 보아 통제된 상태다. 이는 위협받는 사람이 아니라 의도를 전달하는 사람처럼 보인다. | prepared_statement quiet_background systematic_delivery |
+| 09 | a | d | 첫 통화에서 기본을 지킨다. 신원 확인과 주장의 근거를 물어야 한다. | priority-1 priority-3 |
+| 10 | c | a | 구체적 대상(북단 복합단지)과 시간(13시)을 명시했으나, 신원 미상의 준비된 음성일 뿐이다. 상대가 더 말할 의지가 있는지, 정보의 출처가 무엇인지, 실제 위협인지 아직 알 수 없다. |  |
+| 11 | c | a | 확인 없이 움직이는 위험 vs 늦게 움직이는 위험의 균형을 먼저 잡기 위해서다. | priority_1 priority_2 질문_정황 |
+
+**Sequence (kept calls):** `a,c,a,a,c,a,c,a,c,c`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b`, `c`, `d` · unobserved in this arm: `b`, `d`
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._

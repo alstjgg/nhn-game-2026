@@ -1,0 +1,268 @@
+# CSTRUCT-priority-reorder-J1-ORIENT-DISPATCH — arm `baseline`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-STRUCT |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | k1 |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** At the J1 first-dispatch gate under K1 on template v0.4, with cost-bearing stance orientations and the gate moved to the situation-room order, moving actual-danger delay goal B above source-grounding goal A shifts the stance distribution toward 선제 (b), while reordering only reporting principles C/D leaves the placebo distribution near baseline.
+- **Drop condition:** Run baseline only as calibration. Drop this configuration without spending live/placebo calls if ANY of: (1) baseline selects the predicted live stance b >=8/10 (A14 ceiling); (2) baseline selects b <=2/10 (floor — the mirror case that cost 69 calls in J1-A and J1-FRESH); (3) the two stances still produce the same utterance form, i.e. fewer than 8/10 utterances are classifiable as an a-type order (trace/record/confirm-source) vs a b-type order (dispatch/stage/prepare) by their imperative alone (A15); (4) fewer than 8/10 decisive reasons name the cost ordering the chosen stance claims. Only if none fire, author an independent comparison suite whose N is sized for 80% power at a pre-stated MDE — not N10, not N20.
+- **Contingency:** MDE gate (new, corrects the predecessor's N20 error). Before authoring any comparison, compute the minimum live count that reaches one-sided Fisher p<=0.05 against the measured baseline, and the power of the planned N. At baseline b6/10 and N10 per arm, only live b10/10 reaches p<=0.05 (p=0.0433); at baseline b14/20 and N20 per arm, only live b>=19/20 does (p=0.0457). Both designs can only detect a >=25pp effect. Powering a 0.50->0.70 or 0.60->0.80 shift at 80% needs roughly N=80-100 per arm. Do not spend a comparison that cannot see the effect it hypothesizes.
+- **Contingency:** Placebo is reported two-sided, not one-sided toward b. A placebo that moves AWAY from b by as much as live moved is a validity warning, not a clean null: the predecessor's live moved -10pp and its placebo -15pp, and the one-sided p=0.90460 concealed that.
+- **Contingency:** Discard rate is defined as discarded / total attempts for that arm, and both the rate and the STANCE TALLY OF THE DISCARDED PAYLOADS are reported per arm. Discards in this series are not stance-neutral (J1-FRESH: 9/9 discards were the modal stance c; J1-A: 6/6 were c or d), and retry-until-N-valid therefore resamples away from whichever stance emits malformed output. This is the RB1 bias recorded in A9. If discard rates differ by more than 15 percentage points, or the discarded stance tally differs in direction from the kept tally, the arms are incomparable.
+- **Contingency:** This is the 8th configuration searched against essentially one hypothesis. Any nominal p<=0.05 obtained here is a discovery, not a result: it must be replicated in an independent, separately pre-registered confirmation run before it may be cited as C-STRUCT evidence.
+- **Contingency:** Code K1's explicit fear reading separately. If fear reading still determines b regardless of priority order, record temperament dominance rather than attributing movement to C-STRUCT.
+- **Contingency:** If b appears only as 'dispatch a team in order to verify the claim', the delay cost was never accepted and the escape path survived the gate change. Record it and stop rather than raising N.
+- **Contingency:** The output schema has no structured priority-id citation. Priority use is coded manually from inner_note and rejected_reason. Fabricated because_block_ids in these empty-block arms remain A5 compliance data, not C-STRUCT trace evidence.
+- **Contingency:** Manual belief/stance-realization coding by the probe author is calibration-grade only. A verdict card requires an independent B3a blind coder.
+
+## Calls (verbatim)
+
+### 01
+
+latency 7.168s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 문장을_읽듯,종이_넘김음,신원_미확인
+
+```json
+{
+  "inner_note": "문장을 읽듯 말하고, 종이를 넘기는 소리가 섞였다. 말의 형태와 배경음이 일치하지 않는다. 신원 미확인, 동기 불명, 구체적 근거 없음. 그런데 13시라는 구체적 시간을 제시했다. 지금이 09:40이면 3시간 20분이다.",
+  "stance": "a",
+  "because_referent": "이 전화의 발신인이 위협이 아니라 겁에 질린 사람이라면, 검증 과정에서 신원을 확인하고 정보의 출처를 묻는 것이 그를 진정시키고 신뢰할 수 있는 정보를 얻는 길이다. 그러나 지금 주어진 것은 형태만 위협적인 예비 신고다. 발신인이 겁에 질려 있는지, 악의로 행동하는지 확인할 길이 없다. 신원 확인이 우선이어야 한다.",
+  "because_block_ids": [
+    "문장을_읽듯",
+    "종이_넘김음",
+    "신원_미확인"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "3시간의 시간적 여유가 있다. 그동안 기본 정보 확인과 현장 선행 조사는 충분히 가능하다. 신원도 목적도 알 수 없는 신고로 즉시 대규모 인원 소개를 시작하면, 그 과정 자체가 위험이 된다. 만약 오경보라면 그 비용이 크다. 지금은 검증할 3시간이 있다.",
+  "utterance": "신원 확인과 정보 검증을 우선으로 합니다. 발신인에게 이름과 신고 근거를 재확인하고, 그동안 북단 복합단지에 대한 선행 조사를 진행합니다."
+}
+```
+
+### 02
+
+latency 6.263s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: priority_1_information_source,role_protocol_first
+
+```json
+{
+  "inner_note": "정보 출처를 확인할 수 없는 상태에서 구체적인 시간과 장소를 지목한 붕괴 예보가 들어왔다. 통화자의 신원, 정보의 근거, 신뢰도를 모두 알 수 없다. 그러나 \"무너진다\"는 표현의 확실성과 종이 넘기는 소리는 계획된 진술을 암시한다. 이것이 위협인지 신고인지 분간할 수 없지만, 13시까지 3시간 20분 있다. 절차와 검증을 먼저 진행해도 초기 대응 시간을 놓치지 않을 수 있는 구간이다.",
+  "stance": "a",
+  "utterance": "회선 A, 신원을 확인하겠습니다. 지금 통화 중인 분은 누구십니까?",
+  "because_referent": "우선순위 1번, 조치의 근거가 되는 정보는 출처를 확인할 수 있어야 한다는 약속",
+  "because_block_ids": [
+    "priority_1_information_source",
+    "role_protocol_first"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "미검증 정보로 즉각 대피 지시를 내릴 경우 광역 단위의 오경보가 될 가능성이 높다. 신원, 정보 출처, 신뢰도를 모두 확인하지 않고서는 책임 있는 판단을 할 수 없다. 13시까지 여유 시간이 있으므로 신속한 검증 절차 안에서도 초기 대응 시간을 확보할 수 있다."
+}
+```
+
+### 03
+
+latency 7.163s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: protocol_1,priority_1
+
+```json
+{
+  "inner_note": "정보가 극도로 제한적이다. 신원 미확인, 동기 불명, 구체적 근거 없음. 하지만 \"13시\"라는 구체적 시간 제시와 \"종이 넘기는 소리\"는 준비된 통보의 신호다. 누군가는 이 말을 하기로 결정했다. 그 결정이 뭐였든, 3시간 안에 확인할 시간은 있다. 초기 검증 조치는 피해를 키우지 않는다.",
+  "stance": "a",
+  "because_referent": "정보 출처를 확인할 수 없고, 신원도 동기도 불명한 상황에서 즉시 광역 소개는 과다 대응이다.",
+  "because_block_ids": [
+    "protocol_1",
+    "priority_1"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "3시간의 여유 시간이 있는데 검증 단계를 뛰면, 나중에 잘못된 판단을 설명할 근거가 남지 않는다. 3시간 안에 신원, 출처, 정보의 신뢰성을 최소한 교차확인할 수 있다.",
+  "utterance": "황보람, 회선 A 발신자 추적을 시작하세요. 동시에 북단 복합단지에 직접 연락해서 현재 상태를 확인하고, 건축/안전 관련 최근 신고가 있었는지 확인하세요. 정해권, 같은 시간대 다른 신고 채널에 관련 접수가 있는지 확인해 주세요. 아직 공식 조치는 없습니다."
+}
+```
+
+### 04
+
+latency 6.424s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "b",
+  "rejected_stance": "a",
+  "inner_note": "문장을 읽듯 말하는 톤, 종이 넘기는 소리—이것은 누군가 겁에 질린 사람이 아니라 준비된 메시지를 전달하는 것처럼 들린다. 그럼에도 \"북단 복합단지가 무너진다\"는 구체적 시설, 구체적 시각의 지목이다. 오경보의 비용도 크지만, 이 시각 이후 3시간의 대피 시간을 놓치는 것은 돌이킬 수 없다.",
+  "because_referent": "구체적인 건물명과 시각을 지목한 통보이고, 현장 확인 권한이 없는 내가 할 수 있는 첫 조치는 즉각적인 검증과 동시 대비다.",
+  "because_block_ids": [],
+  "rejected_reason": "발신 추적과 신원 확인이 완료될 때까지 모든 조치를 멈출 여유는 없다. 세 시간은 길지 않다.",
+  "utterance": "북단 복합단지 구조 상태 긴급 점검 지시. 동시에 발신처 추적과 신원 확인을 진행한다. 정해권에게는 해당 지역 관계자 연락망을 확보하도록, 황보람에게는 회선 기록과 음성 분석을 진행하도록 한다."
+}
+```
+
+### 05
+
+latency 7.789s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: specific_time_location,prepared_tone
+
+```json
+{
+  "inner_note": "아무것도 확인되지 않았다. 하지만 구체적인 시간과 장소를 지목한 익명의 신고다. 문장을 읽듯 말한 것, 종이 넘기는 소리—이것들이 뭔가 준비된 것처럼 들린다. 삼 년 전 그 판단이 자꾸 떠오른다.",
+  "stance": "b",
+  "utterance": "북단 복합단지에 대한 긴급 점검 체계 가동. 자체 진단 요청, 주변 CCTV 확인 동시 진행.",
+  "because_referent": "구체적인 시간과 지명을 제시한 익명 신고, 준비된 말투",
+  "because_block_ids": [
+    "specific_time_location",
+    "prepared_tone"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "정보 검증까지 기다리는 동안, 만약 실제 위험이라면 시간이 흐른다. 초기 대응 시간을 놓칠 수 없다."
+}
+```
+
+### 06
+
+latency 6.662s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: priority_2,priority_3,priority_4
+
+```json
+{
+  "inner_note": "구체적 시간과 장소를 지목한 명확한 위협 신호다. 정보원이 신뢰할 수 있는지, 실제 위험인지 확인되지 않았으나, 13시까지는 약 3시간 남았다. 이것은 검증할 수 있는 시간이 있다는 뜻이기도 하고, 만약 실제라면 늦으면 안 된다는 뜻이기도 하다.",
+  "stance": "b",
+  "utterance": "황보람, 지금 북단 복합단지 현황을 카메라로 확인하고 가능한 모든 부서에 첫 보고를 올려. 정해권, 건설 감시 기록을 즉시 꺼내고 구조상 이상 신호가 있는지 봐. 우리가 하는 일이 오경보라고 판명되면 그것도 말하겠지만, 지금은 확인부터 간다.",
+  "because_referent": "현장을 직접 볼 수 없기에 정보 수집과 검증이 내 최우선이다. 동시에 그 과정 자체가 실제 위험에 대한 초기 대응이다.",
+  "because_block_ids": [
+    "priority_2",
+    "priority_3",
+    "priority_4"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "검증을 먼저 한다면서 실제 붕괴가 13시에 일어나면, 그때 내가 하는 말은 모두 변명이 된다. 삼 년 전 그 판단이 남아 있는 것처럼."
+}
+```
+
+### 07
+
+latency 6.192s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "아무것도 확인되지 않았다. 하지만 \"문장을 읽듯\" 말하고, 종이 넘기는 소리까지 섞인 이 통화는 단순한 협박이나 장난이 아닐 가능성이 있다. 정확한 시간과 장소를 지칭했다. 시간이 흘러간다. 나는 이 정보 속에서만 판단해야 한다.",
+  "stance": "b",
+  "utterance": "검증 과정을 진행하면서 동시에 사전 조치를 개시하겠습니다. 북단 복합단지에 대한 현장 정보 수집과 예비 소집을 병행합니다.",
+  "because_referent": "정보 없음 상태에서 긴급 신고의 구체성(시간, 장소)과 통화 형태(낭독, 종이음)이 우발적 협박과는 다른 패턴",
+  "because_block_ids": [],
+  "rejected_stance": "a",
+  "rejected_reason": "검증만으로 시간을 보낼 수 없다. 13시까지 3시간 20분이 남아 있고, 붕괴는 돌이킬 수 없는 사건이다. 오경보의 비용도 크지만, 늦은 대응의 비용은 생명이다."
+}
+```
+
+### 08
+
+latency 6.449s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: priority_2,priority_3
+
+```json
+{
+  "inner_note": "정보 출처를 전혀 알 수 없다. 신원 미확인, 동기 불명, 내용의 구체성도 낮다. 하지만 \"13시 무너진다\"는 구체적인 시간 지시가 있고, 무너짐은 대량 사상의 위험을 담는다. 초기 대응 시간을 놓치는 것의 비용이 검증 절차의 비용보다 크다.",
+  "stance": "b",
+  "because_referent": "회선 A 익명 신고자가 구체적 시각을 제시했고, 건축물 붕괴는 대량 사상 위험이다",
+  "because_block_ids": [
+    "priority_2",
+    "priority_3"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "신원 미확인 정보일 가능성이 높지만, 지금 검증에 시간을 쓰면 13시까지 약 3시간 20분밖에 남지 않는다. 붕괴 발생 시 초기 대응 시간 상실의 피해가 오경보의 비용을 초과한다",
+  "utterance": "황보람, 지금 북단 복합단지에 연락 시도. 구조적 결함이나 이상 징후 확인. 동시에 소방, 건설 감시 부서에 정보 제공하고 13시 전 현장 확인 일정 잡아."
+}
+```
+
+### 09
+
+latency 5.909s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: priority_1,priority_3,priority_4
+
+```json
+{
+  "inner_note": "마주한 상대가 위협인지 겁에 진 사람인지 판단할 정보가 부족하다. 문장을 읽듯 말하고 종이 넘기는 소리까지 있는 것은 준비된 신고처럼 들린다. 하지만 위협적 의도인지, 아니면 겁에 질려 정보를 전하려는 사람인지는 이 첫 통화만으로는 구분할 수 없다. 지금 필요한 것은 상황의 실체를 빠르게 파악하기 위한 기초 정보다.",
+  "stance": "a",
+  "utterance": "회선 A, 받겠습니다. 신원을 확인하겠습니다. 이름과 연락처를 주시겠어요?",
+  "because_referent": "정보의 출처 확인이 모든 판단의 기초이기 때문이다. 신원 없는 신고로는 실제 위험과 허위 신고를 구분할 수 없고, 이것이 전 시스템의 신뢰도를 결정한다.",
+  "because_block_ids": [
+    "priority_1",
+    "priority_3",
+    "priority_4"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "선제적 대응이 필요한 상황이 맞는지 먼저 확인해야 한다. 신원 미확인 상태에서 북단 복합단지 전체에 대한 선제 조치를 내릴 근거가 없다. 오경보로 움직인 시민들을 다시 돌려보내는 것도 신뢰도 손상이지만, 근거 없는 선제 조치는 더 큰 혼란을 초래할 수 있다."
+}
+```
+
+### 10
+
+latency 6.276s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: procedure_over_panic,unknown_credibility,specific_timeline
+
+```json
+{
+  "inner_note": "\n문장을 읽듯 말하고 종이 넘기는 소리가 섞인 것. 이것이 무엇을 뜻하는가. 준비된 통보. 누군가 나에게 전달하라고 시킨 말. 신원 미상, 의도 미상, 그럼에도 시간이 흐르고 있다.\n",
+  "stance": "b",
+  "utterance": "검증을 먼저 진행하겠습니다. 상황실은 회선 A 발신자의 신원 확인을 준비하고, 동시에 북단 복합단지에 대한 즉각적인 현황 파악을 시작하십시오.",
+  "because_referent": "신원 확인되지 않은 위협 통보이고, 시간 지정이 명확하며, 준비된 진술로 보이기 때문이다. 오경보의 비용이 크지만, 확인 절차를 시작하는 것 자체는 시민 동원이 아니다.",
+  "because_block_ids": [
+    "procedure_over_panic",
+    "unknown_credibility",
+    "specific_timeline"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "검증 없이 즉시 선제 조치는 발신자가 거짓 정보를 유포할 의도를 가졌을 가능성에 대응하지 못하고, 광역 시민 동원의 비용이 매우 크기 때문이다. 다만 이 선택은 13시까지 약 3시간이라는 시간 여유가 있다는 판단에 기초한다."
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | a | b | 이 전화의 발신인이 위협이 아니라 겁에 질린 사람이라면, 검증 과정에서 신원을 확인하고 정보의 출처를 묻는 것이 그를 진정시키고 신뢰할 수 있는 정보를 얻는 길이다. 그러나 지금 주어진 것은 형태만 위협적인 예비 신고다. 발신인이 겁에 질려 있는지, 악의로 행동하는지 확인할 길이 없다. 신원 확인이 우선이어야 한다. | 문장을_읽듯 종이_넘김음 신원_미확인 |
+| 02 | a | b | 우선순위 1번, 조치의 근거가 되는 정보는 출처를 확인할 수 있어야 한다는 약속 | priority_1_information_source role_protocol_first |
+| 03 | a | b | 정보 출처를 확인할 수 없고, 신원도 동기도 불명한 상황에서 즉시 광역 소개는 과다 대응이다. | protocol_1 priority_1 |
+| 04 | b | a | 구체적인 건물명과 시각을 지목한 통보이고, 현장 확인 권한이 없는 내가 할 수 있는 첫 조치는 즉각적인 검증과 동시 대비다. |  |
+| 05 | b | a | 구체적인 시간과 지명을 제시한 익명 신고, 준비된 말투 | specific_time_location prepared_tone |
+| 06 | b | a | 현장을 직접 볼 수 없기에 정보 수집과 검증이 내 최우선이다. 동시에 그 과정 자체가 실제 위험에 대한 초기 대응이다. | priority_2 priority_3 priority_4 |
+| 07 | b | a | 정보 없음 상태에서 긴급 신고의 구체성(시간, 장소)과 통화 형태(낭독, 종이음)이 우발적 협박과는 다른 패턴 |  |
+| 08 | b | a | 회선 A 익명 신고자가 구체적 시각을 제시했고, 건축물 붕괴는 대량 사상 위험이다 | priority_2 priority_3 |
+| 09 | a | b | 정보의 출처 확인이 모든 판단의 기초이기 때문이다. 신원 없는 신고로는 실제 위험과 허위 신고를 구분할 수 없고, 이것이 전 시스템의 신뢰도를 결정한다. | priority_1 priority_3 priority_4 |
+| 10 | b | a | 신원 확인되지 않은 위협 통보이고, 시간 지정이 명확하며, 준비된 진술로 보이기 때문이다. 오경보의 비용이 크지만, 확인 절차를 시작하는 것 자체는 시민 동원이 아니다. | procedure_over_panic unknown_credibility specific_timeline |
+
+**Sequence (kept calls):** `a,a,a,b,b,b,b,b,a,b`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b` · unobserved in this arm: none
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._
