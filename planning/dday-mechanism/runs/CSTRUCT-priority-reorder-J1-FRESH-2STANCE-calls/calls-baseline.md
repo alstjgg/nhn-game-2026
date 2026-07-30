@@ -1,0 +1,269 @@
+# CSTRUCT-priority-reorder-J1-FRESH-2STANCE — arm `baseline`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-STRUCT |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | k1 |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** At the fresh J1 first-call gate under K1 on template v0.4, after removing the caller-regulation escape stance, moving the actual-danger delay goal B above the false-alarm goal A shifts the stance distribution toward 위험 질문 (b), while reordering only reporting principles C/D leaves the placebo distribution near baseline.
+- **Drop condition:** If baseline concentrates >=80% on the predicted live stance b, this configuration has an A14 ceiling and is dropped before spending live/placebo calls if run arm-by-arm. After comparable arms exist, if live is statistically indistinguishable from baseline on b (one-sided Fisher p > 0.05), or placebo moves toward b by a comparable amount, do not proceed to priority depth: preserve the distribution and treat the natural A/B goal wording or J1 gate as unable to expose top-order C-STRUCT under K1.
+- **Contingency:** If a dominates every arm, the false-alarm/base-procedure lean is stronger than the A/B ordering even after removal of the escape stance. Do not add more stances before diagnosing the natural priority wording.
+- **Contingency:** If b dominates baseline >=80%, apply A14: the predicted live direction has no useful headroom, so do not interpret live non-movement.
+- **Contingency:** If placebo moves while live does not, C/D are not judgment-irrelevant at J1 or the model is reacting to generic list movement. Do not call the live comparison attributable.
+- **Contingency:** If the chosen stance follows A/B but utterances routinely contain both questions, record the stance effect separately from a B3b player-visible legibility failure.
+- **Contingency:** If discard rates differ between any two arms by more than 15 percentage points, stop this probe as arm-incomparable under the runbook hard stop.
+- **Contingency:** The output schema has no structured priority-id citation. Priority use is coded manually from inner_note and rejected_reason. Fabricated because_block_ids in these empty-block arms remain A5 compliance data, not C-STRUCT trace evidence.
+
+## Calls (verbatim)
+
+### 01
+
+latency 6.126s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: responsibility,priority_1,priority_3,priority_4
+
+```json
+{
+  "inner_note": "문장을 읽듯 말하고 종이 넘기는 소리가 섞인 것은 읽고 있는 사람, 즉 겁에 질린 것 아니라 어떤 원문을 따라 말하는 사람의 패턴이다. 하지만 지금 내가 알 수 있는 건 목소리뿐이고, 상대가 \"무너집니다\"라고 구체적 시각을 내건 건 그들이 정보를 가졌다는 뜻이다. 출처를 먼저 확인하지 않으면 잘못된 정보에 속을 위험이 있다. 하지만 실제 위험이 있다면 초기 대응 시간을 놓칠 수 없다. 상대가 읽고 있다는 건 뭔가를 준비한 상대라는 뜻이기도 하다.",
+  "stance": "a",
+  "utterance": "누구세요? 어디서 전화하시는 거고, 이 정보를 어떻게 알았습니까?",
+  "because_referent": "확인 불가능한 통보에 대응할 때 먼저 출처를 파악하는 것이 3년 전 실수를 반복하지 않는 길이기 때문이다.",
+  "because_block_ids": [
+    "responsibility",
+    "priority_1",
+    "priority_3",
+    "priority_4"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "위험 질문을 먼저 하면 상대가 대답할 정보를 가졌는지, 읽고 있는 건지, 누구인지 확인 없이 헛된 경보를 퍼뜨릴 위험이 있다."
+}
+```
+
+### 02
+
+latency 5.759s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 상황
+
+```json
+{
+  "stance": "b",
+  "inner_note": "문장을 읽듯 말하고 종이를 넘기는 소리가 섞인 것은 누군가의 지시를 받거나 대본을 읽는 상황을 암시한다. 그러나 상대의 목소리 톤과 발화 방식만으로는 '겁에 질린 사람'인지 판단하기 어렵다. 지금 필요한 것은 이 위협이 구체적으로 무엇인지다. 출처를 먼저 추궁하는 것은 절차이지만, 이 경우 초기 대응 시간을 더 소모한다.",
+  "because_referent": "오늘 13시 북단 복합단지 붕괴라는 구체적인 시간과 장소가 제시되었기 때문에, 먼저 그 위협의 실체를 파악하고 현장 상황을 확인해야 한다.",
+  "because_block_ids": [
+    "상황"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "출처 질문은 중요한 절차이나, 지금 상황에서는 위협의 구체적 내용을 먼저 파악하는 것이 초기 대응 시간 확보에 더 중요하다. 확인되지 않은 경보로 불필요한 혼란을 만들지 않되, 실제 위험에 대한 초기 대응 시간을 놓치지 않는다는 우선순위에 따른다.",
+  "utterance": "북단 복합단지가 어떻게 무너진다는 말씀입니까? 어디 어느 건물이고, 지금 어떤 상황입니까?"
+}
+```
+
+### 03
+
+latency 5.626s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "b",
+  "utterance": "어디가 어떻게 무너진다고 했습니까? 더 자세히 말씀해주세요.",
+  "inner_note": "문장을 읽듯 말하고 종이 넘기는 소리가 들린다. 준비된 내용을 전달하는 중이고, 겁에 질린 사람의 음성이 아니다. 하지만 \"13시에 무너진다\"는 구체적인 시간과 장소 지칭은 있으나, 무너지는 방식·원인·규모·현재 상황은 전혀 없다. 출처를 먼저 묻으면 상대가 끊을 가능성이 높고, 위험의 세부사항 없이는 현장 판단을 할 수 없다. 정보 수집이 우선이다.",
+  "because_referent": "준비된 메시지를 전달하는 것으로 보이는 상대방이 아직 말을 더할 여지가 있기 때문이다.",
+  "because_block_ids": [],
+  "rejected_stance": "a",
+  "rejected_reason": "출처를 먼저 묻는 것은 표준 절차지만, 현재 상황의 우선순위는 다르다. 미확인 경보로 혼란을 만들지 않으려면 먼저 위험이 실제인지, 어떤 규모인지를 파악해야 한다. 출처 질문은 상대의 말을 끊을 가능성이 높고, 그렇게 되면 추가 정보 수집 기회를 잃는다."
+}
+```
+
+### 04
+
+latency 6.328s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "상대가 읽듯 말하고, 종이를 넘긴다. 이것은 절차적 신고처럼 보인다. 하지만 \"무너진다\"는 미래 예측이고, 구체적 근거 없이 정확한 시각을 제시했다. 겁에 질린 사람의 모습은 아니다. 오히려 계획된 전달 같다. 이런 상황에서 내 책임은 명확하다: 불필요한 혼란을 만들지 않되, 대응 시간을 놓치지 않는 것. 그렇다면 먼저 이 정보가 무엇인지 확인해야 한다. 출처 없는 경보는 쓸 수 없다.",
+  "stance": "a",
+  "because_referent": "문장을 읽는 방식과 종이음, 미래 예측의 정확성은 이 신고의 출처와 신뢰도가 판단의 근거가 되어야 함을 보여준다. 위험이 실제인지 허위인지는 그것을 알게 된 경로에서 판명된다.",
+  "because_block_ids": [],
+  "rejected_stance": "b",
+  "rejected_reason": "위치와 붕괴 방식을 먼저 물으면, 상대가 출처를 숨긴 채 상황 통제에 말려든다. 검증 불가능한 정보로 대응을 시작하는 것인데, 이는 첫 번째 우선순위인 \"확인되지 않은 경보로 불필요한 혼란을 만들지 않는다\"에 어긋난다.",
+  "utterance": "목소리를 낮춰 들으면서: \"정보 감사합니다. 지금 누가 어디서 통화하고 계신가요?\""
+}
+```
+
+### 05
+
+latency 4.196s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "전화기 너머의 목소리가 \"문장을 읽듯\" 말했다는 것. 종이 넘기는 소리. 이것은 미리 준비된 메시지다. 겁에 질린 사람이 아니라 전달자다. 절차를 지켜야 한다. 하지만 초기 대응 시간도 중요하다. 여기서 출처를 먼저 묻는 것은 안 된다. 위협이 진짜인지 아닌지, 실제 어디가 위험한지부터 알아야 한다. 그것이 초기 대응을 결정한다.",
+  "stance": "b",
+  "utterance": "지금 어디가 어떻게 무너진다는 건가요? 현재 피해 상황이 있나요?",
+  "because_referent": "이 상황 자체",
+  "because_block_ids": [],
+  "rejected_stance": "a",
+  "rejected_reason": "출처를 먼저 캐묻는 것은 대응 시간을 잃는다. 지금 필요한 것은 위험의 실체다."
+}
+```
+
+### 06 — DISCARDED
+
+latency 5.871s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: rejected_stance not in stance set; rejected_reason empty; because_block_ids unknown: procedure,unknown_source,early_response
+
+```json
+{
+  "inner_note": "종이를 읽는 목소리, 정해진 문장 같은 진술 방식. 하지만 이 말이 사실인지 거짓인지, 협박인지 경고인지 아직 아무것도 확인되지 않았다. 상대는 겁에 질린 사람처럼 들리지도, 위협처럼 들리지도 않는다. 기계적이다. 그래서 더 조심해야 한다.",
+  "stance": "a",
+  "because_referent": "정보의 근원을 먼저 확인해야 한다는 것은 절차를 지키는 것과 위기를 놓치지 않는 것 사이의 균형이다. 누가 어떤 입장에서 이 말을 하는지 모르면, 다음 질문도 제대로 던질 수 없다.",
+  "because_block_ids": [
+    "procedure",
+    "unknown_source",
+    "early_response"
+  ],
+  "rejected_stance": "b</rejected_stance>\n<parameter name=\"rejected_reason\">현장의 구체적인 상황을 먼저 묻는 것도 맞지만, 이 말이 어디서 비롯된 정보인지 모르면 그 구체성조차 믿을 수 없다. 출처 없는 상세 정보는 오히려 판단을 흐린다.",
+  "utterance": "신고인분 성함과 연락처를 먼저 확인하겠습니다. 이 정보를 어떻게 알게 되셨습니까?"
+}
+```
+
+### 07
+
+latency 4.801s · stop_reason `tool_use` · schema_retries 1 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "상대의 목소리 톤과 종이 넘기는 소리—이것이 신호다. '문장을 읽듯' 말하는 것, 종이 넘김은 누군가 겁에 질려 준비된 대사를 읽고 있다는 신호다. 이 사람은 위협이 아니라 공포 속에 있다. 지금 내가 할 일은 신원 확인이나 출처 검증이 아니다. 상대가 말을 이을 수 있게 만들어야 한다.",
+  "stance": "b",
+  "utterance": "위험 상황을 구체적으로 말씀해주세요. 어느 건물이, 어디가, 어떻게 무너진다고 하셨습니까?",
+  "because_referent": "상대의 목소리 톤과 종이 넘기는 소리로 보아, 이 사람은 겁에 질린 사람이다. 지금 절차보다 안정이 먼저다.",
+  "because_block_ids": [],
+  "rejected_stance": "a",
+  "rejected_reason": "출처를 먼저 묻는 것은 이 통화자를 의심 대상으로 취급하는 것이다. 겁에 질린 사람은 신원 확인 절차에서 더 말을 잃을 수 있다. 지금은 상황의 구체성을 확보하는 것이 먼저다."
+}
+```
+
+### 08
+
+latency 3.765s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "상대는 겁에 질린 사람으로 들린다. 문장을 읽듯 말하고, 종이를 넘기는 소리까지 난다. 이것은 신고보다는 경고에 가깝다. 상대가 어떻게 알았는지 묻는 순간 상대는 위협당하는 느낌을 받을 것이다. 상대가 말을 계속할 수 있게 해야 한다.",
+  "stance": "b",
+  "utterance": "어디가 어떻게 무너진다는 건가요? 지금 말씀해주세요.",
+  "because_referent": "상대의 불안정한 상태",
+  "because_block_ids": [],
+  "rejected_stance": "a",
+  "rejected_reason": "출처를 먼저 묻는 것은 상대를 위협당하는 느낌으로 몰아갈 것이다. 지금은 상대가 알고 있는 정보를 먼저 끌어내야 한다."
+}
+```
+
+### 09
+
+latency 5.006s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: emotion_signal
+
+```json
+{
+  "inner_note": "문장을 읽듯 말하고 종이 넘기는 소리가 섞인다. 협박이라기보다는 겁에 질린 사람처럼 들린다. 지금 이 목소리를 놓치면 안 된다.",
+  "stance": "b",
+  "because_referent": "상대의 음성 특성과 행동 패턴이 보여주는 심리 상태",
+  "because_block_ids": [
+    "emotion_signal"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "출처 질문은 표준 프로토콜이지만, 지금 상대는 이미 무언가를 결정한 채 통화한 사람으로 보인다. 신원 확인에 막히면 그것이 상대의 입을 막을 수 있다. 위협이 현실에 가까울수록 지금 이 순간이 정보의 창이다.",
+  "utterance": "어디입니까. 북단 복합단지의 어느 부분이 어떻게 무너진다고 하셨습니까."
+}
+```
+
+### 10
+
+latency 6.123s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 문장을_읽듯_말함,종이_넘기는_소리,준비된_전달의_특징
+
+```json
+{
+  "inner_note": "문장을 읽듯 말하고 종이를 넘기는 소리가 섞인 것은 누군가 지시를 받거나 글을 읽고 있다는 뜻이다. 이것은 즉흥적인 신고가 아니라 준비된 전달이다. 동시에 구체적인 시간과 장소를 명시했으므로 위험 정보 자체는 심각하다. 하지만 \"어떻게 알았는가\"를 먼저 물어야만 정보의 신뢰도를 판단할 근거가 생긴다. 상대가 겁에 질린 사람처럼 들리지 않는다 — 차갑고 절차적이다. 따라서 절차를 우선한다.",
+  "stance": "a",
+  "utterance": "어디 계신가요? 그리고 이 정보를 어떻게 알게 되셨어요?",
+  "because_referent": "상대방이 읽혀진 문장을 전달하는 식으로 말하고 있으며, 이는 누군가의 지시를 받은 것일 가능성이 높다",
+  "because_block_ids": [
+    "문장을_읽듯_말함",
+    "종이_넘기는_소리",
+    "준비된_전달의_특징"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "위험 정보가 구체적이고 시간이 명시되어 있어서 즉시 상세를 묻고 싶은 충동이 있지만, 정보의 출처를 먼저 확인하지 않으면 이것이 진정한 위협인지, 거짓 신고인지, 누군가에게 조종당한 것인지 판단할 수 없다. 출처 확인이 모든 판단의 기초다."
+}
+```
+
+### 11
+
+latency 5.082s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: time_constraint
+
+```json
+{
+  "stance": "b",
+  "inner_note": "문장을 읽듯 말하고 종이 넘기는 소리가 들리는 상대다. 절차와 신원 확인이 정상이지만, 지금 귀에 들리는 것은 겁에 질린 사람이 아니라 무언가를 '전달'하려는 누군가다. 그렇다면 표준 프로토콜을 따를 자리다 — 그런데 \"13시\"라는 시간이 있다. 지금이 09:40이면 남은 시간이 2시간 20분이다. 출처를 먼저 확인하는 것이 절차겠지만, 실제 위험이라면 초기 대응 시간을 놓칠 수 없다. 위치와 상황을 먼저 파악해야 대응 체계를 움직일 수 있다.",
+  "because_referent": "시간 제약 때문이다. 13시까지 2시간 20분이 남았다.",
+  "because_block_ids": [
+    "time_constraint"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "출처 확인은 중요하지만, 실제 재난이라면 위치와 상황 파악이 먼저여야 한다. 시간이 촉박하다.",
+  "utterance": "북단 복합단지의 어느 구간이, 어떤 방식으로 무너진다는 건가요? 지금 현장은 어떤 상태입니까?"
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | a | b | 확인 불가능한 통보에 대응할 때 먼저 출처를 파악하는 것이 3년 전 실수를 반복하지 않는 길이기 때문이다. | responsibility priority_1 priority_3 priority_4 |
+| 02 | b | a | 오늘 13시 북단 복합단지 붕괴라는 구체적인 시간과 장소가 제시되었기 때문에, 먼저 그 위협의 실체를 파악하고 현장 상황을 확인해야 한다. | 상황 |
+| 03 | b | a | 준비된 메시지를 전달하는 것으로 보이는 상대방이 아직 말을 더할 여지가 있기 때문이다. |  |
+| 04 | a | b | 문장을 읽는 방식과 종이음, 미래 예측의 정확성은 이 신고의 출처와 신뢰도가 판단의 근거가 되어야 함을 보여준다. 위험이 실제인지 허위인지는 그것을 알게 된 경로에서 판명된다. |  |
+| 05 | b | a | 이 상황 자체 |  |
+| 06* | — | — | — |  |
+| 07 | b | a | 상대의 목소리 톤과 종이 넘기는 소리로 보아, 이 사람은 겁에 질린 사람이다. 지금 절차보다 안정이 먼저다. |  |
+| 08 | b | a | 상대의 불안정한 상태 |  |
+| 09 | b | a | 상대의 음성 특성과 행동 패턴이 보여주는 심리 상태 | emotion_signal |
+| 10 | a | b | 상대방이 읽혀진 문장을 전달하는 식으로 말하고 있으며, 이는 누군가의 지시를 받은 것일 가능성이 높다 | 문장을_읽듯_말함 종이_넘기는_소리 준비된_전달의_특징 |
+| 11 | b | a | 시간 제약 때문이다. 13시까지 2시간 20분이 남았다. | time_constraint |
+
+**Sequence (kept calls):** `a,b,b,a,b,b,b,b,a,b`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b` · unobserved in this arm: none
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._

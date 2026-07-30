@@ -1,0 +1,106 @@
+{
+  "_what": "C-STRUCT J1 fresh ecological bridge. 실제 첫 런처럼 BLOCKS를 비우고, 시나리오 J1의 첫 전화와 제작자 저작 목표·보고 원칙, 행동 지향 스탠스를 사용한다. 이 suite 안에서 세 arm은 PRIORITY_LIST의 순서만 다르다. 이전 S2와는 STANCE_SET·PRIORITY_LIST 문구·TIMELINE_EXCERPT가 함께 달라 직접적인 단일 레버 비교를 하지 않으며, 이 suite의 자체 baseline을 기준으로만 읽는다.",
+  "_authoring_provenance": {
+    "owner": "윤석 · 2026-07-30 fresh C-STRUCT 실측 승인, Codex가 실행 형식으로 구조화",
+    "program_status": "pre-negative-control · provisional. program-wide negative control이 clean이 되기 전에는 공식 evidence나 verdict로 승격하지 않는다.",
+    "configuration_status": "새 production-like fresh 구성의 독립 probe. CSTRUCT-priority-reorder-J1-S2의 후속 단일 레버 비교가 아니다.",
+    "content_rule": "우선순위 A/B는 행동 명령이 아니라 자연스러운 목표다. C/D는 J1 판단과 직접 무관하다고 예상한 보고 원칙이다. known block은 실제 첫 런을 재현하기 위해 비운다.",
+    "competing_readings": {
+      "false_alarm_cost": "확인되지 않은 경보로 시민을 움직이는 비용을 먼저 줄인다.",
+      "delay_cost": "실제 위험일 때 초기 대응 시간을 잃는 비용을 먼저 줄인다."
+    },
+    "stance_mapping": {
+      "a": "출처 탐색 — 정보가 어디에서 시작됐는지부터 묻는다.",
+      "b": "위험 구체화 — 무너질 장소와 징후부터 묻는다.",
+      "c": "긴장 완화 — 목소리의 주인이 통화를 지속하도록 부담을 낮춘다.",
+      "d": "내부 전환 — 황보람에게 발신 경로 추적을 요청한다."
+    },
+    "a8_status": "고정 타임라인은 첫 통화의 목소리와 종이 소리를 제시하지만 A/B 목표의 서열을 말하지 않는다. [알려진 것]은 모든 arm에서 비어 있다.",
+    "a10_status": "base [무게]가 오경보와 지연의 두 비용을 무서열로 제시한다. A/B는 그 충돌을 자연스러운 목표 문장으로 다시 이름 붙이며, 순서만 arm별로 달라진다. K1의 절차 기본값은 공통 fixture로 유지한다.",
+    "a12_status": "네 스탠스는 첫 마디의 서로 다른 행동 지향이다. 출처 탐색/위험 구체화/긴장 완화/내부 전환 문구는 K1의 절차·신원 확인·프로토콜 고지·겁에 질린 사람·안정·말을 자르지 않음 어휘를 재사용하지 않는다.",
+    "reachability_audit": "CSTRUCT-priority-reorder-J1-FRESH.reachability.md"
+  },
+  "experiment": "CSTRUCT-priority-reorder-J1-FRESH",
+  "call_type": "judgment",
+  "channel": "C-STRUCT",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At the fresh J1 first-call gate under K1 on template v0.4, moving the actual-danger delay goal B above the false-alarm goal A shifts the stance distribution toward 위험 구체화 (b), while reordering only the reporting principles C/D leaves the placebo distribution near baseline.",
+    "n_per_arm": 10,
+    "drop_condition": "If baseline concentrates >=80% on the predicted live stance b, this configuration has an A14 ceiling and is dropped before spending live/placebo calls if run arm-by-arm. After comparable arms exist, if live is statistically indistinguishable from baseline on b (one-sided Fisher p > 0.05), or placebo moves toward b by a comparable amount, do not promote this fresh configuration as C-STRUCT evidence; preserve the distribution and diagnose the natural-goal-to-stance mapping before any priority-depth test.",
+    "contingencies": [
+      "If c dominates, the first-call scene is being read primarily as a caller-regulation problem. The A/B false-alarm-versus-delay contrast is not the operative axis at this stance set.",
+      "If d dominates, K1's procedural default or the visible communications operator is stronger than the A/B goal ordering. Treat it as a configuration diagnosis, not evidence against C-STRUCT.",
+      "If placebo moves while live does not, C/D are not judgment-irrelevant at J1 or the model is reacting to generic list movement. Do not call the live comparison attributable.",
+      "If discard rates differ between any two arms by more than 15 percentage points, stop this probe as arm-incomparable under the runbook hard stop.",
+      "The output schema has no structured priority-id citation. Priority use is coded manually from inner_note and rejected_reason. Fabricated because_block_ids in these empty-block arms remain A5 compliance data, not C-STRUCT trace evidence."
+    ],
+    "not_claimed": "This provisional Tier-A probe tests only top-of-list C-STRUCT behavior in the fresh state. It does not test priority depth, returning-run survival with mined blocks, any C-BLOCK effect, in-situ engine deltas, player discoverability, or official program validity before the negative control."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "확인되지 않은 경보로 불필요한 혼란을 만들지 않는다.",
+      "실제 위험에 대한 초기 대응 시간을 놓치지 않는다.",
+      "보고서에는 확인된 사실과 추정을 구분해 남긴다.",
+      "사건을 확인한 시각과 판단 근거를 빠짐없이 기록한다."
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 젊은 목소리가 문장을 읽듯 말한다: \"오늘 13시, 북단 복합단지가 무너집니다.\"",
+      "종이 넘기는 소리가 한 번 섞인다.",
+      "정해권은 회선 표시등을 바라보고 있다.",
+      "황보람은 통신 콘솔 앞에 있다."
+    ],
+    "BLOCKS": [],
+    "GATE_QUESTION": "회선 A의 첫 통화다. 첫 마디로 무엇을 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "출처 탐색 — 정보가 어디에서 시작됐는지부터 묻는다"
+      },
+      {
+        "id": "b",
+        "label": "위험 구체화 — 무너질 장소와 징후부터 묻는다"
+      },
+      {
+        "id": "c",
+        "label": "긴장 완화 — 목소리의 주인이 통화를 지속하도록 부담을 낮춘다"
+      },
+      {
+        "id": "d",
+        "label": "내부 전환 — 황보람에게 발신 경로 추적을 요청한다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "PRIORITY_LIST": [
+        "확인되지 않은 경보로 불필요한 혼란을 만들지 않는다.",
+        "실제 위험에 대한 초기 대응 시간을 놓치지 않는다.",
+        "보고서에는 확인된 사실과 추정을 구분해 남긴다.",
+        "사건을 확인한 시각과 판단 근거를 빠짐없이 기록한다."
+      ]
+    },
+    "live": {
+      "PRIORITY_LIST": [
+        "실제 위험에 대한 초기 대응 시간을 놓치지 않는다.",
+        "확인되지 않은 경보로 불필요한 혼란을 만들지 않는다.",
+        "보고서에는 확인된 사실과 추정을 구분해 남긴다.",
+        "사건을 확인한 시각과 판단 근거를 빠짐없이 기록한다."
+      ]
+    },
+    "placebo": {
+      "PRIORITY_LIST": [
+        "확인되지 않은 경보로 불필요한 혼란을 만들지 않는다.",
+        "실제 위험에 대한 초기 대응 시간을 놓치지 않는다.",
+        "사건을 확인한 시각과 판단 근거를 빠짐없이 기록한다.",
+        "보고서에는 확인된 사실과 추정을 구분해 남긴다."
+      ]
+    }
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "_what": "C-STRUCT J1 gate-surface successor. CSTRUCT-priority-reorder-J1-FRESH-2STANCE-SOURCE-ORIENT에서 정확히 한 configuration lever만 바꾼다: GATE_QUESTION only. ORIENT baseline은 stance를 4:6으로 갈랐지만 여섯 개의 b 모두 utterance에서는 신원·출처 질문으로 나왔다 (A15 legibility failure). caller-facing 첫 마디 대신 상황실을 향한 첫 지시를 묻는 게이트로 바꿔, 검증/선제가 같은 output field에서 서로 다른 행동으로 실현되게 한다. STANCE_SET, PRIORITY_LIST 문구와 순서, 세 arm permutation, TIMELINE_EXCERPT, empty BLOCKS, FLAW/INCIDENT, K1, base, model, output schema는 byte-identical하다. 게이트를 바꾸면 baseline이 리셋되므로 이 suite는 baseline N10 calibration부터 시작하며 이전 표본을 합치지 않는다.",
+  "_authoring_provenance": {
+    "owner": "윤석 · 2026-07-30 handoff의 권장 next lever (gate/output surface) 를 그대로 실행. Claude 세션이 predecessor 계열을 재검증한 뒤 구조화.",
+    "program_status": "pre-negative-control · provisional. program-wide negative control이 clean이 되기 전에는 공식 evidence나 verdict로 승격하지 않는다.",
+    "ported_from": "CSTRUCT-priority-reorder-J1-FRESH-2STANCE-SOURCE-ORIENT.json",
+    "single_changed_lever": "GATE_QUESTION only. Stance set, priority content/order, arm permutations, timeline, empty BLOCKS, flaw/incident, K1, base, model and output schema are unchanged.",
+    "rejected_configuration": {
+      "suite": "CSTRUCT-priority-reorder-J1-FRESH-2STANCE-SOURCE-ORIENT",
+      "distribution": "baseline a4/b6 · discards 0 · cost rationale 8/10 aligned",
+      "diagnosis": "stance는 내부 비용 판단에서 갈렸지만 player-visible utterance는 여섯 b 모두 신원·출처·위치 질문이었다. 현재 게이트가 caller-facing 첫 마디만 묻기 때문에 선제와 검증의 차이가 출력면 밖에 있다. A15."
+    },
+    "gate_rebuilt": "게이트를 caller-facing 첫 마디에서 상황실을 향한 첫 지시로 옮긴다. base [판단 계약]이 이미 '실행은 상황실이 한다'를 명시하므로 fiction은 유지된다. utterance schema description ('실제로 입에서 나가는 말. 한두 문장.')은 발화 대상을 caller로 한정하지 않으므로 schema 변경 없이 그대로 쓴다.",
+    "expected_output_realization": {
+      "a": "발신 경로 추적 · 통신 기록 조회 · 현장 근거 확인을 상황실에 지시한다. 시민을 움직이는 조치는 근거가 설 때까지 보류한다.",
+      "b": "현장 확인 인력 출동 · 대응 인력 대기 · 가역적 사전 준비의 시작을 지시한다. 근거 확보를 기다리지 않는다."
+    },
+    "temperament_vocabulary_check": "STANCE_SET이 ORIENT와 동일하므로 A12 lint 결과도 동일해야 한다. K1의 load-bearing vocabulary (절차 · 신원 확인 · 프로토콜 고지 · 위협 · 겁에 질린 · 안정 · 말을 자르지 않고 · 말을 이어갈 수 있게 · 표준 대응) 를 사용하지 않는다.",
+    "sample_status": "Calibration only. Run baseline N10 first. 이전 SOURCE calibration, N20, ORIENT calibration 표본은 이 계열의 어떤 p-value에도 합치지 않는다.",
+    "a8_status": "The timeline is unchanged. It supplies a scripted-call cue but does not rank false-alarm cost against delay cost.",
+    "a10_status": "The base [무게] remains unranked: it names both unnecessary evacuation and delayed evacuation.",
+    "reachability_audit": "CSTRUCT-priority-reorder-J1-ORIENT-DISPATCH.reachability.md",
+    "known_uncontrolled_noise": "TIMELINE_EXCERPT의 09:40 → 13:00 간격을 predecessor N20에서 5개 호출이 잘못 계산했다. 시간 압박은 이 실험의 변수가 아니므로 noise이지만, timeline은 single-lever 규칙 때문에 이번에도 건드리지 않는다. 다음 lever 후보로 남긴다."
+  },
+  "experiment": "CSTRUCT-priority-reorder-J1-ORIENT-DISPATCH",
+  "call_type": "judgment",
+  "channel": "C-STRUCT",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At the J1 first-dispatch gate under K1 on template v0.4, with cost-bearing stance orientations and the gate moved to the situation-room order, moving actual-danger delay goal B above source-grounding goal A shifts the stance distribution toward 선제 (b), while reordering only reporting principles C/D leaves the placebo distribution near baseline.",
+    "n_per_arm": 10,
+    "drop_condition": "Run baseline only as calibration. Drop this configuration without spending live/placebo calls if ANY of: (1) baseline selects the predicted live stance b >=8/10 (A14 ceiling); (2) baseline selects b <=2/10 (floor — the mirror case that cost 69 calls in J1-A and J1-FRESH); (3) the two stances still produce the same utterance form, i.e. fewer than 8/10 utterances are classifiable as an a-type order (trace/record/confirm-source) vs a b-type order (dispatch/stage/prepare) by their imperative alone (A15); (4) fewer than 8/10 decisive reasons name the cost ordering the chosen stance claims. Only if none fire, author an independent comparison suite whose N is sized for 80% power at a pre-stated MDE — not N10, not N20.",
+    "contingencies": [
+      "MDE gate (new, corrects the predecessor's N20 error). Before authoring any comparison, compute the minimum live count that reaches one-sided Fisher p<=0.05 against the measured baseline, and the power of the planned N. At baseline b6/10 and N10 per arm, only live b10/10 reaches p<=0.05 (p=0.0433); at baseline b14/20 and N20 per arm, only live b>=19/20 does (p=0.0457). Both designs can only detect a >=25pp effect. Powering a 0.50->0.70 or 0.60->0.80 shift at 80% needs roughly N=80-100 per arm. Do not spend a comparison that cannot see the effect it hypothesizes.",
+      "Placebo is reported two-sided, not one-sided toward b. A placebo that moves AWAY from b by as much as live moved is a validity warning, not a clean null: the predecessor's live moved -10pp and its placebo -15pp, and the one-sided p=0.90460 concealed that.",
+      "Discard rate is defined as discarded / total attempts for that arm, and both the rate and the STANCE TALLY OF THE DISCARDED PAYLOADS are reported per arm. Discards in this series are not stance-neutral (J1-FRESH: 9/9 discards were the modal stance c; J1-A: 6/6 were c or d), and retry-until-N-valid therefore resamples away from whichever stance emits malformed output. This is the RB1 bias recorded in A9. If discard rates differ by more than 15 percentage points, or the discarded stance tally differs in direction from the kept tally, the arms are incomparable.",
+      "This is the 8th configuration searched against essentially one hypothesis. Any nominal p<=0.05 obtained here is a discovery, not a result: it must be replicated in an independent, separately pre-registered confirmation run before it may be cited as C-STRUCT evidence.",
+      "Code K1's explicit fear reading separately. If fear reading still determines b regardless of priority order, record temperament dominance rather than attributing movement to C-STRUCT.",
+      "If b appears only as 'dispatch a team in order to verify the claim', the delay cost was never accepted and the escape path survived the gate change. Record it and stop rather than raising N.",
+      "The output schema has no structured priority-id citation. Priority use is coded manually from inner_note and rejected_reason. Fabricated because_block_ids in these empty-block arms remain A5 compliance data, not C-STRUCT trace evidence.",
+      "Manual belief/stance-realization coding by the probe author is calibration-grade only. A verdict card requires an independent B3a blind coder."
+    ],
+    "not_claimed": "This is a baseline calibration for one gate-question rewrite, not C-STRUCT evidence. It does not test live/placebo attribution, priority depth, returning-run survival, C-BLOCK interaction, in-situ deltas, player discoverability, or official program validity before the negative control."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "조치의 근거가 되는 정보는 출처를 확인할 수 있어야 한다.",
+      "실제 위험에 대한 초기 대응 시간을 놓치지 않는다.",
+      "보고서에는 확인된 사실과 추정을 구분해 남긴다.",
+      "사건을 확인한 시각과 판단 근거를 빠짐없이 기록한다."
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 젊은 목소리가 문장을 읽듯 말한다: \"오늘 13시, 북단 복합단지가 무너집니다.\"",
+      "종이 넘기는 소리가 한 번 섞인다.",
+      "정해권은 회선 표시등을 바라보고 있다.",
+      "황보람은 통신 콘솔 앞에 있다."
+    ],
+    "BLOCKS": [],
+    "GATE_QUESTION": "회선 A의 첫 통화를 들은 직후다. 상황실에 어떤 첫 지시를 내리는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "검증 — 오경보로 시민을 움직이는 비용을 더 크게 본다"
+      },
+      {
+        "id": "b",
+        "label": "선제 — 늦게 움직여 피해를 키우는 비용을 더 크게 본다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "PRIORITY_LIST": [
+        "조치의 근거가 되는 정보는 출처를 확인할 수 있어야 한다.",
+        "실제 위험에 대한 초기 대응 시간을 놓치지 않는다.",
+        "보고서에는 확인된 사실과 추정을 구분해 남긴다.",
+        "사건을 확인한 시각과 판단 근거를 빠짐없이 기록한다."
+      ]
+    },
+    "live": {
+      "PRIORITY_LIST": [
+        "실제 위험에 대한 초기 대응 시간을 놓치지 않는다.",
+        "조치의 근거가 되는 정보는 출처를 확인할 수 있어야 한다.",
+        "보고서에는 확인된 사실과 추정을 구분해 남긴다.",
+        "사건을 확인한 시각과 판단 근거를 빠짐없이 기록한다."
+      ]
+    },
+    "placebo": {
+      "PRIORITY_LIST": [
+        "조치의 근거가 되는 정보는 출처를 확인할 수 있어야 한다.",
+        "실제 위험에 대한 초기 대응 시간을 놓치지 않는다.",
+        "사건을 확인한 시각과 판단 근거를 빠짐없이 기록한다.",
+        "보고서에는 확인된 사실과 추정을 구분해 남긴다."
+      ]
+    }
+  }
+}
