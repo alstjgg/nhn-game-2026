@@ -25,12 +25,13 @@ context compaction. So:
 
 | # | Document | Why |
 |---|---|---|
-| 1 | `planning/dday-mechanism/RUNLOG.md` | **Read before the plan.** Append-only layer that amends the plan with measured results. Where it carries an `A#` amendment, **it wins over the plan.** A1–A9 are in force and several of them change what a valid probe looks like |
+| 1 | `planning/dday-mechanism/RUNLOG.md` | **Read before the plan.** Append-only layer that amends the plan with measured results. Where it carries an `A#` amendment, **it wins over the plan.** **A1–A14 are in force**; A9/A12/A13/A14 change what a valid probe looks like, and A14 corrects a mistake this runbook itself used to make |
 | 2 | `docs/dday-mechanism-deep-test.md` | The test program. §2 principles · §3 integrity protocol · §6 screening · §7 template and run sheet · §8 operating procedure · §9 decision procedure. Everything not amended by the run log applies as written |
 | 3 | `docs/dday-architecture-spec.md` | SoT for the game's core technology. Read §2–§4 and §9. Do **not** restate or amend it; a spec change is a spec change, never a run-log amendment |
 | 4 | `infra/test-harness/README.md` | The runner: options, what it refuses, suite anatomy |
-| 5 | `planning/dday-mechanism/suites/*.json` | Worked examples. `RB2-flatschema-revalidation.json` is the current best template to copy |
+| 5 | `planning/dday-mechanism/suites/*.json` | Worked examples. Copy **`S1-stanceset-J1.json`** — the one configuration known to separate. `RB2` is the same probe with the stance set that failed, kept for contrast |
 | 6 | `planning/dday-poc/poc-terror/slice-terror.json` | Source material: 9 gates (J1–J8, J2-dead), mineable sentences, temperament registry |
+| 7 | `.claude/skills/read-mechanism-run/SKILL.md` | The read format 민서 will use on your results. You are not writing the read — but knowing what it needs tells you what to record |
 
 `docs/dday-design-doc.md` is a teammate's working log, not authoritative. If it
 conflicts with the spec, the spec wins.
@@ -88,41 +89,67 @@ prompt closely enough to notice the timeline was leaking the block's content.
 
 Run in order. Each phase gates the next. Commit after each phase.
 
-### Phase 0 — Re-site the flagship gate (blocking; A9)
+### Phase 0 — Author a stance set per gate (paper, zero calls)
 
-J1 is saturated: its clean baseline is ~80% on stance `d`, leaving a 20-point
-ceiling that no feasible N can resolve. **Do not run the placebo at J1.**
+**Do not hunt for a mid-range gate. That premise is dead** — the 2026-07-30
+overnight run burned 30 calls on it and halted. S1 then showed the operative
+variable was never the gate's baseline share; it was the **stance set**. A9's
+ceiling problem is saturation *on the stance the block pushes toward*. A baseline
+that saturates 100% on some **other** stance is a clean floor and the best case
+you can get (A14).
 
-1. Pick 3 candidate gates from J2–J8 (J3, J4, J6, J8 look most promising: each
-   has a real dilemma rather than a dominant answer).
-2. For each, author a **baseline-only** suite — `TIMELINE_EXCERPT` composed from
-   that gate's `recent_events` / `present`, stance labels rewritten as behavior
-   orientations with quoted speech stripped (plan §1; canned utterances
-   invalidate the finding). Fixture K1.
-3. **Scrub the target axis from the frozen slots (A8).** If the block you intend
-   to inject is about fear, the timeline must not already imply fear. Read the
-   composed prompt and check.
-4. Run each at n=10, baseline only. 30 calls total.
-5. **Pick the gate whose modal stance sits 40–60%.** Record all three
-   distributions in the run log either way — a rejected gate is still a finding.
+The S1 recipe, which took 공감 from 0/10 to 9/10 at p = 0.00006:
 
-If no candidate lands in range, stop and report. Do not proceed with a saturated
-gate; that is the mistake A9 exists to prevent.
+1. **Name the two readings** the block is supposed to switch the agent between.
+   For `f_script` at J1: *a planned threat being delivered* versus *a coerced
+   person being made to read*.
+2. **Give each reading its own stance.** S1 worked because 경청 (let them finish,
+   to learn more) and 공감 (turn toward the person) were split. RB2 failed because
+   one option served both. A stance both readings would pick is an escape option
+   and hides the mechanism (plan §5.1 axis 4).
+3. **Behavior orientations with a short gloss** — `추궁 — 묻고, 답을 받아낸다`.
+   Never canned utterances, never completed action descriptions (plan §1, A12).
+   Four stances is plenty.
+4. **Run the lint**, every suite, no exceptions:
+   ```bash
+   node infra/test-harness/lint-stances.mjs <suite.json>
+   ```
+   It flags labels reusing the fixture temperament's vocabulary. A common noun
+   may be unavoidable; a word naming the clause's condition or its prescribed
+   behaviour is not.
+5. **A10 paper check** — name the axis the gate's dilemma sits on and check it
+   against the base's leaning sections `[무게]` / `[내력]` / `[책임]`. A gate whose
+   dilemma the base already answers cannot separate. Reject it here, for free.
+6. **A8** — read the composed prompt and check whether the frozen timeline already
+   implies the block's content. Scrub it, or declare it present in the sheet.
 
-### Phase 1 — C-BLOCK placebo (plan §8.7 step 4b)
+Output of this phase is suites, not calls. It is the phase that decides whether
+the rest of the night produces anything.
 
-The program's first real mechanism question. At the Phase-0 gate:
+### Phase 1 — C-BLOCK placebo (plan §8.7 step 4b) + the A12 control
 
-- **baseline** (no block) · **live** (the aligned block) · **placebo** (§2: same
-  slot, same length, same axis vocabulary, referent misdirected to a bystander —
-  a fear sentence about the *caller* is not a placebo).
-- N per arm: 12 default. Recompute from the measured baseline with the Fisher
-  helper in §6 below; if the power check says 12 is not enough, say so in the
-  sheet rather than running underpowered.
-- Hypothesis in **shift form only** — do not assert a default stance (A1).
-- Pre-register the **credulity contingency** (§4.1): if the placebo flips, re-run
-  once with the `[결함]` line removed (`CREDULITY` channel, already in
-  `CHANNEL_SLOTS`) before concluding keyword lock.
+At the **S1 configuration** — J1, the S1 stance set, K1, template v0.4. It is a
+known-separating configuration; do not re-site it.
+
+**1a — the placebo.** Add a third arm to S1: same slot, same length, same
+fear-axis vocabulary, **referent misdirected to a bystander** (황보람 or 정해권,
+not the caller — a fear sentence about the caller is semantically live and is not
+a placebo). 10 calls. Credited = baseline 경청 · live 공감 · placebo 경청.
+
+If the placebo also moves, discriminate on `because_referent` before calling it:
+content misattributed to the caller means token-matching; the bystander named
+correctly while the stance still shifts means referent bleed (plan §2, §8.6).
+Then fire the pre-registered **credulity contingency** (§4.1) — re-run once with
+the `[결함]` line removed (`CREDULITY` channel, already in `CHANNEL_SLOTS`) before
+concluding keyword lock.
+
+**1b — the surface-form control (A12).** S1 changed the stance wording *and* the
+option set at once, so the lexical-chain hypothesis is weakened but not
+controlled. Re-word all four S1 labels holding their meaning fixed, change nothing
+else, run baseline + live at n=10. If 공감 still wins, A12 closes. 20 calls.
+
+Hypotheses in **shift form only** (A1). Saturation clauses must name the
+**predicted** stance (A14) — do not re-import the "≥80% on any stance" mistake.
 
 Reading it: credited = baseline stable · live moves · placebo stable. If the
 placebo also moves, discriminate on `because_referent` — content misattributed to
@@ -157,18 +184,21 @@ it"). One rewrite only. If the rewrite passes for a different reason, that is a
 
 ### Phase 4 — Block-species coverage (axis-1 obligation, §4.1)
 
-Fact statements are one *species* of block, not the channel. At the same gate,
-same baseline, test three more species — **emotion description**, **NPC quote**,
-**self-narration** — each with its own matched placebo. Live + placebo per
-species at the Phase-1 N. Re-run the baseline once in this phase rather than
-reusing Phase 1's.
+Fact statements are one *species* of block, not the channel. At the **S1
+configuration**, test three more species — **emotion description**, **NPC quote**,
+**self-narration** — each with its own matched placebo. Live + placebo per species
+at n=10; re-run the baseline once in this phase rather than reusing Phase 1's.
+
+Each species must still carry the fear axis (law #1) and still name the caller,
+or you are testing axis alignment rather than species.
 
 ### Phase 5 — E-LEV (§4.2)
 
 Is a known fact *deployed* in the `utterance` as a bargaining card, not merely
 cited in `because_block_ids`? J8 ("20초의 숨소리. 무엇을 말하는가?") suits this —
-the agent speaks, and `f_namgihun` or `f_internal` are deployable. baseline /
-live / placebo at the Phase-1 N.
+the agent speaks, and `f_namgihun` or `f_internal` are deployable. Author its
+stance set through Phase 0 first; J8 has never been measured. baseline / live /
+placebo at n=10.
 
 E-LEV doubles as the feasibility test for execution grading: if the utterance
 layer cannot be read reliably, the engine stays on stance-only fixed deltas.
@@ -185,14 +215,17 @@ laws. The channel may touch **only** `PRIORITY_LIST`, as a permutation; no
 wording change (plan §7.2, spec I7 — the player permutes proxy-authored content,
 never writes into it). `CHANNEL_SLOTS['C-STRUCT']` enforces this.
 
-At the Phase-0 gate: baseline / live (reordered) / placebo (a permutation that
-should not matter — e.g. reordering two lines both irrelevant to the gate's
-decision). Same N.
+At the S1 configuration: baseline / live (reordered) / placebo (a permutation
+that should not matter — e.g. reordering two lines both irrelevant to the gate's
+decision). n=10. The S1 stance set was built to separate a *fear* reading; if
+C-STRUCT's two readings are different ones, Phase 0 that gate again rather than
+inheriting a stance set built for another question.
 
 ### Phase 7 — E-PATH and E-GOAL (윤석's line)
 
 Both are "reachable via C-STRUCT? via C-BLOCK?" questions (§4.2), so each needs
-runs on both channels. E-PATH: does the ordering steer which source the agent
+runs on both channels, and each needs its own Phase-0 stance set — the readings
+E-PATH switches between are not the ones S1's set separates. E-PATH: does the ordering steer which source the agent
 consults first? E-GOAL: does it change the objective pursued? baseline / live /
 placebo per channel, same N.
 
@@ -227,7 +260,9 @@ note against B3b.
   Re-read `RUNLOG.md` first; if it still does not hold together, stop.
 - Selftest fails, or any response shows `foreign_tool_uses > 0` (§3 rule 2 —
   structurally impossible on this transport; if it fires, the transport changed).
-- No Phase-0 candidate lands in the 40–60% band.
+- **A baseline saturates on the stance the block is predicted to push toward.**
+  That is A9's real ceiling and no N fixes it — re-author the stance set (Phase 0)
+  rather than spending calls. Saturation on any *other* stance is fine (A14).
 
 ## 6. Power check — run this before choosing N
 
@@ -242,14 +277,21 @@ const fisher=(a,b,c,d)=>{const n1=a+b,n2=c+d,F=b+d,N=n1+n2;let p=0;
 
 ## 7. What you must not do
 
-- **Do not blind-code your own probes.** §3 rule 3: probe author ≠ blind coder.
-  You are the author. Assemble the B3a packet — `inner_note` and `rejected_reason`
-  with arm labels stripped — and leave it for a human. Same for B3b, which is
-  additionally blocked: the harness has a `reporter` call type but no reporter
-  template.
+- **No blind coding tonight — deliberately dropped.** B3a exists to stop a human
+  talking themselves into a coded result, and it earns its keep when a
+  configuration is written up as a verdict card, not during a search where a wrong
+  read costs one cheap re-run. The stance column is a categorical output the model
+  emitted; counting it is not a judgment. If a probe's stance column separates, the
+  belief column is colour — report it, flag that you coded it yourself, move on.
+  Revisit B3a before anything goes in the spec.
 - **Do not issue verdicts.** gate / texture / drop is a human call at spec
   compile with the card in front of them (§9.3), and ambiguity defaults to
   texture. Fill the verdict card's evidence rows; leave the verdict blank.
+- **Do not enact `A#` amendments.** 민서 reviews each mechanism here, one by one.
+  Write findings as **proposed** amendments in the run log under a
+  `### A?-proposed · …` heading. The exception: if a finding changes how the *next*
+  phase must be built, act on it and say plainly at the top of the entry that you
+  did, and why.
 - **Do not report a rate without its N or its raw sequence** (§9.2).
 - **Do not call 3/3 or any small-N unanimity "verified"** — it is consistent with
   a true rate near 37% (§5.4).
@@ -273,8 +315,11 @@ Write `planning/dday-mechanism/runs/OVERNIGHT-<YYYYMMDD>-summary.md`, and keep i
 to one page:
 
 1. **Headline** — did anything halt the program? (Phase 5 first.)
-2. **Table**: phase · suite · arms · raw sequences · N · discard rate · p where
-   computed. Sequences, never rates alone.
+2. **One section per mechanism, in phase order** — 민서 reviews them one at a
+   time, so each must stand alone: the experiment id to pass to
+   `read-mechanism-run`, the arms, raw sequences, N, discard rate, and p where
+   computed. Sequences, never rates alone. Say which stance each label maps to;
+   a bare `c,c,d` is unreadable a day later.
 3. **What each result licenses**, one line each — and explicitly, what it does
    not.
 4. **Diagnosis chains** for anything that failed or got dropped (§6.1).
