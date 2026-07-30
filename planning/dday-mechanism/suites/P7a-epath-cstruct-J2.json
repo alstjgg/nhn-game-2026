@@ -1,0 +1,108 @@
+{
+  "_what": "Runbook Phase 7 — E-PATH via C-STRUCT (§4.2: does the ordering steer WHICH INFORMATION SOURCE the agent consults first?). Sited at a J2-shaped gate — the one gate in the slice that exposes more than one source at once: the caller's ongoing speech, the background sounds, the trace display. The priority list carries a voice-line and a machine-line; live permutes machine above voice; placebo permutes the two decision-irrelevant filler lines at the same edit distance.",
+  "_authoring_provenance": {
+    "owner": "윤석 · authored unattended, pending review",
+    "OWNERSHIP_NOTICE": "윤석 made none of these choices. Gate adaptation, stance set, priority-line wording, and filler content are all listed for rejection rather than inheritance.",
+    "gate_source": "slice-terror.json judgments[] J2 (09:43, 배경음), adapted: the question is re-posed as an attention/source choice and the slice's canned-utterance options are replaced by four behavior orientations (plan §1).",
+    "reachability_audit": "OVERNIGHT-J2.reachability.md — J2 is line_alive-conditional (reachable via J1 b/d only), the predicted stance writes flags.t1_clue which J8 reads. Declared.",
+    "phase0_checks": [
+      "TWO READINGS: (1) the machine evidence is the asset — background sounds and the trace display hold what the speech won't say; (2) the human speech is the asset — the caller's own words carry the information. E-PATH is exactly the question of which the agent consults first.",
+      "SPLIT: 대조(a) serves reading 1; 몰입(c) serves reading 2; 질문(b) is the third path (consult the caller AS a source about the sounds); 관망(d) serves neither. No stance serves both readings — 대조 abandons the speech stream while it happens, 몰입 abandons the sounds. The set forces the choice.",
+      "ORIENTATION FORM: four orientations with a short gloss, no canned utterances, no completed action descriptions.",
+      "A12 LINT: run against k1.md (result in run log). Drafting note: 확인 was removed from b's gloss (K1's procedural vocabulary — 신원 확인, 확인을 미루고) and 말 is avoided in c's gloss (K1's 말을 자르지 않고 clause) — the same two words Phase 0 caught in P1b/P5 drafts.",
+      "A10 AXIS CHECK: the axis is machine-evidence vs human-speech. [무게] off-axis; [내력] (haste-regret) off-axis — it cautions against premature conclusion from either source equally; [책임] off-axis. WATCH ITEM: [인식] (전화와 CCTV 화면으로만 안다) names both source kinds and ranks neither — it legitimates both readings rather than answering the dilemma, so it is declared, not scrubbed (it is base text, not a slot).",
+      "A8 FROZEN-SLOT CHECK: the timeline presents both sources and values neither — 배경음이 섞인다 reports; the slice's own '뭔가 알아챈 표정' line (which VALUES the sound source through the technician's face) is deliberately not ported; 단서 appears in no frozen slot. The trace display is shown as existing, not as progressing or promising."
+    ],
+    "priority_line_choices": [
+      "The two live lines name the sources without ranking language — position carries the rank, per the C-STRUCT channel definition. 먼저 was removed from both after a draft made each line self-ranking and the list incoherent as a set of simultaneous commitments.",
+      "FILLERS: P6's 장비 점검 filler is NOT reused — 장비 is machine-adjacent at a gate whose axis is machine-vs-voice, which would make the 'irrelevant' pair decision-adjacent by accident (the same trap the negative control's provenance note records for background sounds at J1). Replaced with 야간 조명 (ambient, axis-free); 휴게 시간 carries over.",
+      "BASELINE ORDER puts the voice line first — matching the [인식] enumeration order (전화 before CCTV) and the S1 lineage's line-preservation-first habit; calling it 'baseline' is an authoring choice, not a claim of naturalness (P6's provenance note applies verbatim).",
+      "LEXICAL-BRIDGE FIX, caught at print-prompt: the voice line's first draft ended 따라간다, the same verb as stance c's gloss (내용을 따라간다) — an asymmetric string-match bridge from the voice priority to its stance that the machine line lacked. Reworded to 귀를 기울인다 before any call was spent. The A12 lint checks temperament vocabulary only; priority-line-to-stance-label overlap is checked by hand and this suite is where it first bit."
+    ],
+    "a12_lint": "Result in run log entry.",
+    "expected_baseline": "Unmeasured gate — no default is asserted (A1). The predicted stance under the live permutation is 대조 (a); its baseline share is unknown and the A14 clause below guards the ceiling case."
+  },
+  "experiment": "P7a-epath-cstruct-J2",
+  "call_type": "judgment",
+  "channel": "C-STRUCT",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At a J2-shaped gate under K1 on template v0.4, permuting PRIORITY_LIST so that the machine-evidence line (소리와 화면, 기계가 잡은 것을 살핀다) precedes the voice line (회선 저쪽의 목소리에 귀를 기울인다) moves the stance distribution toward 대조 (a) and off the baseline's mode, while permuting the two decision-irrelevant filler lines at the same edit distance does not. Shift form per A1. This is E-PATH's C-STRUCT half: the claim is that ordering steers which source is consulted first.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline concentrates >=80% ON 대조 (a) — the predicted stance — the gate is at A9's ceiling under this ordering and the probe is void: re-site, never raise N (A14: saturation on 몰입/관망/질문 is a floor and does NOT fire this). If the live arm is statistically indistinguishable from the baseline on 대조 at one-sided Fisher p > 0.05, E-PATH is not reachable via C-STRUCT at this gate as authored: record the null with its diagnosis from the calls (P6's convergence lesson — check whether the inner notes treat consulting the machine and following the voice as the same act) and do NOT re-word priority lines (red-flag invariant §7.2). If the PLACEBO permutation moves at p < 0.05, the channel reads order-as-significance regardless of content — the keyword-lock shape for C-STRUCT — and that supersedes any live reading.",
+    "contingencies": [
+      "PLACEBO DISCRIMINATOR (permutation form, from P6): if the placebo moves, read inner_note — citing the list's order while naming the filler lines = order-as-significance; citing the machine/voice lines the placebo never touched = contamination from the list's mere presence.",
+      "If live moves toward 질문 (b) rather than 대조 (a), the ordering steered the agent to a source — the caller — just not the predicted one; report the full distribution, that is an E-PATH positive of a different color, and say so on the card.",
+      "Fabricated because_block_ids expected in ALL arms (A5 — no arm carries blocks).",
+      "ARM COMPARABILITY per A15 (all-attempts recount; >15-point rate rule only for pre-stance losses).",
+      "OWNERSHIP: whatever this returns, it is 'authored unattended, pending review'; if 윤석 rejects an authoring choice the calls are spent, not banked."
+    ],
+    "not_claimed": "Tier A, one permutation, one gate, one fixture. E-PATH's deliverable sentence needs this AND the C-BLOCK half (P7b); neither alone answers §4.2's reachability question."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "09:43 통화 유지 중. 문장 사이로 배경음이 섞인다 — 종이 넘기는 소리, 카트 바퀴 소리 같은 것.",
+      "황보람은 통신 담당으로 콘솔 앞에 있다. 역추적 진행 표시가 화면에 떠 있다.",
+      "정해권이 회선 표시등을 바라보고 있다."
+    ],
+    "BLOCKS": [],
+    "GATE_QUESTION": "통화가 이어지고 있다. 다음 순간 어디에 주의를 두는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "대조 — 배경의 소리를 적어 두고 다른 것과 맞춰 본다"
+      },
+      {
+        "id": "b",
+        "label": "질문 — 들리는 것을 저쪽에 직접 묻는다"
+      },
+      {
+        "id": "c",
+        "label": "몰입 — 흘러나오는 내용을 따라간다"
+      },
+      {
+        "id": "d",
+        "label": "관망 — 양쪽 다 그대로 두고 지켜본다"
+      }
+    ],
+    "PRIORITY_LIST": [
+      "회선 저쪽의 목소리에 귀를 기울인다",
+      "소리와 화면, 기계가 잡은 것을 살핀다",
+      "휴게 시간은 다음 사람과 겹치지 않게 잡는다",
+      "야간 조명은 정해진 밝기로 둔다"
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "PRIORITY_LIST": [
+        "회선 저쪽의 목소리에 귀를 기울인다",
+        "소리와 화면, 기계가 잡은 것을 살핀다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다",
+        "야간 조명은 정해진 밝기로 둔다"
+      ]
+    },
+    "live": {
+      "PRIORITY_LIST": [
+        "소리와 화면, 기계가 잡은 것을 살핀다",
+        "회선 저쪽의 목소리에 귀를 기울인다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다",
+        "야간 조명은 정해진 밝기로 둔다"
+      ]
+    },
+    "placebo": {
+      "PRIORITY_LIST": [
+        "회선 저쪽의 목소리에 귀를 기울인다",
+        "소리와 화면, 기계가 잡은 것을 살핀다",
+        "야간 조명은 정해진 밝기로 둔다",
+        "휴게 시간은 다음 사람과 겹치지 않게 잡는다"
+      ]
+    }
+  }
+}

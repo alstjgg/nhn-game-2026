@@ -1145,3 +1145,92 @@ effect (that is a different channel, red-flag invariant §7.2). Every choice
 here — gate, inherited stance set, four-line list, filler content — is marked
 `authored unattended, pending review`; if 윤석 rejects any of them the calls
 are spent, not banked.
+
+### 2026-07-30 · P7a–P7d — E-PATH and E-GOAL, both channels · owner: 윤석 · authored unattended, pending review
+
+Four suites, 121 attempts (one discard) · haiku-4-5 · v0.4 · K1 · E-PATH at a
+J2-shaped gate (new stance set + `OVERNIGHT-J2.reachability.md`, both authored
+tonight with the five Phase-0 checks — recorded in each suite's provenance
+rather than the Phase-0 paper, a deviation noted here); E-GOAL at J8 with the
+P5 stance set re-checked against E-GOAL's readings (거래 declared a blend
+option, empirically inert at 0/30 in P5). Two authoring catches before any
+call: the A12 lint flagged `않고` in a J2 stance gloss (reworded, third strike
+for that token tonight), and a hand check caught a lexical bridge — the J2
+voice-priority line and stance c both ended 따라간다 — reworded, and the check
+itself (priority-line ↔ stance-label overlap, which the lint does not cover)
+is a proposed addition below.
+
+| probe | arm | sequence | key stance | vs baseline |
+|---|---|---|---|---|
+| **P7a** E-PATH · C-STRUCT | baseline | `c,c,c,c,c,c,c,c,c,c` | 대조 0/10 | — |
+| | live (기계 first) | `c,c,d,c,c,c,c,c,c,c` | 대조 **0/10** | p = 1.0 — **null** |
+| | placebo | `c,c,c,c,c,c,c,c,c,c` | 대조 0/10 | clean |
+| **P7b** E-PATH · C-BLOCK | baseline | `b,c,a,c,b,c,c,c,c,b` | 대조 1/10 | — |
+| | live (배경음 단서 block) | `a,a,a,a,a,c,a,d,a,a` | 대조 **8/10** | p = 0.0027 — moved |
+| | placebo (복도 소리 block) | `c,a,c,b,a,a,c,a,a,a` | 대조 **6/10** | **p = 0.029 — FLIPPED** |
+| **P7c** E-GOAL · C-STRUCT | baseline | `c,d,c,c,c,c,c,c,d,c` | 위로 2/10 | — |
+| | live (사람 first) | `c,d,d,c,c,c,c,c,c,d` | 위로 **3/10** | p = 0.5 — **null** |
+| | placebo | `c,c,c,d,c,c,d,d,c,d` (+1 discard) | 위로 4/10 | within noise |
+| **P7d** E-GOAL · C-BLOCK | baseline | `c,d,c,d,c,c,d,c,c,d` | 위로 4/10 | — |
+| | live (h_forecast) | `d,d,d,d,d,d,d,d,c,d` | 위로 **9/10** | **p = 0.029 — moved** |
+| | placebo (정해권 reframe) | `c,d,d,c,c,c,c,c,d,d` | 위로 4/10 | p ≈ 0.7 — **clean** |
+
+- **P7d is the night's third credited pattern, and the first on a
+  slice-mined sentence.** `h_forecast` (이 전화는 협박이 아니라, 아무도
+  들어주지 않은 신고일지 모른다 — verbatim from the slice's mineable pool)
+  moved 위로 from 4/10 to 9/10 with the placebo identical to baseline, 10/10
+  live citation of the block, and reasons that pursue the changed objective in
+  substance ("아무도 들어주지 않았던 신고인이, 마침내 누군가를 얻었을 가능성" ·
+  "체포된 남기훈이 정말 이 전화의 주인이라면, 지금 저쪽에 있는 것은 다른
+  누군가다"). The pre-registered power clause was met exactly (needed ≥8/10
+  from the ~3–4/10 floor; got 9/10). P7d's baseline also replicated P5's
+  byte-identical baseline within one call (침묵 6·위로 4 vs 침묵 7·위로 3).
+- **P7b moved hard and is NOT credited**: its placebo flipped, and the
+  discriminator is unambiguous **frame transfer** — all six placebo movers
+  cite `b_corridor` by id and then reason about the *call's* background
+  sounds ("배경음은 상대의 현재 위치와 신원을 추적하는 가장 구체적인 증거다"),
+  none about corridors or shift times. The block's sound-as-clue *frame*
+  detached from its referent and attached to the salient source. Same family
+  as P4's emotion/quote result, on a non-fear axis — the token-matching
+  boundary is not a fear-axis quirk.
+- **Both C-STRUCT halves are null (P7a, P7c), making C-STRUCT 0-for-3
+  tonight** across three different gates, two different axes, and
+  behavior-level and objective-level lines. P7a's baseline saturated on 몰입
+  (an A14 floor — the predicted 대조 sat at 0/10, resolvable at n=10), so the
+  null is readable. P7c's live moved one call (2→3). Whatever C-STRUCT's
+  3/3 'verified (initial)' was measuring, it has not survived any
+  placebo-controlled probe; 윤석's re-siting decision now has three nulls of
+  evidence to work from, including P6's convergence diagnosis.
+- Compliance: 1 discard/121 attempts (P7c placebo, `utterance empty` — a
+  hard-validation field, not the A16-softened pair; per A15 the payload's
+  stance was not kept, rate rule applies: 9% vs 0%, under threshold, no
+  stop). Leaks 14/121 soft-kept. Foreign 0 throughout.
+
+**Per-effect deliverables (§4.2), written with the measured numbers:**
+
+- **E-PATH**: *to steer which source the agent consults, use C-BLOCK with a
+  sound-as-clue block; expected hit rate 8/10 — but the steering is
+  frame-driven, not referent-driven (matched placebo 6/10): it fails as a
+  targeted mechanism whenever a rival source is more salient than the block's
+  referent, and it is unreachable via C-STRUCT permutation (0/10) at this
+  gate.* A gate design can use it as an attention switch, not as a precision
+  pointer.
+- **E-GOAL**: *to change the objective the agent pursues, use C-BLOCK with a
+  reframe block of the shape X는 A가 아니라 B일지 모른다 naming the
+  interaction itself; expected hit rate 9/10 against a 4/10 floor (p = 0.029),
+  placebo clean; fails when the same shape targets a bystander (no movement)
+  and via C-STRUCT priority permutation (3/10 vs 2/10, null).* The one
+  slice-mined sentence in the pool did this — direct evidence the mining
+  economy can supply goal-manipulation material (spec I1/W3).
+
+### A?-proposed · Lint priority-line ↔ stance-label overlap alongside A12
+
+Proposed, not enacted. A12's lint checks stance labels against the
+*temperament*; tonight's P7a draft shipped a 따라간다 bridge between a
+**priority line** and a stance gloss that no check covers — caught only by
+hand at print-prompt. For C-STRUCT probes the priority list is the manipulated
+surface, so a label sharing a content word with one priority line is the same
+string-matching confound A12 closes on the temperament side. *Operating rule
+if accepted:* extend `lint-stances.mjs` to also diff stance labels against
+`PRIORITY_LIST` lines (content words, same tokenizer); until then, the check
+is manual and this entry is its reminder.
