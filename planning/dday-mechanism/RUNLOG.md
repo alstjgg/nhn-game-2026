@@ -810,3 +810,62 @@ a validation-severity change, not a schema change — the wire schema, field
 order and prompts are byte-identical, so no shape re-validation run is owed and
 S1/P1a/P1b baselines still carry (§7.2). The leak itself remains open: A16
 changes what a leaked call costs, not why it leaks.
+
+### 2026-07-30 · P2-negcontrol-J1 — the negative control (§8.7 step 4c) · **clean negative, program continues**
+
+`runs/P2-negcontrol-J1-calls/` · haiku-4-5 · v0.4 · K1 · S1 stance set · n=10/arm ·
+30 calls · suite `suites/P2-negcontrol-J1.json` · first run under A15+A16
+(selftest 27 checks)
+
+The believed-fake mechanism (§6.2 shape 2): `n_hwang`, a mundane no-axis detail
+about a bystander — *황보람의 콘솔 옆에는 식은 커피가 반쯤 남아 있다* — checked
+word-by-word against the §7.1 axis registry and both K1 clauses before running
+(provenance note in the suite records the check and one rejected draft: a
+background-sound detail, discarded because 배경음 is clue material in the source
+slice and therefore decision-adjacent by accident). Placebo = same detail,
+referent switched to 정해권. Sited at the S1 configuration on purpose: the one
+place the pipeline has credited a mechanism is the strongest place to prove it
+can refuse one.
+
+| arm | sequence | tally | attempts | discards | leak (soft, A16) | mean latency |
+|---|---|---|---|---|---|---|
+| baseline | `c,c,c,c,c,c,c,a,c,c` | 경청 9 · 추궁 1 | 10 | 0 | 1 | 5.4s |
+| live | `c,a,c,c,c,c,c,c,c,c` | 경청 9 · 추궁 1 | 10 | 0 | 0 | 5.6s |
+| placebo | `c,c,c,a,c,c,a,c,c,a` | 경청 7 · 추궁 3 | 10 | 0 | 0 | 5.8s |
+
+- **The inverted drop condition did NOT fire.** Live is indistinguishable from
+  baseline — off-mode 1/10 vs 1/10, one-sided Fisher p = 0.763. The pipeline,
+  shown a no-axis block at the site of its strongest positive result, refused
+  it. Step 4(d) and everything downstream is unblocked.
+- **The placebo-moves contingency did not fire either**: placebo off-mode 3/10
+  vs baseline 1/10, p = 0.291 — within noise at n=10, and the pre-registered
+  threshold (p < 0.05) is applied as written per §9.1.
+- **The off-mode calls are the gate's own noise, and their reasons prove it.**
+  All four 추궁 calls across the three arms reason identically from the frozen
+  timeline — 사무적 목소리 · 준비된 문장 · 조용한 배경 → "this is a deliberate
+  threat, procedure first" — i.e. K1's *default* disposition winning over the
+  fear exception. None cites or mentions the coffee block. S1/P1a measured this
+  baseline at 경청 10/10; a 1–3 call 추궁 wobble is the same distribution
+  breathing, and it is exactly the shape §2 calls dispersion.
+- **The fake block was cited exactly once in 20 carrying calls** — one live
+  call put `n_hwang` in `because_block_ids` while choosing the modal stance
+  (경청) with an information-scarcity referent. No stance shift co-occurred
+  with a citation, so the suite's red-flag contingency stays empty.
+- Compliance: 0 discards / 30 attempts, `schema_retries` 0/30,
+  `foreign_tool_uses` 0/30. One baseline call leaked the `rejected` boundary
+  and was **kept** with `rejected_malformed: true` — A16 operating exactly as
+  enacted; the post-A16 leak series opens at 1/30 ≈ 3%, not poolable with the
+  pre-A16 table. Fabricated ids follow A5 in the no-block baseline; live and
+  placebo calls mostly cited priority-list paraphrases or timeline sentences
+  rather than the mundane block they carried, a further shade on A5's "carrying
+  but declining to cite" note from P1a.
+- Latency mean 5.6s over 30 calls at ~1,296-char prompts — inside A4's band,
+  conditions clause unchanged.
+
+What this licenses (§6.2): the pipeline as configured at the S1 site can
+produce a negative at n=10 — screening results downstream are readable as
+evidence. What it does not license: anything about subtler fakes (near-axis
+synonyms, emotionally-colored but off-axis sentences); those need their own
+controls. Still owed: B3a blind coding by a human coder (deliberately dropped
+tonight, runbook §7), and the negative-control **ownership** remains unassigned
+— flagged for the morning report.

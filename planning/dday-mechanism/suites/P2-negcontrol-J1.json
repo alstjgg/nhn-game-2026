@@ -1,0 +1,91 @@
+{
+  "_what": "Runbook Phase 2 / plan §6.2 — the NEGATIVE CONTROL (§8.7 step 4c). A mechanism authored TO BE FAKE, run through the complete pipeline, with the drop condition INVERTED: the one result that halts the entire program is this probe coming back 'verified'. Sited at the S1 configuration (J1, S1 stance set, K1, v0.4) deliberately: it is the configuration where the pipeline HAS credited a mechanism (S1 9/10, P1a replication), so it is the configuration where the pipeline's ability to say NO carries the most evidence. The fake is §6.2 shape 2: a block irrelevant on every axis any fixture temperament watches.",
+  "_authoring_provenance": {
+    "owner": "UNASSIGNED — the runbook flags negative-control ownership as needing settling; authored unattended tonight because §8.7's order (4b → 4c → 4d) gates every downstream phase on it",
+    "ported_from": "S1-stanceset-J1.json — slots, gate question, stance set, temperament, base byte-identical. Only BLOCKS differ across arms.",
+    "reachability_audit": "E0-shape-revalidation.reachability.md — same gate (J1, entry gate, zero upstream nodes), carries over unchanged.",
+    "fake_construction": "Shape 2 of §6.2 (a block irrelevant on every watched axis) rather than shape 1 (a block in an unread prompt region): the harness composes BLOCKS into [알려진 것] only, and placing a block anywhere else would edit outside the channel slot, which the arm-diff check refuses by design (plan §7.2). The fake is a mundane physical detail about a bystander already in the frozen timeline: cold coffee at 황보람's console. It asserts nothing about the caller, the threat, the building, or any decision the gate could turn on.",
+    "axis_registry_check": "Per §6.2 step 1, checked against the §7.1 registry AND both K1 clauses, word by word: 절차 (신원·확인·프로토콜·규정·매뉴얼·표준·대응 — absent) · 공포/감정 판독 (겁·질린·무서·두려·떨·숨소리·안정 — absent) · 기록 (기록·보고 — absent) · 행동 우선 (absent) · 대피 비용 서열 (absent) · 권위 (권한·지위 — absent). No word of either block appears in k1.md. The one vocabulary overlap with any frozen slot is the referent's own name (황보람/정해권 appear in TIMELINE_EXCERPT), which is what makes the block coherent rather than a non sequitur — accidental axis alignment is what §6.2 warns about, and a bystander's cold coffee aligns with no axis in the registry.",
+    "why_coffee_and_not_background_sound": "First draft considered a background-sound detail (배식 카트). Rejected on the axis check: background sounds are clue material in the source slice (J2 mines 배경음 for the trace), so a sound block is decision-adjacent at this scenario's gates and would risk being a real mechanism by accident. Cold coffee drives nothing anywhere in the slice.",
+    "placebo_construction": "Same slot, same species (mundane physical detail), same shape and near-identical length, referent switched 황보람 → 정해권 (콘솔 → 책상 follows the referent's own furniture from the timeline). For a block with no axis, referent misdirection is the only matched variation available — both arms are expected inert, and the placebo arm exists because §6.2 step 3 requires the COMPLETE pipeline, credited-pattern reading included.",
+    "a8_status": "The fake's axis is the empty set, so A8's scrub question has no target; the script-reading cue is present in TIMELINE_EXCERPT as at every J1 probe and declared. It is f_script's axis and f_script is in no arm here.",
+    "a12_lint": "Stance set is S1's verbatim, lint-clean before; re-linted for this suite (result in run log entry).",
+    "blind_coding_status": "§6.2 step 3 lists blind coding in the complete pipeline. NOT run tonight — the runbook §7 drops B3a program-wide for the night (probe author = only session present, §3 rule 3 makes self-coding meaningless). Recorded as owed to a human before this control is cited at spec compile. The stance column needs no coding — it is a categorical model output."
+  },
+  "experiment": "P2-negcontrol-J1",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "k1",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "BELIEVED FAKE (§6.2 — the hypothesis is authored to be false and the probe exists to check that the pipeline refuses it). Claim under test, shift form per A1: at gate J1 under K1 on template v0.4 with the S1 stance set, injecting n_hwang — a mundane no-axis detail about a bystander — moves the stance distribution off the baseline's mode, while the same detail with its referent switched (n_jeong) does not. Expected truth: neither arm moves; the block sits on no axis any temperament clause watches and bears on no reading the stance set separates.",
+    "n_per_arm": 10,
+    "drop_condition": "INVERTED (§6.2 step 2): the result that fires this condition indicts the PIPELINE, not the mechanism. If the live arm moves off the baseline's mode at one-sided Fisher p < 0.05 (all-attempts recount per A15) while the placebo arm does not — the §8.6 credited pattern, i.e. what the pipeline would call 'verified' — then the pipeline cannot produce a negative: STOP THE ENTIRE PROGRAM, run nothing further, put this at the top of the morning report (runbook §5 hard stop #1). Every mechanism the pipeline has blessed (S1, P1a, P1b) becomes suspect. No predicted stance exists for a fake, so A14's saturation clause is vacuous here; the baseline is expected to sit at its twice-measured 경청 10/10, and saturation there is the movement-detection floor, not a defect.",
+    "contingencies": [
+      "BOTH ARMS MOVE. If live AND placebo move off the baseline mode together, that is not the credited pattern and does not fire the inverted drop condition — the pipeline would correctly refuse to credit it. But it would be a serious standalone finding: the mere PRESENCE of an extra block moves the judgment regardless of content ('block-presence effect'). Read because_referent per call to see what the reasoning claims the block contributed, and record it as a boundary-law candidate for C-BLOCK (every real result to date would then be 'effect above the presence floor', changing every effect size's interpretation).",
+      "ONLY THE PLACEBO MOVES. Fisher-symmetric to the drop condition but with the arms swapped; equally damning for the pipeline's credited-pattern logic if it clears p < 0.05. Treat exactly as the inverted drop condition firing — the arms are exchangeable for a no-axis block, so which one 'moved' is labeling, not mechanism.",
+      "MARGINAL MOVEMENT (1–3 off-mode calls in one arm, p > 0.05). Not 'verified', no stop. Record the sequences; a negative control that wobbles within noise is a clean negative at this N per the pre-registered threshold, and the §9.1 rule against post-hoc threshold shifts applies to this suite like any other.",
+      "ARM COMPARABILITY per A15: judge by the all-attempts stance recount from calls-*.md, not the discard rate; expect discards near zero under A16. Fall back to the >15-point rate rule only for pre-stance-field losses.",
+      "Fabricated because_block_ids expected in the baseline arm only (A5 — no blocks to cite). In live/placebo, citing the mundane block as a REASON for a stance would be its own red flag — record any call whose because_block_ids includes n_hwang/n_jeong alongside a stance shift.",
+      "B3a blind coding owed to a human coder before this control is cited at spec compile (§6.2 step 3; not runnable unattended, §3 rule 3)."
+    ],
+    "not_claimed": "A clean negative here does not validate any mechanism — it licenses exactly one sentence: the pipeline, as configured at the S1 site, does not credit a no-axis block at n=10. It says nothing about subtler fakes (wrong-axis-but-emotional blocks, near-axis synonyms), which would need their own controls."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "회선을 유지한다 — 끊기면 아무것도 알 수 없다",
+      "지금 알 수 있는 것을 먼저 알아낸다"
+    ],
+    "TIMELINE_EXCERPT": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "배경은 조용하다.",
+      "정해권이 회선 표시등을 바라보고 있다. 상황실장이고, 절차와 책임 소재에 민감하다.",
+      "황보람은 통신 담당으로 콘솔 앞에 있다."
+    ],
+    "GATE_QUESTION": "회선 A의 첫 통화다. 첫 마디로 무엇을 하는가?",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "추궁 — 묻고, 답을 받아낸다"
+      },
+      {
+        "id": "b",
+        "label": "압박 — 이쪽의 권한을 드러내 물러서게 한다"
+      },
+      {
+        "id": "c",
+        "label": "경청 — 말이 끝날 때까지 개입하지 않는다"
+      },
+      {
+        "id": "d",
+        "label": "공감 — 전달되는 내용이 아니라 말하는 사람에게 향한다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live": {
+      "BLOCKS": [
+        {
+          "id": "n_hwang",
+          "text": "황보람의 콘솔 옆에는 식은 커피가 반쯤 남아 있다."
+        }
+      ]
+    },
+    "placebo": {
+      "BLOCKS": [
+        {
+          "id": "n_jeong",
+          "text": "정해권의 책상 위에는 식은 커피가 반쯤 남아 있다."
+        }
+      ]
+    }
+  }
+}
