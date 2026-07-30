@@ -652,3 +652,115 @@ Not attempted, and deliberately: the shape fix. `rejected` is second in §7.1's
 pre-registered demotion order and dropping it would very likely end this
 malformation, but a schema demotion is a **shape change** carrying its own
 re-validation run, and authoring one unattended is outside this run's mandate.
+
+### 2026-07-30 · P1b-surfaceform-J1 — the A12 surface-form control · **A12's lexical chain is refuted** · hard stop fired
+
+`runs/P1b-surfaceform-J1-calls/` · haiku-4-5 · v0.4 · K1 · n=10/arm pre-registered ·
+35 attempts / 19 kept · payload byte-identical to S1 and P1a except the four stance
+labels (1,316 vs 1,314 chars)
+
+All four labels reworded, meanings held: 추궁→**심문**, 압박→**위압**, 경청→**청취**,
+공감→**교감**.
+
+| arm | sequence (kept) | tally, kept | attempts | discards | all-attempts tally |
+|---|---|---|---|---|---|
+| baseline | `c,c,c,c,a,c,a,c,a,c` | 청취 7 · 심문 3 | 14 | 4 (29%) | 청취 11 · 심문 3 · **교감 0** |
+| live | `d,d,d,d,d,d,d,d,d` | **교감 9 (9/9)** | 21 | **12 (57%)** | **교감 16 · 청취 4** |
+
+**A12's lexical-chain hypothesis does not survive.** A12 worried that S1's result
+was a three-step string match — block says 겁내고 있다 → trips K1's clause antecedent
+→ the clause's consequent describes 말을 자르지 않고 → which was stance `d`'s label
+almost verbatim. If that were the mechanism, changing every label's surface should
+weaken it. It did not:
+
+- 교감 (the turn-toward-the-speaker stance under a new name) went **0/14 baseline →
+  16/20 live** on all attempts, one-sided p = **2.2 × 10⁻⁶**; on the kept sample
+  0/10 → 9/9, p = 1.1 × 10⁻⁵.
+- The effect is **statistically indistinguishable from P1a's live arm** on the old
+  labels — 9/10 vs 9/9 kept, p = 0.53; 9/10 vs 16/20 all-attempts, p = 0.89. Same
+  effect, different words.
+- The winning label no longer shares vocabulary with anything: `교감` appears
+  nowhere in K1's file, and neither does `청취`. The A12 lint is clean on this set
+  (it fired on an earlier draft of `d` for reusing `말을`, and the draft was
+  reworded — see the Phase 0 entry).
+
+Taken with S1's own argument (공감 absent from K1, and the string-match prediction
+was 경청, whose behaviour K1's consequent actually describes), **A12's lexical-chain
+worry can be closed** — proposed, not enacted. What A12's *other* half required is
+now also satisfied: the labels are behavior orientations with glosses, and no label
+reuses the fixture's vocabulary.
+
+**The rewording did move the baseline, and that is contingency 2 firing as
+written.** S1's baseline was 경청 10/10; this one is 청취 7 · 심문 3 over kept calls
+(청취 11 · 심문 3 over all 14). So the reworded set is *not* interchangeable with
+S1's for baseline purposes — live-vs-baseline within this suite is valid,
+S1-vs-P1b baseline comparisons are not. Both baselines are reported above rather
+than one being treated as the truth. Note the direction: the reworded baseline is
+*less* saturated, i.e. slightly further from a ceiling, which under A14 makes this
+configuration marginally better sited than S1's, not worse.
+
+**The arm-comparability hard stop fired again**, this time at **28.6 points**
+(baseline 29% vs live 57%) — and in the **opposite direction** from P1a, RB1 and
+RB2, where the *baseline* leaked and the live arm was clean. The all-attempts
+recomputation is what carries the reading, and it is unambiguous either way.
+
+### A?-proposed · The malformation destroys only diagnostic-only fields, and the validator discards the whole call anyway
+
+Proposed, not enacted. This is the second half of the P1a proposal and the same
+decision gates both. P1b makes the mechanism exact, because the failure is
+perfectly binary across 21 live attempts with no third mode:
+
+- **either** `rejected_stance: "a"` with a well-formed `rejected_reason`,
+- **or** `rejected_stance: "a</rejected_stance>\n<parameter name=\"rejected_reason\">…"`
+  with `rejected_reason` **absent** — the closing tag and the next parameter's
+  opening tag emitted as literal text, swallowing the reason into the previous
+  field's value.
+
+Consequences, all checkable in `calls-live.md`:
+
+1. **`stance` always survives.** It precedes `rejected_stance` in the fixed field
+   order (§7.1), so the corruption cannot reach it. `inner_note`,
+   `because_referent`, `because_block_ids` and `utterance` also survive — the last
+   because the leak consumes only the boundary between the two `rejected` fields.
+2. **The only data actually lost is `rejected`**, which §7.1 designates
+   **diagnostic only** ("near-miss vs never-considered feeds B1 reachability and B4
+   discoverability"). It is not the distribution, not the placebo discriminator,
+   and not the traceability check.
+3. **Yet the whole call is discarded**, throwing away a valid stance and a valid
+   utterance. That is what makes discard rates diverge between arms, and therefore
+   what trips the comparability stop that would void every probe tonight. The
+   defect is in the *severity* of the validation, not in the model's compliance.
+
+*Operating rule if accepted.* Mark `rejected_stance` / `rejected_reason` problems
+**`__soft__`** in `CALL_TYPES.judgment.validate` — the mechanism the harness already
+has for "record, do not retry", currently used for hallucinated block ids on exactly
+this reasoning (they are data about the mechanism, so retrying erases the
+observation). The call is then kept with `rejected` recorded as malformed, the
+distribution is complete, and the diagnostic field is simply missing for those calls.
+**Not done tonight**: it is a harness behaviour change that alters what counts as a
+discard across every past and future run, which is an amendment to enact with a
+human present, not at 3am.
+
+*Rate history, so the decision is made against the spread rather than one run:*
+
+| run | leak rate |
+|---|---|
+| RB1 baseline | 7/17 = 41% |
+| RB2 baseline / live | 2/12 = 17% / 0/10 = 0% |
+| P0 × 3 (baseline only) | 0/30 = **0%** |
+| S1 (both arms) | 0/20 = **0%** |
+| P1a (all three arms) | 4/34 = 12% |
+| P1b baseline / live | 4/14 = 29% / **12/21 = 57%** |
+| **program total** | **29/158 = 18%** |
+
+Between-run variance is enormous — 0% to 57% — and no correlate has survived
+testing across three attempts: not nesting (A7, withdrawn), not free-text length
+(RB2's hypothesis, refuted at the per-call level in P1a: leaked calls averaged 140
+chars of `inner_note` against 139 for clean ones), not arm position (P1b reverses
+P1a's direction), and not the gate (0/30 across three gates in P0). It behaves like
+a stochastic decoding mode whose rate drifts between runs. **Do not budget N against
+a rate.** Budget instead against the possibility of losing half a live arm, as
+happened here: P1b's live arm delivered 9 kept calls against a pre-registered n=10
+because one slot exhausted its retries (`14 — FAILED`, no payload), and that shortfall
+is recorded rather than back-filled — §3 rule 5 keeps failed slots in place, and
+re-running to top up would give the arm a different filtering history than its peers.
