@@ -1,92 +1,130 @@
-# DDAY 시나리오 → 게임 파이프라인 (설계 초안)
+# DDAY Scenario-to-Game Pipeline
 
-> **지위:** 제안 — 팀 합의 전. [architecture-spec](./dday-architecture-spec.md)
-> §2·§3·§4와 [call-contracts](./dday-call-contracts.md)를 전제로, **시나리오
-> 문서를 넣으면 플레이 가능한 게임과 게임성 리포트가 나오는** 경로를
-> 정의한다.
-> **전제 2가지:** LLM 레이어(콜 계약 v1 — 있음) · 최소 엔진
-> ([엔진 요청서](./dday-engine-minimal-request.md) — 구현 대기).
-> **목적:** 여러 시나리오 초안을 취향이 아니라 데이터로 바께오프한다.
+> **Status:** operating document. The pipeline splits into two tracks, each
+> decided by its owner.
+> **Agreement works by document, not discussion.** Each owner's spec *is* the
+> communication: the other track reads it and builds against it, and changes
+> propagate as revisions to the owning document.
+> **Binding set:** datapack spec (§3, 민서) ·
+> [engine spec](./dday-engine-minimal-request.md) (윤석) ·
+> [call contracts](./dday-call-contracts.md) (윤석) ·
+> [architecture spec](./dday-architecture-spec.md) (invariants above both).
 
-## 0. 원칙
+## 0. Principles
 
-- **Balance-as-data가 곧 파이프라인이다.** 게임 = 범용 엔진 + 콜 계약 +
-  시나리오 데이터팩. 이 파이프라인의 최종 산출물은 `data/` 팩 하나이며,
-  엔진 코드는 시나리오가 바뀌어도 변하지 않는다 (스펙 §3).
-- 각 단계는 **검사 가능한 산출물**을 낸다. 사람 개입 지점은 §4에 명시 —
-  그 외 단계는 무인으로 반복 가능해야 한다.
+- **Balance-as-data is the pipeline.** A game = the generic engine + the call
+  contracts + one scenario datapack. The pipeline's end product is a `data/`
+  pack; engine code does not change when the scenario does (spec §3).
+- **Two tracks, two questions.** The data pipeline answers *what form the
+  data takes at every point, and what transforms into what*. The architecture
+  pipeline answers *how the layers are actually connected, called, and
+  driven*. The former binds formats; the latter owns methods.
 
-## 1. 단계
+## 1. Tracks and deliverables
 
-| # | 단계 | 입력 → 산출 | 방식 | 상태 |
-|---|---|---|---|---|
-| 0 | **집필** | 브리프+가이드 → 시나리오 초안 (§4 형식) | `/write-scenario` 집필 세션, 병렬 N개 | **있음** |
-| 1 | **컴파일** | 초안 → 데이터팩 (`data/scenario/<slug>/`) | LLM 세션이 변환, JSON 스키마로 검증 | 신규 |
-| 2 | **린트** | 데이터팩 → 위반 목록 | 결정론적 검사: stance↔기질 축 어휘 충돌 · 열쇠 종/채굴 위치(게이트 이전) · 점수 소급성 · 금지 목록 기계 검사분 | 신규 (stance 린트는 하네스에 원형 있음) |
-| 3 | **종이 검사** | 데이터팩+초안 → 판정 메모 | 하드닝 매뉴얼 §6: 타임라인 선점 · 픽스처 여유 · 탈출구 — 사람 1회, LLM 보조 가능 | 매뉴얼 있음 |
-| 4 | **프로브** | 첫 게이트 카드 → 스위트 JSON → 30콜 결과 | 게이트 카드에서 스위트 자동 생성, 기존 하네스로 실행 | 하네스 있음, 생성기 신규 |
-| 5 | **실행** | 데이터팩 → 플레이 가능한 런 | 최소 엔진이 팩을 로드, 풀런 드라이버가 비트를 돌림 (`drive-beat.mjs`의 풀런 확장) | 엔진 대기, 드라이버 원형 있음 |
-| 6 | **게임성 측정** | 풀런 × 정책 봇 → 지표 리포트 | §3의 지표를 정책별 N런으로 집계 | 신규 |
+| Track | Owner | Question | Deliverables |
+|---|---|---|---|
+| **Data pipeline** | 민서 (A) | Every data format between and inside the layers — what turns into what, and what flows where | Transformation chain (§2) · datapack spec (§3) · lint rule set · run-record & meta-state format (what a finished run leaves behind, what persists between runs) · production base prompt template (the D task — the judgment call's default prompt that temperament composes into) · gameplay metric definitions (§5) |
+| **Architecture pipeline** | 윤석 (L) | The actual wiring — call paths, data hand-offs, runtime | Bedrock production path · minimal engine, **including score evaluation at the terminal clock** · payload composer (the runtime side of call contracts §6) · full-run driver · **run-loop manager** (multi-run shell: run counter, depth-gated exposure, prompt carry-over, report archive) · gate-card → suite generator · policy-bot runner |
+| **Client** | — (unassigned) | The player-facing surface — how the player watches runs and touches the membrane | Observe surfaces (timeline · CCTV · call panel) · mining + slot-composition UI (pinboard with cap, species/axis tags) · report viewer with the client-driven typewriter · score/tally screen (absorbs report generation, latency rules 4–5) · run-loop shell UI (run history, prompt carry-over view) · the pause structure that binds the §9 latency budget and report cadence (with L) · assets, each entered in `assets-manifest.json` |
 
-**페이즈 제안:** P0 = 1+2 (컴파일·린트 — 종이 위에서 비교 가능) → P1 = 4
-(첫 게이트 프로브 자동화) → P2 = 5+6 (풀런 게임성 측정, 엔진 도착 후).
-P0만으로도 바께오프의 절반(형식·규칙 준수·구조 비교)이 가능하다.
+### 1.1 Executability check
 
-## 2. 데이터팩 스키마 스케치
+Data + architecture shipped = the game runs **headless** end to end: draft →
+compile → datapack → engine + composer + three calls → scored, repeatable
+runs with depth-gated exposure — enough for stages 4–6 and the whole
+bake-off. All three tracks shipped = **playable by a human**. The client
+consumes and emits only what the other two tracks already bind, so it builds
+document-first like everything else; it carries no owner until one is
+assigned.
 
-`data/scenario/<slug>/` — **엔진 요청서의 입력 형식과 하나로 확정해야 한다
-(미결 #1).** 초안 §4 형식의 각 섹션이 파일 하나로 떨어지게 설계한다:
+## 2. Data pipeline — the transformation chain
 
-| 파일 | 내용 | 초안 출처 |
+Each stage is defined as a **data transformation**: input format → output
+format. The executor of each stage (a skill, a script, the engine) is an
+architecture-track artifact (§4); the formats are bound here.
+
+| # | Stage | Transformation | State |
+|---|---|---|---|
+| 0 | Write | brief + guide → scenario draft (md, `/write-scenario` §4 format, gate cards in yaml) | running |
+| 1 | Compile | draft → datapack (§3) | data track builds the compile skill + JSON schema validator |
+| 2 | Lint | datapack → violation list (stance↔temperament axis-vocabulary collision · key species / mining position · score attributability · the mechanical half of the guide's ban list) | rules fixed by data track; a stance-lint prototype exists in the harness |
+| 3 | Paper check | datapack + draft → verdict memo (hardening manual §6: timeline preemption · fixture slack · escape options) | manual exists; one human pass |
+| 4 | Probe | gate card → suite JSON → 30-call metrics | suite format is the harness's existing format, unchanged |
+| 5 | Run | datapack → run record (delta journal + timeline + the two reports) | run-record format follows the engine spec |
+| 6 | Gameplay measurement | run records × policy → metric report (§5) | report format fixed by data track before first execution |
+
+**Phasing:** P0 = stages 1+2 (compile + lint — drafts become comparable on
+paper) → P1 = stage 4 (first-gate probe) → P2 = stages 5+6 (full-run
+measurement, once the engine lands). P0 alone covers half the bake-off:
+format compliance, rule compliance, structural comparison.
+
+## 3. Datapack spec (v0)
+
+`data/scenario/<slug>/`. **This spec is the compile stage's output and the
+engine's input.** Where it disagrees with the engine spec, the data track
+revises this section to restore fit — by revision, not by meeting.
+
+| File | Contents | Draft source |
 |---|---|---|
-| `meta.json` | 제목 · 시나리오 시계(시작~종료) · D-Day | 로그라인 |
-| `timeline.json` | 고정 이벤트: 시각 · 표면(통화/CCTV/현장) · 텍스트 · 노출 런 깊이 | 고정 타임라인 |
-| `characters.json` | 인물: 특성(고정) · 눈금 ≤2 초기값 · 지식 플래그 | 인물 |
-| `temperament.json` | 기본 성향 · 조건절 ≤2 (축 어휘 · 패배 조건) | 기질 제안 |
-| `gates.json` | 게이트 카드 그대로: 표준형 · stance 세트 · 버킷 · 델타 · 엣지 술어 · **열쇠 조건** | 갈림길 |
-| `truths.json` | 진실 → 운반 문장 id들 · 거짓 단서 id들 | 숨겨진 진실 |
-| `score.json` | 단위 · 술어 · 무개입 기준 점수 | 점수 |
+| `meta.json` | title · scenario clock (start–end) · D-Day | logline |
+| `timeline.json` | fixed events: time · surface (call / CCTV / on-site) · text · exposure run-depth | fixed timeline |
+| `characters.json` | characters: traits (static) · ≤2 meter initial values · knowledge flags | characters |
+| `temperament.json` | default disposition · ≤2 conditional clauses (axis vocabulary · defeat condition) | temperament proposal |
+| `gates.json` | the gate card as-is: standard form · stance set · buckets · deltas · edge predicates · **key condition** | gate cards |
+| `truths.json` | truth → carrier sentence ids · false-lead ids | hidden truths |
+| `score.json` | units · predicates · no-intervention baseline score | score |
 
-핵심 설계 결정 하나: **열쇠는 문장 id가 아니라 조건(축 × 지목 × 인증
-종)으로 저장한다.** 게이트를 여는 것은 조건을 만족하는 문장의 클래스다
-(하드닝 매뉴얼 §3-5) — 특정 문자열을 정답으로 박으면 추리가 제비뽑기가
-된다.
+Decisions in force:
 
-## 3. 게임성 지표 (단계 6)
+- **Keys are stored as conditions (axis × referent × certified species),
+  never as sentence ids.** What opens a gate is the class of sentences
+  satisfying the condition (hardening manual §3-5); a single blessed string
+  turns deduction into a lottery. The condition is authoring/lint/oracle
+  metadata — at runtime the injected sentence simply rides the judgment call
+  and the engine reads only the stance, so determinism is untouched.
+- Fields absent from draft-stage gate cards (buckets · deltas · edge
+  predicates) are filled during hardening. Compile passes them empty; lint
+  flags the pack "hardening incomplete".
+- Field-level type definitions land as the next revision of this section,
+  written together with the compile skill.
 
-정책 봇 세 종으로 같은 팩을 N런씩 돌려 비교한다:
-**random**(아무 문장이나 주입) · **greedy**(직전 보고서에서 눈에 띄는
-문장 주입) · **oracle**(진실과 열쇠 조건을 아는 상한선).
+## 4. Architecture pipeline — the wiring
 
-| 지표 | 묻는 것 | 판정 |
+This document fixes only the scope; the owner decides the methods, and those
+decisions propagate as revisions to the engine spec and call contracts.
+
+- **Bedrock production path** — call contracts v1 on the deployed proxy.
+- **Minimal engine** — spec: [engine spec](./dday-engine-minimal-request.md).
+  Its first run doubles as the W4 check (architecture spec §5). Scope
+  includes evaluating `score.json` at the terminal clock.
+- **Payload composer** — the runtime realization of the call contracts' §6
+  supplier/consumer map: datapack + state + player-injected blocks → each
+  call's slots.
+- **Full-run driver** — the beat driver (`drive-beat.mjs`) extended to a
+  whole run: engine ↔ three calls ↔ datapack in one loop.
+- **Run-loop manager** — the multi-run shell: run counter, depth-gated
+  timeline exposure, prompt carry-over between runs, report archive.
+- **Suite generator** — gate card (yaml) → harness suite JSON.
+- **Policy-bot runner** — drives full runs under the §5 policies, N runs
+  each, emitting run records.
+
+The data track binds only these artifacts' **inputs and outputs** (§2, §3);
+internal structure, language, and deployment are the architecture track's.
+
+## 5. Gameplay metrics (defined: data track · executed: architecture track)
+
+Three scripted policies play the same pack N runs each: **random** (inject
+anything) · **greedy** (inject whatever stood out in the last report) ·
+**oracle** (knows the truths and key conditions — the ceiling).
+
+| Metric | Question | Verdict |
 |---|---|---|
-| **Policy gap** (oracle − random 점수) | 추리가 값을 하는가 | 격차 ≈ 0이면 이 판은 brute-force 게임이다 — 게이트/광맥 재설계 |
-| 점수 분산 (런 간) | 플레이가 결과를 바꾸는가 | 분산 ≈ 0이면 갈림길이 장식이다 |
-| 경로 커버리지 | 그래프가 살아 있는가 | 방문되지 않는 엣지 = 죽은 저작 비용 |
-| 광맥 수율 (런당 신규 채굴 가능 문장) | 공급망이 도는가 | 콜 2 품질 리뷰와 지표 공유 |
-| 근접 실패 흔적률 | 빗나간 주입이 보고서에 배어 나오는가 | 낮으면 warmer/colder 피드백이 죽은 것 |
+| **Policy gap** (oracle − random score) | Does deduction pay? | Gap ≈ 0 means the pack is a brute-force game — redesign gates/vein |
+| Score variance (across runs) | Does play change outcomes? | Variance ≈ 0 means the gates are decoration |
+| Route coverage | Is the graph alive? | Unvisited edges = dead authoring cost |
+| Vein yield (new minable sentences per run) | Does the supply chain turn? | Shares its metric with the Call 2 quality review |
+| Near-miss trace rate | Do missed injections leave marks in the reports? | Low means the warmer/colder feedback loop is dead |
 
-가드 하나: 정책 봇은 **게임성 측정용**이지 정답 검증용이 아니다 — oracle이
-이긴다는 것은 전제이고, 측정 대상은 격차의 크기다.
-
-## 4. 사람 개입 지점
-
-초안 선정(바께오프 판정) · 종이 검사(단계 3) · 프로브 판독(단계 4) ·
-지표 리포트 해석(단계 6). 나머지는 무인 반복.
-
-## 5. 미결과 소유 (제안)
-
-| # | 미결 | 소유 제안 |
-|---|---|---|
-| 1 | 데이터팩 스키마 확정 — 엔진 요청서의 입력 형식과 단일화 | L + A 합의 |
-| 2 | 컴파일 세션 설계 (스킬화) + JSON 스키마 검증기 | A |
-| 3 | 게이트 카드 → 프로브 스위트 생성기 | 하네스 소유자 |
-| 4 | 풀런 드라이버 (`drive-beat.mjs` 확장) + 정책 봇 3종 | L |
-| 5 | 지표 집계 리포트 형식 | A, 단계 6 첫 실행 때 |
-
-## 6. 대회 재료
-
-"시나리오 문서를 넣으면 게임이 나오고, 게임성이 자동으로 평가된다" —
-집필(창작 LLM) → 컴파일(변환 LLM) → 프로브(측정 하네스) → 정책 봇
-플레이테스트로 이어지는 이 사슬 자체가 AI 활용 문서의 중심 스토리 후보다.
-각 단계의 산출물을 그대로 증거로 쓸 수 있게 보존한다.
+Guard: the policy bots measure **gameplay**, not correctness — that oracle
+wins is a premise; the measured quantity is the size of the gap.
