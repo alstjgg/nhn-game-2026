@@ -3,6 +3,19 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-01)
+
+**Phase transition: demo → production.** DDAY is the selected concept (07-28
+decision; the demo bake-off is superseded), so the real build happens at the
+**repo root** — this supersedes the earlier `demos/dday/` scaffolding plan.
+CLAUDE.md updated accordingly (PR #99). Demos stay deployed at `/<slug>/` as
+competition history. Work runs as three tracks per
+[dday-scenario-pipeline.md](./dday-scenario-pipeline.md): **data (민서)** ·
+**architecture (윤석)** · **client (미배정)** — agreement works by document,
+not discussion. The physical structure wrapping the layers is bound by
+[dday-physical-architecture.md](./dday-physical-architecture.md): tier split
+and constraints in force, layout section owned and to be filled by 윤석.
+
 ## Status (2026-07-30)
 
 **DDAY 기본 메커니즘 확정 — C-BLOCK.** 실제 haiku 호출로 메커니즘 후보를
@@ -40,30 +53,35 @@ Vite + TypeScript skeleton — no demo has been scaffolded yet.
 
 ## Active tracks
 
-Slugs are provisional — rename freely if the team picks better ones, and record the
-change here.
-
-| Track | Demo location | Merged from | Demo state |
-|---|---|---|---|
-| Darkest Context (구 agent arena) — build an LLM agent party from cards, watch it journey a tile map | `demos/darkest-context/` | [agent-roguelike](../planning/concepts/game-concept-agent-roguelike.md) + [autobattler](../planning/concepts/game-concept-autobattler.md) → [concept spec](../planning/concepts/game-concept-darkest-context.md) | concept spec done; demo not started |
-| Apothecary — read what customers *actually* ail from and prescribe | `demos/apothecary/` | [apothecary](../planning/concepts/game-concept-apothecary.md), absorbing [blacksmith](../planning/concepts/game-concept-blacksmith.md) | not started |
-| Doodle Life — read residents' requests and draw living solutions | `demos/doodle-life/` | [doodle-life](../planning/concepts/game-concept-doodle-life.md), absorbing [placement](../planning/concepts/game-concept-placement.md) | playable full-AI prototype evaluated; redesigning around three bounded generation stages and clue-driven NPC puzzles |
+The demo concept tracks are closed — DDAY won. Current tracks are work lanes,
+not concepts; owners, questions, and deliverables live in
+[dday-scenario-pipeline.md](./dday-scenario-pipeline.md) §1:
+**data (민서)** — formats and transformations · **architecture (윤석)** —
+wiring and runtime · **client (미배정)** — player-facing surface.
 
 ## Next steps (priority order)
 
-1. Scaffold `demos/` — three subdirectories, per-demo stack choice (separate task).
-2. Build each demo's core loop to minimally playable.
-3. Demo bake-off: compare plausibility, select the final concept.
-4. Phase transition: update CLAUDE.md, begin the real build at the repo root.
+1. 윤석 fills the layout section of
+   [dday-physical-architecture.md](./dday-physical-architecture.md); root
+   scaffolding follows it.
+2. Data P0: compile skill + JSON schema validator, with field-level datapack
+   types landing as the pipeline §3 revision.
+3. Minimal engine (doubles as the W4 check) + Bedrock production path.
+4. First-gate probe (P1), then full-run gameplay measurement (P2).
+5. Assign a client-track owner.
 
 ## Open TODOs
 
 - Verify the exact submission deadline and video editing rules on the official
   competition page (deadline currently assumed ~2026-08-10).
-- Confirm final track slugs (current ones are provisional).
 
 ## Decision log
 
+- 2026-08-01 — Phase transition declared: demo → production. DDAY is built at the
+  repo root (supersedes the `demos/dday/` scaffolding plan); demos remain deployed
+  as history. The root's physical layout is owned by the architecture track via
+  [docs/dday-physical-architecture.md](./dday-physical-architecture.md) —
+  tier split and constraints fixed, layout section to be filled by 윤석.
 - 2026-07-30 — DDAY 기본 메커니즘은 **C-BLOCK**(문장 블록 주입 → 해석 변화 →
   stance/행동 변화 → 확인 가능한 결과). C-STRUCT(우선순위 순서 재배열) 테스트는
   중단 — 8개 구성·190개 유효 응답 보존, 근거 표본 7개 구성·180개에서 목표 방향

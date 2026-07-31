@@ -34,10 +34,12 @@ transitions (planning → demo → production).
 
 ## Design constraints that affect code
 
-- **Demo phase structure:** three concept demos live under `demos/<slug>/`, each free
-  to choose its own minimal stack. The repo root remains the engine-agnostic skeleton;
-  the final selected game will be built at the root after the demo bake-off. Do not
-  install game engines or frameworks at the root during the demo phase.
+- **Production phase structure:** the selected game (**DDAY**) is built at the repo
+  root. The demos under `demos/<slug>/` are competition history — they stay deployed
+  at `/<slug>/` by the Pages workflow but are not extended. The root's physical
+  layout (module boundaries under `src/`, where Node-side tools and the proxy live)
+  is bound by `docs/dday-physical-architecture.md`; do not restructure the root
+  ahead of that document.
 - **The membrane rule:** the player never types free-text to an LLM. All LLM input is composed
   from structured game elements (blocks/cards/items/telemetry). Do not build text-input UI for
   AI features. Prompt-injection "combat" is not an exception: those attacks are performed by the
@@ -65,7 +67,7 @@ and anything the harness isn't suited for.
 ## Layout
 
 ```
-src/            game source (placeholder render loop for now)
+src/            game source — layout bound by docs/dday-physical-architecture.md
 demos/          playable demos, own stacks — each deployed at /<slug>/ by the Pages workflow
 planning/       planning-phase archive (concepts, scenarios, paper tests, meetings) — see planning/README.md
 services/       superseded reference implementations (agent-arena-api · apothecary-llm-layer)

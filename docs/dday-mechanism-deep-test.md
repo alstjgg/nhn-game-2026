@@ -848,7 +848,7 @@ carries the claim.
 
 ### 8.7 Program order
 
-Dates, milestones, and owners live in the [roadmap](./dday-roadmap.md)
+Dates, milestones, and owners live in the [roadmap](../planning/dday-roadmap.md)
 (MS1–MS7). This table is only the **dependency order inside the test program**;
 where the two disagree about scheduling, the roadmap wins. Step 4's sub-order
 below is the part the roadmap does not carry, and is the reason this section
