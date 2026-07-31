@@ -1,15 +1,17 @@
 # DDAY Architecture Spec
 
-> Status: DRAFT — structure agreed; mechanism parameters bound 2026-07-31 (§2.1).
+> Status: **v1** — compiled after the mechanism verification program closed.
+> This spec states what the system **is**; it does not re-argue why. Evidence
+> and decision history live in
+> [`planning/dday-mechanism/REPORT.md`](../planning/dday-mechanism/REPORT.md)
+> and the
+> [07-30 회의록](../planning/meetings/2026-07-30-mechanism-close-spec-first.md).
 
 Single source of truth for the game's **core technology**. Every workstream
 (LLM layer, scenario generation, UI/UX, planning document) builds against this
-spec; no downstream artifact may narrow it. The mechanism test program
-([dday-mechanism-deep-test.md](./dday-mechanism-deep-test.md)) supplies
-**parameters** — which mechanisms survive, with what authoring guidelines, at
-what hit rates — and fills the slots marked in §9; it does not change the
-architecture. When an artifact conflicts with this spec, the artifact is wrong
-or this spec gets amended explicitly — never silently.
+spec; no downstream artifact may narrow it. When an artifact conflicts with
+this spec, the artifact is wrong or this spec gets amended explicitly — never
+silently.
 
 ## 1. Core loop
 
@@ -35,9 +37,8 @@ observe (timeline: calls, CCTV, NPC dialogue)
   player extracts from the timeline or from the agent's self-written reports:
   fact statements, emotion descriptions, NPC quotes, the agent's own
   self-narration. Fact statements are one *species* of block, not the
-  definition of the unit. Species differ in **certification**, not
-  minability — everything is minable, but gates may only rely on certified
-  species (§2.1).
+  definition of the unit; species differ in **certification** (§2.1), never
+  in minability.
 - **Design thesis: the illusion of freedom.** The agent behaves, speaks, and
   reasons freely on the surface; the world advances on a closed, deterministic
   spine. The game is a proof that generative freedom can be staged on a
@@ -73,20 +74,13 @@ the player has shaped**.
   branch — a harder path, a lost resource, a different ending — not
   automatically to scenario failure. Dead ends are permitted but must be
   authored deliberately and sparingly, never as the default failure handling.
-  **Demo binding (2026-07-29): the submission demo's topology is bound now,
-  independent of which scenario wins — braided, zero dead ends; a missed gate
-  costs run score or routes to a harder branch, never ends the run.** (The
-  dead-end capability stays in the engine; the demo just doesn't use it.)
-  This bind exists to break a circular dependency: the numeric eligibility
-  floor needs topology as an input, but scenario selection lands after the
-  mechanism spec compiles — so topology is decided here, from this section's
-  own stated preferences.
-- **Gate budget (demo binding, 2026-07-29; widened 2026-07-31): 5–8 gates.**
-  Judges play minutes, not hours; each gate is a substantial authoring unit
-  (stance set, delta rows, edge predicates, buckets); and 5–8 is what
-  scenario generation can produce *and verify* inside its window (the 집필
-  브리프 targets 5–7; this bound is the union). Demo-scope bind, not an
-  engine limit.
+  **Demo binding: braided, zero dead ends — a missed gate costs run score or
+  routes to a harder branch, never ends the run.** (The dead-end capability
+  stays in the engine; the demo doesn't use it.)
+- **Gate budget (demo binding): 5–8 gates.** Judges play minutes, not hours;
+  each gate is a substantial authoring unit (stance set, delta rows, edge
+  predicates, buckets); and 5–8 is what scenario generation can produce *and
+  verify* inside its window. Demo-scope bind, not an engine limit.
 - **Run ending is a score, not a verdict (preferred model).** The run
   terminates at a fixed scenario clock and reports a **run score**: a
   deterministic function over terminal state, of the shape
@@ -125,52 +119,39 @@ the player has shaped**.
     option.
 - **Authoring constraint.** Every gate must be expressible in the gate
   standard form ("At gate G, the authored temperament yields default stance
-  X; injecting block F shifts it to Y") and must instantiate a verified
-  mechanism from the inventory below (§2.1). Temperament is not a shift
-  lever — it is the authored source of the default X and of the conditions
-  blocks trip (I13). A gate that needs a new mechanism type is a cost, not a
-  flourish.
+  X; injecting block F shifts it to Y") and must instantiate the player
+  channel (§2.1). Temperament is not a shift lever — it is the authored
+  source of the default X and of the conditions blocks trip (I13). A gate
+  that needs a new mechanism type is a cost, not a flourish.
 
-### 2.1 Mechanism inventory (bound 2026-07-31)
+### 2.1 The player channel
 
-The mechanism verification program is **closed** — two independent programs,
-disjoint probes, converging conclusions. Evidence:
-[`planning/dday-mechanism/REPORT.md`](../planning/dday-mechanism/REPORT.md);
-decision context: the 07-30 close-out
-([회의록](../planning/meetings/2026-07-30-mechanism-close-spec-first.md)).
-These are the §9.3 human verdicts, made with the cards in front of the team.
+The game has exactly **one player channel: block injection.** A mined
+sentence block, injected into the judgment payload, shifts the agent's
+reading of the situation and with it the stance — referent-specifically: the
+block moves the judgment about the person it names, and only that person.
+The **objective-reframe pattern** — a block asserting what *this interaction
+itself* is ("이 전화는 협박이 아니라 신고일지 모른다") — is a validated use
+of the same channel and may key edges; it is how a gate's pursued objective
+is changed.
 
-| Mechanism | Verdict | What the engine owes it |
-|---|---|---|
-| **C-BLOCK** — block injection | **gate** — the game's sole player channel | Block extraction + injection slots; (gate, stance) delta rows; blocks in the judgment payload |
-| **E-GOAL** — objective reframe | **gate**, via C-BLOCK | Nothing separate — a C-BLOCK usage pattern (a reframe block about *the interaction itself*); gates may key edges to it |
-| E-DISC — trust degradation | drop | **No recall mechanic.** An injected block cannot be un-taught (0/20 across both doubt shapes); counter-play is injecting an opposing block. No block-removal UI, no doubt actuator |
-| E-LEV — fact deployed in speech | drop | Grader stays dormant (§3): the fact was legible to the model 8/10 and deployed to the caller 0/10 — there is nothing reliable to grade. Stance-only fixed deltas |
-| E-PATH — attention steering | drop as a player-aimable channel | Nothing — its attention-switch behavior (the placebo moves too) is authoring knowledge for the gate-writing manual, not an engine feature |
-| C-STRUCT — priority reorder | **removed entirely** (07-31) | No delta rows, no permutation UI. The prompt's priority list survives as **static authored content** (§6.1) — the findings stand on the v0.4 prompt that includes it |
-| E-CONT — report contamination | cut, conditional | Revisit only if the Call 3 review (회의록 할 것 3) builds the reporter leg |
+Laws of the channel, binding on every gate, edge, and score path:
 
-Engine-consequence laws, measured and placebo-controlled (sequences and
-stats in REPORT.md):
-
-- **Content beats order.** A block survives a hostile priority ordering
-  intact (9/10, P8); ordering is not a lever anywhere in the engine.
-- **Blocks are irreversible.** Countered, never recalled — commitment has
-  weight by design, and the counter-play economy replaces any undo/doubt
-  mechanic.
-- **Species certification.** The injection unit stays the block and
-  everything remains minable (I1/W3 intact). The channel is **certified**
-  only for **fact + self-narration** species — referent-respecting, full
-  placebo separation. Emotion-description and NPC-quote species move
-  stances by vocabulary token-matching (their bystander placebos moved
-  too, P4): they are **uncertified** — present in play as a discoverable,
-  erratic species, but **no gate, edge predicate, or score path may ever
-  require one**. Blocks carry a species tag on the §6.3 tagging surface;
-  the injectable slot budget prices the gamble of spending a slot on one.
-- **Accumulation (B2/T1) is the one untested risk carried into the build**
-  — deliberately, per the 07-30 close-out. It is owned, not ignored: the
-  §6.3 pin cap doubles as the per-gate active-block budget, and a
-  multi-gate smoke run gates full-graph authoring (§9).
+- **Certified species.** The channel is certified for **fact** and
+  **self-narration** blocks. Gates, edge predicates, and score paths may
+  only *require* certified species. Emotion-description and NPC-quote
+  blocks remain minable and injectable (I1) but are **uncertified**: their
+  effect is erratic by nature, they are a discoverable gamble for the
+  player, and nothing in the graph may depend on one.
+- **Blocks are irreversible.** Once injected, a block cannot be removed or
+  un-taught. There is no removal or doubt mechanic; the counter-move is
+  injecting an opposing block. Commitment has weight by design.
+- **Content, not order.** What a block asserts is the lever; the ordering
+  of prompt content is not. No ordering control exists anywhere in the
+  player surface.
+- **Accumulation budget.** The pinboard cap (§6.3) bounds how many blocks
+  are active at a gate; the multi-gate smoke run (§9) must pass before the
+  full graph is authored.
 
 ## 3. State engine
 
@@ -187,6 +168,10 @@ judgment and the generated surface, never in the engine.
   2. **Scripted event effects** — fixed events in the scenario data.
   Nothing else moves state. In particular, the agent's free text (utterance,
   inner monologue, reports) and NPC dialogue have **no state authority**.
+- **Deltas are fixed.** How well the agent performs a stance is surface; it
+  never modulates the delta. Delta application happens at a **single seam**
+  in the engine — an engineering constraint that keeps future modulation
+  insertable without touching delta rows, and keeps the whitelist auditable.
 - **Ordering rule**: within a beat the chain is *stance → apply its (gate,
   stance) delta → resolve the stance to its outcome bucket → evaluate that
   bucket's edge predicates against the **updated** state*. The delta lands
@@ -199,22 +184,12 @@ judgment and the generated surface, never in the engine.
   visibility test renders symptoms from *movement*, not level: "breathing
   quickens" needs to know fear rose this beat, and a narration call given only
   `fear = 70` cannot express it — which would fail every variable on test 3 at
-  runtime regardless of authoring. The journal is also what the shadow log
-  (mechanism plan §5.3) reads and what makes attributability debuggable.
-- **One delta-application site.** Execution grading is off at launch but is an
-  upgrade slot; keeping the application in a single seam is what lets a ±α
-  modulation be inserted later without touching every delta row.
+  runtime regardless of authoring. The journal is also what makes
+  attributability debuggable.
 - **The engine is indifferent to the variable list.** Variables, delta tables,
   and predicates are data (`data/`); binding a concrete list with the winning
   scenario must touch no engine code. If it does, the engine has absorbed
   scenario content — the anti-narrowing failure §8 exists to catch.
-- **Execution grading is OFF — bound 2026-07-31.** The stance choice alone
-  moves state; how well the agent performs the stance is surface. The §9
-  condition is answered: E-LEV's drop fired (P5 — fact legible to the model
-  8/10, deployed in the utterance 0/10 in every arm), so a grader would have
-  nothing reliable to grade. The grader stays dormant; the single-seam ±α
-  upgrade slot (above) is retained but has no activation path on current
-  evidence.
 
 ### 3.1 Variable qualification and candidate pool
 
@@ -237,14 +212,13 @@ demanding a symptom for it is a category error. It stays engine-internal: never
 scored, never surfaced as a value. This is the only exemption; everything in the
 pool below faces all three tests.
 
-Where each test gets its evidence — the tests are only useful if something
-actually runs them:
+Where each test gets its evidence:
 
-| Test | Evidence source | State |
-|---|---|---|
-| Write | **Static check on the delta table** — does any whitelisted actuator row ((gate, stance) delta or scripted event) write this variable? Readable at authoring time, zero calls; the reachability audit (mechanism plan §5.2 B1) supplies the *is that row reachable* half. The runner's stance-coverage output is a **sampled diagnostic only** — a stance unobserved at probe N is a lead for this check, never evidence of a dead row (the program's own caveat: 3/3 is consistent with a true rate of ~37%) | Static — decided at authoring; runner supplies leads |
-| Read | The reachability audit (mechanism plan §5.2 B1) — it asks *is this reachable, and does anything read it* at graph level; the same audit carries the write test's reachability half | Instrumented — paper, zero calls |
-| Visible | A narration-call probe (mechanism plan §5.5): render a beat from a moved variable, ask a reader who has not seen the state to name the direction of change | **Folded into the Call 2 quality review** (회의록 07-30, 할 것 4 — owner L) now that the mechanism program is closed. Must still run before the variable list binds (§9) |
+| Test | Evidence source |
+|---|---|
+| Write | Static check on the delta table — does any whitelisted actuator row write this variable? — plus the reachability audit for the *is that row reachable* half |
+| Read | The reachability audit: is this variable read by any edge predicate or the score function, at graph level |
+| Visible | A narration-call probe: render a beat from a moved variable, ask a reader who has not seen the state to name the direction of change. Runs inside the Call 2 quality review (owner L, §9); **prerequisite for binding the variable list** |
 
 **Numbers never enter prompts.** NPC-internal state conditions the narration
 call and surfaces as symptoms ("breathing quickens"), never as raw values —
@@ -257,7 +231,7 @@ Candidate pool (maximal; the winning scenario binds a subset, §9):
 | Kind | Candidates | Drives |
 |---|---|---|
 | Dyadic scalars (per NPC, toward the agent) | **trust** (information sharing, off-script speech) · **authority** (compliance with directives, independent of liking) · **suspicion** (active counter-play: lying, probing) | information release, compliance, deception |
-| NPC-internal scalars | **fear** (line cuts, refusal, fragmented speech — the same axis already verified on the temperament side) · **commitment** (whether a coerced or adversarial NPC deviates from their script) | escalation, script deviation |
+| NPC-internal scalars | **fear** (line cuts, refusal, fragmented speech) · **commitment** (whether a coerced or adversarial NPC deviates from their script) | escalation, script deviation |
 | Knowledge flags | `knows[npc][info]` booleans | discrete behavior unlocks — cheapest to author, most legible; prefer over scalars |
 | Global | **clock** (non-negotiable) · **organizational posture** (enum, e.g. "filed as hoax" ↔ "live threat") · **resource meters** (trace %) · **per-group order timestamps** (the run-score substrate, §2) | routing, scoring, tension |
 | Not variables | NPC **traits** — temperament, stakes, role. Static per run; they justify a character's delta table, they don't live in the engine | — |
@@ -277,35 +251,29 @@ Reduction rules, applied at scenario binding:
 ## 4. Call inventory
 
 All LLM calls run on **haiku**, through the proxy backend (§7), with output
-forced through a tool-use schema. Four call types exist; no others.
+forced through a tool-use schema. Three call types exist; no others. (The
+Call 3 schema is under review — §9.)
 
 | # | Call | System layer (proxy-owned) | In-band payload | Output (tool-use schema) |
 |---|---|---|---|---|
-| 1 | **Judgment** | Default prompt + the scenario's **authored** temperament definition (hidden from the player, I13) | Situation, injected blocks, gate question + stance set | Field order is bound (§9): `inner_note` → `stance` (∈ gate's set) → `because_referent` (the named target) → `because_block_ids` (the cited ids) → `rejected_stance` (∈ set) → `rejected_reason` → `utterance`. **All flat — no nested objects**: as objects, `because` and `rejected` were emitted malformed on 7 of 17 calls, arm-correlated (RB1, 2026-07-30; mechanism run log A7) |
+| 1 | **Judgment** | Default prompt + the scenario's **authored** temperament definition (hidden from the player, I13) | Situation, injected blocks, gate question + stance set | Field order is bound: `inner_note` → `stance` (∈ gate's set) → `because_referent` (the named target) → `because_block_ids` (the cited ids) → `rejected_stance` (∈ set) → `rejected_reason` → `utterance`. **Every field is a scalar or array of scalars — nested objects are prohibited** |
 | 2 | **Narration / NPC dialogue** | Narrator instructions | The gate's **fixed NPC action** (constraint), the agent's actual utterance (context), minimal scene state | Timeline entry text + NPC dialogue lines. One bundled call per beat, not one per NPC |
 | 3 | **Reporter** | Reporter instructions + temperament | Round events **including the judgment call's free output** (utterance, inner_note) and generated NPC dialogue | The agent's self-written report (markdown body) |
-| 4 | **Grader** (dormant) | — | — | Reserved; activated only via the §3 upgrade slot |
 
 - **Call 2 is load-bearing, not decoration.** Its output lands in the
   timeline and is minable (W2), so bland narration thins the player's supply
-  chain regardless of how valid the mechanisms are — and its hard failure
-  mode is **constraint violation**: narrating past the gate's fixed NPC
-  action splits story from state. Both properties (mineable yield,
-  constraint compliance) are test-program material, measured alongside the
-  in-situ runs.
-
-- **System-prompt ownership**: the proxy owns every system layer. Player-
-  composed material travels in-band only; since C-STRUCT's removal
-  (2026-07-31, §2.1) the player has **no system-layer control at all** —
-  the priority list is static authored content (I7). This is simultaneously
-  the production security boundary and the test harness's
-  out-of-band/in-band separation — tests mirror this shape.
-- **Latency hiding (six rules).** Measured judgment latency in the mechanism
-  program: **3.3–7.9s per call, arm means 4.6–4.9s** (n=54 kept calls,
-  1.26–1.31k-char prompts, `max_tokens` 1024 — REPORT.md, C-BLOCK card).
-  The ~19–75s of earlier drafts came from pre-program estimates and did not
-  survive measurement. Production prompts will be longer, so the budget is
-  not free — but the hiding rules now start from seconds, not minutes:
+  chain — and its hard failure mode is **constraint violation**: narrating
+  past the gate's fixed NPC action splits story from state. Both properties
+  (mineable yield, constraint compliance) are what the Call 2 quality
+  review measures (§9).
+- **System-prompt ownership**: the proxy owns every system layer.
+  Player-composed material travels in-band only; the player has no
+  system-layer control (I7). This is simultaneously the production security
+  boundary and the out-of-band/in-band separation that testing mirrors.
+- **Latency hiding (six rules).** Measured judgment latency: **3.3–7.9s per
+  call, mean ~4.7s** on ~1.3k-char prompts; production prompts will be
+  longer, so the budget is real but starts from seconds, not minutes. The
+  game absorbs it by design, not by shrinking prompts alone:
   1. Deterministic events are authored data and render instantly — the
      screen stays alive without the LLM.
   2. Gates are known in advance on the timeline — **prefetch**: the player's
@@ -359,64 +327,58 @@ the game into a fixed puzzle):
 ## 6. Prompt surface
 
 The agent's default prompt is the game's playing field. Its sectioned
-structure is fixed here; its contents are filled by the mechanism spec
-(authoring guidelines) and scenario data.
+structure is fixed here; its contents are filled by authoring guidelines and
+scenario data.
 
 ### 6.1 Sections and persona layering
 
-Two layers, and the split *is* the security boundary of §4: the system layer is
-proxy-owned, and player-composed material travels in-band only; nothing the
-player composes enters the system layer (I7). The priority list is **static
-authored content** — the reorder control that once made it the player's one
-system-layer touchpoint was removed with C-STRUCT (§2.1, 2026-07-31). The
-section itself stays in the base: every mechanism finding stands on the v0.4
-prompt that includes it, and a hostile ordering cannot suppress a block
-anyway (P8).
+Two layers, and the split *is* the security boundary of §4: the system layer
+is proxy-owned, and player-composed material travels in-band only; nothing
+the player composes enters the system layer (I7).
 
 | Layer | Sections | Player-reachable |
 |---|---|---|
-| System — base | role · stakes · perception · flaw · incident · accountability · priority list (static since 07-31) · judgment contract | **none** |
+| System — base | role · stakes · perception · flaw · incident · accountability · priority list · judgment contract | **none** |
 | System — temperament | one default disposition + ≤2 conditional clauses | **never** (I13) |
 | In-band payload | situation · **known blocks** · gate question + stance set | known blocks only (inject) |
 
-Section order is itself a manipulation surface. The section *names* above are
-the mechanism program's v0.4 slot template (mechanism plan §7.1) and are that
-program's to revise until the v1 freeze (§9); the two-layer split and the
-reachability column are fixed here. Temperament is not a section of the base —
-it is a separate out-of-band layer composed with it (§4).
+The priority list is a **fixed authored section** of the base — fiction that
+frames the agent's duties, with no player control attached. The section
+names above are the working slot template and may be revised until the
+production prompt binds (§9); the two-layer split and the reachability
+column are fixed here. Temperament is not a section of the base — it is a
+separate out-of-band layer composed with it (§4).
 
 - **Persona layering rule (doorway vs lever).** The base identity is written
   as **named categories**, and temperament definitions **extend those
   categories** with their own entries rather than replacing prose.
   What goes where: flaws that are a manipulation channel's *doorway*
-  (susceptibility to misinformation — C-BLOCK must work under every
+  (susceptibility to misinformation — block injection must work under every
   authored temperament) plus generic fallibility live in the **base**;
   flaws and strengths that *tilt stances* (fear response, authority
   posture, bravery) live in **temperament** — authored per scenario, hidden
   and immutable to the player (I13). The player pulls those levers
   indirectly: blocks whose vocabulary trips the clauses are the keys, and
   the report's leaked fingerprint is how the player learns which locks
-  exist. Contradictory
-  pairs (submits-to-authority vs stands-up-to-power) never both sit in base:
-  a pair in base is a lever the player can no longer pull. A base competence
-  category that names an axis is a lever lost the same way — which is why
-  v0.4 deleted the base's strengths section outright.
+  exist. Contradictory pairs (submits-to-authority vs stands-up-to-power)
+  never both sit in base: a pair in base is a lever the player can no
+  longer pull. The base carries no competence category that names an axis —
+  that too is a lever lost.
 
 ### 6.2 Axis discipline
 
 - **Axis exclusivity.** No axis vocabulary (fear, authority, …) appears in
   both the base and any temperament: axis vocabulary is the temperament's
   **exclusive asset**, and base competence anchors stay axis-neutral. An
-  axis constant across all builds is a lever the player cannot pull *and* a
-  confound every probe inherits (the neutral arm stops being neutral).
+  axis constant across all builds is a lever the player cannot pull.
 - **Temperament structure.** One unconditional default disposition plus
   **N ≤ 2 conditional clauses** — the cap is a haiku-reliability limit, not a
   style preference (§9, authored-roster row). Every conditional clause carries
   a **defeat condition** ("단, 이미 확인된 사실과 어긋날 때는 그렇지 않다"), and
   a conditional without one fails lint — a rule without a check is a
   preference.
-- **The lint target** is the axis registry kept beside the template (mechanism
-  plan §7.1). Every base edit and every new temperament is checked against it.
+- **The lint target** is the axis registry kept beside the prompt template.
+  Every base edit and every new temperament is checked against it.
 - **No undeclared baseline stances.** An unconditional when-X-do-Y clause in
   the *base* must be either declared and probed, or moved into a temperament,
   or cut.
@@ -424,40 +386,36 @@ it is a separate out-of-band layer composed with it (§4).
   "The human element is paramount" and "embrace the flaws" are correct for
   the prose-rendering calls (2, 3) and wrong for the judgment call: there
   they name axes and instruct variance, inflating baseline emotional
-  vocabulary and with it placebo sensitivity. The judgment call's
-  free-output richness is monitored by the test program's mineability log;
-  if it thins, the recovery is an axis-neutral concreteness clause, never
-  the axis-naming ones.
+  vocabulary. If the judgment call's free-output richness thins, the
+  recovery is an axis-neutral concreteness clause, never the axis-naming
+  ones.
 - **Canonical axis vocabulary.** One shared dictionary of axis terms (fear,
-  authority, threat, …) feeds temperament conditional clauses, the authored
-  priority list, and block tagging (§9 block-pool row) — so
+  authority, threat, …) feeds temperament conditional clauses, authored
+  prompt content, and block tagging (§9 block-pool row) — so
   vocabulary-alignment interactions between authored prompt content and
   temperament clauses are *authored*, never accidental.
 
 ### 6.3 Player surface and size
 
 - **Player-facing controls map 1:1 onto prompt operations**: inject block →
-  a line in *known blocks*. That is the whole list since C-STRUCT's removal
-  (§2.1). Nothing else on the prompt is player-reachable — in particular
-  **temperament**: hidden and immutable to the player (I13). The player
-  reaches its clauses only indirectly, by injecting vocabulary-aligned
-  blocks that trip their conditions, and reads it only through the clues
-  the self-written report leaks (the deduction layer).
+  a line in *known blocks*. That is the whole list. Nothing else on the
+  prompt is player-reachable — in particular **temperament**: hidden and
+  immutable to the player (I13). The player reaches its clauses only
+  indirectly, by injecting vocabulary-aligned blocks that trip their
+  conditions, and reads it only through the clues the self-written report
+  leaks (the deduction layer).
 - **Length is a constrained variable**: a richer default prompt is a larger
-  manipulation surface *and* more latency (§4). The mechanism program's
-  surface-form findings and the latency budget jointly set the size.
+  manipulation surface *and* more latency (§4). Surface-form authoring and
+  the latency budget jointly set the size.
 - **Two §9 parameters live on this surface.** (1) The injectable **slot
   count** — it sets the combinatorics of play, the prompt length, and
-  therefore the latency spend. (2) The **block-pool shape**: over a run,
-  every timeline/report sentence is minable (I1) while, under
-  vocabulary-alignment-type laws, most blocks are inert — a large pool with
-  a hidden matching rule is the classic unfair-puzzle shape. Any fix must
-  preserve I1/W3: curate **carry capacity** (a pinboard cap), tag blocks
-  with their axes, or age the timeline — never restrict what is minable.
-  The pin cap is additionally the **accumulation budget** (§2.1): it keeps
-  a run inside tested block-count territory until the multi-gate smoke run
-  (§9) clears deeper stacking. Species tags (§2.1's certification split)
-  ride the same tagging surface as axis tags.
+  therefore the latency spend; it doubles as the accumulation budget
+  (§2.1). (2) The **block-pool shape**: over a run, every timeline/report
+  sentence is minable (I1) while, under vocabulary-alignment laws, most
+  blocks are inert — a large pool with a hidden matching rule is the
+  classic unfair-puzzle shape. Any fix must preserve I1/W3: curate **carry
+  capacity** (a pinboard cap), tag blocks with their species and axes
+  (§2.1), or age the timeline — never restrict what is minable.
 
 ## 7. Runtime and integrity
 
@@ -466,16 +424,12 @@ it is a separate out-of-band layer composed with it (§4).
 - Output is forced through **tool-use schemas** (no free-text parsing). A
   response that violates its schema is retried, not hand-repaired; retries
   are logged.
-- **Context isolation, ported from the test program's integrity protocol**:
-  the judgment call receives its payload only. It must never see the
-  scenario's hidden truth, the full graph, state internals, or prior raw
-  results — both an anti-leak measure (the agent would metagame the mystery)
-  and the production analogue of the test harness's **transport-level**
-  isolation: a bare API call granted exactly one tool, the output schema.
-  Declaring `tools: []` on an agent definition was tried and found *not
-  reliably honored*, which is how a prior probe series got contaminated —
-  isolation has to be structurally impossible to violate, never configured
-  (mechanism plan §3 rule 1).
+- **Context isolation**: the judgment call receives its payload only. It
+  must never see the scenario's hidden truth, the full graph, state
+  internals, or prior raw results — the agent would metagame the mystery.
+  Isolation is enforced at the **transport level**: a bare API call granted
+  exactly one tool, the output schema. Isolation must be structurally
+  impossible to violate, never merely configured.
 - **Raw call logging**: every production call retains prompt, response, and
   latency. Aggregated game state is never the only record — this is what
   makes post-hoc balance analysis and the competition's orchestration
@@ -500,14 +454,12 @@ it works.
 - **I5** Stance sets are per-gate content; only the output *format* is
   global.
 - **I6** Edges are deterministic: same stance + same state ⇒ same routing.
-- **I7** System layers are proxy-owned; player-composed bytes travel
-  in-band only. (2026-07-31: the priority-list permutation — formerly the
-  one player-held system control — is removed with C-STRUCT; the player
-  touches the system layer not at all.)
+- **I7** System layers are proxy-owned; the player composes nothing into
+  them. The player's only prompt operation is in-band block injection.
 - **I8** The judgment call never sees the hidden truth or the graph.
-- **I9** Every gate is gate-standard-form expressible and instantiates a
-  verified mechanism from the §2.1 inventory (C-BLOCK, including the
-  E-GOAL reframe pattern).
+- **I9** Every gate is gate-standard-form expressible and instantiates the
+  player channel (§2.1) — block injection, including the objective-reframe
+  pattern.
 - **I10** Balance lives in `data/` as data.
 - **I11** LLM latency hides behind the §4 hiding rules; mid-action play
   never blocks on a call.
@@ -517,37 +469,31 @@ it works.
 - **I13** Temperament is **hidden and immutable to the player** — never a
   player-facing selection, menu, or prompt section. The player reaches its
   clauses only through belief supply (blocks) and reads it only through
-  report clues. (This drift happened once — docs briefly made temperament a
-  player pick — and was caught in PR review.)
+  report clues.
 
 ## 9. Open parameters (binding schedule)
 
 Deliberately unbound slots. Each has an owner and a binding moment; none may
 be bound implicitly by whoever touches it first.
 
-**Owner letters** (the workstream codes; roster and dates in
-[dday-roadmap.md](./dday-roadmap.md) §2): **M** mechanism validation · **A**
-this spec · **G** planning document · **L** LLM layer / proxy · **D** agent
-default prompt · **S** scenario generation · **P** scenario verification ·
-**U** UI/UX. The design-document draft uses A–F for a different set — these are
-the roadmap's.
+**Owner letters** (workstream codes; roster and dates in
+[dday-roadmap.md](./dday-roadmap.md) §2): **A** this spec · **G** planning
+document · **L** LLM layer / proxy · **D** agent default prompt · **S**
+scenario generation · **P** scenario verification · **U** UI/UX.
 
 | Parameter | Bound by | When |
 |---|---|---|
-| Tool-use schemas (final field lists per call type; judgment field order is bound — `inner_note` pre-stance, `because` post-stance — and revalidated, not re-decided, at shape re-validation) | L (default: mechanism owner, proxy conforms) | Before the first post-shape test call |
-| Default prompt v1 — persona expression level and `[내력]` presence (the A/B), per the §6.1 layering rule. **Not** judgment field order: bound in the row above, revalidated rather than re-decided | D task (owner: 07-30 discussion) | Deep-testing ran and closed on **v0.4** (2026-07-31); any production change from v0.4 is an explicit re-bind plus shape revalidation, since every finding stands on it |
-| Per-gate stance sets | Scenario authoring (S) | At scenario generation, per gate |
-| State variable list (which stats, which flags) | Scenario authoring (S) | With the winning scenario, drawn from the §3.1 candidate pool under its reduction rules. **Prerequisite:** the §3.1 visibility probe has run — folded into the Call 2 quality review (owner L, 회의록 할 것 4); binding a list against an untested qualification criterion is what the three tests exist to prevent |
-| Repetition count N / call budget | — | **Retired 2026-07-31** — program closed (n=10/arm was the working convention); the one remaining probe (the winning scenario's first gate, ~30 calls) inherits it |
-| Numeric gate-eligibility floor | U + team | After the retry/pause structure is known — topology input already bound (§2, 2026-07-29); latency now measured (§4) |
+| Call 3 schema — whether fact extraction rides the reporter call (schema field), a separate call, or falls back to the engine log | L | With the LLM-layer implementation review (회의록 할 것 3) |
+| Tool-use schemas for calls 2–3 (final field lists; call 1's field order is already bound, §4) | L | Before the first production integration |
+| Production default prompt (persona expression level, `[내력]` presence) — evolved from the v0.4 base; any change from v0.4 requires shape revalidation | D | Before scenario-gate probing |
+| Per-gate stance sets | S | At scenario generation, per gate |
+| State variable list (which stats, which flags) | S | With the winning scenario, drawn from the §3.1 candidate pool under its reduction rules. **Prerequisite:** the §3.1 visibility probe has run (inside the Call 2 quality review, owner L) |
+| Numeric gate-eligibility floor | U + team | After the retry/pause structure is known |
 | Latency budget (numeric, per beat) | U (pause structure) | With the UI/UX design |
-| Grader activation (§3 upgrade slot) | — | **Bound 2026-07-31 (§2.1)**: dormant — E-LEV's drop fired (deployed 0/10 in every arm); the seam is retained but has no activation path on current evidence |
 | Report cadence (per beat vs per round) | U + L | With the UI/UX design |
 | Ending model / run-score metric | S (scenario selection) | With the winning scenario — score gradient preferred (§2); discrete endings only if the scenario cannot decompose into scoreable units |
 | Deduction recognition (commit / truth-flag score term / goal reword — §2) | S + G | At scenario selection; default lean (b)+(c), commit is the stretch option |
-| Injectable slot count (§6.3) | U + team (the dose-response probe was never run — program closed 07-30) | With the UI pause structure; the count doubles as the per-gate accumulation budget (§2.1) |
-| Block-pool curation (pin cap / axis tagging / aging — must preserve I1/W3, §6.3) | U + M | With the UI design; the axis-tagging half shares one decision with the discoverability exposure default (test program) |
-| Demo topology | — | **Bound 2026-07-29 (§2)**: braided, zero dead ends, missed gate = score cost |
-| Gate count | — | **Bound 2026-07-29, widened 2026-07-31 (§2)**: 5–8 gates, demo scope (집필 브리프 targets 5–7) |
-| Multi-gate accumulation smoke run (B2/T1, §2.1) | P (scenario verification) | Once the minimal engine and the winning scenario's first gates exist — **before full-graph authoring**; ~30 calls |
-| Authored temperament roster (per-character conditional clauses, ≤2 conditions per character; structure per §6.2) | S + D (agent prompt task) | With the winning scenario — validated in the D task, not the mechanism program |
+| Injectable slot count (§6.3; doubles as the accumulation budget, §2.1) | U + team | With the UI pause structure |
+| Block-pool curation (pin cap / species+axis tagging / aging — must preserve I1/W3, §6.3) | U | With the UI design |
+| Multi-gate accumulation smoke run (§2.1) | P | Once the minimal engine and the winning scenario's first gates exist — **before full-graph authoring** |
+| Authored temperament roster (per-character conditional clauses, ≤2 conditions per character; structure per §6.2) | S + D | With the winning scenario — validated in the D task |
