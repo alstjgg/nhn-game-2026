@@ -1,0 +1,58 @@
+{
+  "_what": "C2v2의 화자 오배정 원인 판별 — 딱 한 변수만 바꾼다: TIMELINE_TAIL이 계약 v1 §3대로 \"엔진이 이미 렌더한 고정 사건\"을 포함한다. C2v2는 고정 사건을 별도 슬롯에만 두어 계약을 어겼고, 모델 입장에서는 \"이미 화면에 있다\"는 주장만 있고 타임라인에는 없는 상태였다. FIXED_NPC_ACTION·SCENE_SYMPTOMS·PRESENT_NPCS·AGENT_UTTERANCE·템플릿은 C2v2와 바이트 동일.",
+  "_authoring_provenance": {
+    "derived_from": "SMOKE-C2v2-narration-J1.json — TIMELINE_TAIL 외 전 슬롯 동일",
+    "single_variable": "TIMELINE_TAIL에 고정 사건 1줄 추가. 계약 위반 시정이므로 선택지가 아니라 필수 수정이고, 그래서 이것만 움직인다."
+  },
+  "experiment": "SMOKE-C2v3-narration-J1",
+  "call_type": "narration",
+  "channel": "SHAPE",
+  "template_version": "v0.2",
+  "model": "claude-haiku-4-5-20251001",
+  "max_tokens": 1500,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "화자 오배정(발신자의 자문자답 · NPC가 통제관 노릇)의 원인이 TIMELINE_TAIL의 계약 위반이라면, 고정 사건을 타임라인에 실는 것만으로 사라진다. 남는다면 원인은 프롬프트가 아니라 비트 경계다 — 고정 사건이 통제관에게 응답을 요구하는데 Call 2는 통제관 대사를 만들 수 없기 때문이다.",
+    "n_per_arm": 5,
+    "drop_condition": "화자 오배정이 5콜 중 2콜 이상 남으면 TIMELINE_TAIL은 원인이 아니다. 그 경우 비트 경계 규칙(\"통제관의 응답을 요구하는 지점에서 비트를 끊지 않는다 — 그 응답은 다음 Call 1의 utterance다\")을 엔진 요청서에 실측 근거와 함께 반영하고, 응답을 요구하지 않는 고정 사건으로 재설계해 재측정한다.",
+    "contingencies": [
+      "오배정이 0/5이면 원인은 계약 위반이었고, 비트 경계 규칙은 근거 없음 — 요청서에 넣지 않는다.",
+      "고정 사건 대사의 재출력(v2 #02 유형)은 별도로 센다. TIMELINE_TAIL에 실렸으므로 되풀이 금지가 더 강하게 걸려야 한다.",
+      "대사가 timeline_entries에 섞이는 것도 별도로 센다 — 발화는 npc_lines에만.",
+      "utterance_echo_count는 v2에서 이미 0이었다. 회귀 감시용으로만 본다."
+    ],
+    "not_claimed": "플레이어 채널 주입 없음(SHAPE) — 메커니즘 주장 없음. placebo 불필요."
+  },
+  "slots": {
+    "TIMELINE_TAIL": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "배경은 조용하다.",
+      "정해권이 회선 표시등을 바라보고 있다.",
+      "통제관: \"천천히 말해 주세요. 지금 그쪽이 안전한지부터 듣고 싶습니다.\"",
+      "회선 A의 발신자가 낭독을 멈췄다. 잠깐의 침묵 뒤, 처음으로 대본에 없는 말을 했다: \"…듣고 있어요?\""
+    ],
+    "AGENT_UTTERANCE": "천천히 말해 주세요. 지금 그쪽이 안전한지부터 듣고 싶습니다.",
+    "FIXED_NPC_ACTION": "회선 A의 발신자가 낭독을 멈췄다. 잠깐의 침묵 뒤, 처음으로 대본에 없는 말을 했다: \"…듣고 있어요?\"",
+    "SCENE_SYMPTOMS": [
+      "회선 A 발신자의 숨이 이번 교신에서 눈에 띄게 가빠졌다.",
+      "황보람이 콘솔의 녹음 표시를 다시 확인했다."
+    ],
+    "PRESENT_NPCS": [
+      {
+        "id": "caller_a",
+        "name": "회선 A 발신자"
+      },
+      {
+        "id": "jhg",
+        "name": "정해권 — 상황실장, 절차와 책임 소재에 민감"
+      },
+      {
+        "id": "hbr",
+        "name": "황보람 — 통신 담당, 콘솔 앞"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {}
+  }
+}
