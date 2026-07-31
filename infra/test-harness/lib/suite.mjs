@@ -68,6 +68,25 @@ export function validateSuite(suite) {
       const dupes = npcs.map((p) => p.id).filter((id, i, a) => a.indexOf(id) !== i);
       if (dupes.length) fatal.push(`duplicate npc ids: ${dupes.join(', ')}`);
     }
+    // Contract §3: the engine renders the fixed action and the controller's
+    // utterance to the timeline BEFORE this call, and Call 2 writes only what
+    // follows. A suite whose TIMELINE_TAIL omits them makes the prompt assert
+    // "이미 화면에 있다" about something that is not there — the model then
+    // reconstructs the exchange and misassigns speakers. Fatal, not a warning:
+    // this exact omission already cost a probe whose result was unattributable.
+    const tail = [].concat(suite.slots?.TIMELINE_TAIL ?? []).join('\n');
+    for (const [slot, label] of [
+      ['FIXED_NPC_ACTION', 'the fixed action'],
+      ['AGENT_UTTERANCE', "the controller's utterance"],
+    ]) {
+      const v = String(suite.slots?.[slot] ?? '').trim();
+      if (v && !tail.includes(v)) {
+        fatal.push(
+          `slots.TIMELINE_TAIL does not carry ${slot} — contract §3 requires ${label} to be on ` +
+            'the timeline before this call. Append it to TIMELINE_TAIL.',
+        );
+      }
+    }
   }
 
   if (suite.call_type === 'reporter') {

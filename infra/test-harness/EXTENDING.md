@@ -82,6 +82,39 @@ An unregistered `channel` is refused rather than defaulted to "anything goes" �
 a permissive default would silently disable the arm-diff check, which is the
 harness's main guarantee.
 
+## Paper gates — run these before spending a call
+
+Two kinds of unknown get confused, and confusing them is expensive.
+
+- **Closed** — determined by the artifact itself. *Does every speech act the beat
+  demands have a legal output slot? Does the suite meet the contract's input
+  requirements? Can this comparison design detect the effect size I care about?
+  Do two output fields overlap in meaning?* Reading and arithmetic settle these.
+  **A call spent here buys nothing** — the answer was already available.
+- **Open** — about model behaviour under a prompt. *Does haiku hedge perception
+  or assert it? Is the narration mineable? What is the latency?* No amount of
+  reasoning settles these. **Only calls settle these.**
+
+Exhaust the closed ones first. This program learned that the expensive way: two
+narration defects — the controller speaking with no legal speaker slot, and a
+fixed action that asks the controller a question — cost 20 measured calls to
+rediscover, and both were answerable from the suite file alone.
+
+| gate | instrument | cost |
+|---|---|---|
+| Stance labels must not echo the fixture temperament's vocabulary (A12) | `lint-stances.mjs` | free |
+| Speaker closure · beat boundary · numbers in symptoms (I12) | `lint-beat.mjs` | free |
+| Suite meets the call type's input contract | `validateSuite` — refuses the run | free |
+| Comparison power: minimum live count and MDE power **written into the pre-registration** (A20) | arithmetic, by hand | free |
+| Two output fields must not overlap in meaning | schema review, by eye | free |
+| The composed prompt reads as intended | `--print-prompt` | free |
+
+The last one is still the cheapest bug-catcher in the program.
+
+Both lints **flag rather than block** — only the author knows when an overlap is
+load-bearing. Hard contract requirements block instead, in `validateSuite`, where
+refusing is still free.
+
 ## Recipe D — a new transport
 
 When the proxy backend exists, add it beside `anthropic` and `dryrun`:
