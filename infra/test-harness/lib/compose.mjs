@@ -42,8 +42,31 @@ const renderStanceSet = (set) =>
 
 const renderTimeline = (t) => (Array.isArray(t) ? t.join('\n') : String(t ?? ''));
 
-const renderNpcs = (npcs) =>
-  (npcs ?? []).map((p) => `${p.id} — ${p.name}`).join('\n');
+// NPCs render grouped by `side` when the suite marks it. The grouping is not
+// cosmetic: room-side characters kept stepping into the controller's seat and
+// addressing the person on the line, and a prose rule alone did not stop it —
+// the model had to infer the two sides from names. Naming the sides in the
+// payload makes the boundary structural. `side` is optional; without it the
+// list renders flat, so existing suites are unaffected.
+// The labels carry the rule, not just the grouping. Stating it in the distant
+// constraint list left a residual leak; stating it beside the names removed it.
+const SIDE_LABELS = {
+  line: '회선 너머 — 통제관에게만 말한다',
+  room: '상황실 안 — 서로에게만 말한다. 회선 저쪽에는 말을 걸지 않는다',
+};
+const renderNpcs = (npcs) => {
+  const list = npcs ?? [];
+  const entry = (p) => `${p.id} — ${p.name}`;
+  if (!list.some((p) => p.side)) return list.map(entry).join('\n');
+  const groups = [];
+  for (const [side, label] of Object.entries(SIDE_LABELS)) {
+    const members = list.filter((p) => p.side === side);
+    if (members.length) groups.push(`[${label}]\n${members.map(entry).join('\n')}`);
+  }
+  const rest = list.filter((p) => !(p.side in SIDE_LABELS));
+  if (rest.length) groups.push(rest.map(entry).join('\n'));
+  return groups.join('\n\n');
+};
 
 // Slots with structure get a renderer; everything else passes through as a
 // string. Keyed by slot name, not call type — a slot renders the same way

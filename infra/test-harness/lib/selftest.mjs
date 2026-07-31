@@ -286,6 +286,24 @@ check('narration v0.2 composes against the real templates, no temperament involv
   assert.match(system, /반응이지 사건이 아니다/, 'v0.2 role framing missing');
 });
 
+// The side split is what stopped room-side NPCs from taking the controller's
+// seat (contract §3). The same rule stated only in the constraint list left it
+// at 2/5; grouping plus the rule on the label took it to 0/5 — so the label text
+// is load-bearing, not decoration.
+check('PRESENT_NPCS renders grouped by side, with the role rule on the label', () => {
+  const s = narrSuite();
+  const side = { caller_a: 'line', hbr: 'room' };
+  s.slots.PRESENT_NPCS = s.slots.PRESENT_NPCS.map((p) => ({ ...p, side: side[p.id] }));
+  const { user } = composeArm(s, 'baseline', opts);
+  assert.match(user, /\[회선 너머 — 통제관에게만 말한다\]\ncaller_a/);
+  assert.match(user, /\[상황실 안 — 서로에게만 말한다\. 회선 저쪽에는 말을 걸지 않는다\]\nhbr/);
+});
+
+check('PRESENT_NPCS without side stays flat — existing suites unaffected', () => {
+  const { user } = composeArm(narrSuite(), 'baseline', opts);
+  assert.ok(!/회선 너머/.test(user), 'grouping applied to an unmarked roster');
+});
+
 console.log('narration validation:');
 const nspec = CALL_TYPES.narration;
 const nctx = { suite: narrSuite(), arm: 'baseline' };
