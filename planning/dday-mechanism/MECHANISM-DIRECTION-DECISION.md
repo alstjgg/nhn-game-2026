@@ -3,6 +3,14 @@
 > 결정일: 2026-07-30
 > 결정자: 윤석
 > 상태: 제품 방향 결정 · 증거는 provisional
+>
+> **갱신 2026-07-31 (통합 패스, 원문 보존):** §5의 1·2는 overnight
+> 프로그램에서 완료 — placebo(P1a, referent-flat) · program-wide negative
+> control(P2, clean). 3·4는 07-30 회의에서 생략 결정. §1의 "priority UI는
+> 남길 수 있다"와 §6의 재개 조건은 07-31 결정으로 대체 — **C-STRUCT는 UI
+> 포함 완전 제거, 재개하지 않는다.** 두 독립 프로그램의 통합 판정은
+> [REPORT](REPORT.md) C-STRUCT 카드,
+> 결정 맥락은 [회의록](../meetings/2026-07-30-mechanism-close-spec-first.md).
 
 ## 1. 결정
 

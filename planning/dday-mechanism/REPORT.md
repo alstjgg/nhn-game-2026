@@ -6,8 +6,9 @@
 stance at near-deterministic rates (0/10 → 9/10), referent-specifically
 (placebo-controlled), label-independently, irreversibly (E-DISC), and
 predictably (content beats order, P8). **DDAY is a one-channel game** —
-C-STRUCT moved nothing in four probes and is closed as not viable (윤석,
-2026-07-31) — and should be built as one: mine → inject → the judgment shifts
+C-STRUCT moved nothing in four probes here and eight configurations on the
+independent program (#94); it is closed and **removed entirely, UI included**
+(07-30 회의 · 07-31 확정) — and should be built as one: mine → inject → the judgment shifts
 → a different gate opens. Edges are deterministic engine code with zero
 research risk; the scarce resource is **validated gates**, and the S1 recipe
 prices each new one at roughly an afternoon of paper work plus a 30-call
@@ -50,7 +51,7 @@ night.
 | **C-BLOCK** | **credited** (Tier A) | Referent-respecting judgment for fact + self-narration blocks (p=0.00006, replicated, label-independent, placebo-controlled); emotion + quote species vocabulary-locked pending credulity re-run |
 | **E-DISC** | **dropped** (§6.1, clean chain) | Blocks can be countered, not recalled — the doubt was read, cited, and overridden twice |
 | **E-LEV** | **unreachable as authored** | Fact legible to the model 8/10, deployed to the caller 0/10; execution grading stays off |
-| **C-STRUCT** | **closed — not viable** (윤석, 2026-07-31) | 0-for-4; the priority list is a tiebreaker, not a dial. Ships as UI flavor, not a mechanism |
+| **C-STRUCT** | **closed — 완전 제거** (07-30 회의 · 07-31 확정) | 0-for-4 here, 0-for-8 configs on the independent program (#94); a tiebreaker, not a dial. Removed entirely — no delta rows, no UI element |
 | **E-PATH** | **not credited as targeted** | Moves attention (8/10) but the placebo moves too (6/10) — frame transfer; usable as an attention switch, not a pointer |
 | **E-GOAL** | **credited via C-BLOCK** (Tier A) | Slice-mined reframe 위로 4/10 → 9/10 (p=0.029), placebo clean; C-STRUCT half null |
 | **E-CONT** | **blocked** | No `templates/reporter/` — build task, also blocks B3b program-wide |
@@ -338,13 +339,14 @@ offer-shaped stance or accept J8 under K1 as a 침묵/위로 gate.
 
 ---
 
-## C-STRUCT — priority-reorder channel · **CLOSED — not viable** (윤석, 2026-07-31)
+## C-STRUCT — priority-reorder channel · **CLOSED — 완전 제거** (07-30 회의 · 07-31 확정)
 
 **Reviewed:** P6-cstruct-J1 · P7a-epath-cstruct-J2 · P7c-egoal-cstruct-J8 ·
 P8-interference-J8 struct cell (all 2026-07-30), all authored unattended on
-윤석's line. **윤석 has independently concluded the channel is not viable;
-no re-siting is planned.** The card below stands as the evidence record and
-the closure rationale.
+윤석's line. **윤석's independent program reached the same conclusion on a
+disjoint series (§ below); no re-siting is planned, and the 07-31 decision
+removes the priority list from the game entirely — including as UI.** The
+card below stands as the evidence record and the closure rationale.
 
 ### Four probes, three gates, two axes
 
@@ -382,18 +384,50 @@ incompatible first moves between two priorities (e.g. 묻지 마세요, 물으�
 genuinely exclude each other). That is a gate-design requirement for the spec,
 not a probe rewrite.
 
+### The independent series (#94, merged 2026-07-31) — convergent, disjoint evidence
+
+윤석's program ran **8 configurations · 190 valid responses** (decision base:
+7 configs · 180) on a separate J1 gate family, sharing no probes with this
+card. Findings folded in:
+
+- **Doubling N resolves nothing.** The series' largest comparison
+  (`SOURCE-N20`, n=20/arm) drew baseline `b 14/20` · live `b 12/20` ·
+  placebo `b 11/20` — the live arm moved *against* the target. This also
+  answers this card's J8-wobble question from the other side: the ~20+/arm
+  the wobble would cost was spent there, and found nothing in the target
+  direction.
+- **Reachability ≠ exclusivity — the failure axis of the whole series.**
+  Every configuration that made the target stance reachable failed to make
+  the two readings *choose differently*: an escape option existed in every
+  config (a stance both readings can want), and when the output surface was
+  finally changed (`ORIENT-DISPATCH`), **fixture slack** — a 3h20m gap in
+  the frozen timeline — supplied the escape instead (RUNLOG A22).
+- **Stances must be enactable on the gate's output surface** (RUNLOG A18):
+  `ORIENT` produced a clean internal cost split (9/10) that never appeared
+  in the caller-facing utterance — label separation without behavior
+  separation, the same B3b legibility failure shape as E-LEV.
+
+The two programs never shared a probe, a gate rewrite, or an authoring line,
+and reached the same conclusion — which is why the closure below is a joint
+verdict, not one program's call.
+
 ### Closure
 
-윤석's not-viable conclusion converges with this card's evidence; the
-channel is closed rather than re-sited. What survives the closure:
+Both programs' conclusions converge; the channel is closed rather than
+re-sited, and per the 07-31 decision (회의록 2026-07-30, 결정 1) the priority
+list is **removed from the game entirely**. What survives the closure:
 
-1. **The tiebreaker boundary law stands as design guidance** — if the channel
-   is ever revisited, a forced-conflict gate is the siting criterion; nothing
-   measured tonight refutes the channel at such a gate, because none existed.
-2. **The priority list stays in the game as UI flavor / fiction**, not as a
-   player mechanism; the engine owes it no delta rows.
-3. The J8 struct wobble (2–6/10 between identical draws) is moot — no longer
-   worth the ~20+/arm it would cost to resolve.
+1. **The tiebreaker boundary law stands as design guidance** — nothing
+   measured refutes the channel at a forced-conflict gate, because none
+   existed; but no such gate is planned.
+2. **No priority list anywhere** — no delta rows in the engine, and no UI
+   element either (07-31, supersedes this report's earlier "UI flavor"
+   disposition). The gate-authoring lessons (no escape option · enactable
+   stances · fixture-slack audit) transfer to C-BLOCK gate authoring and go
+   into the spec's authoring guidelines.
+3. The J8 struct wobble (2–6/10 between identical draws) is moot —
+   corroborated by `SOURCE-N20`: doubled N found nothing in the target
+   direction.
 
 ---
 
@@ -490,9 +524,10 @@ same fact as C-STRUCT's nulls seen from the other side. Scope: one gate, one
 block, one priority pair; no dose response. 거래 chosen 0/90 across every J8
 arm in the program — J8's dead-row lead alongside J1's 압박.
 
-Pending 민서: the harness's `CHANNEL_SLOTS` gained
+The harness's `CHANNEL_SLOTS` gained
 `INTERFERENCE: ['BLOCKS','PRIORITY_LIST']` overnight under the runbook's
-axis-4 exception (selftest 27/27) — needs confirmation as permanent.
+axis-4 exception (selftest 27/27) — disposition 07-31: moot, no further
+probes planned; the registration stays as-is (D1, Open items).
 
 ---
 
@@ -509,6 +544,25 @@ program-wide (§5.2). No calls spent, no card.
 
 Every open item in this document, gathered for discussion. Each also remains
 in its card above, in context. C-STRUCT items are closed and do not appear.
+
+### Disposition (2026-07-31, per the 07-30 close-out meeting)
+
+The verification program is **closed** — "working game, not perfect game"
+([회의록](../meetings/2026-07-30-mechanism-close-spec-first.md)). The tables
+below stay as written for the record; their live status:
+
+| item | disposition |
+|---|---|
+| D1 | moot — no further probes planned; the `INTERFERENCE` registration stays in the harness as-is |
+| D2 | closed — program ended, no re-runs planned |
+| D3 | closed — C-STRUCT removed; no INTERFERENCE probes planned |
+| D4 | carried — reporter template folds into 윤석's Call 3 review (회의록 할 것 3); E-CONT stays cut unless that review needs the report leg |
+| D5 | superseded — scenarios are being regenerated from the 집필 브리프; survives as gate-authoring guidance (the dead-row rule) |
+| T1 | closed as research; **carried as a spec-level risk** — the one skipped item the report itself called headline. Mitigation candidates: per-gate active-block budget, and a multi-gate smoke run once the minimal engine exists (~30 calls, far cheaper than the dedicated instrument priced below) |
+| T2–T6 | closed — skipped |
+| H1 | closed — blind coding skipped with the program |
+| H2 | closed here — the UI legibility requirement is inherited by playtest |
+| H3 | **alive** — gate/texture/drop verdicts happen at spec compile (~08-02), card in front of the human (§9.3) |
 
 ### Decisions
 
