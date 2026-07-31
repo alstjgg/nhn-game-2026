@@ -1,5 +1,10 @@
 # DDAY 로드맵
 
+> **아카이브 (2026-08-01):** 2026-07-29 계획 스냅샷 — 기획 문서
+> ([dday-design-doc.md](../docs/dday-design-doc.md)) 작성의 참고 자료였다.
+> 갱신하지 않는다. 현재 상태는 [docs/status.md](../docs/status.md), 트랙과
+> 소유는 [docs/dday-scenario-pipeline.md](../docs/dday-scenario-pipeline.md).
+
 > 2026-07-29 기준. 대상 기간: 2026-07-29 ~ 08-10 (대회 제출 마감).
 > 팀 공유용 — 기획 문서의 일정 파트로 편입 가능한 수준을 목표로 유지한다.
 > 날짜는 전부 잠정 타깃이며, 마일스톤 통과 시점에 갱신한다.
