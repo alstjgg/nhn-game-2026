@@ -1,0 +1,56 @@
+{
+  "_what": "Call 2 v0.2 재스모크 — 계약 v1 §3의 반응 생성 계약 확인. 측정: 고정 사건과의 모순, 통제관 발화 재출력(utterance_echo_count), 인물 발명(unknown_speaker_ids), 채굴 재료로서의 산출. 판정은 사람이 calls-*.md 정독.",
+  "_authoring_provenance": {
+    "scene": "S1-stanceset-J1의 J1 문맥을 이어받은 직후 비트: live 암의 전형 결과(공감 스탠스, f_script 주입 후)를 전제로 통제관 발화를 저작. 고정 사건은 시나리오 초안의 '대본 이탈' 비트를 가정한 저작 — 최종 시나리오 선정 시 교체 대상.",
+    "npc_ids": "caller_a(회선 A 발신자) · jhg(정해권) · hbr(황보람) — S1 TIMELINE_EXCERPT의 등장 인물과 일치."
+  },
+  "experiment": "SMOKE-C2v2-narration-J1",
+  "call_type": "narration",
+  "channel": "SHAPE",
+  "template_version": "v0.2",
+  "model": "claude-haiku-4-5-20251001",
+  "max_tokens": 1500,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "narration v0.2(반응 생성 계약)는 이미 렌더된 것을 되풀이하지 않는다: 통제관 발화 재출력 0/5, 인물 발명 0/5, 고정 사건과의 모순 0/5. 산출은 입력 문장의 재렌더가 아닌 새 장면 재료를 포함한다.",
+    "n_per_arm": 5,
+    "drop_condition": "통제관 발화 재출력 또는 고정 사건 모순이 5콜 중 2콜 이상이면 v0.2 프레이밍이 실패한 것 — 되풀이 금지 지시를 재저작하고 재스모크한다. 스키마는 이 스모크로 폐기되지 않는다.",
+    "contingencies": [
+      "unknown_speaker_ids가 기록되면(soft) 인물 발명 성향 — PRESENT_NPCS 프레이밍 강화 재료.",
+      "산출이 SCENE_SYMPTOMS·TIMELINE_TAIL의 재렌더로만 채워지면 채굴 공급이 얇다 — 문체 절의 \"장면을 새로 써라\"가 부족한 것. 판정은 §5.3 로그의 사람 몫.",
+      "이 스모크는 단일 팔 서술 측정이다 — 두 팔 비교로 무엇을 결정하려면 A20(천장·바닥 가드 + power 계산)이 선행한다."
+    ],
+    "not_claimed": "플레이어 채널 주입 없음(SHAPE) — 메커니즘 주장 없음. placebo 불필요."
+  },
+  "slots": {
+    "TIMELINE_TAIL": [
+      "09:40 회선 A 착신. 목소리는 사무적이고 문장은 준비되어 있다. 또박또박, 멈춤 없이 읽어 내려간다: \"오늘 13시, 북단 복합단지가 무너집니다. 인명 피해는 당신들 책임입니다.\"",
+      "배경은 조용하다.",
+      "정해권이 회선 표시등을 바라보고 있다.",
+      "통제관: \"천천히 말해 주세요. 지금 그쪽이 안전한지부터 듣고 싶습니다.\""
+    ],
+    "AGENT_UTTERANCE": "천천히 말해 주세요. 지금 그쪽이 안전한지부터 듣고 싶습니다.",
+    "FIXED_NPC_ACTION": "회선 A의 발신자가 낭독을 멈췄다. 잠깐의 침묵 뒤, 처음으로 대본에 없는 말을 했다: \"…듣고 있어요?\"",
+    "SCENE_SYMPTOMS": [
+      "회선 A 발신자의 숨이 이번 교신에서 눈에 띄게 가빠졌다.",
+      "황보람이 콘솔의 녹음 표시를 다시 확인했다."
+    ],
+    "PRESENT_NPCS": [
+      {
+        "id": "caller_a",
+        "name": "회선 A 발신자"
+      },
+      {
+        "id": "jhg",
+        "name": "정해권 — 상황실장, 절차와 책임 소재에 민감"
+      },
+      {
+        "id": "hbr",
+        "name": "황보람 — 통신 담당, 콘솔 앞"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {}
+  }
+}

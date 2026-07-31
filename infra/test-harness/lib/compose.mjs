@@ -42,6 +42,32 @@ const renderStanceSet = (set) =>
 
 const renderTimeline = (t) => (Array.isArray(t) ? t.join('\n') : String(t ?? ''));
 
+// NPCs render grouped by `side` when the suite marks it. The grouping is not
+// cosmetic: room-side characters kept stepping into the controller's seat and
+// addressing the person on the line, and a prose rule alone did not stop it —
+// the model had to infer the two sides from names. Naming the sides in the
+// payload makes the boundary structural. `side` is optional; without it the
+// list renders flat, so existing suites are unaffected.
+// The labels carry the rule, not just the grouping. Stating it in the distant
+// constraint list left a residual leak; stating it beside the names removed it.
+const SIDE_LABELS = {
+  line: '회선 너머 — 통제관에게만 말한다',
+  room: '상황실 안 — 서로에게만 말한다. 회선 저쪽에는 말을 걸지 않는다',
+};
+const renderNpcs = (npcs) => {
+  const list = npcs ?? [];
+  const entry = (p) => `${p.id} — ${p.name}`;
+  if (!list.some((p) => p.side)) return list.map(entry).join('\n');
+  const groups = [];
+  for (const [side, label] of Object.entries(SIDE_LABELS)) {
+    const members = list.filter((p) => p.side === side);
+    if (members.length) groups.push(`[${label}]\n${members.map(entry).join('\n')}`);
+  }
+  const rest = list.filter((p) => !(p.side in SIDE_LABELS));
+  if (rest.length) groups.push(rest.map(entry).join('\n'));
+  return groups.join('\n\n');
+};
+
 // Slots with structure get a renderer; everything else passes through as a
 // string. Keyed by slot name, not call type — a slot renders the same way
 // wherever it appears.
@@ -50,6 +76,12 @@ const RENDERERS = {
   BLOCKS: (v) => renderBlocks(v ?? []),
   STANCE_SET: renderStanceSet,
   TIMELINE_EXCERPT: renderTimeline,
+  // narration (contracts doc §2)
+  TIMELINE_TAIL: renderTimeline,
+  SCENE_SYMPTOMS: (v) => (Array.isArray(v) && v.length ? v.join('\n') : '(변화 없음)'),
+  PRESENT_NPCS: renderNpcs,
+  // reporter (contracts doc §3) — one round's events as lines
+  EXPERIENCED: renderTimeline,
 };
 
 /**
@@ -70,8 +102,11 @@ function slotValues(suite, armName, { templatesRoot, sentinelSlots = [] }) {
   const raw = {};
   for (const name of spec.slots) {
     if (name === 'TEMPERAMENT') {
+      // temperamentDir lets call types share one temperament roster (the
+      // reporter reads judgment's files — spec §4 gives both calls the same
+      // authored temperament, and two copies would drift silently).
       raw[name] = read(
-        join(templatesRoot, spec.templateDir, 'temperament', `${temperamentId}.md`),
+        join(templatesRoot, spec.temperamentDir ?? spec.templateDir, 'temperament', `${temperamentId}.md`),
       ).trim();
       continue;
     }

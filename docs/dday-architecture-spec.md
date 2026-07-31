@@ -20,7 +20,7 @@ never controls the agent's actions; the player shapes the agent's **judgment**.
 ```
 observe (timeline: calls, CCTV, NPC dialogue)
   → mine sentence blocks (from timeline + the agent's self-written reports)
-    → compose the agent prompt (inject blocks, reorder priorities)
+    → compose the agent prompt (inject blocks)
       → the agent judges at the next gate (chooses a stance)
         → the world advances deterministically (§2, §3)
           → new material is generated (narration, NPC dialogue, reports)
@@ -126,7 +126,8 @@ the player has shaped**.
   verified mechanism from the mechanism spec. Temperament is not a shift
   lever — it is the authored source of the default X and of the conditions
   blocks trip (I13). A gate that needs a new mechanism type is a cost, not a
-  flourish.
+  flourish. Beats between gates carry their own authoring constraint — a fixed
+  NPC action may not demand a reply from the agent (§4, call 2).
 
 ## 3. State engine
 
@@ -236,27 +237,51 @@ forced through a tool-use schema. Four call types exist; no others.
 | # | Call | System layer (proxy-owned) | In-band payload | Output (tool-use schema) |
 |---|---|---|---|---|
 | 1 | **Judgment** | Default prompt + the scenario's **authored** temperament definition (hidden from the player, I13) | Situation, injected blocks, priority ordering, gate question + stance set | Field order is bound (§9): `inner_note` → `stance` (∈ gate's set) → `because_referent` (the named target) → `because_block_ids` (the cited ids) → `rejected_stance` (∈ set) → `rejected_reason` → `utterance`. **All flat — no nested objects**: as objects, `because` and `rejected` were emitted malformed on 7 of 17 calls, arm-correlated (RB1, 2026-07-30; mechanism run log A7) |
-| 2 | **Narration / NPC dialogue** | Narrator instructions | The gate's **fixed NPC action** (constraint), the agent's actual utterance (context), minimal scene state | Timeline entry text + NPC dialogue lines. One bundled call per beat, not one per NPC |
+| 2 | **Narration / NPC dialogue** | Narrator instructions | Timeline tail (**already containing the engine-rendered fixed action and the agent's utterance**), the fixed NPC action as a *non-contradiction* constraint, scene state as rendered symptoms, the beat's present-NPC roster | **Reaction only** — timeline entries for what follows, plus NPC dialogue lines keyed to a roster id. One bundled call per beat, not one per NPC. It does **not** narrate the fixed action or the agent's utterance: both are deterministic data the engine renders itself (latency rule 1) |
 | 3 | **Reporter** | Reporter instructions + temperament | Round events **including the judgment call's free output** (utterance, inner_note) and generated NPC dialogue | The agent's self-written report (markdown body) |
 | 4 | **Grader** (dormant) | — | — | Reserved; activated only via the §3 upgrade slot |
 
 - **Call 2 is load-bearing, not decoration.** Its output lands in the
   timeline and is minable (W2), so bland narration thins the player's supply
-  chain regardless of how valid the mechanisms are — and its hard failure
-  mode is **constraint violation**: narrating past the gate's fixed NPC
-  action splits story from state. Both properties (mineable yield,
-  constraint compliance) are test-program material, measured alongside the
-  in-situ runs.
+  chain regardless of how valid the mechanisms are. Mineable yield is
+  test-program material, measured alongside the in-situ runs.
+
+- **Call 2 generates the reaction, not the event** (amended 2026-07-31; call
+  contract §3). The fixed NPC action and the agent's utterance are authored or
+  already-emitted data, so the engine renders them and Call 2 writes only what
+  follows. This downgrades the call's hard failure mode: it was *constraint
+  violation* — narrating past the fixed action splits story from state — and is
+  now *contradiction*, a local defect, because the call is no longer the thing
+  that realizes the event. The earlier framing asked the call to restate what
+  was already on screen, and measurably produced restatement defects
+  (SMOKE-C2, 2026-07-31).
+
+- **Beat-boundary constraint — a fixed action must not demand a reply from
+  the agent.** Call 2 can only voice the beat's present-NPC roster, and the
+  agent is deliberately not on it (the agent's speech is call 1's `utterance`).
+  A fixed action that asks the agent a question therefore leaves a hole in the
+  dialogue that the call fills with whoever it *can* voice: the asker answers
+  itself, or a bystander NPC starts acting as the agent. That is the same
+  damage as any free-text state leak — an NPC standing in for the agent
+  extracts information the state engine never sees (I3, W4) — and no output
+  validator can catch it, because the substitute line is well-formed. Author
+  the answer as the next beat's call-1 `utterance`, or make the moment a gate.
+  Measured: misassignment persisted at 4/5 after the payload-side fix was
+  isolated as a single variable (SMOKE-C2v3, 2026-07-31).
 
 - **System-prompt ownership**: the proxy owns every system layer. Player-
-  composed material travels in-band only; the one system-layer control the
-  player has is a permutation of the proxy-authored priority list (I7). This
-  is simultaneously the production security boundary and the test harness's
-  out-of-band/in-band separation — tests mirror this shape.
-- **Latency hiding (six rules).** Measured judgment latency is ~19–75s on
-  haiku, mean ~38s, rising as the payload fills (mechanism plan §1 — the
-  30–49s of earlier drafts was a mid-range reading, not the ceiling). The game
-  absorbs it by design, not by shrinking prompts alone:
+  composed material travels in-band only, and **no system-layer section is
+  player-reachable at all** (I7). This is simultaneously the production
+  security boundary and the test harness's out-of-band/in-band separation —
+  tests mirror this shape.
+- **Latency hiding (six rules).** Judgment latency **at production payload
+  size is not yet measured**. The ~19–75s / mean ~38s figure carried by
+  earlier drafts timed subagent round-trips rather than API calls and is
+  **withdrawn** (run log A4). Direct-API probes run substantially faster, but
+  under test payloads and without the proxy hop — A4's operating rule forbids
+  re-sizing this budget on them, so the number is left open until the engine
+  is attached and a production-shaped call can be timed. The game absorbs
+  latency by design, not by shrinking prompts alone:
   1. Deterministic events are authored data and render instantly — the
      screen stays alive without the LLM.
   2. Gates are known in advance on the timeline — **prefetch**: the player's
@@ -264,10 +289,15 @@ forced through a tool-use schema. Four call types exist; no others.
   3. Waiting is diegetic — "…awaiting radio reply" is suspense, not lag.
   4. The longest call (the self-written report) hides behind the tally
      screen (survivor count-up).
-  5. Report generation streams (SSE) into a typing-effect UI — the agent
-     visibly writes its report, and token arrival rate *is* the typewriter.
-     Combined with rule 4: the tally screen absorbs time-to-first-token,
-     the streaming typewriter absorbs the rest.
+  5. The report plays into a typing-effect UI — the agent visibly writes its
+     report. **The typewriter is client-driven, replaying a completed
+     response at a controlled rate** (call contract §7-6, 2026-07-31). SSE
+     remains available as a schema-compatible upgrade — `report_body` is the
+     last generated field for exactly that reason — but is not built: the
+     deployed path (API Gateway → Lambda → Bedrock Converse) buffers
+     responses, so streaming would need a different transport. Consequence
+     for rule 4: **the tally screen must absorb the whole generation, not
+     only time-to-first-token.**
   6. Mid-action play never blocks on an LLM response (repo hard rule;
      invariant I11).
   Prompt length remains a constrained variable — a longer prompt spends
@@ -280,19 +310,32 @@ forced through a tool-use schema. Four call types exist; no others.
 ```
                  ┌──────────────────────────────────────────────┐
                  │                  TIMELINE                    │
- fixed events ──→│  scripted beats · NPC dialogue (call 2)      │
- judgment call ─→│  agent utterance · (inner_note → report only)│
+ scripted      ─→│  scripted beats · fixed NPC actions          │
+ events          │                                              │
+ judgment (1)  ─→│  agent utterance   (inner_note → report only)│
+ narration (2) ─→│  reaction entries · NPC dialogue lines       │
                  └──────────────┬───────────────────────────────┘
-                                │ round events + free output
+                                │ round events + judgment free output
                                 ↓
-                        REPORTER (call 3) → SELF-WRITTEN REPORT
-                                │
-                                ↓
-                  PLAYER MINES BLOCKS (timeline + reports)
-                                │
-                                ↓
+                        REPORTER (call 3)
+                                ├──→ facts       → objective-log UI
+                                └──→ report_body → report UI (typewriter)
+                                          │
+                                          ↓
+                  PLAYER MINES BLOCKS (timeline + report_body)
+                                          │
+                                          ↓
                   PROMPT COMPOSITION → next JUDGMENT (call 1)
 ```
+
+The engine — not call 2 — writes the deterministic material into the timeline:
+scripted beats, the gate's fixed NPC action, and the agent's `utterance` as it
+comes off call 1. Call 2 appends only the **reaction** to what is already
+there (§4). The timeline is then also the context both generative calls read
+back — call 2 takes its tail, call 3 the round's events — so the loop closes
+on it. The slot-by-slot supplier and consumer map lives one level down, in
+[dday-call-contracts.md](./dday-call-contracts.md) §6; this section fixes only
+which wirings must exist.
 
 **Wirings that must never be cut** (each one, if severed, silently degrades
 the game into a fixed puzzle):
@@ -307,6 +350,24 @@ the game into a fixed puzzle):
 - **W4** — no free text ever reaches the state engine. The free layer's only
   actuator is the player (via mining and re-injection).
 
+**Wiring status (2026-07-31).** W1·W2·W3 are **verified end to end**, not
+asserted: a single beat was driven through all three calls in sequence with
+each call's payload built from the previous call's real output — judgment →
+narration (`AGENT_UTTERANCE` ← `utterance`, timeline tail ← engine-rendered
+fixed action) → reporter (`EXPERIENCED` ← script events + `utterance` +
+`inner_note` + narration output) — and the resulting timeline was rendered as
+the surface the next beat would mine
+([BEAT-drive transcript](../planning/dday-mechanism/runs/BEAT-drive/beat.md);
+driver `infra/test-harness/drive-beat.mjs`). Two limits on that evidence:
+
+- **W4 is unverified because there is nothing yet to violate it.** The run
+  records the stance and stops — no deltas, no buckets, no routing. W4 becomes
+  testable when the minimal engine (§3) exists, and it is the first thing that
+  run must check.
+- **The run proves the wiring, not the yield.** Whether the generated surface
+  is *worth* mining — mineable yield, non-contradiction with the fixed action —
+  is §4's Call 2 question and is measured separately.
+
 ## 6. Prompt surface
 
 The agent's default prompt is the game's playing field. Its sectioned
@@ -316,15 +377,13 @@ structure is fixed here; its contents are filled by the mechanism spec
 ### 6.1 Sections and persona layering
 
 Two layers, and the split *is* the security boundary of §4: the system layer is
-proxy-owned, and player-composed material travels in-band only. The one
-system-layer control the player has is the priority list, and it is a
-**permutation of proxy-authored content, never player bytes** — the player
-reorders entries the proxy wrote and enumerated; nothing the player composes
-enters the system layer (I7).
+proxy-owned, and player-composed material travels in-band only. Nothing the
+player composes **or selects** enters the system layer (I7); the player's only
+prompt operation is block injection, and it is in-band.
 
 | Layer | Sections | Player-reachable |
 |---|---|---|
-| System — base | role · stakes · perception · flaw · incident · accountability · **priority list** · judgment contract | the priority list only (reorder) |
+| System — base | role · stakes · perception · flaw · incident · accountability · **priority list** · judgment contract | **never** — proxy-authored and fixed |
 | System — temperament | one default disposition + ≤2 conditional clauses | **never** (I13) |
 | In-band payload | situation · **known blocks** · gate question + stance set | known blocks only (inject) |
 
@@ -380,15 +439,18 @@ it is a separate out-of-band layer composed with it (§4).
 - **Canonical axis vocabulary.** One shared dictionary of axis terms (fear,
   authority, threat, …) feeds temperament conditional clauses, priority-list
   items, and block tagging (§9 block-pool row) — so vocabulary-alignment
-  interactions between reordering and temperament clauses are *authored*,
-  never accidental.
+  interactions between an injected block and the temperament clauses it may
+  trip are *authored*, never accidental. The priority list is inside this
+  dictionary's scope because it is prompt text the blocks sit beside, not
+  because the player can move it (I7).
 
 ### 6.3 Player surface and size
 
-- **Player-facing controls map 1:1 onto prompt operations**: inject block →
-  a line in *known blocks*; reorder → permutation of the *priority list*.
-  Nothing else on the prompt is player-reachable — in particular
-  **temperament**: hidden and immutable to the player (I13). The player
+- **The player-facing control maps 1:1 onto a prompt operation**: inject
+  block → a line in *known blocks*. That is the only one. Nothing else on the
+  prompt is player-reachable — in particular the **priority list**
+  (proxy-authored and fixed; the reorder channel closed with C-STRUCT,
+  2026-07-31) and **temperament**: hidden and immutable to the player (I13). The player
   reaches its clauses only indirectly, by injecting vocabulary-aligned
   blocks that trip their conditions, and reads it only through the clues
   the self-written report leaks (the deduction layer).
@@ -443,9 +505,13 @@ it works.
 - **I5** Stance sets are per-gate content; only the output *format* is
   global.
 - **I6** Edges are deterministic: same stance + same state ⇒ same routing.
-- **I7** System layers are proxy-owned; player-composed bytes travel
-  in-band only. The player may *select and permute* proxy-authored system
-  content (the priority list) but never writes into it.
+- **I7** System layers are proxy-owned and **not player-reachable in any
+  form — neither written nor reordered**. Player-composed bytes travel
+  in-band only. (Amended 2026-07-31: the former "select and permute" half
+  named the priority-reorder channel, closed with C-STRUCT. The priority-list
+  *section* remains, proxy-authored and fixed — what died is the player's
+  path to it, not the section. This narrows the invariant; nothing that
+  satisfied the old I7 violates the new one.)
 - **I8** The judgment call never sees the hidden truth or the graph.
 - **I9** Every gate is gate-standard-form expressible and instantiates a
   verified mechanism.

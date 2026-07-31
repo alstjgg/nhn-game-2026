@@ -188,18 +188,211 @@ const judgment = {
   },
 };
 
-// Declared, not yet exercised. The reporter call emits prose, so it has no tool
-// and its "validation" is structural (sections present, no invented facts is a
-// human check). Wire it when E-CONT screening needs the report leg.
-const reporter = {
-  templateDir: 'reporter',
-  slots: ['TEMPERAMENT', 'EXPERIENCED'],
-  buildTool: () => null,
-  validate: (text) => (String(text ?? '').trim() ? [] : ['empty report body']),
-  summarize: (text) => ({ body_chars: String(text ?? '').length }),
+// ── Call 2 — Narration / NPC dialogue ───────────────────────────────────────
+// Contract: docs/dday-call-contracts.md §2. One bundled call per beat (spec §4).
+// Load-bearing properties — mineable yield and constraint compliance — are
+// test-program material; the schema structures the output, the human checks the
+// constraint. Output units match mining units: timeline_entries is an array of
+// sentences (I1/W3 — the mining UI operates on these directly, no parsing).
+
+/** NPC ids present in this beat — the only legal npc_lines speakers. */
+const npcIds = (suite) => (suite.slots.PRESENT_NPCS ?? []).map((p) => p.id);
+
+/** "npc_id: 대사" — flat-string encoding because nested objects are banned (A7). */
+const NPC_LINE = /^(\S+):\s*(.+)$/;
+
+/**
+ * Verbatim re-emission detector, NOT a paraphrase detector. The observed failure
+ * is an exact copy of the controller's utterance handed to an NPC, so a shared
+ * 15-char normalized window is enough and stays explainable. A near-miss it
+ * cannot catch is a soft observation lost, never a wrong retry.
+ */
+const normLine = (s) => String(s ?? '').replace(/[\s"'“”‘’.,!?…·:;-]/g, '');
+function echoesUtterance(line, utterance) {
+  const a = normLine(line);
+  const b = normLine(utterance);
+  if (a.length < 15 || b.length < 15) return false;
+  return a.includes(b.slice(0, 15)) || b.includes(a.slice(0, 15));
+}
+
+const narration = {
+  templateDir: 'narration',
+  slots: [
+    'TIMELINE_TAIL',
+    'AGENT_UTTERANCE',
+    'FIXED_NPC_ACTION',
+    'SCENE_SYMPTOMS',
+    'PRESENT_NPCS',
+  ],
+
+  buildTool(suite) {
+    if (npcIds(suite).length < 1) throw new Error('narration: slots.PRESENT_NPCS needs >= 1 npc');
+    return {
+      name: 'narration',
+      description: '이 비트의 반응을 기록한다. 정확히 한 번만 호출한다.',
+      input_schema: {
+        type: 'object',
+        properties: {
+          timeline_entries: {
+            type: 'array',
+            items: { type: 'string' },
+            description:
+              '고정 사건에 뒤따르는 반응과 장면의 결. 항목당 정확히 한 문장. 이미 타임라인에 있는 것(고정 사건·통제관 발화)은 다시 쓰지 않는다.',
+          },
+          npc_lines: {
+            type: 'array',
+            items: { type: 'string' },
+            description:
+              '이 비트의 대사. 각 항목은 "인물id: 대사" 형식. [현장의 인물]에 있는 id만 쓴다. 대사가 없으면 빈 배열.',
+          },
+        },
+        required: ['timeline_entries', 'npc_lines'],
+      },
+    };
+  },
+
+  validate(input, { suite }) {
+    const problems = [];
+    if (!input || typeof input !== 'object') return ['response was not an object'];
+
+    if (!Array.isArray(input.timeline_entries)) problems.push('timeline_entries not an array');
+    else if (!input.timeline_entries.length) problems.push('timeline_entries empty');
+    else if (input.timeline_entries.some((e) => !String(e ?? '').trim()))
+      problems.push('timeline_entries has an empty entry');
+
+    if (!Array.isArray(input.npc_lines)) problems.push('npc_lines not an array');
+    else {
+      const legal = new Set(npcIds(suite));
+      for (const line of input.npc_lines) {
+        const m = String(line ?? '').match(NPC_LINE);
+        // A missing "id:" prefix is form breakage — the line cannot be
+        // attributed, so it cannot go on the timeline and W2 mining is dead on
+        // it. Hard, retry.
+        if (!m) problems.push(`npc_lines entry has no "id: 대사" prefix: ${String(line).slice(0, 40)}`);
+        // An invented speaker is an observation about the model, not a
+        // malformed response — record it, never retry (retrying erases the
+        // observation). Production drops the offending line instead; see the
+        // contracts doc §3. Same grading as judgment's hallucinated block ids.
+        else if (!legal.has(m[1])) problems.push(`__soft__ npc_lines unknown speaker: ${m[1]}`);
+        // The controller is not in PRESENT_NPCS, so re-emitting its utterance
+        // as someone's dialogue passes the speaker check with a legal id. Soft:
+        // it is a measurement of restatement tendency, and the line is
+        // droppable in production the same way.
+        else if (m && echoesUtterance(m[2], suite.slots?.AGENT_UTTERANCE)) {
+          problems.push(`__soft__ npc_lines re-emits the controller utterance as ${m[1]}`);
+        }
+      }
+    }
+    return problems;
+  },
+
+  summarize(input, { suite }) {
+    const legal = new Set(npcIds(suite));
+    const entries = input.timeline_entries ?? [];
+    const lines = input.npc_lines ?? [];
+    const parsed = lines.map((l) => String(l ?? '').match(NPC_LINE)).filter(Boolean);
+    const speakers = parsed.map((m) => m[1]);
+    return {
+      // Mineable-yield inputs for the §5.3 mineability log — counts, not verdicts.
+      entry_count: entries.length,
+      entry_chars: entries.join('').length,
+      npc_line_count: lines.length,
+      speakers,
+      unknown_speaker_ids: speakers.filter((id) => !legal.has(id)),
+      utterance_echo_count: parsed.filter((m) =>
+        echoesUtterance(m[2], suite.slots?.AGENT_UTTERANCE),
+      ).length,
+    };
+  },
+
+  dryRunPayload(suite) {
+    const ids = npcIds(suite);
+    return {
+      timeline_entries: ['(dry-run) 반응 서술 자리.'],
+      npc_lines: ids.length ? [`${ids[0]}: (dry-run) 대사 자리.`] : [],
+    };
+  },
 };
 
-export const CALL_TYPES = { judgment, reporter };
+// ── Call 3 — Reporter ───────────────────────────────────────────────────────
+// Contract: docs/dday-call-contracts.md §3. 사실/판단 분리는 2안(스키마 확장,
+// 07-31 윤석): facts = 객관로그 행, report_body = 자필 보고서. 실용성이 없으면
+// 폐기하고 3안(엔진 로그)으로 격하 — 스모크의 drop_condition이 그 게이트다.
+//
+// Field order is load-bearing twice over: facts-first is the extraction anchor
+// (본문 오염 감소 가설), and report_body-LAST is what keeps the SSE option open
+// (input_json_delta의 꼬리 = 본문 — contracts doc §SSE). Do not reorder.
+//
+// Whether each facts row is actually factual (no judgment/interpretation mixed
+// in) is not machine-checkable — that is the smoke's human check, per the
+// documented precedent (slice 모순을 보고서 5편 중 3편이 흡수).
+const reporter = {
+  templateDir: 'reporter',
+  // Temperament files are per-scenario shared assets — the reporter reads the
+  // SAME file the judgment call reads (spec §4: reporter system = instructions
+  // + temperament). One source; duplicating them under templates/reporter/
+  // would let the two calls' temperaments drift apart silently.
+  temperamentDir: 'judgment',
+  slots: ['TEMPERAMENT', 'EXPERIENCED', 'REPORT_GUIDANCE'],
+
+  buildTool() {
+    return {
+      name: 'reporter',
+      description: '이번 라운드의 기록을 남긴다. 정확히 한 번만 호출한다.',
+      input_schema: {
+        type: 'object',
+        properties: {
+          facts: {
+            type: 'array',
+            items: { type: 'string' },
+            description:
+              '객관 기록. 이 라운드에 실제로 일어났거나 관찰된 것만, 한 항목에 한 문장. 생각·해석·평가 금지.',
+          },
+          report_body: {
+            type: 'string',
+            description:
+              '자필 보고서 (markdown). 생각과 판단의 자리 — 무엇이 걸렸고, 왜 그렇게 판단했는지.',
+          },
+        },
+        required: ['facts', 'report_body'],
+      },
+    };
+  },
+
+  validate(input) {
+    const problems = [];
+    if (!input || typeof input !== 'object') return ['response was not an object'];
+    if (!Array.isArray(input.facts)) problems.push('facts not an array');
+    // A round always contains observable events (the EXPERIENCED slot is never
+    // empty), so an empty facts array is form breakage, not an observation.
+    else if (!input.facts.some((f) => String(f ?? '').trim())) problems.push('facts empty');
+    else if (input.facts.some((f) => !String(f ?? '').trim())) problems.push('facts has an empty entry');
+    if (!input.report_body?.trim()) problems.push('report_body empty');
+    return problems;
+  },
+
+  summarize(input) {
+    const facts = (input.facts ?? []).filter((f) => String(f ?? '').trim());
+    const body = input.report_body ?? '';
+    return {
+      facts_count: facts.length,
+      facts_chars: facts.join('').length,
+      body_chars: body.length,
+      // Crude sentence count for the provisional 20~30문장 policy (contracts
+      // doc §분량) — a tuning input, never a validation gate.
+      body_sentences_approx: body.split(/[.!?…]\s+|\n+/).filter((s) => s.trim()).length,
+    };
+  },
+
+  dryRunPayload() {
+    return {
+      facts: ['(dry-run) 객관 기록 행 자리.'],
+      report_body: '(dry-run) 자필 보고서 본문 자리.',
+    };
+  },
+};
+
+export const CALL_TYPES = { judgment, narration, reporter };
 
 /**
  * Slots a probe of a given kind is permitted to vary. Mirrors deep-test plan

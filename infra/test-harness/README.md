@@ -47,6 +47,18 @@ Do the first three before the fourth every time. `--print-prompt` is the cheapes
 bug-catcher in the program: most authoring mistakes are visible in the composed
 text.
 
+Paper lints, also free — run them on the suite before any of the above:
+
+```bash
+node lint-stances.mjs <suite.json>   # stance labels vs the fixture temperament (A12)
+node lint-beat.mjs <suite.json>      # narration: speaker closure · beat boundary · I12
+```
+
+Both flag rather than block. Why these come first, and the full list of free
+checks, is in [EXTENDING.md § Paper gates](./EXTENDING.md#paper-gates--run-these-before-spending-a-call)
+— the short version is that a question the suite file already answers should
+never be bought with a call.
+
 ### Options
 
 | flag | effect |
@@ -148,8 +160,12 @@ const myCall = {
 ```
 
 `run.mjs`, the arm-diff check, the recorder, and the CLI are untouched. The
-`reporter` entry is already declared as a prose-output example (no tool) for when
-E-CONT screening needs the report leg; wire its templates when that lands.
+`narration` and `reporter` call types are wired this way (templates at
+`templates/narration/` and `templates/reporter/`, both v0.1) — their contracts,
+and the decisions behind their field lists, live in
+[docs/dday-call-contracts.md](../../docs/dday-call-contracts.md). First smoke
+suites: `planning/dday-mechanism/suites/SMOKE-C2*-narration-J1.json` and
+`SMOKE-C3-reporter-J1.json`.
 
 Two things to keep in mind when adding one:
 
