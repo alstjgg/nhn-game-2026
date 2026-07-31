@@ -528,10 +528,12 @@ it works.
 Deliberately unbound slots. Each has an owner and a binding moment; none may
 be bound implicitly by whoever touches it first.
 
-**Owner letters** (workstream codes; roster and dates in
-[dday-roadmap.md](./dday-roadmap.md) §2): **A** this spec · **G** planning
-document · **L** LLM layer / proxy · **D** agent default prompt · **S**
-scenario generation · **P** scenario verification · **U** UI/UX.
+**Owner letters** (historical workstream codes from the archived 07-29
+[roadmap](../planning/dday-roadmap.md) §2; current ownership is the three
+tracks of [dday-scenario-pipeline.md](./dday-scenario-pipeline.md) §1):
+**A** this spec · **G** planning document · **L** LLM layer / proxy · **D**
+agent default prompt · **S** scenario generation · **P** scenario
+verification · **U** UI/UX.
 
 | Parameter | Bound by | When |
 |---|---|---|
