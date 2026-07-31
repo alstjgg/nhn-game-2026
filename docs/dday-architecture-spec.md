@@ -310,19 +310,32 @@ forced through a tool-use schema. Four call types exist; no others.
 ```
                  ┌──────────────────────────────────────────────┐
                  │                  TIMELINE                    │
- fixed events ──→│  scripted beats · NPC dialogue (call 2)      │
- judgment call ─→│  agent utterance · (inner_note → report only)│
+ scripted      ─→│  scripted beats · fixed NPC actions          │
+ events          │                                              │
+ judgment (1)  ─→│  agent utterance   (inner_note → report only)│
+ narration (2) ─→│  reaction entries · NPC dialogue lines       │
                  └──────────────┬───────────────────────────────┘
-                                │ round events + free output
+                                │ round events + judgment free output
                                 ↓
-                        REPORTER (call 3) → SELF-WRITTEN REPORT
-                                │
-                                ↓
-                  PLAYER MINES BLOCKS (timeline + reports)
-                                │
-                                ↓
+                        REPORTER (call 3)
+                                ├──→ facts       → objective-log UI
+                                └──→ report_body → report UI (typewriter)
+                                          │
+                                          ↓
+                  PLAYER MINES BLOCKS (timeline + report_body)
+                                          │
+                                          ↓
                   PROMPT COMPOSITION → next JUDGMENT (call 1)
 ```
+
+The engine — not call 2 — writes the deterministic material into the timeline:
+scripted beats, the gate's fixed NPC action, and the agent's `utterance` as it
+comes off call 1. Call 2 appends only the **reaction** to what is already
+there (§4). The timeline is then also the context both generative calls read
+back — call 2 takes its tail, call 3 the round's events — so the loop closes
+on it. The slot-by-slot supplier and consumer map lives one level down, in
+[dday-call-contracts.md](./dday-call-contracts.md) §6; this section fixes only
+which wirings must exist.
 
 **Wirings that must never be cut** (each one, if severed, silently degrades
 the game into a fixed puzzle):
@@ -336,6 +349,24 @@ the game into a fixed puzzle):
   text* of timeline and reports, not on a pre-authored subset.
 - **W4** — no free text ever reaches the state engine. The free layer's only
   actuator is the player (via mining and re-injection).
+
+**Wiring status (2026-07-31).** W1·W2·W3 are **verified end to end**, not
+asserted: a single beat was driven through all three calls in sequence with
+each call's payload built from the previous call's real output — judgment →
+narration (`AGENT_UTTERANCE` ← `utterance`, timeline tail ← engine-rendered
+fixed action) → reporter (`EXPERIENCED` ← script events + `utterance` +
+`inner_note` + narration output) — and the resulting timeline was rendered as
+the surface the next beat would mine
+([BEAT-drive transcript](../planning/dday-mechanism/runs/BEAT-drive/beat.md);
+driver `infra/test-harness/drive-beat.mjs`). Two limits on that evidence:
+
+- **W4 is unverified because there is nothing yet to violate it.** The run
+  records the stance and stops — no deltas, no buckets, no routing. W4 becomes
+  testable when the minimal engine (§3) exists, and it is the first thing that
+  run must check.
+- **The run proves the wiring, not the yield.** Whether the generated surface
+  is *worth* mining — mineable yield, non-contradiction with the fixed action —
+  is §4's Call 2 question and is measured separately.
 
 ## 6. Prompt surface
 
