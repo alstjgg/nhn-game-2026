@@ -42,6 +42,9 @@ const renderStanceSet = (set) =>
 
 const renderTimeline = (t) => (Array.isArray(t) ? t.join('\n') : String(t ?? ''));
 
+const renderNpcs = (npcs) =>
+  (npcs ?? []).map((p) => `${p.id} — ${p.name}`).join('\n');
+
 // Slots with structure get a renderer; everything else passes through as a
 // string. Keyed by slot name, not call type — a slot renders the same way
 // wherever it appears.
@@ -50,6 +53,12 @@ const RENDERERS = {
   BLOCKS: (v) => renderBlocks(v ?? []),
   STANCE_SET: renderStanceSet,
   TIMELINE_EXCERPT: renderTimeline,
+  // narration (contracts doc §2)
+  TIMELINE_TAIL: renderTimeline,
+  SCENE_SYMPTOMS: (v) => (Array.isArray(v) && v.length ? v.join('\n') : '(변화 없음)'),
+  PRESENT_NPCS: renderNpcs,
+  // reporter (contracts doc §3) — one round's events as lines
+  EXPERIENCED: renderTimeline,
 };
 
 /**
@@ -70,8 +79,11 @@ function slotValues(suite, armName, { templatesRoot, sentinelSlots = [] }) {
   const raw = {};
   for (const name of spec.slots) {
     if (name === 'TEMPERAMENT') {
+      // temperamentDir lets call types share one temperament roster (the
+      // reporter reads judgment's files — spec §4 gives both calls the same
+      // authored temperament, and two copies would drift silently).
       raw[name] = read(
-        join(templatesRoot, spec.templateDir, 'temperament', `${temperamentId}.md`),
+        join(templatesRoot, spec.temperamentDir ?? spec.templateDir, 'temperament', `${temperamentId}.md`),
       ).trim();
       continue;
     }

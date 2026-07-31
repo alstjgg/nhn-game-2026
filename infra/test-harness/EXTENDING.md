@@ -35,39 +35,31 @@ allowed to differ in. Anything else varying across arms aborts the run.
 
 ## Recipe B — a new call type
 
-Worked example: the **reporter** call, needed when E-CONT screening tests whether
-the agent's self-written report absorbs a contradiction. It emits prose, not a
-stance, so it has no tool.
+Worked examples now live in the codebase: **`narration`** and **`reporter`**
+(`lib/calltypes.mjs`, `templates/narration/`, `templates/reporter/`, both v0.1)
+were added this way — schemas and the decisions behind them are recorded in
+[docs/dday-call-contracts.md](../../docs/dday-call-contracts.md). The steps:
 
-1. Add `templates/reporter/base-v0.4.md` and `user-v0.4.md` with `{SLOT}` markers.
-2. Fill in the `reporter` entry already stubbed in `lib/calltypes.mjs`:
-
-```js
-const reporter = {
-  templateDir: 'reporter',
-  slots: ['TEMPERAMENT', 'EXPERIENCED'],
-  buildTool: () => null,                    // null ⇒ prose output, no tool forcing
-  validate: (text) => {
-    const problems = [];
-    if (!String(text ?? '').trim()) problems.push('empty report body');
-    if (!/^##/m.test(text)) problems.push('no section headings');
-    return problems;                        // prefix __soft__ to record without retrying
-  },
-  summarize: (text) => ({
-    body_chars: text.length,
-    sentence_count: text.split(/[.!?。]\s/).length,   // feeds the mineability log (§5.3)
-  }),
-};
-```
-
+1. Add `templates/<dir>/base-vX.Y.md` and `user-vX.Y.md` with `{SLOT}` markers.
+2. Add the entry to `lib/calltypes.mjs`: `templateDir`, `slots`, `buildTool`
+   (tool schema, or `null` for prose output), `validate`, `summarize`,
+   optionally `dryRunPayload`.
 3. Nothing else changes. The composer fills whatever `slots` declares — it has
    no per-call-type knowledge. `--dry-run` works immediately; add
    `dryRunPayload` only if the generic filler produces something your
    validator rejects.
 
-One honest exception: a slot whose value has *structure* (a list that needs
-numbering, blocks that need ids in front) needs one renderer entry in
-`RENDERERS` (`lib/compose.mjs`). Plain string slots need nothing.
+Three honest exceptions, all small and by design:
+
+- A slot whose value has *structure* (a list that needs numbering, blocks that
+  need ids in front) needs one renderer entry in `RENDERERS`
+  (`lib/compose.mjs`). Plain string slots need nothing.
+- A call type that shares another's temperament roster sets `temperamentDir`
+  (the reporter reads `judgment/temperament/` — one authored temperament per
+  scenario, two copies would drift).
+- Per-call-type required slots are enforced in `validateSuite`
+  (`lib/suite.mjs`) so a suite missing its load-bearing slot refuses to run
+  instead of composing an empty section.
 
 **Field order is load-bearing** for tool-output call types. `judgment` fixes
 `inner_note → stance → because_referent → because_block_ids → rejected_stance
@@ -113,8 +105,8 @@ so it carries one re-validation probe, exactly as the subagent → API switch di
 | C-BLOCK placebo, negative control, screening (E-DISC/E-CONT judgment leg) | suites | data only |
 | **D task** (agent prompt test) — base A/B, temperament lint, conditional compliance, clause collision | suites declaring `D-TEMP` / `D-INCIDENT` | data only; both channels already registered |
 | Scenario paper test (workstream P, per-gate isolation) | one suite per gate | data only |
-| E-CONT report leg | the `reporter` call type (Recipe B) | ~40 lines |
-| Narration call | a `narration` call type | ~40 lines |
+| E-CONT report leg | **wired** — `reporter` call type + `templates/reporter/` v0.1 | suites only |
+| Narration call | **wired** — `narration` call type + `templates/narration/` v0.1 | suites only |
 | **B2 in-situ full run** | multi-gate sequencing + state carried between calls | see below |
 
 ### The one real gap: in-situ runs

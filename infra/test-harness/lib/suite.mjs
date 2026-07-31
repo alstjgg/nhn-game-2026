@@ -56,5 +56,23 @@ export function validateSuite(suite) {
     }
   }
 
+  if (suite.call_type === 'narration') {
+    need(suite.slots?.FIXED_NPC_ACTION, 'slots.FIXED_NPC_ACTION missing — the constraint is the point of the call (spec §4)');
+    need(suite.slots?.AGENT_UTTERANCE, 'slots.AGENT_UTTERANCE missing — the W1 context input');
+    const npcs = suite.slots?.PRESENT_NPCS;
+    need(
+      Array.isArray(npcs) && npcs.length >= 1 && npcs.every((p) => p?.id && p?.name),
+      'slots.PRESENT_NPCS needs >= 1 {id,name} entries — npc_lines speakers validate against it',
+    );
+    if (Array.isArray(npcs)) {
+      const dupes = npcs.map((p) => p.id).filter((id, i, a) => a.indexOf(id) !== i);
+      if (dupes.length) fatal.push(`duplicate npc ids: ${dupes.join(', ')}`);
+    }
+  }
+
+  if (suite.call_type === 'reporter') {
+    need(suite.slots?.EXPERIENCED, "slots.EXPERIENCED missing — the round's events are the reporter's only input (W1/W2)");
+  }
+
   return { fatal, warn };
 }
