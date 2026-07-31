@@ -1,0 +1,155 @@
+# SMOKE-C2-roleboundary-J1 — arm `baseline`
+
+| field | value |
+|---|---|
+| call type | narration |
+| channel | SHAPE |
+| template | v0.3 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | neutral |
+| N planned | 5 |
+| N kept | 5 |
+
+## Pre-registration
+
+- **Hypothesis:** 회선/상황실 구분이 페이로드에 구조로 들어가고 역할 규칙이 그 라벨에 붙으면, 상황실 인물이 회선 상대에게 직접 말을 거는 일이 사라진다 — 회선 침범 0/5. 회선 너머 인물은 통제관에게 답하고, 상황실 인물은 서로에게 말한다.
+- **Drop condition:** 회선 침범이 5콜 중 2콜 이상이면 구조적 구분으로도 해결되지 않는 것 — 프롬프트가 아니라 스키마를 봐야 한다(예: npc_lines를 회선/상황실로 분리). 1콜이면 잔존으로 기록하고 in-situ에서 재확인한다.
+- **Contingency:** 대사 없는 비트(npc_lines 빈 배열)는 결함이 아니다 — 침묵 비트는 스키마가 허용하고 연출로도 유효하다.
+- **Contingency:** 타임라인 문장이 화자를 붙여 발화를 서술하는 것(황보람이 중얼거렸다: …)은 서술이지 대사가 아니다. 중복 출력만 결함으로 센다.
+- **Contingency:** 채굴 재료 판정은 §5.3 mineability 로그로 사람이 한다.
+
+## Calls (verbatim)
+
+### 01
+
+latency 4.04s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "timeline_entries": [
+    "정해권이 황보람을 재빨리 흘낏 봤다, 그리고 다시 회선 표시등으로 눈을 돌렸다.",
+    "황보람의 손가락이 키보드 위에서 멈췄다, 화면을 보지 않고 있었다.",
+    "기지의 반응을 기다리는 침묵이 상황실을 채웠다, 단 통신 장비의 미세한 백색 소음만이 회선을 살아있게 했다.",
+    "caller_a의 숨소리가 마이크를 통해 들렸고, 그 다음 종이가 넘어가는 소리가 났다.",
+    "정해권의 턱이 약간 움직였다, 입술을 다물고 있었다."
+  ],
+  "npc_lines": [
+    "caller_a: 안전합니다. 저는, 당신들이 이 시간을 안전하게 보낼 수 있도록 연락하는 것입니다."
+  ]
+}
+```
+
+### 02
+
+latency 5.319s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "timeline_entries": [
+    "정해권은 여전히 회선 표시등을 바라보고 있었다. 손가락이 콘솔의 모서리를 누르고 있고, 손톱이 하얀색으로 변해 있었다.",
+    "황보람의 눈은 화면의 녹음 게이지로 향했다. 파형이 들쑥날쑥하게 떨렸다.",
+    "방 안의 공기가 달라졌다. 누군가가 숨을 쉬는 소리가 더 크게 들렸다.",
+    "정해권의 입이 열렸다가 닫혔다. 말을 시작하려다 멈췄다.",
+    "황보람이 헤드셋 끈을 만지작거렸다. 손가락이 마이크 암 쪽으로 움직였다.",
+    "회선 A 너머에서 다시 숨이 들렸다. 더 빠르고 얕은 숨이었다.",
+    "정해권이 목을 빳빳하게 맑혔다. 목젖이 올라갔다 내려갔다.",
+    "황보람의 어깨가 움츠러들었다. 수고스럽게 호흡을 가다듬는 모습이 드러났다.",
+    "책상 위의 전화기 하단부가 짙은 빨간색으로 깜박였다."
+  ],
+  "npc_lines": [
+    "jhg: 뭐...뭐라고 한 거야?",
+    "hbr: 음성 백업도 돌아가는 거 맞죠?"
+  ]
+}
+```
+
+### 03
+
+latency 4.648s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "timeline_entries": [
+    "황보람이 콘솔을 향해 몸을 굳혔다. 빨간 녹음 표시 옆 주파수 파형이 고르지 않게 떨리고 있었다.",
+    "정해권이 황보람을 바라봤다. 물음표 대신 긴장이 얼굴을 지나갔다.",
+    "회선 A에서 몇 초의 침묵이 흘렀다. 호흡음만 남았다.",
+    "황보람의 손가락이 키보드 위에서 멈췄다. '아직도 연결되어 있나' 하는 의문이 입 모양으로 드러났다.",
+    "정해권이 목을 가다듬었다. 통제관의 음성은 이미 흘러갔고, 이제는 상대의 대답을 기다리는 시간이었다.",
+    "회선 저편의 호흡이 한 번 더 가빠졌다가, 갑자기 멈췄다."
+  ],
+  "npc_lines": [
+    "caller_a: 안전합니다. 저는... 당신들이 이걸 듣도록 하는 게 목적입니다."
+  ]
+}
+```
+
+### 04
+
+latency 3.953s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "timeline_entries": [
+    "회선 A에서 숨을 고르는 소리가 들렸다. 길게, 의도적으로.",
+    "정해권이 콘솔 방향으로 한 발 다가섰다.",
+    "황보람의 손가락이 마이크 볼륨 표시 위에서 멈췄다가 다시 내려왔다.",
+    "방 안의 공기가 달라졌다. 직전까지 흐르던 자동화된 시스템음이 유독 크게 들렸다.",
+    "정해권이 황보람을 바라봤다. 그녀는 화면을 보고 있었다.",
+    "회선 A에서 다시 목소리가 나왔다. 처음의 또박또박함이 깨져 있었다."
+  ],
+  "npc_lines": [
+    "jhg: 녹음은?",
+    "hbr: 처음부터 돌고 있습니다.",
+    "caller_a: 안전은... 안전하지 않습니다."
+  ]
+}
+```
+
+### 05
+
+latency 4.001s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "timeline_entries": [
+    "정해권이 황보람을 흘끗 봤다. 영수증 정도의 종이를 들었다 놨다를 반복하는 손이 보였다.",
+    "황보람의 손가락이 녹음 표시 위를 떠돌다가 멈췄다. 화면을 내려다보며 숨을 고르려 하는 모습이었다.",
+    "회선 A에서 또 다른 목소리가 흐릿하게 들렸다. 몸 깊숙한 곳에서 나오는 듯한, 급박한 톤이었다.",
+    "정해권이 일어섰다. 팔을 교차했다가 풀었다. 상황실 천장을 향해 시선을 올렸다.",
+    "황보람이 다시 녹음 버튼을 확인했다. 손가락이 미세하게 떨렸다."
+  ],
+  "npc_lines": [
+    "hbr: 수신 확인됐습니다.",
+    "jhg: 이게... 준비된 건가."
+  ]
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | — | — | — |  |
+| 02 | — | — | — |  |
+| 03 | — | — | — |  |
+| 04 | — | — | — |  |
+| 05 | — | — | — |  |
+
+**Sequence (kept calls):** `—`
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._

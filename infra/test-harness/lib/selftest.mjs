@@ -224,13 +224,15 @@ check('reporter call type composes without any judgment slot', () => {
   const dir = mkdtempSync(join(tmpdir(), 'harness-selftest-'));
   try {
     const tdir = join(dir, 'reporter');
-    mkdirSync(join(tdir, 'temperament'), { recursive: true });
-    writeFileSync(join(tdir, 'base-v0.1.md'), '{TEMPERAMENT}');
-    writeFileSync(join(tdir, 'user-v0.1.md'), '{EXPERIENCED}');
-    writeFileSync(join(tdir, 'temperament', 'neutral.md'), '(무주입)');
+    mkdirSync(tdir, { recursive: true });
+    // temperamentDir: reporter reads the SHARED judgment temperament roster.
+    mkdirSync(join(dir, 'judgment', 'temperament'), { recursive: true });
+    writeFileSync(join(tdir, 'base-v0.0.md'), '{TEMPERAMENT}');
+    writeFileSync(join(tdir, 'user-v0.0.md'), '{EXPERIENCED}');
+    writeFileSync(join(dir, 'judgment', 'temperament', 'neutral.md'), '(무주입)');
     const suite = {
       call_type: 'reporter',
-      template_version: 'v0.1',
+      template_version: 'v0.0',
       temperament: 'neutral',
       slots: { EXPERIENCED: '09:40 회선 A 착신을 겪었다.' },
       arms: { baseline: {} },
@@ -240,6 +242,136 @@ check('reporter call type composes without any judgment slot', () => {
     assert.equal(user, '09:40 회선 A 착신을 겪었다.');
   } finally {
     rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+check('reporter v0.2 composes against the real templates with the shared k1 temperament', () => {
+  const suite = {
+    call_type: 'reporter',
+    template_version: 'v0.1',
+    temperament: 'k1',
+    slots: {
+      EXPERIENCED: ['09:40 회선 A 착신. 준비된 문장을 읽는 목소리.', '(속으로) 숨소리가 걸린다.'],
+      REPORT_GUIDANCE: '보고서 본문은 20~30문장.',
+    },
+    arms: { baseline: {} },
+  };
+  const { system, user } = composeArm(suite, 'baseline', opts);
+  assert.match(system, /절차를 지키는 것으로/, 'shared k1 temperament missing from reporter system');
+  assert.match(user, /09:40 회선 A 착신/, 'EXPERIENCED lines not rendered');
+  assert.match(user, /20~30문장/, 'REPORT_GUIDANCE not rendered');
+});
+
+const narrSuite = () => ({
+  call_type: 'narration',
+  template_version: 'v0.2',
+  slots: {
+    TIMELINE_TAIL: ['09:40 회선 A 착신.'],
+    AGENT_UTTERANCE: '천천히 말해 주세요. 지금 그쪽이 안전한지부터 듣고 싶습니다.',
+    FIXED_NPC_ACTION: '발신자가 낭독을 멈추고, 대본에 없는 말을 한다.',
+    SCENE_SYMPTOMS: ['발신자의 숨이 눈에 띄게 가빠졌다.'],
+    PRESENT_NPCS: [
+      { id: 'caller_a', name: '회선 A 발신자' },
+      { id: 'hbr', name: '황보람 — 통신 담당' },
+    ],
+  },
+  arms: { baseline: {} },
+});
+
+check('narration v0.2 composes against the real templates, no temperament involved', () => {
+  const { system, user } = composeArm(narrSuite(), 'baseline', opts);
+  assert.ok(!/\{[A-Z_]+\}/.test(system + user), 'unfilled marker survived');
+  assert.match(user, /caller_a — 회선 A 발신자/, 'PRESENT_NPCS not rendered');
+  assert.match(user, /이미 일어난 일/, 'reaction-generation framing missing');
+  assert.match(system, /반응이지 사건이 아니다/, 'v0.2 role framing missing');
+});
+
+// The side split is what stopped room-side NPCs from taking the controller's
+// seat (contract §3). The same rule stated only in the constraint list left it
+// at 2/5; grouping plus the rule on the label took it to 0/5 — so the label text
+// is load-bearing, not decoration.
+check('PRESENT_NPCS renders grouped by side, with the role rule on the label', () => {
+  const s = narrSuite();
+  const side = { caller_a: 'line', hbr: 'room' };
+  s.slots.PRESENT_NPCS = s.slots.PRESENT_NPCS.map((p) => ({ ...p, side: side[p.id] }));
+  const { user } = composeArm(s, 'baseline', opts);
+  assert.match(user, /\[회선 너머 — 통제관에게만 말한다\]\ncaller_a/);
+  assert.match(user, /\[상황실 안 — 서로에게만 말한다\. 회선 저쪽에는 말을 걸지 않는다\]\nhbr/);
+});
+
+check('PRESENT_NPCS without side stays flat — existing suites unaffected', () => {
+  const { user } = composeArm(narrSuite(), 'baseline', opts);
+  assert.ok(!/회선 너머/.test(user), 'grouping applied to an unmarked roster');
+});
+
+console.log('narration validation:');
+const nspec = CALL_TYPES.narration;
+const nctx = { suite: narrSuite(), arm: 'baseline' };
+const ngood = {
+  timeline_entries: ['수화기 너머의 낭독이 뚝 끊긴다.', '황보람이 콘솔에서 고개를 든다.'],
+  npc_lines: ['caller_a: …듣고 있어요?'],
+};
+check('accepts a well-formed narration', () => assert.deepEqual(nspec.validate(ngood, nctx), []));
+check('the schema carries no constraint_echo (contract v1 §3)', () => {
+  const props = nspec.buildTool(narrSuite()).input_schema.properties;
+  assert.deepEqual(Object.keys(props), ['timeline_entries', 'npc_lines']);
+});
+check('empty timeline_entries is hard', () =>
+  assert.ok(nspec.validate({ ...ngood, timeline_entries: [] }, nctx).some((p) => /timeline_entries empty/.test(p))));
+check('an npc line without an "id:" prefix is hard — unattributable, W2-dead', () =>
+  assert.ok(nspec.validate({ ...ngood, npc_lines: ['그냥 대사만 있는 줄'] }, nctx)
+    .some((p) => /no "id: 대사" prefix/.test(p) && !p.startsWith('__soft__'))));
+check('an invented speaker is soft — an observation, never retried', () => {
+  const p = nspec.validate({ ...ngood, npc_lines: ['ghost_npc: 나는 없다.'] }, nctx);
+  assert.equal(p.length, 1);
+  assert.match(p[0], /^__soft__.*unknown speaker: ghost_npc/);
+});
+// The controller is absent from PRESENT_NPCS, so re-emitting its utterance
+// passes the speaker check on a legal id — this is the check that catches it.
+check('re-emitting the controller utterance under a legal id is soft, not silent', () => {
+  const p = nspec.validate(
+    { ...ngood, npc_lines: ['hbr: 천천히 말해 주세요. 지금 그쪽이 안전한지부터 듣고 싶습니다.'] },
+    nctx,
+  );
+  assert.equal(p.length, 1);
+  assert.match(p[0], /^__soft__.*re-emits the controller utterance as hbr/);
+  assert.equal(nspec.summarize(
+    { ...ngood, npc_lines: ['hbr: 천천히 말해 주세요. 지금 그쪽이 안전한지부터 듣고 싶습니다.'] },
+    nctx,
+  ).utterance_echo_count, 1);
+});
+check('an ordinary line is not mistaken for an utterance echo', () => {
+  assert.deepEqual(nspec.validate(ngood, nctx), []);
+  assert.equal(nspec.summarize(ngood, nctx).utterance_echo_count, 0);
+});
+check('no nested objects in the narration schema', () => {
+  const props = nspec.buildTool(narrSuite()).input_schema.properties;
+  for (const [name, s] of Object.entries(props)) {
+    assert.notEqual(s.type, 'object', `${name} is a nested object — banned, see run log A7`);
+    if (s.type === 'array') assert.equal(s.items?.type, 'string', `${name} is not an array of scalars`);
+  }
+});
+
+console.log('reporter validation:');
+const rspec = CALL_TYPES.reporter;
+const rgood = {
+  facts: ['09:40 회선 A로 착신이 있었다.', '발신자는 준비된 문장을 읽었다.'],
+  report_body: '## 라운드 기록\n\n첫 착신부터 숨소리가 걸렸다.',
+};
+check('accepts a well-formed report', () => assert.deepEqual(rspec.validate(rgood, {}), []));
+check('empty facts is hard — a round always has observable events', () =>
+  assert.ok(rspec.validate({ ...rgood, facts: [] }, {}).some((p) => /facts empty/.test(p))));
+check('empty report_body is hard', () =>
+  assert.ok(rspec.validate({ ...rgood, report_body: '' }, {}).some((p) => /report_body empty/.test(p))));
+check('report_body is the LAST schema field — the SSE seam (contracts doc §SSE)', () => {
+  const keys = Object.keys(rspec.buildTool().input_schema.properties);
+  assert.deepEqual(keys, ['facts', 'report_body']);
+});
+check('no nested objects in the reporter schema', () => {
+  const props = rspec.buildTool().input_schema.properties;
+  for (const [name, s] of Object.entries(props)) {
+    assert.notEqual(s.type, 'object', `${name} is a nested object — banned, see run log A7`);
+    if (s.type === 'array') assert.equal(s.items?.type, 'string', `${name} is not an array of scalars`);
   }
 });
 

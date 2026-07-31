@@ -41,7 +41,8 @@ export function writeArtifacts({ outDir, suite, arm, records, transport, force, 
   }
 
   const kept = records.filter((r) => !r.discarded && !r.failed);
-  const sequence = kept.map((r) => r.stance).join(',');
+  // Non-judgment call types have no stance — their sequence is blank, not ",,".
+  const sequence = kept.map((r) => r.stance).filter((s) => s != null).join(',');
   const latencies = records.filter((r) => r.latency_s != null).map((r) => r.latency_s);
 
   writeFileSync(md, renderMarkdown({ suite, arm, records, transport, sequence, coverage, nEffective }));

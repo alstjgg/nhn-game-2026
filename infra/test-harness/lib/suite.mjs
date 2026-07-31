@@ -56,5 +56,42 @@ export function validateSuite(suite) {
     }
   }
 
+  if (suite.call_type === 'narration') {
+    need(suite.slots?.FIXED_NPC_ACTION, 'slots.FIXED_NPC_ACTION missing — the constraint is the point of the call (spec §4)');
+    need(suite.slots?.AGENT_UTTERANCE, 'slots.AGENT_UTTERANCE missing — the W1 context input');
+    const npcs = suite.slots?.PRESENT_NPCS;
+    need(
+      Array.isArray(npcs) && npcs.length >= 1 && npcs.every((p) => p?.id && p?.name),
+      'slots.PRESENT_NPCS needs >= 1 {id,name} entries — npc_lines speakers validate against it',
+    );
+    if (Array.isArray(npcs)) {
+      const dupes = npcs.map((p) => p.id).filter((id, i, a) => a.indexOf(id) !== i);
+      if (dupes.length) fatal.push(`duplicate npc ids: ${dupes.join(', ')}`);
+    }
+    // Contract §3: the engine renders the fixed action and the controller's
+    // utterance to the timeline BEFORE this call, and Call 2 writes only what
+    // follows. A suite whose TIMELINE_TAIL omits them makes the prompt assert
+    // "이미 화면에 있다" about something that is not there — the model then
+    // reconstructs the exchange and misassigns speakers. Fatal, not a warning:
+    // this exact omission already cost a probe whose result was unattributable.
+    const tail = [].concat(suite.slots?.TIMELINE_TAIL ?? []).join('\n');
+    for (const [slot, label] of [
+      ['FIXED_NPC_ACTION', 'the fixed action'],
+      ['AGENT_UTTERANCE', "the controller's utterance"],
+    ]) {
+      const v = String(suite.slots?.[slot] ?? '').trim();
+      if (v && !tail.includes(v)) {
+        fatal.push(
+          `slots.TIMELINE_TAIL does not carry ${slot} — contract §3 requires ${label} to be on ` +
+            'the timeline before this call. Append it to TIMELINE_TAIL.',
+        );
+      }
+    }
+  }
+
+  if (suite.call_type === 'reporter') {
+    need(suite.slots?.EXPERIENCED, "slots.EXPERIENCED missing — the round's events are the reporter's only input (W1/W2)");
+  }
+
   return { fatal, warn };
 }
