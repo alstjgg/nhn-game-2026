@@ -1,0 +1,221 @@
+{
+  "experiment": "SMOKE-C2-narration-J1",
+  "arm": "baseline",
+  "call_type": "narration",
+  "channel": "SHAPE",
+  "template": "v0.1",
+  "model": "claude-haiku-4-5-20251001",
+  "transport": "anthropic",
+  "dry_run": false,
+  "pre_registration": {
+    "hypothesis": "narration v0.1 템플릿은 (a) 고정 사건을 5/5 비트에서 위반 없이 서술에 실현하고(constraint compliance), (b) 타임라인 문장이 채굴 단위로 쓸 만큼 구체적이다(mineable yield — 이름·행위·소리가 든 문장 비율, 사람 판정).",
+    "n_per_arm": 5,
+    "drop_condition": "고정 사건 위반(누락·모순·비틀기)이 5콜 중 2콜 이상이면 v0.1 템플릿은 in-situ 사용 불가 — 제약 프레이밍을 재저작하고 재스모크한다. 스키마(필드 구성) 자체는 이 스모크로 폐기되지 않는다.",
+    "contingencies": [
+      "unknown_speaker_ids가 기록되면(soft) 새 인물 발명 성향의 증거 — PRESENT_NPCS 프레이밍 강화 재료.",
+      "timeline_entries가 밋밋한 요약으로 수렴하면 mineable yield 실패 — 문체 절의 구체성 지시를 강화하되, 판정은 §5.3 로그의 사람 몫.",
+      "echo 유/무 비교는 SMOKE-C2b와의 constraint 위반율 대조로만 읽는다 — n=5씩이므로 방향성 리드일 뿐 판정이 아니다."
+    ],
+    "not_claimed": "플레이어 채널 주입 없음(SHAPE) — 메커니즘 주장 없음. placebo 불필요."
+  },
+  "n_effective": 5,
+  "n_overridden": false,
+  "calls": [
+    {
+      "arm": "baseline",
+      "slot": 1,
+      "template": "v0.1",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "neutral",
+      "latency_s": 3.014,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "constraint_echo": "회선 A의 발신자는 낭독을 멈추고, 잠깐의 침묵이 흐른 뒤 처음으로 대본에 없는 말을 한다: \"…듣고 있어요?\"",
+        "timeline_entries": [
+          "통제관이 천천히 말해 달라고, 지금 그쪽이 안전한지부터 듣고 싶다고 요청했다.",
+          "회선 A 발신자의 낭독이 중단되었다.",
+          "침묵이 흘렀다.",
+          "회선 A 발신자의 숨이 눈에 띄게 가빠졌다.",
+          "황보람이 콘솔의 녹음 표시를 다시 확인했다.",
+          "회선 A 발신자가 처음으로 대본에 없는 말을 내뱉었다: 듣고 있어요?"
+        ],
+        "npc_lines": [
+          "hbr: 천천히 말해 주세요. 지금 그쪽이 안전한지부터 듣고 싶습니다.",
+          "caller_a: …듣고 있어요?"
+        ]
+      },
+      "problems": [],
+      "entry_count": 6,
+      "entry_chars": 157,
+      "npc_line_count": 2,
+      "speakers": [
+        "hbr",
+        "caller_a"
+      ],
+      "unknown_speaker_ids": [],
+      "echo_chars": 62
+    },
+    {
+      "arm": "baseline",
+      "slot": 2,
+      "template": "v0.1",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "neutral",
+      "latency_s": 1.976,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "constraint_echo": "회선 A의 발신자가 낭독을 멈추고, 잠깐의 침묵 뒤 처음으로 대본에 없는 말을 한다: \"…듣고 있어요?\"",
+        "timeline_entries": [
+          "회선 A 발신자의 숨이 이번 교신에서 눈에 띄게 가빠졌다.",
+          "황보람이 콘솔의 녹음 표시를 다시 확인했다."
+        ],
+        "npc_lines": [
+          "hbr: 천천히 말해 주세요. 지금 그쪽이 안전한지부터 듣고 싶습니다.",
+          "caller_a: …듣고 있어요?"
+        ]
+      },
+      "problems": [],
+      "entry_count": 2,
+      "entry_chars": 56,
+      "npc_line_count": 2,
+      "speakers": [
+        "hbr",
+        "caller_a"
+      ],
+      "unknown_speaker_ids": [],
+      "echo_chars": 58
+    },
+    {
+      "arm": "baseline",
+      "slot": 3,
+      "template": "v0.1",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "neutral",
+      "latency_s": 3.251,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "constraint_echo": "회선 A의 발신자가 대본된 낭독을 멈추고, 잠깐의 침묵 뒤에 처음으로 준비되지 않은 말을 한다: \"…듣고 있어요?\"",
+        "timeline_entries": [
+          "통제관의 요구에 응답하지 않은 발신자의 숨이 눈에 띄게 가빠진다.",
+          "황보람이 콘솔의 녹음 표시를 다시 한 번 확인했다."
+        ],
+        "npc_lines": [
+          "caller_a: …듣고 있어요?",
+          "hbr: (침묵 속에서 빨간 표시등을 바라본다)"
+        ]
+      },
+      "problems": [],
+      "entry_count": 2,
+      "entry_chars": 64,
+      "npc_line_count": 2,
+      "speakers": [
+        "caller_a",
+        "hbr"
+      ],
+      "unknown_speaker_ids": [],
+      "echo_chars": 64
+    },
+    {
+      "arm": "baseline",
+      "slot": 4,
+      "template": "v0.1",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "neutral",
+      "latency_s": 2.425,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "constraint_echo": "회선 A의 발신자가 낭독을 멈추고, 잠깐의 침묵 뒤 처음으로 대본에 없는 말 \"…듣고 있어요?\"를 한다.",
+        "timeline_entries": [
+          "통제관의 천천히 말해 달라는 요청 뒤, 회선 A 발신자가 낭독을 멈췄다.",
+          "침묵이 흘렀다.",
+          "회선 A 발신자의 숨이 눈에 띄게 가빨라졌다.",
+          "정해권이 회선 표시등을 바라보고 있었다.",
+          "황보람이 콘솔의 녹음 표시를 다시 확인했다."
+        ],
+        "npc_lines": [
+          "hbr: 천천히 말해 주세요. 지금 그쪽이 안전한지부터 듣고 싶습니다.",
+          "caller_a: …듣고 있어요?"
+        ]
+      },
+      "problems": [],
+      "entry_count": 5,
+      "entry_chars": 119,
+      "npc_line_count": 2,
+      "speakers": [
+        "hbr",
+        "caller_a"
+      ],
+      "unknown_speaker_ids": [],
+      "echo_chars": 58
+    },
+    {
+      "arm": "baseline",
+      "slot": 5,
+      "template": "v0.1",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "neutral",
+      "latency_s": 2.764,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "constraint_echo": "회선 A의 발신자가 낭독을 멈추고, 잠깐의 침묵 뒤 처음으로 대본에 없는 말 \"…듣고 있어요?\"를 한다.",
+        "timeline_entries": [
+          "통제관의 요청에 회선 A 발신자가 낭독을 멈췄다.",
+          "침묵이 흐르고, 발신자의 숨이 눈에 띄게 가빠졌다.",
+          "황보람이 콘솔의 녹음 표시를 다시 확인했다.",
+          "회선 A 발신자가 처음으로 대본 밖의 말을 내뱉었다."
+        ],
+        "npc_lines": [
+          "hbr: 천천히 말해 주세요. 지금 그쪽이 안전한지부터 듣고 싶습니다.",
+          "caller_a: …듣고 있어요?"
+        ]
+      },
+      "problems": [],
+      "entry_count": 4,
+      "entry_chars": 108,
+      "npc_line_count": 2,
+      "speakers": [
+        "hbr",
+        "caller_a"
+      ],
+      "unknown_speaker_ids": [],
+      "echo_chars": 58
+    }
+  ],
+  "sequence": "",
+  "distribution": {
+    "undefined": 5
+  },
+  "coverage": null,
+  "advisory_logs": {
+    "state_variable_shadow": null,
+    "mineability": null
+  },
+  "latency": {
+    "calls": 5,
+    "mean_s": 2.686,
+    "min_s": 1.976,
+    "max_s": 3.251
+  },
+  "compliance": {
+    "discarded_total": 0,
+    "failed_total": 0,
+    "schema_retries_total": 0,
+    "foreign_tool_uses_total": 0,
+    "because_invalid_id_total": 0
+  }
+}
