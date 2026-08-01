@@ -49,7 +49,7 @@ architecture-track artifact (§4); the formats are bound here.
 | # | Stage | Transformation | State |
 |---|---|---|---|
 | 0 | Write | brief + guide → scenario draft (md, `/write-scenario` §4 format, gate cards in yaml) | running |
-| 1 | Compile | draft → datapack (§3) | data track builds the compile skill + JSON schema validator |
+| 1 | Compile | draft → datapack (§3) | **deterministic script** (`infra/scenario-pipeline/compile-datapack.mjs`, zero deps, zero calls). The draft format (write skill §4) is its parse contract — unparseable drafts fail compile instead of being guessed at. No LLM touches this stage: pack sentences are the mining vein, and a silent paraphrase would break key conditions invisibly |
 | 2 | Lint | datapack → violation list (stance↔temperament axis-vocabulary collision · key species / mining position · score attributability · the mechanical half of the guide's ban list) | rules fixed by data track; a stance-lint prototype exists in the harness |
 | 3 | Paper check | datapack + draft → verdict memo (hardening manual §6: timeline preemption · fixture slack · escape options) | manual exists; one human pass |
 | 4 | Probe | gate card → suite JSON → 30-call metrics | suite format is the harness's existing format, unchanged |
@@ -61,21 +61,28 @@ paper) → P1 = stage 4 (first-gate probe) → P2 = stages 5+6 (full-run
 measurement, once the engine lands). P0 alone covers half the bake-off:
 format compliance, rule compliance, structural comparison.
 
-## 3. Datapack spec (v0)
+## 3. Datapack spec (v0.1)
 
 `data/scenario/<slug>/`. **This spec is the compile stage's output and the
 engine's input.** Where it disagrees with the engine spec, the data track
 revises this section to restore fit — by revision, not by meeting.
 
+**Field-level types are normative in `data/scenario/_schema/*.schema.json`**
+(JSON Schema draft 2020-12, one schema per file below). This table is the
+map; the schemas are the law. The lint stage validates every pack against
+them.
+
 | File | Contents | Draft source |
 |---|---|---|
-| `meta.json` | title · scenario clock (start–end) · D-Day | logline |
-| `timeline.json` | fixed events: time · surface (call / CCTV / on-site) · text · exposure run-depth | fixed timeline |
-| `characters.json` | characters: traits (static) · ≤2 meter initial values · knowledge flags | characters |
-| `temperament.json` | default disposition · ≤2 conditional clauses (axis vocabulary · defeat condition) | temperament proposal |
-| `gates.json` | the gate card as-is: standard form · stance set · buckets · deltas · edge predicates · **key condition** | gate cards |
-| `truths.json` | truth → carrier sentence ids · false-lead ids | hidden truths |
-| `score.json` | units · predicates · no-intervention baseline score | score |
+| `meta.json` | slug · title · logline · scenario clock (start–end) · D-Day | logline |
+| `timeline.json` | fixed events: id · time · surface (call / cctv / onsite / document) · place ref · text · exposure (`visible_from` clock + free-text `extra_condition`) | fixed timeline |
+| `characters.json` | id · role · interest · knows / doesn't-know · ≤2 meters (initial `null` until hardening) · strands (truth/gate refs — attributability input) | characters |
+| `places.json` | id · name · yields: ≥2 entries of (clock or depth note → info) | places |
+| `temperament.json` | default disposition · ≤2 clauses (axis · **axis_vocabulary** · condition · defeat condition) | temperament proposal |
+| `gates.json` | the gate card as-is (hardening manual §5): standard form · stance set · default stance · **key_conditions** · key_examples · false leads · buckets · edge predicates — plus clock/place/scene prose carried from the draft | gate cards |
+| `truths.json` | truth → carrier sentences (id + text + where) · false leads. **This file issues sentence ids** (`trN-sN` / `trN-fN`) | hidden truths |
+| `score.json` | units (tallies · baseline · attributed gates · predicates) · no-intervention baseline · variance notes | score |
+| `draft.md` | the source draft, moved in verbatim — the pack is self-contained and the draft's home moves with compilation | whole draft |
 
 Decisions in force:
 
@@ -86,10 +93,20 @@ Decisions in force:
   metadata — at runtime the injected sentence simply rides the judgment call
   and the engine reads only the stance, so determinism is untouched.
 - Fields absent from draft-stage gate cards (buckets · deltas · edge
-  predicates) are filled during hardening. Compile passes them empty; lint
-  flags the pack "hardening incomplete".
-- Field-level type definitions land as the next revision of this section,
-  written together with the compile skill.
+  predicates · meter initials · score predicates) are filled during
+  hardening. Compile passes them empty/null; lint flags the pack
+  "hardening incomplete".
+- **`places.json` added (v0.1).** The draft format has a mandatory places
+  section (each place yields ≥2 pieces of info at different clock depths)
+  and v0 had no file to receive it — a schema hole by the template
+  principle, promoted here.
+- **Exposure conditions beyond the clock stay free text at compile**
+  (`extra_condition` / `depth_note` / `availability`). They become engine
+  predicates during hardening; until then lint flags them as incomplete
+  rather than compile inventing semantics.
+- Compile is extraction, not authoring: text fields carry the draft's
+  sentences verbatim, and anything the draft doesn't state compiles to
+  `null`/empty — never to an invented value.
 
 ## 4. Architecture pipeline — the wiring
 

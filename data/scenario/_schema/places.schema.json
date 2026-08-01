@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "places.schema.json",
+  "title": "datapack places.json — 장소와 장소별 정보 산출",
+  "description": "초안 §4 장소 섹션의 수용처. 장소마다 서로 다른 시계 깊이에서 내놓는 정보가 둘 이상이어야 한다(집필 스킬 §4-4).",
+  "type": "object",
+  "required": ["places"],
+  "additionalProperties": false,
+  "properties": {
+    "places": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "desc", "yields"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^p[0-9]+$" },
+          "name": { "type": "string", "minLength": 1 },
+          "desc": { "type": "string", "minLength": 1, "description": "어떤 정보가 그곳에서만 나오는지 한 줄(집필 스킬 §4-4)" },
+          "yields": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": ["clock", "depth_note", "info"],
+              "additionalProperties": false,
+              "properties": {
+                "clock": {
+                  "type": ["string", "null"],
+                  "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]\\+?$",
+                  "description": "이 정보가 나오는 시계. 시계로 특정되지 않으면 null + depth_note"
+                },
+                "depth_note": {
+                  "type": ["string", "null"],
+                  "description": "시계로 못 적는 깊이 조건의 자유 서술(예: 재방문한 런, 깊은 런). 하드닝 시 술어로 승격"
+                },
+                "info": { "type": "string", "minLength": 1, "description": "그곳에서만 나오는 정보" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

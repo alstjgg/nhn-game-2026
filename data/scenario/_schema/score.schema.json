@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "score.schema.json",
+  "title": "datapack score.json — 집계 단위와 무개입 기준",
+  "description": "집계된 모든 단위는 어느 갈림길로 소급되는지 밝혀야 한다(가이드 §5) — 린트가 검사한다. predicates는 하드닝 산출물로, 컴파일 시 빈 배열 허용.",
+  "type": "object",
+  "required": ["units", "baseline_summary"],
+  "additionalProperties": false,
+  "properties": {
+    "units": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "tallies", "baseline", "attributed_gates", "predicates"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^u[0-9]+$" },
+          "label": { "type": "string", "minLength": 1 },
+          "tallies": { "type": "string", "minLength": 1, "description": "무엇이 집계되나" },
+          "baseline": { "type": "string", "minLength": 1, "description": "무개입 기준값 — 구체적인 숫자로" },
+          "attributed_gates": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "pattern": "^G[0-9]+$" },
+            "description": "이 단위가 소급되는 갈림길"
+          },
+          "predicates": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "description": "하드닝 산출물 — 상태 → 집계값 술어. 컴파일 시 빈 배열 허용(린트가 미완 플래그)"
+          }
+        }
+      }
+    },
+    "baseline_summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "무개입 기준 점수 요약 — 고정 타임라인이 예정대로 일어난 결과"
+    },
+    "variance_notes": {
+      "type": "object",
+      "required": ["failed_runs", "saved_runs"],
+      "additionalProperties": false,
+      "properties": {
+        "failed_runs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "못 막은 런들끼리 점수가 갈리는 방식"
+        },
+        "saved_runs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "막은 런에 남는 값"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "characters.schema.json",
+  "title": "datapack characters.json — 인물",
+  "type": "object",
+  "required": ["characters"],
+  "additionalProperties": false,
+  "properties": {
+    "characters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "role", "interest", "knows", "doesnt_know", "meters", "strands"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^c[0-9]+$" },
+          "name": { "type": "string", "minLength": 1 },
+          "age": { "type": ["integer", "null"] },
+          "role": { "type": "string", "minLength": 1 },
+          "interest": { "type": "string", "minLength": 1, "description": "이해관계 — 이 인물이 지키려는 것" },
+          "knows": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "doesnt_know": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "meters": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "required": ["id", "label", "initial"],
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string", "pattern": "^m[0-9]+$" },
+                "label": { "type": "string", "minLength": 1 },
+                "initial": {
+                  "type": ["number", "null"],
+                  "description": "초기값. 초안 단계에는 null — 하드닝이 채운다(린트가 미완 플래그)"
+                }
+              }
+            },
+            "description": "눈금 — 인물당 최대 2 (가이드 §5)"
+          },
+          "strands": {
+            "type": "object",
+            "required": ["truth_ids", "gate_ids"],
+            "additionalProperties": false,
+            "properties": {
+              "truth_ids": { "type": "array", "items": { "type": "string", "pattern": "^tr[0-9]+$" } },
+              "gate_ids": { "type": "array", "items": { "type": "string", "pattern": "^G[0-9]+$" } }
+            },
+            "description": "걸치는 줄기 — 이 인물이 걸친 진실·갈림길. 린트의 소급성 검사 입력"
+          }
+        }
+      }
+    }
+  }
+}
