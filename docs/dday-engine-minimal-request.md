@@ -5,6 +5,9 @@
 > 명세부터 정의한다")의 앞 절반이다. 무엇이 **필요한지**를 적고, 어떻게 만들지는
 > 엔진 소유자가 정한다.
 >
+> **답:** [최소 엔진 명세 v0](./dday-engine-minimal-spec.md) — §6의 질문 다섯에
+> 답하고 §7을 실행 가능한 판정으로 고정했다.
+>
 > **요청자:** L (LLM Infrastructure). **근거 문서:**
 > [콜 계약 v1](./dday-call-contracts.md) §6 · [architecture-spec](./dday-architecture-spec.md) §3.
 > **범위:** 게이트 **1개**의 라운드 1회가 끝까지 도는 데 필요한 것만.
