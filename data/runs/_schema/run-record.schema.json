@@ -4,7 +4,7 @@
   "title": "run-record — 끝난 런이 남기는 것 (pipeline §6)",
   "description": "데이터 트랙은 런이 남기는 표면만 묶는다 — 엔진 내부는 엔진 소유. 공급자는 전부 기존 계약이 정한다: 비트·stance·utterance는 콜 계약 §2, delta journal은 엔진 요청서 §4, 두 보고서는 콜 계약 §4, timeline은 §6 데이터 흐름.",
   "type": "object",
-  "required": ["run_id", "pack_slug", "policy", "reached_clock", "injected_blocks", "beats", "timeline", "reports", "score"],
+  "required": ["run_id", "pack_slug", "policy", "reached_clock", "injected_blocks", "beats", "timeline", "reports", "score", "fallbacks"],
   "additionalProperties": false,
   "properties": {
     "run_id": { "type": "string", "minLength": 1 },
@@ -72,6 +72,20 @@
         "facts": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "객관 기록 (Call 3)" },
         "report_body": { "type": "string", "minLength": 1, "description": "자필 보고서 (Call 3) — 채굴 표면(W3)" }
       }
+    },
+    "fallbacks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["beat", "call", "code"],
+        "additionalProperties": false,
+        "properties": {
+          "beat": { "type": "integer", "minimum": 1 },
+          "call": { "enum": [1, 2, 3] },
+          "code": { "type": "string", "minLength": 1, "description": "프록시 x-fallback-code" }
+        }
+      },
+      "description": "콜 최종 실패의 기록(엔진 명세 §5). 상태 변화가 아니므로 journal이 아닌 여기 모인다 — 단 Call 1 fallback의 delta는 journal에도 cause로 남는다"
     },
     "score": {
       "type": ["object", "null"],

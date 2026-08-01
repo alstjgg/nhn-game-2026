@@ -27,7 +27,7 @@ if (!packDir) {
 }
 const PACK = resolve(packDir);
 const SCHEMA_DIR = join(PACK, '..', '_schema');
-const FILES = ['meta', 'timeline', 'characters', 'places', 'temperament', 'gates', 'truths', 'score'];
+const FILES = ['meta', 'timeline', 'characters', 'places', 'temperament', 'gates', 'truths', 'score', 'symptoms'];
 
 const errors = [];
 const warns = [];
@@ -242,6 +242,52 @@ for (const g of pack.gates.gates ?? []) {
   }
 }
 
+// ---------- symptoms (engine spec §2.2/§6) ----------
+// Order + digits are ERRORs whenever entries exist (a malformed symptom file
+// is not consumable). Coverage activates once actuator deltas exist: every
+// (variable, direction) a bucket delta can produce needs a min:1 entry, or
+// the renderer hard-errors at runtime — on exactly the stances that trip it.
+
+const symptoms = pack.symptoms ?? {};
+for (const [variable, dirs] of Object.entries(symptoms)) {
+  if (variable === 'flags') {
+    for (const [id, f] of Object.entries(dirs)) {
+      for (const key of ['set', 'unset']) {
+        if (typeof f[key] === 'string' && /\d/.test(f[key])) errors.push(`symptoms flags.${id}.${key}: digits in symptom text (I12)`);
+      }
+    }
+    continue;
+  }
+  for (const [dir, list] of Object.entries(dirs)) {
+    for (let i = 1; i < list.length; i++) {
+      if (list[i].min > list[i - 1].min) {
+        errors.push(`symptoms ${variable}.${dir}: entries not in descending min order (${list[i - 1].min} → ${list[i].min}) — the renderer takes the first match`);
+        break;
+      }
+    }
+    for (const e of list) {
+      if (/\d/.test(e.text)) errors.push(`symptoms ${variable}.${dir} (min ${e.min}): digits in symptom text (I12)`);
+    }
+  }
+}
+
+const dirOf = (n) => (n > 0 ? 'up' : n < 0 ? 'down' : null);
+const reachable = new Set();
+for (const g of pack.gates.gates ?? []) {
+  for (const b of g.buckets) {
+    for (const [variable, delta] of Object.entries(b.deltas)) {
+      const dir = dirOf(delta);
+      if (dir) reachable.add(`${variable}/${dir}`);
+    }
+  }
+}
+for (const key of reachable) {
+  const [variable, dir] = key.split('/');
+  const list = symptoms[variable]?.[dir];
+  if (!list) errors.push(`symptom coverage: (${variable}, ${dir}) is reachable by a bucket delta but symptoms.json has no ${variable}.${dir} list (engine spec §6-2 failure ②)`);
+  else if (!list.some((e) => e.min === 1)) errors.push(`symptom coverage: ${variable}.${dir} has no min:1 entry — smallest deltas fall through (engine spec §6-2 failure ①)`);
+}
+
 // ---------- hardening-incomplete flags ----------
 
 for (const g of pack.gates.gates ?? []) {
@@ -263,6 +309,7 @@ for (const p of pack.places.places ?? []) {
     if (!y.clock && y.depth_note) flags.push(`${p.id} ${p.name} yield[${i}]: depth is free text ("${y.depth_note}") — promote to a predicate`);
   }
 }
+if (!Object.keys(symptoms).length) flags.push('symptoms.json empty — authored during hardening; until then state changes have no path to the screen');
 
 // ---------- report ----------
 

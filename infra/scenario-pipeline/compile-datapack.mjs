@@ -482,6 +482,9 @@ writeJSON('temperament.json', temperament);
 writeJSON('gates.json', { gates });
 writeJSON('truths.json', { truths });
 writeJSON('score.json', score);
+// symptoms are authored at hardening (they attach to deltas, which don't
+// exist at draft stage) — compile emits the empty skeleton, lint flags it
+writeJSON('symptoms.json', {});
 copyFileSync(resolve(draftPath), join(outDir, 'draft.md'));
 
 console.log(`✓ compiled ${basename(draftPath)} → ${outDir}`);

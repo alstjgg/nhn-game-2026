@@ -61,7 +61,7 @@ paper) → P1 = stage 4 (first-gate probe) → P2 = stages 5+6 (full-run
 measurement, once the engine lands). P0 alone covers half the bake-off:
 format compliance, rule compliance, structural comparison.
 
-## 3. Datapack spec (v0.1)
+## 3. Datapack spec (v0.2)
 
 `data/scenario/<slug>/`. **This spec is the compile stage's output and the
 engine's input.** Where it disagrees with the engine spec, the data track
@@ -82,6 +82,7 @@ them.
 | `gates.json` | the gate card as-is (hardening manual §5): standard form · stance set · default stance · **key_conditions** · key_examples · false leads · buckets · edge predicates — plus clock/place/scene prose carried from the draft | gate cards |
 | `truths.json` | truth → carrier sentences (id + text + where) · false leads. **This file issues sentence ids** (`trN-sN` / `trN-fN`) | hidden truths |
 | `score.json` | units (tallies · baseline · attributed gates · predicates) · no-intervention baseline · variance notes | score |
+| `symptoms.json` | state change → symptom sentences, per (variable × direction × magnitude band) + flag set/unset — the **only** channel state reaches the screen (engine spec §2.2, added v0.2 on its revision request) | — (hardening; compile emits an empty skeleton) |
 | `draft.md` | the source draft, moved in verbatim — the pack is self-contained and the draft's home moves with compilation | whole draft |
 
 Decisions in force:
@@ -95,7 +96,14 @@ Decisions in force:
 - Fields absent from draft-stage gate cards (buckets · deltas · edge
   predicates · meter initials · score predicates) are filled during
   hardening. Compile passes them empty/null; lint flags the pack
-  "hardening incomplete".
+  "hardening incomplete". `symptoms.json` is hardening-stage for the same
+  reason — symptoms attach to deltas, and the draft format has no symptoms
+  section; once deltas exist, lint enforces **symptom coverage** (every
+  actuator-reachable (variable, direction) needs a `min: 1` entry — engine
+  spec §6-2), min-descending entry order, and the no-digits rule (I12).
+- `default_stance` is a **required** field of every gate card
+  (`gates.schema.json`) and rides compile verbatim — it is the engine's
+  Call-1 fallback and the P1 probe's prediction value (engine spec §5).
 - **`places.json` added (v0.1).** The draft format has a mandatory places
   section (each place yields ≥2 pieces of info at different clock depths)
   and v0 had no file to receive it — a schema hole by the template
@@ -163,7 +171,7 @@ request §4); engine internals stay the engine's.
 
 | File | Contents | Consumer |
 |---|---|---|
-| `run-record` | run id · pack slug · policy (null = human) · reached clock · injected blocks · beats (gate · stance · **delta journal** `{variable, before, after, cause}`) · rendered timeline lines (mining surface, W2) · the two reports (W1/W3) · score at terminal clock | metric stage (§5) · report viewer · mining UI |
+| `run-record` | run id · pack slug · policy (null = human) · reached clock · injected blocks · beats (gate · stance · **delta journal** `{variable, before, after, cause}`) · rendered timeline lines (mining surface, W2) · the two reports (W1/W3) · score at terminal clock · fallbacks `{beat, call, code}` (engine spec §5) | metric stage (§5) · report viewer · mining UI |
 | `meta-state` | pack slug · run count · max exposure clock reached (drives `visible_from` gating) · carried blocks (prompt carry-over) · report archive | run-loop manager |
 | `metric-report` | per-policy rows (n, mean, variance) · policy gap · score variance · route coverage · vein yield · near-miss trace rate · source run ids | bake-off / §5 verdicts |
 
