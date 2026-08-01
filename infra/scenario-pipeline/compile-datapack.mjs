@@ -13,7 +13,7 @@
 //
 // Non-mechanical mappings are printed as NOTE lines for the session report.
 
-import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync } from 'node:fs';
 import { join, resolve, basename } from 'node:path';
 
 const draftPath = process.argv[2];
@@ -227,7 +227,7 @@ const characters = [];
       interest: get('이해관계'),
       knows: splitItems(knowsRaw.slice(0, ki)),
       doesnt_know: splitItems(knowsRaw.slice(ki + '모르는 것:'.length)),
-      meters: stripDot(get('눈금 후보')).split(' · ').map((label, i) => ({ id: `m${i + 1}`, label: label.trim(), initial: null })),
+      meters: stripDot(get('눈금 후보')).split(' · ').map((label, i) => ({ id: `m${i + 1}`, label: label.trim(), variable: null, initial: null })),
       strands: { truth_ids: [...new Set(truth_ids)], gate_ids },
     });
   }
@@ -318,21 +318,43 @@ let temperament;
 
 // ---------- §7 갈림길 (yaml card subset parser) ----------
 
-function parseInlineMap(str, where) {
-  const inner = str.replace(/^\{/, '').replace(/\}$/, '').trim();
-  const segs = [];
-  let buf = '', inQ = false;
-  for (const ch of inner) {
+// bracket-aware top-level split — hardened cards nest arrays and maps inside
+// inline maps: { id: heard, stances: [c], deltas: { trust: +15 } }
+function splitTop(str, where) {
+  const parts = [];
+  let buf = '', inQ = false, depth = 0;
+  for (const ch of str) {
     if (ch === '"') inQ = !inQ;
-    if (ch === ',' && !inQ) { segs.push(buf); buf = ''; } else buf += ch;
+    if (!inQ) {
+      if (ch === '{' || ch === '[') depth++;
+      if (ch === '}' || ch === ']') depth--;
+      if (ch === ',' && depth === 0) { parts.push(buf); buf = ''; continue; }
+    }
+    buf += ch;
   }
-  if (inQ) die(`${where}: unbalanced quotes in inline map`);
-  segs.push(buf);
+  if (inQ || depth !== 0) die(`${where}: unbalanced quotes/brackets`);
+  parts.push(buf);
+  return parts;
+}
+
+function parseInlineValue(raw, where) {
+  const v = raw.trim();
+  if (v.startsWith('{')) return parseInlineMap(v, where);
+  if (v.startsWith('[')) {
+    return splitTop(v.replace(/^\[/, '').replace(/\]$/, ''), where)
+      .map((s) => s.trim()).filter(Boolean).map(unquote);
+  }
+  return unquote(v);
+}
+
+function parseInlineMap(str, where) {
+  const inner = str.trim().replace(/^\{/, '').replace(/\}$/, '').trim();
   const obj = {};
-  for (const seg of segs) {
+  for (const seg of splitTop(inner, where)) {
+    if (!seg.trim()) continue;
     const i = seg.indexOf(':');
     if (i < 0) die(`${where}: inline map segment without key — "${seg.trim()}"`);
-    obj[seg.slice(0, i).trim()] = unquote(seg.slice(i + 1).trim());
+    obj[seg.slice(0, i).trim()] = parseInlineValue(seg.slice(i + 1), where);
   }
   return obj;
 }
@@ -416,6 +438,16 @@ const gates = [];
       if (!(req in card)) die(`${h[1]}: card missing "${req}"`);
     }
     if (card.gate !== h[1]) die(`${h[1]}: card says gate ${card.gate}`);
+    // hardened cards carry buckets — delta values arrive as "+15"/"-20" strings
+    const buckets = (card.buckets ?? []).map((b) => {
+      if (!b.id || !Array.isArray(b.stances)) die(`${h[1]}: bucket needs id and stances[] — got ${JSON.stringify(b)}`);
+      const deltas = Object.fromEntries(Object.entries(b.deltas ?? {}).map(([variable, v]) => {
+        const n = Number(v);
+        if (Number.isNaN(n)) die(`${h[1]} bucket ${b.id}: delta ${variable} is not a number — "${v}"`);
+        return [variable, n];
+      }));
+      return { id: b.id, stances: b.stances, deltas };
+    });
     gates.push({
       gate: card.gate,
       title: h[2].trim(),
@@ -432,7 +464,7 @@ const gates = [];
       key_examples: card.key_examples,
       predicted_shift: card.predicted_shift ?? null,
       false_leads: card.false_leads,
-      buckets: card.buckets ?? [],
+      buckets,
       edge_predicates: card.edge_predicates ?? [],
     });
   }
@@ -465,7 +497,7 @@ let score;
   };
 }
 
-// ---------- meta + write ----------
+// ---------- meta ----------
 
 const logline = sections['로그라인'].map((l) => l.trim()).filter(Boolean).join(' ');
 const meta = {
@@ -476,6 +508,41 @@ const meta = {
 
 const outDir = join(resolve(outRoot), slug);
 mkdirSync(outDir, { recursive: true });
+
+// ---------- hardening overlay ----------
+// Hand-authored values with no home in the draft (the draft stays in world
+// language). Gate machinery (buckets/predicted_shift/edge predicates) lives in
+// the draft's canonical cards; everything else — meter variable bindings and
+// initials, event effects, symptoms — lives in <pack>/hardening.json and is
+// merged here, so recompiling from the draft is always idempotent.
+
+let symptoms = {};
+const hardeningPath = join(outDir, 'hardening.json');
+if (existsSync(hardeningPath)) {
+  const hardening = JSON.parse(readFileSync(hardeningPath, 'utf8'));
+  for (const [cid, meterSpecs] of Object.entries(hardening.characters ?? {})) {
+    const character = characters.find((c) => c.id === cid);
+    if (!character) die(`hardening.json: unknown character "${cid}"`);
+    for (const [mid, spec] of Object.entries(meterSpecs)) {
+      const meter = character.meters.find((m) => m.id === mid);
+      if (!meter) die(`hardening.json: ${cid} has no meter "${mid}"`);
+      meter.variable = spec.variable ?? null;
+      meter.initial = spec.initial ?? null;
+    }
+  }
+  for (const [eid, spec] of Object.entries(hardening.timeline_effects ?? {})) {
+    const event = events.find((e) => e.id === eid);
+    if (!event) die(`hardening.json: unknown timeline event "${eid}"`);
+    // event ids are positional — the time guard catches overlay drift when
+    // draft rows are added or split
+    if (spec.time !== event.time) die(`hardening.json: ${eid} expects time ${spec.time} but event is at ${event.time} — draft rows moved, rekey the overlay`);
+    event.effects = { deltas: spec.deltas ?? {}, flags: spec.flags ?? {} };
+  }
+  symptoms = hardening.symptoms ?? {};
+  notes.push(`hardening.json 병합: 인물 ${Object.keys(hardening.characters ?? {}).length} · 이벤트 효과 ${Object.keys(hardening.timeline_effects ?? {}).length} · 증상 변수 ${Object.keys(symptoms).filter((k) => k !== 'flags').length}`);
+}
+
+// ---------- write ----------
 const writeJSON = (name, obj) => writeFileSync(join(outDir, name), `${JSON.stringify(obj, null, 2)}\n`);
 writeJSON('meta.json', meta);
 writeJSON('timeline.json', { events });
@@ -485,9 +552,8 @@ writeJSON('temperament.json', temperament);
 writeJSON('gates.json', { gates });
 writeJSON('truths.json', { truths });
 writeJSON('score.json', score);
-// symptoms are authored at hardening (they attach to deltas, which don't
-// exist at draft stage) — compile emits the empty skeleton, lint flags it
-writeJSON('symptoms.json', {});
+// authored via the hardening overlay; empty skeleton until then (lint flags it)
+writeJSON('symptoms.json', symptoms);
 copyFileSync(resolve(draftPath), join(outDir, 'draft.md'));
 
 console.log(`✓ compiled ${basename(draftPath)} → ${outDir}`);

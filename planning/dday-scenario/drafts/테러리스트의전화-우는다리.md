@@ -198,6 +198,11 @@ key_examples:
   - { for: k1, text: "13:05 통화 판독: 다리를 말하는 대목에서 발신자의 호흡은 겁에 질린 사람의 것이었다.", mined_from: "런 2 객관 로그 · 시계 13:05 — 다음 런의 G1 이전에 채굴 가능" }
 false_leads:
   - "옳은 정서, 틀린 사람 — '임차복은 어두워진 뒤 관리동을 떠나기를 겁냈다'(현장 기록). 두려움의 축은 맞지만 지목이 발신자가 아니라 방관자다."
+predicted_shift: "b → c"
+buckets:
+  - { id: heard, stances: [c], deltas: { trust: +15 } }
+  - { id: procedural, stances: [b], deltas: { trust: -5 } }
+  - { id: pressed, stances: [a], deltas: { trust: -20, fear: +10 } }
 ```
 
 G1을 경청으로 통과한 런에서는 13:05의 통화가 일방 통보가 아니라 조금 더 긴

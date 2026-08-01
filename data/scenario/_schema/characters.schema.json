@@ -26,14 +26,18 @@
             "maxItems": 2,
             "items": {
               "type": "object",
-              "required": ["id", "label", "initial"],
+              "required": ["id", "label", "variable", "initial"],
               "additionalProperties": false,
               "properties": {
                 "id": { "type": "string", "pattern": "^m[0-9]+$" },
                 "label": { "type": "string", "minLength": 1 },
+                "variable": {
+                  "type": ["string", "null"],
+                  "description": "엔진 상태 변수 이름(델타·증상 키가 이 이름을 쓴다). 하드닝 오버레이가 바인딩 — 초안 단계에는 null"
+                },
                 "initial": {
                   "type": ["number", "null"],
-                  "description": "초기값. 초안 단계에는 null — 하드닝이 채운다(린트가 미완 플래그)"
+                  "description": "초기값. 하드닝 오버레이가 채운다 — 초안 단계에는 null(린트가 미완 플래그)"
                 }
               }
             },

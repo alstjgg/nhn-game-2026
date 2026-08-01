@@ -19,12 +19,14 @@
         {
           "id": "m1",
           "label": "대응실에 대한 신뢰",
-          "initial": null
+          "variable": "trust",
+          "initial": 40
         },
         {
           "id": "m2",
           "label": "시간에 쫓기는 공포",
-          "initial": null
+          "variable": "fear",
+          "initial": 55
         }
       ],
       "strands": {
@@ -56,11 +58,13 @@
         {
           "id": "m1",
           "label": "체면의 방어",
+          "variable": null,
           "initial": null
         },
         {
           "id": "m2",
           "label": "에이전트에 대한 협조",
+          "variable": null,
           "initial": null
         }
       ],
@@ -93,11 +97,13 @@
         {
           "id": "m1",
           "label": "폭로에 대한 불안",
+          "variable": null,
           "initial": null
         },
         {
           "id": "m2",
           "label": "통제욕",
+          "variable": null,
           "initial": null
         }
       ],
@@ -130,11 +136,13 @@
         {
           "id": "m1",
           "label": "책임의 부담",
+          "variable": null,
           "initial": null
         },
         {
           "id": "m2",
           "label": "대응실에 대한 신뢰",
+          "variable": null,
           "initial": null
         }
       ],
@@ -164,11 +172,13 @@
         {
           "id": "m1",
           "label": "확신",
+          "variable": null,
           "initial": null
         },
         {
           "id": "m2",
           "label": "조급함",
+          "variable": null,
           "initial": null
         }
       ],
@@ -199,11 +209,13 @@
         {
           "id": "m1",
           "label": "분노",
+          "variable": null,
           "initial": null
         },
         {
           "id": "m2",
           "label": "대응실에 대한 신뢰",
+          "variable": null,
           "initial": null
         }
       ],
@@ -234,11 +246,13 @@
         {
           "id": "m1",
           "label": "다리에 대한 애착",
+          "variable": null,
           "initial": null
         },
         {
           "id": "m2",
           "label": "고집",
+          "variable": null,
           "initial": null
         }
       ],

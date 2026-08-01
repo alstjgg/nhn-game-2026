@@ -61,7 +61,7 @@ paper) → P1 = stage 4 (first-gate probe) → P2 = stages 5+6 (full-run
 measurement, once the engine lands). P0 alone covers half the bake-off:
 format compliance, rule compliance, structural comparison.
 
-## 3. Datapack spec (v0.2)
+## 3. Datapack spec (v0.3)
 
 `data/scenario/<slug>/`. **This spec is the compile stage's output and the
 engine's input.** Where it disagrees with the engine spec, the data track
@@ -83,6 +83,7 @@ them.
 | `truths.json` | truth → carrier sentences (id + text + where) · false leads. **This file issues sentence ids** (`trN-sN` / `trN-fN`) | hidden truths |
 | `score.json` | units (tallies · baseline · attributed gates · predicates) · no-intervention baseline · variance notes | score |
 | `symptoms.json` | state change → symptom sentences, per (variable × direction × magnitude band) + flag set/unset — the **only** channel state reaches the screen (engine spec §2.2, added v0.2 on its revision request) | — (hardening; compile emits an empty skeleton) |
+| `hardening.json` | **hand-authored source, not compiler output** — hardening values with no home in the draft: meter variable bindings + initials · timeline event effects · symptoms. Compile merges it into the three files above | — (hardening) |
 | `draft.md` | the source draft, moved in verbatim — the pack is self-contained and the draft's home moves with compilation | whole draft |
 
 Decisions in force:
@@ -119,6 +120,15 @@ Decisions in force:
 - Compile is extraction, not authoring: text fields carry the draft's
   sentences verbatim, and anything the draft doesn't state compiles to
   `null`/empty — never to an invented value.
+- **Hardening has exactly two homes, and recompile is idempotent (v0.3).**
+  Gate machinery (buckets · predicted_shift · edge predicates) is authored
+  in the draft's gate cards — that *is* the canonical card form (hardening
+  manual §5) — and the compiler parses hardened cards. Everything mechanical
+  with no draft home (meter variable bindings + initials, event effects,
+  symptoms) is authored in `hardening.json`, merged at compile. Nothing is
+  ever hand-edited in compiler output, so recompiling from the draft never
+  destroys hardening work. Overlay event keys carry a `time` guard because
+  event ids are positional — the compiler fails loudly if draft rows moved.
 
 ## 4. Architecture pipeline — the wiring
 
