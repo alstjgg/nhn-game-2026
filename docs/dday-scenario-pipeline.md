@@ -151,3 +151,29 @@ anything) · **greedy** (inject whatever stood out in the last report) ·
 
 Guard: the policy bots measure **gameplay**, not correctness — that oracle
 wins is a premise; the measured quantity is the size of the gap.
+
+## 6. Run artifacts (v0) — what execution leaves behind
+
+Data-track deliverables "run-record & meta-state format" and "§5 report
+format", bound now so the engine's output side and the policy runner can be
+built against them document-first. **Normative schemas:
+`data/runs/_schema/*.schema.json`.** Everything here only names surfaces
+whose suppliers are already contract-bound (call contracts §2/§4/§6, engine
+request §4); engine internals stay the engine's.
+
+| File | Contents | Consumer |
+|---|---|---|
+| `run-record` | run id · pack slug · policy (null = human) · reached clock · injected blocks · beats (gate · stance · **delta journal** `{variable, before, after, cause}`) · rendered timeline lines (mining surface, W2) · the two reports (W1/W3) · score at terminal clock | metric stage (§5) · report viewer · mining UI |
+| `meta-state` | pack slug · run count · max exposure clock reached (drives `visible_from` gating) · carried blocks (prompt carry-over) · report archive | run-loop manager |
+| `metric-report` | per-policy rows (n, mean, variance) · policy gap · score variance · route coverage · vein yield · near-miss trace rate · source run ids | bake-off / §5 verdicts |
+
+Decisions in force:
+
+- **Unmeasurable ≠ zero.** Every metric is nullable; a metric that could not
+  be computed is `null`, never `0` (A20: no-events-observed is "cannot
+  measure", not "no effect").
+- Route coverage's denominator comes from hardened `gates.json`
+  (buckets/edges) — `null` until hardening lands.
+- **Open items, engine-owned (engine request §6):** what ends a run before
+  the terminal clock (fixes `reached_clock` semantics) and beat granularity
+  per round. These land here as revisions when the engine spec answers.

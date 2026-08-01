@@ -195,6 +195,53 @@ for (const g of pack.gates.gates ?? []) {
   }
 }
 
+// ---------- W3 — key example species vs condition species (heuristic) ----------
+// The key is a condition CLASS (axis × referent × species); an example outside
+// the condition's species teaches the player the wrong lock shape and poisons
+// anything that derives positives from key_examples (suite generator, oracle).
+// Species is inferred from mined_from wording — heuristic, so WARN not ERROR.
+
+const inferSpecies = (minedFrom) =>
+  /주관 보고서|자기 서술|자기서술/.test(minedFrom) ? '자기서술'
+    : /객관 로그|객관 사건/.test(minedFrom) ? '사실'
+      : null;
+for (const g of pack.gates.gates ?? []) {
+  const condSpecies = new Map(g.key_conditions.map((k) => [k.id, k.species]));
+  for (const ex of g.key_examples) {
+    const inferred = inferSpecies(ex.mined_from);
+    const want = condSpecies.get(ex.for);
+    if (inferred && want && inferred !== want) {
+      warns.push(`W3 ${g.gate} example for ${ex.for}: mined_from suggests ${inferred}, condition wants ${want} — "${ex.text.slice(0, 24)}…"`);
+    }
+  }
+}
+
+// ---------- W4 — key example carries the targeted clause's axis vocabulary ----------
+// Measured: an example that doesn't speak the axis vocabulary opens nothing
+// (manual §3-1 — same fact, wrong axis = 0). Stem-matched (first 2 syllables)
+// to ride Korean conjugation; heuristic, so WARN.
+
+const clauseVocab = new Map(temp.clauses.map((c) => {
+  const stems = [c.axis, ...c.axis_vocabulary]
+    .flatMap((t) => t.split(/\s+/))
+    .flatMap((t) => (t.length > 2 ? [t, t.slice(0, 2)] : [t]));
+  return [c.id, [...new Set(stems)]];
+}));
+const clauseByRef = (targetsClause) => {
+  const m = targetsClause.match(/조건절\s*(\d+)/);
+  return m ? `cl${m[1]}` : null;
+};
+for (const g of pack.gates.gates ?? []) {
+  const condClause = new Map(g.key_conditions.map((k) => [k.id, clauseByRef(k.targets_clause)]));
+  for (const ex of g.key_examples) {
+    const cl = condClause.get(ex.for);
+    const stems = cl ? clauseVocab.get(cl) : null;
+    if (stems && !stems.some((s) => ex.text.includes(s))) {
+      warns.push(`W4 ${g.gate} example for ${ex.for}: text carries no axis vocabulary of ${cl} (${stems.slice(0, 4).join('/')}…) — "${ex.text.slice(0, 24)}…"`);
+    }
+  }
+}
+
 // ---------- hardening-incomplete flags ----------
 
 for (const g of pack.gates.gates ?? []) {

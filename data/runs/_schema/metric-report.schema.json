@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "metric-report.schema.json",
+  "title": "metric-report — 게임성 측정 리포트 (pipeline §5의 리포트 포맷)",
+  "description": "정책 봇 N런 × 정책들의 집계. §5가 요구한 '첫 실행 전 포맷 확정'의 이행. 측정 불가한 지표는 null — 0과 null을 구분한다(측정 불가 ≠ 효과 없음, RUNLOG A20).",
+  "type": "object",
+  "required": ["pack_slug", "run_ids", "policies", "metrics"],
+  "additionalProperties": false,
+  "properties": {
+    "pack_slug": { "type": "string", "minLength": 1 },
+    "run_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "집계에 들어간 run-record들 — 재현 가능성의 근거"
+    },
+    "policies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["policy", "n_runs", "mean_score", "score_variance"],
+        "additionalProperties": false,
+        "properties": {
+          "policy": { "type": "string", "minLength": 1, "description": "random | greedy | oracle …" },
+          "n_runs": { "type": "integer", "minimum": 1 },
+          "mean_score": { "type": ["number", "null"] },
+          "score_variance": { "type": ["number", "null"] }
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["policy_gap", "score_variance", "route_coverage", "vein_yield", "near_miss_trace_rate"],
+      "additionalProperties": false,
+      "properties": {
+        "policy_gap": { "type": ["number", "null"], "description": "oracle 평균 − random 평균. 두 정책이 다 있어야 계산 — 없으면 null" },
+        "score_variance": { "type": ["number", "null"], "description": "전 런 점수 분산 — ≈0이면 게이트가 장식" },
+        "route_coverage": {
+          "type": ["object", "null"],
+          "required": ["visited_edges", "total_edges", "ratio"],
+          "additionalProperties": false,
+          "properties": {
+            "visited_edges": { "type": "integer", "minimum": 0 },
+            "total_edges": { "type": "integer", "minimum": 0 },
+            "ratio": { "type": ["number", "null"] }
+          },
+          "description": "total_edges는 하드닝된 gates.json의 buckets·edge에서 센다 — 하드닝 전엔 null"
+        },
+        "vein_yield": { "type": ["number", "null"], "description": "런당 새로 채굴 가능해진 문장 수 평균 (Call 2 품질 리뷰와 지표 공유)" },
+        "near_miss_trace_rate": { "type": ["number", "null"], "description": "빗나간 주입이 다음 보고서에 흔적을 남긴 비율 — 낮으면 warmer/colder 루프 사망" }
+      }
+    }
+  }
+}

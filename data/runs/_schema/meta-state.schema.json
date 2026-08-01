@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meta-state.schema.json",
+  "title": "meta-state — 런 사이에 지속되는 것 (pipeline §6)",
+  "description": "런루프 매니저(아키텍처 트랙)가 읽고 쓰는 런 간 상태. 노출 게이팅·프롬프트 이월·보고서 아카이브의 데이터 형태만 묶는다.",
+  "type": "object",
+  "required": ["pack_slug", "run_count", "exposure_clock_reached", "carried_blocks", "report_archive"],
+  "additionalProperties": false,
+  "properties": {
+    "pack_slug": { "type": "string", "minLength": 1 },
+    "run_count": { "type": "integer", "minimum": 0 },
+    "exposure_clock_reached": {
+      "anyOf": [
+        { "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]\\+?$" },
+        { "type": "null" }
+      ],
+      "description": "역대 런의 최대 도달 시계 — timeline.json exposure.visible_from 게이팅의 기준값"
+    },
+    "carried_blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1 }
+        }
+      },
+      "description": "다음 런 프롬프트로 이월되는 블럭 (프롬프트 이월 — 런루프 매니저 범위)"
+    },
+    "report_archive": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "보관된 run_id 목록 — 과거 보고서 열람·채굴의 색인"
+    }
+  }
+}
