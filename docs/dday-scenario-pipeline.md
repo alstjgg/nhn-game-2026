@@ -83,7 +83,7 @@ them.
 | `truths.json` | truth → carrier sentences (id + text + where) · false leads. **This file issues sentence ids** (`trN-sN` / `trN-fN`) | hidden truths |
 | `score.json` | units (tallies · baseline · attributed gates · predicates) · no-intervention baseline · variance notes | score |
 | `symptoms.json` | state change → symptom sentences, per (variable × direction × magnitude band) + flag set/unset — the **only** channel state reaches the screen (engine spec §2.2, added v0.2 on its revision request) | — (hardening; compile emits an empty skeleton) |
-| `hardening.json` | **hand-authored source, not compiler output** — hardening values with no home in the draft: meter variable bindings + initials · timeline event effects · symptoms. Compile merges it into the three files above | — (hardening) |
+| `hardening.json` | **hand-authored source, not compiler output** — hardening values with no home in the draft: meter variable bindings + initials · per-event effects and beat rosters (`present`) · symptoms. Compile merges it into the three files above | — (hardening) |
 | `draft.md` | the source draft, moved in verbatim — the pack is self-contained and the draft's home moves with compilation | whole draft |
 
 Decisions in force:

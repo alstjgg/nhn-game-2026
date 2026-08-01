@@ -10,7 +10,17 @@
         "visible_from": null,
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        },
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
     },
     {
       "id": "t2",
@@ -22,7 +32,17 @@
         "visible_from": null,
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        },
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
     },
     {
       "id": "t3",
@@ -34,7 +54,8 @@
         "visible_from": null,
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": []
     },
     {
       "id": "t4",
@@ -46,7 +67,8 @@
         "visible_from": null,
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": []
     },
     {
       "id": "t5",
@@ -58,7 +80,8 @@
         "visible_from": null,
         "extra_condition": "현장(관리동)을 들여다본 런에만 보임"
       },
-      "effects": null
+      "effects": null,
+      "present": []
     },
     {
       "id": "t6",
@@ -70,7 +93,13 @@
         "visible_from": null,
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
     },
     {
       "id": "t7",
@@ -82,7 +111,8 @@
         "visible_from": null,
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": null
     },
     {
       "id": "t8",
@@ -94,7 +124,8 @@
         "visible_from": "12:00",
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": null
     },
     {
       "id": "t9",
@@ -106,7 +137,8 @@
         "visible_from": "13:05",
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": null
     },
     {
       "id": "t10",
@@ -118,7 +150,8 @@
         "visible_from": "14:20",
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": null
     },
     {
       "id": "t11",
@@ -130,7 +163,8 @@
         "visible_from": "15:10",
         "extra_condition": "사무소를 들여다본 런에만"
       },
-      "effects": null
+      "effects": null,
+      "present": null
     },
     {
       "id": "t12",
@@ -142,7 +176,8 @@
         "visible_from": "16:40",
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": null
     },
     {
       "id": "t13",
@@ -154,7 +189,8 @@
         "visible_from": "17:30",
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": null
     },
     {
       "id": "t14",
@@ -166,7 +202,8 @@
         "visible_from": "18:20",
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": null
     },
     {
       "id": "t15",
@@ -178,7 +215,8 @@
         "visible_from": "19:10",
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": null
     },
     {
       "id": "t16",
@@ -190,7 +228,8 @@
         "visible_from": "19:40",
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": null
     },
     {
       "id": "t17",
@@ -202,7 +241,8 @@
         "visible_from": "20:30",
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": null
     },
     {
       "id": "t18",
@@ -214,7 +254,8 @@
         "visible_from": "21:04",
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": null
     },
     {
       "id": "t19",
@@ -226,7 +267,8 @@
         "visible_from": "21:04+",
         "extra_condition": null
       },
-      "effects": null
+      "effects": null,
+      "present": null
     }
   ]
 }

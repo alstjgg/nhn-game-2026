@@ -5,7 +5,14 @@
       "m2": { "variable": "fear", "initial": 55 }
     }
   },
-  "timeline_effects": {},
+  "timeline": {
+    "t1": { "time": "08:50", "present": [{ "char_id": "c1", "side": "line" }, { "char_id": "c2", "side": "room" }] },
+    "t2": { "time": "09:25", "present": [{ "char_id": "c1", "side": "line" }, { "char_id": "c2", "side": "room" }] },
+    "t3": { "time": "09:40", "present": [] },
+    "t4": { "time": "10:40", "present": [] },
+    "t5": { "time": "10:40", "present": [] },
+    "t6": { "time": "11:07", "present": [{ "char_id": "c2", "side": "room" }] }
+  },
   "symptoms": {
     "trust": {
       "up": [

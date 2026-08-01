@@ -133,8 +133,12 @@ uniq(pack.truths.truths?.flatMap((t) => [...t.carriers, ...t.false_leads].map((s
 
 // ---------- referential integrity (ERROR) ----------
 
+const charIds = new Set(pack.characters.characters?.map((c) => c.id) ?? []);
 for (const e of pack.timeline.events ?? []) {
   if (e.place_id && !placeIds.has(e.place_id)) errors.push(`timeline ${e.id}: unknown place_id "${e.place_id}"`);
+  for (const p of e.present ?? []) {
+    if (!charIds.has(p.char_id)) errors.push(`timeline ${e.id}: present references unknown character "${p.char_id}"`);
+  }
 }
 for (const g of pack.gates.gates ?? []) {
   const stanceIds = new Set(g.stances.map((s) => s.id));
@@ -329,6 +333,8 @@ for (const p of pack.places.places ?? []) {
 if (!Object.keys(symptoms).length) flags.push('symptoms.json empty — authored during hardening; until then state changes have no path to the screen');
 const unfilledEffects = (pack.timeline.events ?? []).filter((e) => e.effects === null).length;
 if (unfilledEffects) flags.push(`timeline: effects null on ${unfilledEffects} event(s) — machine effects are assigned during gate hardening`);
+const unfilledPresent = (pack.timeline.events ?? []).filter((e) => e.present === null).length;
+if (unfilledPresent) flags.push(`timeline: present null on ${unfilledPresent} event(s) — beat rosters (Call 2 PRESENT_NPCS) are assigned during gate hardening`);
 
 // ---------- report ----------
 

@@ -182,8 +182,10 @@ const events = [];
       id, time, surface, place_id, text,
       exposure: { visible_from, extra_condition: extras.length ? extras.join(' · ') : null },
       // the draft carries only the narrative form of an event; its machine
-      // effect (scalar deltas / flags) is assigned during gate hardening
+      // effect (scalar deltas / flags) and beat roster (present) are assigned
+      // during gate hardening via the overlay
       effects: null,
+      present: null,
     });
   }
   const keys = events.map((e) => e.time);
@@ -530,16 +532,17 @@ if (existsSync(hardeningPath)) {
       meter.initial = spec.initial ?? null;
     }
   }
-  for (const [eid, spec] of Object.entries(hardening.timeline_effects ?? {})) {
+  for (const [eid, spec] of Object.entries(hardening.timeline ?? {})) {
     const event = events.find((e) => e.id === eid);
     if (!event) die(`hardening.json: unknown timeline event "${eid}"`);
     // event ids are positional — the time guard catches overlay drift when
     // draft rows are added or split
     if (spec.time !== event.time) die(`hardening.json: ${eid} expects time ${spec.time} but event is at ${event.time} — draft rows moved, rekey the overlay`);
-    event.effects = { deltas: spec.deltas ?? {}, flags: spec.flags ?? {} };
+    if (spec.effects) event.effects = { deltas: spec.effects.deltas ?? {}, flags: spec.effects.flags ?? {} };
+    if (spec.present) event.present = spec.present;
   }
   symptoms = hardening.symptoms ?? {};
-  notes.push(`hardening.json 병합: 인물 ${Object.keys(hardening.characters ?? {}).length} · 이벤트 효과 ${Object.keys(hardening.timeline_effects ?? {}).length} · 증상 변수 ${Object.keys(symptoms).filter((k) => k !== 'flags').length}`);
+  notes.push(`hardening.json 병합: 인물 ${Object.keys(hardening.characters ?? {}).length} · 타임라인 ${Object.keys(hardening.timeline ?? {}).length} · 증상 변수 ${Object.keys(symptoms).filter((k) => k !== 'flags').length}`);
 }
 
 // ---------- write ----------
