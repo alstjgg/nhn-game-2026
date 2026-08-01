@@ -273,6 +273,7 @@ for (const [variable, dirs] of Object.entries(symptoms)) {
 
 const dirOf = (n) => (n > 0 ? 'up' : n < 0 ? 'down' : null);
 const reachable = new Set();
+const flagReachable = new Set();
 for (const g of pack.gates.gates ?? []) {
   for (const b of g.buckets) {
     for (const [variable, delta] of Object.entries(b.deltas)) {
@@ -281,11 +282,27 @@ for (const g of pack.gates.gates ?? []) {
     }
   }
 }
+for (const e of pack.timeline.events ?? []) {
+  if (!e.effects) continue;
+  for (const [variable, delta] of Object.entries(e.effects.deltas)) {
+    const dir = dirOf(delta);
+    if (dir) reachable.add(`${variable}/${dir}`);
+  }
+  for (const [id, val] of Object.entries(e.effects.flags)) {
+    flagReachable.add(`${id}/${val ? 'set' : 'unset'}`);
+  }
+}
 for (const key of reachable) {
   const [variable, dir] = key.split('/');
   const list = symptoms[variable]?.[dir];
-  if (!list) errors.push(`symptom coverage: (${variable}, ${dir}) is reachable by a bucket delta but symptoms.json has no ${variable}.${dir} list (engine spec §6-2 failure ②)`);
+  if (!list) errors.push(`symptom coverage: (${variable}, ${dir}) is reachable by an actuator but symptoms.json has no ${variable}.${dir} list (engine spec §6-2 failure ②)`);
   else if (!list.some((e) => e.min === 1)) errors.push(`symptom coverage: ${variable}.${dir} has no min:1 entry — smallest deltas fall through (engine spec §6-2 failure ①)`);
+}
+for (const key of flagReachable) {
+  const [id, kind] = key.split('/');
+  if (typeof symptoms.flags?.[id]?.[kind] !== 'string') {
+    errors.push(`symptom coverage: flag ${id} can be ${kind} by an event effect but symptoms.json has no flags.${id}.${kind} sentence`);
+  }
 }
 
 // ---------- hardening-incomplete flags ----------
@@ -310,6 +327,8 @@ for (const p of pack.places.places ?? []) {
   }
 }
 if (!Object.keys(symptoms).length) flags.push('symptoms.json empty — authored during hardening; until then state changes have no path to the screen');
+const unfilledEffects = (pack.timeline.events ?? []).filter((e) => e.effects === null).length;
+if (unfilledEffects) flags.push(`timeline: effects null on ${unfilledEffects} event(s) — machine effects are assigned during gate hardening`);
 
 // ---------- report ----------
 

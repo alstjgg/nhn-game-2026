@@ -12,9 +12,32 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["id", "time", "surface", "text", "exposure"],
+        "required": ["id", "time", "surface", "text", "exposure", "effects"],
         "additionalProperties": false,
         "properties": {
+          "effects": {
+            "anyOf": [
+              { "type": "null" },
+              {
+                "type": "object",
+                "required": ["deltas", "flags"],
+                "additionalProperties": false,
+                "properties": {
+                  "deltas": {
+                    "type": "object",
+                    "additionalProperties": { "type": "number" },
+                    "description": "스칼라 변수 → 델타. 버킷 델타와 같은 map 형태(매뉴얼 §5)"
+                  },
+                  "flags": {
+                    "type": "object",
+                    "additionalProperties": { "type": "boolean" },
+                    "description": "플래그 id → set(true)/unset(false)"
+                  }
+                }
+              }
+            ],
+            "description": "이 사건이 상태에 새기는 효과 — 엔진 명세 §1.2 액추에이터 (b)의 데이터 슬롯. 초안에는 사건의 서사형만 있으므로 컴파일 시 null; 게이트 하드닝 단계에서 기계형이 붙는다(린트가 미완 플래그). 증상 커버리지 린트(E7)의 소스"
+          },
           "id": { "type": "string", "pattern": "^t[0-9]+$" },
           "time": { "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]\\+?$" },
           "surface": {

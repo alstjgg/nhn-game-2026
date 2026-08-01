@@ -9,7 +9,8 @@
       "exposure": {
         "visible_from": null,
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t2",
@@ -20,7 +21,8 @@
       "exposure": {
         "visible_from": null,
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t3",
@@ -31,7 +33,8 @@
       "exposure": {
         "visible_from": null,
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t4",
@@ -42,7 +45,8 @@
       "exposure": {
         "visible_from": null,
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t5",
@@ -53,7 +57,8 @@
       "exposure": {
         "visible_from": null,
         "extra_condition": "현장(관리동)을 들여다본 런에만 보임"
-      }
+      },
+      "effects": null
     },
     {
       "id": "t6",
@@ -64,7 +69,8 @@
       "exposure": {
         "visible_from": null,
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t7",
@@ -75,7 +81,8 @@
       "exposure": {
         "visible_from": null,
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t8",
@@ -86,7 +93,8 @@
       "exposure": {
         "visible_from": "12:00",
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t9",
@@ -97,7 +105,8 @@
       "exposure": {
         "visible_from": "13:05",
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t10",
@@ -108,7 +117,8 @@
       "exposure": {
         "visible_from": "14:20",
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t11",
@@ -119,7 +129,8 @@
       "exposure": {
         "visible_from": "15:10",
         "extra_condition": "사무소를 들여다본 런에만"
-      }
+      },
+      "effects": null
     },
     {
       "id": "t12",
@@ -130,7 +141,8 @@
       "exposure": {
         "visible_from": "16:40",
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t13",
@@ -141,7 +153,8 @@
       "exposure": {
         "visible_from": "17:30",
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t14",
@@ -152,7 +165,8 @@
       "exposure": {
         "visible_from": "18:20",
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t15",
@@ -163,7 +177,8 @@
       "exposure": {
         "visible_from": "19:10",
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t16",
@@ -174,7 +189,8 @@
       "exposure": {
         "visible_from": "19:40",
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t17",
@@ -185,7 +201,8 @@
       "exposure": {
         "visible_from": "20:30",
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t18",
@@ -196,7 +213,8 @@
       "exposure": {
         "visible_from": "21:04",
         "extra_condition": null
-      }
+      },
+      "effects": null
     },
     {
       "id": "t19",
@@ -207,7 +225,8 @@
       "exposure": {
         "visible_from": "21:04+",
         "extra_condition": null
-      }
+      },
+      "effects": null
     }
   ]
 }

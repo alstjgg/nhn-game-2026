@@ -181,6 +181,9 @@ const events = [];
     events.push({
       id, time, surface, place_id, text,
       exposure: { visible_from, extra_condition: extras.length ? extras.join(' · ') : null },
+      // the draft carries only the narrative form of an event; its machine
+      // effect (scalar deltas / flags) is assigned during gate hardening
+      effects: null,
     });
   }
   const keys = events.map((e) => e.time);

@@ -75,7 +75,7 @@ them.
 | File | Contents | Draft source |
 |---|---|---|
 | `meta.json` | slug · title · logline · scenario clock (start–end) · D-Day | logline |
-| `timeline.json` | fixed events: id · time · surface (call / cctv / onsite / document) · place ref · text · exposure (`visible_from` clock + free-text `extra_condition`) | fixed timeline |
+| `timeline.json` | fixed events: id · time · surface (call / cctv / onsite / document) · place ref · text · exposure (`visible_from` clock + free-text `extra_condition`) · **effects** (scalar deltas + flag set/unset — engine spec §1.2 actuator (b); `null` until hardening) | fixed timeline (narrative form; machine effects assigned at hardening) |
 | `characters.json` | id · role · interest · knows / doesn't-know · ≤2 meters (initial `null` until hardening) · strands (truth/gate refs — attributability input) | characters |
 | `places.json` | id · name · yields: ≥2 entries of (clock or depth note → info) | places |
 | `temperament.json` | default disposition · ≤2 clauses (axis · **axis_vocabulary** · condition · defeat condition) | temperament proposal |
@@ -101,6 +101,10 @@ Decisions in force:
   section; once deltas exist, lint enforces **symptom coverage** (every
   actuator-reachable (variable, direction) needs a `min: 1` entry — engine
   spec §6-2), min-descending entry order, and the no-digits rule (I12).
+  Coverage counts **both** actuators: bucket deltas and timeline event
+  `effects` — the latter field added in v0.2 so engine spec §1.2's second
+  actuator (script event effects) has a data slot instead of a dangling
+  declaration.
 - `default_stance` is a **required** field of every gate card
   (`gates.schema.json`) and rides compile verbatim — it is the engine's
   Call-1 fallback and the P1 probe's prediction value (engine spec §5).
