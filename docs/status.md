@@ -13,8 +13,11 @@ competition history. Work runs as three tracks per
 [dday-scenario-pipeline.md](./dday-scenario-pipeline.md): **data (민서)** ·
 **architecture (윤석)** · **client (미배정)** — agreement works by document,
 not discussion. The physical structure wrapping the layers is bound by
-[dday-physical-architecture.md](./dday-physical-architecture.md): tier split
-and constraints in force, layout section owned and to be filled by 윤석.
+[dday-physical-architecture.md](./dday-physical-architecture.md) — tier split,
+constraints, and the §3 repo layout are all in force. The minimal engine now
+has a spec: [dday-engine-minimal-spec.md](./dday-engine-minimal-spec.md)
+answers the request's five questions and closes call-contract open items
+#4 and #5.
 
 ## Status (2026-07-30)
 
@@ -61,14 +64,27 @@ wiring and runtime · **client (미배정)** — player-facing surface.
 
 ## Next steps (priority order)
 
-1. 윤석 fills the layout section of
-   [dday-physical-architecture.md](./dday-physical-architecture.md); root
-   scaffolding follows it.
+1. **Root scaffolding** — physical architecture §3.8 steps 1–2: module folders,
+   the three tsconfigs, `build` running `check`, and **verify the Pages deploy
+   before anything else lands**. This is the real gate for parallel work:
+   `src/shared/` does not exist yet, so the data track's first type definition
+   has nowhere to go.
 2. Data P0: compile skill + JSON schema validator, with field-level datapack
-   types landing as the pipeline §3 revision.
-3. Minimal engine (doubles as the W4 check) + Bedrock production path.
-4. First-gate probe (P1), then full-run gameplay measurement (P2).
-5. Assign a client-track owner.
+   types landing in `src/shared/datapack.ts` (the pipeline §3 revision) — plus
+   `symptoms.json` and the symptom-coverage lint rule requested by engine spec §6.
+3. **Pick one scenario** from the three drafts (team decision). Both the
+   hardening pass below and the compile skill need a target, and nine days does
+   not fit three.
+4. Minimal engine (doubles as the W4 check) + Bedrock production path. Its first
+   datapack is **the chosen draft's G1, hand-hardened** — not a synthetic test
+   pack. Draft-stage gate cards carry no buckets, deltas, or edge predicates
+   (pipeline §3 says hardening fills them), so hardening is the missing step;
+   doing it by hand for one gate feeds the engine *and* gives the hardening
+   manual its first real use. It does not wait on the compile skill. Engine unit
+   fixtures for the §7 criteria live in test code, not in `data/`.
+5. First-gate probe (P1), then full-run gameplay measurement (P2).
+6. Assign a client-track owner. **Still unassigned and the largest schedule
+   risk** — deliverables #1 and #2 depend on it.
 
 ## Open TODOs
 
@@ -77,11 +93,22 @@ wiring and runtime · **client (미배정)** — player-facing surface.
 
 ## Decision log
 
+- 2026-08-01 — **물리 아키텍처 §3 확정 + 최소 엔진 명세 v0.** 레이아웃은 plain
+  folder (npm workspaces 미채택) + tsconfig 3벌 — `core`에서 `DOM` lib를 빼서
+  isomorphism 제약을 **컴파일 에러로 강제**한다. 프록시는
+  `services/apothecary-llm-layer/`의 복제본이며 살아 있는 스택은 건드리지
+  않는다. `src/shared/`는 파일로 소유를 가른다(`datapack.ts` 민서 /
+  `contracts.ts` 윤석), **타입은 코드가 정본**. 엔진 명세는 요청서 §6의 다섯
+  질문에 답하고 계약 v1 미결 #4·#5를 닫는다 — 변수 목록·타임라인 길이·재시도
+  예산은 실측 전까지 **잠정**이다. 발견: §2 제약 3(데이터팩의 브라우저 도달)과
+  5(`data/` 소재)가 현재 같이 서지 못하며, 빌드타임 복사로 해소했다.
+  [물리 아키텍처](./dday-physical-architecture.md) §3 ·
+  [엔진 명세](./dday-engine-minimal-spec.md).
 - 2026-08-01 — Phase transition declared: demo → production. DDAY is built at the
   repo root (supersedes the `demos/dday/` scaffolding plan); demos remain deployed
   as history. The root's physical layout is owned by the architecture track via
   [docs/dday-physical-architecture.md](./dday-physical-architecture.md) —
-  tier split and constraints fixed, layout section to be filled by 윤석.
+  tier split and constraints fixed; §3 layout filled on 08-01 (entry above).
 - 2026-07-30 — DDAY 기본 메커니즘은 **C-BLOCK**(문장 블록 주입 → 해석 변화 →
   stance/행동 변화 → 확인 가능한 결과). C-STRUCT(우선순위 순서 재배열) 테스트는
   중단 — 8개 구성·190개 유효 응답 보존, 근거 표본 7개 구성·180개에서 목표 방향
