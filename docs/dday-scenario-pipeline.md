@@ -6,10 +6,10 @@
 > communication: the other track reads it and builds against it, and changes
 > propagate as revisions to the owning document.
 > **Binding set:** datapack spec (§3, 민서) ·
-> [engine spec](./dday-engine-minimal-request.md) (윤석) ·
+> [engine spec](./dday-engine-minimal-spec.md) (윤석 — answers the
+> [request](./dday-engine-minimal-request.md)) ·
 > [call contracts](./dday-call-contracts.md) (윤석) ·
-> [physical architecture](./dday-physical-architecture.md) (윤석 — layout
-> section to fill) ·
+> [physical architecture](./dday-physical-architecture.md) (윤석) ·
 > [architecture spec](./dday-architecture-spec.md) (invariants above both).
 
 ## 0. Principles
@@ -27,7 +27,7 @@
 | Track | Owner | Question | Deliverables |
 |---|---|---|---|
 | **Data pipeline** | 민서 (A) | Every data format between and inside the layers — what turns into what, and what flows where | Transformation chain (§2) · datapack spec (§3) · lint rule set · run-record & meta-state format (what a finished run leaves behind, what persists between runs) · production base prompt template (the D task — the judgment call's default prompt that temperament composes into) · gameplay metric definitions (§5) |
-| **Architecture pipeline** | 윤석 (L) | The actual wiring — call paths, data hand-offs, runtime | Bedrock production path · minimal engine, **including score evaluation at the terminal clock** · payload composer (the runtime side of call contracts §6) · full-run driver · **run-loop manager** (multi-run shell: run counter, depth-gated exposure, prompt carry-over, report archive) · gate-card → suite generator · policy-bot runner · **physical architecture** (fill the layout section of [the physical-architecture doc](./dday-physical-architecture.md)) |
+| **Architecture pipeline** | 윤석 (L) | The actual wiring — call paths, data hand-offs, runtime | Bedrock production path · minimal engine, **including score evaluation at the terminal clock** · payload composer (the runtime side of call contracts §6) · full-run driver · **run-loop manager** (multi-run shell: run counter, depth-gated exposure, prompt carry-over, report archive) · gate-card → suite generator · policy-bot runner · **physical architecture** ([the doc](./dday-physical-architecture.md) — §3 layout filled; further changes by revision) |
 | **Client** | — (unassigned) | The player-facing surface — how the player watches runs and touches the membrane | Observe surfaces (timeline · CCTV · call panel) · mining + slot-composition UI (pinboard with cap, species/axis tags) · report viewer with the client-driven typewriter · score/tally screen (absorbs report generation, latency rules 4–5) · run-loop shell UI (run history, prompt carry-over view) · the pause structure that binds the §9 latency budget and report cadence (with L) · assets, each entered in `assets-manifest.json` |
 
 ### 1.1 Executability check
@@ -147,10 +147,10 @@ decisions propagate as revisions to the engine spec and call contracts.
 
 - **Physical architecture** — the repo layout wrapping all three tracks:
   [dday-physical-architecture.md](./dday-physical-architecture.md). Its tier
-  split and constraints are already in force; the layout section is unfilled
-  and is this track's to fill — by revision, like everything else.
+  split, constraints, and §3 repo layout are all in force; further changes
+  propagate as revisions, like everything else.
 - **Bedrock production path** — call contracts v1 on the deployed proxy.
-- **Minimal engine** — spec: [engine spec](./dday-engine-minimal-request.md).
+- **Minimal engine** — spec: [engine spec](./dday-engine-minimal-spec.md).
   Its first run doubles as the W4 check (architecture spec §5). Scope
   includes evaluating `score.json` at the terminal clock.
 - **Payload composer** — the runtime realization of the call contracts' §6
