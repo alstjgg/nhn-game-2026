@@ -20,7 +20,7 @@
 
 | # | 룰 | 근거 |
 |---|---|---|
-| E1 | 8파일 각각이 자기 스키마를 통과한다 (타입·필수 필드·enum·패턴·개수) | pipeline §3 |
+| E1 | 10파일 각각이 자기 스키마를 통과한다 (타입·필수 필드·enum·패턴·개수·최솟값) — **손저작 `hardening.json` 포함**(`hardening.schema.json`, 전 층위 `additionalProperties: false`로 키 오타 차단). 검증기가 모르는 스키마 키워드는 조용히 넘기지 않고 ERROR — "스키마에 적힌 룰이 실은 안 돌고 있음"을 소리 나게 한다 | pipeline §3 · #104 리뷰 1(b)·2 (08-02) |
 | E2 | 열쇠의 인증 종은 `사실 \| 자기서술`뿐 (스키마 enum) — 감정·인용이 정답 경로에 못 들어온다 | 가이드 금지 목록 4 · 매뉴얼 안티패턴 5 |
 | E3 | id 중복 없음 (사건·인물·장소·게이트·진실·문장 레지스트리·점수 단위, 게이트 내 stance·조건) | — |
 | E4 | 참조 무결성: `place_id` → places · strands → truths/gates · `attributed_gates` → gates · bucket stance → stance 셋 · `default_stance` → stance 셋 · `key_examples.for` → 조건 id | — |
@@ -43,7 +43,7 @@
 | # | 대상 | 하드닝이 채울 것 |
 |---|---|---|
 | F1 | `buckets` · `edge_predicates` 빈 배열 | 매뉴얼 §5 buckets/delta 초안 |
-| F2 | 눈금 `initial: null` | 초기값 |
+| F2 | 눈금 `variable: null` 또는 `initial: null` — 어느 쪽이 비어도 미바인딩이다 (#104 리뷰 2에서 확장) | 변수 바인딩 + 초기값 |
 | F3 | 점수 `predicates` 빈 배열 | 상태 → 집계값 술어 |
 | F4 | 자유 서술 노출 조건 (`extra_condition` · `availability` · 장소 yield의 `depth_note`) | 엔진 술어로 승격 |
 
@@ -56,6 +56,11 @@
   기계 검사 대상이 아니다. 비트 층위의 7번(통제관 응답 요구)은 스위트가
   생기면 `infra/test-harness/lint-beat.mjs`가 잡는다.
 - **프로브** — 첫 게이트만, 하네스 소관 (매뉴얼 §6).
+- **오버레이 표류 (컴파일러 소관)** — `hardening.json`의 사건 키는 위치
+  기반(t·N)이라, 초안 행 이동·교체 시 값이 엉뚱한 사건에 붙는 표류는
+  린트가 아니라 **컴파일러의 이중 가드**(time + `text_head` startsWith
+  대조)가 die로 잡는다. 같은 시각의 두 행(t4·t5 10:40)이 자리를 바꾸는
+  경우가 time 단독 가드의 사각이었다 (#104 리뷰 3, 08-02).
 
 ## 사용
 

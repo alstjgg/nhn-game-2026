@@ -27,7 +27,7 @@ if (!packDir) {
 }
 const PACK = resolve(packDir);
 const SCHEMA_DIR = join(PACK, '..', '_schema');
-const FILES = ['meta', 'timeline', 'characters', 'places', 'temperament', 'gates', 'truths', 'score', 'symptoms'];
+const FILES = ['meta', 'timeline', 'characters', 'places', 'temperament', 'gates', 'truths', 'score', 'symptoms', 'hardening'];
 
 const errors = [];
 const warns = [];
@@ -48,7 +48,23 @@ if (errors.length) { report(); process.exit(1); }
 
 // ---------- schema validation (subset used by _schema/*.schema.json) ----------
 
+// The subset contract, made loud (#104 review 1(b)): a keyword outside this
+// set was NOT checked, and silence would mean a rule written in a normative
+// schema simply never runs. Adding a keyword to a schema means teaching the
+// validator about it — this error is the reminder.
+const KNOWN_KEYWORDS = new Set([
+  '$schema', '$id', '$ref', '$defs', 'title', 'description',
+  'type', 'enum', 'pattern', 'minLength', 'minimum', 'maximum',
+  'minItems', 'maxItems', 'items', 'required', 'properties',
+  'additionalProperties', 'anyOf',
+]);
+
 function validate(schema, data, path, root) {
+  for (const k of Object.keys(schema)) {
+    if (!KNOWN_KEYWORDS.has(k)) {
+      errors.push(`${path}: schema keyword "${k}" is not implemented by this validator — the rule it states was NOT checked`);
+    }
+  }
   if (schema.$ref) {
     const ref = schema.$ref.replace('#/$defs/', '');
     return validate(root.$defs[ref], data, path, root);
@@ -75,6 +91,14 @@ function validate(schema, data, path, root) {
   }
   if (schema.enum && !schema.enum.includes(data)) {
     errors.push(`${path}: ${JSON.stringify(data)} not in enum [${schema.enum.join(', ')}]`);
+  }
+  if (typeof data === 'number') {
+    if (schema.minimum != null && data < schema.minimum) {
+      errors.push(`${path}: ${data} < minimum ${schema.minimum}`);
+    }
+    if (schema.maximum != null && data > schema.maximum) {
+      errors.push(`${path}: ${data} > maximum ${schema.maximum}`);
+    }
   }
   if (typeof data === 'string') {
     if (schema.pattern && !new RegExp(schema.pattern).test(data)) {
@@ -299,13 +323,15 @@ for (const g of pack.gates.gates ?? []) {
     }
   }
 }
+// `?? {}` guards: a malformed effects object is already a schema ERROR above —
+// this loop must still reach report() instead of crashing and losing it (#104 review 1, repro ②)
 for (const e of pack.timeline.events ?? []) {
   if (!e.effects) continue;
-  for (const [variable, delta] of Object.entries(e.effects.deltas)) {
+  for (const [variable, delta] of Object.entries(e.effects.deltas ?? {})) {
     const dir = dirOf(delta);
     if (dir) reachable.add(`${variable}/${dir}`);
   }
-  for (const [id, val] of Object.entries(e.effects.flags)) {
+  for (const [id, val] of Object.entries(e.effects.flags ?? {})) {
     flagReachable.add(`${id}/${val ? 'set' : 'unset'}`);
   }
 }
@@ -334,12 +360,12 @@ const checkDelta = (v, where) => {
 };
 for (const g of pack.gates.gates ?? []) {
   for (const b of g.buckets) {
-    for (const [variable, v] of Object.entries(b.deltas)) checkDelta(v, `${g.gate} bucket ${b.id} delta ${variable}`);
+    for (const [variable, v] of Object.entries(b.deltas ?? {})) checkDelta(v, `${g.gate} bucket ${b.id} delta ${variable}`);
   }
 }
 for (const e of pack.timeline.events ?? []) {
   if (!e.effects) continue;
-  for (const [variable, v] of Object.entries(e.effects.deltas)) checkDelta(v, `timeline ${e.id} effects delta ${variable}`);
+  for (const [variable, v] of Object.entries(e.effects.deltas ?? {})) checkDelta(v, `timeline ${e.id} effects delta ${variable}`);
 }
 
 // ---------- hardening-incomplete flags ----------
@@ -349,8 +375,15 @@ for (const g of pack.gates.gates ?? []) {
   if (!g.edge_predicates.length) flags.push(`${g.gate}: edge_predicates empty`);
   if (g.availability) flags.push(`${g.gate}: availability is free text — promote to a predicate`);
 }
+// F2 covers both halves of a binding: a meter with variable === null is as
+// unbound as one with initial === null — a typo'd overlay key used to demote
+// variable to null with byte-identical lint output (#104 review 2)
 for (const c of pack.characters.characters ?? []) {
-  for (const m of c.meters) if (m.initial === null) flags.push(`${c.id} ${c.name}: meter "${m.label}" initial unset`);
+  for (const m of c.meters) {
+    if (m.variable === null || m.initial === null) {
+      flags.push(`${c.id} ${c.name}: meter "${m.label}" unbound (variable: ${m.variable ?? '—'} · initial: ${m.initial ?? '—'})`);
+    }
+  }
 }
 for (const u of pack.score.units ?? []) {
   if (!u.predicates.length) flags.push(`score ${u.id} (${u.label}): predicates empty`);

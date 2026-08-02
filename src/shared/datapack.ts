@@ -33,18 +33,18 @@ export type Meta = {
 /** datapack timeline.json — 무개입 고정 타임라인 */
 export type Timeline = {
   events: Array<{
-    /** 이 사건이 상태에 새기는 효과 — 엔진 명세 §1.2 액추에이터 (b)의 데이터 슬롯. 초안에는 사건의 서사형만 있으므로 컴파일 시 null; 게이트 하드닝 단계에서 기계형이 붙는다(린트가 미완 플래그). 증상 커버리지 린트(E7)의 소스 */
-    effects: null | {
+    /** 이 사건이 상태에 새기는 효과 — 엔진 명세 §1.2 액추에이터 (b)의 데이터 슬롯. 초안에는 사건의 서사형만 있으므로 컴파일 시 null; 게이트 하드닝 단계에서 기계형이 붙는다(린트가 미완 플래그). 증상 커버리지 린트(E7)의 소스. object/null 평탄형인 이유: 객체 키워드는 null에 no-op이라 anyOf와 의미 동일하면서 위반 진단이 필드 단위로 정확해진다 (#104 리뷰 1(a)) */
+    effects: {
       /** 스칼라 변수 → 비-0 정수 델타. 버킷 델타와 같은 map 형태(매뉴얼 §5 · 엔진 명세 §1.3 — 0 금지는 린트 E8이 잡는다) */
       deltas: Record<string, number>;
       /** 플래그 id → set(true)/unset(false) */
       flags: Record<string, boolean>;
-    };
-    /** 이 비트의 등장 인물 — Call 2 PRESENT_NPCS의 데이터 슬롯. side는 장식이 아니다(콜 계약 §3: line=회선 너머 · room=상황실 안 — 화자 오배정을 0으로 만든 유일한 수단). null = 하드닝 전 · 빈 배열 = NPC 대사 없는 비트. 하드닝 오버레이가 채운다 */
-    present: null | Array<{
+    } | null;
+    /** 이 비트의 등장 인물 — Call 2 PRESENT_NPCS의 데이터 슬롯. side는 장식이 아니다(콜 계약 §3: line=회선 너머 · room=상황실 안 — 화자 오배정을 0으로 만든 유일한 수단). null = 하드닝 전 · 빈 배열 = NPC 대사 없는 비트. 하드닝 오버레이가 채운다. array/null 평탄형 — effects와 같은 근거 */
+    present: Array<{
       char_id: string;
       side: "line" | "room";
-    }>;
+    }> | null;
     id: string;
     time: string;
     /** 사건이 관측되는 표면 — 통화 / CCTV / 현장 / 문서·기록 화면 */

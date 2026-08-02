@@ -127,8 +127,14 @@ Decisions in force:
   with no draft home (meter variable bindings + initials, event effects,
   symptoms) is authored in `hardening.json`, merged at compile. Nothing is
   ever hand-edited in compiler output, so recompiling from the draft never
-  destroys hardening work. Overlay event keys carry a `time` guard because
-  event ids are positional — the compiler fails loudly if draft rows moved.
+  destroys hardening work. Overlay event keys are positional, so drift is
+  guarded twice: `time` catches added/split rows, and `text_head` (a prefix
+  of the target event's text, matched with startsWith) catches same-time
+  rows swapping places — the case `time` alone can never see, and 우는다리
+  already has such a pair (t4·t5, both 10:40). The compiler fails loudly on
+  either mismatch (#104 review 3). The overlay itself is schema-validated
+  (`hardening.schema.json`, `additionalProperties: false` at every level) —
+  it is the pack's only hand-written file, so it gets the strictest walls.
 - **Buckets carry `flags` alongside `deltas` (v0.4).** Caller-facing gates
   (G1 · G4 · G7 — the man on the line) discharge through scalar deltas on
   his meters. Structural gates (G2 · G3 · G5 · G6) change *world* state, not

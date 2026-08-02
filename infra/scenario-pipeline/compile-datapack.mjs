@@ -526,7 +526,12 @@ mkdirSync(outDir, { recursive: true });
 let symptoms = {};
 const hardeningPath = join(outDir, 'hardening.json');
 if (existsSync(hardeningPath)) {
-  const hardening = JSON.parse(readFileSync(hardeningPath, 'utf8'));
+  let hardening;
+  try {
+    hardening = JSON.parse(readFileSync(hardeningPath, 'utf8'));
+  } catch (e) {
+    die(`hardening.json: cannot parse — ${e.message}`);
+  }
   for (const [cid, meterSpecs] of Object.entries(hardening.characters ?? {})) {
     const character = characters.find((c) => c.id === cid);
     if (!character) die(`hardening.json: unknown character "${cid}"`);
@@ -540,9 +545,13 @@ if (existsSync(hardeningPath)) {
   for (const [eid, spec] of Object.entries(hardening.timeline ?? {})) {
     const event = events.find((e) => e.id === eid);
     if (!event) die(`hardening.json: unknown timeline event "${eid}"`);
-    // event ids are positional — the time guard catches overlay drift when
-    // draft rows are added or split
+    // event ids are positional — overlay drift is guarded twice: time catches
+    // added/split rows, text_head catches same-time rows swapping places
+    // (t4/t5 share 10:40 — time alone never fires there, #104 review 3)
     if (spec.time !== event.time) die(`hardening.json: ${eid} expects time ${spec.time} but event is at ${event.time} — draft rows moved, rekey the overlay`);
+    if (!spec.text_head || !event.text.startsWith(spec.text_head)) {
+      die(`hardening.json: ${eid} text_head ${JSON.stringify(spec.text_head ?? null)} does not match event text "${event.text.slice(0, 20)}…" — draft rows moved or reworded, rekey the overlay`);
+    }
     if (spec.effects) event.effects = { deltas: spec.effects.deltas ?? {}, flags: spec.effects.flags ?? {} };
     if (spec.present) event.present = spec.present;
   }

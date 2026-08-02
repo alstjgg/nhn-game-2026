@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hardening.schema.json",
+  "title": "datapack hardening.json — 손저작 하드닝 오버레이",
+  "description": "팩에서 유일하게 사람이 직접 쓰는 파일 — 그래서 유일하게 오타가 가능한 파일이다 (#104 리뷰 2). 모든 층위에 additionalProperties:false를 걸어 키 오타('vairable' 류)가 조용히 null로 강등되는 대신 스키마 위반으로 터지게 한다. id가 실재하는지(인물·눈금·사건)는 스키마가 못 보므로 컴파일러가 die로 검사한다. 세 섹션 전부 선택 — 최소 오버레이는 빈 객체다.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "characters": {
+      "type": "object",
+      "description": "인물 id → 눈금 id → 변수 바인딩. 미지의 인물/눈금 id는 컴파일러가 die",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "required": ["variable", "initial"],
+          "additionalProperties": false,
+          "properties": {
+            "variable": { "type": "string", "minLength": 1, "description": "엔진 상태 모델의 변수 이름 (명세 §1.1)" },
+            "initial": { "type": "integer", "description": "초기값 — 스칼라는 정수 (명세 §1.3)" }
+          }
+        }
+      }
+    },
+    "timeline": {
+      "type": "object",
+      "description": "사건 id(t·N — 위치 기반) → 오버레이 값. 위치 드리프트 이중 가드: time과 text_head 둘 다 컴파일 시 실제 사건과 대조 — 같은 시각의 행이 자리를 바꿔도 text_head가 잡는다 (#104 리뷰 3)",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["time", "text_head"],
+        "additionalProperties": false,
+        "properties": {
+          "time": { "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]\\+?$" },
+          "text_head": { "type": "string", "minLength": 6, "description": "대상 사건 text의 머리 — 컴파일러가 startsWith로 대조해 어긋나면 die" },
+          "effects": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "deltas": { "type": "object", "additionalProperties": { "type": "integer" } },
+              "flags": { "type": "object", "additionalProperties": { "type": "boolean" } }
+            },
+            "description": "생략 가능(효과 미저작 = 팩에 null). 빈 객체 {} = 명시적 무효과. 컴파일이 deltas/flags를 {}로 채워 병합"
+          },
+          "present": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["char_id", "side"],
+              "additionalProperties": false,
+              "properties": {
+                "char_id": { "type": "string", "pattern": "^c[0-9]+$" },
+                "side": { "enum": ["line", "room"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "symptoms": {
+      "type": "object",
+      "description": "병합 후 symptoms.json에 그대로 실려 symptoms.schema.json의 전체 검사(정렬·숫자 금지·커버리지)를 받는다 — 여기서는 객체라는 것만 본다"
+    }
+  }
+}
