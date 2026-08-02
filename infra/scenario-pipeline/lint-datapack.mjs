@@ -284,6 +284,9 @@ for (const g of pack.gates.gates ?? []) {
       const dir = dirOf(delta);
       if (dir) reachable.add(`${variable}/${dir}`);
     }
+    for (const [id, val] of Object.entries(b.flags ?? {})) {
+      flagReachable.add(`${id}/${val ? 'set' : 'unset'}`);
+    }
   }
 }
 for (const e of pack.timeline.events ?? []) {
@@ -305,7 +308,7 @@ for (const key of reachable) {
 for (const key of flagReachable) {
   const [id, kind] = key.split('/');
   if (typeof symptoms.flags?.[id]?.[kind] !== 'string') {
-    errors.push(`symptom coverage: flag ${id} can be ${kind} by an event effect but symptoms.json has no flags.${id}.${kind} sentence`);
+    errors.push(`symptom coverage: flag ${id} can be ${kind} by an actuator (bucket or event effect) but symptoms.json has no flags.${id}.${kind} sentence`);
   }
 }
 

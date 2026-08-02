@@ -61,7 +61,8 @@
           ],
           "deltas": {
             "trust": 15
-          }
+          },
+          "flags": {}
         },
         {
           "id": "procedural",
@@ -70,7 +71,8 @@
           ],
           "deltas": {
             "trust": -5
-          }
+          },
+          "flags": {}
         },
         {
           "id": "pressed",
@@ -80,7 +82,8 @@
           "deltas": {
             "trust": -20,
             "fear": 10
-          }
+          },
+          "flags": {}
         }
       ],
       "edge_predicates": []
@@ -129,11 +132,30 @@
           "mined_from": "런 3 객관 로그 · 시계 17:30 사무소 반경 — 다음 런의 G2 이전에 채굴 가능"
         }
       ],
-      "predicted_shift": null,
+      "predicted_shift": "a → b",
       "false_leads": [
         "옳은 정서, 틀린 사람 — '강필주는 집회에서 다 무너뜨리겠다고 외쳤다'(11:30 브리핑 자료). 원한의 온도는 진짜지만, 첫 통화 시각의 그는 농성장 생중계 화면 안에 있었다."
       ],
-      "buckets": [],
+      "buckets": [
+        {
+          "id": "framed",
+          "stances": [
+            "a"
+          ],
+          "deltas": {},
+          "flags": {}
+        },
+        {
+          "id": "traced",
+          "stances": [
+            "b"
+          ],
+          "deltas": {},
+          "flags": {
+            "tip_traced": true
+          }
+        }
+      ],
       "edge_predicates": []
     },
     {
@@ -185,11 +207,41 @@
           "mined_from": "런 3 객관 로그 · 서고 단말(원본 열람 가지) — 다음 런의 G3 이전에 채굴 가능"
         }
       ],
-      "predicted_shift": null,
+      "predicted_shift": "a → b",
       "false_leads": [
         "옳은 정서, 틀린 사람 — '백도현은 수사 기록 열람 요청에 얼굴이 굳었다'(14시경 상황실). 감추는 낯빛의 축이 아니라 경계심이고, 지워진 기록의 서명자는 형사가 아니다."
       ],
-      "buckets": [],
+      "buckets": [
+        {
+          "id": "deferred",
+          "stances": [
+            "a"
+          ],
+          "deltas": {},
+          "flags": {}
+        },
+        {
+          "id": "unsealed",
+          "stances": [
+            "b"
+          ],
+          "deltas": {},
+          "flags": {
+            "originals_read": true
+          }
+        },
+        {
+          "id": "confronted",
+          "stances": [
+            "c"
+          ],
+          "deltas": {},
+          "flags": {
+            "originals_read": true,
+            "chief_confronted": true
+          }
+        }
+      ],
       "edge_predicates": []
     },
     {
@@ -241,11 +293,46 @@
           "mined_from": "런 4~5 주관 보고서(자기 서술) — 이후 런의 G4 이전에 채굴 가능"
         }
       ],
-      "predicted_shift": null,
+      "predicted_shift": "b → c",
       "false_leads": [
         "옳은 정서, 틀린 사람 — '폭발물 탐지견이 무대 아래에서 두 번 멈췄다'(19:10 경비 보고). 불안의 냄새는 진짜지만 그 코가 가리킨 것은 화약이 아니라 불꽃놀이 재료다."
       ],
-      "buckets": [],
+      "buckets": [
+        {
+          "id": "pressed",
+          "stances": [
+            "a"
+          ],
+          "deltas": {
+            "trust": -25,
+            "fear": 15
+          },
+          "flags": {}
+        },
+        {
+          "id": "procedural",
+          "stances": [
+            "b"
+          ],
+          "deltas": {
+            "trust": -10
+          },
+          "flags": {}
+        },
+        {
+          "id": "redefined",
+          "stances": [
+            "c"
+          ],
+          "deltas": {
+            "trust": 20,
+            "fear": -10
+          },
+          "flags": {
+            "caller_named": true
+          }
+        }
+      ],
       "edge_predicates": []
     },
     {
@@ -314,11 +401,41 @@
           "mined_from": "런 3 주관 보고서(자기 서술) — 다음 런의 G5 이전에 채굴 가능"
         }
       ],
-      "predicted_shift": null,
+      "predicted_shift": "a → b",
       "false_leads": [
         "옳은 정서, 틀린 사람 — '오세라는 세명건설 이야기가 나오자 말을 돌렸다'(19:10 축제 본부). 회피의 냄새는 진짜지만 그녀가 감춘 것은 결함이 아니라 결재선 공포다."
       ],
-      "buckets": [],
+      "buckets": [
+        {
+          "id": "paperwork",
+          "stances": [
+            "a"
+          ],
+          "deltas": {},
+          "flags": {}
+        },
+        {
+          "id": "seized",
+          "stances": [
+            "b"
+          ],
+          "deltas": {},
+          "flags": {
+            "logs_saved": true
+          }
+        },
+        {
+          "id": "leveraged",
+          "stances": [
+            "c"
+          ],
+          "deltas": {},
+          "flags": {
+            "logs_saved": true,
+            "insider_testimony": true
+          }
+        }
+      ],
       "edge_predicates": []
     },
     {
@@ -387,11 +504,40 @@
           "mined_from": "런 3 객관 로그 · 시계 21:04+ 집계 — 다음 런의 G6 이전에 채굴 가능"
         }
       ],
-      "predicted_shift": null,
+      "predicted_shift": "a → b",
       "false_leads": [
         "옳은 정서, 틀린 사람 — '시장실 독려 전화 이후 비서관의 목소리가 떨렸다'(19:10 통화 기록). 떨림은 진짜지만 그는 아무 권한도 결함도 모르는 전달자다."
       ],
-      "buckets": [],
+      "buckets": [
+        {
+          "id": "as_planned",
+          "stances": [
+            "a"
+          ],
+          "deltas": {},
+          "flags": {}
+        },
+        {
+          "id": "capped",
+          "stances": [
+            "b"
+          ],
+          "deltas": {},
+          "flags": {
+            "entry_capped": true
+          }
+        },
+        {
+          "id": "shouldered",
+          "stances": [
+            "c"
+          ],
+          "deltas": {},
+          "flags": {
+            "cancel_requested": true
+          }
+        }
+      ],
       "edge_predicates": []
     },
     {
@@ -443,11 +589,49 @@
           "mined_from": "런 4~5 주관 보고서(자기 서술) — 다음 런의 G7 이전에 채굴 가능"
         }
       ],
-      "predicted_shift": null,
+      "predicted_shift": "a → c",
       "false_leads": [
         "옳은 정서, 틀린 사람 — '임차복은 랜턴 불빛을 보고 겁에 질려 관리동 문을 잠갔다'(20:10 현장 기록). 그 두려움은 진짜지만, 계획이 아니라 습관이다."
       ],
-      "buckets": [],
+      "buckets": [
+        {
+          "id": "suppressed",
+          "stances": [
+            "a"
+          ],
+          "deltas": {
+            "trust": -25,
+            "fear": 20
+          },
+          "flags": {}
+        },
+        {
+          "id": "coaxed",
+          "stances": [
+            "b"
+          ],
+          "deltas": {
+            "trust": -10
+          },
+          "flags": {
+            "caller_descended": true
+          }
+        },
+        {
+          "id": "witnessed",
+          "stances": [
+            "c"
+          ],
+          "deltas": {
+            "trust": 20,
+            "fear": -15
+          },
+          "flags": {
+            "hatch_opened": true,
+            "caretaker_evacuated": true
+          }
+        }
+      ],
       "edge_predicates": []
     }
   ]

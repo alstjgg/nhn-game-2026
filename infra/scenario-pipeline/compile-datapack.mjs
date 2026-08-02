@@ -440,7 +440,8 @@ const gates = [];
       if (!(req in card)) die(`${h[1]}: card missing "${req}"`);
     }
     if (card.gate !== h[1]) die(`${h[1]}: card says gate ${card.gate}`);
-    // hardened cards carry buckets — delta values arrive as "+15"/"-20" strings
+    // hardened cards carry buckets — delta values arrive as "+15"/"-20" strings,
+    // flag values as "true"/"false" strings
     const buckets = (card.buckets ?? []).map((b) => {
       if (!b.id || !Array.isArray(b.stances)) die(`${h[1]}: bucket needs id and stances[] — got ${JSON.stringify(b)}`);
       const deltas = Object.fromEntries(Object.entries(b.deltas ?? {}).map(([variable, v]) => {
@@ -448,7 +449,11 @@ const gates = [];
         if (Number.isNaN(n)) die(`${h[1]} bucket ${b.id}: delta ${variable} is not a number — "${v}"`);
         return [variable, n];
       }));
-      return { id: b.id, stances: b.stances, deltas };
+      const bFlags = Object.fromEntries(Object.entries(b.flags ?? {}).map(([id, v]) => {
+        if (v !== 'true' && v !== 'false' && typeof v !== 'boolean') die(`${h[1]} bucket ${b.id}: flag ${id} is not a boolean — "${v}"`);
+        return [id, v === true || v === 'true'];
+      }));
+      return { id: b.id, stances: b.stances, deltas, flags: bFlags };
     });
     gates.push({
       gate: card.gate,

@@ -102,7 +102,7 @@ Decisions in force:
   section; once deltas exist, lint enforces **symptom coverage** (every
   actuator-reachable (variable, direction) needs a `min: 1` entry — engine
   spec §6-2), min-descending entry order, and the no-digits rule (I12).
-  Coverage counts **both** actuators: bucket deltas and timeline event
+  Coverage counts **both** actuators: bucket deltas/flags and timeline event
   `effects` — the latter field added in v0.2 so engine spec §1.2's second
   actuator (script event effects) has a data slot instead of a dangling
   declaration.
@@ -129,6 +129,16 @@ Decisions in force:
   ever hand-edited in compiler output, so recompiling from the draft never
   destroys hardening work. Overlay event keys carry a `time` guard because
   event ids are positional — the compiler fails loudly if draft rows moved.
+- **Buckets carry `flags` alongside `deltas` (v0.4).** Caller-facing gates
+  (G1 · G4 · G7 — the man on the line) discharge through scalar deltas on
+  his meters. Structural gates (G2 · G3 · G5 · G6) change *world* state, not
+  the caller's meters — their outcome is a flag set (`logs_saved`,
+  `originals_read`, …), the same boolean state model as timeline
+  `effects.flags`. Without this slot, structural gates would harden into
+  empty no-ops. Flag symptom coverage counts both sources; conditional
+  outcomes (e.g. G6's cancel succeeding only when `logs_saved` is set) are
+  **not** encoded in buckets — that resolution belongs to edge predicates /
+  the engine, pending the routing vocabulary.
 
 ## 4. Architecture pipeline — the wiring
 

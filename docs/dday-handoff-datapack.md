@@ -3,16 +3,18 @@
 > **지위:** pipeline §2 stage 5의 데이터 트랙 측 준비 문서. 시나리오는
 > **우는다리**로 확정(08-01, 민서 결정). 아키텍처 트랙의 소비 확인(스위트
 > 생성기 · 엔진 로드)이 남은 절반이며, §4가 그 확인 목록이다.
-> **대상 팩:** `data/scenario/우는다리/` — 린트 ERROR 0, G1 하드닝 완료.
+> **대상 팩:** `data/scenario/우는다리/` — 린트 ERROR 0, **G1–G7 하드닝
+> 완료**(buckets · predicted_shift · 비트 명단 · 사건 효과 · 증상). 남은
+> FLAG는 전부 §4의 어휘/상태모델 확인에 걸려 있다.
 
 ## 1. 엔진 로드 — 파일별 소비자와 상태
 
 | 파일 | 엔진/컴포저가 읽는 것 | 상태 |
 |---|---|---|
-| `gates.json` | G1: stance 셋 · `default_stance`(콜 실패 fallback + 프로브 예측) · buckets 3 · deltas | ✅ G1 하드닝 완료. `edge_predicates`는 빈 배열 — 라우팅 어휘(§4-2) 대기 |
-| `characters.json` | 눈금의 **변수 바인딩**: c1 서지형 `trust`(초기 40) · `fear`(초기 55) | ✅ 엔진 명세 §1.1의 잠정 변수 이름에 맞춤 — 재바인딩 시 오버레이만 수정 |
-| `symptoms.json` | 증상 렌더러 룩업 (명세 §2.2 형식) | ✅ G1 도달 가능 (변수,방향) 전부 커버 — 커버리지 린트 통과 |
-| `timeline.json` | 고정 사건 렌더 · 노출 게이팅 · `effects` · `present` | ✅ G1 라운드(t1–t6) 비트 명단 채움. effects는 전부 null(G1 라운드에 이벤트 효과 없음 — 의도) |
+| `gates.json` | G1–G7: stance 셋 · `default_stance`(콜 실패 fallback + 프로브 예측) · `predicted_shift` · buckets(deltas + **flags**) | ✅ 전 게이트 하드닝 완료. 통화 게이트(G1·G4·G7)는 trust/fear 델타, 구조 게이트(G2·G3·G5·G6)는 플래그 배출(§3-5). `edge_predicates`는 빈 배열 — 라우팅 어휘(§4-2) 대기 |
+| `characters.json` | 눈금의 **변수 바인딩**: c1 서지형 `trust`(초기 40) · `fear`(초기 55) | ✅ 엔진 명세 §1.1의 잠정 변수 이름에 맞춤 — 재바인딩 시 오버레이만 수정. c2–c7 눈금은 미바인딩(§4-6) |
+| `symptoms.json` | 증상 렌더러 룩업 (명세 §2.2 형식) | ✅ 도달 가능 (변수,방향) 4방향 + 플래그 16종 set 문장 전부 커버 — 커버리지 린트 통과 |
+| `timeline.json` | 고정 사건 렌더 · 노출 게이팅 · `effects` · `present` | ✅ 전 사건(t1–t19) 비트 명단 채움. effects: 세계를 바꾸는 5건(파쇄 t13 · 구금 t14 · 체포 t16 · 개막 t17 · 파단 t18)은 플래그, 나머지 14건은 명시적 무효과(`{}` — 초안 자기검사 5 그대로) |
 | `temperament.json` | Call 1·3의 `TEMPERAMENT` (같은 파일) | ✅ |
 | `meta.json` / `places.json` / `truths.json` / `score.json` | 시계 · 장소 · 오라클 메타데이터 · 종료 집계 | ✅ (score `predicates`는 하드닝 잔여) |
 
@@ -49,16 +51,29 @@ G1 카드로 사람 검증 완료. 카드의 모든 소비 필드가 존재한�
    이라고만 적었고 데이터팩(시나리오 종속)도 아니고 어느 파일도 아니다.
    시나리오 무관 정책이므로 `data/policy/report-guidance.json` 같은 팩 밖
    자리를 제안 — §4 확인 후 §3 개정 없이 별도 파일로 간다.
+5. **buckets에 `flags` 슬롯 신설** (pipeline §3 v0.4 결정). 구조 게이트
+   (G2·G3·G5·G6)의 결과는 발신자 눈금이 아니라 세계 상태다 — `logs_saved`
+   `originals_read` `entry_capped` 같은 플래그를 배출하며, 상태 모델은
+   timeline `effects.flags`와 동일(불리언 set). 조건부 결과(G6의 취소가
+   `logs_saved`일 때만 성립하는 것 등)는 buckets에 **넣지 않았다** — 그
+   해석은 edge predicate/엔진 몫이다.
 
 ## 4. 윤석 귀환 시 확인 목록
 
 1. `timeline.events[].effects` 형태 확인 (스칼라 델타 map + 플래그 —
-   #102 코멘트에서 요청함).
+   #102 코멘트에서 요청함) — 그리고 같은 상태 모델을 buckets `flags`에도
+   쓴 것(§3-5)의 확인.
 2. **라우팅 어휘** — `edge_predicates`가 가리킬 노드/술어의 형태. 이것이
-   와야 G1 하드닝의 마지막 필드가 닫힌다. 최소 엔진(게이트 1)은 빈 배열로
-   돌 수 있는지도 함께.
+   와야 게이트 하드닝의 마지막 필드가 닫힌다(전 게이트 공통). 최소
+   엔진(게이트 1)은 빈 배열로 돌 수 있는지도 함께. 같은 술어 언어가
+   노출 조건(`extra_condition`) · 장소 깊이(`depth_note`) · G7
+   `availability` · score `predicates`의 승격에도 쓰인다 — 남은 FLAG
+   전부가 이 어휘 하나에 걸려 있다.
 3. `datapack.ts` = `_schema/` 전사 합의 (#102 코멘트).
 4. `REPORT_GUIDANCE` 소재 (§3-4).
 5. 소비 확인 실행: 스위트 생성기가 G1 카드를 먹는가 · 엔진이 이 팩을
    로드해 §7 판정 1(라운드 1회 완주)을 도는가 — **이 둘이 통과하면 stage
    5가 닫힌다.**
+6. **c2–c7 눈금의 변수 바인딩 여부** — 엔진 §1.1 상태 모델은 잠정
+   trust/fear뿐이라 NPC 눈금은 미바인딩으로 남겼다(FLAG 12건). 상태
+   모델을 넓힐지, v0에서는 스펙아웃할지의 결정 사안.

@@ -93,7 +93,7 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["id", "stances", "deltas"],
+              "required": ["id", "stances", "deltas", "flags"],
               "additionalProperties": false,
               "properties": {
                 "id": { "type": "string", "minLength": 1 },
@@ -102,6 +102,11 @@
                   "type": "object",
                   "additionalProperties": { "type": "number" },
                   "description": "변수명 → 정수 delta. 초안 수준이면 충분(정본 §5)"
+                },
+                "flags": {
+                  "type": "object",
+                  "additionalProperties": { "type": "boolean" },
+                  "description": "구조 결과 — 게이트 stance가 세계 상태에 남기는 플래그 (timeline effects.flags와 같은 상태 모델). 인과 통화 게이트는 deltas, 구조 게이트는 flags가 주 배출구다"
                 }
               }
             },

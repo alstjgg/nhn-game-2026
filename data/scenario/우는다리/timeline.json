@@ -10,7 +10,10 @@
         "visible_from": null,
         "extra_condition": null
       },
-      "effects": null,
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
       "present": [
         {
           "char_id": "c1",
@@ -32,7 +35,10 @@
         "visible_from": null,
         "extra_condition": null
       },
-      "effects": null,
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
       "present": [
         {
           "char_id": "c1",
@@ -54,7 +60,10 @@
         "visible_from": null,
         "extra_condition": null
       },
-      "effects": null,
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
       "present": []
     },
     {
@@ -67,7 +76,10 @@
         "visible_from": null,
         "extra_condition": null
       },
-      "effects": null,
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
       "present": []
     },
     {
@@ -80,7 +92,10 @@
         "visible_from": null,
         "extra_condition": "현장(관리동)을 들여다본 런에만 보임"
       },
-      "effects": null,
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
       "present": []
     },
     {
@@ -93,7 +108,10 @@
         "visible_from": null,
         "extra_condition": null
       },
-      "effects": null,
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
       "present": [
         {
           "char_id": "c2",
@@ -111,8 +129,20 @@
         "visible_from": null,
         "extra_condition": null
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c5",
+          "side": "room"
+        },
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
     },
     {
       "id": "t8",
@@ -124,8 +154,11 @@
         "visible_from": "12:00",
         "extra_condition": null
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
     },
     {
       "id": "t9",
@@ -137,8 +170,20 @@
         "visible_from": "13:05",
         "extra_condition": null
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        },
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
     },
     {
       "id": "t10",
@@ -150,8 +195,16 @@
         "visible_from": "14:20",
         "extra_condition": null
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
     },
     {
       "id": "t11",
@@ -163,8 +216,11 @@
         "visible_from": "15:10",
         "extra_condition": "사무소를 들여다본 런에만"
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
     },
     {
       "id": "t12",
@@ -176,8 +232,20 @@
         "visible_from": "16:40",
         "extra_condition": null
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        },
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
     },
     {
       "id": "t13",
@@ -189,8 +257,18 @@
         "visible_from": "17:30",
         "extra_condition": null
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {
+          "logs_destroyed": true
+        }
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "room"
+        }
+      ]
     },
     {
       "id": "t14",
@@ -202,8 +280,22 @@
         "visible_from": "18:20",
         "extra_condition": null
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {
+          "kang_detained": true
+        }
+      },
+      "present": [
+        {
+          "char_id": "c6",
+          "side": "room"
+        },
+        {
+          "char_id": "c5",
+          "side": "room"
+        }
+      ]
     },
     {
       "id": "t15",
@@ -215,8 +307,16 @@
         "visible_from": "19:10",
         "extra_condition": null
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c4",
+          "side": "room"
+        }
+      ]
     },
     {
       "id": "t16",
@@ -228,8 +328,22 @@
         "visible_from": "19:40",
         "extra_condition": null
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {
+          "caller_arrested": true
+        }
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        },
+        {
+          "char_id": "c5",
+          "side": "room"
+        }
+      ]
     },
     {
       "id": "t17",
@@ -241,8 +355,18 @@
         "visible_from": "20:30",
         "extra_condition": null
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {
+          "crowd_on_bridge": true
+        }
+      },
+      "present": [
+        {
+          "char_id": "c7",
+          "side": "room"
+        }
+      ]
     },
     {
       "id": "t18",
@@ -254,8 +378,13 @@
         "visible_from": "21:04",
         "extra_condition": null
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {
+          "bridge_collapsed": true
+        }
+      },
+      "present": []
     },
     {
       "id": "t19",
@@ -267,8 +396,11 @@
         "visible_from": "21:04+",
         "extra_condition": null
       },
-      "effects": null,
-      "present": null
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
     }
   ]
 }
