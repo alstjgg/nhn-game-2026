@@ -1,98 +1,105 @@
-# 최소 엔진 명세 v0
+# Spec — Minimal Engine v0
 
-> **지위:** [최소 엔진 요청서](./dday-engine-minimal-request.md)에 대한 답이다.
-> 07-30 회의 §2-3이 정한 순서("무엇이 필요한지 먼저 **요청**한 뒤 최소 규모
-> **명세**부터 정의한다")의 뒷 절반. 요청서 §6의 질문 다섯에 답하고, §7의 완성
-> 판정을 실행 가능한 형태로 고정한다.
+> **Tier:** `spec-` — normative authority for its domain. Breaking anything here
+> makes a downstream artifact defective even if it works.
+> **Owner:** 윤석 (architecture track).
+> **Scope:** one round of a **single** gate. Everything the request excluded is
+> excluded here too.
 >
-> **소유자:** 윤석 (architecture track).
-> **범위:** 게이트 **1개**의 라운드 1회. 요청서 §5가 제외한 것은 여기서도 제외다.
-> **근거 문서:** [architecture-spec](./dday-architecture-spec.md) §2·§3 ·
-> [콜 계약 v1](./dday-call-contracts.md) · [파이프라인](./dday-scenario-pipeline.md) §3.
+> **This document is the answer** to the (now archived)
+> [minimal engine request](../planning/dday-engine-minimal-request.md) — the back
+> half of the 07-30 meeting's §2-3 sequence ("first *request* what is needed,
+> then define the minimum spec"). It answers the request's five §6 questions and
+> turns its §7 into executable acceptance criteria.
+>
+> **Source documents:** [architecture spec](./spec-architecture.md) §2 · §3 ·
+> [call contracts](./contract-calls.md) · [datapack contract](./contract-datapack.md).
 
----
+## 1. State model (request §6-1)
 
-## 1. 상태 모델 (요청서 §6-1)
-
-### 1.1 변수 집합 — **잠정**
+### 1.1 Variable set — **provisional**
 
 ```ts
 type RunState = {
-  scalars: { trust: number; fear: number };  // 정수 — §1.3
-  flags:   Record<string, boolean>;          // 최소 엔진에서 1개
-  clock:   number;                            // 시나리오 분
+  scalars: { trust: number; fear: number };  // integers — §1.3
+  flags:   Record<string, boolean>;          // one, in the minimal engine
+  clock:   number;                            // scenario minutes
   route:   { node: string; beat: number; visited: string[] };
 };
 ```
 
-세 시험(spec §3.1) 통과 근거:
+Evidence that each passes the three tests (architecture spec §3.1):
 
-| 변수 | write | read | visible |
+| Variable | write | read | visible |
 |---|---|---|---|
-| `trust` | (게이트,스탠스) delta | edge 술어 `(soft, trust≥T)` | 말수 · 정보 공유 |
-| `fear` | (게이트,스탠스) delta | edge 술어 `(hard, fear≥F)` | 호흡 · 목소리 |
-| `clock` | 스크립트 이벤트 | 종료 판정 + `score.json` | 벽시계 — **다이제틱 계기판이라 I12 예외** |
-| flag ×1 | 스크립트 이벤트 **또는 스탠스 버킷** (§1.2) | edge 술어 | 행동 변화 |
-| `route` | 엔진 | edge 술어 | **면제** (spec §3.1의 유일한 면제 항목) |
+| `trust` | (gate, stance) delta | edge predicate `(soft, trust≥T)` | talkativeness · information sharing |
+| `fear` | (gate, stance) delta | edge predicate `(hard, fear≥F)` | breathing · voice |
+| `clock` | script events | termination check + `score.json` | wall clock — **an I12 exception, being a diegetic instrument** |
+| flag ×1 | script events **or stance buckets** (§1.2) | edge predicate | behavior change |
+| `route` | engine | edge predicate | **exempt** (the only exemption in architecture spec §3.1) |
 
-두 스칼라를 고른 이유는 대칭이다 — `soft`·`hard` 두 버킷이 **각각** 술어를 걸
-변수를 가져야 라우팅이 실제로 갈라지고, 그래야 §7-6(같은 스탠스+같은 상태 →
-같은 라우팅)이 자명하지 않은 테스트가 된다. flag는 종류 커버리지용이다: 최소
-엔진이 flag 경로를 한 번도 실행하지 않으면 그 경로는 시나리오 바인딩 때 처음
-돌게 된다.
+The two scalars were chosen for symmetry — the `soft` and `hard` buckets must
+**each** own a variable a predicate can hang on, otherwise routing never actually
+diverges and §7-6 (same stance + same state → same routing) becomes a trivial
+test. The flag exists for kind coverage: if the minimal engine never executes a
+flag path, that path first runs at scenario-binding time.
 
-**flag write는 두 곳이다: 스크립트 이벤트와 스탠스 버킷.** 처음 이 절은
-스크립트 전용으로 좁혀 적었다 — 버킷에 flag 슬롯이 없었고, 없는 슬롯을 명세가
-약속하면 그 약속은 시나리오 바인딩 때 처음 깨지기 때문이다. 그 슬롯이 같은 날
-생겼다(파이프라인 §3 v0.4, `buckets[].flags` — `effects.flags`와 같은 불리언
-모델): 구조 게이트(우는다리 G2·G3·G5·G6)의 결과는 발신자 눈금이 아니라 세계
-상태라, 슬롯 없이는 그 게이트들이 빈 no-op으로 하드닝된다. **최소 엔진은
-무관하다** — 첫 팩의 G1 버킷은 flag를 배출하지 않으므로, 최소 엔진의 flag 경로
-종류 커버리지는 여전히 스크립트 이벤트 하나로 충족된다. 엔진의 flag 적용
-이음매는 소스를 가리지 않아야 한다(§1.2의 두 액추에이터가 같은 코드로 도는
-것과 같은 근거).
+**Flags are written in two places: script events and stance buckets.** This
+section was first written narrowed to script events only — buckets had no flag
+slot, and a spec that promises a slot which does not exist breaks that promise at
+scenario-binding time. The slot appeared the same day (datapack contract v0.4,
+`buckets[].flags`, the same boolean model as `effects.flags`): the outcome of a
+structural gate (우는다리 G2 · G3 · G5 · G6) is world state rather than the
+caller's meters, so without the slot those gates harden into empty no-ops. **The
+minimal engine is unaffected** — the first pack's G1 buckets emit no flags, so
+its flag-path kind coverage is still satisfied by the script event alone. The
+engine's flag-application seam must not discriminate by source (same reasoning as
+§1.2's two actuators running through the same code).
 
-⚠️ **이 목록은 spec §9의 `state variable list` 바인딩이 아니다.** §9는 그
-바인딩에 (a) 시나리오 선정 (b) §3.1 visibility 프로브(소유자 L, 미실행)를
-전제조건으로 걸어두었고 둘 다 미충족이다. 이것은 **엔진을 돌리기 위한 잠정
-집합**이며, 두 전제가 채워지면 §3.1의 감축 규칙에 따라 재바인딩한다. 엔진은
-변수 목록에 무관해야 하므로(spec §3) 재바인딩이 엔진 코드를 건드리면 그 자체가
-결함이다.
+> ⚠️ **This list is not architecture spec §9's `state variable list` binding.**
+> §9 makes that binding conditional on (a) scenario selection and (b) the §3.1
+> visibility probe (owner L, not yet run); the second is unmet. This is a
+> **provisional set for getting the engine running**, and it is rebound under
+> §3.1's reduction rules once both preconditions are satisfied. The engine must
+> be indifferent to the variable list (architecture spec §3), so if rebinding
+> touches engine code, that is itself a defect.
 
-### 1.2 액추에이터
+### 1.2 Actuators
 
-spec §3의 whitelist 그대로. **(게이트,스탠스) 고정 delta**와 **스크립트 이벤트
-효과** 둘뿐이다. delta 적용은 **엔진의 한 이음매**에서만 일어난다 — 지금 실행
-등급(±α)은 꺼져 있지만, 이 이음매가 Call 4의 삽입 지점이다.
+Exactly architecture spec §3's whitelist: **(gate, stance) fixed deltas** and
+**script event effects**, and nothing else. Delta application happens at **one
+seam in the engine** — the execution grade (±α) is off today, but that seam is
+Call 4's insertion point.
 
-| 액추에이터 | 데이터 소재 | 형태 |
+| Actuator | Data location | Shape |
 |---|---|---|
-| (a) (게이트,스탠스) delta | `gates.json` `gates[].buckets[]` | `{ deltas: 변수→정수, flags: id→boolean }` — `flags`는 §3 v0.4 신설 |
-| (b) 스크립트 이벤트 효과 | `timeline.json` `events[].effects` | `{ deltas: 변수→정수, flags: id→boolean }` 또는 하드닝 전이면 `null` |
+| (a) (gate, stance) delta | `gates.json` `gates[].buckets[]` | `{ deltas: variable→integer, flags: id→boolean }` — `flags` added in datapack contract v0.4 |
+| (b) script event effect | `timeline.json` `events[].effects` | `{ deltas: variable→integer, flags: id→boolean }`, or `null` pre-hardening |
 
-(b)의 슬롯은 이 명세의 요청으로 데이터 트랙이 신설했다(파이프라인 §3 v0.3).
-**형태는 이대로 엔진이 소비한다** — `flags`의 boolean이 `symptoms.json`의
-`set`/`unset`과 1:1로 붙고, `deltas`는 (a)와 같은 map이라 journal 기록과 증상
-룩업이 두 액추에이터에 대해 같은 코드로 돈다. 적용 시점은 §4.
+The slot for (b) was created by the data track at this spec's request (datapack
+contract v0.3). **The engine consumes that shape as-is** — the boolean in `flags`
+maps 1:1 onto `symptoms.json`'s `set`/`unset`, and `deltas` is the same map as
+(a), so journal recording and symptom lookup run through the same code for both
+actuators. Application timing: §4.
 
-### 1.3 스칼라와 delta는 **정수**다
+### 1.3 Scalars and deltas are **integers**
 
-상태 스칼라와 두 액추에이터의 delta 값은 전부 정수이며, delta `0`은 저작
-오류다. 이것은 취향이 아니라 §2.3의 전제다 — 증상 룩업은 변화량을 `min`
-(정수 ≥ 1) 구간에 매치시키므로, `+0.5`짜리 delta는 **어떤 문장에도 걸리지 않고**
-§2.3-2의 hard error가 된다. 그런데 §6-2의 커버리지 lint는 `(변수, 방향)`만
-검사하므로 이 데이터를 통과시킨다: 저작 시점에 조용하고 런타임에 터지는,
-§6-2가 막으려던 바로 그 부류다.
+State scalars and both actuators' delta values are integers, and a delta of `0`
+is an authoring error. This is not taste; it is §2.3's premise. The symptom
+lookup matches magnitude against `min` bands (integers ≥ 1), so a `+0.5` delta
+**matches no sentence at all** and becomes §2.3-2's hard error. Yet §6-2's
+coverage lint only inspects `(variable, direction)`, so it passes that data:
+exactly the silent-at-authoring, explodes-at-runtime class §6-2 exists to
+prevent.
 
-데이터 쪽 스키마는 지금 `number`다. 파이프라인 §3이 "엔진 스펙과 어긋나면
-데이터 트랙이 개정해 맞춘다"고 조정 방향을 정해 두었으므로, 이 문단이 그
-개정 근거다 — 별도 요청서가 아니다(§6-2 참조).
+The data-side schema currently says `number`. The datapack contract fixed the
+adjustment direction ("where it disagrees with the engine spec, the data track
+revises to restore fit"), so this paragraph *is* the basis for that revision —
+not a separate request (see §6-3).
 
----
+## 2. Delta journal and symptom renderer (request §6-2 · contract open #4)
 
-## 2. delta journal과 증상 렌더러 (요청서 §6-2 · 계약 미결 #4)
-
-### 2.1 journal 항목
+### 2.1 Journal entry
 
 ```ts
 type DeltaEntry = {
@@ -103,26 +110,29 @@ type DeltaEntry = {
 };
 ```
 
-비트마다 기록한다. `cause`는 장식이 아니라 attributability의 근거다 — 점수나
-결과를 설명하지 못하면 그것은 버그라는 게 spec §2의 입장이다.
+Recorded every beat. `cause` is not decoration — it is the basis of
+attributability, and architecture spec §2's position is that a score or outcome
+you cannot explain is a bug.
 
-**`cause`는 팩의 id로 쓴다.** 게이트는 `gates[].gate`(`G7`), 스탠스는
-`stances[].id`(`c`), 이벤트는 `events[].id`(`t12`)다 — 스탠스 `label`(`공감`)이나
-이벤트 본문이 아니다. journal은 run record(`data/runs/_schema/run-record`)에
-그대로 실리므로, 라벨을 쓰면 저작자가 라벨 한 글자를 고치는 순간 **과거 런의
-귀속이 끊긴다.** id는 스키마가 패턴으로 고정하고 있고 라벨은 자유 텍스트다.
+**Write `cause` using pack ids.** The gate is `gates[].gate` (`G7`), the stance is
+`stances[].id` (`c`), the event is `events[].id` (`t12`) — not the stance `label`
+(`공감`) and not event prose. The journal rides verbatim into the run record
+(`data/runs/_schema/run-record`), so if labels were used, **the moment an author
+edits one character of a label, attribution for every past run breaks.** Ids are
+pattern-fixed by the schema; labels are free text.
 
-### 2.2 증상 문장은 **데이터**다
+### 2.2 Symptom sentences are **data**
 
-문장은 코드가 아니라 `data/scenario/<slug>/symptoms.json`에 저작한다
-(balance-as-data). 렌더러는 룩업 함수이고, 시나리오가 바뀔 때 엔진은 바뀌지
-않는다.
+Sentences are authored in `data/scenario/<slug>/symptoms.json`, not in code
+(balance-as-data). The renderer is a lookup function, and when the scenario
+changes the engine does not.
 
-**이 파일은 하드닝 산출물이다.** 증상은 delta에 붙는데 draft 단계 게이트 카드는
-delta를 갖지 않으므로(파이프라인 §3), 초안에서 컴파일된 팩은 **빈 골격**을
-갖고 lint가 그것을 미완으로 추적한다 — 결함이 아니라 추적되는 저작 단계다.
-아래 §6-2의 커버리지 검사는 delta가 생기는 순간부터 실효를 갖는다. 엔진이
-빈 팩을 먹으면 첫 delta에서 §2.3-2로 멈추는 것이 맞다.
+**This file is a hardening artifact.** Symptoms attach to deltas, and draft-stage
+gate cards have no deltas (datapack contract), so a pack compiled from a draft
+carries an **empty skeleton** and lint tracks it as incomplete — not a defect but
+a tracked authoring stage. §6-2's coverage check becomes effective the moment
+deltas exist. If the engine is fed an empty pack, halting at the first delta via
+§2.3-2 is the correct behavior.
 
 ```jsonc
 {
@@ -142,380 +152,409 @@ delta를 갖지 않으므로(파이프라인 §3), 초안에서 컴파일된 팩
 }
 ```
 
-| 키 | 의미 |
+| Key | Meaning |
 |---|---|
-| 최상위 키 | 스칼라 변수 이름, 또는 플래그를 모은 `flags` |
-| `up` / `down` | 변화 방향. `up`은 증가, `down`은 감소 |
-| `min` | 이 문장이 적용되는 **최소 변화량** `\|after − before\|`. 항목은 `min` 내림차순으로 읽힌다 |
-| `text` | 증상 문장. 숫자를 포함하면 §2.3-7이 hard error를 낸다 |
+| top-level key | A scalar variable name, or `flags` collecting the flags |
+| `up` / `down` | Direction of change. `up` is increase, `down` is decrease |
+| `min` | The **minimum magnitude** `\|after − before\|` at which this sentence applies. Entries are read in `min` descending order |
+| `text` | The symptom sentence. Containing a digit raises §2.3-7's hard error |
 | `flags.<id>.set` / `.unset` | `false→true` / `true→false` |
 
-`{who}`는 그 변수를 가진 인물의 이름으로 치환한다 — `characters.json`에서
-`characters[].meters[].variable`이 그 변수와 일치하는 인물의 `name`이다. 눈금의
-변수 바인딩은 하드닝 단계에 채워지므로(초안에는 `null`), 이 조회는 하드닝된
-팩에서만 성립한다. 선택적이다 — 인물이 하나뿐이면 문장에 직접 써도 된다.
-최소 엔진은 스칼라가 인물 1명에 귀속되므로 소유자가 자명하고, 다중 인물로
-확장되면 변수 키가 `<npc_id>.<var>` 형태가 된다 — 시나리오 바인딩 시점의
-일이다.
+`{who}` is substituted with the name of the character owning that variable — the
+`name` of the character in `characters.json` whose
+`characters[].meters[].variable` matches. Meter variable bindings are filled at
+hardening (they are `null` in a draft), so this lookup only resolves on a hardened
+pack. It is optional: with a single character you may write the name directly
+into the sentence. In the minimal engine the scalars belong to one character, so
+ownership is self-evident; when this extends to multiple characters the variable
+key becomes `<npc_id>.<var>` — a scenario-binding-time concern.
 
-**실제 렌더 예시.** 게이트 7에서 `압박`(`trust −20`, `fear +25`)을 골랐고 상태가
-`{trust: 40, fear: 55}`였다면:
+**A worked render.** At gate 7, `압박` was chosen (`trust −20`, `fear +25`) with
+state `{trust: 40, fear: 55}`:
 
 ```
-journal  [ { fear,  55→80, "gate7:압박" },      → up,   크기 25
-           { trust, 40→20, "gate7:압박" } ]     → down, 크기 20
+journal  [ { fear,  55→80, "gate7:압박" },      → up,   magnitude 25
+           { trust, 40→20, "gate7:압박" } ]     → down, magnitude 20
 
-룩업     fear.up   에서 min 20 매치 → "회선 A 발신자의 숨이 눈에 띄게 가빠졌다"
-         trust.down에서 min 15 매치 → "회선 A 발신자가 문장을 짧게 끊기 시작했다"
+lookup   fear.up    matches min 20 → "회선 A 발신자의 숨이 눈에 띄게 가빠졌다"
+         trust.down matches min 15 → "회선 A 발신자가 문장을 짧게 끊기 시작했다"
 
-정렬     둘 다 스칼라(kind_rank 0) → 크기 내림차순 → fear(25) 먼저
-상한     2개 ≤ 3 → 그대로
+sort     both scalar (kind_rank 0) → magnitude descending → fear (25) first
+cap      2 ≤ 3 → unchanged
 
 SCENE_SYMPTOMS = [ "회선 A 발신자의 숨이 눈에 띄게 가빠졌다",
                    "회선 A 발신자가 문장을 짧게 끊기 시작했다" ]
 ```
 
-### 2.3 렌더러 계약
+### 2.3 Renderer contract
 
 ```ts
 renderSymptoms(journal: DeltaEntry[], pack: SymptomPack): string[]
 ```
 
-1. 각 항목을 `(variable, direction, magnitude)`로 환원한다. 스칼라는
-   `magnitude = |after − before|`, flag는 `magnitude` 없음.
-   **`magnitude === 0`인 항목은 여기서 버린다** — 상태가 움직이지 않았으므로
-   보여줄 증상이 없다. 이것은 2번의 예외가 아니라 그 앞단이다: 버리지 않으면
-   모든 no-op delta가 매치 실패로 hard error를 낸다. journal에는 남는다(§2.1의
-   기록 대상은 상태 변화 시도이지 화면 도달분이 아니다). §1.3이 delta `0`을
-   저작 오류로 두었으므로 이 경로를 실제로 밟는 것은 상쇄되는 다중 delta뿐이다.
-2. `symptoms.json`에서 `min` **내림차순 첫 매치**를 취한다. 매치가 없으면
-   **hard error**다. 스킵하지 않는 이유: 저작 누락을 조용히 넘기면 증상이 소리
-   없이 사라지고, 그 변수는 §3.1 세 시험의 **visible을 실질적으로 잃는다** —
-   그런데 어디에서도 그 사실이 드러나지 않는다. 런타임에 터지기 전에 lint가
-   정적으로 잡는다(§6-2).
-   렌더러는 배열이 **이미 `min` 내림차순으로 저작돼 있다고 신뢰한다** —
-   방어적으로 정렬하지 않는다. JSON Schema는 순서를 강제하지 못하므로 이
-   신뢰의 근거는 lint뿐이고(§6-2), 그래서 정렬 규칙은 저작 시점 검사로
-   존재해야 한다.
-3. 정렬 키는 **`(kind_rank, −magnitude, journal 등장 순서)`** — `kind_rank`는
-   스칼라 0, flag 1. 동률 tie-break를 등장 순서로 고정하는 것이 결정론의
-   조건이다. 이것을 비워 두면 같은 입력이 다른 문장 순서를 낼 수 있다.
-4. 상위 **3개**까지 자른다.
-5. 결과가 비면 **`["(변화 없음)"]`** 을 반환한다. 빈 배열이 아니다 —
-   템플릿의 `[장면의 변화]` 헤더만 남아 모델이 해석할 것이 사라지고, 하네스는
-   이미 `BLOCKS`에 `(없음)` 관례를 쓰고 있다.
-6. 항목당 문장 수는 **자유**다. 저작된 데이터이므로 길이는 작가 통제 하에 있고,
-   모델 출력이 아니므로 상한이 안전장치로 필요하지 않다. 필요해지면 lint 규칙이지
-   엔진 규칙이 아니다.
-7. **출력에 숫자가 한 개라도 있으면 hard error.** I12를 코드가 강제한다.
+1. Reduce each entry to `(variable, direction, magnitude)`. For scalars
+   `magnitude = |after − before|`; flags have no magnitude.
+   **Entries with `magnitude === 0` are dropped here** — state did not move, so
+   there is no symptom to show. This is not an exception to rule 2 but a stage
+   before it: without the drop, every no-op delta would fail to match and raise a
+   hard error. The entry stays in the journal (§2.1 records *attempts* to change
+   state, not what reached the screen). Since §1.3 makes a delta of `0` an
+   authoring error, the only traffic on this path is multiple deltas cancelling
+   out.
+2. Take the **first match in `min` descending order** from `symptoms.json`. No
+   match is a **hard error**. Why not skip: silently passing over an authoring
+   gap makes the symptom vanish soundlessly, and that variable effectively
+   **loses the `visible` leg of §3.1's three tests** — with nothing anywhere
+   revealing it. Lint catches this statically before it can fire at runtime
+   (§6-2).
+   The renderer **trusts that the array is already authored in `min` descending
+   order** and does not defensively sort. JSON Schema cannot enforce ordering, so
+   the only basis for that trust is lint (§6-2) — which is why the ordering rule
+   must exist as an authoring-time check.
+3. The sort key is **`(kind_rank, −magnitude, order of appearance in the
+   journal)`**, where `kind_rank` is 0 for scalars and 1 for flags. Fixing the
+   tie-break to appearance order is a condition of determinism; leave it out and
+   the same input can produce a different sentence order.
+4. Truncate to the top **3**.
+5. If the result is empty, return **`["(변화 없음)"]`** — not an empty array. An
+   empty array leaves only the template's `[장면의 변화]` header with nothing for
+   the model to interpret, and the harness already uses the `(없음)` convention
+   for `BLOCKS`.
+6. Sentences per entry are **unconstrained**. This is authored data, so length is
+   under the writer's control; it is not model output, so no cap is needed as a
+   safety device. If one becomes necessary it is a lint rule, not an engine rule.
+7. **A single digit anywhere in the output is a hard error.** Code enforces I12.
 
-2·3·7의 세 hard error는 전부 저작 시점에 판정 가능하고, lint가 **선점한다**
-(§6-2) — 커버리지(2) · `min` 내림차순(3) · 숫자 금지(7). 런타임 검사는 그대로
-남긴다: lint는 팩을 검사하지만 엔진의 계약은 팩이 아니라 입력 전체이고, 두
-검사가 겹치는 것이 이 종류 결함에서는 비용이 아니다.
+All three hard errors (2, 3, 7) are decidable at authoring time and lint
+**preempts** them (§6-2) — coverage (2) · `min` descending (3) · no digits (7).
+The runtime checks stay: lint inspects the pack, but the engine's contract is
+over its whole input rather than the pack, and for this class of defect the
+overlap is not a cost.
 
----
+## 3. Beats and rounds (request §6-5 · §6-4)
 
-## 3. 비트와 라운드 (요청서 §6-5 · §6-4)
-
-### 3.1 라운드 = 게이트
+### 3.1 Round = gate
 
 ```
-라운드 = [게이트 비트] + [다음 게이트 직전까지의 스크립트 비트들]
-보고서(Call 3) = 라운드의 마지막 비트 직후, 라운드당 정확히 1회
+round  = [gate beat] + [script beats up to just before the next gate]
+report (Call 3) = immediately after the round's last beat, exactly once per round
 ```
 
-| 비트 종류 | Call 1 | Call 2 | Call 3 |
+| Beat kind | Call 1 | Call 2 | Call 3 |
 |---|---|---|---|
-| 게이트 비트 | ✅ | ✅ | — |
-| 스크립트 비트 | — | ✅ | — |
-| 라운드 끝 | — | — | ✅ |
+| gate beat | ✅ | ✅ | — |
+| script beat | — | ✅ | — |
+| end of round | — | — | ✅ |
 
-**스크립트 비트도 예외 없이 Call 2를 돈다.** 저작으로 켜고 끄는 필드를 두지
-않는다 — 조건부 경로는 최소 엔진이 실행해 보지 않는 분기를 만들고, 실측 없이
-"이 사건은 반응이 필요 없다"를 저작자가 판단하게 만든다. 무조건 호출의 값은
-지연이고(비트당 약 4.5초, spec §4 지연 규칙 2의 prefetch가 흡수해야 하는 몫),
-대가는 **채굴 재료의 증가**다 — Call 2 출력은 타임라인에 실려 W2의 공급원이
-되므로, 스크립트 비트의 반응은 그 자체로 플레이어의 재료다.
+**Script beats run Call 2 without exception.** No authored on/off field is
+provided — a conditional path creates a branch the minimal engine never
+executes, and it makes authors decide "this event needs no reaction" without
+measurement. The price of the unconditional call is latency (about 4.5s per beat,
+which architecture spec §4's latency rule 2 prefetch must absorb); the return is
+**more mining material** — Call 2's output lands in the timeline and is W2's
+supply, so a script beat's reaction is itself player material.
 
-재검토 트리거는 A4 지연 실측이다. 그때 비용이 재료 값을 넘으면 **그 시점에**
-`timeline.json`에 선언 필드를 요청한다 — 미리 만들어 두지 않는다.
+The re-examination trigger is the A4 latency measurement. If cost then exceeds
+material value, request a declaration field in `timeline.json` **at that point** —
+do not build it in advance.
 
-게이트 예산이 5~8개(spec §2)이므로 보고서도 런당 5~8회다. 이 경계를 고른 이유:
+With a gate budget of 5–8 (architecture spec §2), reports also run 5–8 times per
+run. Why this boundary:
 
-- **W3 공급 주기와 일치한다** — 보고서 → 채굴 → 다음 게이트의 `BLOCKS`. 매
-  판단마다 새 재료가 들어온다.
-- **지연이 숨는다** — 보고서 콜이 게이트 사이 스크립트 비트가 흐르는 동안
-  처리된다 (spec §4 지연 규칙 2 prefetch). 비트당 1회로 두면 9초짜리 콜이 매
-  비트마다 서고, 규칙 4(tally 화면 뒤에 숨김)는 런 끝 1회뿐이라 성립하지 않는다.
+- **It matches W3's supply cycle** — report → mining → the next gate's `BLOCKS`.
+  Fresh material arrives before every judgment.
+- **Latency hides** — the report call is processed while the script beats between
+  gates flow past (architecture spec §4 latency rule 2, prefetch). At one per
+  beat, a 9-second call would stall every beat, and rule 4 (hide behind the tally
+  screen) applies only once, at end of run.
 
-⚠️ **요청서 §6.1의 실측 제약이 라운드 경계에도 걸린다.** 라운드 경계는 게이트
-직전이어야 하며, **통제관의 응답을 요구하는 고정 사건 뒤**여서는 안 된다.
+> ⚠️ **The request's §6.1 measured constraint applies to round boundaries too.**
+> A round boundary must fall just before a gate, and must **not** fall after a
+> fixed event that demands a reply from the controller.
 
-### 3.2 타임라인 길이 — **잠정**
+### 3.2 Timeline length — **provisional**
 
-| 슬롯 | 상한 |
+| Slot | Cap |
 |---|---|
-| `TIMELINE_EXCERPT` (Call 1) | 최근 **6줄** |
-| `TIMELINE_TAIL` (Call 2) | 최근 **6줄** |
+| `TIMELINE_EXCERPT` (Call 1) | most recent **6 lines** |
+| `TIMELINE_TAIL` (Call 2) | most recent **6 lines** |
 
-**비트 중간에서 자르지 않는다.** 상한에 걸리면 가장 오래된 비트를 **통째로**
-제거한다. `npc_lines`가 여럿이면 한 비트가 여러 줄을 차지하므로, 줄 수만 세면
-잘린 반쪽 비트가 남고 그것은 문맥이 아니라 노이즈다.
+**Never truncate mid-beat.** On hitting the cap, remove the **whole** oldest
+beat. With several `npc_lines` a single beat occupies several lines, so counting
+lines alone leaves a severed half-beat behind — that is noise, not context.
 
-근거와 한계: 실측이 존재하는 형태는 `TIMELINE_EXCERPT` 4줄
-(`RB1-rebaseline-v04`), `TIMELINE_TAIL` 5줄(`SMOKE-C2v4`)이다 — C-BLOCK을 입증한
-프롬프트가 그 크기였다. 6줄은 거기에 여유 한 칸을 더한 값이고, **측정된 값이
-아니다.** 재조정 트리거는 **프로덕션 페이로드에서의 지연 실측(RUNLOG A4)** 이며,
-그 숫자는 §7의 완성 판정을 통과해야 나온다.
+Basis and limits: the shapes that have actually been measured are
+`TIMELINE_EXCERPT` at 4 lines (`RB1-rebaseline-v04`) and `TIMELINE_TAIL` at 5
+lines (`SMOKE-C2v4`) — the prompt that established C-BLOCK was that size. Six is
+that plus one slot of headroom and is **not a measured value.** The retuning
+trigger is the **production-payload latency measurement (RUNLOG A4)**, and that
+number only appears once §7's acceptance criteria pass.
 
----
+## 4. Ordering rules
 
-## 4. 순서 규칙
+### 4.1 Gate beat
 
-### 4.1 게이트 비트
-
-spec §3 그대로, 한 비트 안에서:
+Exactly architecture spec §3, within one beat:
 
 ```
 stance
-  → (게이트,스탠스) delta 적용        ← 먼저
-  → 스탠스를 outcome bucket으로 해소
-  → 그 버킷의 edge 술어를 ★갱신된★ 상태로 평가
-  → 다음 노드 확정
+  → apply (gate, stance) delta          ← first
+  → resolve stance to an outcome bucket
+  → evaluate that bucket's edge predicates against the ★updated★ state
+  → fix the next node
 ```
 
-delta는 술어보다 먼저 착지한다. 뒤집으면 라우팅이 달라지면서도 **여전히
-결정론처럼 보이므로**, 이 순서는 §7-5의 독립 테스트 대상이다.
+Deltas land before predicates. Inverting the order changes routing while **still
+looking deterministic**, which is why this ordering is §7-5's dedicated test
+target.
 
-### 4.2 스크립트 비트
+### 4.2 Script beat
 
 ```
-events[].effects 적용 (deltas → flags)
-  → journal 기록
-  → 증상 렌더 (§2.3)
+apply events[].effects (deltas → flags)
+  → record journal
+  → render symptoms (§2.3)
   → Call 2
 ```
 
-**효과는 Call 2보다 먼저 착지한다.** 그래야 이번 비트의 `SCENE_SYMPTOMS`가 이번
-사건의 결과를 보여준다 — 뒤로 미루면 증상이 한 비트씩 밀리고, 플레이어에게는
-원인과 증상이 어긋난 채로만 보인다. 이 규칙이 없으면 시점이 구현자 재량이
-되고, 밀린 증상은 §7 판정 어디에도 걸리지 않는다.
+**Effects land before Call 2.** Only then does this beat's `SCENE_SYMPTOMS` show
+this event's consequence — defer it and symptoms slip one beat, so the player
+only ever sees cause and symptom out of alignment. Without this rule the timing
+becomes implementer's discretion, and slipped symptoms are caught by none of §7's
+criteria.
 
-한 비트에 사건이 둘 이상이면 `events` 배열 순서로 적용한다(같은 `time`이어도
-그렇다). 여기가 §2.3-3의 tie-break가 기대는 "journal 등장 순서"의 출처다.
+If a beat holds more than one event, apply them in `events` array order (even at
+identical `time`). This is the origin of the "order of appearance in the journal"
+that §2.3-3's tie-break relies on.
 
-`effects`가 `null`이면 상태 변화 없이 렌더와 Call 2만 돈다 — 하드닝 전 팩의
-정상 경로이며, 증상은 `["(변화 없음)"]`이 된다(§2.3-5).
+If `effects` is `null`, only rendering and Call 2 run, with no state change — the
+normal path for a pre-hardening pack, and symptoms become `["(변화 없음)"]`
+(§2.3-5).
 
-### 4.3 라우팅 어휘 — edge 술어의 형태
+### 4.3 Routing vocabulary — the shape of an edge predicate
 
-`gates.json`의 `edge_predicates`는 문자열 배열이다. 엔진이 파싱하는 문법은
-한 줄에 하나, 이 형태다:
+`gates.json`'s `edge_predicates` is an array of strings. The grammar the engine
+parses is one per line, in this form:
 
 ```
-<변수> <비교> <정수> -> <노드>      # trust >= 55 -> n_trusted
-else -> <노드>                      # 정확히 하나, 마지막 줄
+<variable> <comparison> <integer> -> <node>      # trust >= 55 -> n_trusted
+else -> <node>                                   # exactly one, the last line
 ```
 
-- `<비교>`는 `>=` `<=` `>` `<` `==` 다섯뿐이다. 불리언 결합(`and`/`or`)은 없다 —
-  필요하면 술어를 나눠 여러 줄로 쓴다. 최소 엔진이 파싱기를 갖는 것이
-  목적이 아니다.
-- 평가는 **위에서 아래로 첫 참**이고, `else`가 없으면 hard error다. 술어 밖으로
-  떨어지는 상태가 있으면 라우팅이 상태에 의존하지 않는 지점이 생긴다.
-- flag는 `<flag_id> == true` 형태로 같은 문법에 실린다.
-- 평가 시점은 §4.1이 정한 대로 **delta 적용 이후**다.
+- `<comparison>` is one of exactly five: `>=` `<=` `>` `<` `==`. There is no
+  boolean combination (`and`/`or`) — split into multiple lines if needed. Giving
+  the minimal engine a parser is not the goal.
+- Evaluation is **first-true, top to bottom**, and a missing `else` is a hard
+  error. A state that falls off the end of the predicates creates a point where
+  routing does not depend on state.
+- Flags ride the same grammar as `<flag_id> == true`.
+- Evaluation timing is **after delta application**, per §4.1.
 
-**빈 배열은 유효하다.** 게이트가 하나뿐이면 갈 노드가 없고, 술어 없이도 라운드
-1회는 끝까지 돈다(§7-1) — 빈 배열은 "이 게이트 다음은 런 종료"로 읽는다.
-§7-5·§7-6이 요구하는 술어 분기는 **테스트 픽스처**로 만든다. 그래서 첫 팩의
-G1은 `edge_predicates`를 비운 채로 엔진에 들어갈 수 있고, 이 문법은 하드닝이
-그 필드를 닫을 때 쓰는 어휘다.
+**An empty array is valid.** With only one gate there is no node to go to, and
+one round completes without predicates (§7-1) — an empty array reads as "after
+this gate, the run ends". The predicate branching §7-5 and §7-6 require is built
+as **test fixtures**. So the first pack's G1 can enter the engine with
+`edge_predicates` empty, and this grammar is the vocabulary hardening uses when
+it closes that field.
 
-이 문법은 **잠정이다** — 게이트 그래프(요청서 §5 제외분)가 들어올 때 노드
-이름의 소재와 함께 재검토한다. 지금 고정하는 이유는 하드닝이 그 필드를 채울
-어휘를 기다리고 있기 때문이다.
+This grammar is **provisional** — it is re-examined when the gate graph (excluded
+by request §5) arrives, together with the question of where node names live. It
+is fixed now because hardening is waiting on a vocabulary to fill that field.
 
----
+## 5. Behavior on call failure (request §6-3 · contract open #5)
 
-## 5. 콜 실패 시 거동 (요청서 §6-3 · 계약 미결 #5)
+The retry budget is **one retry (two calls total)**. Only hard validation
+failures trigger a re-call (call contracts §1 rule 6).
 
-재시도 예산은 **1회 재시도(총 2회 호출)** 다. hard 검증 실패만 재호출을
-유발한다(계약 §1 규칙 6).
+The harness uses `maxRetries = 2`
+([drive-beat.mjs](../infra/test-harness/drive-beat.mjs)), but the production
+engine reduces it to 1 — **measurement and play optimize for different things.**
+Measurement prioritizes not losing samples; play prioritizes latency. Two retries
+make the judgment call worst-case three calls, and that latency is a charge
+against architecture spec §4 latency rule 2's prefetch buffer. The harness value
+stays as it is; the two numbers differing is deliberate.
 
-하네스는 `maxRetries = 2`를 쓰지만([drive-beat.mjs](../infra/test-harness/drive-beat.mjs))
-프로덕션 엔진은 1회로 줄인다 — **측정과 플레이는 최적화 대상이 다르다.** 측정은
-표본 손실을 피하는 것이 우선이고, 플레이는 지연이 우선이다. 2회 재시도는 판단
-콜을 최악 3회 호출로 만들고, 그 지연은 §4 지연 규칙 2의 prefetch 버퍼가 흡수해야
-하는 몫이다. 하네스 값은 그대로 두며, 두 숫자가 다른 것은 의도다.
+This value is **provisional** for the same reason as §3.2 — the
+production-payload latency measurement (A4) is the retuning trigger.
 
-이 값은 §3.2와 같은 이유로 **잠정**이다 — 프로덕션 페이로드 지연 실측(A4)이
-재조정 트리거다.
-
-| 콜 | 최종 실패 시 | 등급 |
+| Call | On final failure | Grade |
 |---|---|---|
-| **1 판단** | `gates.json`의 `default_stance`로 진행. 그 delta 항목의 `cause`는 `"fallback:call1"` | 치명적 |
-| **2 나레이션** | `timeline_entries`·`npc_lines` 없이 비트 계속. 고정 사건과 `utterance`는 엔진이 이미 렌더했으므로 화면은 살아 있다 | 국소 (계약 §3) |
-| **3 보고서** | `facts`는 엔진이 조립한 객관 로그로 채우고, `report_body`는 대체 문구. W3 공급은 끊기지만 W2(타임라인 채굴)는 살아 있다 | 공급 차단 |
+| **1 Judgment** | Proceed with `gates.json`'s `default_stance`. That delta entry's `cause` is `"fallback:call1"` | fatal |
+| **2 Narration** | Continue the beat with no `timeline_entries` or `npc_lines`. The fixed event and the `utterance` were already rendered by the engine, so the screen stays alive | local (call contracts §3) |
+| **3 Reporter** | Fill `facts` from the engine-assembled objective log, and `report_body` with substitute text. W3 supply is cut, but W2 (timeline mining) survives | supply cut |
 
-**기본 스탠스는 엔진이 고르지 않는다.** 게이트 표준형이 "저작된 기질이 기본
-스탠스 X를 낳는다"를 전제하므로 X는 저작된 값이다. 엔진이 스탠스 셋의 첫
-항목을 집으면 그것은 저작되지 않은 베이스라인 스탠스이고 spec §6.2에 걸린다.
-그 값은 이미 존재한다 — 게이트 카드 표준형이 `default_stance`를 저작하고
-있고(하드닝 매뉴얼 §5), 초안의 게이트들이 전부 선언하고 있다. 엔진은 그것이
-`gates.json`까지 살아 오기만 하면 된다(§6 확인 1).
+**The engine does not choose the default stance.** The gate standard form
+presupposes "the authored temperament produces default stance X", so X is an
+authored value. If the engine grabbed the first item of the stance set, that
+would be an undeclared baseline stance and would fall foul of architecture spec
+§6.2. The value already exists — the canonical gate card authors `default_stance`
+(hardening manual §5) and every gate in the draft declares it. The engine only
+needs it to survive as far as `gates.json` (§6-4).
 
-**프록시 계약.** 모든 응답에 `x-llm-fallback: true|false`와 실패 시
-`x-fallback-code`를 실는다. 헤더로 두는 이유는 **출력 스키마를 건드리지 않기
-위해서**다 — 필드 추가는 shape 변경이고 재검증을 동반한다(계약 §1 규칙 3).
-`x-llm-fallback`은 apothecary Lambda가 이미 쓰는 관례이므로 새 발명이 아니다.
+**Proxy contract.** Every response carries `x-llm-fallback: true|false`, plus
+`x-fallback-code` on failure. These are headers specifically **to avoid touching
+the output schema** — adding a field is a shape change and carries revalidation
+(call contracts §1 rule 3). `x-llm-fallback` is already the convention in the
+apothecary Lambda, so it is not a new invention.
 
-**run record.** fallback은 상태 변화가 아니므로 delta journal이 아니라 run
-record에 모은다: `fallbacks: [{ beat, call, code }]`. 단 Call 1 fallback이
-낳은 delta 항목은 journal에도 `cause`로 남는다 — 그 delta는 실제로 상태를
-움직였기 때문이다.
+**Run record.** A fallback is not a state change, so it is collected in the run
+record rather than the delta journal: `fallbacks: [{ beat, call, code }]`. The
+delta a Call 1 fallback produces does still appear in the journal via `cause` —
+that delta genuinely moved state.
 
----
+## 6. Datapack — revision requests and their resolution
 
-## 6. 데이터팩 — 개정 요청과 그 해소
+This section began as a request list and became a **resolution record**. Per the
+adjustment direction the datapack contract fixed ("where it disagrees with the
+engine spec, the data track revises this section to restore fit"), everything
+below was handled by revision rather than by meeting — the data track's P0
+(datapack contract v0.3, schemas · compiler · lint · first pack) implemented all
+of it.
 
-이 절은 요청 목록으로 시작해 **해소 기록**이 됐다. 파이프라인 §3이 정한 조정
-방향("엔진 스펙과 어긋나면 데이터 트랙이 이 섹션을 개정해 맞춘다")대로, 회의가
-아니라 리비전으로 처리됐다 — 데이터 트랙 P0(파이프라인 §3 v0.3, 스키마 ·
-컴파일러 · lint · 첫 팩)이 아래 전부를 구현했다.
+### 6-1 `symptoms.json` — absorbed into the datapack ✅
 
-### 6-1 `symptoms.json` — 데이터팩에 편입됨 ✅
+Authored data turning state change into **symptom sentences** the player can
+read. Format, field semantics, and a render example are in §2.2; the canonical
+schema is `data/scenario/_schema/symptoms.schema.json`.
 
-상태 변화를 플레이어가 읽을 수 있는 **증상 문장**으로 바꾸는 저작 데이터.
-형식·필드 의미·렌더 예시는 §2.2, 스키마 정본은
-`data/scenario/_schema/symptoms.schema.json`.
+**Why data:** sentences are scenario content — they change entirely when the
+scenario changes, and the engine must not change by one line (architecture spec
+§3). Putting them in code is the moment the engine absorbs the scenario, and that
+is an anti-narrowing failure under §8.
 
-**왜 데이터인가:** 문장은 시나리오 내용이다 — 시나리오가 바뀌면 전부 바뀌고
-엔진은 한 줄도 바뀌지 않아야 한다(spec §3). 코드에 두면 그 순간 엔진이
-시나리오를 흡수한 것이고, §8의 anti-narrowing 실패다.
+**Why the game does not work without it:** `SCENE_SYMPTOMS` is the **only**
+channel by which state change reaches the screen (call contracts §1 rule 5 — no
+number may go to a prompt or a screen). If this file is empty, the `visible` leg
+of §3.1's three tests fails for every variable, and the player can never learn
+what their choice moved.
 
-**왜 없으면 게임이 성립하지 않는가:** `SCENE_SYMPTOMS`는 상태 변화가 화면에
-도달하는 **유일한 통로**다(계약 §1 규칙 5 — 숫자는 프롬프트에도 화면에도 나갈
-수 없다). 이 파일이 비면 §3.1 세 시험의 **visible이 전부 실패**하고, 플레이어는
-자기 선택이 무엇을 움직였는지 영영 알 수 없다.
+**Authoring unit:** one sentence per `(variable × direction × magnitude band)`.
+At single-gate scale with two scalars that is a minimum of 4 bands (`trust`
+up/down, `fear` up/down), or 8 if each is split in two.
 
-**저작 단위:** `(변수 × 방향 × 변화량 구간)` 하나당 문장 하나. 게이트 1개
-규모에서 스칼라 2개면 최소 4개 구간(`trust` up/down, `fear` up/down)이고,
-구간을 둘로 나누면 8개다.
+**Scoping correction (data track's reply, accepted).** This is not a datapack
+file but a **hardening artifact** — symptoms attach to deltas, and draft-stage
+cards have no deltas. Compile emits an empty skeleton and lint tracks the
+incompleteness (§2.2). The judgment above ("the game does not work without it")
+stands, but the empty state is a **tracked authoring stage**, not a defect.
 
-**스코핑 정정(데이터 트랙 회신, 채택).** 이 파일은 데이터팩 파일이 아니라
-**하드닝 산출물**이다 — 증상은 delta에 붙는데 draft 단계 카드에는 delta가
-없다. 컴파일은 빈 골격을 내고 lint가 미완을 추적한다(§2.2). "비면 게임이
-성립하지 않는다"는 위 판정은 유지되지만, 빈 상태는 결함이 아니라 **추적되는
-저작 단계**다.
+### 6-2 lint — symptom coverage plus two static preemptions ✅
 
-### 6-2 lint — 증상 커버리지 + 정적 선점 2건 ✅
+**Coverage.** For every `(variable, direction)` combination the actuators (§1.2's
+(a) `buckets[].deltas` and (b) `events[].effects`) can produce, `symptoms.json`
+must carry an entry **reaching down to `min: 1`**. The same holds for flags —
+every flag an event can flip needs `flags.<id>.set` / `.unset`.
 
-**커버리지.** 액추에이터(§1.2의 (a) `buckets[].deltas` + (b) `events[].effects`)가
-만들어 낼 수 있는 모든 `(변수, 방향)` 조합에 대해, `symptoms.json`이
-**`min: 1`까지 내려오는 항목**을 가져야 한다. flag도 같다 — 이벤트가 뒤집을 수
-있는 모든 flag에 `flags.<id>.set`/`.unset`이 있어야 한다.
+Because §2.3-2 makes a match failure a hard error, without this check an
+authoring omission first surfaces **at runtime** — and only on a path that
+actually steps on that delta. It is statically decidable: the delta table and
+`symptoms.json` are all it takes.
 
-§2.3-2가 매치 실패를 hard error로 두었으므로 이 검사가 없으면 저작 누락이
-**런타임에** 처음 드러난다 — 그것도 그 delta를 실제로 밟는 경로에서만.
-정적으로 판정 가능하다: delta 테이블과 `symptoms.json` 두 파일이면 된다.
-
-실패 예시 둘 (표기는 카드 정본 — `deltas`는 변수→숫자 map이다):
+Two failure examples (notation is the canonical card — `deltas` is a
+variable→number map):
 
 ```jsonc
-// ① 구간 미달 — 작은 변화를 커버하지 못한다
+// ① band gap — small changes are uncovered
 gates.json     "buckets": [ { "id": "a", "deltas": { "fear": 5 } } ]
 symptoms.json  "fear": { "up": [ { "min": 20, … } ] }
-→ FAIL  fear/up 의 최소 min 이 20 — 크기 5 를 매치할 항목이 없다
+→ FAIL  the smallest min in fear/up is 20 — nothing can match magnitude 5
 
-// ② 방향 누락
+// ② missing direction
 gates.json     "buckets": [ { "id": "b", "deltas": { "trust": -20 } } ]
 symptoms.json  "trust": { "up": [ … ] }
-→ FAIL  trust/down 이 통째로 없다
+→ FAIL  trust/down is missing entirely
 ```
 
-①이 특히 위험하다 — `symptoms.json`이 존재하고 그럴듯해 보이는데도 특정
-스탠스에서만 터지기 때문이다.
+① is the more dangerous: `symptoms.json` exists and looks plausible, yet it
+detonates only under certain stances.
 
-**정적 선점 2건(데이터 트랙이 추가, 채택).** §2.3의 나머지 두 런타임 hard
-error도 저작 시점에 판정 가능하다 — 항목의 `min` **내림차순** 정렬(§2.3-2가
-첫 매치를 취하므로 순서가 의미를 갖는다)과 **숫자 금지**(I12, §2.3-7). 이로써
-`symptoms.json`이 런타임에 터지는 세 경로가 전부 lint에 선점된다.
+**Two static preemptions (added by the data track, accepted).** The other two
+runtime hard errors in §2.3 are also decidable at authoring time — entries sorted
+by `min` **descending** (§2.3-2 takes the first match, so order carries meaning)
+and the **no-digits** rule (I12, §2.3-7). All three runtime failure paths for
+`symptoms.json` are therefore preempted by lint.
 
-### 6-3 남은 개정 1건 — delta는 정수, `0`은 오류
+### 6-3 One remaining revision — deltas are integers, `0` is an error
 
-§1.3이 근거다. `buckets[].deltas`와 `events[].effects.deltas`의 값 타입이 현재
-`number`이며, 정수·비-0 제약이 없다. 커버리지 lint는 `(변수, 방향)`만 보므로
-`+0.5`짜리 delta를 통과시키고, 그것은 §2.3-2의 런타임 hard error가 된다 —
-6-2가 막으려던 바로 그 부류다. 스키마의 정수 제약이든 lint 규칙이든, 판정이
-저작 시점으로 오기만 하면 된다.
+§1.3 is the rationale. The value type of `buckets[].deltas` and
+`events[].effects.deltas` is currently `number` with no integer or non-zero
+constraint. The coverage lint only inspects `(variable, direction)`, so it passes
+a `+0.5` delta — which then becomes §2.3-2's runtime hard error, exactly the class
+6-2 set out to prevent. Either a schema integer constraint or a lint rule is
+fine; all that matters is that the verdict moves to authoring time.
 
-### 6-4 확인 사항 — 해소됨 ✅
+### 6-4 Confirmation item — resolved ✅
 
-**`default_stance`가 컴파일에서 살아남는가.** `gates.schema.json`이 이 필드를
-`required`로 선언하고 컴파일은 카드를 그대로 옮기므로, 열거에서 빠져 조용히
-탈락할 경로가 없다. 첫 팩의 게이트 전부에 존재함이 확인됐다. §5의 fallback과
-**P1 first-gate 프로브의 예측값** 둘 다 안전하다.
+**Does `default_stance` survive compilation?** `gates.schema.json` declares the
+field `required` and compile carries the card across verbatim, so there is no
+path by which it drops out of an enumeration silently. It was confirmed present
+on every gate of the first pack. Both §5's fallback and **the P1 first-gate
+probe's prediction value** are therefore safe.
 
-### 6-5 요청하지 않는 것
+### 6-5 What is deliberately not requested
 
-`timeline.json`의 나레이션 on/off 선언 필드. §3.1이 무조건 호출로 정했으므로
-지금은 불필요하다. A4 지연 실측이 비용 초과를 보이면 그때 요청한다.
+A narration on/off declaration field in `timeline.json`. §3.1 settled on an
+unconditional call, so it is unnecessary now. If the A4 latency measurement shows
+the cost exceeding the return, request it then.
 
-게이트 버킷의 `flags` 슬롯은 **요청하기 전에 생겼다** — 데이터 트랙이 구조
-게이트의 배출구로 신설했다(파이프라인 §3 v0.4). §1.1이 flag write에 두 소스를
-인정하는 근거이며, 최소 엔진(G1)은 버킷 flag를 밟지 않으므로 이 절의 "요청하지
-않는 것" 목록에서만 빠진다.
+The `flags` slot on gate buckets **appeared before it was requested** — the data
+track created it as the discharge point for structural gates (datapack contract
+v0.4). It is the basis on which §1.1 recognizes two sources of flag writes, and
+it drops off this "not requested" list only because the minimal engine (G1) never
+steps on a bucket flag.
 
----
+## 7. Acceptance criteria — the request's §7 in executable form
 
-## 7. 완성 판정 — 요청서 §7에 대한 실행 가능한 형태
-
-| # | 요청서의 판정 | 어떻게 확인하는가 |
+| # | The request's criterion | How it is verified |
 |---|---|---|
-| 1 | 라운드 1회가 끝까지 돈다 | 전체 드라이버가 세 콜의 슬롯을 전부 채우고 세 출력을 전부 소비하며, 갱신된 타임라인이 다음 라운드의 입력이 된다 |
-| 2 | 비트마다 delta journal | 각 비트가 `{variable, before, after, cause}` 배열을 낸다. `cause`가 빈 항목은 실패 |
-| 3 | `SCENE_SYMPTOMS`에 숫자 0개 | 렌더러 §2.3-7의 hard error가 테스트로 승격 — 숫자를 포함하는 출력은 실패 |
-| 4 | 자유 텍스트가 상태를 못 움직인다 | `utterance`·`inner_note`·`timeline_entries`·`npc_lines`·`facts`·`report_body`를 임의 문자열로 치환해도 라우팅과 최종 상태가 바이트 동일 |
-| 5 | 순서 규칙 | delta 적용 전 상태로 술어를 평가하면 다른 노드가 나오는 픽스처를 두고, 엔진이 갱신된 상태 쪽을 고르는지 확인 |
-| 6 | 같은 스탠스 + 같은 상태 → 같은 라우팅 (I6) | 동일 입력 N회 실행이 동일 경로·동일 journal을 낸다 |
+| 1 | One round runs end to end | The full driver fills all three calls' slots, consumes all three outputs, and the updated timeline becomes the next round's input |
+| 2 | A delta journal every beat | Each beat emits an array of `{variable, before, after, cause}`. An entry with an empty `cause` fails |
+| 3 | Zero digits in `SCENE_SYMPTOMS` | The renderer's §2.3-7 hard error is promoted to a test — output containing a digit fails |
+| 4 | Free text cannot move state | Replacing `utterance` · `inner_note` · `timeline_entries` · `npc_lines` · `facts` · `report_body` with arbitrary strings leaves routing and final state byte-identical |
+| 5 | Ordering rule | Hold a fixture where evaluating predicates against the pre-delta state yields a different node, and confirm the engine picks the updated-state branch |
+| 6 | Same stance + same state → same routing (I6) | N executions of identical input produce an identical path and an identical journal |
 
-4번과 5번은 회귀 테스트로 상주시킨다. 둘 다 **깨져도 조용한** 종류의 결함이다.
+4 and 5 become **resident regression tests**. Both are the kind of defect that
+**breaks silently**.
 
-여기까지 서면 LLM 레이어는 손저작 스텁을 버리고 엔진에 붙을 수 있고, 그 시점에
-**프로덕션 페이로드에서의 지연 실측**이 가능해진다 — RUNLOG A4가 요구하고
-spec §4가 기다리는 숫자다. §3.2의 6줄이 재조정되는 시점도 여기다.
+Once this holds, the LLM layer can drop its hand-authored stubs and attach to the
+engine — and at that moment **latency measurement at production payload size**
+becomes possible, which is the number RUNLOG A4 demands and architecture spec §4
+is waiting on. It is also the point at which §3.2's six lines get retuned.
 
----
+## 8. What this spec closes and what it leaves open
 
-## 8. 이 명세가 닫는 것 / 열어두는 것
+**Closes**
 
-**닫는다**
+- All five questions in the request's §6
+- Call contracts open item **#4** (`SCENE_SYMPTOMS` renderer contract) → §2.3
+- Call contracts open item **#5** (behavior on call failure, including proxy
+  fallback metadata) → §5
 
-- 요청서 §6의 질문 1~5 전부
-- 계약 v1 미결 **#4**(`SCENE_SYMPTOMS` 렌더러 계약) → §2.3
-- 계약 v1 미결 **#5**(콜 실패 시 게임 거동, 프록시 fallback 메타데이터 포함) → §5
+**Leaves open**
 
-**열어둔다**
+- **Formal binding of the variable list** — after the §3.1 visibility probe
+  (owner L, not yet run), per architecture spec §9. Scenario selection is
+  satisfied (우는다리, 08-01). §1.1 is provisional.
+- **Formal timeline length** — after production-payload latency measurement (§3.2).
+- **Retry budget** — same measurement is the trigger (§5). One is a
+  latency-first provisional value.
+- **Formal shape of the routing vocabulary** — §4.3 is a provisional grammar fixed
+  now so hardening can fill `edge_predicates`; re-examined when the gate graph
+  arrives.
+- **Where Call 3's substitute text lives** — an engine constant in the minimal
+  engine, moved to `data/` in production.
+- **U's ratification of report cadence** — call contracts §7 #2. §3.1 is L's
+  decision and can be overturned once the UI pause structure is settled.
+- Everything the request's §5 excluded: gate graph, run score / ending model,
+  execution grade (grader), save/load.
 
-- **변수 목록의 정식 바인딩** — §3.1 visibility 프로브(소유자 L, 미실행) 이후
-  (spec §9). 시나리오 선정은 충족됐다(우는다리, 08-01). §1.1은 잠정이다.
-- **타임라인 길이의 정식 값** — 프로덕션 페이로드 지연 실측 이후(§3.2).
-- **재시도 예산** — 같은 실측이 트리거다(§5). 1회는 지연을 우선한 잠정값이다.
-- **라우팅 어휘의 정식 형태** — §4.3은 하드닝이 `edge_predicates`를 채울 수
-  있게 지금 고정한 잠정 문법이고, 게이트 그래프가 들어올 때 재검토한다.
-- **Call 3 대체 문구의 소재** — 최소 엔진은 엔진 상수로 두고, 프로덕션에서
-  `data/`로 이관한다.
-- **보고 주기의 U 추인** — 계약 §7 #2. §3.1은 L의 결정이며 UI pause 구조가
-  정해지면 뒤집힐 수 있다.
-- 요청서 §5가 제외한 것 전부: 게이트 그래프, run score / 엔딩 모델, 실행
-  등급(grader), 세이브/로드.
+**Two items the data track has parked on this spec — both outside the minimal
+engine's scope.** The run-artifact format (`data/runs/_schema/`) leaves two
+places nullable while waiting for these answers, so it is stated here that those
+`null`s are **deferral, not defect**.
 
-**데이터 트랙이 이 명세에 걸어둔 미결 2건 — 최소 엔진 범위 밖이다.** run
-artifact 형식(`data/runs/_schema/`)이 두 자리를 `null` 허용으로 비워두고 답을
-기다리고 있으므로, 그 `null`이 **보류지 결함이 아님**을 여기 명시한다.
-
-| 미결 | 왜 지금 답하지 않는가 | 언제 |
+| Open item | Why it is not answered now | When |
 |---|---|---|
-| **런 종료 조건** (`run-record.reached_clock`의 의미, `score` nullable) | 요청서 §5가 run score / 엔딩 모델을 제외했고, 종료 판정은 그 모델의 일부다. 최소 엔진의 범위는 게이트 1개의 라운드 1회이며 §4.3의 빈 `edge_predicates`가 "다음은 런 종료"로 읽히는 것이 현재의 전부다 | 게이트 그래프 + 엔딩 모델과 함께 |
-| **비트 granularity** | 최소 엔진의 답은 **타임라인 이벤트 1개 = 비트 1개**이며 §4.2가 그 전제로 서 있다. 다만 이것은 UI pause 구조에 걸려 있고(계약 §7 #2와 같은 의존), 그 구조가 정해지기 전에 형식으로 고정하면 run record가 두 번 바뀐다 | 클라이언트 트랙 착수 후 |
+| **Run termination condition** (the meaning of `run-record.reached_clock`, `score` nullable) | The request's §5 excluded run score / ending model, and the termination verdict is part of that model. The minimal engine's scope is one round of one gate, and §4.3's empty `edge_predicates` reading as "next is end of run" is currently the whole of it | With the gate graph + ending model |
+| **Beat granularity** | The minimal engine's answer is **one timeline event = one beat**, and §4.2 stands on that premise. But it is tied to the UI pause structure (the same dependency as call contracts §7 #2), and fixing it as a format before that structure exists would change the run record twice | After the client track starts |

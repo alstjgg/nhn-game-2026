@@ -1,410 +1,419 @@
-# DDAY LLM 콜 계약 v1
+# Contract — LLM Calls v1
 
-> **지위:** [architecture-spec](./dday-architecture-spec.md) §4 Call inventory의
-> 하위 문서. 스펙이 "네 종류의 콜이 존재한다"고 선언한 것을 **실행 가능한 입출력
-> 계약**으로 확정한다. 스펙과 어긋나는 곳은 이 문서가 틀렸거나 스펙이 명시적으로
-> 개정되어야 하며(스펙 헤더 규칙), 어긋난 채로 두지 않는다 — 현재 걸려 있는 개정
-> 요청은 §8에 모아 둔다.
+> **Tier:** `contract-` — a fixed interface between two owners.
+> **Owner:** L (LLM infrastructure / call inventory), 윤석.
+> **Producer:** the payload composer and the proxy. **Consumer:** the engine,
+> the timeline, the mining UI.
+> **Status:** schemas are bound; the open parameters in §7 are not.
 >
-> **소유자:** L (LLM Infrastructure / Call Inventory).
-> **바인딩 상태:** 스키마는 확정, §7의 미결 파라미터는 미확정.
+> **Position:** this is the sub-document of [architecture spec](./spec-architecture.md)
+> §4 (call inventory). Where the spec declares *that three call types exist*,
+> this document fixes them as **executable input/output contracts**. If the two
+> disagree, either this document is wrong or the spec gets amended explicitly —
+> never silently.
 
----
+## Where the law lives
 
-## 1. 모든 콜에 적용되는 규칙
+| Artifact | Role | Drift guard |
+|---|---|---|
+| **This document** | **The law.** Field order, types, and validation grade are normative here | — |
+| `infra/test-harness/lib/calltypes.mjs` + `templates/` | The harness's executable form; 1:1 with this document (§10) | manual — reviewed on change |
+| `src/shared/contracts.ts` | TypeScript transcription for engine/composer/client | ⚠️ **none.** Hand-written. Unlike `datapack.ts`, which is generated from its schemas, this transcription can drift silently. Treat a disagreement as a bug in one of the two, and check both when editing either |
 
-1. **런타임 모델은 haiku, 출력은 tool-use 스키마로 강제한다.** 자유 텍스트 파싱
-   금지. 스키마 위반 응답은 재호출하며 손으로 고치지 않는다 (스펙 §7).
-2. **중첩 객체 금지.** 모든 필드는 스칼라 또는 스칼라 배열이다. 중첩 객체는
-   haiku에서 신뢰성 있게 생성되지 않으며, 그 실패가 팔 상관을 만들어 비교를
-   무효화한 전례가 있다 (RUNLOG A7).
-3. **`input_schema.properties`의 필드 순서 = 생성 순서 = 계약.** 순서 변경은
-   shape 변경이며 재검증 런을 동반한다. 필드 추가·삭제도 같다.
-4. **시스템 레이어는 프록시가 소유한다.** 플레이어가 조성한 바이트는 in-band
-   페이로드로만 이동한다 (스펙 I7).
-5. **NPC 내부 상태는 숫자로 프롬프트·화면에 노출되지 않는다.** 상태는 증상으로만
-   드러난다("숨이 가빠졌다"). 시각·마감 시각처럼 세계에 실재하는 수치와 다이제틱
-   계기판은 이 규칙의 대상이 아니다 (스펙 I12).
-6. **검증의 hard/soft 이원화.** 형식이 깨져 소비가 불가능한 것은 hard(재호출),
-   모델의 행동에 관한 관찰은 soft(기록하되 재호출하지 않음)다. 관찰을 재호출로
-   지우면 그 데이터가 사라지고, hard-discard가 팔마다 다른 필터를 만들면 비교가
-   무효가 된다 (RUNLOG A16).
-7. **판단 콜은 숨은 진실·그래프·상태 내부를 보지 않는다** (스펙 I8). 격리는 설정이
-   아니라 전송 계층의 성질로 보장한다 — 출력 스키마 하나만 부여된 API 콜.
+## 1. Rules that apply to every call
 
----
+1. **Runtime model is haiku; output is forced through a tool-use schema.** No
+   free-text parsing. A schema-violating response is re-called, never
+   hand-repaired (architecture spec §7).
+2. **No nested objects.** Every field is a scalar or an array of scalars. haiku
+   does not generate nested objects reliably, and that failure once correlated
+   with the experimental arm, invalidating the comparison (RUNLOG A7).
+3. **`input_schema.properties` field order = generation order = the contract.**
+   Reordering is a shape change and requires a revalidation run. So does adding
+   or removing a field.
+4. **The proxy owns every system layer.** Bytes the player composed travel
+   in-band only (architecture spec I7).
+5. **NPC internal state never reaches a prompt or the screen as a number.**
+   State surfaces only as symptoms ("his breathing went shallow"). Quantities
+   that genuinely exist in the world — clock time, a deadline — and diegetic
+   instrument readouts are outside this rule (architecture spec I12).
+6. **Validation is split hard/soft.** Something malformed enough to be
+   unconsumable is *hard* (re-call). An observation about how the model behaved
+   is *soft* (record, do not re-call). Erasing an observation by re-calling
+   destroys the datum, and a hard-discard that differs per arm invalidates the
+   comparison (RUNLOG A16).
+7. **The judgment call never sees the hidden truth, the graph, or state
+   internals** (architecture spec I8). Isolation is a property of the transport,
+   not a setting — a bare API call granted exactly one tool, the output schema.
+8. **Before deciding anything by comparing two arms, apply A20 first.** The drop
+   condition must exclude both the ceiling (≥80%) and the floor (≤20%), and
+   before using a comparison suite you must compute (a) the minimum live count
+   that reaches `p≤0.05` against the measured baseline and (b) the power at a
+   pre-stated MDE, and write both into the pre-registration. Seeing 15–20pp at
+   80% power needs roughly 80–100 calls per arm. **A result where both arms have
+   zero events is "cannot measure", not "no effect"** — no difference could have
+   been observed by that design, so no keep/drop decision may rest on it.
 
 ## 2. Call 1 — Judgment
 
-게이트에서 스탠스를 고른다. 게임의 유일한 상태 액추에이터 입력.
+Chooses a stance at a gate. The game's only state-actuator input.
 
-### 입력
+### Input
 
-| 레이어 | 슬롯 | 내용 |
+| Layer | Slot | Contents |
 |---|---|---|
-| 시스템 | `FLAW` `INCIDENT` | 프록시 소유 default prompt. 플레이어가 조작하지 않는다 |
-| 시스템 | `PRIORITY_LIST` | 기본 프롬프트의 `[우선순위]` 섹션. **플레이어 조작면이 아니다** — 재배열 채널은 종료됐고, 섹션은 프록시 저작 고정값으로 **존치**한다 (§7-8) |
-| 시스템 | `TEMPERAMENT` | 시나리오가 저작한 기질. 플레이어에게 비가시·불변 (스펙 I13) |
-| in-band | `TIMELINE_EXCERPT` | 엔진 타임라인의 발췌 |
-| in-band | `BLOCKS` | 플레이어가 채굴해 주입한 블럭. `id: text`로 렌더 |
-| in-band | `GATE_QUESTION` `STANCE_SET` | 게이트별 시나리오 데이터 (스펙 I5) |
+| system | `FLAW` `INCIDENT` | Proxy-owned default prompt. The player does not touch it |
+| system | `PRIORITY_LIST` | The default prompt's `[우선순위]` section. **Not a player surface** — the reorder channel is terminated; the section itself is **retained** as a proxy-authored constant (§7-8) |
+| system | `TEMPERAMENT` | The scenario's authored temperament. Hidden and immutable to the player (spec I13) |
+| in-band | `TIMELINE_EXCERPT` | An excerpt of the engine timeline |
+| in-band | `BLOCKS` | Blocks the player mined and injected. Rendered as `id: text` |
+| in-band | `GATE_QUESTION` `STANCE_SET` | Per-gate scenario data (spec I5) |
 
-### 출력 (필드 순서 = 계약)
+### Output (field order is part of the contract)
 
-| # | 필드 | 타입 | 의미 |
+| # | Field | Type | Meaning |
 |---|---|---|---|
-| 1 | `inner_note` | string | 고르기 **전** 지나간 생각 1~3문장 |
-| 2 | `stance` | enum(스탠스 id) | 고른 스탠스 |
-| 3 | `because_referent` | string | 이 판단이 향한 대상을 이름으로 지목 |
-| 4 | `because_block_ids` | string[] | 근거가 된 블럭 id. 없으면 빈 배열 |
-| 5 | `rejected_stance` | enum | 고르지 않은 것 중 가장 가까웠던 하나 |
-| 6 | `rejected_reason` | string | 버린 이유 한 줄 |
-| 7 | `utterance` | string | 실제로 입에서 나가는 말 |
+| 1 | `inner_note` | string | 1–3 sentences of thought that passed **before** choosing |
+| 2 | `stance` | enum (stance id) | The chosen stance |
+| 3 | `because_referent` | string | Names the target this judgment was aimed at |
+| 4 | `because_block_ids` | string[] | Ids of the blocks it rested on. Empty array if none |
+| 5 | `rejected_stance` | enum | The nearest of the ones not chosen |
+| 6 | `rejected_reason` | string | One line on why it was dropped |
+| 7 | `utterance` | string | What actually leaves the agent's mouth |
 
-**순서의 근거:** `inner_note`는 스탠스 **앞**에 두어 숙고가 되게 하고, `because`·
-`rejected`는 **뒤**에 두어 사후 판독이 되게 한다. 이 배치가 실측의 전제다.
+**Why this order.** `inner_note` sits **before** the stance so it is
+deliberation; `because_*` and `rejected_*` sit **after** so they are post-hoc
+readout. The entire measurement program ran on this arrangement, so changing it
+triggers revalidation.
 
-**검증:** `stance`가 스탠스 셋 밖 · `inner_note`/`because_referent`/`utterance`
-공백 · `because_block_ids`가 배열 아님 → hard. 존재하지 않는 블럭 id 인용 ·
-`rejected_*` 계열의 모든 문제 → soft (규칙 6).
-
----
+**Validation.** Hard: `stance` outside the stance set · blank `inner_note`,
+`because_referent`, or `utterance` · `because_block_ids` not an array. Soft:
+citing a block id that does not exist · anything wrong in the `rejected_*`
+family (rule 6).
 
 ## 3. Call 2 — Narration / NPC
 
-**이 콜은 고정 사건을 서술하지 않는다 — 고정 사건에 대한 반응을 생성한다.**
+**This call does not narrate the fixed event — it generates the reaction to it.**
 
-고정 사건은 저작된 결정론 데이터이므로 엔진이 직접 타임라인에 렌더한다(스펙 §4
-지연 규칙 1: "결정론 이벤트는 즉시 렌더된다"). 통제관의 발화도 마찬가지로 Call 1의
-출력을 엔진이 싣는다. Call 2에 남는 일은 **그 다음에 오는 것** — 인물들의 반응,
-장면의 결, 대사다.
+A fixed event is authored deterministic data, so the engine renders it into the
+timeline itself (spec §4 latency rule 1: deterministic events render instantly).
+The controller's utterance is likewise the engine placing Call 1's output. What
+is left for Call 2 is **what comes next** — how people react, the texture of the
+scene, the dialogue.
 
-이 축소가 계약의 성격을 바꾼다: 제약이 "고정 사건을 반드시 실현하라"(실현 실패 =
-스토리와 상태의 분리)에서 **"고정 사건과 모순되지 마라"**(모순 = 국소 결함)로
-내려간다. 실패 모드의 등급이 한 단계 낮아진다.
+That reduction changes the character of the contract: the constraint drops from
+"you must realize the fixed event" (failure = story and state split) to
+**"do not contradict the fixed event"** (contradiction = a local defect). The
+failure mode drops one severity grade.
 
-비트당 1콜이다 (NPC당 1콜이 아니다).
+One call per beat — not one per NPC.
 
-### 입력
+### Input
 
-| 슬롯 | 내용 | 왜 필요한가 |
+| Slot | Contents | Why it is needed |
 |---|---|---|
-| `TIMELINE_TAIL` | 엔진 타임라인 꼬리 — **엔진이 이미 렌더한 고정 사건과 통제관 발화를 포함** | 문맥. 이미 화면에 있는 것이므로 다시 쓰지 않는다 |
-| `AGENT_UTTERANCE` | Call 1의 `utterance` | 되풀이 금지 대상을 명시하고, 검증기가 재출력을 잡는 기준값 |
-| `FIXED_NPC_ACTION` | 이번 비트의 고정 NPC 행동 | 서술 대상이 아니라 **모순 방지용 제약**. 이미 일어난 것으로 취급한다. ⚠️ **통제관의 응답을 요구하는 사건이면 안 된다** — 아래 |
-| `SCENE_SYMPTOMS` | 엔진 delta journal이 증상 문장으로 렌더한 것 | 상태 변화의 유일한 통로 (규칙 5) |
-| `PRESENT_NPCS` | `{id, name, side}` 목록. `side`는 `line`(회선 너머) 또는 `room`(상황실 안) | `npc_lines`의 화자는 여기서만 나온다. **`side`는 장식이 아니다** — 아래 |
+| `TIMELINE_TAIL` | Tail of the engine timeline — **including the fixed event and controller utterance the engine already rendered** | Context. It is already on screen, so it is not to be written again |
+| `AGENT_UTTERANCE` | Call 1's `utterance` | Names what must not be echoed, and gives the validator its comparison value for detecting re-emission |
+| `FIXED_NPC_ACTION` | This beat's fixed NPC action | Not the subject of narration but a **non-contradiction constraint**. Treated as already having happened. ⚠️ **Must not be an event that demands a reply from the controller** — see below |
+| `SCENE_SYMPTOMS` | The engine's delta journal rendered into symptom sentences | The only channel by which state change reaches anything (rule 5) |
+| `PRESENT_NPCS` | List of `{id, name, side}`. `side` is `line` (across the phone line) or `room` (inside the situation room) | Speakers of `npc_lines` may come from here and nowhere else. **`side` is not decoration** — see below |
 
-### 출력
+### Output
 
-| # | 필드 | 타입 | 의미 |
+| # | Field | Type | Meaning |
 |---|---|---|---|
-| 1 | `timeline_entries` | string[] | 반응·장면 서술. 항목당 한 문장. **이미 타임라인에 있는 것(고정 사건·통제관 발화)을 되풀이하지 않는다** |
-| 2 | `npc_lines` | string[] | `"<npc_id>: <대사>"`. 대사가 없으면 빈 배열 |
+| 1 | `timeline_entries` | string[] | Reaction and scene description, one sentence per item. **Does not repeat what is already in the timeline** (fixed event, controller utterance) |
+| 2 | `npc_lines` | string[] | `"<npc_id>: <line>"`. Empty array if nobody speaks |
 
-**`npc_lines`가 접두 문자열인 이유:** 화자 귀속이 필요한데 중첩 객체가 금지(규칙
-2)라서. 하네스가 블럭을 `id: text`로 렌더하는 관례와 같다.
+**Why `npc_lines` is a prefixed string:** speaker attribution is required but
+nested objects are banned (rule 2). Same convention as the harness rendering
+blocks as `id: text`.
 
-**검증**
+**Validation**
 
-| 조건 | 등급 | 근거 |
+| Condition | Grade | Rationale |
 |---|---|---|
-| `timeline_entries` 비었거나 빈 항목 포함 | hard | 소비 불가 |
-| `npc_lines` 항목에 `id:` 접두 없음 | hard | 화자 귀속 불가 → 타임라인에 실을 수 없고 채굴(W2)도 죽는다 |
-| `npc_lines`의 화자가 `PRESENT_NPCS` 밖 | **soft** | 인물 발명은 모델 행동에 관한 **관찰**이다. 재호출하면 그 관찰이 지워진다 (규칙 6, Call 1의 환각 블럭 id와 같은 처리) |
-| `npc_lines` 항목이 통제관 발화와 실질 일치 | **soft** | 통제관은 `PRESENT_NPCS`에 없으므로 검증기가 화자 id로는 잡지 못한다. 되풀이 성향의 계측점 |
+| `timeline_entries` empty, or contains an empty item | hard | Unconsumable |
+| An `npc_lines` item lacks the `id:` prefix | hard | No speaker attribution → cannot be placed in the timeline, and mining (W2) dies with it |
+| An `npc_lines` speaker is outside `PRESENT_NPCS` | **soft** | Inventing a character is an **observation** about model behavior. Re-calling erases the observation (rule 6 — same handling as Call 1's hallucinated block ids) |
+| An `npc_lines` item is substantially identical to the controller's utterance | **soft** | The controller is not in `PRESENT_NPCS`, so a speaker-id validator cannot catch this. It is the measurement point for echo tendency |
 
-**프로덕션의 처리는 다르다.** soft는 *측정*의 등급이다. 런타임에서는 존재하지 않는
-NPC의 대사가 화면에 나가면 안 되므로, 프록시가 **해당 줄만 드롭**하고 나머지 비트는
-살린다 — 콜 전체를 재시도하지 않는다.
+**Production behaves differently from measurement.** Soft is a grade for
+*measuring*. At runtime a line from a nonexistent NPC must not reach the screen,
+so the proxy **drops that line only** and keeps the rest of the beat — it does
+not retry the whole call.
 
-**통제관의 빈자리 — 이 콜의 구조적 약점과 그 대응.** 통제관은 매 비트의 대화
-참여자인데 `PRESENT_NPCS`에 없다(그 발화는 Call 1의 `utterance`다). 그래서 장면이
-통제관의 말을 필요로 할 때마다 대화에 구멍이 남고, 모델은 쓸 수 있는 화자로 그것을
-메운다 — 발신자가 자기 질문에 답하거나, 옆 NPC가 통제관 노릇을 한다. **NPC가 통제관
-자리를 차지하면 그 발화가 상태를 움직이지 못하므로**(I3/W4) 서사와 상태가 갈린다.
-축자 재출력 검출기는 이 형태를 잡지 못한다.
+**The controller's empty seat — this call's structural weakness, and the two
+things that answer it.** The controller participates in the dialogue every beat
+but is absent from `PRESENT_NPCS` (its speech is Call 1's `utterance`). So
+whenever a scene needs the controller to speak, a hole is left in the dialogue
+and the model fills it with whoever it *can* voice — the caller answers their own
+question, or a bystander NPC starts acting as the controller. **When an NPC
+occupies the controller's seat, that utterance cannot move state** (I3/W4), so
+story and state diverge. A verbatim-echo detector cannot catch this shape,
+because the substitute line is well-formed.
 
-원인이 둘이고 대응도 둘이다:
+There are two causes and two answers:
 
-1. **고정 사건이 통제관에게 답을 요구할 때** — 저작으로 막는다. 규칙과 실측은
-   [엔진 요청서 §6.1](./dday-engine-minimal-request.md#61-비트-경계에는-이미-실측된-제약이-하나-있다).
-   `lint-beat.mjs`가 무료로 검사한다.
-2. **회선이 열려 있는 동안 상시** — 고정 사건이 아무것도 묻지 않아도, 대화가
-   진행 중이면 후속 질문의 자리가 비어 있다. 이건 **`side` 구분으로 막는다.**
-   회선 너머 인물과 상황실 인물을 페이로드에서 갈라 놓고, 역할 규칙("상황실 안 —
-   서로에게만 말한다. 회선 저쪽에는 말을 걸지 않는다")을 **그 라벨에 붙인다.**
+1. **A fixed event demanding an answer from the controller** — prevented by
+   authoring. The rule and its measurement:
+   [engine request §6.1](../planning/dday-engine-minimal-request.md#61-비트-경계에는-이미-실측된-제약이-하나-있다)
+   (archived; the rule itself is upstream in [spec-architecture](./spec-architecture.md) §4).
+   `lint-beat.mjs` checks it for free.
+2. **Standing exposure while the line is open** — even when the fixed event asks
+   nothing, an in-progress conversation leaves a slot open for a follow-up
+   question. This one is stopped by the **`side` split.** Separate the people
+   across the line from the people in the room *in the payload*, and attach the
+   role rule ("inside the room — you speak only to each other; you do not
+   address the far end of the line") **to that label**.
 
-2의 근거는 실측이다: 같은 규칙을 제약 목록에 산문으로만 두면 회선 침범 2/5로
-변화가 없었고, `side` 그룹핑을 더해 1/5, 규칙을 라벨로 옮겨 **0/5**(독립 2회)가 됐다.
-**규칙은 그것이 적용될 데이터 옆에 있을 때 작동한다** — 멀리 있는 제약 목록에서는
-읽히지 않는다.
-
----
+The evidence for (2) is measured: leaving the same rule as prose in a constraint
+list held line-crossing at 2/5, unchanged; adding `side` grouping brought it to
+1/5; moving the rule onto the label itself reached **0/5** (twice, independently).
+**A rule works when it sits next to the data it governs** — in a distant
+constraint list it does not get read.
 
 ## 4. Call 3 — Reporter
 
-라운드가 끝날 때 두 가지를 남긴다: 객관 기록과 자필 보고서. 한 콜 안에서 분리한다.
+At the end of a round it leaves two things: the objective record and the
+self-written report. They are separated *within one call*.
 
-**한 콜인 이유.** 콜을 나누면 라운드당 콜이 하나 늘고(비용·지연), 스펙 §4의 "네
-종류 외에는 없다"를 개정해야 한다. 한 스키마 안에서 필드로 분리하는 것은 Call 1이
-`inner_note`/`stance`/`utterance`를 분리하는 것과 같은 패턴이고, 그 패턴은 실측
-프로그램 전체에서 작동이 확인됐다.
+**Why one call.** Splitting adds a call per round (cost and latency) and would
+require amending spec §4's "three types exist; no others". Separating them as
+fields inside one schema is the same pattern as Call 1 separating
+`inner_note`/`stance`/`utterance`, and that pattern is confirmed working across
+the whole measurement program.
 
-### 입력
+### Input
 
-| 슬롯 | 내용 |
+| Slot | Contents |
 |---|---|
-| `TEMPERAMENT` | **Call 1과 같은 파일을 읽는다.** 시나리오당 기질은 하나이고, 사본이 둘이면 조용히 어긋난다 |
-| `EXPERIENCED` | 이 라운드에 겪은 것 전부 — 스크립트 이벤트 + Call 2의 출력 + Call 1의 `utterance`와 `inner_note` (W1·W2) |
-| `REPORT_GUIDANCE` | 분량·형식 정책 (`data/`, balance-as-data) |
+| `TEMPERAMENT` | **Reads the same file as Call 1.** There is one temperament per scenario, and two copies drift silently |
+| `EXPERIENCED` | Everything experienced this round — script events + Call 2's output + Call 1's `utterance` and `inner_note` (W1 · W2) |
+| `REPORT_GUIDANCE` | Length and format policy (`data/policy/report-guidance.json`, balance-as-data) |
 
-### 출력 (필드 순서 = 계약)
+### Output (field order is part of the contract)
 
-| # | 필드 | 타입 | 의미 |
+| # | Field | Type | Meaning |
 |---|---|---|---|
-| 1 | `facts` | string[] | 객관 기록. 실제로 일어났거나 관찰된 것만, 항목당 한 문장 |
-| 2 | `report_body` | string | 자필 보고서 (markdown). 생각과 판단의 자리 |
+| 1 | `facts` | string[] | Objective record. Only what actually happened or was observed, one sentence per item |
+| 2 | `report_body` | string | The self-written report (markdown). Where thought and judgment live |
 
-**순서의 근거 두 겹.** `facts`를 앞에 두면 사실 확정이 본문 작성의 앵커가 된다.
-`report_body`를 **마지막**에 두면 스트리밍 시 부분 JSON의 꼬리가 곧 본문이 되어,
-타자기 UI를 tool-use 아래서도 구현할 수 있는 이음매가 남는다 — 지금은 쓰지 않지만
-(§7-6) 순서를 지키는 비용이 0이므로 옵션을 닫지 않는다.
+**Two reasons for this order.** Putting `facts` first makes fact-fixing the
+anchor for writing the body. Putting `report_body` **last** means that under
+streaming the tail of a partial JSON *is* the body, leaving a seam where a
+typewriter UI could be implemented under tool-use. It is not used today (§7-6),
+but preserving the order costs nothing, so the option is not closed.
 
-**기록 계약** (프롬프트가 강제하고, 기계 검증은 불가능하다 — §6의 관측 결함이 근거):
+**Record-keeping contract** (enforced by the prompt; not machine-checkable — the
+observed defects in §9 are the rationale):
 
-- 들리고 보인 것은 `~들렸다/보였다`로 적는다. 단정형(`감지됨`, `확인됨`)은 계기가
-  있을 때만 쓴다.
-- `facts` 항목에 괄호 주석이나 평가를 붙이지 않는다.
-- 일어난 순서대로 적고, 자신의 발화도 사건으로 적는다.
-- 겪지 않은 일을 만들어 넣지 않는다. 지시문 자체를 보고서에서 언급하지 않는다.
+- What was heard or seen is written as *heard / seen*. Assertive forms
+  ("detected", "confirmed") only when an instrument backs them.
+- No parenthetical commentary or evaluation attached to a `facts` item.
+- Written in the order things happened, with the agent's own utterances recorded
+  as events.
+- Nothing that did not happen is invented, and the instructions themselves are
+  never mentioned in the report.
 
-**검증:** `facts`가 배열 아님·전부 공백·빈 항목 포함, `report_body` 공백 → hard.
-라운드는 항상 관측 가능한 사건을 포함하므로 빈 `facts`는 관찰이 아니라 형식 파손이다.
+**Validation.** Hard: `facts` not an array, entirely blank, or containing an
+empty item; blank `report_body`. A round always contains observable events, so
+empty `facts` is format breakage, not an observation.
 
-**`facts`의 존폐 조건.** 이 필드는 객관로그를 LLM으로 만든다는 선택이다. 추출 품질이
-쓸 만하지 않다고 판정되면 필드를 삭제하고 객관로그를 엔진 이벤트 로그로 격하한다
-(그 경우 NPC 발화처럼 LLM을 타는 사실은 객관로그에서 빠지는 것을 감수한다).
-
----
+**The condition under which `facts` survives.** This field is a bet that the
+objective log can be made by an LLM. If extraction quality is judged not good
+enough, delete the field and demote the objective log to the engine's event log —
+accepting that facts which ride the LLM, such as NPC speech, then drop out of
+the objective log.
 
 ## 5. Call 4 — Grader
 
-휴면. 스펙 §3의 업그레이드 슬롯으로만 활성화된다. 실행 품질에 따른 delta 변조(±α)는
-런칭 시점에 꺼져 있고, E-LEV 판정이 "도달 불가"였으므로 활성 계획이 없다.
+Dormant. Activated only as spec §3's upgrade slot. Delta modulation by execution
+quality (±α) is off at launch, and the E-LEV verdict was "unreachable", so there
+is no plan to activate it.
 
----
-
-## 6. 데이터 흐름 — 입력이 어디서 오는가
+## 6. Data flow — where every input comes from
 
 ```
- [시나리오 데이터]                      [프록시 시스템 레이어]
-  게이트 질문 · 스탠스 셋 · 고정 NPC     default prompt (결함·내력·
-  행동 · 인물 목록 · 스크립트 이벤트     우선순위 · 판단 계약) + 기질 주입
-  · 기질 산문                                    │
-        │                                        ▼
+ [scenario data]                          [proxy system layer]
+  gate question · stance set · fixed        default prompt (flaw · history ·
+  NPC action · character list · script      priorities · judgment contract)
+  events · temperament prose                + temperament injection
+        │                                        │
         ├───────────────────────▶ ┌─ CALL 1 judgment ─┐
- [엔진 타임라인] ─ TIMELINE_EXCERPT ▶│                  │◀ BLOCKS ─ [플레이어 채굴 UI]
+ [engine timeline] ─ TIMELINE_EXCERPT ▶│              │◀ BLOCKS ─ [player mining UI]
                                    └─┬──────┬─────┬───┘
                               stance │ utterance │ inner_note
                                      ▼      │     │
-                            [엔진: delta → bucket → edge]
+                          [engine: delta → bucket → edge]
                                      │      │     │
-                                     │      ▼     │
-                        (다음 게이트) │  [엔진 타임라인] (W1)
+                        (next gate)  │  [engine timeline] (W1)
                                      │      │     │
-        [엔진: delta journal → 증상 렌더러] │     │
+      [engine: delta journal → symptom renderer]  │
                                      ▼      ▼     │
                             ┌─ CALL 2 narration ─┐│
-                            │ 고정 사건은 엔진이  ││
-                            │ 이미 렌더 — 반응만  ││
+                            │ engine already     ││
+                            │ rendered the fixed ││
+                            │ event — reaction   ││
+                            │ only               ││
                             └─────────┬──────────┘│
                     timeline_entries · npc_lines  │
                                       ▼           │
-                            [엔진 타임라인] (W2, 채굴 대상)
+                       [engine timeline] (W2, minable)
                                       │           │
-                        [라운드 이벤트 조립기] ◀───┘
+                        [round event assembler] ◀─┘
                                       ▼
                             ┌─ CALL 3 reporter ─┐
                             └────────┬──────────┘
                               facts  │  report_body
                                 ▼    │      ▼
-                      [객관로그 UI]  │  [보고서 UI · 타자기]
+                    [objective-log UI]│  [report UI · typewriter]
                                      │      │
-                                     └──────┴──▶ 플레이어 채굴 (W3)
+                                     └──────┴──▶ player mining (W3)
                                                       │
                                                       ▼
-                                            다음 Call 1의 BLOCKS
+                                          BLOCKS of the next Call 1
 ```
 
-### 슬롯별 공급자
+### Supplier per slot
 
-| 콜 | 슬롯 | 공급자 |
+| Call | Slot | Supplier |
 |---|---|---|
-| 1 | `FLAW` `INCIDENT` `PRIORITY_LIST` | 프록시 (D task가 저작한 default prompt) |
-| 1 · 3 | `TEMPERAMENT` | 시나리오 저작 기질 — 두 콜이 **같은 파일** |
-| 1 | `TIMELINE_EXCERPT` | 엔진 타임라인 = 스크립트 이벤트 + Call 2 출력 + Call 1 `utterance` |
-| 1 | `BLOCKS` | 플레이어 — 타임라인·보고서의 실제 생성 텍스트에서 채굴 (W3, I1) |
-| 1 | `GATE_QUESTION` `STANCE_SET` | 시나리오, 게이트별 |
-| 2 | `TIMELINE_TAIL` | 엔진 타임라인 꼬리 |
-| 2 | `FIXED_NPC_ACTION` `PRESENT_NPCS` | 시나리오, 비트별 |
-| 2 | `SCENE_SYMPTOMS` | 엔진 per-beat delta journal → 증상 렌더러 |
-| 3 | `EXPERIENCED` | 라운드 이벤트 조립기 (스크립트 + Call 2 출력 + Call 1 `utterance`·`inner_note`) |
-| 3 | `REPORT_GUIDANCE` | `data/` 정책 |
+| 1 | `FLAW` `INCIDENT` `PRIORITY_LIST` | Proxy (the default prompt authored by the D task) |
+| 1 · 3 | `TEMPERAMENT` | Scenario-authored temperament — **the same file** for both calls |
+| 1 | `TIMELINE_EXCERPT` | Engine timeline = script events + Call 2 output + Call 1 `utterance` |
+| 1 | `BLOCKS` | The player — mined from the actual generated text of timeline and reports (W3, I1) |
+| 1 | `GATE_QUESTION` `STANCE_SET` | Scenario, per gate |
+| 2 | `TIMELINE_TAIL` | Tail of the engine timeline |
+| 2 | `FIXED_NPC_ACTION` `PRESENT_NPCS` | Scenario, per beat |
+| 2 | `SCENE_SYMPTOMS` | Engine per-beat delta journal → symptom renderer |
+| 3 | `EXPERIENCED` | Round event assembler (script + Call 2 output + Call 1 `utterance`/`inner_note`) |
+| 3 | `REPORT_GUIDANCE` | `data/policy/report-guidance.json` |
 
-### 출력의 소비자
+### Consumer per output
 
-| 출력 | 흐르는 곳 |
+| Output | Where it flows |
 |---|---|
-| `stance` | 엔진 — (게이트,스탠스) delta → bucket → edge 판정 |
-| `utterance` | 엔진 타임라인 · Call 2 문맥 · Call 3 입력 |
-| `inner_note` | **Call 3에만.** 플레이어에게 직접 노출되지 않고 보고서를 통해서만 샌다 |
-| `because_*` `rejected_*` | 진단·raw 로깅 전용. 플레이어 비노출 |
-| `timeline_entries` `npc_lines` | 엔진 타임라인 → 화면 + 채굴(W2) → 다음 Call 1·Call 3 |
-| `facts` | 객관로그 UI |
-| `report_body` | 보고서 UI(타자기) → 채굴(W3) → 다음 Call 1의 `BLOCKS` |
+| `stance` | Engine — (gate, stance) delta → bucket → edge resolution |
+| `utterance` | Engine timeline · Call 2 context · Call 3 input |
+| `inner_note` | **Call 3 only.** Never shown to the player directly; it leaks only through the report |
+| `because_*` `rejected_*` | Diagnostics and raw logging only. Not player-facing |
+| `timeline_entries` `npc_lines` | Engine timeline → screen + mining (W2) → next Call 1 and Call 3 |
+| `facts` | Objective-log UI |
+| `report_body` | Report UI (typewriter) → mining (W3) → next Call 1's `BLOCKS` |
 
-### 이 지도가 끊기면 안 되는 곳
+### Where this map must not be cut
 
-W1(판단 자유 출력 → 보고서·타임라인) · W2(생성 NPC 대사 → 채굴 가능) · W3(채굴은
-실제 생성 텍스트 위에서) · W4(자유 텍스트는 상태를 못 움직인다). 하나라도 끊기면
-게임이 고정 퍼즐로 조용히 격하된다 (스펙 §5).
+W1 (judgment free output → report and timeline) · W2 (generated NPC dialogue →
+minable) · W3 (mining happens on actually generated text) · W4 (free text cannot
+move state). Cut any one and the game degrades silently into a fixed puzzle
+(architecture spec §5).
 
----
+## 7. Open parameters
 
-## 7. 미결 파라미터
-
-| # | 항목 | 상태 | 바인딩 주체 |
+| # | Item | Status | Bound by |
 |---|---|---|---|
-| 1 | `facts` 시점 표기 (1인칭/3인칭) | 미결 — 객관로그 UI의 요구에 맞춰 고정 | L + U |
-| 2 | 보고 주기 | **라운드당 1회** — L 결정, **U 추인 대기** (스펙 §9는 U+L 공동) | U + L |
-| 3 | 보고서 분량 | 잠정 20~30문장 | U + L |
-| 4 | `SCENE_SYMPTOMS` 렌더러 계약 | ✅ **닫힘** — [엔진 최소 명세](./dday-engine-minimal-spec.md) §2.3 | 엔진 |
-| 5 | 콜 실패 시 게임 거동 | ✅ **닫힘** — [엔진 최소 명세](./dday-engine-minimal-spec.md) §5. 프록시 fallback은 헤더(`x-llm-fallback`·`x-fallback-code`)로 실어 스키마를 건드리지 않는다 | L + 엔진 |
-| 6 | 보고서 전송 방식 | **클라이언트 타자기** (완성된 응답을 재생). SSE는 스키마만 대응하고 착수하지 않는다 | L + U |
-| 7 | `constraint_echo` 필드 | **스키마에 없음.** 재도입 조건은 §8-4 | L |
-| 8 | 기본 프롬프트의 `[우선순위]` 섹션 | ✅ **존치** (07-31 윤석) — 아래 | D task |
+| 1 | `facts` grammatical person (1st/3rd) | Open — fix to what the objective-log UI needs | L + U |
+| 2 | Report cadence | **Once per round** — L's decision, **awaiting U's ratification** (spec §9 makes it joint U+L) | U + L |
+| 3 | Report length | Provisionally 20–30 sentences | U + L |
+| 4 | `SCENE_SYMPTOMS` renderer contract | ✅ **Closed** — [engine spec](./spec-engine.md) §2.3 | engine |
+| 5 | Game behavior on call failure | ✅ **Closed** — [engine spec](./spec-engine.md) §5. Proxy fallback rides in headers (`x-llm-fallback` · `x-fallback-code`) so the schema is untouched | L + engine |
+| 6 | Report transport | **Client-side typewriter** (replaying a completed response). SSE stays schema-compatible but is not built | L + U |
+| 7 | `constraint_echo` field | **Not in the schema.** Reintroduction condition below | L |
+| 8 | The default prompt's `[우선순위]` section | ✅ **Retained** (07-31, 윤석) — below | D task |
 
-**#8: 조작 채널과 프롬프트 섹션은 다른 물건이다.**
+### #8 — a manipulation channel and a prompt section are different objects
 
-- **C-STRUCT(플레이어가 순서를 바꾸는 조작 채널)는 완전히 죽었다** — 액추에이터,
-  UI, 델타 행 전부. 07-31 결정과 REPORT의 C-STRUCT 카드("no delta rows, no UI
-  element")가 일치한다.
-- **기본 프롬프트의 `[우선순위]` 섹션**(`너는 다음을 스스로에게 약속했다: …`)은
-  **남는다.** 플레이어가 닿지 못하는 프록시 저작 고정값이며, 에이전트의 기본
-  성향을 저작하는 수단으로 계속 쓰인다.
+- **C-STRUCT (the player reordering priorities) is entirely dead** — actuator, UI,
+  and delta rows all. The 07-31 decision and the REPORT's C-STRUCT card ("no
+  delta rows, no UI element") agree.
+- **The default prompt's `[우선순위]` section stays.** It is a proxy-authored
+  constant the player cannot reach, and it remains a means of authoring the
+  agent's baseline disposition.
 
-**존치의 근거는 증거의 부재다.** C-STRUCT 프로브는 전 팔이 4개 항목을 유지한 채
-순서만 바꿨다 — **리스트의 부재는 한 번도 측정된 적이 없다.** "순서를 바꿔도 안
-움직인다"는 "없어도 된다"와 다른 주장이고, 후자는 근거가 없다. 프로그램의 판정도
-"효과 0"이 아니라 "다이얼이 아니라 tiebreaker"였다. 게다가 C-BLOCK을 입증한 판단
-콜 전부가 이 섹션을 가진 프롬프트 위에서 나왔으므로, 삭제는 스펙 §9가 동결한 기본
-프롬프트의 변경이 되어 재바인딩과 베이스라인 재측정을 부른다. **존치는 동결 상태
-그대로이므로 재검증이 필요 없다** — 이 결정이 값싼 쪽인 이유다.
+**The reason for retention is the absence of evidence.** Every C-STRUCT arm kept
+all four items and changed only their order — **the absence of the list has never
+been measured.** "Reordering does not move it" is a different claim from "it can
+be removed", and the latter has no evidence. The program's verdict was also not
+"zero effect" but "a tiebreaker, not a dial". Moreover every judgment call that
+established C-BLOCK ran on a prompt containing this section, so deleting it would
+be a change to the default prompt that spec §9 froze — triggering rebinding and a
+baseline re-measurement. **Retention is the frozen state itself and therefore
+needs no revalidation** — that is why it is the cheap side.
 
-*기각된 삭제 논거(기록용)*: 플레이어가 닿지 못하는 섹션은 프롬프트 길이·지연
-비용이고, 스펙 §6.2의 "선언되지 않은 베이스라인 스탠스 금지"에 걸릴 여지가 있다.
-후자는 섹션이 실제로 스탠스를 지시하는지 재검토할 때 다시 열릴 수 있다.
+*Rejected deletion arguments (recorded)*: a section the player cannot reach is
+prompt length and latency cost, and it may fall foul of spec §6.2's ban on
+undeclared baseline stances. The latter can reopen if the section is re-examined
+for whether it actually instructs a stance.
 
-⚠️ **기록 정합성 하나.** 07-30 회의록 §2-3의 항목 **제목**은 "우선순위 리스트 완전
-제거"인데 본문이 지목하는 범위는 액추에이터와 UI 작업량이다. 이 결정(섹션 존치)은
-본문과는 맞고 제목의 문자적 독해와는 어긋나므로, 제목을 "우선순위 **재배열 채널**
-완전 제거"로 정정하는 것이 기록을 자기모순 없이 만든다 — 민서 확인 사항.
+### #6 — rationale and limits
 
-**#6의 근거와 한계.** 현재 백엔드 경로(API Gateway HTTP API → Lambda → Bedrock
-Converse)는 응답을 버퍼링하므로 SSE를 하려면 Lambda Function URL(RESPONSE_STREAM)
-+ ConverseStream으로 바꿔야 한다 — 클라이언트 조정이 아니라 백엔드 아키텍처 변경이다.
-클라이언트 타자기는 시각적으로 동등하고 속도를 제어할 수 있으나, **time-to-first-token을
-흡수하지 못한다**(생성이 끝날 때까지 화면이 빈다). 이 절충이 성립하는지는 프로덕션
-페이로드에서의 보고서 콜 지연에 달려 있고, 그 수치는 아직 없다(§8-2).
+The current backend path (API Gateway HTTP API → Lambda → Bedrock Converse)
+buffers responses, so SSE would require switching to a Lambda Function URL
+(`RESPONSE_STREAM`) plus ConverseStream — a backend architecture change, not a
+client adjustment. The client typewriter is visually equivalent and speed-
+controllable, but **it cannot absorb time-to-first-token** (the screen stays
+empty until generation finishes). Whether that trade holds depends on the report
+call's latency at production payload size, and that number does not exist yet.
 
----
+### #7 — reintroduction condition
 
-## 8. 상위 문서에 대한 개정 요청
+`constraint_echo` being absent from the schema is a **design judgment, not the
+conclusion of a comparison**. When Call 2 shrank to reaction-generation (§3), the
+"realize the fixed event" burden the field was anchoring left the call entirely,
+and a field with no consumer only spends tokens. **Reintroduce if** a
+contradiction with a fixed event is first observed in situ — and then re-examine
+under a design that satisfies rule 8 (A20).
 
-이 계약이 스펙과 어긋나는 지점. 조용히 두지 않고 명시적 개정 안건으로 올린다.
+## 8. Revision requests to the parent spec — all resolved (record)
 
-**1. `PRIORITY_LIST`는 플레이어 조작면이 아니다 — 스펙 §6.1·§6.3·I7 개정 필요.**
+This section was a list of places where this contract disagreed with the
+architecture spec. The spec has since absorbed all three. Kept as a record of
+what was raised and where it landed; **nothing here is outstanding.**
 
-스펙은 "플레이어가 가진 유일한 시스템 레이어 조작 = 우선순위 목록의 순열"(I7)이라고
-못박고 있다. 그러나 C-STRUCT는 종료됐고, 07-31 결정은 **UI 연출로도 다시 다루지
-않는다** — actuator whitelist에서 priority-reorder 제외, UI 작업량에서도 제외.
-따라서 재배열 UI는 존재하지 않고 `PRIORITY_LIST`는 플레이어가 닿지 못한다. 스펙의
-세 곳(§6.1 reachability 열, §6.3 "1:1 매핑", I7)이 개정 대상이다.
-
-**개정 범위 주의.** 여기서 죽는 것은 **플레이어의 도달 경로**뿐이다. 기본
-프롬프트의 `[우선순위]` 섹션은 프록시 저작 고정값으로 **존치한다**(§7-8, 07-31
-윤석). 개정문이 그 둘을 한 문장으로 묶으면 측정된 적 없는 변경(섹션 삭제)이
-측정된 판정(채널 종료)에 얹혀 들어간다 — 스펙 §6.1의 reachability 열은 "reorder"를
-지우되 섹션 행 자체는 남겨야 한다.
-
-*결과*: 플레이어의 조작면은 **블럭 주입 하나**로 좁아진다. 게임이 한 채널 게임이라는
-판정과 정합한다.
-
-**2. 스펙 §4의 지연 수치는 이미 무효이며, 대체 수치는 아직 없다.**
-
-스펙 §4가 인용하는 "19–75s, 평균 ~38s"는 서브에이전트 왕복을 잰 것이지 API 콜을 잰
-것이 아니다(RUNLOG A4가 이미 무효화). 직접 API 실측은 이보다 훨씬 빠르다. 다만 A4의
-운영 규칙이 명시하듯 **그 수치로 프로덕션의 지연 은닉 예산을 다시 잡아서는 안 된다** —
-프로덕션 페이로드 크기에서의 재측정이 필요하고, 방향은 유리하지만 크기는 확립되지
-않았다. 스펙 §4는 낡은 수치를 인용하는 상태이므로 개정 대상이되, 새 숫자를 넣는 것이
-아니라 **"재측정 대기"로 바꾸는 것**이 정확하다.
-
-**3. 스펙 §4 지연 규칙 5(SSE 타자기)는 §7-6과 어긋난다.**
-
-규칙 5는 "보고서는 SSE로 스트림되고 토큰 도착률이 곧 타자기"라고 명시한다. 이 계약은
-클라이언트 타자기를 택했으므로 규칙 5의 개정이 필요하다. 규칙 4(tally 화면이
-time-to-first-token을 흡수)는 그대로 유효하고, 오히려 클라이언트 타자기에서 더
-중요해진다.
-
-**4. 비교 프로브를 쓸 때는 A20을 먼저 적용한다.**
-
-이 계약의 어떤 항목(예: 삭제한 `constraint_echo`의 재도입, 프롬프트 변형 A/B)이든
-**두 팔을 비교해 결정하려면** RUNLOG A20이 선행한다: drop 조건이 천장(≥80%)과
-바닥(≤20%)을 모두 막아야 하고, 비교 스위트를 쓰기 전에 (a) 측정된 baseline에 대해
-`p≤0.05`가 되는 최소 live count와 (b) 사전 명시한 MDE에서의 power를 계산해
-pre-registration에 적어야 한다. 15~20pp를 80% power로 보려면 팔당 대략 80~100콜이
-필요하다. **두 팔 모두 사건이 0건인 결과는 "효과 없음"이 아니라 "측정 불가"다** —
-그 설계로는 어떤 차이도 관측될 수 없었다는 뜻이므로, 그 위에 삭제·유지 결정을 얹지
-않는다.
-
-*적용*: `constraint_echo`가 스키마에 없는 것은 비교 실험의 결론이 아니라 **설계
-판단**이다 — Call 2가 반응 생성으로 축소되면서(§3) 그 필드가 앵커하려던 "고정 사건
-실현" 부담 자체가 콜에서 빠졌고, 소비자가 없는 필드는 토큰만 쓴다. **재도입 조건**:
-in-situ에서 고정 사건과의 모순이 처음 관측되면, A20을 만족하는 설계로 재검토한다.
-
----
-
-## 9. 근거
-
-이 계약의 어느 조항이 무엇에 기대고 있는지. 근거 없는 조항은 취향이므로 여기
-없으면 스펙 인용이거나 팀 결정이다.
-
-| 조항 | 근거 |
+| Request | Absorbed into |
 |---|---|
-| 중첩 객체 금지 (§1-2) | RUNLOG **A7** — `because`가 객체였을 때 17콜 중 7콜이 malformed였고 팔 상관이 있었다 |
-| hard/soft 이원화 (§1-6) | RUNLOG **A16** — hard-discard가 팔마다 다른 필터를 만들어 비교를 반복적으로 무효화했다 |
-| Call 1 필드 순서 (§2) | 메커니즘 프로그램 전체가 이 배치 위에서 측정됐다. 변경은 재검증 대상 |
-| Call 2 반응 생성 축소 (§3) | 첫 스모크에서 되풀이 계열 결함 3종 — 통제관 발화를 NPC 대사로 재출력 8/10, 인용 중복, 직전 타임라인 재서술. 원인이 "이미 있는 것을 다시 쓰게 한 계약"이었다. [판독](../planning/dday-mechanism/runs/SMOKE-20260731-callcontract-read.md) |
-| 통제관 발화 재출력 검출 (§3) | 같은 관측. 통제관이 `PRESENT_NPCS`에 없어 화자 id 검증으로는 잡히지 않는다 |
-| `facts`/`report_body` 한 콜 분리 (§4) | 같은 스모크에서 추출이 복사가 아님(순서 재구성·인용 보존)과 기질 지문의 보고서 누출 10/10을 관측 |
-| 기록 계약 3줄 (§4) | 같은 스모크의 결함 — 무헤지 단정("분석 결과 확인됨"), 괄호 해석 주석, 자기 발화 누락과 순서 왜곡 |
-| 분량 잠정 20~30 (§7-3) | 같은 스모크 실측 18~29문장(평균 23.8), 10콜 중 1콜만 하한 미달 |
-| 지연 수치 무효 (§8-2) | RUNLOG **A4** — 옛 수치는 서브에이전트 왕복을 잰 것. 대체 수치는 프로덕션 페이로드 재측정 대기 |
-| 비교 프로브 사전 조건 (§8-4) | RUNLOG **A20** — 바닥에 붙은 예측 사건은 saturation과 같은 결함. 15~20pp를 80% power로 보려면 팔당 80~100 |
-| `PRIORITY_LIST` 고정 (§8-1) | C-STRUCT 종료 판정과 07-31 결정(UI 연출로도 다루지 않는다) |
+| `PRIORITY_LIST` is not a player surface | spec §6.1 ("a fixed authored section … with no player control attached"), §6.3 ("inject block → a line in *known blocks*. That is the whole list."), and a rewritten I7 |
+| The §4 latency figures are invalid | spec §4 ("not yet measured … the ~19–75s figure of earlier drafts … is withdrawn") |
+| §4 latency rule 5 specifies SSE, contradicting §7-6 | spec §4 rule 5 ("The typewriter is client-driven … SSE … is not built") |
 
-**근거로 쓰이지 않는 것 하나.** 첫 스모크의 `constraint_echo` A/B(위반 0/5 vs
-0/5)는 양쪽 팔 모두 사건이 0건이라 **어떤 차이도 관측될 수 없는 설계**였다
-(A20). 그 런은 echo의 유지·삭제 어느 쪽도 뒷받침하지 않으며, §8-4의 처분은
-비교 결과가 아니라 설계 판단이다.
+The fourth item in the old list was not a revision request but a standing
+methodology rule; it now lives as **rule 8** in §1.
 
-## 10. 하네스와의 관계
+## 9. Evidence
 
-이 계약은 `infra/test-harness`의 콜 타입 정의(`lib/calltypes.mjs` + `templates/`)와
-1:1로 대응한다. 하네스에서 슬롯 값은 스위트 JSON의 손저작으로 공급되고, 프로덕션에서는
-§6의 공급자가 공급한다 — **계약은 같고 공급자만 다르다.** 프록시 전송으로 바꾸는 것은
-shape 변경이므로 재검증 런 1회를 동반한다(EXTENDING.md Recipe D).
+What each clause rests on. A clause with no evidence is a preference, so absence
+from this table means the clause is a spec citation or a team decision.
 
-`data/`에 데이터로 사는 것: 스탠스 셋, 게이트 그래프, delta 표, 임계값, 분량 정책.
-로직에 인라인되는 것: 없음 (스펙 I10).
+| Clause | Evidence |
+|---|---|
+| No nested objects (§1-2) | RUNLOG **A7** — when `because` was an object, 7 of 17 calls were malformed, and the failure correlated with the arm |
+| hard/soft split (§1-6) | RUNLOG **A16** — hard-discard created a different filter per arm and repeatedly invalidated comparisons |
+| A20 preconditions (§1-8) | RUNLOG **A20** — a predicted event pinned to the floor is the same defect as saturation. Seeing 15–20pp at 80% power needs 80–100 per arm |
+| Call 1 field order (§2) | The entire mechanism program was measured on this arrangement. Changing it means revalidation |
+| Call 2 reduced to reaction generation (§3) | Three recurring defect families in the first smoke test — controller utterance re-emitted as NPC dialogue 8/10, duplicated quotation, restatement of the immediately preceding timeline. The cause was *a contract that asked for what already existed to be written again*. [Read-out](../planning/dday-mechanism/runs/SMOKE-20260731-callcontract-read.md) |
+| Controller re-emission detection (§3) | Same observation. The controller is absent from `PRESENT_NPCS`, so speaker-id validation cannot catch it |
+| `side` split (§3) | Line-crossing 2/5 with prose-only rule → 1/5 with `side` grouping → **0/5** with the rule moved onto the label (two independent runs) |
+| `facts`/`report_body` split within one call (§4) | Same smoke test observed that extraction is not copying (order restructured, quotation preserved) and that the temperament fingerprint leaked into the report 10/10 |
+| The three record-keeping lines (§4) | Same smoke test's defects — unhedged assertion ("analysis confirmed"), parenthetical interpretation, omission of the agent's own utterance and order distortion |
+| Provisional length 20–30 (§7-3) | Same smoke test measured 18–29 sentences (mean 23.8); 1 of 10 calls fell below the floor |
+| Latency figures invalid (§8) | RUNLOG **A4** — the old figures timed subagent round-trips. A replacement awaits re-measurement at production payload size |
+| `PRIORITY_LIST` frozen (§8) | The C-STRUCT termination verdict and the 07-31 decision (not to be revived even as UI dressing) |
+
+**One thing that is explicitly not used as evidence.** The first smoke test's
+`constraint_echo` A/B (0/5 violations vs 0/5) had zero events in both arms, so it
+was **a design under which no difference could have been observed** (A20). That
+run supports neither keeping nor deleting the field; §7-7's disposition is a
+design judgment, not a comparison result.
+
+## 10. Relationship to the harness
+
+This contract corresponds 1:1 to `infra/test-harness`'s call-type definitions
+(`lib/calltypes.mjs` + `templates/`). In the harness, slot values are supplied by
+hand-authored suite JSON; in production they come from the §6 suppliers — **the
+contract is the same and only the supplier differs.** Switching to proxy
+transport is a shape change and carries one revalidation run (EXTENDING.md,
+Recipe D).
+
+Living in `data/` as data: stance sets, gate graph, delta tables, thresholds,
+length policy.
