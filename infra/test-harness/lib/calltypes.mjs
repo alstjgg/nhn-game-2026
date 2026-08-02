@@ -189,7 +189,7 @@ const judgment = {
 };
 
 // ── Call 2 — Narration / NPC dialogue ───────────────────────────────────────
-// Contract: docs/dday-call-contracts.md §2. One bundled call per beat (spec §4).
+// Contract: docs/contract-calls.md §2. One bundled call per beat (spec §4).
 // Load-bearing properties — mineable yield and constraint compliance — are
 // test-program material; the schema structures the output, the human checks the
 // constraint. Output units match mining units: timeline_entries is an array of
@@ -315,7 +315,7 @@ const narration = {
 };
 
 // ── Call 3 — Reporter ───────────────────────────────────────────────────────
-// Contract: docs/dday-call-contracts.md §3. 사실/판단 분리는 2안(스키마 확장,
+// Contract: docs/contract-calls.md §3. 사실/판단 분리는 2안(스키마 확장,
 // 07-31 윤석): facts = 객관로그 행, report_body = 자필 보고서. 실용성이 없으면
 // 폐기하고 3안(엔진 로그)으로 격하 — 스모크의 drop_condition이 그 게이트다.
 //

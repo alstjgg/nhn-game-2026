@@ -2,7 +2,7 @@
 
 Probe runner for DDAY test programs. Zero dependencies, plain Node ≥24.
 
-First consumer is the [mechanism deep-test plan](../../docs/dday-mechanism-deep-test.md)
+First consumer is the [mechanism deep-test plan](../../docs/plan-mechanism-test.md)
 — see its §8 for the operating procedure. The harness is built to outlive that
 program: [**EXTENDING.md**](./EXTENDING.md) covers pointing it at other tests,
 with worked recipes and what each planned test still needs.
@@ -163,7 +163,7 @@ const myCall = {
 `narration` and `reporter` call types are wired this way (templates at
 `templates/narration/` and `templates/reporter/`, both v0.1) — their contracts,
 and the decisions behind their field lists, live in
-[docs/dday-call-contracts.md](../../docs/dday-call-contracts.md). First smoke
+[docs/contract-calls.md](../../docs/contract-calls.md). First smoke
 suites: `planning/dday-mechanism/suites/SMOKE-C2*-narration-J1.json` and
 `SMOKE-C3-reporter-J1.json`.
 

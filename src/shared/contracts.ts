@@ -2,7 +2,7 @@
  * LLM call contracts — the wire shape of the three calls.
  *
  * Owner: 윤석 (architecture track), per physical architecture §3.1.
- * Source of truth: `docs/dday-call-contracts.md` v1. This file is a
+ * Source of truth: `docs/contract-calls.md` v1. This file is a
  * transcription of that document, not a place to make new decisions — a change
  * here without a change there is a bug in one of the two.
  *

@@ -38,7 +38,7 @@ transitions (planning → demo → production).
   root. The demos under `demos/<slug>/` are competition history — they stay deployed
   at `/<slug>/` by the Pages workflow but are not extended. The root's physical
   layout (module boundaries under `src/`, where Node-side tools and the proxy live)
-  is bound by `docs/dday-physical-architecture.md`; do not restructure the root
+  is bound by `docs/spec-physical-architecture.md`; do not restructure the root
   ahead of that document.
 - **The membrane rule:** the player never types free-text to an LLM. All LLM input is composed
   from structured game elements (blocks/cards/items/telemetry). Do not build text-input UI for
@@ -67,7 +67,7 @@ and anything the harness isn't suited for.
 ## Layout
 
 ```
-src/            game source — layout bound by docs/dday-physical-architecture.md
+src/            game source — layout bound by docs/spec-physical-architecture.md
 demos/          playable demos, own stacks — each deployed at /<slug>/ by the Pages workflow
 planning/       planning-phase archive (concepts, scenarios, paper tests, meetings) — see planning/README.md
 services/       superseded reference implementations (agent-arena-api · apothecary-llm-layer)

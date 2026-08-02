@@ -13,7 +13,7 @@
 //           initials, free-text exposure conditions). Expected for a
 //           draft-stage pack; the list is the hardening worklist.
 //
-// Rule set: docs/dday-datapack-lint-rules.md. Schemas are the law
+// Rule set: docs/contract-datapack.md §3. Schemas are the law
 // (data/scenario/_schema); this script implements the subset of JSON Schema
 // they actually use, so the schema files stay the single source of truth.
 

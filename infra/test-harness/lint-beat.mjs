@@ -15,7 +15,7 @@
 //   2. A fixed action that ASKS the controller something guarantees (1) — the
 //      dialogue needs an answer and the only available speakers are NPCs.
 //
-// The rule lives in docs/dday-engine-minimal-request.md §6.1 and the call
+// The rule lives in planning/dday-engine-minimal-request.md §6.1 and the call
 // contract §3; this is the check that makes it free to enforce.
 //
 // Flags, never blocks — the author knows when an overlap is load-bearing.
@@ -65,7 +65,7 @@ if (asksQuestion || addresses) {
       '  Call 2는 통제관 대사를 만들 수 없다(통제관은 PRESENT_NPCS에 없다).',
       '  대화에 구멍이 남으면 모델이 NPC로 그것을 메우고, 그 발화는 상태를 움직이지 못한다(I3/W4).',
       '  → 응답을 요구하지 않는 고정 사건으로 바꾸거나, 답이 다음 Call 1의 utterance가 되도록 비트를 이어 붙인다.',
-      '  근거: docs/dday-engine-minimal-request.md §6.1 (실측 4/5)',
+      '  근거: planning/dday-engine-minimal-request.md §6.1 (실측 4/5)',
     ].filter(Boolean),
   );
 }
