@@ -3,6 +3,21 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-03)
+
+**Client track claimed — 민서, minimal-first.** The client layer now has an
+owner, closing the "largest schedule risk" row (README §4 ·
+[plan-game-design.md](./plan-game-design.md) §7 risk 2 — both flip on their
+next revision). Plan is two-phased: **Phase 1** = a minimal working UI that
+renders engine output into something visible — its purpose is verifying the
+engine, with the UI serving as the test base. **Phase 2** = enhancement
+(typography/document-art direction per plan-game-design §6). The layer stays
+intentionally minimalistic — there is no frontend developer or designer on
+the team; it gives an idea of what could have been, not a blank. Next
+artifact on this track: a **UI/UX spec & contract document** that becomes the
+SSoT for implementation; until it lands, working decisions live in a local
+(untracked) WORKLINE file on 민서's machine.
+
 ## Status (2026-08-02)
 
 **시나리오 확정 + 첫 데이터팩 존재.** 우는다리로 확정(민서 결정), 데이터 트랙
