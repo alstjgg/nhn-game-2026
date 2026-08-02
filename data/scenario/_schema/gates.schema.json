@@ -100,8 +100,8 @@
                 "stances": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z]$" } },
                 "deltas": {
                   "type": "object",
-                  "additionalProperties": { "type": "number" },
-                  "description": "변수명 → 정수 delta. 초안 수준이면 충분(정본 §5)"
+                  "additionalProperties": { "type": "integer" },
+                  "description": "변수명 → 비-0 정수 delta (엔진 명세 §1.3 — 증상 룩업이 정수 min 구간 매치라 소수는 어떤 문장에도 안 걸리고 0은 렌더 탈락. 0 금지는 린트 E8이 잡는다). 초안 수준이면 충분(정본 §5)"
                 },
                 "flags": {
                   "type": "object",

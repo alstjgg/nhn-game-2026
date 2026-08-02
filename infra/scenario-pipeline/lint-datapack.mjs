@@ -53,6 +53,16 @@ function validate(schema, data, path, root) {
     const ref = schema.$ref.replace('#/$defs/', '');
     return validate(root.$defs[ref], data, path, root);
   }
+  if (schema.anyOf) {
+    const saved = errors.length;
+    for (const branch of schema.anyOf) {
+      validate(branch, data, path, root);
+      if (errors.length === saved) return;
+      errors.length = saved;
+    }
+    errors.push(`${path}: matches no anyOf branch`);
+    return;
+  }
   const types = Array.isArray(schema.type) ? schema.type : schema.type ? [schema.type] : null;
   if (types) {
     const t = data === null ? 'null'
@@ -310,6 +320,26 @@ for (const key of flagReachable) {
   if (typeof symptoms.flags?.[id]?.[kind] !== 'string') {
     errors.push(`symptom coverage: flag ${id} can be ${kind} by an actuator (bucket or event effect) but symptoms.json has no flags.${id}.${kind} sentence`);
   }
+}
+
+// ---------- E8 — deltas are non-zero integers (engine spec §1.3 / §6-3) ----------
+// Symptom lookup matches |Δ| against integer min tiers: a fractional delta
+// matches no sentence (runtime hard error §2.3-2) and a zero delta is dropped
+// from rendering (§2.3-1) — coverage (E7) sees only (variable, direction) and
+// passes both, so the authoring-time check lives here.
+
+const checkDelta = (v, where) => {
+  if (!Number.isInteger(v)) errors.push(`E8 ${where}: delta must be an integer — ${v} falls through every symptom min tier (engine spec §1.3)`);
+  else if (v === 0) errors.push(`E8 ${where}: delta 0 changes nothing and is dropped from symptom rendering (engine spec §2.3-1) — remove the entry`);
+};
+for (const g of pack.gates.gates ?? []) {
+  for (const b of g.buckets) {
+    for (const [variable, v] of Object.entries(b.deltas)) checkDelta(v, `${g.gate} bucket ${b.id} delta ${variable}`);
+  }
+}
+for (const e of pack.timeline.events ?? []) {
+  if (!e.effects) continue;
+  for (const [variable, v] of Object.entries(e.effects.deltas)) checkDelta(v, `timeline ${e.id} effects delta ${variable}`);
 }
 
 // ---------- hardening-incomplete flags ----------
