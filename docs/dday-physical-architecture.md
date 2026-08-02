@@ -97,10 +97,13 @@ lint stages in `tools/`, before anything loads them. Data-contract rules like
 "≥2 key examples per condition" or `^G[0-9]+$` have no TS expression at all.
 
 The cost of this arrangement is drift between schema and transcription, and it
-has to be paid explicitly rather than assumed away: `datapack.ts` should be
-**generated** from the schemas, or the lint stage should compare its field set
-against them. Owner: 민서, with pipeline §3's next revision. Until one of those
-exists, the transcription is hand-kept and that is a known gap.
+is paid structurally rather than by review: `datapack.ts` is **generated**
+from the schemas by `infra/scenario-pipeline/generate-datapack-types.mjs`
+(zero deps, deterministic; `--check` exits non-zero on drift, CI-able). A
+generated transcription cannot disagree with its source — the gap named here
+in the previous revision is closed (08-02). Constraints TS cannot express
+(patterns, item minimums, non-zero deltas) stay in the schemas and in the
+lint stage, which is why the schemas remain the law.
 
 ### 3.2 What each boundary forbids
 

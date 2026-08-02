@@ -72,12 +72,14 @@ G1 카드로 사람 검증 완료. 카드의 모든 소비 필드가 존재한�
    유효**(G1은 비운 채 엔진 투입 가능). 단 문법은 잠정 — **노드 이름의
    소재가 게이트 그래프와 함께 와야** edge_predicates 저작이 열린다.
    score `predicates` · 노출 조건 승격이 같은 언어를 쓰는지는 미정.
-3. ~~`datapack.ts` = `_schema/` 전사~~ **✅ 수용** (물리 §3.1 + #103 스텁
-   주석 뒤집음). **후속(민서 소유, 물리 §3.1에 "알려진 gap"으로 기록됨):**
-   전사 drift를 잡는 장치 — `_schema/`에서 `datapack.ts`를 **생성**하거나,
-   린트에 필드 집합 대조를 넣거나. `datapack.ts` 재작성 때 함께 푼다.
-4. ~~`REPORT_GUIDANCE` 소재~~ **✅ 합의** — 팩 밖
-   `data/policy/report-guidance.json`. 파일 저작은 데이터 트랙 몫으로 남음.
+3. ~~`datapack.ts` = `_schema/` 전사~~ **✅ 수용 → 해소(08-02).** drift
+   guard는 생성으로 풀었다: `generate-datapack-types.mjs`가 `_schema/`에서
+   `datapack.ts`를 생성(`--check`가 drift에 exit 1). 물리 §3.1의 "알려진
+   gap" 닫힘. `npm run check` 통과 확인.
+4. ~~`REPORT_GUIDANCE` 소재~~ **✅ 합의 → 저작(08-02)** —
+   `data/policy/report-guidance.json` v0 (facts ≤ 한 문장 항목 8개 ·
+   report_body 300–1200자 markdown · 판단 표지 정책 — 자기서술 광맥 보호).
+   값은 실측(§5) 후 조정.
 5. **소비 확인 실행 (열림):** 스위트 생성기가 G1 카드를 먹는가 · 엔진이 이
    팩을 로드해 §7 판정 1(라운드 1회 완주)을 도는가 — **이 둘이 통과하면
    stage 5가 닫힌다.**
