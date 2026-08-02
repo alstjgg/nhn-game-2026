@@ -1,130 +1,149 @@
 ---
 name: write-scenario
-description: 시나리오 공장 — 배정 1건으로 집필→컴파일→린트→종이 검사→수정 루프를 돌려, 검증된 데이터팩과 판정 메모를 산출한다. 인자 - 브리프 파일 경로(내장 §1–§3 대체) · draft-only(집필만 하고 중단) · 기존 초안 경로(집필 생략, 검증 루프만). 산출 형식 정본 - 초안은 §4, 데이터팩은 data/scenario/_schema.
+description: Scenario factory — runs one assignment through the write → compile → lint → paper-check → revise loop, producing a validated datapack and a verdict memo. Args - brief file path (replaces built-in §1–§3) · draft-only (write, then stop) · existing draft path (skip writing, run the validation loop only). Format canon - drafts follow §4, datapacks follow data/scenario/_schema.
 ---
 
-# 시나리오 공장
+# Scenario factory
 
-이 스킬을 실행하는 세션은 **오케스트레이터**다 — 직접 쓰지 않는다. §0~§5는
-집필 서브에이전트에게 통째로 투입되는 재료(집필자가 보는 세계의 전부)이고,
-이 세션이 따르는 공정은 §6이다. 최종 산출물은 검증 루프를 통과한
-**데이터팩 + 판정 메모 + 초안 diff + 잔여 목록** 번들이다. 모든 산출물은
-한국어로 쓴다.
+The session running this skill is the **orchestrator** — it does not write. §0–§5
+are the material fed wholesale to the writing sub-agent (the entirety of the
+writer's world); the process this session follows is §6. The final product is a
+bundle that has passed the validation loop: **datapack + verdict memo + draft
+diff + remainder list**. All produced artifacts (draft, datapack, memos) are
+written in Korean.
 
-**인자:** 브리프 파일 경로(§1–§3 대체) · `draft-only`(§6-1에서 중단) ·
-기존 초안 경로(§6-1 생략, 그 초안으로 §6-2부터).
+**Args:** brief file path (replaces §1–§3) · `draft-only` (stop after §6-1) ·
+existing draft path (skip §6-1, enter §6-2 with that draft).
 
-## 0. 준비 — 읽을 것과 읽지 말 것
+## 0. Preparation — what to read, and what not to
 
-1. `docs/scenario/scenario-generation-guide.md`를 읽는다. **그 문서의 모든
-   규칙은 물리 법칙이다** — 취향이 아니라 제약이며, 위반한 장면은 게임에
-   실리지 못한다.
-2. **저장소의 다른 문서는 읽지 않는다** — 스펙, 리포트, 회의록, 다른 초안
-   전부. 필요한 모든 것은 이 명령과 가이드에 있다. 기술 문서를 읽으면 그
-   어휘가 문체에 스며들어 시나리오가 죽는다.
-3. 인자로 브리프 파일 경로가 주어졌으면 그 브리프를 읽고, 이 문서의
-   §1–§3 대신 그것을 따른다. §0·§4·§5는 항상 유효하다.
+1. Read `docs/scenario/scenario-generation-guide.md`. **Every rule in that
+   document is a law of physics** — a constraint, not a taste; a scene that
+   violates one cannot ship in the game.
+2. **Read no other document in the repository** — no specs, reports, meeting
+   notes, or other drafts. Everything you need is in this brief and the guide.
+   Reading technical documents lets their vocabulary seep into your prose, and
+   the scenario dies.
+3. If a brief file path was passed as an argument, read it and follow it in
+   place of §1–§3. §0, §4, and §5 always apply.
 
-## 1. 게임 컨텍스트
+## 1. Game context
 
-- **세계:** 큰 재앙이 예정된 세계. 위기가 포착된 순간, 대응 조직의 예측
-  시뮬레이터가 도시의 모든 데이터를 물어 D-Day까지의 시간을 통째로
-  재구성했다. **시뮬레이션 안에는 진실이 있다 — 그러나 사람이 열어 볼 수
-  있는 형태가 아니다.** 읽는 방법은 하나뿐: 플레이어(재앙 대비 책임자)가
-  **AI 에이전트 1기**를 안에 들여보내 겪게 하고, 그 보고서를 받는 것.
-  D-Day 전까지 몇 번이고 — 실패를 관전하고 → 보고서를 읽고 → 에이전트의
-  프롬프트를 고치고 → 다시 보낸다. trial-and-error로 재앙을 해결할
-  에이전트를 완성하는 게임.
-- **에이전트의 동사는 읽기·판단·설득·우선순위 결정이다.** 에이전트는
-  LLM이다 — 물리력이 아니라 말과 판단으로 문제를 푼다.
-- **재앙 자체는 못 막는다. 에이전트가 상대하는 것은 사람이다.** 재앙은
-  시계(clock)이고, 인간이 퍼즐이다 — 대피를 거부하는 노인, 은폐하는
-  책임자, 패닉에 빠진 군중.
-- **시뮬레이션의 세계는 고정 타임라인 위에서 돈다.** 에이전트가 개입하지
-  않으면 항상 같은 일이 같은 시각에 일어난다. 그래서 "13:00에 다리가
-  무너진다"는 사실은 13:00까지 도달한 런에서만 알 수 있다 — 더 멀리 간
-  런이 더 깊은 진실을 캔다.
-- **문장 채집:** 런이 끝나면 플레이어는 보고서 2종(객관 사건 로그 +
-  에이전트가 자기 성격대로 쓴 주관 보고서)을 받고, 거기서 **문장을 드래그해
-  다음 런의 프롬프트에 투입**한다. 시나리오는 이 채집을 먹여 살릴 만큼
-  사실·비밀·추측이 촘촘해야 한다.
-- **멤브레인:** 플레이어는 한 글자도 타이핑하지 않는다. 시뮬레이션이
-  산출한 문장을 고를 뿐이다.
-- **같은 재앙을 수 번(5~10런) 반복 관전한다.** 세계가 얇으면 3번째 런부터
-  지루해진다. 볼 때마다 새 얼굴·새 비밀이 보여야 한다.
+- **World:** a world where a great disaster is already scheduled. The moment
+  the crisis was detected, the response organization's prediction simulator
+  swallowed all of the city's data and reconstructed the entire span of time
+  up to D-Day. **The truth is inside the simulation — but not in a form a
+  human can open.** There is exactly one way to read it: the player (the
+  disaster-preparedness officer) sends **a single AI agent** inside to live
+  through it, and receives its report. Until D-Day, again and again — watch
+  the failure → read the report → revise the agent's prompt → send it back.
+  A game of completing, by trial and error, the agent that resolves the
+  disaster.
+- **The agent's verbs are reading, judging, persuading, and setting
+  priorities.** The agent is an LLM — it solves problems with words and
+  judgment, not physical force.
+- **The disaster itself cannot be prevented. What the agent contends with is
+  people.** The disaster is the clock; humans are the puzzle — the old man
+  who refuses to evacuate, the official who covers up, the crowd in panic.
+- **The simulated world runs on a fixed timeline.** Without the agent's
+  intervention, the same things happen at the same times, every run. So the
+  fact that "the bridge collapses at 13:00" can only be learned in a run that
+  reached 13:00 — a run that goes further mines deeper truth.
+- **Sentence mining:** when a run ends, the player receives two reports (an
+  objective event log + a subjective report the agent wrote in its own
+  temperament) and **drags sentences out of them into the next run's
+  prompt**. The scenario must be dense enough in facts, secrets, and
+  conjecture to feed this mining.
+- **The membrane:** the player never types a single character. They only
+  select sentences the simulation itself produced.
+- **The same disaster is watched repeatedly (5–10 runs).** A thin world gets
+  boring by run 3. Every viewing must reveal a new face, a new secret.
 
-## 2. 시나리오 배정
+## 2. Assignment
 
-> 이 섹션은 배정마다 갈아끼운다. 다른 배정을 원하면 이 섹션만 교체한다.
-> 배정은 반드시 **파일 접두**를 정의한다 — §4의 산출 파일명이 그것을 쓴다.
+> This section is swapped out per assignment. To run a different assignment,
+> replace only this section. An assignment must define the **file prefix** —
+> the §4 output filename uses it.
 
-### 자유 주제
+### Free topic
 
-재앙의 종류, 도시의 모습, 대응 조직의 형태, 무엇이 숨겨져 있고 누구를
-상대하는지 — 전부 당신이 정한다. §1의 게임 컨텍스트(예정된 재앙,
-시뮬레이션 속 세계, 에이전트 1기, 사람이라는 퍼즐)와 가이드의 물리만
-지키면 어떤 판이든 열 수 있다. 차별점·탐구 질문·함정을 미리 주지 않는다 —
-그것을 백지에서 설계하는 것까지가 이번 배정의 집필이고, 로그라인이 그
-답이 되게 하라.
+The kind of disaster, the shape of the city, the form of the response
+organization, what is hidden and who is confronted — all of it is yours to
+decide. Keep §1's game context (a scheduled disaster, a simulated world, one
+agent, people as the puzzle) and the guide's physics, and any stage you can
+imagine is open. No differentiator, guiding question, or trap is given in
+advance — designing those from a blank page is part of this assignment's
+writing, and the logline should be their answer.
 
-**단 하나의 제한:** 협박 전화와 정체불명의 발신자 구도는 이미 다른 배정이
-차지했다. 전화선 바깥에서 시작하라.
+**The single restriction:** the bomb-threat call with an unidentified caller
+is already taken by another assignment. Start outside the phone line.
 
-**파일 접두:** `자유주제`
+**File prefix:** `자유주제`
 
-## 3. 수량
+## 3. Quantities
 
-갈림길(게이트) 5–7 · 인물 5–7 · 장소 3–5 · 숨겨진 진실 4–6.
+Gates 5–7 · characters 5–7 · places 3–5 · hidden truths 4–6.
 
-수량의 방향은 **넓게가 아니라 길게**다. 인물과 장소는 관객이 얼굴을 전부
-기억할 만큼만 둔다(주요 인물 7명 상한 — 관객이 추적할 수 있는 인원의
-통설적 한계). 대신 한 인물이 여러 진실과 갈림길에 걸치고, 한 장소가 서로
-다른 시계 깊이에서 다른 정보를 내놓는다. 이야기 줄기는 수평으로 늘리지
-말고 런 깊이를 따라 수직으로 쌓는다 — 앞 진실을 실은 문장이 다음 진실의
-문 앞까지 데려가는 사슬이면 가장 좋다.
+The direction of these numbers is **long, not wide**. Keep only as many
+characters and places as an audience can hold every face of (7 major
+characters is the cap — the conventional limit of who an audience can track).
+Instead, one character spans several truths and gates, and one place yields
+different information at different clock depths. Don't stretch story strands
+horizontally; stack them vertically along run depth — best of all is a chain
+where a sentence carrying one truth delivers the player to the door of the
+next.
 
-## 4. 산출 형식
+## 4. Output format
 
-`planning/dday-scenario/drafts/<파일 접두>-<두 단어 슬러그>.md` 한
-파일로 쓴다. 파일 접두는 §2의 배정이 정의한 것을 쓰고, 슬러그는 초안의
-개성을 담은 한국어 두 단어(예: `-깊은우물`).
-**이 형식은 기계가 읽는다** — 섹션의 순서·이름, 표의 열, 항목의 라벨과
-모양은 계약이다. 어긋난 초안은 컴파일이 에러로 멈춘다. 산문의 자유는
-문장 안에 있고, 뼈대는 아래를 정확히 따른다:
+Write a single file:
+`planning/dday-scenario/drafts/<file prefix>-<two-word slug>.md`. The file
+prefix is defined by the §2 assignment; the slug is two Korean words carrying
+the draft's character (e.g. `-깊은우물`).
+**This format is read by a machine** — the order and names of sections, the
+table columns, the labels and shapes of items are a contract. A draft that
+deviates stops the compiler with an error. Prose freedom lives inside the
+sentences; the skeleton follows the below exactly. Section headers are
+`## N. <name>` with exactly these nine Korean names, in this order:
+`로그라인 · 고정 타임라인 · 인물 · 장소 · 숨겨진 진실 · 기질 제안 · 갈림길 · 점수 · 자기 검사`.
 
-1. **로그라인** — 3문장 이하.
-2. **고정 타임라인** — 무개입 시 사건표, 시작부터 종료 시계까지. 열은
-   정확히 다섯: `| 시각 | 표면 | 장소 | 사건 | 처음 보이는 런 깊이 |`.
-   표면은 통화/CCTV/현장/문서 중 하나, 장소는 §4 장소 섹션의 이름
-   그대로(해당 없으면 —). 런 깊이 칸의 어휘는 셋: "초반 런에도 보임" /
-   "시계 N까지 간 런에만 보임" / "시계 끝까지 간 런에만 보임" — 추가
-   조건은 " · " 뒤에 잇는다. **한 행에 한 노출** — 노출 깊이가 다른
-   정보는 행을 나눈다.
-3. **인물** (5–7) — 인물마다 이 모양으로:
-   - `**이름** (나이 · 역할)` 표제 아래 글머리 넷:
+1. **`로그라인`** — 3 sentences or fewer.
+2. **`고정 타임라인`** — the no-intervention event table, from start to the
+   final clock. Exactly five columns:
+   `| 시각 | 표면 | 장소 | 사건 | 처음 보이는 런 깊이 |`.
+   표면 is one of `통화/CCTV/현장/문서`; 장소 is a name from the 장소 section,
+   verbatim (— if none applies). The run-depth cell uses exactly one of three
+   phrasings: `초반 런에도 보임` / `시계 N까지 간 런에만 보임` /
+   `시계 끝까지 간 런에만 보임` — extra conditions are appended after
+   `" · "`. **One exposure per row** — information with different exposure
+   depths is split into separate rows.
+3. **`인물`** (5–7) — each character in this shape:
+   - Under a `**이름** (나이 · 역할)` heading, four bullets:
      `- 이해관계: …` / `- 아는 것: 항목 · 항목 · …. 모르는 것: ….`
-     (항목은 ·로 구분 — 쉼표는 문장 안의 것) / `- 눈금 후보: A · B.`
-     (인물당 최대 2) /
-     `- 걸치는 줄기: 진실 1·2…, 갈림길 G1·G4….` (진실·갈림길 번호를
-     반드시 이 표기로).
-   - 인물마다 둘 이상의 숨겨진 진실 또는 갈림길에 걸친다 — 한 줄기만
-     지는 인물은 자리가 아깝다.
-4. **장소** (3–5) — 장소마다 `**이름** — 어떤 정보가 그곳에서만 나오는지
-   한 줄.` 표제 아래 `- 깊이: 정보` 글머리 둘 이상. 깊이는 "시계
-   HH:MM"(필요하면 덧말) 또는 자유 서술("재방문 깊이" 같은) — 서로 다른
-   시계 깊이여야 한다.
-5. **숨겨진 진실** (4–6) — 진실마다 `**진실 N — 진실 한 문장**` 표제
-   아래:
-   - `- 실어 나르는 문장:` 밑에 `- "문장 원문" — 나오는 자리(표면 · 시계
-     깊이 · 몇 번째 런쯤)` 3개 이상.
-   - `- 거짓 단서: "문장" — 자리. 왜 미끼인가` 1개 이상 — "옳은 정서,
-     틀린 사람" 형태.
-6. **기질 제안** — `**기본 성향** — …` 한 단락, 이어서 조건절 최대 2를
-   `**조건절 N (축 어휘: 축 — '어휘', '어휘')**` 표제 아래 본문과
-   `- 패배 조건: 단, ….` 글머리로.
-7. **갈림길** (5–7) — 각각 산문 설명(장면과 긴장) 뒤에, 아래 형식의
-   게이트 카드를 **yaml 코드 블록으로** 붙인다. 카드 없는 갈림길은 미완성
-   이다:
+     (items separated by `·` — commas belong inside sentences) /
+     `- 눈금 후보: A · B.` (max 2 per character) /
+     `- 걸치는 줄기: 진실 1·2…, 갈림길 G1·G4….` (truth and gate numbers in
+     exactly this notation).
+   - Every character spans two or more hidden truths or gates — a character
+     carrying only one strand doesn't earn the slot.
+4. **`장소`** (3–5) — each place as a
+   `**이름** — one line: what information surfaces only there.` heading,
+   followed by two or more `- 깊이: 정보` bullets. 깊이 is `시계 HH:MM`
+   (with an optional tail) or free prose (like `재방문 깊이`) — the depths
+   must be different clock depths.
+5. **`숨겨진 진실`** (4–6) — each under a `**진실 N — 진실 한 문장**`
+   heading:
+   - Under `- 실어 나르는 문장:`, 3 or more entries of
+     `- "문장 원문" — 나오는 자리(표면 · 시계 깊이 · 몇 번째 런쯤)`.
+   - `- 거짓 단서: "문장" — 자리. 왜 미끼인가` — 1 or more, in the "right
+     emotion, wrong person" shape.
+6. **`기질 제안`** — one `**기본 성향** — …` paragraph, then up to 2
+   conditional clauses, each under a
+   `**조건절 N (축 어휘: 축 — '어휘', '어휘')**` heading with body text and a
+   `- 패배 조건: 단, ….` bullet.
+7. **`갈림길`** (5–7) — each gate opens with a
+   `### GN 「제목」 — 시각, 장소` heading, then prose (the scene and its
+   tension), then the gate card as a **yaml code block**. A gate without a
+   card is unfinished:
 
    ```yaml
    gate: G3                          # G1..G7
@@ -132,93 +151,160 @@ description: 시나리오 공장 — 배정 1건으로 집필→컴파일→린�
      갈림길 G3에서, 기질은 기본 stance 경청을 낸다;
      열쇠 조건 k1을 만족하는 문장 주입 시 공감으로 이동한다.
    question: "이 갈림길에서 에이전트에게 던져지는 판단 질문"
-   stances:                          # 2–4개, 전부 지향형,
+   stances:                          # 2–4, all orientation-typed
      - { id: a, label: 추궁, desc: "발화에서 어떻게 나타나는지" }
      - { id: c, label: 경청, desc: "..." }
      - { id: d, label: 공감, desc: "..." }
-   default_stance: c                 # 무주입 시 예측
-   key_conditions:                   # 열쇠는 문장이 아니라 조건이다 — 1개 이상
+   default_stance: c                 # prediction with no injection
+   key_conditions:                   # a key is a condition, not a sentence — 1+
      - id: k1
-       axis: 두려움                   # 치는 조건절의 축
-       referent: 발신자               # 지목 대상
+       axis: 두려움                   # the axis of the clause it strikes
+       referent: 발신자               # who/what it points at
        species: 사실                  # 사실 | 자기서술
        targets_clause: "기질 조건절 1"
-   key_examples:                     # 조건을 만족하는 문장 — 조건마다 2개 이상
+   key_examples:                     # sentences satisfying the condition — 2+ per condition
      - { for: k1, text: "열쇠 문장 원문", mined_from: "채굴 위치 — 반드시 이 갈림길 이전" }
      - { for: k1, text: "같은 조건을 만족하는 다른 문장", mined_from: "다른 채굴 위치" }
    false_leads:
      - "옳은 정서, 틀린 사람 — 미끼 문장과 그 위치"
    ```
 
-   조건마다 그것을 만족하는 문장이 광맥에 여럿 있어야 한다 — 하나뿐인
-   자물쇠는 추리가 아니라 제비뽑기다. (이 카드 형식은 저작 도구 쪽 정본과
-   동기화된 사본이다 — 세션은 이 사본만 따르면 된다.)
-8. **점수** — 표 `| 단위 | 무엇이 집계되나 | 무개입 기준 | 소급되는
-   갈림길 |`(기준은 구체적인 숫자로, 갈림길은 GN 표기), 표 뒤에 글머리
-   셋: `**무개입 기준 점수(자연 기준):**` · `**못 막은 런들끼리도 점수가
-   다르다:**` · `**막은 런에도 치른 값이 남는다:**`.
-   **재앙 발생 여부를 유일한 집계로 삼지 마라.** "막았다/못 막았다"의
-   이분법 대신, 발생 자체가 정도(규모·장소·시각)로 갈리게 하고 사람
-   단위로 집계한다 — 제때 대피한 이들, 잘못 체포된 이, 발신자의 결말
-   같은 것들. 막지 못한 런들끼리도 점수가 달라야 하고, 막은 런에도
-   치른 값이 남아야 한다. 무개입 기준은 자연스럽다: 고정 타임라인의
-   테러가 예정대로 일어난 결과가 기준 점수다.
-9. **자기 검사** — 가이드의 금지 목록 7개 항목 각각에 대해, 이 초안이
-   위반하지 않음을 확인하는 한 줄씩. 위반을 발견하면 고치고 나서 제출한다.
+   Every condition needs several satisfying sentences in the ore — a lock
+   with only one key is a lottery, not deduction. (This card format is a
+   synchronized copy of the authoring-tool canon — the session follows this
+   copy alone.)
+8. **`점수`** — a table
+   `| 단위 | 무엇이 집계되나 | 무개입 기준 | 소급되는 갈림길 |`
+   (the baseline in concrete numbers; gates in GN notation), followed by
+   three bullets: `**무개입 기준 점수(자연 기준):**` ·
+   `**못 막은 런들끼리도 점수가 다르다:**` ·
+   `**막은 런에도 치른 값이 남는다:**`.
+   **Do not make "did the disaster happen" the only tally.** Instead of the
+   prevented/not-prevented binary, let the occurrence itself vary by degree
+   (scale, place, time) and tally in units of people — those evacuated in
+   time, the one wrongfully arrested, how the caller ends. Runs that failed
+   to prevent it must still score differently from each other, and a run
+   that prevented it must still carry a price. The no-intervention baseline
+   is natural: the fixed timeline's disaster happening as scheduled *is* the
+   baseline score.
+9. **`자기 검사`** — for each of the 7 items on the guide's forbidden list,
+   one line confirming this draft does not violate it, plus an 8th line
+   confirming the translationese sweep (§5, "The language of the draft") was
+   run. If you discover a violation, fix it first, then submit.
 
-## 5. 태도
+## 5. Attitude
 
-- 규칙 안에서 최대한 대담하게 쓴다. 규칙은 상상력의 상한이 아니라 무대의
-  바닥이다.
-- 분량보다 밀도. 모든 인물에 비밀 하나, 모든 장소에 이유 하나 — 인원이
-  적은 만큼 한 사람이 여러 줄기를 진다.
-- 기술 어휘(스탠스, 델타, 프롬프트 등)는 §7 갈림길 섹션 밖에서는 쓰지
-  않는다 — 시나리오 본문은 세계의 언어로 쓴다.
+- Write as boldly as the rules allow. Rules are the floor of the stage, not
+  the ceiling of imagination.
+- Density over volume. Every character a secret, every place a reason — the
+  cast is small precisely so one person can carry several strands.
+- Technical vocabulary (stance, delta, prompt, …) appears nowhere outside
+  the gate section's yaml cards — the scenario body is written in the
+  world's own language.
 
-## 6. 공정 — 오케스트레이터 전용
+### The language of the draft
 
-> 집필 서브에이전트는 이 섹션을 따르지 않는다. §0-2의 읽기 격리는 집필자의
-> 규칙이고, 오케스트레이터는 저장소 문서를 자유로 읽는다.
+Write Korean from the first word. Do not outline, plan beats, or draft in
+English and then render into Korean — every intermediate artifact (beat
+plans, notes to self, discarded variants) is also written in Korean.
+Translated Korean has a smell, and mined sentences carry that smell straight
+into the game.
 
-1. **집필** — 서브에이전트 1기를 띄운다. 프롬프트: 이 파일의 §0~§5와
-   가이드(`docs/scenario/scenario-generation-guide.md`)를 읽고 **§0~§5만
-   따르라, §6은 공정 문서이므로 무시하라**. 브리프 인자가 있으면 §0-3대로
-   전달한다. 오케스트레이터의 어휘가 초안에 스미지 않도록 **집필은 반드시
-   서브에이전트에서** 한다. `draft-only`면 초안 경로를 보고하고 끝.
-2. **기계 관문** —
-   `node infra/scenario-pipeline/compile-datapack.mjs <초안>` →
-   `node infra/scenario-pipeline/lint-datapack.mjs data/scenario/<슬러그>`.
-   컴파일 에러와 린트 ERROR는 **형식만** 오케스트레이터가 직접 고친다
-   (표의 열, 라벨의 모양, id 표기 — **문장 원문은 한 글자도 바꾸지
-   않는다**). 형식으로 안 풀리는 에러는 §6-4의 수정 대상이다.
-3. **종이 검사** — 검사 서브에이전트 1기: 매뉴얼
-   (`docs/scenario/gate-hardening-manual.md`) + 가이드 + 초안 + 팩을 읽고
-   다음만 검사한다 — 매뉴얼 §6의 세 렌즈(타임라인 선점 · 픽스처 여유 ·
-   탈출구/죽은 행) + 카드 층위(열쇠 예시의 종·채굴 위치가 조건·게이트
-   시각과 정합한가). 발견마다 **매뉴얼/가이드의 근거 절을 인용**하고 셋
-   중 하나로 분류한다: **draft-fixable**(초안 수정으로 해소) /
-   **cross-track**(엔진·계약과 묶임 — 초안이 못 고침) / **advisory**(권고).
-   근거 절을 대지 못하는 발견은 버린다 — 이것이 루프가 수렴하는 조건이다.
-   검사자 프롬프트에 반드시 넣을 두 가지 (첫 실전에서 배운 것):
-   - **판단 콜이 보는 표면을 명시한다**: 판단 페이로드는 타임라인 발췌 ·
-     게이트 질문 · 스탠스 셋 · 주입 블럭뿐이다(콜 계약 §2). 카드의 scene
-     산문은 페이로드가 아니다 — 선점 판정은 고정 타임라인·픽스처 텍스트에만
-     걸고, scene 산문의 결론 누출은 "하드닝 시 픽스처 저작 주의"
-     advisory로 분류한다.
-   - **죽은 행은 종이로 확정할 수 없다** — 선택 분포는 프로브 소관(매뉴얼
-     §6). 죽은 행 후보는 advisory다.
-   검사 메모는 **제안**이다 — 오케스트레이터가 분류를 심사해 확정한다
-   (과잉 격상·근거 절 오적용은 기각하고, 기각 사유를 메모에 남긴다).
-   산출: `planning/dday-scenario/paper-check-<슬러그>.md`
-   (판정: 통과 / 조건부 통과 / 재작업 + 렌즈별 표 + 처방 + 심사 기록).
-4. **수정** — draft-fixable 블로커가 있으면 수정 서브에이전트 1기: 가이드 +
-   초안 + 메모**만** 읽고, **메모가 지목한 줄만** 고친다. 지목되지 않은
-   문장은 한 글자도 건드리지 않는다 — 초안의 문장이 광맥이다. 수정이
-   열쇠 예시·채굴 위치를 움직였으면 카드의 해당 필드도 함께 맞춘다.
-5. **루프** — §6-2 → §6-3을 다시 돈다. 종료 조건: 린트 ERROR 0 **그리고**
-   draft-fixable 블로커 0. 최대 3회 — 그래도 남으면 멈추고 잔여로 보고한다.
-6. **보고** — 번들로 마친다: 팩 경로 · 최종 판정 메모 · 초안 diff(집필
-   직후 대비) · 잔여 목록(cross-track / advisory / "린트 승격 후보" — 기계로
-   잡을 수 있었던 발견은 룰 승격을 제안한다) · 남은 린트 WARN·FLAG 요약.
-   **이 루프의 통과는 매뉴얼 §6의 사람 독해를 대체하지 않는다** — 프로브
-   전 사람 1회 독해가 그대로 남는다는 문장을 보고에 명시한다.
+Before submitting, sweep the draft for the usual translationese tells
+(this sweep is the 8th line of `자기 검사`):
+
+- **Pronouns 그/그녀/그것/그들** — Korean repeats the name or drops the
+  subject. `그녀는 대장을 덮었다` → `윤은 대장을 덮었다`.
+- **`~에 의해` passives and `~되어지다`** — prefer the active voice or a
+  plain intransitive. `일지가 실장에 의해 폐기되었다` →
+  `실장이 일지를 폐기했다`.
+- **`~에도 불구하고`** → `그런데도` / `~는데도`.
+- **Possessive chains `A의 B의 C`** — recast. `그의 아버지의 공장의 장부` →
+  `아버지 공장 장부`.
+- **Plural `-들` where number is already clear.** `세 명의 직원들이` →
+  `직원 셋이`.
+- **`가장 ~한 것 중 하나`** — commit to one: `손꼽히는` / `몇 안 되는`.
+- **Stacked 관형절** mimicking English relative clauses — break the
+  sentence instead of nesting it.
+- **English punctuation habits** — semicolons, mid-sentence parenthetical
+  asides.
+
+Register anchors — match these *shapes*, never their content. Timeline rows
+are clipped report prose:
+
+- ✗ `그 노인은 그의 오래된 관리동에서 무언가를 태우고 있는 것이 목격되었다`
+- ✓ `관리인이 관리동 뒤에서 서류를 태운다. 연기가 CCTV에 걸린다`
+
+Scene prose breathes, but in Korean cadence — short clauses, dropped
+subjects, weight at the end of the sentence:
+
+- ✗ `그녀는 전화를 받았고, 그것은 그녀가 오랫동안 기다려왔던 전화였다`
+- ✓ `기다리던 전화였다. 수화기를 드는 손이 느렸다`
+
+## 6. Process — orchestrator only
+
+> The writing sub-agent does not follow this section. §0-2's reading
+> isolation is the writer's rule; the orchestrator reads repository
+> documents freely.
+
+1. **Write** — spawn one sub-agent. Its task: read §0–§5 of this file plus
+   the guide (`docs/scenario/scenario-generation-guide.md`) and **follow
+   §0–§5 only; §6 is a process document — ignore it**. If a brief argument
+   exists, pass it per §0-3. So the orchestrator's vocabulary cannot seep
+   into the draft, **writing always happens in a sub-agent**. If
+   `draft-only`, report the draft path and stop.
+   **Compose the spawn prompt itself in Korean.** This document is English,
+   but output language tracks context language — the writer's world must
+   stay Korean-dominant, and the prompt is the first thing in it. Open with
+   a Korean authorial persona (e.g. `당신은 한국어로 단련된 장르
+   작가다. 번역하지 않는다 — 처음부터 한국어로 사고하고 쓴다.`), then give
+   the task framing and the §0–§5/§6 boundary in Korean. The persona line
+   sets the register more than any instruction about register does.
+2. **Machine gate** —
+   `node infra/scenario-pipeline/compile-datapack.mjs <draft>` →
+   `node infra/scenario-pipeline/lint-datapack.mjs data/scenario/<slug>`.
+   Compile errors and lint ERRORs that are **format-only** are fixed directly
+   by the orchestrator (table columns, label shapes, id notation — **never
+   change a single character of sentence text**). Errors format can't fix
+   belong to §6-4.
+3. **Paper check** — one checker sub-agent: reads the manual
+   (`docs/scenario/gate-hardening-manual.md`) + guide + draft + pack and
+   checks only this — the manual §6's three lenses (timeline preemption ·
+   fixture margin · escape-hatch/dead-row stances) + the card level (do the
+   key examples' species and mining sites cohere with the condition and the
+   gate's clock). Every finding must **cite the manual/guide clause it rests
+   on** and be classed as one of three: **draft-fixable** (resolved by
+   editing the draft) / **cross-track** (tied to engine/contract — the draft
+   can't fix it) / **advisory** (recommendation). A finding that cannot cite
+   a clause is dropped — that is what makes the loop converge.
+   Two things that must go into the checker's prompt (learned in the first
+   live run):
+   - **State the surface the judgment call actually sees**: the judgment
+     payload is the timeline excerpt · gate question · stance set ·
+     injection block, nothing else (call contract §2). The card's scene
+     prose is not payload — preemption verdicts attach only to
+     fixed-timeline/fixture text; a conclusion leaking in scene prose is
+     classified as an advisory ("careful fixture authoring at hardening").
+   - **Dead rows cannot be confirmed on paper** — choice distribution is
+     probe territory (manual §6). Dead-row candidates are advisory.
+   The check memo is a **proposal** — the orchestrator adjudicates the
+   classifications (rejects over-promotions and misapplied clauses, and
+   records each rejection's reason in the memo).
+   Output: `planning/dday-scenario/paper-check-<slug>.md`
+   (verdict: 통과 / 조건부 통과 / 재작업 + per-lens table + prescriptions +
+   adjudication record).
+4. **Revise** — if draft-fixable blockers exist, one reviser sub-agent:
+   reads the guide + draft + memo **only**, and fixes **only the lines the
+   memo names**. A sentence not named is not touched by a single character —
+   the draft's sentences are the ore. If a fix moves a key example or its
+   mining site, the card's matching fields move with it.
+5. **Loop** — run §6-2 → §6-3 again. Exit condition: lint ERROR 0 **and**
+   draft-fixable blockers 0. Maximum 3 rounds — if anything remains, stop
+   and report it as remainder.
+6. **Report** — close with the bundle: pack path · final verdict memo ·
+   draft diff (against the freshly written draft) · remainder list
+   (cross-track / advisory / "lint promotion candidates" — a finding a
+   machine could have caught proposes a rule promotion) · a summary of
+   remaining lint WARN·FLAG. **Passing this loop does not replace the human
+   read of manual §6** — the report must state that one human read before
+   the probe still stands.
