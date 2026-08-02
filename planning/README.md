@@ -6,6 +6,12 @@
 
 DDAY 트랙의 확정 시점 기록·문서 지도는 [dday-sot.md](./dday-sot.md).
 
+> ⚠️ **`docs/` was renamed on 2026-08-02** onto a `spec-` / `contract-` / `plan-`
+> scheme. Files in this archive still link to the old names **on purpose** — these
+> are records, and their append-only character is protected by a decision in
+> `docs/status.md`. If a `../docs/dday-*.md` link here does not resolve, look it
+> up in the redirect table: [docs/README.md](../docs/README.md) §6.
+
 | 폴더 | 내용 |
 |---|---|
 | `concepts/` | 게임 컨셉 문서 9편 + 템플릿 + darkest-context 브리프 |
