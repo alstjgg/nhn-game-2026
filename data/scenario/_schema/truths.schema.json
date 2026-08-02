@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "truths.schema.json",
+  "title": "datapack truths.json — 숨겨진 진실과 운반 문장 레지스트리",
+  "description": "진실은 선언이 아니라 공급망이다(가이드 §3). 문장 id는 이 파일이 발급한다 — 팩 안에서 문장을 id로 지목할 일이 생기면 여기의 id를 쓴다.",
+  "type": "object",
+  "required": ["truths"],
+  "additionalProperties": false,
+  "properties": {
+    "truths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "statement", "carriers", "false_leads"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^tr[0-9]+$" },
+          "statement": { "type": "string", "minLength": 1, "description": "진실 한 문장" },
+          "carriers": {
+            "type": "array",
+            "minItems": 3,
+            "items": {
+              "type": "object",
+              "required": ["id", "text", "where"],
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string", "pattern": "^tr[0-9]+-s[0-9]+$" },
+                "text": { "type": "string", "minLength": 1, "description": "문장 원문" },
+                "where": { "type": "string", "minLength": 1, "description": "그 문장이 나오는 자리 — 표면 · 시계 깊이 · 몇 번째 런쯤" }
+              }
+            },
+            "description": "그 진실을 실어 나르는 문장 3개 이상(집필 스킬 §4-5)"
+          },
+          "false_leads": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["id", "text", "where"],
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string", "pattern": "^tr[0-9]+-f[0-9]+$" },
+                "text": { "type": "string", "minLength": 1 },
+                "where": { "type": "string", "minLength": 1 }
+              }
+            },
+            "description": "거짓 단서 — 옳은 정서, 틀린 사람"
+          }
+        }
+      }
+    }
+  }
+}

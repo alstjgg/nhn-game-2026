@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meta.schema.json",
+  "title": "datapack meta.json — 시나리오 식별과 시계",
+  "type": "object",
+  "required": ["slug", "title", "logline", "clock"],
+  "additionalProperties": false,
+  "properties": {
+    "slug": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/\\\\ ]+$",
+      "description": "데이터팩 디렉터리 이름. data/scenario/<slug>/"
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "logline": { "type": "string", "minLength": 1, "description": "초안 §1 로그라인 원문" },
+    "clock": {
+      "type": "object",
+      "required": ["start", "end"],
+      "additionalProperties": false,
+      "properties": {
+        "start": { "$ref": "#/$defs/clockTime" },
+        "end": { "$ref": "#/$defs/clockTime" }
+      },
+      "description": "시나리오 시계 — 고정 타임라인의 첫 사건과 종료 시계"
+    },
+    "dday": {
+      "type": ["string", "null"],
+      "description": "D-Day 표기. 초안에 날짜가 없으면 null"
+    }
+  },
+  "$defs": {
+    "clockTime": {
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]\\+?$",
+      "description": "HH:MM. 종료 시계 이후의 집계 시점은 '+' 접미로 표기(예: 21:04+)"
+    }
+  }
+}

@@ -1,0 +1,334 @@
+{
+  "characters": {
+    "c1": {
+      "m1": {
+        "variable": "trust",
+        "initial": 40
+      },
+      "m2": {
+        "variable": "fear",
+        "initial": 55
+      }
+    }
+  },
+  "timeline": {
+    "t1": {
+      "time": "08:50",
+      "text_head": "첫 전화(28초). \"",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        },
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    "t2": {
+      "time": "09:25",
+      "text_head": "두 번째 전화. 발신자",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        },
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    "t3": {
+      "time": "09:40",
+      "text_head": "통화 음성 판독 보고 ",
+      "effects": {},
+      "present": []
+    },
+    "t4": {
+      "time": "10:40",
+      "text_head": "윤슬교 관리동 정례 순",
+      "effects": {},
+      "present": []
+    },
+    "t5": {
+      "time": "10:40",
+      "text_head": "관리동 열쇠 대장에는 ",
+      "effects": {},
+      "present": []
+    },
+    "t6": {
+      "time": "11:07",
+      "text_head": "상황실 제보 회선에 익",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    "t7": {
+      "time": "11:30",
+      "text_head": "경찰 합동 브리핑. 강",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c5",
+          "side": "room"
+        },
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    "t8": {
+      "time": "12:00",
+      "text_head": "접수 대장 정리 화면.",
+      "effects": {},
+      "present": []
+    },
+    "t9": {
+      "time": "13:05",
+      "text_head": "세 번째 전화(일방 통",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        },
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    "t10": {
+      "time": "14:20",
+      "text_head": "상황실 서고 단말이 한",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    "t11": {
+      "time": "15:10",
+      "text_head": "세명건설 현장사무소, ",
+      "effects": {},
+      "present": []
+    },
+    "t12": {
+      "time": "16:40",
+      "text_head": "네 번째이자 마지막 전",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        },
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    "t13": {
+      "time": "17:30",
+      "text_head": "파쇄기 도착·가동. 무",
+      "effects": {
+        "flags": {
+          "logs_destroyed": true
+        }
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "room"
+        }
+      ]
+    },
+    "t14": {
+      "time": "18:20",
+      "text_head": "강필주 체포 시도. 농",
+      "effects": {
+        "flags": {
+          "kang_detained": true
+        }
+      },
+      "present": [
+        {
+          "char_id": "c6",
+          "side": "room"
+        },
+        {
+          "char_id": "c5",
+          "side": "room"
+        }
+      ]
+    },
+    "t15": {
+      "time": "19:10",
+      "text_head": "개통식 최종 점검. 다",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c4",
+          "side": "room"
+        }
+      ]
+    },
+    "t16": {
+      "time": "19:40",
+      "text_head": "둔치 주차장 공중전화 ",
+      "effects": {
+        "flags": {
+          "caller_arrested": true
+        }
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        },
+        {
+          "char_id": "c5",
+          "side": "room"
+        }
+      ]
+    },
+    "t17": {
+      "time": "20:30",
+      "text_head": "개통식 개막. 인파가 ",
+      "effects": {
+        "flags": {
+          "crowd_on_bridge": true
+        }
+      },
+      "present": [
+        {
+          "char_id": "c7",
+          "side": "room"
+        }
+      ]
+    },
+    "t18": {
+      "time": "21:04",
+      "text_head": "불꽃 절정. 폭발음은 ",
+      "effects": {
+        "flags": {
+          "bridge_collapsed": true
+        }
+      },
+      "present": []
+    },
+    "t19": {
+      "time": "21:04+",
+      "text_head": "집계. 사망 26(다리",
+      "effects": {},
+      "present": []
+    }
+  },
+  "symptoms": {
+    "trust": {
+      "up": [
+        {
+          "min": 15,
+          "text": "발신자의 통화가 길어진다 — 끊지 않고, 다음 질문을 기다린다"
+        },
+        {
+          "min": 1,
+          "text": "발신자의 대답이 반 박자 빨라졌다"
+        }
+      ],
+      "down": [
+        {
+          "min": 15,
+          "text": "발신자가 문장을 짧게 끊기 시작했다"
+        },
+        {
+          "min": 1,
+          "text": "발신자가 한 박자 늦게 답했다"
+        }
+      ]
+    },
+    "fear": {
+      "up": [
+        {
+          "min": 15,
+          "text": "발신자의 말이 빨라지고, 문장이 앞말을 덮친다"
+        },
+        {
+          "min": 1,
+          "text": "발신자의 호흡이 얕아졌다"
+        }
+      ],
+      "down": [
+        {
+          "min": 15,
+          "text": "발신자의 목소리가 처음으로 바닥에 내려앉았다 — 서두르지 않는다"
+        },
+        {
+          "min": 1,
+          "text": "발신자가 한숨을 돌렸다"
+        }
+      ]
+    },
+    "flags": {
+      "tip_traced": {
+        "set": "접수 대장의 빈 번호란 위로 발신 궤적 조회가 걸렸다"
+      },
+      "originals_read": {
+        "set": "서고 단말의 열람 기록에 민원 원본 열람이 줄줄이 찍혔다"
+      },
+      "chief_confronted": {
+        "set": "실장이 종결 사유를 묻는 질문 앞에서 처음으로 말을 멈췄다"
+      },
+      "caller_named": {
+        "set": "발신자가 처음으로 제 이름을 말했다"
+      },
+      "logs_saved": {
+        "set": "파쇄기가 멈추고, 계측 일지 원본이 봉인 봉투에 담겼다"
+      },
+      "insider_testimony": {
+        "set": "문강희가 일지와 함께 입을 열었다 — 회사보다 한발 앞서"
+      },
+      "entry_capped": {
+        "set": "다리 진입이 상한으로 묶이고, 무대가 둔치로 내려왔다"
+      },
+      "cancel_requested": {
+        "set": "대응실 명의의 취소 요청서가 축제 본부 책상에 올랐다"
+      },
+      "caller_descended": {
+        "set": "난간 위의 남자가 제 발로 내려왔다 — 손목에는 수갑이 채워졌다"
+      },
+      "hatch_opened": {
+        "set": "점검구가 공식 입회 아래 열렸다 — 랜턴 불빛에 소선 다발이 드러났다"
+      },
+      "caretaker_evacuated": {
+        "set": "관리동의 불이 꺼지고, 노인이 처음으로 밤에 다리 곁을 떠났다"
+      },
+      "logs_destroyed": {
+        "set": "세명건설 사무소의 파쇄기 소리가 그쳤다 — 종이는 이미 재다"
+      },
+      "kang_detained": {
+        "set": "농성 천막 앞이 조용해졌다 — 천막의 주인이 연행됐다"
+      },
+      "caller_arrested": {
+        "set": "직통 회선이 더는 울리지 않는다"
+      },
+      "crowd_on_bridge": {
+        "set": "다리 위가 발소리로 가득 찼다"
+      },
+      "bridge_collapsed": {
+        "set": "강 쪽에서 쇠가 마지막으로 울었다 — 그 뒤로는 아무 소리도 없다"
+      }
+    }
+  }
+}

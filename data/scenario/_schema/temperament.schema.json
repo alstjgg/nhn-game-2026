@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "temperament.schema.json",
+  "title": "datapack temperament.json — 기질 (기본 성향 + 조건절)",
+  "description": "Call 1과 Call 3이 같은 파일을 읽는다(콜 계약 §4). 조건절의 axis_vocabulary는 린트의 stance↔축 어휘 충돌 검사(A12) 입력이다.",
+  "type": "object",
+  "required": ["default_disposition", "clauses"],
+  "additionalProperties": false,
+  "properties": {
+    "default_disposition": {
+      "type": "string",
+      "minLength": 1,
+      "description": "기본 성향 산문 — 무개입 시 에이전트의 판단 습관"
+    },
+    "clauses": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["id", "axis", "axis_vocabulary", "condition", "defeat_condition"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^cl[0-9]+$" },
+          "axis": { "type": "string", "minLength": 1, "description": "축 이름(두려움, 지워짐, …)" },
+          "axis_vocabulary": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 },
+            "description": "이 축의 전유 어휘. 세계의 다른 곳(특히 stance 라벨)에 흔하면 자물쇠가 무뎌진다(가이드 §4-2)"
+          },
+          "condition": { "type": "string", "minLength": 1, "description": "조건절 본문" },
+          "defeat_condition": { "type": "string", "minLength": 1, "description": "패배 조건 — '단, …할 때는 그렇지 않다'(가이드 §4-1)" }
+        }
+      }
+    }
+  }
+}

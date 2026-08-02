@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gates.schema.json",
+  "title": "datapack gates.json — 게이트 카드 (정본: gate-hardening-manual §5)",
+  "description": "카드 필드는 정본 스키마 그대로다. buckets·edge_predicates는 하드닝 산출물 — 컴파일은 빈 배열로 통과시키고 린트가 '하드닝 미완'을 플래그한다(pipeline §3).",
+  "type": "object",
+  "required": ["gates"],
+  "additionalProperties": false,
+  "properties": {
+    "gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "gate", "standard_form", "question", "stances", "default_stance",
+          "key_conditions", "key_examples", "false_leads", "buckets", "edge_predicates"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "gate": { "type": "string", "pattern": "^G[0-9]+$" },
+          "title": { "type": ["string", "null"], "description": "초안의 갈림길 제목(「…」)" },
+          "clock": {
+            "type": ["string", "null"],
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]\\+?$",
+            "description": "이 갈림길이 서는 시각. 무개입 선에 없는 게이트는 null 가능"
+          },
+          "place_id": { "type": ["string", "null"], "description": "places.json의 장소 id" },
+          "availability": {
+            "type": ["string", "null"],
+            "description": "무개입 선에 없는 게이트의 등장 조건 자유 서술(예: 특정 가지에서만). 하드닝 시 술어로 승격"
+          },
+          "scene": { "type": ["string", "null"], "description": "카드 앞의 산문 — 장면과 긴장" },
+          "branch_note": { "type": ["string", "null"], "description": "카드 뒤의 산문 — 통과/실패 가지의 결과" },
+          "standard_form": { "type": "string", "minLength": 1 },
+          "question": { "type": "string", "minLength": 1 },
+          "stances": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "required": ["id", "label", "desc"],
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z]$" },
+                "label": { "type": "string", "minLength": 1 },
+                "desc": { "type": "string", "minLength": 1 }
+              }
+            }
+          },
+          "default_stance": { "type": "string", "pattern": "^[a-z]$" },
+          "key_conditions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["id", "axis", "referent", "species", "targets_clause"],
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string", "pattern": "^k[0-9]+$" },
+                "axis": { "type": "string", "minLength": 1 },
+                "referent": { "type": "string", "minLength": 1 },
+                "species": { "enum": ["사실", "자기서술"] },
+                "targets_clause": { "type": "string", "minLength": 1 }
+              }
+            },
+            "description": "열쇠는 조건 클래스다(축 × 지목 × 인증 종) — 문장이 아니다"
+          },
+          "key_examples": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": ["for", "text", "mined_from"],
+              "additionalProperties": false,
+              "properties": {
+                "for": { "type": "string", "pattern": "^k[0-9]+$" },
+                "text": { "type": "string", "minLength": 1 },
+                "mined_from": { "type": "string", "minLength": 1, "description": "채굴 위치 — 반드시 이 게이트 이전" }
+              }
+            },
+            "description": "조건마다 2개 이상 — 린트가 조건별 개수를 검사한다"
+          },
+          "predicted_shift": { "type": ["string", "null"], "description": "예: c → d" },
+          "false_leads": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 },
+            "description": "옳은 정서, 틀린 사람 — 미끼 문장과 위치"
+          },
+          "buckets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "stances", "deltas", "flags"],
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string", "minLength": 1 },
+                "stances": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z]$" } },
+                "deltas": {
+                  "type": "object",
+                  "additionalProperties": { "type": "integer" },
+                  "description": "변수명 → 비-0 정수 delta (엔진 명세 §1.3 — 증상 룩업이 정수 min 구간 매치라 소수는 어떤 문장에도 안 걸리고 0은 렌더 탈락. 0 금지는 린트 E8이 잡는다). 초안 수준이면 충분(정본 §5)"
+                },
+                "flags": {
+                  "type": "object",
+                  "additionalProperties": { "type": "boolean" },
+                  "description": "구조 결과 — 게이트 stance가 세계 상태에 남기는 플래그 (timeline effects.flags와 같은 상태 모델). 인과 통화 게이트는 deltas, 구조 게이트는 flags가 주 배출구다"
+                }
+              }
+            },
+            "description": "하드닝 산출물. 컴파일 시 빈 배열 허용 — 린트가 미완 플래그"
+          },
+          "edge_predicates": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "description": "하드닝 산출물. 컴파일 시 빈 배열 허용 — 린트가 미완 플래그"
+          }
+        }
+      }
+    }
+  }
+}

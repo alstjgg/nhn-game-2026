@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "timeline.schema.json",
+  "title": "datapack timeline.json — 무개입 고정 타임라인",
+  "description": "무개입 시 항상 같은 시각에 일어나는 사건만 싣는다. 갈림길의 선택으로만 나타나는 사건(분기 전용)은 gates.json의 branch_note 산문에 남고 타임라인에는 없다.",
+  "type": "object",
+  "required": ["events"],
+  "additionalProperties": false,
+  "properties": {
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "time", "surface", "text", "exposure", "effects", "present"],
+        "additionalProperties": false,
+        "properties": {
+          "effects": {
+            "type": ["object", "null"],
+            "required": ["deltas", "flags"],
+            "additionalProperties": false,
+            "properties": {
+              "deltas": {
+                "type": "object",
+                "additionalProperties": { "type": "integer" },
+                "description": "스칼라 변수 → 비-0 정수 델타. 버킷 델타와 같은 map 형태(매뉴얼 §5 · 엔진 명세 §1.3 — 0 금지는 린트 E8이 잡는다)"
+              },
+              "flags": {
+                "type": "object",
+                "additionalProperties": { "type": "boolean" },
+                "description": "플래그 id → set(true)/unset(false)"
+              }
+            },
+            "description": "이 사건이 상태에 새기는 효과 — 엔진 명세 §1.2 액추에이터 (b)의 데이터 슬롯. 초안에는 사건의 서사형만 있으므로 컴파일 시 null; 게이트 하드닝 단계에서 기계형이 붙는다(린트가 미완 플래그). 증상 커버리지 린트(E7)의 소스. object/null 평탄형인 이유: 객체 키워드는 null에 no-op이라 anyOf와 의미 동일하면서 위반 진단이 필드 단위로 정확해진다 (#104 리뷰 1(a))"
+          },
+          "present": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "object",
+              "required": ["char_id", "side"],
+              "additionalProperties": false,
+              "properties": {
+                "char_id": { "type": "string", "pattern": "^c[0-9]+$" },
+                "side": { "enum": ["line", "room"] }
+              }
+            },
+            "description": "이 비트의 등장 인물 — Call 2 PRESENT_NPCS의 데이터 슬롯. side는 장식이 아니다(콜 계약 §3: line=회선 너머 · room=상황실 안 — 화자 오배정을 0으로 만든 유일한 수단). null = 하드닝 전 · 빈 배열 = NPC 대사 없는 비트. 하드닝 오버레이가 채운다. array/null 평탄형 — effects와 같은 근거"
+          },
+          "id": { "type": "string", "pattern": "^t[0-9]+$" },
+          "time": { "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]\\+?$" },
+          "surface": {
+            "enum": ["call", "cctv", "onsite", "document"],
+            "description": "사건이 관측되는 표면 — 통화 / CCTV / 현장 / 문서·기록 화면"
+          },
+          "place_id": {
+            "type": ["string", "null"],
+            "description": "places.json의 장소 id. 특정 장소에 속하지 않으면 null"
+          },
+          "text": { "type": "string", "minLength": 1, "description": "사건 서술 원문 — 채굴 광맥이 되는 문장" },
+          "exposure": {
+            "type": "object",
+            "required": ["visible_from"],
+            "additionalProperties": false,
+            "properties": {
+              "visible_from": {
+                "type": ["string", "null"],
+                "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]\\+?$",
+                "description": "이 시계까지 생존한 런에만 보인다. null = 초반 런에도 보임"
+              },
+              "extra_condition": {
+                "type": ["string", "null"],
+                "description": "시계 외 추가 노출 조건의 자유 서술(예: 현장을 들여다본 런). 하드닝 시 술어로 승격 — 린트가 미완 플래그를 단다"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

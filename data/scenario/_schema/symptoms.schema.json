@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "symptoms.schema.json",
+  "title": "datapack symptoms.json — 상태 변화 → 증상 문장 (엔진 명세 §2.2)",
+  "description": "상태 변화가 화면에 닿는 유일한 통로(계약 §1 규칙 5 — 숫자 노출 금지). 하드닝 산출물이다: 초안 형식에 증상 섹션이 없고 증상은 델타에 붙으므로, 컴파일은 빈 골격을 내고 린트가 미완을 플래그한다. 최상위 키는 스칼라 변수 이름 또는 'flags'. 방향 목록은 min 내림차순으로 읽히며(첫 매치), 정렬·커버리지·숫자 금지는 린트가 검사한다.",
+  "type": "object",
+  "properties": {
+    "flags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "set": { "type": ["string", "null"], "description": "false→true 시 증상 문장" },
+          "unset": { "type": ["string", "null"], "description": "true→false 시 증상 문장" }
+        }
+      }
+    }
+  },
+  "additionalProperties": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "up": { "$ref": "#/$defs/entryList" },
+      "down": { "$ref": "#/$defs/entryList" }
+    }
+  },
+  "$defs": {
+    "entryList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["min", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "min": { "type": "integer", "minimum": 1, "description": "적용되는 최소 변화량 |after−before|. min:1 항목이 방향의 바닥을 받친다(커버리지 린트)" },
+          "text": { "type": "string", "minLength": 1, "description": "증상 문장. 숫자 금지(I12 — 린트가 잡는다). {who}는 변수 소유 인물 이름으로 치환" }
+        }
+      }
+    }
+  }
+}
