@@ -1,16 +1,27 @@
 # 최소 엔진 요청서 — LLM 레이어가 엔진에 요구하는 것
 
-> **이것은 엔진 설계가 아니다.** 07-30 회의 §2-3이 정한 순서("엔진을 만드는 게
-> 아니라, 최소 규모 엔진에 필요한 것이 무엇인지 **먼저 요청**한 뒤 최소 규모
-> 명세부터 정의한다")의 앞 절반이다. 무엇이 **필요한지**를 적고, 어떻게 만들지는
-> 엔진 소유자가 정한다.
+> **ARCHIVE — answered, superseded as an authority.** This is the *request*
+> half of the 07-30 meeting's §2-3 sequence (ask what is needed first, then
+> spec the minimum). It was answered in full; build against the answer:
+> [`docs/spec-engine.md`](../docs/spec-engine.md), which resolves all five
+> questions of §6 and turns §7 into executable acceptance criteria.
 >
-> **답:** [최소 엔진 명세 v0](./dday-engine-minimal-spec.md) — §6의 질문 다섯에
-> 답하고 §7을 실행 가능한 판정으로 고정했다.
+> **One section here is still cited and still normative as evidence: §6.1**
+> (beat-boundary constraint — a fixed event must not demand a reply from the
+> controller). The *rule* now lives upstream in
+> [`docs/spec-architecture.md`](../docs/spec-architecture.md) §4
+> (Beat-boundary constraint); what §6.1 uniquely holds is the **measurement
+> that established it** (speaker misassignment 8/10 → 4/5 under a
+> single-variable probe → 0/5 once `PRESENT_NPCS` carried `side`) and the
+> paths to the raw run artifacts. Evidence lives in `planning/` by convention,
+> alongside `dday-mechanism/RUNLOG.md` and `runs/`, which is why this document
+> was archived rather than dissolved. `infra/test-harness/lint-beat.mjs`
+> cites §6.1 as the rationale it enforces.
 >
-> **요청자:** L (LLM Infrastructure). **근거 문서:**
-> [콜 계약 v1](./dday-call-contracts.md) §6 · [architecture-spec](./dday-architecture-spec.md) §3.
-> **범위:** 게이트 **1개**의 라운드 1회가 끝까지 도는 데 필요한 것만.
+> **Requester:** L (LLM Infrastructure). **Source documents:**
+> [call contracts](../docs/contract-calls.md) §6 ·
+> [architecture spec](../docs/spec-architecture.md) §3.
+> **Scope:** only what one round of a single gate needs to run end to end.
 
 ---
 
