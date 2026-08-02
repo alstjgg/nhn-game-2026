@@ -1,0 +1,26 @@
+{
+  /*
+   * The isomorphic core: shared types, the state engine, the payload composer.
+   *
+   * This config exists to enforce physical architecture §2 constraint 1 —
+   * "the same module runs in the browser and headless in Node" — mechanically
+   * rather than by review. `lib` omits DOM and `types` is emptied, so
+   * `document`, `window`, and `fetch` do not resolve inside these folders.
+   * Reaching for the DOM here is a compile error, not a review comment.
+   *
+   * Known consequence: `console` goes with it. That is deliberate — a
+   * deterministic module observed by its return values does not need to print,
+   * and the per-beat delta journal already exists to make the engine's
+   * reasoning inspectable. If you want to see what the engine did, return it
+   * and log it at the boundary (`tools/` or `client/`, both of which keep their
+   * globals). Do not widen this config to get a print statement.
+   *
+   * `npm run check` runs this before the regular build.
+   */
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": []
+  },
+  "include": ["src/shared", "src/engine", "src/composer"]
+}
