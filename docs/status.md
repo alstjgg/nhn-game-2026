@@ -25,12 +25,12 @@ decision; the demo bake-off is superseded), so the real build happens at the
 **repo root** — this supersedes the earlier `demos/dday/` scaffolding plan.
 CLAUDE.md updated accordingly (PR #99). Demos stay deployed at `/<slug>/` as
 competition history. Work runs as three tracks per
-[dday-scenario-pipeline.md](./dday-scenario-pipeline.md): **data (민서)** ·
+[plan-pipeline.md](./plan-pipeline.md): **data (민서)** ·
 **architecture (윤석)** · **client (미배정)** — agreement works by document,
 not discussion. The physical structure wrapping the layers is bound by
-[dday-physical-architecture.md](./dday-physical-architecture.md) — tier split,
+[spec-physical-architecture.md](./spec-physical-architecture.md) — tier split,
 constraints, and the §3 repo layout are all in force. The minimal engine now
-has a spec: [dday-engine-minimal-spec.md](./dday-engine-minimal-spec.md)
+has a spec: [spec-engine.md](./spec-engine.md)
 answers the request's five questions and closes call-contract open items
 #4 and #5.
 
@@ -73,7 +73,7 @@ Vite + TypeScript skeleton — no demo has been scaffolded yet.
 
 The demo concept tracks are closed — DDAY won. Current tracks are work lanes,
 not concepts; owners, questions, and deliverables live in
-[dday-scenario-pipeline.md](./dday-scenario-pipeline.md) §1:
+[plan-pipeline.md](./plan-pipeline.md) §1:
 **data (민서)** — formats and transformations · **architecture (윤석)** —
 wiring and runtime · **client (미배정)** — player-facing surface.
 
@@ -93,7 +93,7 @@ wiring and runtime · **client (미배정)** — player-facing surface.
    in `data/` — including the edge-predicate branches, since G1 ships with an
    empty `edge_predicates` (valid per spec §4.3).
 3. **Close the datapack handoff** (pipeline §2 stage 5) — the consuming half of
-   [dday-handoff-datapack.md](./dday-handoff-datapack.md) §4: suite generator
+   [handoffs/datapack.md](./handoffs/datapack.md) §4: suite generator
    eats the G1 card, engine loads the pack. Two of its five items are answered
    by engine spec §4.2–4.3 (`effects` shape, routing vocabulary); one decision
    is open — where `REPORT_GUIDANCE` lives (data track proposes
@@ -110,6 +110,24 @@ wiring and runtime · **client (미배정)** — player-facing surface.
 
 ## Decision log
 
+- 2026-08-02 — **docs/ reorganised onto three tiers: `spec-` / `contract-` /
+  `plan-`.** `spec-` is the normative authority for its domain (breaking it makes
+  a downstream artifact defective even if it works); `contract-` is a fixed
+  interface between two named owners, carrying a map plus a pointer to where the
+  machine-readable law lives; `plan-` is normative about the work rather than the
+  artifact. Legend, document map, and the redirect table for old names:
+  [docs/README.md](./README.md). Structural consequences: the pipeline document
+  split into [plan-pipeline](./plan-pipeline.md) +
+  [contract-datapack](./contract-datapack.md) (absorbing the lint ruleset) +
+  [contract-run-artifacts](./contract-run-artifacts.md); the answered engine
+  request and the 07-29 design doc moved to `planning/`; a live game-design
+  document now exists at [plan-game-design](./plan-game-design.md). Two standing
+  problems were fixed rather than renamed: call-contracts §8 had three revision
+  requests the architecture spec had already absorbed, and cross-track requests
+  were scattered across four documents with no single place to see them —
+  docs/README.md §4 is now that place. **docs/ is written in English**: its
+  primary readers are agents, and the Korean/English split ran straight through
+  the binding set.
 - 2026-08-02 — **데이터팩 타입의 정본은 JSON Schema**(`data/scenario/_schema/`),
   `src/shared/datapack.ts`는 전사다. 08-01의 "타입은 코드가 정본"을 뒤집는다 —
   근거는 강제 가능성이다: TS 타입은 런타임에 지워지고, 팩 검증은 엔진과 TS
@@ -119,7 +137,7 @@ wiring and runtime · **client (미배정)** — player-facing surface.
   스칼라·delta **정수** 규약(§1.3), flag write를 **스크립트 이벤트 전용**으로
   축소(§1.1), 스크립트 비트 순서 규칙(§4.2), **라우팅 어휘**(§4.3),
   `symptoms.json`을 하드닝 산출물로 스코핑(§2.2). 데이터 트랙 리뷰(#102) 반영.
-  [물리 §3.1](./dday-physical-architecture.md) · [엔진 명세](./dday-engine-minimal-spec.md).
+  [물리 §3.1](./spec-physical-architecture.md) · [엔진 명세](./spec-engine.md).
 - 2026-08-01 — **물리 아키텍처 §3 확정 + 최소 엔진 명세 v0.** 레이아웃은 plain
   folder (npm workspaces 미채택) + tsconfig 3벌 — `core`에서 `DOM` lib를 빼서
   isomorphism 제약을 **컴파일 에러로 강제**한다. 프록시는
@@ -130,12 +148,12 @@ wiring and runtime · **client (미배정)** — player-facing surface.
   질문에 답하고 계약 v1 미결 #4·#5를 닫는다 — 변수 목록·타임라인 길이·재시도
   예산은 실측 전까지 **잠정**이다. 발견: §2 제약 3(데이터팩의 브라우저 도달)과
   5(`data/` 소재)가 현재 같이 서지 못하며, 빌드타임 복사로 해소했다.
-  [물리 아키텍처](./dday-physical-architecture.md) §3 ·
-  [엔진 명세](./dday-engine-minimal-spec.md).
+  [물리 아키텍처](./spec-physical-architecture.md) §3 ·
+  [엔진 명세](./spec-engine.md).
 - 2026-08-01 — Phase transition declared: demo → production. DDAY is built at the
   repo root (supersedes the `demos/dday/` scaffolding plan); demos remain deployed
   as history. The root's physical layout is owned by the architecture track via
-  [docs/dday-physical-architecture.md](./dday-physical-architecture.md) —
+  [docs/spec-physical-architecture.md](./spec-physical-architecture.md) —
   tier split and constraints fixed; §3 layout filled on 08-01 (entry above).
 - 2026-07-30 — DDAY 기본 메커니즘은 **C-BLOCK**(문장 블록 주입 → 해석 변화 →
   stance/행동 변화 → 확인 가능한 결과). C-STRUCT(우선순위 순서 재배열) 테스트는

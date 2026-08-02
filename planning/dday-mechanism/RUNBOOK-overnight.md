@@ -38,14 +38,14 @@ context compaction. So:
 | # | Document | Why |
 |---|---|---|
 | 1 | `planning/dday-mechanism/RUNLOG.md` | **Read before the plan.** Append-only layer that amends the plan with measured results. Where it carries an `A#` amendment, **it wins over the plan.** **A1–A16 are in force**; A9/A12/A13/A14 change what a valid probe looks like, A14 corrects a mistake this runbook itself used to make, and A15/A16 (enacted by 민서 2026-07-30) redefine the comparability stop and what counts as a discard |
-| 2 | `docs/dday-mechanism-deep-test.md` | The test program. §2 principles · §3 integrity protocol · §6 screening · §7 template and run sheet · §8 operating procedure · §9 decision procedure. Everything not amended by the run log applies as written |
-| 3 | `docs/dday-architecture-spec.md` | SoT for the game's core technology. Read §2–§4 and §9. Do **not** restate or amend it; a spec change is a spec change, never a run-log amendment |
+| 2 | `docs/plan-mechanism-test.md` | The test program. §2 principles · §3 integrity protocol · §6 screening · §7 template and run sheet · §8 operating procedure · §9 decision procedure. Everything not amended by the run log applies as written |
+| 3 | `docs/spec-architecture.md` | SoT for the game's core technology. Read §2–§4 and §9. Do **not** restate or amend it; a spec change is a spec change, never a run-log amendment |
 | 4 | `infra/test-harness/README.md` | The runner: options, what it refuses, suite anatomy |
 | 5 | `planning/dday-mechanism/suites/*.json` | Worked examples. Copy **`S1-stanceset-J1.json`** — the one configuration known to separate. `RB2` is the same probe with the stance set that failed, kept for contrast |
 | 6 | `planning/dday-poc/poc-terror/slice-terror.json` | Source material: 9 gates (J1–J8, J2-dead), mineable sentences, temperament registry |
 | 7 | `.claude/skills/read-mechanism-run/SKILL.md` | The read format 민서 will use on your results. You are not writing the read — but knowing what it needs tells you what to record |
 
-`docs/dday-design-doc.md` is a teammate's working log, not authoritative. If it
+`planning/dday-design-doc.md` is a teammate's working log, not authoritative. If it
 conflicts with the spec, the spec wins.
 
 ## 2. Scope — all 7 mechanisms, two lines, one owner caveat

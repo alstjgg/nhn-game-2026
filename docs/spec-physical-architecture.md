@@ -6,10 +6,10 @@
 > Per the pipeline's working rule, this document *is* the agreement: the owner
 > fills and revises §3 by revision, and the other tracks build against what it
 > says — no meeting required.
-> Neighbors: [scenario pipeline](./dday-scenario-pipeline.md) ·
-> [engine spec](./dday-engine-minimal-spec.md) ·
-> [call contracts](./dday-call-contracts.md) ·
-> [architecture spec](./dday-architecture-spec.md).
+> Neighbors: [scenario pipeline](./plan-pipeline.md) ·
+> [engine spec](./spec-engine.md) ·
+> [call contracts](./contract-calls.md) ·
+> [architecture spec](./spec-architecture.md).
 
 ## 1. The two tiers
 
@@ -81,7 +81,7 @@ contracts → 윤석):
 | File | Owner | Holds | Transcribes |
 |---|---|---|---|
 | `src/shared/datapack.ts` | 민서 (data) | datapack types | `data/scenario/_schema/*.schema.json` |
-| `src/shared/contracts.ts` | 윤석 (architecture) | the three calls' payload and response types | [call contracts v1](./dday-call-contracts.md) |
+| `src/shared/contracts.ts` | 윤석 (architecture) | the three calls' payload and response types | [call contracts v1](./contract-calls.md) |
 
 **Normative lives in the artifact that can enforce itself.** Neither file is a
 source of truth; both are transcriptions, and each carries a header pointer to
@@ -187,7 +187,7 @@ deploy job only runs `npm run build`.
 Not written from scratch, and not an edit to the original: that stack is
 deployed and live under a different route contract (`POST /ai/dialogue`), and
 DDAY needs the three call types of
-[call contracts](./dday-call-contracts.md) plus a different model. Two
+[call contracts](./contract-calls.md) plus a different model. Two
 contracts in one function is how a live deliverable breaks — the copy exists so
 the working one is never at risk.
 

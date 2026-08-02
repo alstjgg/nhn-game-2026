@@ -2,7 +2,7 @@
 
 > DDAY의 AI 메커니즘 후보를 실제 모델 호출로 측정한 기록이다.
 > 이 폴더는 계획 문서가 아니라 **측정 기록**이다. 실험 계획은
-> [`docs/dday-mechanism-deep-test.md`](../../docs/dday-mechanism-deep-test.md)에 있다.
+> [`docs/plan-mechanism-test.md`](../../docs/plan-mechanism-test.md)에 있다.
 
 ## 지금 상태 (2026-07-31 · 검증 프로그램 종료)
 

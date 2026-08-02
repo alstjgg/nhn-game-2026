@@ -38,7 +38,7 @@ allowed to differ in. Anything else varying across arms aborts the run.
 Worked examples now live in the codebase: **`narration`** and **`reporter`**
 (`lib/calltypes.mjs`, `templates/narration/`, `templates/reporter/`, both v0.1)
 were added this way — schemas and the decisions behind them are recorded in
-[docs/dday-call-contracts.md](../../docs/dday-call-contracts.md). The steps:
+[docs/contract-calls.md](../../docs/contract-calls.md). The steps:
 
 1. Add `templates/<dir>/base-vX.Y.md` and `user-vX.Y.md` with `{SLOT}` markers.
 2. Add the entry to `lib/calltypes.mjs`: `templateDir`, `slots`, `buildTool`

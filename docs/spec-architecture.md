@@ -255,7 +255,7 @@ Reduction rules, applied at scenario binding:
 All LLM calls run on **haiku**, through the proxy backend (§7), with output
 forced through a tool-use schema. Three call types exist; no others. Their
 executable input/output contracts are bound one level down in
-[dday-call-contracts.md](./dday-call-contracts.md); this section fixes what
+[contract-calls.md](./contract-calls.md); this section fixes what
 each call is and is not.
 
 | # | Call | System layer (proxy-owned) | In-band payload | Output (tool-use schema) |
@@ -350,7 +350,7 @@ what is already there (§4). The timeline is then also the context both
 generative calls read back — call 2 takes its tail, call 3 the round's
 events — so the loop closes on it. The slot-by-slot supplier and consumer
 map lives one level down, in
-[dday-call-contracts.md](./dday-call-contracts.md) §6; this section fixes
+[contract-calls.md](./contract-calls.md) §6; this section fixes
 only which wirings must exist.
 
 **Wirings that must never be cut** (each one, if severed, silently degrades
@@ -530,14 +530,14 @@ be bound implicitly by whoever touches it first.
 
 **Owner letters** (historical workstream codes from the archived 07-29
 [roadmap](../planning/dday-roadmap.md) §2; current ownership is the three
-tracks of [dday-scenario-pipeline.md](./dday-scenario-pipeline.md) §1):
+tracks of [plan-pipeline.md](./plan-pipeline.md) §1):
 **A** this spec · **G** planning document · **L** LLM layer / proxy · **D**
 agent default prompt · **S** scenario generation · **P** scenario
 verification · **U** UI/UX.
 
 | Parameter | Bound by | When |
 |---|---|---|
-| Call-contract open parameters (the contracts themselves are bound — [dday-call-contracts.md](./dday-call-contracts.md); its §7 lists what remains) | L | Per that document's own schedule |
+| Call-contract open parameters (the contracts themselves are bound — [contract-calls.md](./contract-calls.md); its §7 lists what remains) | L | Per that document's own schedule |
 | Production default prompt (persona expression level, `[내력]` presence) — evolved from the v0.4 base; any change from v0.4 requires shape revalidation | D | Before scenario-gate probing |
 | Per-gate stance sets | S | At scenario generation, per gate |
 | State variable list (which stats, which flags) | S | With the winning scenario, drawn from the §3.1 candidate pool under its reduction rules. **Prerequisite:** the §3.1 visibility probe has run (inside the Call 2 quality review, owner L) |

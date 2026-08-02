@@ -1,9 +1,23 @@
 # D-Day 시뮬레이션 — 게임 기획서
 
-> **2026-07-29 작성 · 살아있는 문서** — 설계가 바뀌면 이 문서를 PR로 고친다.
-> 배경과 실측 원자료는 [컨셉 문서](./game-concept-dday-simulation.md) ·
-> [페이퍼 테스트 RESULTS](../demos/dday-simulation/poc-terror/RESULTS.md), 진행 상황은
-> [SoT](./dday-sot.md).
+> **ARCHIVE — do not build against this document.** Written 2026-07-29; moved
+> here 2026-08-02. The live game-design authority is
+> [`docs/plan-game-design.md`](../docs/plan-game-design.md), which was written
+> from this document as source material.
+>
+> **Known-superseded claims in the body below** (kept verbatim as a record of
+> what was believed on 07-29):
+> - §3 lists **priority-list reordering** as a player control. The C-STRUCT
+>   channel was terminated 07-31 — block injection is the only player channel.
+> - §4.7 latency rule 5 specifies **SSE streaming**. Superseded by the
+>   client-driven typewriter (`docs/contract-calls.md` §7-6).
+> - §5 describes the **original** 「테러리스트의 전화」 (15 characters, 5 truths,
+>   7 gates). The shipped scenario is **우는다리**
+>   (`data/scenario/우는다리/draft.md`, selected 08-01).
+>
+> Background and raw measurements: [concept doc](./concepts/game-concept-dday-simulation.md) ·
+> [paper-test RESULTS](./dday-poc/poc-terror/RESULTS.md). Concept-freeze record:
+> [SoT](./dday-sot.md). Current project state: [`docs/status.md`](../docs/status.md).
 
 ---
 
@@ -89,7 +103,7 @@ D-Day — 손댈 수 없는 단 한 번의 실전 런. UI의 D-Day 카운터(= �
 
 플레이어가 잡을 수 있는 조종간은 둘, 잡을 수 없는 것이 하나다.
 셋 모두 같은 판단 지점에서 단독으로 분기를 뒤집음이 실측되었다
-([RESULTS](../demos/dday-simulation/poc-terror/RESULTS.md) — 무대 텍스트는
+([RESULTS](./dday-poc/poc-terror/RESULTS.md) — 무대 텍스트는
 한 글자도 바꾸지 않고).
 
 | 조종간 | 누가 잡나 | 게임에서의 실체 |
@@ -136,7 +150,7 @@ D-Day — 손댈 수 없는 단 한 번의 실전 런. UI의 D-Day 카운터(= �
    책임진다. LLM이 흔들려도 세계는 흔들리지 않고, 그래서 실패 원인이 읽힌다.
 2. **모든 튜너블은 데이터로 산다** (레포 규칙 balance-as-data). 수치·문구·조건은
    코드에 없다. 데모 단계의 데이터 원형은
-   [slice-terror.json](../demos/dday-simulation/poc-terror/slice-terror.json),
+   [slice-terror.json](./dday-poc/poc-terror/slice-terror.json),
    프로덕션 스키마는 WS A에서 확정한다.
 3. **멤브레인은 실행 환경으로 강제한다.** 플레이어의 자유 입력이 없는 것은 UI
    약속이 아니라 구조다 — 시스템 프롬프트는 프록시가 소유하고, 클라이언트는
@@ -320,7 +334,7 @@ D-Day — 손댈 수 없는 단 한 번의 실전 런. UI의 D-Day 카운터(= �
 '막기'에서 '비우기'로 바뀐다. 훅은 첫 60초의 몫, 반전은 3런째의 보상이다.
 
 시나리오 원안(인물 15 · 진실 5 · 게이트 7)은
-[시나리오\_테러리스트의전화.md](./시나리오_테러리스트의전화.md)에 있고,
+[시나리오\_테러리스트의전화.md](./dday-scenarios/시나리오_테러리스트의전화.md)에 있고,
 데모용 재단 기준과 현재 기준선은 §7.1.1에 있다.
 
 ## 6. UX/UI

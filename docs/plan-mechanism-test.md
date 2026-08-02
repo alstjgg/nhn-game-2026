@@ -3,7 +3,7 @@
 Test program for the judgment-control mechanisms of DDAY. This program supplies
 the game's **parameters** — which mechanisms survive, with what authoring
 guidelines, at what hit rates. It does not define the game's core technology,
-which is fixed in [dday-architecture-spec.md](./dday-architecture-spec.md), the
+which is fixed in [spec-architecture.md](./spec-architecture.md), the
 single source of truth. §1 restates only the facts that change how a probe is
 built; everything else about the game is read from the spec, never copied here.
 
