@@ -51,7 +51,7 @@ Whatever layout §3 chooses must preserve these:
 
 ```
 src/
-  shared/      datapack + call-contract types, JSON schema   ← no DOM, no fs
+  shared/      datapack + call-contract types (transcriptions) ← no DOM, no fs
   engine/      state machine: delta → bucket → edge, journal ← no DOM, no fs
   composer/    datapack + state + blocks → call slots        ← no DOM, no fs
   client/      Vite app — the only place DOM exists
@@ -78,16 +78,29 @@ style question.
 along the line the pipeline already draws (§1: data formats → 민서, call
 contracts → 윤석):
 
-| File | Owner | Holds |
-|---|---|---|
-| `src/shared/datapack.ts` | 민서 (data) | datapack types + JSON schema — where pipeline §3's field-level types land |
-| `src/shared/contracts.ts` | 윤석 (architecture) | the three calls' payload and response types (call contracts v1) |
+| File | Owner | Holds | Transcribes |
+|---|---|---|---|
+| `src/shared/datapack.ts` | 민서 (data) | datapack types | `data/scenario/_schema/*.schema.json` |
+| `src/shared/contracts.ts` | 윤석 (architecture) | the three calls' payload and response types | [call contracts v1](./dday-call-contracts.md) |
 
-**Code is normative; the document points at it.** Pipeline §3 schedules
-field-level type definitions as its own next revision — types living in both a
-document and a compiler will drift, and the drift is silent until a datapack
-fails to load. The document names the fields and says what they mean; the
-declaration that anything is checked against is `datapack.ts`.
+**Normative lives in the artifact that can enforce itself.** Neither file is a
+source of truth; both are transcriptions, and each carries a header pointer to
+what it transcribes. If a transcription disagrees with its source, one of the
+two is a bug — the same rule already in force for `contracts.ts`.
+
+For the datapack that artifact is **JSON Schema, not TypeScript** (pipeline §3:
+"this table is the map, the schemas are the law"). A TS type is erased at
+runtime — it *describes* JSON but cannot *check* it, so code reading a pack
+through `datapack.ts` would simply be trusting the data. Packs must be
+validated where neither an engine nor a TS build exists yet: the compile and
+lint stages in `tools/`, before anything loads them. Data-contract rules like
+"≥2 key examples per condition" or `^G[0-9]+$` have no TS expression at all.
+
+The cost of this arrangement is drift between schema and transcription, and it
+has to be paid explicitly rather than assumed away: `datapack.ts` should be
+**generated** from the schemas, or the lint stage should compare its field set
+against them. Owner: 민서, with pipeline §3's next revision. Until one of those
+exists, the transcription is hand-kept and that is a known gap.
 
 ### 3.2 What each boundary forbids
 

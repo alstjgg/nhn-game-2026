@@ -3,6 +3,21 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-02)
+
+**시나리오 확정 + 첫 데이터팩 존재.** 우는다리로 확정(민서 결정), 데이터 트랙
+P0가 컴파일러·lint·스키마와 함께 첫 팩을 냈고 **G1이 손으로 하드닝됐다** —
+"선정된 초안의 G1"을 기다리던 최소 엔진의 전제 조건이 채워졌다. 남은 빈 필드는
+`edge_predicates` 하나이며, 엔진 명세 §4.3이 그 어휘를 고정했다(빈 배열도
+유효하므로 엔진 착수를 막지 않는다).
+
+**두 트랙 경계에서 정본의 위치가 바뀌었다.** 데이터팩 타입의 정본은
+`data/scenario/_schema/*.schema.json`이고 `src/shared/datapack.ts`는 그
+전사다 — TS 타입은 런타임에 지워져 JSON을 검사하지 못하고, 팩은 엔진도 TS
+빌드도 없는 시점(compile·lint)에 검증돼야 한다. `contracts.ts`가 계약 문서를
+전사하는 것과 같은 구조다. 남은 비용은 전사 drift이며 생성 또는 lint 대조로
+갚는다(물리 §3.1).
+
 ## Status (2026-08-01)
 
 **Phase transition: demo → production.** DDAY is the selected concept (07-28
@@ -66,25 +81,27 @@ wiring and runtime · **client (미배정)** — player-facing surface.
 
 1. **Root scaffolding** — physical architecture §3.8 steps 1–2: module folders,
    the three tsconfigs, `build` running `check`, and **verify the Pages deploy
-   before anything else lands**. This is the real gate for parallel work:
-   `src/shared/` does not exist yet, so the data track's first type definition
-   has nowhere to go.
-2. Data P0: compile skill + JSON schema validator, with field-level datapack
-   types landing in `src/shared/datapack.ts` (the pipeline §3 revision) — plus
-   `symptoms.json` and the symptom-coverage lint rule requested by engine spec §6.
-3. **Pick one scenario** from the three drafts (team decision). Both the
-   hardening pass below and the compile skill need a target, and nine days does
-   not fit three.
-4. Minimal engine (doubles as the W4 check) + Bedrock production path. Its first
-   datapack is **the chosen draft's G1, hand-hardened** — not a synthetic test
-   pack. Draft-stage gate cards carry no buckets, deltas, or edge predicates
-   (pipeline §3 says hardening fills them), so hardening is the missing step;
-   doing it by hand for one gate feeds the engine *and* gives the hardening
-   manual its first real use. It does not wait on the compile skill. Engine unit
-   fixtures for the §7 criteria live in test code, not in `data/`.
-5. First-gate probe (P1), then full-run gameplay measurement (P2).
-6. Assign a client-track owner. **Still unassigned and the largest schedule
-   risk** — deliverables #1 and #2 depend on it.
+   before anything else lands**. This is no longer the gate for the data track
+   (its types are normative in `data/scenario/_schema/`, which exists), but it
+   is still the gate for the engine and composer: they have nowhere to live.
+2. **Minimal engine** (doubles as the W4 check) + Bedrock production path. **Its
+   first datapack already exists** — `data/scenario/우는다리/`, lint ERROR 0,
+   G1 hand-hardened (buckets, deltas, meter bindings to the spec's provisional
+   `trust`/`fear`, symptom coverage passing actively). The engine no longer
+   waits on anything data-side; target is engine spec §7 criterion 1, one full
+   round on that pack. Unit fixtures for the §7 criteria live in test code, not
+   in `data/` — including the edge-predicate branches, since G1 ships with an
+   empty `edge_predicates` (valid per spec §4.3).
+3. **Close the datapack handoff** (pipeline §2 stage 5) — the consuming half of
+   [dday-handoff-datapack.md](./dday-handoff-datapack.md) §4: suite generator
+   eats the G1 card, engine loads the pack. Two of its five items are answered
+   by engine spec §4.2–4.3 (`effects` shape, routing vocabulary); one decision
+   is open — where `REPORT_GUIDANCE` lives (data track proposes
+   `data/policy/report-guidance.json`, outside the pack).
+4. First-gate probe (P1), then full-run gameplay measurement (P2).
+5. Assign a client-track owner. **Still unassigned and the largest schedule
+   risk** — deliverables #1 and #2 depend on it. It also blocks one engine
+   answer the data track is waiting on: beat granularity (engine spec §8).
 
 ## Open TODOs
 
@@ -93,12 +110,23 @@ wiring and runtime · **client (미배정)** — player-facing surface.
 
 ## Decision log
 
+- 2026-08-02 — **데이터팩 타입의 정본은 JSON Schema**(`data/scenario/_schema/`),
+  `src/shared/datapack.ts`는 전사다. 08-01의 "타입은 코드가 정본"을 뒤집는다 —
+  근거는 강제 가능성이다: TS 타입은 런타임에 지워지고, 팩 검증은 엔진과 TS
+  빌드가 없는 compile·lint 단계에서 일어나야 하며, "조건당 key example 2개
+  이상" 같은 데이터 계약 규칙은 TS로 표현되지 않는다. 대가는 전사 drift이고
+  생성 또는 lint 대조로 갚기로 한다. 같은 리비전에서 엔진 명세가 흡수한 것:
+  스칼라·delta **정수** 규약(§1.3), flag write를 **스크립트 이벤트 전용**으로
+  축소(§1.1), 스크립트 비트 순서 규칙(§4.2), **라우팅 어휘**(§4.3),
+  `symptoms.json`을 하드닝 산출물로 스코핑(§2.2). 데이터 트랙 리뷰(#102) 반영.
+  [물리 §3.1](./dday-physical-architecture.md) · [엔진 명세](./dday-engine-minimal-spec.md).
 - 2026-08-01 — **물리 아키텍처 §3 확정 + 최소 엔진 명세 v0.** 레이아웃은 plain
   folder (npm workspaces 미채택) + tsconfig 3벌 — `core`에서 `DOM` lib를 빼서
   isomorphism 제약을 **컴파일 에러로 강제**한다. 프록시는
   `services/apothecary-llm-layer/`의 복제본이며 살아 있는 스택은 건드리지
   않는다. `src/shared/`는 파일로 소유를 가른다(`datapack.ts` 민서 /
-  `contracts.ts` 윤석), **타입은 코드가 정본**. 엔진 명세는 요청서 §6의 다섯
+  `contracts.ts` 윤석), **타입은 코드가 정본**(→ 08-02 항목이 뒤집음). 엔진
+  명세는 요청서 §6의 다섯
   질문에 답하고 계약 v1 미결 #4·#5를 닫는다 — 변수 목록·타임라인 길이·재시도
   예산은 실측 전까지 **잠정**이다. 발견: §2 제약 3(데이터팩의 브라우저 도달)과
   5(`data/` 소재)가 현재 같이 서지 못하며, 빌드타임 복사로 해소했다.
