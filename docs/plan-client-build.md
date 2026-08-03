@@ -56,7 +56,7 @@ spec §7 #8; do not introduce `localStorage`).
 | `reference_globs` (frontend-mod P0-A) | `docs/design/phase2-ui/**` | never edit · **mandatory reading**, sliced per unit |
 | `frozen_globs` | `data/scenario/우는다리/**` · `data/scenario/_schema/**` · `docs/*.md` (all specs/contracts) | never edit; spec findings → `DISCOVERY.md` |
 | guarded | `assets-manifest.json` | edits limited to: re-pointing the three existing webfont entries + appending new entries. Never remove or rewrite others |
-| pending upstream | `src/` scaffolding ([physical §3.8](./spec-physical-architecture.md)) · pack-copy plugin ([physical §3.7](./spec-physical-architecture.md)) · view-driver seam ratification (spec §5.2) | requests filed with 윤석 (docs PR); u0 proceeds only on his OK, fixture mode does not wait on §3.7 |
+| resolved upstream (PR #108 review) | seam **ratified** (spec §5.2 amendments) · `src/` tree + tsconfig split **already exist** · pack-copy plugin lands with 윤석 (fixture mode does not wait on it) | one standing condition: **no unit may touch `tsconfig.core.json`'s `include` or add path aliases** — it is the mechanical isomorphism guard |
 
 ## 4. Invariants
 
@@ -74,9 +74,9 @@ earlier units).
 
 | id | title | deps | verification (own slice) | reference/context scope |
 |---|---|---|---|---|
-| **u0** | `src/client/` scaffold + tsconfig split (physical §3.8 steps, client slice only) — **blocked on 윤석's OK** | — | `npm run build` on empty modules | physical §3.8 |
+| **u0** | `src/client/` internal scaffold (module dirs per spec §2.1, entry wiring) — the `src/` tree and tsconfig split already exist; **must not touch `tsconfig.core.json` or add path aliases** (윤석's condition, 08-03) | — | `npm run build` on empty modules | physical §3.8 · spec §2.1 |
 | **u1** | `styles/tokens.css` + vendored per-window skins from `desktop.css`, re-tokenized (inv 8) | u0 | vitest: token-only lint passes | `desktop.css` (whole) |
-| **u2** | `driver/`: `ViewEvent`/`MembraneOp` types (spec §5.2) · fixture driver · **fixture files regenerated from `우는다리` with real authored ids** · **clock pause/seed + animation-freeze hooks** (for the build's own e2e determinism; harness captures use frontend-mod P0-B's browser-clock settle protocol) | u0 | vitest: fixture replay ordering; hooks pin a frame | spec §5.2·§5.4 · `data.js` (as content source only) |
+| **u2** | seam types → `src/shared/view-driver.ts` (**ratified shapes verbatim**, spec §5.2) · `driver/`: fixture driver · **fixture files regenerated from `우는다리`, sentence ids per the ratified scheme (`b-r<run>-<channel><nn>`, channel-derived species)** · **clock pause/seed + animation-freeze hooks** (for the build's own e2e determinism; harness captures use frontend-mod P0-B's browser-clock settle protocol) | u0 | vitest: fixture replay ordering; hooks pin a frame | spec §5.2·§5.4 · `data.js` (as content source only) |
 | **u3** | shell: topbar (clock · D-DAY · case) · taskbar · window manager · `applyLayout` | u1 | playwright: 5 windows drag/resize/collapse at 1280×800 | `index.html` topbar/win markup · `app.js` window-manager + layout notes |
 | **u4** | AGENT FILE + BLOCK STORE windows (membrane ops: slot/unslot/deploy; dossier incl. sealed §3) | u2·u3 | vitest: ops emitted with ids; playwright: stamp/lock | reference dossier + card markup/CSS |
 | **u5** | LIVE FEED window (7 line kinds · clock-landed lines · typewriter replay · diegetic waiting) | u2·u3 | playwright: fixture round renders in order, `(변화 없음)`, `※` fallback | reference fanfold markup · feed-kind mapping note |

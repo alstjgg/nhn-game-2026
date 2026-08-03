@@ -25,7 +25,7 @@ flowchart LR
       PACK["Data Pack<br/>data/scenario/&lt;slug&gt;/"]
       SCHEMAS["Schemas<br/>data/scenario/_schema/<br/>data/runs/_schema/"]
       POLICIES["Policies<br/>data/policy/report-guidance.json"]
-      TOOLS["Pipeline tools<br/>infra/scenario-pipeline/<br/>infra/test-harness/"]
+      TOOLS["Pipeline tools<br/>authoring/<br/>tools/ (probe · lib · driver)"]
     end
   end
 
@@ -48,7 +48,7 @@ flowchart LR
 
   subgraph TIER_AWS["AWS"]
     subgraph PROXY["PROXY LAYER"]
-      LAMBDA["Lambda proxy<br/>services/dday-llm-proxy/"]
+      LAMBDA["Lambda proxy<br/>proxy/"]
       BEDROCK["Bedrock<br/>(Converse, buffered)"]
     end
   end
@@ -75,7 +75,7 @@ each box's exact ins/outs, and §3 shows them in motion.
 | **Data Pack** — 11 files per scenario (only pack today: `우는다리`) | `data/scenario/<slug>/` | file-by-file table below | [contract-datapack §1](./contract-datapack.md) |
 | **Schemas** | `data/scenario/_schema/` · `data/runs/_schema/` | build-time only: lint + type generation (drift guard `--check`). No runtime consumer | [README §3](./README.md) |
 | **Policies** — `report-guidance.json` | `data/policy/` | Call 3 `REPORT_GUIDANCE` slot. Absorption into the composer agreed 08-03; contract revision pending | [contract-calls §4·§6](./contract-calls.md) |
-| **Pipeline tools** — compile · lint · generate-types · probe harness | `infra/scenario-pipeline/` · `infra/test-harness/` | build-time only; executors of pipeline stages 1–4 (§3.1 below) | [plan-pipeline §2](./plan-pipeline.md) |
+| **Pipeline tools** — compile · lint · generate-types · probe harness | `authoring/` · `tools/` (probe · lib · driver) | build-time only; executors of pipeline stages 1–4 (§3.1 below) | [plan-pipeline §2](./plan-pipeline.md) · [README §6](./README.md) code-path redirects |
 
 Data Pack, file by file (runtime consumers — the pack reaches the browser as
 static JSON via the physical §3.7 build-time copy, **unbuilt**):
@@ -125,7 +125,7 @@ exposure ([contract-calls §6](./contract-calls.md) consumer map · I8 · I13).
 
 | Box | In | Out | Physical home | Source |
 |---|---|---|---|---|
-| **Lambda proxy** | call payloads ← Call Transport | Bedrock Converse invocation → buffered response back. Holds the **only secret**; also supplies Call 1's default prompt (`FLAW` · `INCIDENT` · `PRIORITY_LIST`) | `services/dday-llm-proxy/` — API Gateway → Lambda | [spec-physical §1·§3.6](./spec-physical-architecture.md) · [contract-calls §6](./contract-calls.md) · [handoffs/llm-lambda-runtime](./handoffs/llm-lambda-runtime.md) |
+| **Lambda proxy** | call payloads ← Call Transport | Bedrock Converse invocation → buffered response back. Holds the **only secret**; also supplies Call 1's default prompt (`FLAW` · `INCIDENT` · `PRIORITY_LIST`; `proxy/prompts/` inlined into the Lambda bundle at build) | `proxy/` — API Gateway → Lambda | [spec-physical §1·§3.6](./spec-physical-architecture.md) · [contract-calls §6](./contract-calls.md) · [handoffs/llm-lambda-runtime](./handoffs/llm-lambda-runtime.md) |
 | **Bedrock** | Converse request ← Lambda | complete response — **buffered, no streaming**; time-to-first-token is irrelevant, which is why the tally must absorb the whole report call (latency rules 4–5) | AWS managed | [spec-architecture §4](./spec-architecture.md) |
 
 ## 3. Flows — three diagrams, one story each
@@ -145,7 +145,7 @@ flowchart LR
   PAPER["stage 3 · paper check<br/>(manual — hardening manual §6)"]
   GATE["gate card (yaml)"]
   SUITE["suite generator<br/>(윤석 · planned)"]
-  HARNESS["test-harness probe<br/>30-call metrics (stage 4)"]
+  HARNESS["tools/probe<br/>30-call metrics (stage 4)"]
 
   DRAFT --> COMPILE --> PACKF --> LINT --> VIOL
   SCH --> LINT

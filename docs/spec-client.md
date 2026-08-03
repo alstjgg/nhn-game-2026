@@ -4,7 +4,9 @@
 > **Language:** TypeScript (vanilla, **zero runtime dependencies**) · **Home:**
 > `src/client/` — the only place DOM exists; nothing imports it
 > ([physical §3.1–3.2](./spec-physical-architecture.md)).
-> **Status: draft v3, not yet committed.**
+> **Status: draft v3.1** — v3 + 윤석's PR #108 ratification: the §5.2 seam
+> is ratified with six amendments, persistence is resolved
+> (`sessionStorage`), scaffolding and pack-copy answered (§9).
 >
 > This document **references and consumes** the laws it sits under — it never
 > redefines them. Conflict order:
@@ -55,7 +57,7 @@ CLAUDE.md).
 |---|---|---|
 | in | `data/scenario/<slug>/` as static JSON (fetch at boot; reaches the browser via the physical §3.7 copy plugin — **unbuilt**, see §9) | [contract-datapack](./contract-datapack.md); per-file consumers: [architecture-map §2.1](./architecture-map.md) |
 | in | `ViewEvent` stream ← view driver (fixture or live engine) | §5.2 — **proposed seam, ratification with 윤석 pending** |
-| in | run/meta view: run counter · carried blocks · report archive ← run-loop manager (fixture-simulated until it exists) | [contract-run-artifacts](./contract-run-artifacts.md); storage open (§9) |
+| in | run/meta view (`meta` events **on the same stream**, amendment d): run counter · carried blocks · report archive ← run-loop manager via the driver (fixture-simulated until it exists) | §5.2 · [contract-run-artifacts](./contract-run-artifacts.md); stored in `sessionStorage` (§9) |
 | out | `MembraneOp` stream → driver (deploy carries the slotted set = the next Call 1 `BLOCKS`) | §5.2 · [contract-calls §6](./contract-calls.md) supplier map |
 | out | nothing else — no network beyond the pack fetch (and, live mode, calls made by the composer, not by the client) · no disk writes | [physical §2](./spec-physical-architecture.md) |
 
@@ -67,7 +69,7 @@ Import direction ([physical §3.2](./spec-physical-architecture.md)):
 
 | Module | Holds | May import |
 |---|---|---|
-| `driver/` | `ViewEvent`/`MembraneOp` types · fixture driver + fixture run files · (later) live driver binding engine+composer | `shared`; live driver only: `engine`, `composer` |
+| `driver/` | fixture driver + fixture run files · (later) live driver binding engine+composer. Seam types are **not** here — they live in `src/shared/view-driver.ts` (ratified, §5.2) | `shared`; live driver only: `engine`, `composer` |
 | `shell/` | topbar (clock · D-DAY · case) · taskbar · window manager · layout | `driver` types |
 | `windows/` | the five windows, one module each | `components`, `driver` types |
 | `components/` | the §6 inventory | — |
@@ -151,12 +153,13 @@ fetch data/scenario/<slug>/*.json → parse against src/shared/datapack.ts types
 Run states: `BUILD → (deploy) → RUN → (per round) REPORT → … → (21:04)
 TALLY → (new_run) BUILD`, D-DAY decrementing until the last run.
 
-### 5.2 The view-driver seam (**proposed** — graduates to `src/shared/`
-types on ratification with 윤석; until then fixture-shaped, not law)
+### 5.2 The view-driver seam (**ratified 08-03 with amendments** — 윤석,
+PR #108 review; types land in `src/shared/view-driver.ts`)
 
-Everything the client consumes during a run is one ordered event stream;
-everything it emits is one op stream. Shapes (TypeScript, illustrative
-field-level detail — names final, optionality to ratify):
+Everything the client consumes during a run is **one** ordered event stream;
+everything it emits is one op stream. The run-loop manager's channel is
+folded into the same stream (`meta` — amendment d), so there is exactly one
+in-channel and one out-channel.
 
 ```ts
 type Species = 'fact' | 'selfnarr' | 'emotion' | 'quote';
@@ -167,19 +170,48 @@ interface FeedLine { kind: FeedKind; clock: string /* "HH:MM" */; text: string;
                      speaker?: string; sentence_id?: string /* set ⇢ minable */ }
 
 type ViewEvent =
-  | { type: 'feed';    line: FeedLine }
-  | { type: 'waiting'; active: boolean }                    // diegetic marker on/off
-  | { type: 'report';  round: number; facts: Sentence[]; report_body: Sentence[] }
-  | { type: 'score';   total: number; rows: { label: string; value: number }[] }
-  | { type: 'run_end'; run: number };
+  | { type: 'beat_start' | 'beat_end'; beat: number; clock: string }
+  | { type: 'feed';     line: FeedLine }
+  | { type: 'waiting';  active: boolean; for: 'judgment' | 'narration' | 'report' }
+  | { type: 'fallback'; call: 1 | 2 | 3; code: string; beat: number }
+  | { type: 'report';   round: number; facts: Sentence[]; report_body: Sentence[] }
+  | { type: 'score';    total: number; rows: { label: string; value: number }[] }
+  | { type: 'run_end';  run: number }
+  | { type: 'meta';     run: number; runs_left: number; carried: string[];
+                        archive: { run: number; label: string }[] };
+                        // exact `meta` shape settles when 윤석 builds the
+                        // run-loop manager; the channel itself is ratified
 
 type MembraneOp =
   | { op: 'slot';    block_id: string; slot: number }
   | { op: 'unslot';  slot: number }
   | { op: 'mine';    sentence_id: string }
-  | { op: 'deploy';  blocks: string[] }                     // = next Call 1 BLOCKS
+  | { op: 'deploy';  blocks: string[] }  // a SET — order carries no meaning
+                                         // (architecture §2.1: content, not
+                                         // order; the composer sorts
+                                         // canonically before composing)
   | { op: 'new_run' };
 ```
+
+Amendment notes (all 윤석, PR #108):
+
+- **Beat boundaries** give the pause structure its attachment point — this
+  is what lets [contract-run-artifacts §3](./contract-run-artifacts.md)'s
+  deferred beat-granularity slot finally bind.
+- **`waiting.for`** picks the diegetic phrasing; the three waits are
+  different animals under latency rules 2 and 4–5.
+- **`fallback` is an event, not just a feed kind**: engine §5 grades
+  failures (fatal / local / supply-cut) and the run record keeps
+  `{beat, call, code}` — `FallbackNotice` renders per class. The `fallback`
+  `FeedKind` remains as its on-feed rendering.
+- **Sentence identity is engine-minted**: `b-r<run>-<channel><nn>` with
+  channels `f` (facts) · `b` (report body) · `n` (Call 2 narration) · `q`
+  (NPC line); authored script lines keep `timeline.json`'s `t*` ids and are
+  run-independent (same sentence = same block across runs, which is what
+  makes archive highlighting behave). The report-body segmenter lives in
+  `src/shared/`, is called by engine, fixture generator, and probe alike
+  (invariant 12 made structural), and carries a golden test. **Species
+  derives from the channel, never from classification.**
 
 What never appears in `ViewEvent`: `inner_note` · `because_*` /
 `rejected_*` · temperament · truths beyond exposure
@@ -191,8 +223,8 @@ driver, not the windows, is where that guarantee is enforced (invariant 12).
 | State | Owner | Client's part |
 |---|---|---|
 | game state (meters, gates, journal) | engine | none — not even mirrored |
-| run counter · carried blocks · report archive | run-loop manager (meta-state) | display + membrane ops against it |
-| window geometry · focus · collapsed set · archive-rail selection · animation state | **client** | in-memory; survives-refresh question follows the §9 persistence resolution |
+| run counter · carried blocks · report archive | run-loop manager (meta-state, `sessionStorage` — §9) | display + membrane ops against it; arrives as `meta` events |
+| window geometry · focus · collapsed set · archive-rail selection · animation state | **client** | in-memory only — cosmetic state legitimately resets on refresh |
 | mining/slotted marks on sentences | derived from meta-state by id | render only |
 
 ### 5.4 Fixture mode
@@ -255,8 +287,10 @@ Against `data/scenario/우는다리/`, in fixture mode, in a browser.
 6. Terminal clock reached → score renders.
 7. A forced `fallback` feed line renders per engine §5, and the run
    continues.
-8. Refresh behavior matches whatever resolves the persistence contradiction
-   (§9); until then, fixture runs may keep state in memory only.
+8. Refresh mid-run: the multi-run meta-state (counter, archive, carried
+   blocks) survives via `sessionStorage`; closing the tab starts clean
+   (윤석's resolution, §9). Window geometry and other cosmetic state may
+   reset.
 
 **Shell (the desktop half):**
 
@@ -304,20 +338,28 @@ self-hosting is an acceptance item (§7 #11), with the subsetting approach
 left to the PRD (recommendation: mirror Google's per-`unicode-range` Korean
 slices so LLM-generated text never hits a missing glyph).
 
+**Resolved by 윤석's PR #108 ratification (08-03):**
+
+- **View-driver seam** — ratified with six amendments, recorded in §5.2;
+  types land in `src/shared/view-driver.ts`. The sentence-id scheme
+  (engine-minted, channel-derived species, shared segmenter with golden
+  test) is part of the ratification.
+- **Persistence** — `sessionStorage` for meta-state: survives refresh (the
+  multi-run loop isn't destroyed by F5), dies with the tab (every judge
+  starts clean — `localStorage` would break the run-3 demo staging). 윤석
+  revises physical §1 and game-design §6; §7 #8 binds it here.
+- **`src/` scaffolding** — already done (physical §3.8 step 1: the four
+  `src/` dirs and the `tsconfig`/`tsconfig.core` split exist). **Condition
+  on the build: never touch `tsconfig.core.json`'s `include` or add path
+  aliases** — that file is the mechanical isomorphism guard.
+- **Pack-to-browser copy plugin** — 윤석 lands it (it copies `scenario/` +
+  `policy/` by name, never `data/` wholesale). Fixture mode doesn't wait.
+
 **Owned elsewhere — pointed at, not restated:**
 
-- Persistence contradiction (localStorage vs refresh-resets) — 윤석's
-  [physical §1](./spec-physical-architecture.md) vs
-  [game design §6](./plan-game-design.md); §7 #8 absorbs either resolution.
 - §9 U-owned parameters (latency budget · report cadence · slot count ·
   block-pool curation · gate-eligibility floor) —
   [architecture §9](./spec-architecture.md); they bind by revision of this
   document when their moments arrive.
-- Pack-to-browser copy plugin —
-  [physical §3.7](./spec-physical-architecture.md) (윤석).
-- `src/` scaffolding — [physical §3.8](./spec-physical-architecture.md).
 - Temperament transport seam · report-guidance absorption —
   [contract-calls](./contract-calls.md).
-- **View-driver seam ratification** (§5.2) — proposed here; becomes
-  `src/shared/` types (or a `contract-`) after 윤석 reviews, since the live
-  driver is where his engine meets this spec.

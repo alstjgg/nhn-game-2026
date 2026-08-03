@@ -48,7 +48,7 @@ artifact that can enforce itself.*
 | [`spec-physical-architecture.md`](./spec-physical-architecture.md) | spec | Where code physically lives and runs — the two tiers, module boundaries under `src/`, the isomorphism constraint and how the compiler enforces it | 윤석 |
 | [`contract-calls.md`](./contract-calls.md) | contract | The three LLM calls' payloads and responses, field order, hard/soft validation, the slot supplier/consumer map | 윤석 |
 | [`contract-datapack.md`](./contract-datapack.md) | contract | What a scenario datapack is, file by file, plus the lint ruleset that defines conformance | 민서 |
-| [`spec-client.md`](./spec-client.md) | spec | The view layer: role/scope, I/O contract, `src/client/` code layout, twelve review-blocking invariants, the window set, runtime seams (view-driver — ratification pending), component inventory, acceptance | 민서 |
+| [`spec-client.md`](./spec-client.md) | spec | The view layer: role/scope, I/O contract, `src/client/` code layout, twelve review-blocking invariants, the window set, runtime seams (view-driver — ratified 08-03, PR #108), component inventory, acceptance | 민서 |
 | [`contract-run-artifacts.md`](./contract-run-artifacts.md) | contract | What a finished run leaves behind: run record, meta-state, metric report | 민서 |
 | [`plan-pipeline.md`](./plan-pipeline.md) | plan | The three tracks, their owners and deliverables, the stage-by-stage transformation chain, and gameplay metric definitions | 민서 |
 | [`plan-game-design.md`](./plan-game-design.md) | plan | The live game design — pitch, pillars, non-goals, core loop, systems, UX/UI, scope | 윤석 |
