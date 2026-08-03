@@ -69,10 +69,12 @@ Human-verified against the G1 card. Every field the generator consumes exists:
 1. ~~Confirm the shape of `timeline.events[].effects`~~ **✅ Approved.** Engine
    spec §1.2 gained an actuator → data-location table, and §4.2 fixed the
    application order: effects → journal → symptoms → Call 2.
-   **One follow-up:** the reply narrowed §1.1's flag write to script events only,
-   on the premise that buckets had no `flags` slot — but v0.4 created that slot
-   the same day (§3-5). Whether to re-widen §1.1 is 윤석's call. The minimal
-   engine is unaffected (G1's buckets emit no flags).
+   ~~**One follow-up:** whether to re-widen §1.1's flag write~~ **✅ Answered —
+   widened.** Engine spec §1.1 now reads "flags are written in two places:
+   script events and stance buckets", with the reason: G2 · G3 · G5 · G6 emit
+   flags and **no deltas**, so without the bucket slot those four gates harden
+   into no-ops. The minimal engine is unaffected either way (G1's buckets emit no
+   flags). The answer predates this note; only the tracker was stale.
 2. ~~Routing vocabulary~~ **✅ Answered.** Engine spec §4.3 added: one predicate
    per line, `<variable> <comparison> <integer> -> <node>`, 5 comparisons, flags
    as `== true`, a mandatory final `else`, first-true top-to-bottom, and **an
@@ -92,10 +94,17 @@ Human-verified against the G1 card. Every field the generator consumes exists:
 5. **Consumption confirmation, execution (OPEN):** does the suite generator eat
    the G1 card, and does the engine load this pack and complete engine spec §7
    criterion 1 (one full round)? **Stage 5 closes when both pass.**
-6. **Variable binding for c2–c7 meters (OPEN):** engine spec §1.1's state model is
-   provisionally trust/fear only, so NPC meters were left unbound (12 FLAGs).
-   This is a decision: widen the state model, or spec it out of v0. (The reply
-   was written before the v0.4 commit and did not see this item.)
+6. ~~**Variable binding for c2–c7 meters**~~ **✅ Answered (08-03) — spec'd out
+   of v0.** Engine spec §1.1a: the twelve meters are authoring annotation, not
+   engine state. Grounds: nothing in the pack writes, reads, or renders them
+   (deltas touch only `trust`/`fear`; `symptoms.json` is keyed to those plus
+   `flags`; every `edge_predicates` and every score `predicates` is empty), and
+   they fail all three of architecture spec §3.1's tests. Binding one later is a
+   data change — `variable` is already nullable by schema.
+   **One request back:** F2 cannot tell "unbound, pending hardening" from "not v0
+   state", so those twelve are permanent residents of the hardening worklist.
+   An explicit marker in `characters.schema.json` would separate them; its shape
+   is the data track's call. Not a defect — F2 is a FLAG and lint exits 0.
 
 **One revision request received — handled:** deltas are non-zero integers
 (engine spec §1.3 · §6-3). The schema was tightened to `integer` and lint E8 was
