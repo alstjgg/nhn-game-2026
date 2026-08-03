@@ -367,7 +367,7 @@ The retry budget is **one retry (two calls total)**. Only hard validation
 failures trigger a re-call (call contracts §1 rule 6).
 
 The harness uses `maxRetries = 2`
-([drive-beat.mjs](../infra/test-harness/drive-beat.mjs)), but the production
+([drive-beat.mjs](../tools/driver/drive-beat.mjs)), but the production
 engine reduces it to 1 — **measurement and play optimize for different things.**
 Measurement prioritizes not losing samples; play prioritizes latency. Two retries
 make the judgment call worst-case three calls, and that latency is a charge

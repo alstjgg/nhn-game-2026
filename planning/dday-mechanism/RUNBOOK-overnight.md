@@ -40,7 +40,7 @@ context compaction. So:
 | 1 | `planning/dday-mechanism/RUNLOG.md` | **Read before the plan.** Append-only layer that amends the plan with measured results. Where it carries an `A#` amendment, **it wins over the plan.** **A1–A16 are in force**; A9/A12/A13/A14 change what a valid probe looks like, A14 corrects a mistake this runbook itself used to make, and A15/A16 (enacted by 민서 2026-07-30) redefine the comparability stop and what counts as a discard |
 | 2 | `docs/plan-mechanism-test.md` | The test program. §2 principles · §3 integrity protocol · §6 screening · §7 template and run sheet · §8 operating procedure · §9 decision procedure. Everything not amended by the run log applies as written |
 | 3 | `docs/spec-architecture.md` | SoT for the game's core technology. Read §2–§4 and §9. Do **not** restate or amend it; a spec change is a spec change, never a run-log amendment |
-| 4 | `infra/test-harness/README.md` | The runner: options, what it refuses, suite anatomy |
+| 4 | `tools/probe/README.md` | The runner: options, what it refuses, suite anatomy |
 | 5 | `planning/dday-mechanism/suites/*.json` | Worked examples. Copy **`S1-stanceset-J1.json`** — the one configuration known to separate. `RB2` is the same probe with the stance set that failed, kept for contrast |
 | 6 | `planning/dday-poc/poc-terror/slice-terror.json` | Source material: 9 gates (J1–J8, J2-dead), mineable sentences, temperament registry |
 | 7 | `.claude/skills/read-mechanism-run/SKILL.md` | The read format 민서 will use on your results. You are not writing the read — but knowing what it needs tells you what to record |
@@ -76,8 +76,7 @@ below. Flag in the report that ownership needs settling.
 ## 3. Before you spend a single call
 
 ```bash
-cd infra/test-harness
-node lib/selftest.mjs                  # must pass; currently 27 checks
+node tools/probe/lib/selftest.mjs                  # must pass; currently 27 checks
 git rev-parse --abbrev-ref HEAD        # expect test/dday-e0-shape-revalidation
 git config user.email                  # must resolve to the alstjgg account
 ```
@@ -89,9 +88,9 @@ Then, for every probe, follow plan §7.3's order. The runner enforces steps 1–
 step 3 (the reachability audit, §5.2 B1) it cannot, so you write it:
 
 ```bash
-node run.mjs <suite> --print-prompt=live          # free — read it, every time
-node run.mjs <suite> --dry-run --out=/tmp/dry-x   # free
-node run.mjs <suite>                              # spends calls
+node tools/probe/run.mjs <suite> --print-prompt=live          # free — read it, every time
+node tools/probe/run.mjs <suite> --dry-run --out=/tmp/dry-x   # free
+node tools/probe/run.mjs <suite>                              # spends calls
 ```
 
 `--print-prompt` is not optional. A9 exists because nobody read a composed
@@ -124,7 +123,7 @@ The S1 recipe, which took 공감 from 0/10 to 9/10 at p = 0.00006:
    Four stances is plenty.
 4. **Run the lint**, every suite, no exceptions:
    ```bash
-   node infra/test-harness/lint-stances.mjs <suite.json>
+   node tools/probe/lint-stances.mjs <suite.json>
    ```
    It flags labels reusing the fixture temperament's vocabulary. A common noun
    may be unavoidable; a word naming the clause's condition or its prescribed

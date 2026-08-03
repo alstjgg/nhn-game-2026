@@ -53,8 +53,8 @@ documents.
 | # | Stage | Transformation | State |
 |---|---|---|---|
 | 0 | Write | brief + guide → scenario draft (md, `/write-scenario` §4 format, gate cards in yaml) | running |
-| 1 | Compile | draft → datapack ([contract](./contract-datapack.md) §1) | **deterministic script** (`infra/scenario-pipeline/compile-datapack.mjs`, zero deps, zero calls). The draft format (write skill §4) is its parse contract — unparseable drafts fail compile instead of being guessed at. No LLM touches this stage: pack sentences are the mining vein, and a silent paraphrase would break key conditions invisibly |
-| 2 | Lint | datapack → violation list | rules bound in [contract](./contract-datapack.md) §3; implemented in `infra/scenario-pipeline/lint-datapack.mjs` |
+| 1 | Compile | draft → datapack ([contract](./contract-datapack.md) §1) | **deterministic script** (`authoring/compile-datapack.mjs`, zero deps, zero calls). The draft format (write skill §4) is its parse contract — unparseable drafts fail compile instead of being guessed at. No LLM touches this stage: pack sentences are the mining vein, and a silent paraphrase would break key conditions invisibly |
+| 2 | Lint | datapack → violation list | rules bound in [contract](./contract-datapack.md) §3; implemented in `authoring/lint-datapack.mjs` |
 | 3 | Paper check | datapack + draft → verdict memo (hardening manual §6: timeline preemption · fixture slack · escape options) | manual exists; one human pass |
 | 4 | Probe | gate card → suite JSON → 30-call metrics | suite format is the harness's existing format, unchanged |
 | 5 | Run | datapack → run record ([contract](./contract-run-artifacts.md) §1) | in progress — [`handoffs/datapack.md`](./handoffs/datapack.md) is the data-track half |

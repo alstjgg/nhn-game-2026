@@ -1,0 +1,30 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /dday/call",
+  "rawPath": "/dday/call",
+  "rawQueryString": "",
+  "headers": {
+    "content-type": "application/json",
+    "origin": "https://alstjgg.github.io"
+  },
+  "requestContext": {
+    "accountId": "141840355276",
+    "apiId": "local",
+    "domainName": "local",
+    "domainPrefix": "local",
+    "requestId": "local-call",
+    "routeKey": "POST /dday/call",
+    "stage": "$default",
+    "time": "01/Jan/2026:00:00:00 +0000",
+    "timeEpoch": 1767225600000,
+    "http": {
+      "method": "POST",
+      "path": "/dday/call",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "smoke"
+    }
+  },
+  "body": "{\"call_type\":\"judgment\",\"template_version\":\"v0.4\",\"slots\":{}}",
+  "isBase64Encoded": false
+}

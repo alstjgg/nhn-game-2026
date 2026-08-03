@@ -17,7 +17,8 @@
 | Artifact | Role | Drift guard |
 |---|---|---|
 | **This document** | **The law.** Field order, types, and validation grade are normative here | — |
-| `infra/test-harness/lib/calltypes.mjs` + `templates/` | The harness's executable form; 1:1 with this document (§10) | manual — reviewed on change |
+| `tools/lib/calls.mjs` | The executable form of the output schemas; 1:1 with this document (§10) | manual — reviewed on change |
+| `proxy/prompts/` · `data/prompts/` | The two prompt layers, split by supplier (§6) | manual |
 | `src/shared/contracts.ts` | TypeScript transcription for engine/composer/client | ⚠️ **none.** Hand-written. Unlike `datapack.ts`, which is generated from its schemas, this transcription can drift silently. Treat a disagreement as a bug in one of the two, and check both when editing either |
 
 ## 1. Rules that apply to every call
@@ -406,14 +407,34 @@ was **a design under which no difference could have been observed** (A20). That
 run supports neither keeping nor deleting the field; §7-7's disposition is a
 design judgment, not a comparison result.
 
-## 10. Relationship to the harness
+## 10. Where this contract is executable
 
-This contract corresponds 1:1 to `infra/test-harness`'s call-type definitions
-(`lib/calltypes.mjs` + `templates/`). In the harness, slot values are supplied by
-hand-authored suite JSON; in production they come from the §6 suppliers — **the
-contract is the same and only the supplier differs.** Switching to proxy
-transport is a shape change and carries one revalidation run (EXTENDING.md,
-Recipe D).
+The output schemas live as code in
+[`proxy/src/calls.ts`](../proxy/src/calls.ts),
+1:1 with §2–§4. Both prompt layers live in that tier too, because the proxy
+renders them (physical architecture §3.10):
+
+| Artifact | Path |
+|---|---|
+| system layer (the default prompt) | `proxy/prompts/<call>/base-v*.md` |
+| user layer | `proxy/prompts/<call>/user-v*.md` |
+| `FLAW` `INCIDENT` `PRIORITY_LIST` | `proxy/src/default-prompt.ts` |
+| temperament | `data/scenario/<slug>/temperament.json`; `tools/probe/fixtures/temperament/` holds the probe's prose stand-ins |
+
+The client posts `{call_type, template_version, slots}` and nothing else. Slots
+this tier owns are **ignored** when a client sends them — honouring them would
+let a client rewrite the agent's character.
+
+`tools/probe/` supplies slot values from hand-authored suite JSON; in production
+they come from the §6 suppliers — **the contract is the same and only the
+supplier differs.** Switching to proxy transport is a shape change and carries
+one revalidation run (EXTENDING.md, Recipe D); until that transport exists, no
+measurement has passed through the tier that will actually ship.
+
+⚠️ **The probe keeps its own renderer** (`tools/lib/{compose,calls}.mjs`) because
+it measures offline. `proxy/tests/prompt-parity.test.ts` holds
+the two to byte identity — without it, the measurements stop describing the
+deployed system silently.
 
 Living in `data/` as data: stance sets, gate graph, delta tables, thresholds,
 length policy.

@@ -1,6 +1,6 @@
 # runs/ — measured artifacts only
 
-One directory per experiment, written by `infra/test-harness`:
+One directory per experiment, written by `tools/probe`:
 
 ```
 <EXP>-calls/

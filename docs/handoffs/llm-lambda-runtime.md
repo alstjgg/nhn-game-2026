@@ -2,7 +2,7 @@
 
 This is the operating guide for the Apothecary dialogue Lambda. For the API
 contract and implementation map, see
-[`services/apothecary-llm-layer/README.md`](../../services/apothecary-llm-layer/README.md).
+[`planning/legacy-services/apothecary-llm-layer/README.md`](../../planning/legacy-services/apothecary-llm-layer/README.md).
 
 ## Runtime
 
@@ -80,9 +80,9 @@ Key infrastructure files:
 
 | Responsibility | File |
 |---|---|
-| Application stack | `services/apothecary-llm-layer/template.yaml` |
-| OIDC roles and artifact bucket | `services/apothecary-llm-layer/deploy/github-actions-bootstrap.yaml` |
-| Replacement/deletion protection | `services/apothecary-llm-layer/deploy/application-stack-policy.json` |
+| Application stack | `planning/legacy-services/apothecary-llm-layer/template.yaml` |
+| OIDC roles and artifact bucket | `planning/legacy-services/apothecary-llm-layer/deploy/github-actions-bootstrap.yaml` |
+| Replacement/deletion protection | `planning/legacy-services/apothecary-llm-layer/deploy/application-stack-policy.json` |
 | CI/CD | `.github/workflows/llm-layer.yml` |
 
 ## Local verification
@@ -90,7 +90,7 @@ Key infrastructure files:
 These checks do not require AWS credentials or call Bedrock:
 
 ```bash
-cd "$(git rev-parse --show-toplevel)/services/apothecary-llm-layer"
+cd "$(git rev-parse --show-toplevel)/planning/legacy-services/apothecary-llm-layer"
 npm ci
 npm run check
 npm run sam:validate
@@ -137,7 +137,7 @@ live dialogue, CORS, body-limit, and CloudWatch telemetry checks after deploy.
 ### Manual application deployment
 
 ```bash
-cd "$(git rev-parse --show-toplevel)/services/apothecary-llm-layer"
+cd "$(git rev-parse --show-toplevel)/planning/legacy-services/apothecary-llm-layer"
 aws sso login --profile nhn-game --use-device-code
 npm run aws:preflight
 npm run check
@@ -164,7 +164,7 @@ The separate bootstrap stack owns the OIDC provider, deployment roles, and
 artifact bucket. Update it only with local SSO:
 
 ```bash
-cd "$(git rev-parse --show-toplevel)/services/apothecary-llm-layer"
+cd "$(git rev-parse --show-toplevel)/planning/legacy-services/apothecary-llm-layer"
 aws sso login --profile nhn-game --use-device-code
 npm run aws:preflight
 npm run bootstrap:validate
@@ -251,7 +251,7 @@ own SSO identity:
    `LlmExecutionRole` policy modification and nothing else:
 
 ```bash
-cd "$(git rev-parse --show-toplevel)/services/apothecary-llm-layer"
+cd "$(git rev-parse --show-toplevel)/planning/legacy-services/apothecary-llm-layer"
 aws sso login --profile nhn-game --use-device-code
 npm run aws:preflight
 npm run check

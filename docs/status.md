@@ -3,6 +3,62 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-03) — repo structure settled · the proxy is real
+
+**`infra/` is gone, and `services/` with it.** One folder,
+`infra/test-harness/`, was holding the production system prompts, the three
+calls' output schemas, the payload composer's prototype, and an embryonic
+full-run driver, so none of physical architecture §3.1's boundaries were visible
+in the tree. Four roots now, split on what each thing actually is:
+
+| Root | Job | Runs |
+|---|---|---|
+| `src/` | the browser bundle + isomorphic core | browser (+ Node for engine/composer) |
+| `authoring/` | datapack compile · lint · type generation | Node, before anything else exists |
+| `tools/` | probe runner · beat driver · shared libs | Node, never reachable from index.html |
+| `proxy/` | the LLM tier — Lambda → Bedrock | AWS, outside the root install |
+
+Experiment vocabulary (arm, channel, placebo, harness) is confined to
+`tools/probe/`. Two undeployed backends moved to `planning/legacy-services/` —
+nothing calls either, and the deployed `demos/apothecary/` runs stub-only.
+
+**✅ Decision — the proxy renders both prompt layers** (physical §3.10). The
+client posts `{call_type, template_version, slots}`; "user" there is the Messages
+API message *role*, not the player. Rendering needs the slot renderers, and the
+tool schema is built *from* a slot value, so the renderers and output schemas
+followed the templates into `proxy/`. The call contract's executable form went
+from three copies to one, and `src/shared/contracts.ts` narrows to the payload
+envelope.
+
+The cost is two renderers — the probe measures offline and cannot reach a
+Lambda. `proxy/tests/prompt-parity.test.ts` holds them to byte identity;
+mutation-tested, 8 of 9 renderer mutations turn it red and the 9th is unreachable
+with the current templates.
+
+**Verified across the move:** all three call types compose byte-identical system
+and user messages before and after; probe selftest 44/44; proxy 36/36;
+`npm run build` green. **Not done: zero real Bedrock calls** — no deploy, no AWS
+smoke.
+
+**Run records** go to `artifacts/runs/` and `artifacts/reports/`, committed — not
+under `data/`, which is copied into `dist/` (§3.7) and would publish every
+measured run to the web.
+
+### TBD audit — what blocks running the tracks in parallel
+
+The criterion is that any interface two work units cross must be specified before
+the fan-out, or parallel agents each invent a different signature.
+
+| Boundary | Specified | Missing |
+|---|---|---|
+| composer ↔ proxy | implemented, 36 tests | the HTTP envelope is in code and READMEs, not in a contract document; `src/shared/contracts.ts` still types the proxy-owned slots as client-supplied and is **stale** |
+| state engine ↔ composer | call contracts §6 supplier map | the module interface entirely — no engine snapshot type, no `temperament.json` → prose renderer (the probe uses hand-written `.md` fixtures), and "round event assembler" appears once in a §6 diagram with no owner. **This is the blocker** |
+| consumer rules | §6 "Consumer per output" maps where fields flow | what production does with a soft failure, who isolates `inner_note` to Call 3, who appends `timeline_entries` |
+| `ui` | plan-game-design §6 brief, explicitly plan-tier | a spec, and the five U-owned parameters in architecture spec §9. PR #106 claims the track for 민서 and names a UI/UX spec & contract document as its next artifact — that closes this row |
+
+Also open: the `dist/data` copy plugin (§3.7) still does not exist, and without a
+`proxy` transport no measurement has crossed the tier that ships.
+
 ## Status (2026-08-02)
 
 **시나리오 확정 + 첫 데이터팩 존재.** 우는다리로 확정(민서 결정), 데이터 트랙
@@ -79,11 +135,12 @@ wiring and runtime · **client (미배정)** — player-facing surface.
 
 ## Next steps (priority order)
 
-1. **Root scaffolding** — physical architecture §3.8 steps 1–2: module folders,
-   the three tsconfigs, `build` running `check`, and **verify the Pages deploy
-   before anything else lands**. This is no longer the gate for the data track
-   (its types are normative in `data/scenario/_schema/`, which exists), but it
-   is still the gate for the engine and composer: they have nowhere to live.
+1. **Specify the composer ↔ engine boundary** — the engine snapshot type, the
+   `temperament.json` → prose renderer, and where the round event assembler
+   lives. See the TBD audit above: this is what blocks the three tracks running
+   in parallel. (Root scaffolding is done — §3.8 steps 1–2 and 4 landed 08-03;
+   `tsconfig.tools.json` is deferred until `tools/` has a `.ts` file, and the
+   `data/` copy plugin is step 3, still open.)
 2. **Minimal engine** (doubles as the W4 check) + Bedrock production path. **Its
    first datapack already exists** — `data/scenario/우는다리/`, lint ERROR 0,
    G1 hand-hardened (buckets, deltas, meter bindings to the spec's provisional
@@ -141,7 +198,7 @@ wiring and runtime · **client (미배정)** — player-facing surface.
 - 2026-08-01 — **물리 아키텍처 §3 확정 + 최소 엔진 명세 v0.** 레이아웃은 plain
   folder (npm workspaces 미채택) + tsconfig 3벌 — `core`에서 `DOM` lib를 빼서
   isomorphism 제약을 **컴파일 에러로 강제**한다. 프록시는
-  `services/apothecary-llm-layer/`의 복제본이며 살아 있는 스택은 건드리지
+  `planning/legacy-services/apothecary-llm-layer/`의 복제본이며 원본은 건드리지
   않는다. `src/shared/`는 파일로 소유를 가른다(`datapack.ts` 민서 /
   `contracts.ts` 윤석), **타입은 코드가 정본**(→ 08-02 항목이 뒤집음). 엔진
   명세는 요청서 §6의 다섯
@@ -175,7 +232,7 @@ wiring and runtime · **client (미배정)** — player-facing surface.
   no gpt-image-1/OpenAI in deployment; apothecary's portrait endpoint is dev-time tooling.
 - 2026-07-25 — LLM backend direction settled: stateless proxy, GitHub Pages → API Gateway →
   Lambda → Bedrock Converse, per `docs/llm-backend-aws-bedrock.md` (PR #48). PR #15's
-  `services/agent-arena-api/` merged as a **superseded reference implementation** — kept for
+  agent-arena API merged as a **superseded reference implementation** (at `services/agent-arena-api/`; archived to `planning/legacy-services/` on 08-03) — kept for
   history and salvage (closed-action validation, contract shapes), never deployed.
 - 2026-07-25 — AWS account live and verified: personal account `141840355276`, IAM Identity
   Center (both members), CLI profile `nhn-game`, budget alarms, and both candidate models

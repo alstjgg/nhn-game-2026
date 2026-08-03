@@ -13,7 +13,7 @@
 ## Status (2026-07-24)
 
 The first self-contained backend slice is implemented at
-`services/agent-arena-api/`.
+`planning/legacy-services/agent-arena-api/`.
 
 - Node.js + TypeScript REST/SSE service with an OpenAPI contract
 - allowlisted model, Prompt, Skill, MCP and harness registries
@@ -180,8 +180,8 @@ must remain visible as unconfigured/unverified in `GET /v1/capabilities`.
 ## References
 
 - `docs/agent-arena-api-usage.md`
-- `services/agent-arena-api/README.md`
-- `services/agent-arena-api/openapi.yaml`
+- `planning/legacy-services/agent-arena-api/README.md`
+- `planning/legacy-services/agent-arena-api/openapi.yaml`
 - `docs/agent-arena-api-live-test-2026-07-24.md`
 - [Agent Arena brief](https://github.com/alstjgg/nhn-game-2026/blob/main/docs/agent-arena-brief.md)
 - `docs/game-concept-agent-roguelike.md`

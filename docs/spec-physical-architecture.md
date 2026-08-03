@@ -50,25 +50,50 @@ Whatever layout §3 chooses must preserve these:
 ### 3.1 The layout
 
 ```
-src/
+src/                      the browser bundle + the isomorphic core
   shared/      datapack + call-contract types (transcriptions) ← no DOM, no fs
   engine/      state machine: delta → bucket → edge, journal ← no DOM, no fs
   composer/    datapack + state + blocks → call slots        ← no DOM, no fs
   client/      Vite app — the only place DOM exists
   main.ts      browser entry (referenced by index.html)
-data/scenario/<slug>/     datapacks (balance-as-data, §2 constraint 5)
-tools/                    Node-only: compile · lint · suite-gen · run driver · policy bot
-infra/test-harness/       existing probe harness — unchanged, stays put
-services/dday-llm-proxy/  Lambda proxy (SAM) — own package.json, own workflow
+
+authoring/                authoring-time preprocessing (data track, 민서):
+                          compile · lint · datapack-type generation
+tools/                    Node-only executables (architecture track, 윤석)
+  lib/         calls · compose · prompts · transport — probe and driver share these
+  probe/       the measurement program: suites, arms, channels, artifacts
+  driver/      drive-beat → the full-run driver
+
+proxy/                    the LLM tier — Lambda (SAM), outside the root install
+  prompts/<call>/         BOTH message layers; neither enters the bundle (§3.10)
+  src/                    handler · renderer · call schemas · Bedrock provider
+
+data/                     INPUTS only — copied into dist/ at build time (§3.7)
+  scenario/<slug>/        datapacks (balance-as-data, §2 constraint 5)
+  policy/                 report guidance, gameplay policies
+artifacts/                OUTPUTS — headless run records + metric reports (§3.9)
 public/assets/            static assets (each manifested)
 ```
 
 Dependency direction is one-way and total:
 
 ```
-client  →  composer  →  engine  →  shared
-tools   →  composer  →  engine  →  shared
+client     →  composer  →  engine  →  shared
+tools      →  composer  →  engine  →  shared
+authoring  →  (nothing of ours; it runs before the rest exists)
+proxy      →  (nothing of ours; a separate tier, reached over HTTP)
 ```
+
+`authoring/` is separated from `tools/` on the *when*, not the *who*: it runs
+before there is an engine, a TypeScript build, or a browser, which is exactly
+why the datapack's law is JSON Schema (below) rather than a TS type. `tools/`
+imports `src/` and executes the game's own code paths; `authoring/` may not.
+
+**Experiment vocabulary is confined to `tools/probe/`.** "Arm", "channel",
+"pre-registration", "placebo", "harness" are the measurement program's words.
+They do not appear in `src/`, `proxy/`, or `tools/{lib,driver}/` — the
+production composer composes one payload for one beat and has no second arm to
+compare it against.
 
 `shared` imports nothing of ours. `engine` never imports `composer` or
 `client`. Nothing imports `client`. A cycle here is a layering bug, not a
@@ -93,12 +118,12 @@ For the datapack that artifact is **JSON Schema, not TypeScript** (pipeline §3:
 runtime — it *describes* JSON but cannot *check* it, so code reading a pack
 through `datapack.ts` would simply be trusting the data. Packs must be
 validated where neither an engine nor a TS build exists yet: the compile and
-lint stages in `tools/`, before anything loads them. Data-contract rules like
+lint stages in `authoring/`, before anything loads them. Data-contract rules like
 "≥2 key examples per condition" or `^G[0-9]+$` have no TS expression at all.
 
 The cost of this arrangement is drift between schema and transcription, and it
 is paid structurally rather than by review: `datapack.ts` is **generated**
-from the schemas by `infra/scenario-pipeline/generate-datapack-types.mjs`
+from the schemas by `authoring/generate-datapack-types.mjs`
 (zero deps, deterministic; `--check` exits non-zero on drift, CI-able). A
 generated transcription cannot disagree with its source — the gap named here
 in the previous revision is closed (08-02). Constraints TS cannot express
@@ -113,13 +138,23 @@ lint stage, which is why the schemas remain the law.
 | `engine` | browser **and** Node | DOM, `fs`, `fetch`, timers, randomness, reading files |
 | `composer` | browser **and** Node | same as engine |
 | `client` | browser only | being imported by anything else |
-| `tools` | Node only | being reachable from `index.html` |
+| `tools` | Node only | being reachable from `index.html`; importing `services` |
+| `authoring` | Node only | importing anything of ours — it predates all of it |
+| `proxy` | its own tier | importing `src`; entering the root `npm ci` |
 
 **The engine never reads a file.** Datapacks arrive as already-parsed objects.
 Loading is host-specific (`fetch` in the browser, `fs` in Node), so it lives in
 `client` and `tools` respectively — never inside the isomorphic core. This is
 what makes §2 constraint 1 achievable rather than aspirational: there is no
 seam where a file read could sneak in.
+
+**The same rule governs prompt templates.** The user layer is authored content
+the *host* loads and hands to the composer as a string — `fetch` in the browser,
+`fs` in `tools/lib/prompts.mjs` — which is why it lives under `data/` and not
+beside the composer. A `?raw` import would resolve under Vite and fail at run
+time under Node's type stripping, the same trap §3.3 flags for `paths` aliases.
+The system layer is not loaded by the composer at all: it belongs to the proxy
+(§3.6).
 
 ### 3.3 Plain folders, not npm workspaces
 
@@ -131,9 +166,9 @@ One root `package.json`. Reasons, in order of weight:
 2. The isolation we actually need is *"engine must not touch DOM"*, and a
    package boundary does not enforce that — TypeScript does (§3.4). We would
    be paying workspace overhead for a guarantee it cannot give.
-3. `services/dday-llm-proxy/` is a separate deployment tier with its own
+3. `proxy/` is a separate deployment tier with its own
    dependency tree and its own workflow. It stays **outside** the root install
-   entirely, exactly as `services/apothecary-llm-layer/` already does.
+   entirely, exactly as `planning/legacy-services/apothecary-llm-layer/` already does.
 
 Cross-module imports are therefore **relative paths** (`../engine/state.ts`).
 
@@ -155,13 +190,19 @@ of a review comment.
 |---|---|---|---|
 | `tsconfig.core.json` | `src/shared`, `src/engine`, `src/composer` | `ES2023` — **no DOM** | enforces isomorphism |
 | `tsconfig.json` (existing) | `src` | `ES2023`, `DOM` | client build |
-| `tsconfig.tools.json` | `tools` | `ES2023` + `@types/node` | Node-side tools |
+| `tsconfig.tools.json` | `tools` | `ES2023` + `@types/node` | Node-side tools — **not yet created** |
 
 ```jsonc
-// package.json
-"check": "tsc -p tsconfig.core.json && tsc -p tsconfig.tools.json && tsc",
+// package.json — current
+"check": "tsc -p tsconfig.core.json && tsc && npm run datapack:check",
 "build": "npm run check && vite build"
 ```
+
+`tsconfig.tools.json` is deferred, not dropped: `tools/` is `.mjs` today and a
+tsconfig with no inputs is a build error, so it lands with the first `.ts` file
+under `tools/` (the full-run driver, once it imports the engine). What `check`
+gained instead is the datapack type-drift gate, which had been runnable but
+unwired.
 
 `deploy.yml` still calls `npm run build` and is untouched.
 
@@ -181,9 +222,9 @@ than incidental.
 Requires Node ≥ 22.18 for tool execution. Pages builds are unaffected — the
 deploy job only runs `npm run build`.
 
-### 3.6 The proxy lives at `services/dday-llm-proxy/`
+### 3.6 The proxy lives at `proxy/`
 
-**Start it as a copy of `services/apothecary-llm-layer/`, then edit the copy.**
+**Start it as a copy of `planning/legacy-services/apothecary-llm-layer/`, then edit the copy.**
 Not written from scratch, and not an edit to the original: that stack is
 deployed and live under a different route contract (`POST /ai/dialogue`), and
 DDAY needs the three call types of
@@ -201,8 +242,31 @@ the working one is never at risk.
 
 - New application stack; **reuse** the existing bootstrap stack (OIDC provider,
   deploy roles, artifact bucket) rather than standing up a second one.
-- `services/` is invisible to `deploy.yml` (it globs `demos/*/` and the root
+- `proxy/` is invisible to `deploy.yml` (it globs `demos/*/` and the root
   only), so nothing here can break Pages.
+
+**Correction (08-03): one route, not three.** The table above says "route table
+→ the DDAY call **routes**". That was wrong. The three call types share auth,
+body validation, timeout, and fallback and differ only in an output schema, so
+three routes are three copies of one handler with one line changed. It is
+`POST /dday/call` with `call_type` in the body, plus `GET /dday/health`.
+
+**Copied 08-03** — `proxy/` now holds the transport half:
+config validation, the origin/content-type/body-size checks, the error envelope,
+`template.yaml` (narrowed to haiku — the `AllowedProfileMode` parameter and the
+Nova IAM branches are gone, and the samconfig `[elevated]` profile went with
+them), the bundle smoke, and 19 tests. `src/call-service.ts` throws 501 on
+purpose: what goes inside depends on §3.10, and guessing would bake in the wrong
+answer.
+
+**The system prompt layer already lives there**, ahead of the handler:
+`proxy/prompts/<call>/base-v*.md`. Call contracts §6 names the
+proxy as the supplier of `FLAW`, `INCIDENT`, and `PRIORITY_LIST`, so those files
+were never the probe's to own — and leaving them in the probe would have meant
+the handler was written against a *copy*, with nothing to keep the two in step.
+Until the handler exists, `tools/` reads them off disk; that is a filesystem
+read from a sibling directory, not a module edge, and it closes when the `proxy`
+transport lands.
 
 ### 3.7 ⚠️ Datapacks do not currently reach the browser
 
@@ -212,7 +276,10 @@ serves `public/` only, and `data/` is outside it, so nothing copies it into
 `dist/`. Nobody has hit this because no datapack exists yet.
 
 Resolution taken here: a **build-time copy** — a small `closeBundle` plugin in
-`vite.config.ts` copies `data/` into `dist/data/`. Constraint 5 keeps the
+`vite.config.ts` copies `data/` into `dist/data/`. It must copy
+`scenario/`, `prompts/`, and `policy/` **by name, not `data/` wholesale**:
+`data/` holds inputs, and anything that ever lands there as an *output* would
+otherwise be published to the web on the next deploy. Constraint 5 keeps the
 authored location, constraint 3 gets satisfied, `deploy.yml` stays untouched,
 and the client fetches `${import.meta.env.BASE_URL}data/scenario/<slug>/…` —
 matching §1's "datapacks fetched as static JSON".
@@ -224,28 +291,98 @@ being fetchable as data).
 
 ### 3.8 Migration order
 
-The root is still the placeholder Vite skeleton (`src/main.ts` + `style.css`).
-Steps 1–2 are prerequisites for anyone building against this document.
+1. ✅ `src/{shared,engine,composer,client}/` created; `main.ts` is a two-line
+   entry.
+2. ✅ `tsconfig.core.json` added and `build` runs `check` first.
+   `tsconfig.tools.json` is deferred until `tools/` has a `.ts` file (§3.4).
+3. ⬜ The `data/` copy plugin (§3.7) — **still missing**, and now blocking two
+   things rather than one: datapacks and the user prompt layer both reach the
+   browser through it.
+4. ✅ `infra/` dissolved into `authoring/` + `tools/` (revision 08-02, below).
+5. ⬜ `proxy/`'s handler, and the `proxy` transport that lets
+   the probe measure the tier that actually ships.
 
-1. Create `src/{shared,engine,composer,client}/`; move the placeholder render
-   loop into `src/client/` so `main.ts` is a two-line entry.
-2. Add `tsconfig.core.json` + `tsconfig.tools.json`; switch `build` to run
-   `check` first. **Verify Pages still deploys before anything else lands.**
-3. Add the `data/` copy plugin (§3.7).
-4. `tools/` and `services/dday-llm-proxy/` as their work starts.
+**Revision 08-02 — `infra/` is gone.** The previous revision said the probe
+harness "does not move… relocating it buys nothing and costs provenance". Both
+halves turned out to be wrong. It bought the separation this section is *for*:
+the probe was holding the production system prompts, the call schemas, the
+composer prototype, and an embryonic full-run driver in one folder, so no
+boundary in §3.1 was observable in the tree. And it cost no provenance — the
+recorded artifacts live under `planning/dday-mechanism/runs/`, never moved, and
+the code went by `git mv`.
 
-`infra/test-harness/` does not move. It is `.mjs`, has no dependency on `src/`,
-and its recorded artifacts are reproducibility evidence — relocating it buys
-nothing and costs provenance.
+Verified at the move: the three call types compose byte-identical system and
+user messages before and after, and the offline suite passes 44/44.
+
+`infra/scenario-pipeline/` became `authoring/` rather than folding into
+`tools/`, on the *when* argument in §3.1.
 
 ### 3.9 Left open
 
+- ✅ **Where headless run records are written — `artifacts/`, committed** (08-03).
+  `artifacts/runs/<pack>/<policy>/<run-id>.json` and `artifacts/reports/`. They
+  are committed because they are gameplay-measurement evidence and LLM output is
+  not reproducible, so a deleted record cannot be regenerated. They are **not**
+  under `data/`: that directory is inputs, it is copied into `dist/` (§3.7), and
+  putting outputs there would publish every measured run to the web. Probe
+  artifacts are unaffected and stay at `planning/dday-mechanism/runs/`.
 - **Where the run-loop manager's between-run state is written.** §1 says
   `localStorage`; whether `tools/` mirrors it to disk for headless multi-run
   measurement is the run-loop manager's own design decision.
 - **Whether `src/client/` subdivides.** Deliberately unbound — the client track
   has no owner yet, and its internal structure is that owner's to set. The only
   binding constraint is the arrow direction in §3.1.
+- ✅ **How the call contract stays single-sourced** — largely closed by §3.10
+  (08-03). The output schemas now live once, in the proxy. What remains is the
+  probe's renderer, held to byte identity by the parity gate, and
+  `src/shared/contracts.ts`, which narrows to the payload envelope. Neither is a
+  second copy of a schema.
+- **Whether the default prompt is per-scenario.** `default-prompt.ts` holds one
+  global FLAW/INCIDENT/PRIORITY_LIST, copied from the measured suite. A second
+  scenario wanting a different flaw turns it into a lookup, and the payload has to
+  name the pack.
+
+### 3.10 ✅ The proxy renders both message layers (decided 08-03)
+
+Note that "user" here is the Messages API message *role*, not the player — the
+player never authors either layer (the membrane rule).
+
+**The client posts slot values; the proxy renders.** Payload is
+`{call_type, template_version, slots}`. Prompt text exists once, in one tier;
+iterating a sentence is a proxy deploy and never touches the bundle; and the
+composer's job is exactly what the design already called it — slot assembly.
+The rejected alternative had the composer render the `user` message and post the
+text, which puts prompt wording in the bundle and behind a Pages redeploy.
+
+**Three things followed the templates across, and this is the part worth
+noticing.** Rendering needs the slot renderers, and the tool schema is built
+*from* a slot value (`stance` enumerates `STANCE_SET`), so:
+
+| Moved to `proxy/src/` | Was |
+|---|---|
+| `prompt.ts` — renderers, slot filling | `tools/lib/compose.mjs` (prototype) |
+| `calls.ts` — the three output schemas + validation | `tools/lib/calls.mjs` |
+| `default-prompt.ts` — FLAW · INCIDENT · PRIORITY_LIST | suite slots |
+
+So the contract's executable form is now **one** copy, not the three §3.9
+worried about. `src/shared/contracts.ts` narrows to the payload envelope —
+what the client sends and receives — which it can hold without duplicating a
+schema.
+
+**Consequence for the probe, and it is not free.** `tools/lib/{compose,calls}.mjs`
+still exist, because the probe measures offline against the Anthropic API and
+cannot reach a Lambda. Two renderers, one claim — "the mechanism numbers describe
+the deployed system". `proxy/tests/prompt-parity.test.ts`
+composes real suites through both and requires byte identity; it is the only
+thing keeping that claim true, and it is the one sanctioned place code crosses
+the tier boundary (a drift gate has to see both sides).
+
+⚠️ **Probe channels that vary a proxy-owned slot can no longer be reproduced
+through the production path.** C-STRUCT (`PRIORITY_LIST`), CREDULITY (`FLAW`),
+and D-INCIDENT (`INCIDENT`) all inject into the default prompt, and the proxy
+ignores those slots from a client by construction. C-STRUCT is already dropped,
+but CREDULITY is a live contingency arm on the C-BLOCK sheet — running it against
+production would need a deploy-time parameter, not a payload field.
 
 ## 4. Out of scope
 
