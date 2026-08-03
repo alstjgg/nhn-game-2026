@@ -22,5 +22,12 @@
     "lib": ["ES2023"],
     "types": []
   },
-  "include": ["src/shared", "src/engine", "src/composer"]
+  "include": [
+    "src/shared",
+    "src/engine",
+    "src/composer",
+    "src/transport",
+    "src/driver",
+    "src/runloop"
+  ]
 }

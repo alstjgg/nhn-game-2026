@@ -29,11 +29,17 @@ touching it will collide mid-flight) · AWS deployment or a real Bedrock call
 edit to `docs/design/` or the scenario pack (findings → `DISCOVERY.md`) ·
 `authoring/` · `tools/probe/`.
 
-**Standing condition, from the client build and repeated here:** never touch
-`tsconfig.core.json`'s `include`, and never add a path alias. That file is the
-mechanical isomorphism guard (physical §3.4–3.5); type stripping does not read
-`tsconfig.json`, so an alias fails at run time in the headless driver rather
-than at build.
+**Standing condition:** never **remove** anything from `tsconfig.core.json`'s
+`include`, and never add a path alias. That file is the mechanical isomorphism
+guard (physical §3.4–3.5); type stripping does not read `tsconfig.json`, so an
+alias fails at run time in the headless driver rather than at build.
+
+The client build's version of this condition says "never touch `include`", which
+was right for a build that adds no isomorphic folder. This one adds three
+(`transport`, `driver`, `runloop` — physical §3.1, revised 08-03), and they are
+**worthless outside the guard**: a DOM reference in the live driver has to fail
+the build. Extending `include` is e0's job and nobody else's; removing an entry
+is what stays forbidden.
 
 ## 2. Environment & gates
 
@@ -57,7 +63,7 @@ than at build.
 | 6 | Sentence ids are **engine-minted**; channels `f·b·n·q` plus **`u`** for Call 1's utterance; symptoms carry **no** id | contract-engine-composer §2.0 |
 | 7 | `BLOCKS` arrives as a **set of ids**, composer sorts **lexicographically** | contract-engine-composer §3 |
 | 8 | Fallbacks are graded fatal / local / supply-cut, with concrete per-call behaviour | spec-engine §5 |
-| 9 | `PRESENT_NPCS` **may be empty**; when it is, `npc_lines` must be empty | contract-calls §6 |
+| 9 | `PRESENT_NPCS` **may be empty**. Nothing validates that `npc_lines` is then empty — a foreign speaker is *soft*, and **the engine drops the line** on the way to the timeline | contract-calls §6 |
 | 10 | A round **begins with a gate**; beats before the first gate belong to no round and get no report | spec-engine §3.1 |
 | 11 | NPC meters beyond the bound pair are authoring annotation, **not** engine state | spec-engine §1.1a |
 | 12 | meta-state lives in `sessionStorage` | physical §1.1 |
@@ -69,7 +75,7 @@ Dependencies are real; the waves at the end are illustrative.
 
 | id | title | deps | verification (own slice) |
 |---|---|---|---|
-| **e0** | `src/shared/` seam types: import `view-driver.ts` (client build owns the file — **consume, never edit**); `id.ts` minting + parsing for the six channels; `segment.ts` report-body segmenter | — | vitest: id round-trip; **golden test** on the segmenter (spec-client §5.2 requires one) |
+| **e0** | **extend `tsconfig.core.json`'s `include` with `src/transport`, `src/driver`, `src/runloop`** (physical §3.1) · `src/shared/` seam types: import `view-driver.ts` (client build owns the file — **consume, never edit**); `id.ts` — minting + parsing for the **five** minted channels (`f·b·n·q·u`); `t*` ids are inherited from `timeline.json`, never minted; `segment.ts` report-body segmenter | — | vitest: id round-trip; **golden test** on the segmenter (spec-client §5.2 requires one) |
 | **e1** | `src/shared/temperament.ts` + `report-guidance.ts` — structured pack/policy → the prose the bare `{TEMPERAMENT}` / `{REPORT_GUIDANCE}` slots expect | — | vitest: the four §4 invariants (byte-identical across Calls 1·3 · non-empty · deterministic · renders its own header) |
 | **e2** | `src/engine/` state core: variable init from bound meters · delta journal · `applyEffects` · symptom renderer (§2.3 in full, including the three hard errors) | e0 | vitest: §2.3 ordering, the `min`-descending first match, `(변화 없음)`, digit → throw |
 | **e3** | `src/engine/` beat & round driver: beat schedule from `timeline.json` × gate clocks · §4.1 and §4.2 ordering · round boundaries per decision 10 · `gateView`/`beatView`/`roundView` | e2 | vitest: delta-before-predicate (§7-5) · effects-before-Call-2 · **no report for a pre-gate beat** · views are snapshots |

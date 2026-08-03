@@ -101,6 +101,8 @@ undetected. This table is the index; the owning document remains the authority.
 | `facts` grammatical person · report length | L → U | **open** | [`contract-calls.md`](./contract-calls.md) §7 #1, #3 |
 | Datapacks do not currently reach the browser; resolution is a build-time copy plugin, not yet built | 윤석, self | **open** | [`spec-physical-architecture.md`](./spec-physical-architecture.md) §3.7 · §3.8 step 3 |
 | `contracts.ts` has no drift guard, unlike `datapack.ts` | 윤석, self | **open** | §3 above |
+| `spec-client` §2.1 puts the **live** driver inside `src/client/driver/`; it must live at `src/driver/` so `tools/` can reach it for headless runs ("nothing imports `client`"). The fixture driver stays where it is | 윤석 → 민서 | **open** — one parenthetical | [`spec-physical-architecture.md`](./spec-physical-architecture.md) §3.1 |
+| Channel → `Species` map is undefined. `Species` is declared and "species derives from the channel" is ratified, but no document says which channel yields which species — it blocks fixture generation (u2) and id minting (e0) | 윤석 → 민서 | **open** | [`spec-client.md`](./spec-client.md) §5.2 |
 | Temperament prose shape — the pack is structured, the prompt wants prose, and no authored exemplar exists for a real pack | 윤석 → S + D | **open** | [`contract-engine-composer.md`](./contract-engine-composer.md) §4.1 |
 | `AGENT_UTTERANCE` missing from the call-contract supplier table | 윤석, self | ✅ **resolved 08-03** — row added | [`contract-calls.md`](./contract-calls.md) §6 |
 | Where a production **soft flag** is recorded — the run record has `fallbacks[]`, and a soft flag is not a failure | 윤석 → 민서 | **open**, not a defect until P2 wants the number | [`contract-calls.md`](./contract-calls.md) §6 |

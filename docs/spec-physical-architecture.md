@@ -73,9 +73,12 @@ Whatever layout §3 chooses must preserve these:
 
 ```
 src/                      the browser bundle + the isomorphic core
-  shared/      datapack + call-contract types (transcriptions) ← no DOM, no fs
+  shared/      datapack + call-contract + seam types, pure renderers ← no DOM, no fs
   engine/      state machine: delta → bucket → edge, journal ← no DOM, no fs
-  composer/    datapack + state + blocks → call slots        ← no DOM, no fs
+  composer/    engine views + blocks → call slots            ← no DOM, no fs
+  transport/   CallRequest → the proxy over HTTP             ← no DOM, no fs
+  driver/      binds engine + composer + transport; emits ViewEvent ← no DOM, no fs
+  runloop/     multi-run shell; meta-state behind an adapter ← no DOM, no fs
   client/      Vite app — the only place DOM exists
   main.ts      browser entry (referenced by index.html)
 
@@ -100,8 +103,10 @@ public/assets/            static assets (each manifested)
 Dependency direction is one-way and total:
 
 ```
-client     →  composer  →  engine  →  shared
-tools      →  composer  →  engine  →  shared
+client     →  driver  →  composer  →  engine  →  shared
+tools      →  driver  →  composer  →  engine  →  shared
+runloop    →  driver                          →  shared
+driver     →  transport                       →  shared
 authoring  →  (nothing of ours; it runs before the rest exists)
 proxy      →  (nothing of ours; a separate tier, reached over HTTP)
 ```
@@ -110,6 +115,16 @@ proxy      →  (nothing of ours; a separate tier, reached over HTTP)
 before there is an engine, a TypeScript build, or a browser, which is exactly
 why the datapack's law is JSON Schema (below) rather than a TS type. `tools/`
 imports `src/` and executes the game's own code paths; `authoring/` may not.
+
+**Six isomorphic folders, one DOM folder.** `transport`, `driver` and `runloop`
+joined the no-DOM set on 08-03: the headless full-run driver and the policy bot
+need all three, and physical §2 constraint 1 already required that the same
+modules run in both hosts. Putting the live driver inside `src/client/` instead
+would make it unreachable from `tools/` — "nothing imports `client`" — and force
+a second engine+composer binding for headless runs. That is the drift the
+prompt-parity test exists to prevent elsewhere, and it is not worth acquiring
+here. `src/client/driver/` keeps the **fixture** driver and wires to
+`src/driver/` in live mode.
 
 **Experiment vocabulary is confined to `tools/probe/`.** "Arm", "channel",
 "pre-registration", "placebo", "harness" are the measurement program's words.
@@ -210,7 +225,7 @@ of a review comment.
 
 | File | `include` | `lib` | Purpose |
 |---|---|---|---|
-| `tsconfig.core.json` | `src/shared`, `src/engine`, `src/composer` | `ES2023` — **no DOM** | enforces isomorphism |
+| `tsconfig.core.json` | `src/shared`, `src/engine`, `src/composer`, `src/transport`, `src/driver`, `src/runloop` | `ES2023` — **no DOM** | enforces isomorphism |
 | `tsconfig.json` (existing) | `src` | `ES2023`, `DOM` | client build |
 | `tsconfig.tools.json` | `tools` | `ES2023` + `@types/node` | Node-side tools — **not yet created** |
 
