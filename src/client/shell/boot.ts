@@ -6,7 +6,7 @@
 // window bodies stay empty here, [u3 · c10]), never computes the time (the
 // driver's clock is the only clock, [u3#c3]) and never counts runs (the `meta`
 // event does, spec-client §5.2 amendment d).
-import { createFixtureDriver } from '../driver/index.ts'
+import { createFixtureDriver, demoRun } from '../driver/index.ts'
 import type { ClockRate, FixtureDriver, Frame } from '../driver/index.ts'
 import { createGameClock } from '../components/game-clock.ts'
 import { createRunCounter } from '../components/run-counter.ts'
@@ -60,7 +60,7 @@ export async function bootShell(): Promise<void> {
   renderIdentity(identity)
 
   // 2 — the driver behind the §5.2 seam. Nothing above this line knows it.
-  const driver = createFixtureDriver(placeholderBootRun(identity))
+  const driver = createFixtureDriver((await demoRun()) ?? placeholderBootRun(identity))
 
   // 3 — the chrome the driver feeds.
   const clock = createGameClock({
