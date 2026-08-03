@@ -143,3 +143,36 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   a url whose tail is `assets/fonts/<path>.woff2` — the e2e spec maps that tail
   onto `<baseURL>assets/fonts/<path>`, which is how Vite serves `public/` under
   the `/nhn-game-2026/` base in both dev and build.
+- [u9d] `.claude/super/units/u9d.md`, `.../u9d/design.md` and `.../u9d/spec.md` are
+  **absent** in this worktree (`.claude/super/` holds only `progress.json`, and
+  the directory is gitignored). The unit was worked from the orchestrator's
+  inlined acceptance criteria plus `docs/spec-client.md` §2.1 / §3 inv 11–12 /
+  §6 / §7; the pinned DOM + module contract lives in
+  `.claude/super/units/u9d/tests.md` and in the header comments of the RED
+  suites. Whoever reconciles contracts should treat those as the source of truth
+  for this unit.
+- [u9d] The unit's `file_globs` list `src/client/debug/**`, `vite.config.ts`,
+  `tests/debug/**`, `e2e/debug-pane.spec.ts` — but the pane cannot mount without
+  a **three-line, flag-guarded dynamic import in `src/client/main.ts`**
+  (`if (__DEBUG_PANE__) void import('./debug/index.ts')…`). `index.html` and
+  `vite.config.ts` are both closed to it (c6 forbids a plugin), so main.ts is the
+  only integration point. The RED suite pins exactly that shape
+  (`tests/debug/flag-off-bundle.test.ts` › 'the reference guard'); the scope gap
+  is in the glob list, not in the design.
+- [u9d] `window.__shell` (u3's dev handle) exposes `frame()` and `drain()` only —
+  no `subscribe()`. The pane therefore reads the driver by polling `frame()`
+  through that handle rather than subscribing, which keeps it inside inv 12
+  (driver output only, no engine/composer import) but means it cannot observe
+  `MembraneOp`s: the driver has no op-emission channel. Until one exists, the
+  pane's op table is fed by its own observational `window.__debug.noteOp(op)` —
+  a recorder that never forwards to the driver. Whoever adds op emission at the
+  seam should re-point the table at it.
+- [u9d] Contradictory guidance on the §3.7 pack-copy plugin: the unit's read
+  scope says it "landed upstream with #114 — leave it exactly as it is", while
+  `u9d.md` c6 says "must not add the pack-copy plugin". This worktree's base
+  (508fcca) has an 8-line `vite.config.ts` with no `plugins` array at all, so
+  neither statement is testable as an absence. `tests/debug/build-flag.test.ts`
+  resolves it the only safe way: it does NOT ban a `plugins:` array (upstream may
+  bring one), it bans this unit from pulling a copy-plugin PACKAGE
+  (`viteStaticCopy`/`rollup-plugin-copy`), from adding `alias`, and from changing
+  `base`. If #114 merges before integration, that suite stays green untouched.

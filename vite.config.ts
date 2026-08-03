@@ -38,13 +38,24 @@ function copyPackData(): Plugin {
   }
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   base: '/nhn-game-2026/',
   plugins: [copyPackData()],
+
+  // [u9d#c6] spec-client §3 invariant 11 — the debug pane is build-flag only.
+  // A `define` and not an env lookup on purpose: the value is a literal the
+  // bundler constant-folds, so the `if (__DEBUG_PANE__)` guard in
+  // `src/client/main.ts` becomes `if (false)` in the player build and the
+  // guarded dynamic import is dropped whole. A runtime check would leave the
+  // pane's code in the bundle, flag or no flag.
+  define: {
+    __DEBUG_PANE__: JSON.stringify(mode !== 'production'),
+  },
+
   server: {
     // The client posts to a same-origin path, so the browser sends the dev
     // origin the proxy is configured to accept. In production
     // `VITE_PROXY_BASE_URL` points at API Gateway instead (call contracts §11).
     proxy: { '/dday': { target: 'http://localhost:8787', changeOrigin: false } },
   },
-})
+}))
