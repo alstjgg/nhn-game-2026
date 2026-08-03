@@ -283,8 +283,10 @@ seconds; the reversal is the reward of a later run.
 
 ## 6. UX/UI
 
-Three screens, one per beat of the loop. **The client track has no owner yet;
-this section is the brief its owner inherits.**
+Three screens, one per beat of the loop. **Owner: 민서 (claimed 2026-08-03,
+minimal-first — see status.md); this section is the brief that track
+inherits.** The forthcoming UI/UX spec & contract document becomes the
+implementation SSoT; until it lands, this section stands.
 
 | Screen | Contents |
 |---|---|
@@ -322,7 +324,7 @@ workstream/roadmap tables of the 07-29 document; current sequencing lives in
 | # | Risk | Status / response |
 |---|---|---|
 | 1 | **Scenario density is the whole game.** Does density on paper become density in play? Thin, and the player looks for a skip button by run 3 | The largest risk. Only measurable in play. The policy-bot metrics (plan-pipeline §4) are the instrument: policy gap ≈ 0 means the pack is brute-forceable |
-| 2 | **The client track has no owner** | The largest *schedule* risk — deliverables #1 and #2 both depend on it, and it blocks the beat-granularity answer the data track is waiting on |
+| 2 | **The client track is single-threaded on a non-specialist** — claimed by 민서 (08-03), no frontend developer or designer on the team | Downgraded from "no owner". Response: two-phase minimal-first plan (status.md) — Phase 1 is an unstyled engine-verification UI; the beat-granularity answer unblocks with its pause structure |
 | 3 | A 30–60s spectacle video for a text detective game | Typography/document art direction is a separate task. The live-run ending is the climax candidate |
 | 4 | Real API latency and cost unmeasured at production payload | Blocked on the engine; measured the moment engine spec §7 criterion 1 passes |
 | 5 | C-BLOCK is adopted but **not fully verified** — placebo control, program-wide negative control, and blind coding remain | External phrasing stays at "the mechanism with the strongest measured evidence to date". Only the placebo control directly affects the game |

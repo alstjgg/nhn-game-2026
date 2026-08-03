@@ -32,7 +32,7 @@
 |---|---|---|---|
 | **Data pipeline** | 민서 (A) | Every data format between and inside the layers — what turns into what, and what flows where | Transformation chain (§2) · [datapack contract](./contract-datapack.md) incl. the lint ruleset · [run-artifact contract](./contract-run-artifacts.md) (what a finished run leaves behind, what persists between runs) · production base prompt template (the D task — the judgment call's default prompt that temperament composes into) · gameplay metric definitions (§4) |
 | **Architecture pipeline** | 윤석 (L) | The actual wiring — call paths, data hand-offs, runtime | Bedrock production path · minimal engine, **including score evaluation at the terminal clock** · payload composer (the runtime side of call contracts §6) · full-run driver · **run-loop manager** (multi-run shell: run counter, depth-gated exposure, prompt carry-over, report archive) · gate-card → suite generator · policy-bot runner · **physical architecture** ([the doc](./spec-physical-architecture.md) — §3 layout filled; further changes by revision) |
-| **Client** | — (unassigned) | The player-facing surface — how the player watches runs and touches the membrane | Observe surfaces (timeline · CCTV · call panel) · mining + slot-composition UI (pinboard with cap, species/axis tags) · report viewer with the client-driven typewriter · score/tally screen (absorbs report generation, latency rules 4–5) · run-loop shell UI (run history, prompt carry-over view) · the pause structure that binds the architecture spec §9 latency budget and report cadence (with L) · assets, each entered in `assets-manifest.json` |
+| **Client** | 민서 (claimed 08-03, minimal-first) | The player-facing surface — how the player watches runs and touches the membrane | Observe surfaces (timeline · CCTV · call panel) · mining + slot-composition UI (pinboard with cap, species/axis tags) · report viewer with the client-driven typewriter · score/tally screen (absorbs report generation, latency rules 4–5) · run-loop shell UI (run history, prompt carry-over view) · the pause structure that binds the architecture spec §9 latency budget and report cadence (with L) · assets, each entered in `assets-manifest.json` |
 
 ### 1.1 Executability check
 
@@ -41,7 +41,8 @@ compile → datapack → engine + composer + three calls → scored, repeatable 
 with depth-gated exposure — enough for stages 4–6 and the whole bake-off. All
 three tracks shipped = **playable by a human**. The client consumes and emits
 only what the other two tracks already bind, so it builds document-first like
-everything else; it carries no owner until one is assigned.
+everything else; 민서 claimed it 2026-08-03 on a two-phase minimal-first
+plan (status.md).
 
 ## 2. The transformation chain
 

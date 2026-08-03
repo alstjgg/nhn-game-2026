@@ -3,6 +3,21 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-03)
+
+**Client track claimed — 민서, minimal-first.** The client layer now has an
+owner, closing the "largest schedule risk" row (README §4 ·
+[plan-game-design.md](./plan-game-design.md) §7 risk 2 — both flip on their
+next revision). Plan is two-phased: **Phase 1** = a minimal working UI that
+renders engine output into something visible — its purpose is verifying the
+engine, with the UI serving as the test base. **Phase 2** = enhancement
+(typography/document-art direction per plan-game-design §6). The layer stays
+intentionally minimalistic — there is no frontend developer or designer on
+the team; it gives an idea of what could have been, not a blank. Next
+artifact on this track: a **UI/UX spec & contract document** that becomes the
+SSoT for implementation; until it lands, working decisions live in a local
+(untracked) WORKLINE file on 민서's machine.
+
 ## Status (2026-08-03) — repo structure settled · the proxy is real
 
 **`infra/` is gone, and `services/` with it.** One folder,
@@ -54,7 +69,7 @@ the fan-out, or parallel agents each invent a different signature.
 | composer ↔ proxy | implemented, 36 tests | the HTTP envelope is in code and READMEs, not in a contract document; `src/shared/contracts.ts` still types the proxy-owned slots as client-supplied and is **stale** |
 | state engine ↔ composer | call contracts §6 supplier map | the module interface entirely — no engine snapshot type, no `temperament.json` → prose renderer (the probe uses hand-written `.md` fixtures), and "round event assembler" appears once in a §6 diagram with no owner. **This is the blocker** |
 | consumer rules | §6 "Consumer per output" maps where fields flow | what production does with a soft failure, who isolates `inner_note` to Call 3, who appends `timeline_entries` |
-| `ui` | plan-game-design §6 brief, explicitly plan-tier | a spec, and the five U-owned parameters in architecture spec §9. PR #106 claims the track for 민서 and names a UI/UX spec & contract document as its next artifact — that closes this row |
+| `ui` | plan-game-design §6 brief, explicitly plan-tier | a spec, and the five U-owned parameters in architecture spec §9. The entry above claims the track and names a UI/UX spec & contract document as its next artifact — that is what closes this row |
 
 Also open: the `dist/data` copy plugin (§3.7) still does not exist, and without a
 `proxy` transport no measurement has crossed the tier that ships.
@@ -131,7 +146,8 @@ The demo concept tracks are closed — DDAY won. Current tracks are work lanes,
 not concepts; owners, questions, and deliverables live in
 [plan-pipeline.md](./plan-pipeline.md) §1:
 **data (민서)** — formats and transformations · **architecture (윤석)** —
-wiring and runtime · **client (미배정)** — player-facing surface.
+wiring and runtime · **client (민서, 08-03~)** — player-facing surface,
+minimal-first.
 
 ## Next steps (priority order)
 
@@ -156,9 +172,11 @@ wiring and runtime · **client (미배정)** — player-facing surface.
    is open — where `REPORT_GUIDANCE` lives (data track proposes
    `data/policy/report-guidance.json`, outside the pack).
 4. First-gate probe (P1), then full-run gameplay measurement (P2).
-5. Assign a client-track owner. **Still unassigned and the largest schedule
-   risk** — deliverables #1 and #2 depend on it. It also blocks one engine
-   answer the data track is waiting on: beat granularity (engine spec §8).
+5. Client track (민서, claimed 08-03): first the **UI/UX spec & contract
+   document** — it binds the §9 parameters owned by U (latency budget, report
+   cadence ratification, slot count, block-pool curation) and unblocks beat
+   granularity (engine spec §8) via the pause structure — then the phase-1
+   minimal UI (engine-verification test base).
 
 ## Open TODOs
 
@@ -166,6 +184,13 @@ wiring and runtime · **client (미배정)** — player-facing surface.
   competition page (deadline currently assumed ~2026-08-10).
 
 ## Decision log
+
+- 2026-08-03 — **Removed blocks are discarded, recovered by re-mining**
+  (민서·윤석 chat; recorded in spec-architecture §2.1). Slot composition is
+  free at build time; no discard inventory. Every past report stays readable
+  in the archive, with previously-slotted sentences highlighted; the
+  archive's segmentation must not expose gate structure to the player.
+  Presentation details bind with the UI pause structure (§9).
 
 - 2026-08-02 — **docs/ reorganised onto three tiers: `spec-` / `contract-` /
   `plan-`.** `spec-` is the normative authority for its domain (breaking it makes

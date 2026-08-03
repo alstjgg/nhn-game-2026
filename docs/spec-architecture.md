@@ -145,9 +145,19 @@ Laws of the channel, binding on every gate, edge, and score path:
   blocks remain minable and injectable (I1) but are **uncertified**: their
   effect is erratic by nature, they are a discoverable gamble for the
   player, and nothing in the graph may depend on one.
-- **Blocks are irreversible.** Once injected, a block cannot be removed or
-  un-taught. There is no removal or doubt mechanic; the counter-move is
-  injecting an opposing block. Commitment has weight by design.
+- **Composition is free; judgments are not.** Blocks go into slots and come
+  back out freely at build time — a block judged wrong is simply removed.
+  A removed block is **discarded, not shelved**: there is no discard
+  inventory. Recovery is re-mining — every past report stays readable in
+  the archive (run-artifact `meta-state`), so a discarded sentence is found
+  again where it was first found, and sentences the player has slotted
+  before are highlighted there. One constraint rides on that surface: the
+  archive's segmentation must not expose gate structure to the player
+  (presentation is bound with the UI pause structure, §9). What cannot be
+  undone is a judgment already made: once deployed, a run's equipped set is
+  fixed (Watch is no-intervention), and a gate judged under a contaminated
+  block stays judged. Commitment weighs at the run scale — a bad block
+  costs the runs it rode, not the whole game. (민서·윤석, 08-03)
 - **Content, not order.** What a block asserts is the lever; the ordering
   of prompt content is not. No ordering control exists anywhere in the
   player surface.
@@ -449,9 +459,11 @@ separate out-of-band layer composed with it (§4).
 
 ### 6.3 Player surface and size
 
-- **Player-facing controls map 1:1 onto prompt operations**: inject block →
-  a line in *known blocks*. That is the whole list. Nothing else on the
-  prompt is player-reachable — in particular **temperament**: hidden and
+- **Player-facing controls map 1:1 onto prompt operations**: slot a mined
+  block → a line in *known blocks*; unslot it → the line is gone at the next
+  deploy. That is the whole list, and the source pool is every minable
+  sentence — any timeline or report sentence (I1, §2.1), not a fixed
+  offering. Nothing else on the prompt is player-reachable — in particular **temperament**: hidden and
   immutable to the player (I13). The player reaches its clauses only
   indirectly, by injecting vocabulary-aligned blocks that trip their
   conditions, and reads it only through the clues the self-written report
