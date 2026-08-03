@@ -128,3 +128,18 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   which is not an `"HH:MM"` stamp and would throw in `driver/clock.ts`'s `mm()`.
   The shell must normalise it before it reaches the clock; the e2e suite asserts
   only that the topbar's terminal label *contains* `21:04`.
+- [u10] The workflow pointed at `.claude/super/units/u10/design.md` as the API
+  contract, but that file is **stale**: it describes a conversation beat engine
+  (`beats.ts`, `mountConversation`) from an earlier run, not webfont self-hosting.
+  `.claude/super/units/u10.md` is the contract actually followed. No DESIGN
+  artefact exists for this unit; the RED suites encode the shape instead.
+- [u10] Nothing imports `src/client/styles/index.css` yet (`src/client/main.ts`
+  still mounts `placeholder.ts`, which imports `style.css`), so a page load
+  fetches no webfont at all. `e2e/fonts.spec.ts` therefore replays the real
+  `@font-face` blocks against the dev server at absolute same-origin URLs and
+  drives `document.fonts.load(font, text)`. When u2/u3 mount the shell, the
+  spec's third-party-request assertion covers the real render path unchanged.
+- [u10] Font files must live under `public/assets/fonts/` and be referenced with
+  a url whose tail is `assets/fonts/<path>.woff2` — the e2e spec maps that tail
+  onto `<baseURL>assets/fonts/<path>`, which is how Vite serves `public/` under
+  the `/nhn-game-2026/` base in both dev and build.
