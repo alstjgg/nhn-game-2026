@@ -28,11 +28,29 @@ describe("loadConfig", () => {
     ).toThrow(/not in the deployed allowlist/);
   });
 
+  it("allows plain http on loopback, for the dev server", () => {
+    expect(loadConfig(env({ ALLOWED_ORIGIN: "http://localhost:5173" })).allowedOrigin).toBe(
+      "http://localhost:5173",
+    );
+    expect(loadConfig(env({ ALLOWED_ORIGIN: "http://127.0.0.1:5173" })).allowedOrigin).toBe(
+      "http://127.0.0.1:5173",
+    );
+  });
+
+  it("does not extend the http exception past loopback", () => {
+    expect(() => loadConfig(env({ ALLOWED_ORIGIN: "http://evil.example" }))).toThrow(
+      /exact HTTPS origin/,
+    );
+    expect(() => loadConfig(env({ ALLOWED_ORIGIN: "http://localhost.evil.example" }))).toThrow(
+      /exact HTTPS origin/,
+    );
+  });
+
   it("requires an exact HTTPS origin", () => {
     expect(() => loadConfig(env({ ALLOWED_ORIGIN: "https://a.example/path" }))).toThrow(
       /exact HTTPS origin/,
     );
-    expect(() => loadConfig(env({ ALLOWED_ORIGIN: "http://a.example" }))).toThrow(
+    expect(() => loadConfig(env({ ALLOWED_ORIGIN: "https://a.example/path" }))).toThrow(
       /exact HTTPS origin/,
     );
   });

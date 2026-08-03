@@ -142,6 +142,32 @@ describe("DDAY proxy HTTP skeleton", () => {
     expect(res.statusCode).toBe(400);
   });
 
+  it("accepts a narration beat with nobody present — a document arriving", async () => {
+    // 7 of 우는다리's 19 beats are `surface: "document"`. Requiring a non-empty
+    // roster made them unrunnable against engine spec §3.1.
+    const res = result(
+      await build()(
+        event(
+          JSON.stringify({
+            call_type: "narration",
+            template_version: "v0.3",
+            slots: {
+              TIMELINE_TAIL: ["09:40 판독 보고 전송."],
+              AGENT_UTTERANCE: "",
+              FIXED_NPC_ACTION: "판독 보고가 상황실 단말에 뜬다.",
+              SCENE_SYMPTOMS: ["(변화 없음)"],
+              PRESENT_NPCS: [],
+            },
+          }),
+        ),
+        context,
+      ),
+    );
+    // The point is that it reaches the provider at all: an empty roster must not
+    // be rejected as a bad payload.
+    expect(res.statusCode).not.toBe(400);
+  });
+
   it("rejects unconfigured routes", async () => {
     const res = result(
       await build()(event(validCallBody, { rawPath: "/ai/dialogue" }), context),
