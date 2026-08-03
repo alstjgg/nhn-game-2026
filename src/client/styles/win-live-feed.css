@@ -1,0 +1,65 @@
+/* ===========================================================================
+   win-live-feed.css — WINDOW 2 · LIVE FEED (desktop.css lines 414..470).
+
+   Green-bar fanfold printing as you watch: one grid row per line, kind-coded
+   (event · radio · npc · symptom · wait · fallback · mark).
+   =========================================================================== */
+
+.win-feed{--delay:.14s}
+
+.feed-scroll{position:absolute;inset:0;padding:0 var(--space-26);overflow-y:auto;scroll-behavior:smooth}
+.feed-scroll::-webkit-scrollbar{width:8px}
+.feed-scroll::-webkit-scrollbar-track{background:var(--sh-06)}
+.feed-scroll::-webkit-scrollbar-thumb{background:var(--sh-28)}
+.feed-head{padding:var(--space-12) 0 var(--space-9);border-bottom:1px solid var(--sh-3);
+  margin-bottom:var(--space-2);
+  font-size:var(--fs-8-5);letter-spacing:.12em;color:var(--feed-hd);line-height:1.7;text-align:center}
+#feedList{list-style:none}
+
+.fl{display:grid;grid-template-columns:44px 1fr;gap:0 var(--space-10);
+  padding:var(--space-3) var(--space-8) var(--space-3) var(--space-4);
+  font-family:var(--kmono);font-size:var(--fs-11);line-height:1.65;
+  position:relative;animation:lineIn .34s cubic-bezier(.25,.9,.3,1) both}
+@keyframes lineIn{from{opacity:0;transform:translateY(4px);clip-path:inset(0 100% 0 0)}
+  to{opacity:1;transform:none;clip-path:inset(0 0 0 0)}}
+.fl.band{background:linear-gradient(90deg,var(--band-1),var(--band-2))}
+.fl-t{font-size:var(--fs-9-5);color:var(--feed-t);letter-spacing:.02em;padding-top:var(--space-2);
+  font-variant-numeric:tabular-nums;text-align:right}
+.fl-c{color:var(--feed-1);min-width:0;padding-left:var(--space-14)}
+.fl-c::before{content:attr(data-mark);display:inline-block;width:14px;margin-left:var(--space-n14);
+  color:var(--feed-mark);font-size:var(--fs-10)}
+
+.fl-event .fl-c{font-family:var(--myeong);font-size:var(--fs-11-5);color:var(--feed-2)}
+.fl-radio{margin:var(--space-2) 0}
+.fl-radio .fl-c{font-weight:700;color:var(--radio);letter-spacing:-.01em;
+  font-family:var(--kmono);font-size:var(--fs-11)}
+.fl-radio .fl-c::before{color:var(--radio)}
+.fl-radio .fl-c b{display:block;font-size:var(--fs-8);letter-spacing:.22em;color:var(--radio-2);
+  font-weight:600;margin-bottom:var(--space-1)}
+.fl-npc .fl-c{font-family:var(--myeong);font-size:var(--fs-12);color:var(--feed-3)}
+.fl-npc .fl-c b{font-weight:700;color:var(--npc);font-size:var(--fs-10-5);letter-spacing:.04em}
+.fl-npc .fl-c q{quotes:'“' '”';font-style:normal}
+.fl-symptom .fl-c{font-family:var(--myeong);font-style:italic;font-size:var(--fs-11);
+  color:var(--symptom);padding-left:var(--space-26)}
+.fl-symptom .fl-c::before{color:var(--symptom-mark);margin-left:var(--space-n26);width:26px;text-align:center}
+.fl-wait .fl-c{color:var(--feed-wait);font-size:var(--fs-10-5);letter-spacing:.04em;font-family:var(--myeong)}
+.fl-wait .dots{display:inline-flex;gap:var(--space-3);margin-left:var(--space-5);vertical-align:1px}
+.fl-wait .dots i{width:3px;height:3px;background:var(--feed-wait);display:block;
+  animation:waitDot 1.35s ease-in-out infinite}
+.fl-wait .dots i:nth-child(2){animation-delay:.18s}
+.fl-wait .dots i:nth-child(3){animation-delay:.36s}
+@keyframes waitDot{0%,70%,100%{opacity:.15}35%{opacity:1}}
+.fl-wait{opacity:.9}
+.fl-wait.resolved{display:none}
+.fl-fallback{background:repeating-linear-gradient(135deg,var(--seal-a09) 0 6px,transparent 6px 12px);
+  border-top:1px solid var(--seal-a4);border-bottom:1px solid var(--seal-a4);margin:var(--space-3) 0}
+.fl-fallback .fl-c{color:var(--seal-2);font-family:var(--kmono);font-size:var(--fs-10-5)}
+.fl-fallback .fl-c::before{color:var(--seal)}
+.fl-mark{grid-template-columns:1fr;padding:var(--space-11) 0 var(--space-12);margin:var(--space-6) 0}
+.fl-mark .fl-c{padding:0;text-align:center;font-family:var(--myeong);font-size:var(--fs-9-5);
+  letter-spacing:.34em;color:var(--feed-rule);position:relative}
+.fl-mark .fl-c::before{display:none}
+.fl-mark .fl-c span{background:var(--fanfold);padding:0 var(--space-12);position:relative;z-index:1}
+.fl-mark .fl-c::after{content:'';position:absolute;left:0;right:0;top:50%;
+  border-top:1px dashed var(--sh-35)}
+.feed-tail{height:120px}

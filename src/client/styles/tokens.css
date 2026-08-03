@@ -1,0 +1,269 @@
+/* ===========================================================================
+   tokens.css — style-as-data (spec-client §3 invariant 8)
+
+   Every color, paper stock, type face/size and spacing step used by the
+   client is declared HERE and nowhere else. This sheet declares; it never
+   paints (no element/class rule lives in this file).
+
+   Values are vendored from docs/design/phase2-ui/desktop.css (spec-client §8
+   porting rule: "CSS may be vendored and adapted ... re-tokenized per
+   invariant 8"). No color is re-invented: every literal below appears in the
+   design reference. The one adaptation is consolidation — the reference's
+   near-identical chrome greys (#e4e7ea/#e2e8ed/#dfe6ec/#f0f3f6 …) collapse
+   onto a single step of the scale, which is the point of a token scale.
+
+   Fonts: u10 owns styles/fonts.css and public/assets/fonts/, including the
+   self-hosted face declarations. This sheet carries the family STACKS only —
+   it declares no face and references no font file.
+   =========================================================================== */
+
+/* ─── vendored :root block — desktop.css lines 8..44, verbatim ─────────── */
+:root{
+  /* ink */
+  --ink-0:#08090c;
+  --ink-1:#0d1015;
+  --ink-2:#141920;
+  --ink-3:#1e242c;
+  --ink-line:#2b333d;
+  --blueprint:#4a6072;
+
+  /* paper stocks */
+  --kraft:#d9cdb4;
+  --kraft-2:#cbbd9f;
+  --bond:#f2efe6;
+  --bond-2:#e6e2d5;
+  --fanfold:#e4e6dd;
+  --fanfold-bar:#cfdcc9;
+  --ledger:#efe9dc;
+  --card:#e9e3d3;
+
+  /* marks — two accents only: graphite ink + 관인-red */
+  --graphite:#242a30;
+  --graphite-2:#3c444d;
+  --faded:#7d7565;
+  --faded-2:#9b9382;
+  --seal:#b2242c;
+  --seal-2:#8d1a20;
+  --seal-wash:rgba(178,36,44,.10);
+  --thread:#a8272f;
+  --highlight:#e8d24a;
+
+  --shadow-win:0 2px 0 rgba(0,0,0,.5), 0 28px 64px -20px rgba(0,0,0,.9),
+               0 0 0 1px rgba(0,0,0,.7);
+
+  /* three faces: mono chrome · Korean mono radio · 명조 document body */
+  --mono:'IBM Plex Mono','Nanum Gothic Coding',ui-monospace,Menlo,monospace;
+  --kmono:'Nanum Gothic Coding','IBM Plex Mono',ui-monospace,monospace;
+  --myeong:'Nanum Myeongjo','AppleMyungjo','Batang',ui-serif,serif;
+}
+
+/* ─── machine-room chrome: surfaces ───────────────────────────────────── */
+:root{
+  --edge:#000;
+  --sky:#182029;
+  --chrome-hi:#12171d;
+  --chrome-lo:#0b0e12;
+  --chrome-deep:#090c10;
+  --chrome-raise:#11161c;
+  --chrome-raise-2:#161d25;
+  --chrome-open:#1a222b;
+  --chrome-focus:#233040;
+  --bar-hi:#1b222a;
+  --bar-hi-on:#26313c;
+  --tab-hi:#252d36;
+  --tab-lo:#1a2027;
+  --ctl-hover:#2b3540;
+  --track:#1c232b;
+  --dot:#3c4650;
+  --gauge-1:#3d5b74;
+  --gauge-2:#8fb8d8;
+}
+
+/* ─── machine-room chrome: type + rules ───────────────────────────────── */
+:root{
+  --txt-max:#fff;
+  --txt-hi:#e8eef3;
+  --txt:#cfd4da;
+  --txt-2:#b7c0c9;
+  --txt-3:#8d99a5;
+  --txt-4:#78838f;
+  --txt-5:#6a7683;
+  --txt-6:#5c6773;
+  --txt-7:#54606c;
+  --txt-8:#3e4854;
+  --line-1:#3f4a56;
+  --line-2:#4a5764;
+  --line-3:#6a7d90;
+  --alert-txt:#f0d7d8;
+  --alert-line:#4a2226;
+  --alert-dim:#8d7c7d;
+}
+
+/* ─── ink on paper ────────────────────────────────────────────────────── */
+:root{
+  --pap-max:#12171c;
+  --pap-hd:#1a1f24;
+  --pap-1:#22282e;
+  --pap-2:#1e242a;
+  --pap-3:#3b434b;
+  --pap-4:#5b6068;
+  --pap-5:#6f7781;
+  --pap-6:#a89f8b;
+  --pap-7:#948b78;
+  --redact:#15191d;
+  --good:#2f6b3e;
+  --slotted-ink:#7a6512;
+}
+
+/* ─── fanfold (LIVE FEED) inks ────────────────────────────────────────── */
+:root{
+  --feed-1:#252b23;
+  --feed-2:#20261e;
+  --feed-3:#1d2419;
+  --feed-mark:#7d8577;
+  --feed-t:#6c7468;
+  --feed-hd:#5f665a;
+  --feed-rule:#5c6355;
+  --feed-wait:#77806f;
+  --radio:#1a2f42;
+  --radio-2:#4a6b8a;
+  --npc:#4a3524;
+  --symptom:#6a4a3a;
+  --symptom-mark:#96604f;
+  --band-1:rgba(150,180,145,.30);
+  --band-2:rgba(150,180,145,.22);
+}
+
+/* ─── index-card stock (BLOCK STORE) + sprocket hardware ──────────────── */
+:root{
+  --card-face:#f6f2e6;
+  --punch-1:#8d846f;
+  --punch-2:#c9c0a8;
+  --kind-fact:#2f4054;
+  --kind-self:#4d3f6b;
+  --kind-quote:#3f5340;
+  --pin-hi:#e0666c;
+  --sprocket-hole:#0e1116;
+  --sprocket-1:#cdd1c6;
+  --sprocket-2:#d8dbd1;
+}
+
+/* ─── shade: the graphite-ink accent at low alpha (rules, wells, shadow) ─ */
+:root{
+  --sh-025:rgba(0,0,0,.025);
+  --sh-04:rgba(0,0,0,.04);
+  --sh-055:rgba(0,0,0,.055);
+  --sh-06:rgba(0,0,0,.06);
+  --sh-07:rgba(0,0,0,.07);
+  --sh-13:rgba(0,0,0,.13);
+  --sh-14:rgba(0,0,0,.14);
+  --sh-15:rgba(0,0,0,.15);
+  --sh-18:rgba(0,0,0,.18);
+  --sh-2:rgba(0,0,0,.2);
+  --sh-22:rgba(0,0,0,.22);
+  --sh-24:rgba(0,0,0,.24);
+  --sh-25:rgba(0,0,0,.25);
+  --sh-28:rgba(0,0,0,.28);
+  --sh-3:rgba(0,0,0,.3);
+  --sh-34:rgba(0,0,0,.34);
+  --sh-35:rgba(0,0,0,.35);
+  --sh-4:rgba(0,0,0,.4);
+  --sh-5:rgba(0,0,0,.5);
+  --sh-7:rgba(0,0,0,.7);
+  --sh-72:rgba(0,0,0,.72);
+  --sh-8:rgba(0,0,0,.8);
+  --sh-9:rgba(0,0,0,.9);
+}
+
+/* ─── sheen: paper highlight at low alpha ─────────────────────────────── */
+:root{
+  --sheen-05:rgba(255,255,255,.05);
+  --sheen-25:rgba(255,255,255,.25);
+  --sheen-28:rgba(255,255,255,.28);
+  --sheen-3:rgba(255,255,255,.3);
+  --sheen-35:rgba(255,255,255,.35);
+  --sheen-4:rgba(255,255,255,.4);
+  --sheen-5:rgba(255,255,255,.5);
+  --sheen-55:rgba(255,255,255,.55);
+  --sheen-6:rgba(255,255,255,.6);
+  --sheen-warm:rgba(255,250,235,.5);
+}
+
+/* ─── 관인-red at low alpha + the red thread ──────────────────────────── */
+:root{
+  --seal-a08:rgba(178,36,44,.08);
+  --seal-a09:rgba(178,36,44,.09);
+  --seal-a12:rgba(178,36,44,.12);
+  --seal-a13:rgba(178,36,44,.13);
+  --seal-a25:rgba(178,36,44,.25);
+  --seal-a4:rgba(178,36,44,.4);
+  --seal-a5:rgba(178,36,44,.5);
+  --seal-a55:rgba(178,36,44,.55);
+  --thread-a55:rgba(168,39,47,.55);
+  --thread-a8:rgba(168,39,47,.8);
+  --horizon:rgba(120,24,28,.16);
+  --highlight-a62:rgba(232,210,74,.62);
+}
+
+/* ─── boot scanline + instrument glow ─────────────────────────────────── */
+:root{
+  --scan-a05:rgba(150,200,255,.05);
+  --scan-a1:rgba(150,200,255,.10);
+  --glow-clk:rgba(200,225,255,.28);
+  --glow-tick:rgba(220,240,255,.6);
+}
+
+/* ─── type scale ──────────────────────────────────────────────────────── */
+:root{
+  --fs-7:7px;
+  --fs-7-5:7.5px;
+  --fs-8:8px;
+  --fs-8-5:8.5px;
+  --fs-9:9px;
+  --fs-9-5:9.5px;
+  --fs-10:10px;
+  --fs-10-5:10.5px;
+  --fs-11:11px;
+  --fs-11-5:11.5px;
+  --fs-12:12px;
+  --fs-13:13px;
+  --fs-14:14px;
+  --fs-15:15px;
+  --fs-16:16px;
+  --fs-17:17px;
+  --fs-19:19px;
+  --fs-20:20px;
+  --fs-21:21px;
+  --fs-44:44px;
+}
+
+/* ─── spacing scale (padding · margin · gap only) ─────────────────────── */
+:root{
+  --space-1:1px;
+  --space-2:2px;
+  --space-3:3px;
+  --space-4:4px;
+  --space-5:5px;
+  --space-6:6px;
+  --space-7:7px;
+  --space-8:8px;
+  --space-9:9px;
+  --space-10:10px;
+  --space-11:11px;
+  --space-12:12px;
+  --space-13:13px;
+  --space-14:14px;
+  --space-15:15px;
+  --space-16:16px;
+  --space-18:18px;
+  --space-20:20px;
+  --space-22:22px;
+  --space-24:24px;
+  --space-26:26px;
+  --space-30:30px;
+  --space-32:32px;
+  --space-34:34px;
+  --space-n1:-1px;
+  --space-n14:-14px;
+  --space-n26:-26px;
+}
