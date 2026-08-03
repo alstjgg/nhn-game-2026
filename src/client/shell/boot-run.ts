@@ -9,6 +9,7 @@
 //
 // What is NOT synthetic: the clock band. `end` is the scenario's own terminal
 // out of the pack, so the desk really does run toward the case's 21:04.
+import { loadDemoRun } from '../driver/index.ts'
 import type { FixtureRun } from '../driver/index.ts'
 import type { ScenarioIdentity } from './pack.ts'
 
@@ -22,6 +23,15 @@ const OPENS_AT = '13:05'
 /** PLACEHOLDER — the allotment the D-DAY pips render (design target: RUN 03 / 10). */
 const RUN = 3
 const RUNS_LEFT = 7
+
+/**
+ * The stream the desk opens on: the authored demo run when the driver has one
+ * (dev builds), and the placeholder otherwise. Which stream that is belongs to
+ * the driver — the shell only asks, through the barrel (C8 / inv 12).
+ */
+export async function bootRun(identity: ScenarioIdentity): Promise<FixtureRun> {
+  return (await loadDemoRun()) ?? placeholderBootRun(identity)
+}
 
 export function placeholderBootRun(identity: ScenarioIdentity): FixtureRun {
   return {

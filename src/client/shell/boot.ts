@@ -7,6 +7,7 @@
 // driver's clock is the only clock, [u3#c3]) and never counts runs (the `meta`
 // event does, spec-client §5.2 amendment d).
 import { createFixtureDriver, demoRun } from '../driver/index.ts'
+import { placeholderBootRun } from './boot-run.ts'
 import type { ClockRate, FixtureDriver, Frame } from '../driver/index.ts'
 import { createGameClock } from '../components/game-clock.ts'
 import { createRunCounter } from '../components/run-counter.ts'
@@ -14,7 +15,6 @@ import { holdDesk, revealDesk } from '../components/desktop-dressing.ts'
 import { must } from './dom.ts'
 import { fetchScenarioIdentity } from './pack.ts'
 import type { ScenarioIdentity } from './pack.ts'
-import { placeholderBootRun } from './boot-run.ts'
 import { PORTAL, TASKBAR_HINT } from './portal-identity.ts'
 import { WINDOW_REGISTRY } from './window-registry.ts'
 import { createWindowManager } from './window-manager.ts'
