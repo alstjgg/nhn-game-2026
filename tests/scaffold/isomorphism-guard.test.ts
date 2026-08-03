@@ -61,9 +61,14 @@ describe('[u0#c3] tsconfig.core.json is untouched (C6 standing condition)', () =
     expect(git(['status', '--porcelain', '--', 'tsconfig.core.json']).trim()).toBe('')
   })
 
-  it('(c) its include is exactly the three core areas', () => {
-    const cfg = parseJsonc(read('tsconfig.core.json')) as { include?: unknown }
-    expect(cfg.include).toEqual(['src/shared', 'src/engine', 'src/composer'])
+  // (a) already proves byte-identity with upstream, so this asserts the part the
+  // CLIENT run actually depends on and that no upstream edit may take away:
+  // core still covers the shared seam, and it never reaches into src/client
+  // (which is what keeps the client out of the isomorphic core — inv 12).
+  it('(c) core covers the shared areas and never includes src/client', () => {
+    const cfg = parseJsonc(read('tsconfig.core.json')) as { include?: string[] }
+    expect(cfg.include).toEqual(expect.arrayContaining(['src/shared', 'src/engine', 'src/composer']))
+    expect(cfg.include?.some((i) => i.startsWith('src/client'))).toBe(false)
   })
 
   it('(c2) it still omits DOM lib and all ambient types', () => {
@@ -112,15 +117,24 @@ describe('[u0#c3] no path alias anywhere (C6)', () => {
   })
 })
 
-describe('[u0#c9] vite.config.ts carries no §3.7 pack-copy plugin', () => {
-  it('git reports vite.config.ts unmodified', () => {
-    expect(git(['status', '--porcelain', '--', 'vite.config.ts']).trim()).toBe('')
-  })
+// u0's charter was "do not build the §3.7 pack-copy plugin — it is 윤석's".
+// It landed upstream in PR #114, so "the file contains no copy plugin" is now
+// false by design. What still binds is that *this run* adds no copy plugin of
+// its own — so the assert reads the diff against the merge-base, not the file.
+// Diff-based rather than byte-identity because u9d is licensed to add the debug
+// flag define to this same file.
+describe('[u0#c9] this run adds no §3.7 pack-copy plugin of its own', () => {
+  const addedLines = () =>
+    git(['diff', `${runMergeBase()}...HEAD`, '--', 'vite.config.ts'])
+      .split('\n')
+      .filter((l) => l.startsWith('+') && !l.startsWith('+++'))
+      .join('\n')
 
-  it('source declares no plugins array and no closeBundle hook', () => {
-    const source = read('vite.config.ts')
-    expect(source).not.toMatch(/closeBundle/)
-    expect(source).not.toMatch(/(^|\s)plugins\s*:/)
+  it('introduces no closeBundle hook, plugins array, or pack copy', () => {
+    const added = addedLines()
+    expect(added).not.toMatch(/closeBundle/)
+    expect(added).not.toMatch(/(^|\s)plugins\s*:/)
+    expect(added).not.toMatch(/cpSync|copyFile|data\/scenario/)
   })
 
   it('still pins the GitHub-Pages base', () => {
