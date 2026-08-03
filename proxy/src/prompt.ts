@@ -7,7 +7,7 @@ import type { CallRequest, CallType } from "./types.js";
  * Slot values → the two rendered messages.
  *
  * This is the production home of what `tools/lib/compose.mjs` prototypes. The
- * renderers below must stay byte-compatible with it: `tools/check-prompt-parity.mjs`
+ * renderers below must stay byte-compatible with it: `tests/prompt-parity.test.ts`
  * composes the same suite through both and fails on any difference. That gate
  * is what lets the probe's measurements stand for the payload this tier sends.
  *

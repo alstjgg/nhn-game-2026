@@ -1,0 +1,58 @@
+name: CI
+
+# Every gate in the repo, on every PR. Before this existed the only workflow that
+# ran anything was deploy.yml — push-to-main only, root + demos only — so the
+# proxy's 36 tests, including the prompt-parity gate that is the sole thing
+# holding up "the mechanism measurements describe the deployed system", ran only
+# when a human remembered to run them locally.
+#
+# Nothing here deploys. deploy.yml stays the only path to Pages (CLAUDE.md rule 3),
+# and is left untouched; the overlap on push-to-main is one cheap duplicate build.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Root: tsc over src/ (both configs) + the datapack type-drift check.
+  # Node 22 matches deploy.yml — this job is the browser bundle's gate, so it
+  # runs on the version that actually builds the deliverable.
+  root:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+
+  # Proxy: prompt-bundle drift + typecheck + 36 tests, all offline (no AWS, no
+  # Bedrock credentials needed — that is the point of the mocked provider).
+  #
+  # Node 24, not 22: the Lambda runtime is nodejs24.x and proxy/package.json pins
+  # `engines.node >= 24`. Installing this tier on 22 is what proxy/.npmrc now
+  # refuses outright.
+  proxy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: proxy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: proxy/package-lock.json
+      - run: npm ci
+      - run: npm run check
