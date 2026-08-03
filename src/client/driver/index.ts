@@ -24,6 +24,8 @@ export type { FixtureDriver, FixtureStore, Frame, ViewListener } from './fixture
 
 export type { FixtureRun, OpResponse } from './fixtures/types.ts'
 
+export { demoRun } from './demo-run.ts'
+
 export {
   freezeAnimations,
   thawAnimations,
