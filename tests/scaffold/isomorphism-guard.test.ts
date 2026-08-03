@@ -2,16 +2,18 @@
 import { describe, it, expect } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
-import crypto from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
-// D7 — SHA-256 of tsconfig.core.json at spec time. This file is 윤석's standing
-// condition: it must come out of this unit byte-identical.
-const CORE_TSCONFIG_SHA256 = '72c0613b49951284d006b2480d449e62e80ae9369ea62c94c9c595837bffb062'
-
+// D7 — 윤석's standing condition on tsconfig.core.json (C6).
+//
+// The condition is "*this run* does not touch the file", NOT "the file never
+// changes". 윤석 owns it and will change it again upstream — PR #114 already did.
+// So the guard measures a diff against the commit this run branched from, rather
+// than pinning a hash: any upstream edit moves the baseline with it, and only a
+// change introduced *here* can fail. See the header of this file's rewrite commit.
 function read(rel: string): string {
   return fs.readFileSync(path.join(REPO, rel), 'utf8')
 }
@@ -28,10 +30,31 @@ function git(args: string[]): string {
   return execFileSync('git', args, { cwd: REPO, encoding: 'utf8' })
 }
 
+/**
+ * The commit this run branched from. Everything at or below it is upstream work
+ * (윤석's), so it is the baseline the run must not diverge from. Once main is
+ * merged into the integration branch this resolves to main's head, which is
+ * exactly right — the run still owns no change to the file.
+ */
+function runMergeBase(): string {
+  const errors: string[] = []
+  for (const ref of ['origin/main', 'main']) {
+    try {
+      return git(['merge-base', 'HEAD', ref]).trim()
+    } catch (err) {
+      errors.push(`${ref}: ${(err as Error).message}`)
+    }
+  }
+  throw new Error(
+    `cannot resolve a merge-base against main — is this a shallow clone?\n${errors.join('\n')}`,
+  )
+}
+
 describe('[u0#c3] tsconfig.core.json is untouched (C6 standing condition)', () => {
-  it('(a) SHA-256 matches the pinned constant', () => {
-    const hash = crypto.createHash('sha256').update(fs.readFileSync(path.join(REPO, 'tsconfig.core.json'))).digest('hex')
-    expect(hash).toBe(CORE_TSCONFIG_SHA256)
+  it('(a) this run introduces no diff to tsconfig.core.json, measured against the run merge-base', () => {
+    const base = runMergeBase()
+    const upstream = git(['show', `${base}:tsconfig.core.json`])
+    expect(read('tsconfig.core.json')).toBe(upstream)
   })
 
   it('(b) git reports no modification to tsconfig.core.json', () => {
