@@ -29,6 +29,71 @@
  *
  * Compiled by `tsconfig.core.json`, which omits the DOM lib — `document`,
  * `window`, and `fetch` do not resolve in this folder, by design.
+ *
+ * This file is the e0 skeleton: the full public surface as exported types,
+ * with a stub factory. The behaviour above lands with the unit that
+ * implements the engine's body; nothing here runs yet.
  */
 
-export {}
+import type { FeedLine } from '../shared/view-driver.ts'
+import type { Stance, PresentNpc } from '../shared/contracts.ts'
+import type { Temperament } from '../shared/datapack.ts'
+
+/**
+ * The engine's temperament view — contract-engine-composer §2's
+ * `TemperamentPack`, aliased to `datapack.ts`'s `Temperament` rather than
+ * re-declared: that file is the one place the shape is authored (§4.1's
+ * `default_disposition` + up to 2 `clauses` of
+ * `{axis, axis_vocabulary, condition, defeat_condition}`).
+ */
+export type TemperamentPack = Temperament
+
+/** Everything Call 1 needs that is not the proxy's and not the player's. */
+export type GateView = {
+  GATE_QUESTION: string
+  STANCE_SET: Stance[]
+  /** Most recent 6 lines, never a severed beat (§3.2). */
+  TIMELINE_EXCERPT: string[]
+  /** Structured; the composer renders it (§4). */
+  TEMPERAMENT: TemperamentPack
+}
+
+/** Everything Call 2 needs. Valid only after the beat's effects are applied. */
+export type BeatView = {
+  /** Most recent 6 lines, never a severed beat. */
+  TIMELINE_TAIL: string[]
+  /** This beat's Call 1 `utterance`; `""` on a script beat. */
+  AGENT_UTTERANCE: string
+  FIXED_NPC_ACTION: string
+  PRESENT_NPCS: PresentNpc[]
+  /** `renderSymptoms` output — never empty (§2.3-5). */
+  SCENE_SYMPTOMS: string[]
+}
+
+/** Everything Call 3 needs. Valid only at a round boundary. */
+export type RoundView = {
+  /** The round event assembler's output (§5). */
+  EXPERIENCED: string[]
+  /** The SAME value `GateView` carried for this round. */
+  TEMPERAMENT: TemperamentPack
+}
+
+/**
+ * What the engine needs to construct — decision 15: every cross-module
+ * dependency is injected. The concrete shape (pack data, run seed, …) is
+ * fixed by the unit that implements the engine's body; the skeleton only
+ * commits to "the factory takes one deps object".
+ */
+export type EngineDeps = Record<string, unknown>
+
+export interface Engine {
+  gateView(): GateView
+  beatView(): BeatView
+  roundView(): RoundView
+  /** This beat's feed lines, in order, ids already minted. */
+  feed(): FeedLine[]
+}
+
+export function createEngine(_deps: EngineDeps): Engine {
+  throw new Error('unimplemented: createEngine')
+}
