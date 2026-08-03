@@ -107,7 +107,8 @@ type ModuleSpec = {
    * Set by the unit that replaces the stub with behaviour. The surface census
    * above still applies; only the `unimplemented:` throw stops being true.
    * [e6#D-m] — e6 implements `transport`, so `createTransport({})` must now
-   * degrade to the fixture provider instead of throwing.
+   * degrade to the fixture provider instead of throwing. Same mechanism
+   * applies per-folder to any later unit (e8 → runloop, etc.).
    */
   implemented?: true
 }
@@ -138,6 +139,7 @@ const MODULES: readonly ModuleSpec[] = [
     folder: 'runloop',
     factory: 'createRunLoop',
     exports: ['RunLoop', 'RunLoopDeps', 'MetaState', 'MetaStore', 'createRunLoop'],
+    implemented: true, // e8 — behaviour landed; see tests/runloop/
   },
 ] as const
 
