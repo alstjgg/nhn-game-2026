@@ -114,15 +114,31 @@ would then be two places that must agree. One minting site, two consumers.
 `b-r<run>-<channel><nn>` per the ratified scheme, plus one channel it did not
 cover:
 
-| Channel | Source | Minable |
-|---|---|---|
-| `f` | Call 3 `facts` | ✅ |
-| `b` | Call 3 `report_body` (segmented) | ✅ |
-| `n` | Call 2 `timeline_entries` | ✅ |
-| `q` | Call 2 `npc_lines` | ✅ |
-| **`u`** | **Call 1 `utterance`** — added 08-03 | ✅ |
-| — | engine symptom sentences | ❌ **no id** |
-| `t*` | authored script events, from `timeline.json` | ✅ (run-independent) |
+| Channel | Source | Species | Certified? | Minable |
+|---|---|---|---|---|
+| `f` | Call 3 `facts` — the objective log | `fact` | ✅ | ✅ |
+| `b` | Call 3 `report_body` (segmented) — the subjective report | `selfnarr` | ✅ | ✅ |
+| `n` | Call 2 `timeline_entries` — scene texture | `emotion` | ❌ | ✅ |
+| `q` | Call 2 `npc_lines` | `quote` | ❌ | ✅ |
+| **`u`** | **Call 1 `utterance`** — added 08-03 | `quote` | ❌ | ✅ |
+| — | engine symptom sentences | — | — | ❌ **no id** |
+| `t*` | authored script events, from `timeline.json` | `fact` | ✅ | ✅ (run-independent) |
+
+**The species column is derived, not chosen** (added 08-03, closing a gap the
+ratification left: spec-client §5.2 declares `Species` and ratifies "species
+derives from the channel", but no document said which channel yields which).
+[contract-datapack](./contract-datapack.md) **W3** fixes two of them outright —
+*objective log → 사실 · subjective report → 자기서술* — and **E2** limits a key
+condition to those two, so `emotion` and `quote` are the uncertified pair that
+[gate-hardening-manual](./scenario/gate-hardening-manual.md) anti-pattern 5 keeps
+off the solution path: an uncertified species "moves even when it points at a
+bystander, so aiming becomes impossible".
+
+That decides `n`, which was the only one in doubt. Certifying Call 2's scene
+texture would put **model-generated, unauthored prose on the solution path** —
+anti-pattern 5 exactly. `fact` stays reserved for the objective log and for
+authored script events; texture is neither. The map lives in
+`src/shared/species.ts`.
 
 **`u` closes a hole in W3.** Mining happens on actually generated text, and the
 controller's own utterance is generated — without a channel it could never
