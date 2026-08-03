@@ -37,6 +37,23 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
 
 ## Seam friction
 
+- [u2] The u2 worktree carries no `.claude/super/units/u2.md` and no
+  `units/u2/design.md`/`spec.md` — the unit's own contract and API design were
+  not materialised on disk, only in the agent brief. Consequence: the TDD-Red
+  suite had to **define** the fixture-driver runtime surface (`createFixtureDriver`,
+  `createClock`, the freeze/seed hooks, `assertSeamClean`) rather than test an
+  agreed one; that surface is written up in `.claude/super/units/u2/tests.md`.
+  If a later unit disagrees with a name there, the tests move with it — the
+  orchestrator owns re-materialising unit contracts into the worktree.
+- [u2] §5.2 ratifies the seam types but nothing ratifies the **driver runtime**:
+  §5.4 describes a fixture run file ("ordered `ViewEvent[]` … plus canned
+  responses") without an interface, and §8 assigns the reference clock loop to
+  the driver without naming its controls. `MS_PER_SIM_MIN = 105` and the
+  ×1/×4/pause rates are ported verbatim from `docs/design/phase2-ui/app.js`;
+  the pause/seed/animation-freeze hooks required by PRD §5 u2 have no spec text
+  at all. Whoever owns the live driver should confirm the same shape before
+  fixture and live modes are claimed pixel-identical (invariant 12).
+
 - [u0] e2e runs against **`npm run dev`** (`--port 5174 --strictPort`), not
   `vite preview`. `preview` only serves an existing `dist/`, and — per the §3.7
   gap above — that `dist/` has no scenario pack, so a preview-served run cannot
