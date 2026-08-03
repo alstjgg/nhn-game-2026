@@ -59,23 +59,32 @@ function boundedInteger(
   return value;
 }
 
+/**
+ * Exactly one origin, and HTTPS — with one narrow exception: plain HTTP on
+ * `localhost` / `127.0.0.1`, so the handler can be driven from a local dev
+ * server. Without it the client loop is untestable off AWS, which is how a wire
+ * contract stays unexercised — verified 08-03 by driving the real handler from a
+ * browser.
+ *
+ * The exception is not a hole in production. `template.yaml` declares
+ * `AllowedOrigin` with `AllowedPattern: ^https://…`, so CloudFormation refuses a
+ * non-HTTPS value at deploy time — the guard that matters sits a layer up, and
+ * this one is about what a running function will accept.
+ */
 function parseOrigin(raw: string): string {
   try {
     const url = new URL(raw);
-    if (
-      url.protocol !== "https:" ||
-      url.origin !== raw ||
-      url.username ||
-      url.password
-    ) {
-      throw new Error("not an HTTPS origin");
+    const loopback = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+    const scheme = url.protocol === "https:" || (url.protocol === "http:" && loopback);
+    if (!scheme || url.origin !== raw || url.username || url.password) {
+      throw new Error("not an allowed origin");
     }
     return raw;
   } catch {
     throw new PublicError(
       500,
       "invalid_config",
-      "ALLOWED_ORIGIN must be one exact HTTPS origin without a path.",
+      "ALLOWED_ORIGIN must be one exact HTTPS origin without a path (or http on localhost for dev).",
     );
   }
 }
