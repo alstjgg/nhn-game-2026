@@ -90,7 +90,8 @@ The demo concept tracks are closed — DDAY won. Current tracks are work lanes,
 not concepts; owners, questions, and deliverables live in
 [plan-pipeline.md](./plan-pipeline.md) §1:
 **data (민서)** — formats and transformations · **architecture (윤석)** —
-wiring and runtime · **client (미배정)** — player-facing surface.
+wiring and runtime · **client (민서, 08-03~)** — player-facing surface,
+minimal-first.
 
 ## Next steps (priority order)
 
@@ -114,9 +115,11 @@ wiring and runtime · **client (미배정)** — player-facing surface.
    is open — where `REPORT_GUIDANCE` lives (data track proposes
    `data/policy/report-guidance.json`, outside the pack).
 4. First-gate probe (P1), then full-run gameplay measurement (P2).
-5. Assign a client-track owner. **Still unassigned and the largest schedule
-   risk** — deliverables #1 and #2 depend on it. It also blocks one engine
-   answer the data track is waiting on: beat granularity (engine spec §8).
+5. Client track (민서, claimed 08-03): first the **UI/UX spec & contract
+   document** — it binds the §9 parameters owned by U (latency budget, report
+   cadence ratification, slot count, block-pool curation) and unblocks beat
+   granularity (engine spec §8) via the pause structure — then the phase-1
+   minimal UI (engine-verification test base).
 
 ## Open TODOs
 
@@ -124,6 +127,13 @@ wiring and runtime · **client (미배정)** — player-facing surface.
   competition page (deadline currently assumed ~2026-08-10).
 
 ## Decision log
+
+- 2026-08-03 — **Removed blocks are discarded, recovered by re-mining**
+  (민서·윤석 chat; recorded in spec-architecture §2.1). Slot composition is
+  free at build time; no discard inventory. Every past report stays readable
+  in the archive, with previously-slotted sentences highlighted; the
+  archive's segmentation must not expose gate structure to the player.
+  Presentation details bind with the UI pause structure (§9).
 
 - 2026-08-02 — **docs/ reorganised onto three tiers: `spec-` / `contract-` /
   `plan-`.** `spec-` is the normative authority for its domain (breaking it makes

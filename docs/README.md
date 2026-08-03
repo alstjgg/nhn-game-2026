@@ -93,7 +93,7 @@ undetected. This table is the index; the owning document remains the authority.
 | `facts` grammatical person · report length | L → U | **open** | [`contract-calls.md`](./contract-calls.md) §7 #1, #3 |
 | Datapacks do not currently reach the browser; resolution is a build-time copy plugin, not yet built | 윤석, self | **open** | [`spec-physical-architecture.md`](./spec-physical-architecture.md) §3.7 · §3.8 step 3 |
 | `contracts.ts` has no drift guard, unlike `datapack.ts` | 윤석, self | **open** | §3 above |
-| Client track has no owner — the largest schedule risk | team | **open** | [`status.md`](./status.md) |
+| Client track has no owner — the largest schedule risk | team | **resolved 08-03** — claimed by 민서, minimal-first | [`status.md`](./status.md) |
 
 `spec-architecture.md` §9 keeps its own binding schedule for spec-level open
 parameters; it is not duplicated here.
