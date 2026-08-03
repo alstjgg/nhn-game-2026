@@ -82,3 +82,27 @@ prompt's truncated list plus `tests.md` and the eight RED test files, which
 between them pin every AC. Flagging it in case the same truncation hit other
 units: the criteria strings in the prompt are cut mid-sentence with a
 `(full: …#cN)` pointer to a file that is not on disk.
+
+## 5. VERIFY attempt 1 — measured seam state (appended by VERIFY)
+
+Baseline established by running the full suite at the run base
+(`super/20260803-213143`, detached worktree, same node_modules): **7 files / 13
+tests already red before this unit** — `tests/scaffold/{layout,deps}`,
+`tests/styles/{index-order,hard-constraints,token-lint}`,
+`tests/assets/{fonts-css,no-third-party-url}` (all u0/u1/u10 barrier oracles).
+
+At u2f HEAD the suite is **8 files / 14 tests**. The single delta is exactly the
+conflict predicted in §1 above — `tests/driver/replay-order.test.ts > [u2#c9]
+(p)`. Nothing else in the repository moved: `npm run check` exits 0 and
+`vite build` succeeds. So the u2 ∪ u2f barrier has **one** item to arbitrate,
+and §1's suggested re-point (`['index.ts','minimal.ts','types.ts']` for the
+non-`woodari` modules, `(q)` left as-is) is sufficient to clear it.
+
+**No visual check was run, by design.** u2f ships no rendering surface: its
+`file_globs` are the four `src/client/driver/fixtures/woodari-*`/`index` modules
+plus `tests/fixtures/**`, the modules are DEV-guarded dynamic imports with no
+consumer wired in this snapshot, and no e2e/capture spec in the repo mentions
+them (`e2e/shell.spec.ts`'s own `[u3#c10]` still asserts window bodies are
+empty). Whoever first renders the feed from these fixtures — the consuming UI
+unit, not this one — owns the first pixel comparison against
+`docs/design/phase2-ui`.
