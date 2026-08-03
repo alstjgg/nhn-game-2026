@@ -27,6 +27,13 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   §1.1 (decided 08-03), echoed by `spec-client.md` §9 and §5.2. Units follow
   `sessionStorage`; `localStorage` stays forbidden either way. The PRD sentence
   is the thing that is wrong, not the spec.
+- [u1] `.claude/super/units/u1/design.md` and `.../spec.md` are **stale**: both
+  describe run `20260725-025242`'s u1 (the `demos/apothecary` stub AI adapter +
+  boot factory), not this run's u1 (client stylesheets). Only `status.json` was
+  refreshed for run `20260803-213143`. The TEST suite was written against
+  `.claude/super/units/u1.md` (the contract) + the design reference slices, and
+  ignores the stale DESIGN artifact — whoever owns the unit-artifact writer
+  should stop reusing a unit dir across runs, or stamp `run_id` into design.md.
 
 ## Seam friction
 
@@ -64,3 +71,19 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   of the `src/client/` table, while `index.html` actually lives at the repo root
   (Vite's entry). Read as: the client boot root is `src/client/main.ts`, reached
   from the repo-root `index.html` via `src/main.ts`. No file was moved.
+- [u1] Invariant 8 / constraint C11 ("no color/size/font literal outside
+  `tokens.css`") has no stated boundary for non-type lengths, while the design
+  reference carries ~140 hex literals, ~100 `rgba()` calls, 20 distinct
+  `font-size`s and free-form paddings. `tests/styles/token-lint.test.ts` encodes
+  a bounded reading: **all** colors, `font`/`font-family`/`font-size`, and
+  `padding`/`margin`/`gap` must be tokens; geometry lengths (`width`, `height`,
+  `inset`, `border-width`, `top/left`) may stay literal. If the reviewer wants
+  the stricter reading, the lint tightens in one place — 민서 decides.
+- [u1] The contract allows "the same custom-property names **or** a documented
+  rename map" but does not say where the map lives. The suite accepts
+  `--old -> --new` (also `→`, `=>`) either in a `tokens.css` comment or in
+  `src/client/styles/RENAME-MAP.md`.
+- [u1] `--x/--y/--w/--h/--z/--delay` are written by the runtime (u3's
+  WindowFrame), not by `tokens.css`. The var()-resolution lint allowlists exactly
+  those six; if u3 adds a seventh runtime-written property the allowlist in
+  `tests/styles/css-utils.ts` (`RUNTIME_PROPS`) must grow with it.
