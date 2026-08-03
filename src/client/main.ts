@@ -1,9 +1,9 @@
 // Client boot root (spec-client §2.1 root row, §5.1).
 //
-// Scaffold stage: the shell/window/driver modules are still empty, so boot
-// keeps the pre-existing placeholder render alive. u1 retires `placeholder.ts`
-// and mounts the real shell here. Keep this file a thin boot root — nothing
-// but the mount call belongs at this level.
-import { mountPlaceholder } from './placeholder.ts'
+// Three lines by design: the skin u1 owns, and the shell boot u3 owns. The
+// boot ORDER lives in `shell/boot.ts`; the scaffold placeholder render is
+// retired here — nothing but the boot call belongs at this level.
+import './styles/index.css'
+import { bootShell } from './shell/boot.ts'
 
-mountPlaceholder()
+void bootShell()
