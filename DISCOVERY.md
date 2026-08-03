@@ -104,3 +104,27 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   WindowFrame), not by `tokens.css`. The var()-resolution lint allowlists exactly
   those six; if u3 adds a seventh runtime-written property the allowlist in
   `tests/styles/css-utils.ts` (`RUNTIME_PROPS`) must grow with it.
+- [u3/TEST] `.claude/super/units/u3/{spec.md,design.md}` are leftovers from the
+  previous run (20260725-025242, apothecary `pixelate`) and describe a different
+  unit entirely. There is no DESIGN artefact for this run's u3, so the TEST phase
+  pinned the API surface itself (`shell/layout.ts` `applyLayout(viewport)` as a
+  pure function, `shell/window-registry.ts` `WINDOW_REGISTRY`, the five
+  `windows/*.ts` `mount(host, driver)` stubs, and the dev-only `window.__shell`
+  = `{ frame(), drain() }` handle) and recorded it in that directory's
+  `tests.md`. The stale run's `tests.md` was moved to
+  `.claude/super/archive/20260725-025242-u3/`.
+- [u3/TEST] `tests/scaffold/layout.test.ts` › `[u0#c8] empty-modules-only census`
+  (2 tests) is **already RED on the u3 branch point**, broken by the u1 (styles)
+  and u2 (driver) merges: u0's census asserts every file under `src/client/` is a
+  `.gitkeep` or `main.ts`. It is u0's file and not u3's to edit (C13: u3 gates on
+  its own slice only). Someone must retire or re-scope that census — flagged for
+  u11 / 민서.
+- [u3/TEST] The shell's game clock cannot be verified as "driver-fed" from the
+  DOM alone. The suite therefore requires a dev/test-only `window.__shell`
+  handle exposing `frame()` (delegating to the driver) and `drain()`. It is the
+  view-side analogue of u2's `test-hooks.ts` and must be excluded from the player
+  build alongside the debug pane (inv 11).
+- [u3/TEST] `data/scenario/우는다리/meta.json` carries `clock.end = "21:04+"`,
+  which is not an `"HH:MM"` stamp and would throw in `driver/clock.ts`'s `mm()`.
+  The shell must normalise it before it reaches the clock; the e2e suite asserts
+  only that the topbar's terminal label *contains* `21:04`.
