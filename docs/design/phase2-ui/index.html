@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>NDSP-2 · 우는다리 — 운영자 단말</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="desktop.css">
+</head>
+<body class="booting">
+
+<!-- ══ WALLPAPER ═════════════════════════════════════════════════════════ -->
+<div id="wallpaper" aria-hidden="true">
+  <svg id="blueprint" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M40 0H0V40" fill="none" stroke="#3c4a58" stroke-width=".5"/>
+      </pattern>
+      <pattern id="gridfine" width="8" height="8" patternUnits="userSpaceOnUse">
+        <path d="M8 0H0V8" fill="none" stroke="#33404d" stroke-width=".3"/>
+      </pattern>
+    </defs>
+    <rect width="1600" height="900" fill="url(#gridfine)" opacity=".5"/>
+    <rect width="1600" height="900" fill="url(#grid)" opacity=".8"/>
+    <!-- 윤슬교 elevation -->
+    <g class="bp" transform="translate(0,120)">
+      <path d="M60 560 L1540 560" />
+      <path d="M60 566 L1540 566" class="thin"/>
+      <path d="M240 560 L240 300 M800 560 L800 240 M1360 560 L1360 300" />
+      <path d="M240 300 Q520 470 800 250 Q1080 470 1360 300" class="cable"/>
+      <path d="M240 300 Q520 470 800 250 Q1080 470 1360 300" class="cable2"/>
+      <g class="hang">
+        <path d="M300 560 V330"/><path d="M370 560 V368"/><path d="M440 560 V400"/>
+        <path d="M510 560 V424"/><path d="M580 560 V436"/><path d="M650 560 V430"/>
+        <path d="M720 560 V400"/><path d="M790 560 V255"/><path d="M860 560 V330"/>
+        <path d="M930 560 V400"/><path d="M1000 560 V430"/><path d="M1070 560 V436"/>
+        <path d="M1140 560 V424"/><path d="M1210 560 V400"/><path d="M1280 560 V368"/>
+      </g>
+      <path d="M60 620 H1540" class="dim"/>
+      <path d="M60 610 V630 M800 610 V630 M1540 610 V630" class="dim"/>
+      <text x="420" y="606" class="bplabel">경간 A · 정착부 N-3</text>
+      <text x="1150" y="606" class="bplabel">경간 B · 정착부 S-3</text>
+      <text x="60" y="270" class="bplabel">윤슬교 종단면 · 축척 1:400 · 세명건설</text>
+      <circle cx="800" cy="560" r="26" class="mark"/>
+      <text x="836" y="565" class="bplabel warn">정착부 — 소선 파단</text>
+    </g>
+  </svg>
+  <div id="horizon"></div>
+</div>
+
+<!-- ══ EVIDENCE THREADS (between wallpaper and windows) ══════════════════ -->
+<svg id="threads" aria-hidden="true"></svg>
+
+<!-- ══ TOP BAR ══════════════════════════════════════════════════════════ -->
+<header id="topbar">
+  <div class="tb-row tb-row-1">
+    <div class="tb-identity">
+      <span class="seal-emblem" aria-hidden="true">
+        <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18"/><circle cx="20" cy="20" r="14.5"/>
+        <text x="20" y="25.5" text-anchor="middle">災</text></svg>
+      </span>
+      <span class="tb-portal">
+        <b id="portalName">국가재난모의포털</b>
+        <i id="portalCode">NDSP-2</i>
+      </span>
+      <span class="tb-sep"></span>
+      <span class="tb-op">
+        <em>OPERATOR</em>
+        <b id="opName">OP-2291 · 박민서</b>
+        <i>권한 C-2</i>
+      </span>
+      <span class="tb-sep"></span>
+      <span class="tb-case">
+        <em>CASE</em><b id="caseName">우는다리 · 윤슬교</b>
+      </span>
+    </div>
+
+    <div class="tb-clock" id="clockUnit">
+      <div class="clk-face">
+        <span class="clk-lead">SIM</span>
+        <span class="clk-digits" id="clockDigits">13:05</span>
+        <span class="clk-term">→ 21:04</span>
+      </div>
+      <div class="clk-bar"><i id="clockFill"></i><u id="clockTerm"></u></div>
+      <div class="clk-rate">
+        <button class="rate-btn is-on" data-rate="1" type="button">▶</button>
+        <button class="rate-btn" data-rate="4" type="button">▶▶</button>
+        <button class="rate-btn" data-rate="0" type="button">❚❚</button>
+      </div>
+    </div>
+
+    <div class="tb-dday" id="ddayUnit">
+      <div class="dd-label">잔여 시행</div>
+      <div class="dd-value">D-DAY <span id="ddayNum">−07</span></div>
+      <div class="dd-runs"><span id="runNum">RUN 03</span> / 10</div>
+      <div class="dd-pips" id="ddayPips"></div>
+    </div>
+  </div>
+
+  <nav class="tb-row tb-row-2" id="taskbar" aria-label="열린 창"></nav>
+</header>
+
+<!-- ══ DESKTOP ══════════════════════════════════════════════════════════ -->
+<main id="desktop">
+
+  <!-- ─── WINDOW 1 · AGENT FILE ─────────────────────────────────────── -->
+  <section class="win win-file" id="w-file" data-win="file"
+           style="--x:836px; --y:78px; --w:520px; --h:640px; --z:31">
+    <div class="win-tab">AF-03</div>
+    <header class="win-bar">
+      <span class="win-dot"></span>
+      <h2>AGENT&nbsp;FILE<i>요원 파일 — 프롬프트 편성</i></h2>
+      <div class="win-ctl">
+        <button class="wc wc-min" type="button" title="접기">—</button>
+        <button class="wc wc-close" type="button" title="닫기">×</button>
+      </div>
+    </header>
+    <div class="win-body paper kraft">
+      <div class="stamp stamp-deploy" id="deployStamp"><span>배 치 완 료</span><em>RUN 03 · 08:50</em></div>
+
+      <div class="file-head">
+        <div class="fh-left">
+          <div class="fh-doc">문서번호 NDSP-2/AF/우는다리/03</div>
+          <div class="fh-title">현장 요원 운용 파일</div>
+        </div>
+        <div class="fh-right">
+          <div class="fh-k">호출부호</div><div class="fh-v">ECHO-1</div>
+        </div>
+      </div>
+
+      <div id="dossier"></div>
+
+      <div class="deploy-zone">
+        <div class="dz-meta">
+          <span id="slotCount">2 / 4</span> 슬롯 사용 ·
+          <span id="deployState">배치됨 — 이번 시행에서 잠김</span>
+        </div>
+        <button class="btn-deploy" id="btnDeploy" type="button">
+          <span class="bd-main">DEPLOY</span>
+          <span class="bd-sub">배치 · 파일 잠금</span>
+        </button>
+      </div>
+    </div>
+    <div class="win-grip" aria-hidden="true"></div>
+  </section>
+
+  <!-- ─── WINDOW 2 · LIVE FEED ──────────────────────────────────────── -->
+  <section class="win win-feed" id="w-feed" data-win="feed"
+           style="--x:24px; --y:78px; --w:560px; --h:700px; --z:30">
+    <div class="win-tab">LF-03</div>
+    <header class="win-bar">
+      <span class="win-dot live"></span>
+      <h2>LIVE&nbsp;FEED<i>실시간 무전 · 열람 전용</i></h2>
+      <div class="win-ctl">
+        <button class="wc wc-min" type="button" title="접기">—</button>
+        <button class="wc wc-close" type="button" title="닫기">×</button>
+      </div>
+    </header>
+    <div class="win-body fanfold">
+      <div class="sprocket left" aria-hidden="true"></div>
+      <div class="sprocket right" aria-hidden="true"></div>
+      <div class="feed-scroll" id="feedScroll">
+        <div class="feed-head">
+          <div>연속용지 · 상황실 무전 기록 · 우는다리 RUN 03</div>
+          <div>열람 전용 — 이 창은 조작되지 않습니다</div>
+        </div>
+        <ol id="feedList"></ol>
+        <div class="feed-tail" id="feedTail"></div>
+      </div>
+    </div>
+    <div class="win-grip" aria-hidden="true"></div>
+  </section>
+
+  <!-- ─── WINDOW 3 · REPORTS ────────────────────────────────────────── -->
+  <section class="win win-rep" id="w-rep" data-win="rep"
+           style="--x:604px; --y:300px; --w:700px; --h:480px; --z:29">
+    <div class="win-tab">RP-02</div>
+    <header class="win-bar">
+      <span class="win-dot"></span>
+      <h2>REPORTS<i>부검 — 문장 채굴</i></h2>
+      <div class="win-ctl">
+        <button class="wc wc-min" type="button" title="접기">—</button>
+        <button class="wc wc-close" type="button" title="닫기">×</button>
+      </div>
+    </header>
+    <div class="win-body paper bond">
+      <div class="arch-rail" id="archRail"></div>
+      <div class="rep-grid">
+        <article class="doc doc-facts">
+          <header class="doc-hd">
+            <span class="doc-no">가</span>
+            <h3>객관 로그</h3>
+            <i>일어난 것 · 관측된 것</i>
+          </header>
+          <ol class="facts" id="factsList"></ol>
+        </article>
+        <article class="doc doc-body">
+          <header class="doc-hd">
+            <span class="doc-no">나</span>
+            <h3>요원 보고서</h3>
+            <i>ECHO-1 자필 · 1인칭</i>
+          </header>
+          <div class="rbody" id="bodyList"></div>
+          <div class="sig">
+            <span class="sig-line">ECHO-1</span>
+            <span class="sig-stamp">검 인</span>
+          </div>
+        </article>
+      </div>
+      <footer class="rep-foot">
+        문장을 누르면 뜯어내 블록 보관함으로 보냅니다 · <b id="minedCount">0</b>건 채굴됨
+      </footer>
+    </div>
+    <div class="win-grip" aria-hidden="true"></div>
+  </section>
+
+  <!-- ─── WINDOW 4 · TALLY ──────────────────────────────────────────── -->
+  <section class="win win-tally hidden" id="w-tally" data-win="tally"
+           style="--x:300px; --y:120px; --w:660px; --h:620px; --z:40">
+    <div class="win-tab">TL-03</div>
+    <header class="win-bar">
+      <span class="win-dot"></span>
+      <h2>TALLY<i>집계표 · 시행 종료</i></h2>
+      <div class="win-ctl">
+        <button class="wc wc-min" type="button" title="접기">—</button>
+        <button class="wc wc-close" type="button" title="닫기">×</button>
+      </div>
+    </header>
+    <div class="win-body paper ledger">
+      <div class="tly-head">
+        <div class="tly-doc">집계표 NDSP-2/TL/우는다리/03</div>
+        <h3>21시 04분 시점 집계</h3>
+        <div class="tly-sub">기준선 대비 — 무개입 하루가 기준이다</div>
+      </div>
+      <div class="tly-headline">
+        <div class="th-k">사망</div>
+        <div class="th-v"><span id="tlyBig">0</span><i>명</i></div>
+        <div class="th-b">기준 24명</div>
+      </div>
+      <table class="tly-table"><tbody id="tlyRows"></tbody></table>
+      <div class="tly-verdict" id="tlyVerdict">
+        <div class="tv-stamp">재개통 예정</div>
+        <p>결함이 공식 확인되지 않은 채 하루가 끝났다. 집계표의 마지막 줄에 도장이 찍힌다.</p>
+      </div>
+      <div class="tly-foot">
+        <div class="tly-wait" id="tlyWait">……보고서 정리 중</div>
+        <button class="btn-newrun" id="btnNewRun" type="button" disabled>
+          <span class="bn-main">NEW RUN</span><span class="bn-sub">다음 시행 · 08:50으로</span>
+        </button>
+      </div>
+    </div>
+    <div class="win-grip" aria-hidden="true"></div>
+  </section>
+
+</main>
+
+<!-- ══ BLOCK STORE (docked panel, part of AGENT FILE) ════════════════════ -->
+<aside class="win win-store" id="w-store" data-win="store"
+       style="--x:1368px; --y:78px; --w:400px; --h:640px; --z:32">
+  <div class="win-tab">BS</div>
+  <header class="win-bar">
+    <span class="win-dot"></span>
+    <h2>BLOCK&nbsp;STORE<i>블록 보관함 — 채굴된 문장</i></h2>
+    <div class="win-ctl">
+      <button class="wc wc-min" type="button" title="접기">—</button>
+      <button class="wc wc-close" type="button" title="닫기">×</button>
+    </div>
+  </header>
+  <div class="win-body paper card-stock">
+    <div class="store-filter" id="storeFilter"></div>
+    <div class="store-list" id="storeList"></div>
+    <div class="store-empty" id="storeEmpty">아직 채굴한 문장이 없습니다.</div>
+  </div>
+  <div class="win-grip" aria-hidden="true"></div>
+</aside>
+
+<div id="grain" aria-hidden="true"></div>
+<div id="vignette" aria-hidden="true"></div>
+<div id="sweep" aria-hidden="true"></div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
