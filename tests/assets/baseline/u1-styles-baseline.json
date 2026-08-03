@@ -1,0 +1,26 @@
+{
+  "note": "RED-time sha256 of every u1 stylesheet (u10 c8 guard). index.css is exempt: u10 appends exactly one import to it. Never regenerate to make a test pass.",
+  "sha256": {
+    "base.css": "b6a447cf0420b91a4f1b24d947ede50c1a478b63146b9174e5be05a5ececa843",
+    "index.css": "5ca7cae9b8f6c4dad759f5c82082b939551cd5089fa4b9b1d09e61880cda42eb",
+    "paper.css": "633a0a0b3e9527f5d162c932879990a4e2531d779bd747cd894738df856d9551",
+    "shell.css": "9e9fc9f3ea9b0e009386682bacb72c67caca2777646e2efdd787448945a9aa1f",
+    "tokens.css": "3960a8b13325ba9a470e112a3795ad3a7e16eb5ff269739f9caee47d5176eca4",
+    "win-agent-file.css": "6a8fc5a6a45d6dbc2e287f32e64c8d11877a76e289b7f2dd957e974e4a6a65a5",
+    "win-block-store.css": "cd42869edb3c94f9b7b7dc4318595dbb34fcfe3ebe0a784af466d31947c08b8f",
+    "win-live-feed.css": "efe50f2ca393683aa51f4391c8579690b88d6123e3d39b11b07e20e1f6320e51",
+    "win-reports.css": "909722da7c1f17aa3997175314162670ec933d7d3b6949461194750ee5a5696b",
+    "win-tally.css": "fdf36747ac973f02aecb69749d3e3231cde03b46107e2fb79a5fd0f062afe719"
+  },
+  "indexImports": [
+    "./tokens.css",
+    "./base.css",
+    "./shell.css",
+    "./paper.css",
+    "./win-agent-file.css",
+    "./win-block-store.css",
+    "./win-live-feed.css",
+    "./win-reports.css",
+    "./win-tally.css"
+  ]
+}
