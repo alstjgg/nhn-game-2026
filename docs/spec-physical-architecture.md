@@ -18,8 +18,30 @@ database, no game server, no server-side session state.
 
 | Tier | Host | Runs |
 |---|---|---|
-| **Static bundle** | GitHub Pages (built by `.github/workflows/deploy.yml`) | client UI · state engine · payload composer · datapacks fetched as static JSON · between-run meta-state in `localStorage` |
+| **Static bundle** | GitHub Pages (built by `.github/workflows/deploy.yml`) | client UI · state engine · payload composer · datapacks fetched as static JSON · between-run meta-state in `sessionStorage` (§1.1) |
 | **LLM proxy** | Lambda (API Gateway → Bedrock Converse) | the three call types; holds the only secret (the API key) |
+
+### 1.1 ✅ Meta-state lives in `sessionStorage` (decided 08-03)
+
+This table used to say `localStorage` while
+[game design §6](./plan-game-design.md) said "no persistence — session-only;
+refresh resets". Both documents are mine, so the contradiction was mine to
+close rather than a question for the client track.
+
+`sessionStorage` is what both lines were actually protecting:
+
+- **It survives a refresh.** Meta-state is the multi-run loop itself — run
+  counter, report archive, carried blocks. Losing it to a stray F5 does not
+  reset a session, it destroys the game's spine mid-play. That is what the
+  `localStorage` line was for.
+- **It dies with the tab.** Every judge starts clean. `localStorage` would
+  drop a returning judge into someone else's run 4, which breaks the
+  "the demo opens on run 3" staging outright — and the judge's first 60
+  seconds is the optimization target (CLAUDE.md).
+
+Consequence for the client: [spec-client](./spec-client.md) §7 #8 can bind
+instead of absorbing either outcome, and the view layer no longer has to
+stay memory-only.
 
 ## 2. Constraints in force
 
@@ -277,7 +299,7 @@ serves `public/` only, and `data/` is outside it, so nothing copies it into
 
 Resolution taken here: a **build-time copy** — a small `closeBundle` plugin in
 `vite.config.ts` copies `data/` into `dist/data/`. It must copy
-`scenario/`, `prompts/`, and `policy/` **by name, not `data/` wholesale**:
+`scenario/` and `policy/` **by name, not `data/` wholesale**:
 `data/` holds inputs, and anything that ever lands there as an *output* would
 otherwise be published to the web on the next deploy. Constraint 5 keeps the
 authored location, constraint 3 gets satisfied, `deploy.yml` stays untouched,
@@ -295,9 +317,10 @@ being fetchable as data).
    entry.
 2. ✅ `tsconfig.core.json` added and `build` runs `check` first.
    `tsconfig.tools.json` is deferred until `tools/` has a `.ts` file (§3.4).
-3. ⬜ The `data/` copy plugin (§3.7) — **still missing**, and now blocking two
-   things rather than one: datapacks and the user prompt layer both reach the
-   browser through it.
+3. ⬜ The `data/` copy plugin (§3.7) — **still missing**. It blocks one thing
+   again, not two: §3.10 moved rendering to the proxy, and `proxy/prompts/`
+   is inlined into the Lambda bundle at build time, so no prompt text needs
+   to reach the browser. Scope is back to `scenario/` + `policy/`.
 4. ✅ `infra/` dissolved into `authoring/` + `tools/` (revision 08-02, below).
 5. ⬜ `proxy/`'s handler, and the `proxy` transport that lets
    the probe measure the tier that actually ships.
@@ -326,12 +349,13 @@ user messages before and after, and the offline suite passes 44/44.
   under `data/`: that directory is inputs, it is copied into `dist/` (§3.7), and
   putting outputs there would publish every measured run to the web. Probe
   artifacts are unaffected and stay at `planning/dday-mechanism/runs/`.
-- **Where the run-loop manager's between-run state is written.** §1 says
-  `localStorage`; whether `tools/` mirrors it to disk for headless multi-run
-  measurement is the run-loop manager's own design decision.
-- **Whether `src/client/` subdivides.** Deliberately unbound — the client track
-  has no owner yet, and its internal structure is that owner's to set. The only
-  binding constraint is the arrow direction in §3.1.
+- **Where the run-loop manager's between-run state is written.** §1.1 binds the
+  browser side to `sessionStorage`; whether `tools/` mirrors it to disk for
+  headless multi-run measurement is the run-loop manager's own design decision.
+- **Whether `src/client/` subdivides.** Deliberately unbound — [spec-client
+  §2.1](./spec-client.md) fixes the boundaries and leaves the sub-split to the
+  client track (민서, claimed 08-03). The only binding constraint from here is
+  the arrow direction in §3.1.
 - ✅ **How the call contract stays single-sourced** — largely closed by §3.10
   (08-03). The output schemas now live once, in the proxy. What remains is the
   probe's renderer, held to byte identity by the parity gate, and

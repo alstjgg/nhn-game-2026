@@ -8,9 +8,9 @@ Outside the root install by design (physical architecture §3.3): its own
 and the root, so nothing here can break GitHub Pages.
 
 ```bash
-cd proxy
+cd proxy               # node >= 24, enforced at install (.npmrc engine-strict)
 npm install
-npm run check          # typecheck + tests
+npm run check          # prompt-bundle drift + typecheck + tests — CI runs this
 npm run sam:validate
 ```
 
@@ -31,7 +31,7 @@ is a stack that has actually run. What came across works and is under test:
 | **the three output schemas + validation** | `src/calls.ts` |
 | **Bedrock Converse, forced through the schema** | `src/provider.ts` |
 
-30 tests, all offline. **What has not happened: a single real Bedrock call.**
+36 tests, all offline. **What has not happened: a single real Bedrock call.**
 The provider is a faithful port of one that ran in production, and it is covered
 by mocks, but nothing here has been deployed or smoke-tested against AWS. Treat
 `npm run aws:preflight` → `sam:build` → `sam:smoke` → deploy as unstarted work.
