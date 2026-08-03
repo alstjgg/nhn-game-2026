@@ -70,3 +70,51 @@ repeated here.)
    with this unit's changes stashed — u10 territory. Likewise the two
    `[u0#c8]` census assertions in `tests/scaffold/layout.test.ts` and the
    `tests/styles/*` / `tests/assets/fonts-css.test.ts` reds.
+
+---
+
+## VERIFY attempt 1 — additional findings
+
+## F. The unit's visual target cannot be captured from a production build
+
+8. The run assigns u9d the reference target **`debug-pane-on`**, and the capture
+   protocol says "build `npm run build` and serve `dist`". Those two cannot both
+   hold: `npm run build` is `--mode production`, where `__DEBUG_PANE__` folds to
+   `false` and the pane is dropped from the bundle *by design* (inv 11, pinned by
+   this unit's own `tests/debug/flag-off-bundle.test.ts`). A production `dist`
+   renders **no** debug pane, so the shot was taken against the flag-ON dev
+   server — the same boot path `e2e/debug-pane.spec.ts` drives. Any future
+   verifier of a build-flag-only surface needs the same exemption.
+   **Harness decides.**
+9. **No reference shot exists for `debug-pane-on`.**
+   `nhn-game-2026/.claude/super/reference-shots/` contains only
+   `boot-scanline.png`, `shell-desktop-1280x800.png` and
+   `topbar-clock-dday.png`. The unit's visual check therefore had no pixel
+   counterpart and fell back to checking the capture against the unit's own
+   `tests.md` DOM inventory (all items present). A debug surface arguably should
+   not have a design reference at all; if so the run's target list for u9d
+   should be empty rather than naming a shot that was never produced.
+
+## G. New cross-unit oracle red introduced by this unit
+
+10. `tests/styles/token-lint.test.ts` › `[u1#c1] (c) no color literal in any
+    component .ts under src/client` goes red on `src/client/debug/pane.ts`
+    (`#080d12`, `#cfe3ea`, `#23343d`, `#7fb0c4`). It is the **only** new failure
+    in the full suite relative to this unit's parent commit `508fcca` (11 → 12
+    failing tests, same 5 files). u1's lint globs all of `src/client/**/*.ts` and
+    predates the `debug/` tree. It cannot be fixed by moving the palette into
+    `styles/tokens.css`: that sheet ships in the **player** build, and inv 11
+    forbids any of the pane reaching it. The resolution is either a
+    `src/client/debug/**` exclusion in u1's lint or a palette constant inside
+    `debug/` that the lint skips. Not fixed inline — it is u1's oracle, outside
+    this unit's `file_globs`. **Integrator decides.**
+
+## H. Pane z-order and clipping (cosmetic, deliberately not fixed)
+
+11. In the 1280×800 capture the pane is painted *under* the TALLY desk window,
+    which covers the ops table's `payload` column, and the pane has no
+    `max-height`/`overflow`, so it clips at the bottom viewport edge. Left alone:
+    raising `z-index` on `#debug-pane` is a one-liner but it is a visual choice
+    for a surface with no reference shot, and the acceptance suite asserts only
+    that the pane is a direct child of `<body>` — which it is. Recorded in
+    `.claude/super/units/u9d/failures.md` under "attempt 1 visual".
