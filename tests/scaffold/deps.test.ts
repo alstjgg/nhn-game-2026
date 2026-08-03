@@ -20,9 +20,17 @@ const pkg = (): Pkg => JSON.parse(fs.readFileSync(path.join(REPO, 'package.json'
 const DEV_ALLOWLIST = new Set(['vitest', 'playwright', 'typescript', 'vite', '@types/node'])
 
 // Scripts that existed before this unit and must survive byte-identical.
+//
+// ⚠️ **`check` repaired by e0.** The client run's u0 pinned the pre-#114 string.
+// `main` #114 appended `test:shared`; the client branch added `typecheck:test`.
+// plan-engine-build §2a.3 makes the *composed* form a prerequisite of this run —
+// "a silently dropped clause disarms a gate for every unit" — so the pin spells
+// that composed string out and `test:shared` joins the frozen set.
+// `package.json` is a frozen input (PRD §9): the expectation moves, not the file.
 const FROZEN_SCRIPTS: Record<string, string> = {
   dev: 'vite',
-  check: 'tsc -p tsconfig.core.json && tsc && npm run datapack:check',
+  check:
+    'tsc -p tsconfig.core.json && tsc && npm run typecheck:test && npm run datapack:check && npm run test:shared',
   build: 'npm run check && vite build',
   preview: 'vite preview',
   'datapack:types': 'node authoring/generate-datapack-types.mjs',
@@ -32,6 +40,7 @@ const FROZEN_SCRIPTS: Record<string, string> = {
   probe: 'node tools/probe/run.mjs',
   'probe:selftest': 'node tools/probe/lib/selftest.mjs',
   'drive:beat': 'node tools/driver/drive-beat.mjs',
+  'test:shared': 'node --test --experimental-strip-types "tools/tests/*.mjs"',
 }
 
 describe('[u0#c4] dependency shape', () => {
@@ -84,6 +93,17 @@ describe('[u0#c4] script wiring', () => {
     expect(scripts['test']).toMatch(/vitest/)
     expect(scripts['test:e2e']).toMatch(/playwright/)
     expect(scripts['typecheck:test']).toMatch(/tsconfig\.test\.json/)
+  })
+
+  it('(g3) `check` composes both halves — §2a.3, all five clauses in order', () => {
+    const check = (pkg().scripts ?? {})['check'] ?? ''
+    expect(check.split('&&').map((c) => c.trim())).toEqual([
+      'tsc -p tsconfig.core.json',
+      'tsc',
+      'npm run typecheck:test',
+      'npm run datapack:check',
+      'npm run test:shared',
+    ])
   })
 
   it('(g2) pre-existing scripts are unchanged', () => {
