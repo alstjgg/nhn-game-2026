@@ -103,6 +103,13 @@ type ModuleSpec = {
   factory: string
   /** every symbol contract §2·§3·§9 requires this folder to export */
   exports: readonly string[]
+  /**
+   * Set by the unit that replaces the stub with behaviour. The surface census
+   * above still applies; only the `unimplemented:` throw stops being true.
+   * [e6#D-m] — e6 implements `transport`, so `createTransport({})` must now
+   * degrade to the fixture provider instead of throwing.
+   */
+  implemented?: true
 }
 
 const MODULES: readonly ModuleSpec[] = [
@@ -120,6 +127,7 @@ const MODULES: readonly ModuleSpec[] = [
     folder: 'transport',
     factory: 'createTransport',
     exports: ['Transport', 'TransportDeps', 'TransportResult', 'createTransport'],
+    implemented: true,
   },
   {
     folder: 'driver',
@@ -192,7 +200,8 @@ describe('[e0#c2] every symbol in contract §2·§3·§9 is exported', () => {
 // ─── 3. stub behaviour ───────────────────────────────────────────────────────
 
 describe('[e0#c2] every factory is a stub that throws `unimplemented: <symbol>`', () => {
-  for (const { folder, factory } of MODULES) {
+  for (const { folder, factory, implemented } of MODULES) {
+    if (implemented) continue
     it(`${factory}() throws "unimplemented: ${factory}"`, async () => {
       const mod = (await import(`../../src/${folder}/index.ts`)) as Record<string, unknown>
       expect(typeof mod[factory], `${factory} is not an exported function`).toBe('function')
