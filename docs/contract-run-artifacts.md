@@ -25,7 +25,7 @@ the engine's**, and this document never reaches into them.
 |---|---|---|
 | `run-record` | run id · pack slug · policy (`null` = human) · reached clock · injected blocks · beats (gate · stance · **delta journal** `{variable, before, after, cause}`) · rendered timeline lines (the mining surface, W2) · the two reports (W1/W3) · score at terminal clock · fallbacks `{beat, call, code}` (engine spec §5) | metric stage · report viewer · mining UI |
 | `meta-state` | pack slug · run count · max exposure clock reached (drives `visible_from` gating) · carried blocks (prompt carry-over) · report archive | run-loop manager |
-| `metric-report` | per-policy rows (n, mean, variance) · policy gap · score variance · route coverage · vein yield · near-miss trace rate · source run ids | bake-off verdicts ([`plan-pipeline.md`](./plan-pipeline.md) §5) |
+| `metric-report` | per-policy rows (n, mean, variance) · policy gap · score variance · route coverage · vein yield · near-miss trace rate · source run ids | bake-off verdicts ([`plan-pipeline.md`](./plan-pipeline.md) §4) |
 
 ## 2. Decisions in force
 
@@ -52,6 +52,6 @@ them, this document takes the revision.
 
 ## 4. Related documents
 
-- Metric definitions the `metric-report` serves: [`plan-pipeline.md`](./plan-pipeline.md) §5
+- Metric definitions the `metric-report` serves: [`plan-pipeline.md`](./plan-pipeline.md) §4
 - Who produces each field: [`spec-engine.md`](./spec-engine.md) §2, §5
 - Slot suppliers and consumers upstream of a run: [`contract-calls.md`](./contract-calls.md) §6
