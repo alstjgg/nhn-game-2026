@@ -79,6 +79,18 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
 
 ## Reference ambiguities
 
+- [e5] `contract-engine-composer.md` §3 says the composer resolves block ids
+  "through the block store the driver passes in", but the `ComposerDeps` literal
+  in the same section carries only `reportGuidance` — and the views are frozen by
+  §2, so the store cannot ride in one. Read as: the store is a **construction**
+  dependency. `createComposer` takes
+  `ComposerDeps & { reportGuidance: ReportGuidance; blocks: BlockStore }`; the
+  same intersection narrows e0's `reportGuidance: unknown` to e1's canonical
+  type without redeclaring it. Details and the reversal path: `discovery/e5.md`.
+- [e5] The contract does not say what happens when an injected block id has no
+  entry in the store. Read as: **throw**, resolve-all-then-emit, nothing partial
+  emitted. Skip-and-continue would let two runs with "the same" block set compose
+  different bytes, which is the property §8-10 exists to protect.
 - [u0] No deviation applied yet. This unit creates empty module directories only
   and ports nothing from `docs/design/phase2-ui/`; the §8 porting rule
   (CSS vendored & re-tokenized · JS rewritten in TS · markup structure ported)
