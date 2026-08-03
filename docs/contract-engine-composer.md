@@ -18,9 +18,9 @@
 
 | Artifact | Role | Drift guard |
 |---|---|---|
-| `src/engine/index.ts` exported types | the engine's public surface | **`tsc -p tsconfig.core.json`** — a composer call that does not match fails the build |
-| `src/composer/index.ts` exported types | what the composer produces | same |
-| `src/shared/temperament.ts` | the temperament renderer, pure | same |
+| `src/engine/index.ts` exported types | the engine's public surface | **`tsc -p tsconfig.core.json`** — a composer call that does not match fails the build. **Stub today** ([plan-engine-build](./plan-engine-build.md) e2–e4) |
+| `src/composer/index.ts` exported types | what the composer produces | same — **stub today** (e5) |
+| `src/shared/temperament.ts` | the temperament renderer, pure | same — **not yet written** ([plan-engine-build](./plan-engine-build.md) e1) |
 | `proxy/src/types.ts` `CallRequest` | the wire shape the composer must fill | ⚠️ none — hand-transcribed across a tier boundary (physical §3.9) |
 | this document | the map, and the decisions below | manual |
 
@@ -301,11 +301,16 @@ Executable, in the style of engine spec §7 — a work unit is done when these p
 | 5 | `inner_note` reaches Call 3 and nothing else | Run a round; `inner_note` appears in `RoundView.EXPERIENCED` and in no `GateView` or `BeatView`, and on no timeline line |
 | 6 | Call 1 and Call 3 get the same temperament | `renderTemperament` output is byte-identical across the two views of one round |
 | 7 | The composed payload is accepted by the proxy | `judgment()` output passes `proxy/src/handler.ts`'s envelope validation and `CALL_SPECS.judgment.buildTool` without error |
+| 8 | Every generated feed line carries a well-formed, engine-minted id | Run a round; every `FeedLine` sourced from Call 1·2·3 has a `sentence_id` matching `b-r<run>-<channel><nn>` with the channel that produced it, and authored script lines carry their `t*` id unchanged across two runs |
+| 9 | Symptom lines carry **no** id | Run a beat whose effects move a variable; its `kind: 'symptom'` line has `sentence_id === undefined`. A symptom that becomes minable is a regression, not a feature |
+| 10 | The same block set composes the same bytes | `judgment(view, ['b-r1-n02','b-r1-f01'])` and `judgment(view, ['b-r1-f01','b-r1-n02'])` produce byte-identical payloads. This is what makes a C-BLOCK comparison a comparison |
 
 Criterion 1 is the one that keeps this document honest: it fails the moment §6
 gains a slot nobody assigned. Criterion 7 is the seam test — it is the only one
 that crosses the tier boundary, and it runs offline against the proxy's own
-validators, not against AWS.
+validators, not against AWS. Criteria 8–10 were added with the 08-03 revision,
+because the three decisions it introduced would otherwise have shipped with the
+gate still reading "seven".
 
 ## 9. Open
 

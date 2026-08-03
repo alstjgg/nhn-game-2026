@@ -1,4 +1,4 @@
-import { cpSync, existsSync, readFileSync } from 'node:fs'
+import { cpSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
 
@@ -12,24 +12,21 @@ import { defineConfig, type Plugin } from 'vite'
  * **By name, never `data/` wholesale.** `data/` is inputs; anything that ever
  * lands there as an *output* would otherwise be published on the next deploy,
  * and `artifacts/` exists so that never has to be remembered (§3.9).
+ *
+ * **Build only — there is deliberately no dev middleware.** Vite's dev server
+ * already serves the project root, so `data/` is reachable at `npm run dev`
+ * without any help; a middleware here would add a second, hand-rolled file
+ * server for capability that already exists. The first version had one, and its
+ * prefix check ran on the still-encoded path — `%2e%2e%2f` passed the check and
+ * then decoded into a traversal out of `data/`. Removed rather than patched:
+ * the safest hand-rolled file server is the one that is not written.
  */
 const PUBLISHED = ['scenario', 'policy']
 
-function serveData(): Plugin {
+function copyPackData(): Plugin {
   return {
     name: 'dday-data',
-    // dev: serve data/ off disk, so a pack edit needs no restart
-    configureServer(server) {
-      server.middlewares.use((req, res, next) => {
-        const path = (req.url ?? '').split('?')[0] ?? ''
-        if (!PUBLISHED.some((d) => path.startsWith(`/data/${d}/`))) return next()
-        const file = join(process.cwd(), decodeURIComponent(path))
-        if (!existsSync(file)) return next()
-        res.setHeader('content-type', 'application/json; charset=utf-8')
-        res.end(readFileSync(file))
-      })
-    },
-    // build: copy into dist/, which is what deploy.yml publishes
+    // build only: copy into dist/, which is what deploy.yml publishes
     closeBundle() {
       for (const dir of PUBLISHED) {
         const from = join(process.cwd(), 'data', dir)
@@ -43,7 +40,7 @@ function serveData(): Plugin {
 
 export default defineConfig({
   base: '/nhn-game-2026/',
-  plugins: [serveData()],
+  plugins: [copyPackData()],
   server: {
     // The client posts to a same-origin path, so the browser sends the dev
     // origin the proxy is configured to accept. In production

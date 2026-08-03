@@ -311,8 +311,16 @@ A beat with nobody present is not an edge case. In 우는다리, **7 of 19 beats
 one, because no one speaks. Engine spec §3.1 runs Call 2 on every beat without
 exception, so a `>= 1` requirement made 37% of that pack unrunnable.
 
-> **`PRESENT_NPCS` may be empty. When it is, `npc_lines` must be empty**, and the
-> tool description says so in place of the roster instruction.
+> **`PRESENT_NPCS` may be empty.** When it is, the tool description instructs the
+> model to return an empty `npc_lines` in place of the roster instruction.
+
+**Nothing validates that instruction, deliberately.** A line whose speaker is
+not in the roster is already *soft* (§1 rule 6) — an observation about model
+behaviour, not a malformation — and an empty roster is only the limiting case of
+that rule. So a line that arrives anyway is recorded, not re-called, and the
+**engine drops it on the way to the timeline** (see the disposition table below).
+The wording matters because "must" reads as enforced: it is not, and the engine
+is the only thing standing between an invented speaker and the screen.
 
 The alternative — making the pack name someone for a fax arriving — invents
 presence, and worse, licenses the model to have that person speak in a room they
