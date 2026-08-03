@@ -1,0 +1,48 @@
+/* ===========================================================================
+   paper.css — the five paper stocks (desktop.css lines 235..269).
+
+   kraft (AGENT FILE dossier) · green-bar fanfold (LIVE FEED) · white bond
+   (REPORTS) · ruled ledger (TALLY) · index-card stock (BLOCK STORE).
+   Each stock paints from its own token — the stock IS the data.
+   =========================================================================== */
+
+.paper{color:var(--graphite);overflow-y:auto;overflow-x:hidden}
+.paper::-webkit-scrollbar{width:9px}
+.paper::-webkit-scrollbar-track{background:var(--sh-07)}
+.paper::-webkit-scrollbar-thumb{background:var(--sh-24);border:2px solid transparent;background-clip:content-box}
+.paper::-webkit-scrollbar-thumb:hover{background:var(--sh-4);background-clip:content-box}
+
+/* kraft — dossier stock, warm and fibrous */
+.kraft{background:
+  linear-gradient(115deg,var(--sheen-35),transparent 40%),
+  radial-gradient(120% 60% at 80% 0%,var(--sheen-warm),transparent 60%),
+  var(--kraft);
+  padding:var(--space-20) var(--space-22) var(--space-24)}
+.kraft::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23f)' opacity='.5'/%3E%3C/svg%3E");
+  mix-blend-mode:multiply}
+
+/* bond — white report stock */
+.bond{background:
+  linear-gradient(180deg,var(--sheen-5),transparent 30%),
+  var(--bond)}
+
+/* ledger — ruled 집계표 stock */
+.ledger{background:var(--ledger);padding:0}
+
+/* index card — one punch hole per card, faint rule every 28px */
+.card-stock{background:
+  repeating-linear-gradient(0deg,transparent 0 27px,var(--sh-025) 27px 28px),
+  var(--card);
+  padding:var(--space-10) var(--space-12) var(--space-16)}
+
+/* fanfold — continuous green-bar paper, sprocket holes both edges */
+.fanfold{background:var(--fanfold);padding:0 var(--space-22)}
+.sprocket{position:absolute;top:0;bottom:0;width:22px;z-index:3;
+  background:
+    radial-gradient(circle at 11px 9.5px, var(--sprocket-hole) 0 3.1px, var(--sh-28) 3.1px 4px, transparent 4.2px)
+      0 0/22px 19px repeat-y,
+    linear-gradient(90deg,var(--sprocket-1),var(--sprocket-2));
+  box-shadow:inset -1px 0 0 var(--sh-14), inset 1px 0 0 var(--sh-14)}
+.sprocket.left{left:0;border-right:1px dashed var(--sh-28)}
+.sprocket.right{right:0;border-left:1px dashed var(--sh-28)}

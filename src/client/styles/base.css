@@ -1,0 +1,25 @@
+/* ===========================================================================
+   base.css — reset + document ground (desktop.css lines 46..58).
+
+   Nothing here may create a stacking context: `.win` roots are z-ordered by a
+   single runtime `--z` and BLOCK STORE lives outside `#desktop` in the markup,
+   so html / body / #app must stay neutral (design README 'Notes').
+   =========================================================================== */
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+html,body{height:100%}
+
+body{
+  background:var(--ink-0);
+  color:var(--txt);
+  font-family:var(--mono);
+  overflow:hidden;
+  cursor:default;
+  -webkit-font-smoothing:antialiased;
+  user-select:none;
+}
+
+#app{height:100%}
+
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}

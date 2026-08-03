@@ -1,0 +1,91 @@
+/* ===========================================================================
+   win-reports.css — WINDOW 3 · REPORTS (desktop.css lines 471..548).
+
+   Two filed documents on white bond, side by side: the fact column and the
+   보고서 body with its red margin rule. Every `.min` sentence is mineable — the
+   red thread is anchored to it once it has been slotted.
+   =========================================================================== */
+
+.win-rep{--delay:.36s}
+
+/* the bond stock, worn as a two-pane document window */
+.bond{display:flex;flex-direction:column;overflow:hidden}
+
+.arch-rail{display:flex;gap:0;flex:0 0 auto;background:var(--bond-2);
+  border-bottom:1px solid var(--sh-35);overflow-x:auto;padding-left:var(--space-2)}
+.arch{padding:var(--space-7) var(--space-14) var(--space-6);font-size:var(--fs-8-5);
+  letter-spacing:.14em;color:var(--faded);
+  border-right:1px solid var(--sh-18);white-space:nowrap;transition:.14s;position:relative;
+  display:flex;flex-direction:column;gap:var(--space-2);align-items:flex-start}
+.arch em{font-style:normal;font-family:var(--myeong);font-size:var(--fs-9-5);
+  letter-spacing:.02em;color:var(--pap-7)}
+.arch:hover{background:var(--sheen-6);color:var(--graphite)}
+.arch.on{background:var(--bond);color:var(--pap-hd);box-shadow:inset 0 -2px 0 var(--seal)}
+.arch.on em{color:var(--seal-2)}
+.arch-note{margin-left:auto;align-self:center;padding:0 var(--space-12);font-size:var(--fs-8);
+  letter-spacing:.13em;color:var(--faded-2);white-space:nowrap}
+
+.rep-grid{flex:1;min-height:0;display:grid;grid-template-columns:.92fr 1.08fr}
+.doc{padding:var(--space-13) var(--space-14) var(--space-18);overflow-y:auto;position:relative}
+.doc::-webkit-scrollbar{width:8px}
+.doc::-webkit-scrollbar-thumb{background:var(--sh-22)}
+.doc-facts{border-right:1px solid var(--sh-2);
+  background:linear-gradient(90deg,transparent 96%,var(--sh-04))}
+.doc-body{background:
+  linear-gradient(90deg,transparent 0 22px,var(--seal-a55) 22px 23px,transparent 23px),
+  var(--bond);
+  padding-left:var(--space-34)}
+.doc-hd{display:flex;align-items:baseline;gap:var(--space-8);padding-bottom:var(--space-6);
+  margin-bottom:var(--space-10);border-bottom:1.5px solid var(--graphite)}
+.doc-no{width:16px;height:16px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  font-family:var(--myeong);font-size:var(--fs-10);font-weight:700;
+  border:1px solid var(--graphite);color:var(--graphite)}
+.doc-hd h3{font-family:var(--myeong);font-size:var(--fs-14);font-weight:800;color:var(--pap-hd);
+  letter-spacing:.01em}
+.doc-hd i{font-style:normal;font-size:var(--fs-8);letter-spacing:.14em;color:var(--faded);margin-left:auto}
+
+.facts{list-style:none;counter-reset:f}
+.facts li{counter-increment:f;display:grid;grid-template-columns:17px 34px 1fr;gap:0 var(--space-5);
+  padding:var(--space-5) var(--space-2) var(--space-5) 0;
+  border-bottom:1px dotted var(--sh-2);align-items:baseline}
+.facts li::before{content:counter(f,decimal-leading-zero);font-size:var(--fs-8);color:var(--faded-2)}
+.facts .f-t{font-size:var(--fs-8-5);color:var(--faded);font-variant-numeric:tabular-nums}
+.facts .min{font-family:var(--myeong);font-size:var(--fs-11);line-height:1.62;color:var(--pap-1);
+  word-break:keep-all}
+
+.rbody{font-family:var(--myeong);font-size:var(--fs-11-5);line-height:1.92;color:var(--pap-2);
+  text-align:justify;word-break:keep-all}
+.rbody .sent{display:inline}
+.sig{margin-top:var(--space-20);display:flex;align-items:center;justify-content:flex-end;gap:var(--space-14)}
+.sig-line{font-family:var(--myeong);font-size:var(--fs-12);color:var(--pap-3);
+  border-bottom:1px solid var(--graphite);padding:0 var(--space-22) var(--space-2)}
+.sig-stamp{width:38px;height:38px;border:2px solid var(--seal);color:var(--seal);
+  display:flex;align-items:center;justify-content:center;font-family:var(--myeong);
+  font-size:var(--fs-11);font-weight:800;letter-spacing:.02em;transform:rotate(-7deg);
+  opacity:.8;mix-blend-mode:multiply;border-radius:2px}
+
+/* minable sentence */
+.min{cursor:pointer;transition:background .15s,box-shadow .15s;position:relative;
+  padding:var(--space-1) var(--space-2);margin:0 var(--space-n1);border-radius:1px}
+.min:hover{background:var(--seal-a13);box-shadow:0 1px 0 var(--seal)}
+.min.mined{color:var(--pap-5);cursor:default;
+  background:repeating-linear-gradient(180deg,transparent 0 1.35em,var(--seal-a5) 1.35em calc(1.35em + 1px))}
+.min.mined::after{content:'채굴';font-family:var(--mono);font-size:var(--fs-7);letter-spacing:.1em;
+  color:var(--seal);vertical-align:super;margin-left:var(--space-4);white-space:nowrap}
+.min.slotted{background:linear-gradient(transparent 55%,var(--highlight-a62) 55%)}
+.min.slotted::after{content:'배치';font-family:var(--mono);font-size:var(--fs-7);letter-spacing:.1em;
+  color:var(--slotted-ink);vertical-align:super;margin-left:var(--space-4);white-space:nowrap}
+.min.tear{animation:tearFlash .5s ease-out}
+@keyframes tearFlash{0%{background:var(--seal-a55);box-shadow:0 0 0 4px var(--seal-a25)}
+  100%{background:transparent;box-shadow:none}}
+.facts li.min-row{cursor:pointer}
+.facts li.min-row:hover{background:var(--seal-a08)}
+
+.rep-foot{flex:0 0 auto;padding:var(--space-6) var(--space-14);background:var(--bond-2);
+  border-top:1px solid var(--sh-28);font-size:var(--fs-8-5);letter-spacing:.11em;color:var(--faded)}
+.rep-foot b{color:var(--seal-2);font-weight:700}
+
+/* typewriter caret */
+.caret{display:inline-block;width:7px;height:1.05em;vertical-align:-.15em;
+  background:var(--graphite);animation:blink .85s steps(2) infinite;margin-left:var(--space-1)}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
