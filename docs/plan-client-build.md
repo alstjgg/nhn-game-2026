@@ -1,5 +1,8 @@
-# DDAY Client View Layer — PRD (super-pipeline build input)
+# Plan — Client View-Layer Build (the PRD super-pipeline builds from)
 
+> **Tier:** `plan-` — normative about the work, not the artifact: who builds
+> what, in what order, and how it is verified. "PRD" names its function as
+> the harness's build input; `plan-` names its authority.
 > **Owner:** 민서 · **Language:** TypeScript (vanilla, zero runtime deps) ·
 > **Build target:** `src/client/` in this repo, in-place.
 >

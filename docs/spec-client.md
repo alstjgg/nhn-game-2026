@@ -10,7 +10,7 @@
 > redefines them. Conflict order:
 > `spec-architecture.md → spec-engine.md / contract-calls.md /
 > contract-datapack.md / contract-run-artifacts.md → physical spec → this
-> document → [`prd-client-view-layer.md`](./prd-client-view-layer.md)`.
+> document → [`plan-client-build.md`](./plan-client-build.md)`.
 > Who-talks-to-what and the datapack consumption map live in
 > [`architecture-map.md`](./architecture-map.md), not here.
 

@@ -53,10 +53,10 @@ artifact that can enforce itself.*
 | [`plan-pipeline.md`](./plan-pipeline.md) | plan | The three tracks, their owners and deliverables, the stage-by-stage transformation chain, and gameplay metric definitions | 민서 |
 | [`plan-game-design.md`](./plan-game-design.md) | plan | The live game design — pitch, pillars, non-goals, core loop, systems, UX/UI, scope | 윤석 |
 | [`plan-mechanism-test.md`](./plan-mechanism-test.md) | plan | The mechanism verification program: testing principles, run integrity, probe harness, decision procedure | 민서 |
+| [`plan-client-build.md`](./plan-client-build.md) | plan | The view-layer build: the PRD super-pipeline builds from — environment/gates, provided-input classes, work-unit DAG hint, definition of done. Derived from `spec-client.md`; the spec wins on conflict | 민서 |
 | [`status.md`](./status.md) | — | **Mutable project state.** Updated freely by any session. Newest first | shared |
 | [`competition.md`](./competition.md) | — | The 5 required deliverables and the rules governing them | shared |
 | [`architecture-map.md`](./architecture-map.md) | — | **Derived map, not law** — one view of all layers: structure diagram, box catalog with per-claim sources, three flow diagrams. When it disagrees with a spec, the spec wins | 민서 |
-| [`prd-client-view-layer.md`](./prd-client-view-layer.md) | — | The super-pipeline build input for the view layer — environment, provided inputs, work-unit hints. Derived from `spec-client.md`; the spec wins on conflict | 민서 |
 | [`design/phase2-ui/`](./design/phase2-ui/README.md) | — | The client **design target** (self-contained mockup; spec-client §8 binds its standing and porting rule) | 민서 |
 | [`scenario/scenario-generation-guide.md`](./scenario/scenario-generation-guide.md) | guide | Rules injected into a writing session — the physics a scenario must obey | 민서 |
 | [`scenario/gate-hardening-manual.md`](./scenario/gate-hardening-manual.md) | guide | Turning gates into verifiable form. **§5 is the canonical gate card** | 민서 |
