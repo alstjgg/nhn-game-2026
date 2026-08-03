@@ -133,8 +133,21 @@ production composer composes one payload for one beat and has no second arm to
 compare it against.
 
 `shared` imports nothing of ours. `engine` never imports `composer` or
-`client`. Nothing imports `client`. A cycle here is a layering bug, not a
-style question.
+`client`. Nothing imports `client`.
+
+**The reason is DOM containment, not layering taste.** `src/client/` is the only
+folder compiled *with* the DOM lib; the other six are compiled by
+`tsconfig.core.json`, where `document` does not resolve at all (§3.4). So a
+module under `client/` can reference the DOM and keep the build green — which is
+correct there and nowhere else. A Node process that imports it therefore fails at
+**run time**, in the headless driver, instead of at build. Verified 08-03:
+`document.title` inside `src/client/` passes `npm run check`.
+
+That is what decides where the live driver lives. It has no DOM, so
+`src/client/driver/` would work today — and it would be the one isomorphic module
+outside the mechanical guard, so the first stray `document.` in it would surface
+as a broken full-run rather than a red build. `src/client/driver/` keeps the
+fixture driver, which is client-only and belongs there.
 
 **`src/shared/` is the only folder both tracks write to.** Split it by file,
 along the line the pipeline already draws (§1: data formats → 민서, call
