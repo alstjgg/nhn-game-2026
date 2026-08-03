@@ -54,6 +54,7 @@ artifact that can enforce itself.*
 | [`plan-pipeline.md`](./plan-pipeline.md) | plan | The three tracks, their owners and deliverables, the stage-by-stage transformation chain, and gameplay metric definitions | 민서 |
 | [`plan-game-design.md`](./plan-game-design.md) | plan | The live game design — pitch, pillars, non-goals, core loop, systems, UX/UI, scope | 윤석 |
 | [`plan-mechanism-test.md`](./plan-mechanism-test.md) | plan | The mechanism verification program: testing principles, run integrity, probe harness, decision procedure | 민서 |
+| [`plan-engine-build.md`](./plan-engine-build.md) | plan | PRD for the engine/LLM build: units, gates, the thirteen decisions already made, and what is deliberately left open | 윤석 |
 | [`plan-client-build.md`](./plan-client-build.md) | plan | The view-layer build: the PRD super-pipeline builds from — environment/gates, provided-input classes, work-unit DAG hint, definition of done. Derived from `spec-client.md`; the spec wins on conflict | 민서 |
 | [`status.md`](./status.md) | — | **Mutable project state.** Updated freely by any session. Newest first | shared |
 | [`competition.md`](./competition.md) | — | The 5 required deliverables and the rules governing them | shared |
@@ -88,7 +89,7 @@ undetected. This table is the index; the owning document remains the authority.
 
 | Item | Requester → Responder | Status | Lives in |
 |---|---|---|---|
-| Consumption confirmation: does the suite generator eat the G1 card, and does the engine load the pack for one full round? **Closing this closes pipeline stage 5** | 민서 → 윤석 | **open** | [`handoffs/datapack.md`](./handoffs/datapack.md) §4-5 |
+| Consumption confirmation: does the suite generator eat the G1 card, and does the engine load the pack for one full round? **Closing this closes pipeline stage 5** | 민서 → 윤석 | **open** — assigned to [`plan-engine-build`](./plan-engine-build.md) e9 (engine half; the suite generator stays stage 4) | [`handoffs/datapack.md`](./handoffs/datapack.md) §4-5 |
 | Variable binding for the c2–c7 meters — widen the state model, or spec it out of v0? | 민서 → 윤석 | ✅ **answered 08-03** — spec'd out of v0; the meters are authoring annotation | [`spec-engine.md`](./spec-engine.md) §1.1a |
 | Lint F2 cannot distinguish "unbound, pending hardening" from "not v0 state" — 12 permanent FLAGs on the hardening worklist | 윤석 → 민서 | **open**, not a defect | [`spec-engine.md`](./spec-engine.md) §1.1a · [`contract-datapack.md`](./contract-datapack.md) §3 |
 | Re-widen engine spec §1.1's flag write now that `buckets[].flags` exists? | 민서 → 윤석 | ✅ **answered** — widened; flags are written by script events **and** stance buckets. The tracker was stale, the spec was not | [`spec-engine.md`](./spec-engine.md) §1.1 |
