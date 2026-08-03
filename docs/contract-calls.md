@@ -304,6 +304,21 @@ is no plan to activate it.
 | `facts` | Objective-log UI |
 | `report_body` | Report UI (typewriter) → mining (W3) → next Call 1's `BLOCKS` |
 
+### An empty `PRESENT_NPCS` is legal
+
+A beat with nobody present is not an edge case. In 우는다리, **7 of 19 beats are
+`surface: "document"`** — a report arriving, a log screen — and the pack lists no
+one, because no one speaks. Engine spec §3.1 runs Call 2 on every beat without
+exception, so a `>= 1` requirement made 37% of that pack unrunnable.
+
+> **`PRESENT_NPCS` may be empty. When it is, `npc_lines` must be empty**, and the
+> tool description says so in place of the roster instruction.
+
+The alternative — making the pack name someone for a fax arriving — invents
+presence, and worse, licenses the model to have that person speak in a room they
+are not in. `timeline_entries` stays required and non-empty: a document landing
+has a reaction even without dialogue.
+
 ### Disposition of a soft-flagged output
 
 §1 rule 6 grades a defect *hard* or *soft*, and that grade decides whether to

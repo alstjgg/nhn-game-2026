@@ -4,7 +4,12 @@
 > **two work units**: one implements the engine, the other the composer, and
 > neither may wait on the other. That is what makes this a `contract-` and not a
 > section of the engine spec.
-> Neighbors: [engine spec](./spec-engine.md) ·
+> **Revised 08-03** to sit under the view-driver seam the client track ratified
+> ([spec-client §5.2](./spec-client.md)). That seam is *above* this one:
+> `windows ⟷ [ViewEvent/MembraneOp] ⟷ driver`, and the driver binds engine +
+> composer across the seam below. Nothing here redefines a view-driver type;
+> they live in `src/shared/view-driver.ts` and this document imports them.
+> Neighbors: [spec-client](./spec-client.md) · [engine spec](./spec-engine.md) ·
 > [call contracts](./contract-calls.md) ·
 > [physical architecture](./spec-physical-architecture.md) ·
 > [architecture spec](./spec-architecture.md).
@@ -81,6 +86,56 @@ export interface Engine {
 }
 ```
 
+### 2.0 The engine has two output surfaces
+
+Slot views feed the **composer**. Feed lines feed the **driver**, which wraps
+them into `ViewEvent`s (spec-client §5.2 ratifies the wrapping, not the
+minting). Both come from the same beat, and the engine emits both:
+
+```ts
+import type { FeedLine, Sentence } from '../shared/view-driver.ts'
+
+interface Engine {
+  gateView(): GateView
+  beatView(): BeatView
+  roundView(): RoundView
+  /** This beat's feed lines, in order, ids already minted. */
+  feed(): FeedLine[]
+}
+```
+
+**Why the engine and not the driver** (decided 08-03): spec-client §5.2 ratified
+that *sentence identity is engine-minted*. If the driver assembled feed lines it
+would have to mint or re-derive ids, and the headless driver and the browser
+would then be two places that must agree. One minting site, two consumers.
+
+#### Sentence ids
+
+`b-r<run>-<channel><nn>` per the ratified scheme, plus one channel it did not
+cover:
+
+| Channel | Source | Minable |
+|---|---|---|
+| `f` | Call 3 `facts` | ✅ |
+| `b` | Call 3 `report_body` (segmented) | ✅ |
+| `n` | Call 2 `timeline_entries` | ✅ |
+| `q` | Call 2 `npc_lines` | ✅ |
+| **`u`** | **Call 1 `utterance`** — added 08-03 | ✅ |
+| — | engine symptom sentences | ❌ **no id** |
+| `t*` | authored script events, from `timeline.json` | ✅ (run-independent) |
+
+**`u` closes a hole in W3.** Mining happens on actually generated text, and the
+controller's own utterance is generated — without a channel it could never
+become a block, so W1 would reach the report and the timeline but never the next
+round's `BLOCKS`.
+
+**Symptoms carry no `sentence_id` and are therefore not minable.** They are
+authored fixed sentences: identical every run, so mining one carries no
+information, and I12 already forbids their numeric source from surfacing.
+`FeedLine.kind` is still `'symptom'`; only the id is absent.
+
+**Species derives from the channel, never from classification** (ratified).
+
 **Views are snapshots, not live handles.** Each returns plain data valid at the
 moment of the call; the composer must not hold one across a beat. An engine that
 returns a mutable reference into its own state fails §8-3.
@@ -107,11 +162,20 @@ export type ComposerDeps = {
 }
 
 export interface Composer {
-  judgment(view: GateView, blocks: Block[]): CallRequest
+  /** `deploy`'s slotted set, as ids — resolution and ordering are this module's. */
+  judgment(view: GateView, blockIds: string[]): CallRequest
   narration(view: BeatView): CallRequest
   reporter(view: RoundView): CallRequest
 }
 ```
+
+**`BLOCKS` arrives as a set of ids and the composer sorts it canonically.**
+`MembraneOp.deploy` carries `blocks: string[]` and spec-client §5.2 states the
+order carries no meaning (architecture §2.1: content, not order). Two deploys of
+the same set must therefore compose the **same bytes**, or the C-BLOCK
+measurement is comparing payloads that differ for a reason the experiment never
+declared. Canonical order is **lexicographic by id**; the composer resolves ids
+to text through the block store the driver passes in.
 
 `CallRequest` is `{call_type, template_version, slots}` — physical §3.10: the
 proxy renders both message layers, so the composer assembles **values**, never
@@ -252,5 +316,9 @@ validators, not against AWS.
   not change when the number does.
 - **`AGENT_UTTERANCE` in call contracts §6's supplier table** (§2.1) — a table
   gap, fix belongs in that document.
+- **Where the run-loop manager lives.** In scope for the next build (08-03) and
+  isomorphic like the engine — the policy bot drives it headless — so `src/runloop/`,
+  under the same no-DOM tsconfig. Its `meta` event shape settles when it is built;
+  the channel is already ratified.
 - **Whether `ComposerDeps` grows.** `reportGuidance` is the only non-state input
   today. A second one is a signal to check whether it is really state.
