@@ -18,9 +18,10 @@
 >
 > **Harness mods assumed:** the frontend-mod
 > ([`planning/research/super-pipeline-frontend-mod.md`](../planning/research/super-pipeline-frontend-mod.md))
-> P0-A (`reference_globs`) and P0-B (rendered-output capture) are implemented
-> in the super-pipeline repo **before this run** (민서 runs that
-> implementation separately).
+> P0-A (`reference_globs`), P0-B (`render_capture`), P0-C (reference shots +
+> in-loop visual self-check) and P1-F (DISCOVERY plumbing) are implemented in
+> the super-pipeline repo **before this run** (민서 runs that implementation
+> separately).
 
 ---
 
@@ -63,7 +64,11 @@ Spec-client §3's twelve invariants are the review bar, verbatim — reviewers
 block on them, and the P1-D structural asserts (§5 u9) turn four of them
 into tests: no free-text surface (inv 1) · no digit in NPC channels, scoped
 to feed/symptom nodes (inv 2) · no third-party URL in the built bundle
-(inv 10) · no color/size literals outside `styles/tokens.css` (inv 8).
+(inv 10) · no color/size literals outside `styles/tokens.css` (inv 8) —
+plus a11y asserts (keyboard-reachable membrane ops and window controls,
+roles/landmarks, focus order). Unit-scoped asserts ride their own unit's
+gate; **repo-wide asserts bind fully only at u11** (no full-suite gates on
+earlier units).
 
 ## 5. Work-unit DAG (build hint — the decomposer refines)
 
@@ -71,7 +76,7 @@ to feed/symptom nodes (inv 2) · no third-party URL in the built bundle
 |---|---|---|---|---|
 | **u0** | `src/client/` scaffold + tsconfig split (physical §3.8 steps, client slice only) — **blocked on 윤석's OK** | — | `npm run build` on empty modules | physical §3.8 |
 | **u1** | `styles/tokens.css` + vendored per-window skins from `desktop.css`, re-tokenized (inv 8) | u0 | vitest: token-only lint passes | `desktop.css` (whole) |
-| **u2** | `driver/`: `ViewEvent`/`MembraneOp` types (spec §5.2) · fixture driver · **fixture files regenerated from `우는다리` with real authored ids** | u0 | vitest: fixture replay ordering | spec §5.2·§5.4 · `data.js` (as content source only) |
+| **u2** | `driver/`: `ViewEvent`/`MembraneOp` types (spec §5.2) · fixture driver · **fixture files regenerated from `우는다리` with real authored ids** · **clock pause/seed + animation-freeze hooks** (for the build's own e2e determinism; harness captures use frontend-mod P0-B's browser-clock settle protocol) | u0 | vitest: fixture replay ordering; hooks pin a frame | spec §5.2·§5.4 · `data.js` (as content source only) |
 | **u3** | shell: topbar (clock · D-DAY · case) · taskbar · window manager · `applyLayout` | u1 | playwright: 5 windows drag/resize/collapse at 1280×800 | `index.html` topbar/win markup · `app.js` window-manager + layout notes |
 | **u4** | AGENT FILE + BLOCK STORE windows (membrane ops: slot/unslot/deploy; dossier incl. sealed §3) | u2·u3 | vitest: ops emitted with ids; playwright: stamp/lock | reference dossier + card markup/CSS |
 | **u5** | LIVE FEED window (7 line kinds · clock-landed lines · typewriter replay · diegetic waiting) | u2·u3 | playwright: fixture round renders in order, `(변화 없음)`, `※` fallback | reference fanfold markup · feed-kind mapping note |
@@ -85,9 +90,11 @@ to feed/symptom nodes (inv 2) · no third-party URL in the built bundle
 Waves (illustrative): `[u0] → [u1 ∥ u2] → [u3] → [u4 ∥ u5 ∥ u6] →
 [u7 ∥ u8 ∥ u9 ∥ u10] → [u11]`.
 
-**Lenses:** design-fidelity (frontend-mod P1-C) and game-feel (game-mod
-P1-C) both trigger — this PRD is a frontend build of a game surface.
-Evidence bar: named deviations citing reference file/line or a P0-B capture.
+**Review:** design-fidelity applies at the **unit-PR Lead review** (frontend-
+mod P1-E — where the captures are); if also seated on the final panel, 민서
+pins it at the approval gate. Game-feel (game-mod P1-C) triggers on the
+panel. Evidence bar everywhere: named deviations citing reference file/line
+or a capture, never taste.
 
 ## 6. Definition of done
 
