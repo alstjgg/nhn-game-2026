@@ -64,6 +64,47 @@ engine's flag-application seam must not discriminate by source (same reasoning a
 > be indifferent to the variable list (architecture spec §3), so if rebinding
 > touches engine code, that is itself a defect.
 
+### 1.1a NPC meters are **not** v0 engine state
+
+`characters.json` gives every character up to two meters with a `variable` /
+`initial` binding slot. In `우는다리` the caller's two are bound (`c1` →
+`trust` / `fear`); the other six characters' twelve are `null`, and lint F2
+flags each one.
+
+**Those twelve are authoring annotation, not state, and v0 does not bind them.**
+
+The evidence is that nothing in the pack already treats them as state:
+
+| Surface | What it actually references |
+|---|---|
+| gate bucket `deltas` | `trust`, `fear` — nothing else |
+| script event `effects.deltas` | none |
+| `symptoms.json` | keyed `trust` · `fear` · `flags` |
+| `edge_predicates` | empty in all seven gates |
+| `score.json` `predicates` | empty in all units |
+
+They also fail all three of architecture spec §3.1's tests — no actuator writes
+them, no predicate reads them, and nothing renders them visible. By that
+document's own criterion they do not qualify as state variables, so this is less
+a decision than a recognition.
+
+What they *do* is real work: they tell the scenario writer what each character
+wants, and that shapes prose, stances, and false leads. Keeping them out of the
+state model does not delete them.
+
+**Binding one later is a data change, not a schema change** — `variable` is
+already `["string","null"]` and the schema's own description says the hardening
+overlay fills it. And architecture spec §9 defers the formal variable list to
+the §3.1 visibility probe regardless, so nothing here is permanent.
+
+> **Revision request → data track.** Lint F2 ([contract-datapack](./contract-datapack.md)
+> §3) cannot currently tell "unbound, pending hardening" from "not v0 state" —
+> both are `null`. Twelve of the pack's 34 FLAGs are therefore permanent
+> residents of a list described as "the hardening worklist". Distinguishing them
+> probably needs an explicit marker in `characters.schema.json`; the shape of that
+> marker is the data track's call, and this section is the basis for the request.
+> **Not a defect** — F2 is a FLAG, lint exits 0, and the pack is consumable today.
+
 ### 1.2 Actuators
 
 Exactly architecture spec §3's whitelist: **(gate, stance) fixed deltas** and

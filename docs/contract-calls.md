@@ -286,6 +286,7 @@ is no plan to activate it.
 | 1 | `BLOCKS` | The player — mined from the actual generated text of timeline and reports (W3, I1) |
 | 1 | `GATE_QUESTION` `STANCE_SET` | Scenario, per gate |
 | 2 | `TIMELINE_TAIL` | Tail of the engine timeline |
+| 2 | `AGENT_UTTERANCE` | Call 1's `utterance` this beat, held by the engine. Empty string on a script beat |
 | 2 | `FIXED_NPC_ACTION` `PRESENT_NPCS` | Scenario, per beat |
 | 2 | `SCENE_SYMPTOMS` | Engine per-beat delta journal → symptom renderer |
 | 3 | `EXPERIENCED` | Round event assembler (script + Call 2 output + Call 1 `utterance`/`inner_note`) |
@@ -302,6 +303,63 @@ is no plan to activate it.
 | `timeline_entries` `npc_lines` | Engine timeline → screen + mining (W2) → next Call 1 and Call 3 |
 | `facts` | Objective-log UI |
 | `report_body` | Report UI (typewriter) → mining (W3) → next Call 1's `BLOCKS` |
+
+### An empty `PRESENT_NPCS` is legal
+
+A beat with nobody present is not an edge case. In 우는다리, **7 of 19 beats are
+`surface: "document"`** — a report arriving, a log screen — and the pack lists no
+one, because no one speaks. Engine spec §3.1 runs Call 2 on every beat without
+exception, so a `>= 1` requirement made 37% of that pack unrunnable.
+
+> **`PRESENT_NPCS` may be empty.** When it is, the tool description instructs the
+> model to return an empty `npc_lines` in place of the roster instruction.
+
+**Nothing validates that instruction, deliberately.** A line whose speaker is
+not in the roster is already *soft* (§1 rule 6) — an observation about model
+behaviour, not a malformation — and an empty roster is only the limiting case of
+that rule. So a line that arrives anyway is recorded, not re-called, and the
+**engine drops it on the way to the timeline** (see the disposition table below).
+The wording matters because "must" reads as enforced: it is not, and the engine
+is the only thing standing between an invented speaker and the screen.
+
+The alternative — making the pack name someone for a fax arriving — invents
+presence, and worse, licenses the model to have that person speak in a room they
+are not in. `timeline_entries` stays required and non-empty: a document landing
+has a reaction even without dialogue.
+
+### Disposition of a soft-flagged output
+
+§1 rule 6 grades a defect *hard* or *soft*, and that grade decides whether to
+re-call. It does not say what the consumer then **does** with a soft-flagged
+response, and the two contexts want different things: the probe records the
+observation and keeps the response whole, but production has to put something on
+a screen.
+
+One rule covers every case:
+
+> **A soft flag never discards the response. The offending element is dropped if
+> it would otherwise reach the player, and ignored if the field is
+> diagnostics-only.**
+
+| Soft defect | Production disposition | Why |
+|---|---|---|
+| `npc_lines` speaker outside `PRESENT_NPCS` | **drop that line**, keep the rest of the beat | The line cannot be attributed, so it cannot be mined (W2) and would put an invented character on screen. The beat's `timeline_entries` are unaffected and discarding them too would cost real material |
+| `npc_lines` item echoes the controller's utterance | **drop that line** | It is already on the timeline; showing it twice reads as a bug |
+| `because_block_ids` contains an id not in `BLOCKS` | **ignore** | Diagnostics-only (see the consumer table above) — it never reaches the player, so there is nothing to drop |
+| `rejected_stance` equals `stance`, or arrives malformed | **ignore** | Same: diagnostics-only |
+
+**Dropping is the engine's, not the proxy's.** The proxy validates and reports;
+it does not edit model output. `proxy/src/calls.ts` therefore grades these as
+non-fatal and passes the payload through intact — the engine drops on the way to
+the timeline. Two consequences worth stating: a beat whose every `npc_lines`
+entry is dropped is legal (it renders as a beat with no dialogue), and the
+dropped text still exists in the raw response, so it stays measurable.
+
+⚠️ **Open — where a production soft flag is recorded.** The run record carries
+`fallbacks: [{beat, call, code}]` for call failures ([run
+artifacts](./contract-run-artifacts.md) §1), and a soft flag is not a failure. If
+soft-flag counts are wanted in gameplay measurement they need their own slot
+there. Raised to the data track; not a defect until P2 asks for the number.
 
 ### Where this map must not be cut
 
@@ -438,3 +496,102 @@ deployed system silently.
 
 Living in `data/` as data: stance sets, gate graph, delta tables, thresholds,
 length policy.
+
+## 11. The wire — composer ⟷ proxy
+
+§10 says where the calls are executable. This section is the transport between
+the two tiers, and it is the other half of what a work unit needs to build
+either side without a meeting.
+
+### Request
+
+```
+POST <PROXY_BASE_URL>/dday/call
+content-type: application/json
+origin: <the deployed Pages origin>          ← checked; a mismatch is 403
+```
+```jsonc
+{
+  "call_type": "judgment" | "narration" | "reporter",
+  "template_version": "v0.4",                // /^v[0-9]+\.[0-9]+$/
+  "slots": { /* values, not prose — see below */ }
+}
+```
+
+**One route for all three calls.** They differ only in an output schema and
+share auth, validation, timeout, and fallback; three routes would be three copies
+of one handler. `GET /dday/health` is the other route and invokes no model.
+
+**`slots` carries values, not rendered text** (physical §3.10): arrays stay
+arrays, `STANCE_SET` stays `{id,label}[]`. The proxy renders both message layers.
+The one slot that must arrive already-prose is `TEMPERAMENT` — the proxy has no
+renderer for it and passes it through
+([engine ⟷ composer](./contract-engine-composer.md) §4).
+
+**Slots this tier owns are ignored, not rejected.** `FLAW`, `INCIDENT`, and
+`PRIORITY_LIST` come from the default prompt. A client that sends them is not
+erroring — honouring them would let a client rewrite the agent's character, so
+they are silently dropped.
+
+### Response
+
+**200** — the tool payload **verbatim**, unwrapped. A judgment 200 body *is* the
+`JudgmentResponse` of §2. There is no envelope on success: an envelope would be
+a second place for the schema to drift.
+
+**Non-2xx** — always this shape, never a bare string:
+
+```jsonc
+{ "error": { "code": "invalid_request", "message": "…", "requestId": "…" } }
+```
+
+### Headers
+
+| Header | On | Meaning |
+|---|---|---|
+| `x-request-id` | every response | Correlates with the Lambda log line |
+| `x-llm-fallback` | `false` on 200 · `true` on a model-side failure | **The engine's signal to apply its own authored fallback** (engine spec §5) |
+| `x-fallback-code` | model-side failures only | Which failure, for the run record's `fallbacks[]` |
+
+`x-llm-fallback: true` is deliberately **absent** on a malformed request. A 400
+means the client is wrong; flagging it as a fallback would have the engine absorb
+a client bug with an authored default, and the bug would never surface.
+
+### Status codes
+
+| Code | `code` | Fallback? | Meaning |
+|---|---|---|---|
+| 400 | `invalid_json` · `invalid_request` · `invalid_slots` · `unknown_template_version` | no | Malformed payload, unknown call type or version, or slots the schema cannot be built from (e.g. fewer than 2 stances) |
+| 403 | `origin_forbidden` | no | Origin is not the configured one |
+| 404 | `not_found` | no | Not `POST /dday/call` or `GET /dday/health` |
+| 413 | `request_too_large` | no | Over `MAX_BODY_BYTES` |
+| 415 | `unsupported_media_type` | no | Content-Type is not `application/json` |
+| 500 | `invalid_config` · `unfilled_slot` · `internal_error` | no | This tier's bug. `unfilled_slot` means a template slot had no value — a contract break, not a client error |
+| 502 | `invalid_model_output` | **yes** | The model returned no tool call, or output that failed validation |
+| 504 | `bedrock_timeout` | **yes** | The model did not answer inside `MODEL_TIMEOUT_MS` |
+
+The 4xx/5xx split is the load-bearing line: **4xx means fix the caller, 5xx-with-
+a-fallback-header means apply the authored default and carry on.**
+
+### Retries belong to the engine
+
+One retry, two calls total (engine spec §5), and **the engine owns the counter** —
+the proxy never retries a model call. API Gateway allows the whole request 9
+seconds and `MODEL_TIMEOUT_MS` already consumes 7, so a proxy-side retry would
+land outside the budget and return a gateway error instead of a usable fallback.
+The probe uses 2 retries against a different budget; the two numbers differing is
+deliberate.
+
+### Endpoint configuration
+
+The client learns the base URL at build time from `VITE_PROXY_BASE_URL`. An unset
+value is not an error — the client runs with LLM features degraded rather than
+crashing, which is what keeps a Pages deploy green while the stack is down. It is
+**not** a secret; the origin check and throttling are the access control, and the
+only secret in the system stays inside the Lambda (physical §2 constraint 2).
+
+⚠️ **Open — nothing sets `VITE_PROXY_BASE_URL` yet.** `deploy.yml` must not change
+(physical §2 constraint 4), so it arrives as a repository variable read by the
+existing build step. `demos/apothecary/` hit exactly this and its build never set
+`VITE_AI_BASE_URL`, which is why that demo runs stub-only today — the precedent
+to not repeat.

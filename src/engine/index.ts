@@ -1,7 +1,13 @@
 /**
  * State engine — deterministic, isomorphic, DOM-free.
  *
- * Owner: 윤석 (architecture track). Stub until the minimal engine spec merges.
+ * Owner: 윤석 (architecture track). Stub.
+ *
+ * Its **public surface** — what the composer may call — is fixed by
+ * [contract-engine-composer.md](../../docs/contract-engine-composer.md) §2:
+ * `gateView()` · `beatView()` · `roundView()`, each returning a snapshot of
+ * plain data, never a live handle into state. That contract also assigns this
+ * module the round event assembler (§5). Its internals are this spec's:
  *
  * What lands here, per that spec: the run state, the per-beat delta journal
  * (`{variable, before, after, cause}`), the symptom renderer, and the beat

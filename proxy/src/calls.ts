@@ -154,9 +154,14 @@ const narration: CallSpec = {
   ],
 
   buildTool(slots) {
-    if (idsOf(slots.PRESENT_NPCS).length < 1) {
-      throw bad("slots.PRESENT_NPCS needs >= 1 {id,name} entry.");
-    }
+    // An EMPTY roster is legal, and it is not an edge case: 7 of 우는다리's 19
+    // beats are `surface: "document"` — a report arriving, a log screen — where
+    // nobody is present because nobody speaks. Requiring >= 1 made 37% of that
+    // pack unrunnable against engine spec §3.1 ("script beats run Call 2 without
+    // exception"), and the only way to satisfy it would be to invent presence,
+    // which also licenses the model to have someone speak in an empty room.
+    // Found 2026-08-03 by running the pack through the real handler.
+    const roster = idsOf(slots.PRESENT_NPCS);
     return {
       name: "narration",
       description: "이 비트의 반응을 기록한다. 정확히 한 번만 호출한다.",
@@ -172,8 +177,9 @@ const narration: CallSpec = {
           npc_lines: {
             type: "array",
             items: { type: "string" },
-            description:
-              '이 비트의 대사. 각 항목은 "인물id: 대사" 형식. [현장의 인물]에 있는 id만 쓴다. 대사가 없으면 빈 배열.',
+            description: roster.length
+              ? '이 비트의 대사. 각 항목은 "인물id: 대사" 형식. [현장의 인물]에 있는 id만 쓴다. 대사가 없으면 빈 배열.'
+              : "이 비트에는 아무도 없다. 반드시 빈 배열을 쓴다.",
           },
         },
         required: ["timeline_entries", "npc_lines"],
