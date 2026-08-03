@@ -305,8 +305,11 @@ implementation SSoT; until it lands, this section stands.
 - **The judge's experience.** Page load ~1s (static deploy, minimal assets). The
   demo starts **on run 3**, not run 1 — some mined sentences already exist, so the
   first 60 seconds can show "insert a sentence → the judgment changes".
-- **No persistence.** Progress (mined sentences, unlocked truths, runs remaining)
-  is session-only; refresh resets.
+- **Session-scoped persistence.** Progress (mined sentences, unlocked truths,
+  runs remaining) lives in `sessionStorage` — a refresh does **not** reset it,
+  closing the tab does (physical §1.1, 08-03). A stray F5 mid-play would
+  otherwise destroy the multi-run loop, while a judge returning to the page
+  still gets a clean start on run 3.
 
 Two open parameters live on this surface and are bound with the pause structure:
 the injectable slot count, and block-pool curation (pin cap, species/axis
