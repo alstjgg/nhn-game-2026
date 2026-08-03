@@ -22,7 +22,7 @@ const DEV_ALLOWLIST = new Set(['vitest', 'playwright', 'typescript', 'vite', '@t
 // Scripts that existed before this unit and must survive byte-identical.
 const FROZEN_SCRIPTS: Record<string, string> = {
   dev: 'vite',
-  check: 'tsc -p tsconfig.core.json && tsc && npm run datapack:check',
+  check: 'tsc -p tsconfig.core.json && tsc && npm run typecheck:test && npm run datapack:check && npm run test:shared',
   build: 'npm run check && vite build',
   preview: 'vite preview',
   'datapack:types': 'node authoring/generate-datapack-types.mjs',

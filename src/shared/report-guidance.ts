@@ -13,6 +13,11 @@
  * `ReportGuidance` is scenario-independent policy (contract-engine-composer §3:
  * `ComposerDeps.reportGuidance`), which is why it lives outside any
  * `data/scenario/**` pack and is host-loaded instead.
+ *
+ * D4 / spec S5: like `renderTemperament`, this renderer is **total** — no
+ * validation, no throw. A missing/malformed field is guarded and rendered as
+ * the field's zero value rather than raised as an error; validating the
+ * authored policy is `authoring/lint-datapack.mjs`'s job, not the renderer's.
  */
 
 export type ReportGuidance = {
@@ -34,35 +39,22 @@ export type ReportGuidance = {
 }
 
 export function renderReportGuidance(guidance: ReportGuidance): string {
-  if (typeof guidance !== 'object' || guidance === null) {
-    throw new Error('renderReportGuidance: guidance must be a ReportGuidance object')
-  }
-  if (typeof guidance.facts !== 'object' || guidance.facts === null) {
-    throw new Error('renderReportGuidance: facts must be an object')
-  }
-  if (typeof guidance.report_body !== 'object' || guidance.report_body === null) {
-    throw new Error('renderReportGuidance: report_body must be an object')
-  }
-  const { facts, report_body } = guidance
-  if (typeof facts.max_items !== 'number' || typeof facts.policy !== 'string') {
-    throw new Error('renderReportGuidance: facts.max_items/policy missing')
-  }
-  if (
-    typeof report_body.format !== 'string' ||
-    typeof report_body.policy !== 'string' ||
-    typeof report_body.length !== 'object' ||
-    report_body.length === null ||
-    typeof report_body.length.min_chars !== 'number' ||
-    typeof report_body.length.max_chars !== 'number'
-  ) {
-    throw new Error('renderReportGuidance: report_body fields missing')
-  }
+  const facts = guidance?.facts
+  const reportBody = guidance?.report_body
+  const length = reportBody?.length
+
+  const maxItems = typeof facts?.max_items === 'number' ? facts.max_items : 0
+  const factsPolicy = typeof facts?.policy === 'string' ? facts.policy : ''
+  const format = typeof reportBody?.format === 'string' ? reportBody.format : ''
+  const minChars = typeof length?.min_chars === 'number' ? length.min_chars : 0
+  const maxChars = typeof length?.max_chars === 'number' ? length.max_chars : 0
+  const bodyPolicy = typeof reportBody?.policy === 'string' ? reportBody.policy : ''
 
   const lines: string[] = [
-    `사실 목록: 최대 ${facts.max_items}개. ${facts.policy}`,
+    `사실 목록: 최대 ${maxItems}개. ${factsPolicy}`,
     '',
-    `보고서 본문: ${report_body.format} 형식, ${report_body.length.min_chars}~${report_body.length.max_chars}자.`,
-    report_body.policy,
+    `보고서 본문: ${format} 형식, ${minChars}~${maxChars}자.`,
+    bodyPolicy,
   ]
 
   return lines.join('\n')

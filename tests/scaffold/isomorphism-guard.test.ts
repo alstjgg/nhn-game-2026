@@ -8,9 +8,11 @@ import { fileURLToPath } from 'node:url'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
-// D7 — SHA-256 of tsconfig.core.json at spec time. This file is 윤석's standing
-// condition: it must come out of this unit byte-identical.
-const CORE_TSCONFIG_SHA256 = '72c0613b49951284d006b2480d449e62e80ae9369ea62c94c9c595837bffb062'
+// D7 — SHA-256 of tsconfig.core.json. Re-pinned to the composed base (PRD §2a.3):
+// the hand-composed base extended `include` to the six core folders, which is a
+// legitimate widening of the isomorphic core, not a violation of the standing
+// condition — the guard re-anchors on the new byte-identical value.
+const CORE_TSCONFIG_SHA256 = '876a7313e70e221c2619de88fbf91507c92483301c91688b65afd8453b736fcd'
 
 function read(rel: string): string {
   return fs.readFileSync(path.join(REPO, rel), 'utf8')
@@ -38,9 +40,16 @@ describe('[u0#c3] tsconfig.core.json is untouched (C6 standing condition)', () =
     expect(git(['status', '--porcelain', '--', 'tsconfig.core.json']).trim()).toBe('')
   })
 
-  it('(c) its include is exactly the three core areas', () => {
+  it('(c) its include is exactly the six core areas (PRD §2a.3 composed base)', () => {
     const cfg = parseJsonc(read('tsconfig.core.json')) as { include?: unknown }
-    expect(cfg.include).toEqual(['src/shared', 'src/engine', 'src/composer'])
+    expect(cfg.include).toEqual([
+      'src/shared',
+      'src/engine',
+      'src/composer',
+      'src/transport',
+      'src/driver',
+      'src/runloop',
+    ])
   })
 
   it('(c2) it still omits DOM lib and all ambient types', () => {
@@ -89,15 +98,22 @@ describe('[u0#c3] no path alias anywhere (C6)', () => {
   })
 })
 
-describe('[u0#c9] vite.config.ts carries no §3.7 pack-copy plugin', () => {
-  it('git reports vite.config.ts unmodified', () => {
-    expect(git(['status', '--porcelain', '--', 'vite.config.ts']).trim()).toBe('')
+// [u0#c9] originally asserted vite.config.ts carried no §3.7 pack-copy plugin.
+// §3.7 has since been ratified (cee7060): a build-only closeBundle plugin that
+// copies `data/{scenario,policy}` into `dist/data/` is now required, not
+// forbidden. Inverted rather than deleted so the guard still catches drift —
+// it now pins the ratified shape (build-only, by-name allowlist, no dev
+// middleware) instead of its absence.
+describe('[u0#c9] vite.config.ts carries the ratified §3.7 pack-copy plugin', () => {
+  it('source declares a plugins array with a closeBundle hook', () => {
+    const source = read('vite.config.ts')
+    expect(source).toMatch(/closeBundle/)
+    expect(source).toMatch(/(^|\s)plugins\s*:/)
   })
 
-  it('source declares no plugins array and no closeBundle hook', () => {
+  it('the copy is build-only: no dev-server middleware is declared', () => {
     const source = read('vite.config.ts')
-    expect(source).not.toMatch(/closeBundle/)
-    expect(source).not.toMatch(/(^|\s)plugins\s*:/)
+    expect(source).not.toMatch(/configureServer/)
   })
 
   it('still pins the GitHub-Pages base', () => {

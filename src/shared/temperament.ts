@@ -15,27 +15,45 @@
  * its own header — the slot is bare in both templates) plus carry every
  * authored field without dropping any of them. When S + D land the ratified
  * shape, only the body of this function changes; the export stays the same.
+ *
+ * The header text below is the one exemplar the spec gives (probe fixture
+ * `tools/probe/fixtures/temperament/k1.md`, design decision 6): S + D still
+ * own the final call, but this is not a placeholder invented by this unit.
+ *
+ * D4 / spec S5: this renderer is **total** — no validation, no throw.
+ * Validation of authored data is `authoring/lint-datapack.mjs`'s job; a
+ * malformed field is guarded and skipped here (never coerced into the
+ * prompt), not raised as an error.
  */
 import type { Temperament } from './datapack.ts'
 
+/** contract §4's name for the renderer's input — a local alias, not a new type. */
+export type TemperamentPack = Temperament
+
 /** The header this renderer supplies — {TEMPERAMENT} sits bare in its templates. */
-const HEADER = '[기질]'
+const HEADER = '**너의 기질 — 이것은 협상 대상이 아니다.**'
 
-export function renderTemperament(pack: Temperament): string {
-  if (typeof pack !== 'object' || pack === null) {
-    throw new Error('renderTemperament: pack must be a Temperament object')
-  }
-  if (typeof pack.default_disposition !== 'string') {
-    throw new Error('renderTemperament: default_disposition must be a string')
-  }
-  if (!Array.isArray(pack.clauses)) {
-    throw new Error('renderTemperament: clauses must be an array')
+function str(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+export function renderTemperament(pack: TemperamentPack): string {
+  const lines: string[] = [HEADER]
+
+  const disposition = str(pack?.default_disposition)
+  if (disposition) {
+    lines.push('', disposition)
   }
 
-  const lines: string[] = [HEADER, '', pack.default_disposition]
-
-  for (const clause of pack.clauses) {
-    lines.push('', clause.condition, clause.defeat_condition)
+  const clauses = Array.isArray(pack?.clauses) ? pack.clauses : []
+  for (const clause of clauses) {
+    if (clause == null || typeof clause !== 'object') continue
+    const condition = str((clause as { condition?: unknown }).condition)
+    const defeatCondition = str((clause as { defeat_condition?: unknown }).defeat_condition)
+    if (!condition && !defeatCondition) continue
+    lines.push('')
+    if (condition) lines.push(condition)
+    if (defeatCondition) lines.push(defeatCondition)
   }
 
   return lines.join('\n')

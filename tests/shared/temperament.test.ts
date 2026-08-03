@@ -30,7 +30,17 @@ function readJson<T>(rel: string): T {
   return JSON.parse(read(rel)) as T
 }
 
-/** Strip line and block comments so a source scan does not fire on prose. */
+/**
+ * Strip line and block comments so a source scan does not fire on prose.
+ *
+ * Known blind spot: this is a textual regex, not a tokenizer, so a `//`
+ * inside a string or regex literal in `rel`'s source (e.g. `fetch('//host/x')`)
+ * is stripped along with real comments. Both renderers are currently
+ * comment-free of that shape, so it does not misfire today, but a future
+ * edit that embeds a URL literal could silently escape the invariant-3(e)
+ * purity scan below. Do not lean on this helper as a purity guarantee for
+ * anything more sophisticated than "no clock/randomness/fs/DOM keyword".
+ */
 function stripComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1')
 }
@@ -40,11 +50,14 @@ function firstNonEmptyLine(s: string): string {
 }
 
 /**
- * A "section header" without deciding the shape: a bracketed tag (`[기질]`,
- * the style every prompt template uses), a 【…】 tag, a markdown heading, or a
- * bold line (the style of the only exemplar, probe fixture `temperament/k1.md`).
+ * A4 pins the header to the bold-line style of the one exemplar this unit has,
+ * probe fixture `temperament/k1.md` (design decision 6): the renderer ships
+ * literal `**너의 기질 — 이것은 협상 대상이 아니다.**`. This was previously widened to a
+ * four-alternative regex ([기질] / 【…】 / markdown heading / bold) that let a
+ * placeholder header pass — tightened back to A4's actual assertion so a
+ * regression here is caught instead of silently accepted.
  */
-const HEADER_LINE = /^\s*(\[[^\]]+\]|【[^】]+】|#{1,6}\s+\S|\*\*[^*]+\*\*)/
+const HEADER_LINE = /^\*\*.+\*\*$/
 
 // ─── frozen inputs (read-only: data/scenario/**, data/policy/**) ─────────────
 
@@ -120,14 +133,18 @@ describe('[e1] invariant 2 — output is non-empty for any schema-valid pack', (
     expect(renderTemperament(twoClauses).trim()).not.toBe('')
   })
 
-  it('(d) malformed input never yields an empty string — it throws instead', () => {
+  it('(d) malformed input never yields an empty string', () => {
+    // D4 / spec S5: the renderer is total (guarded, never throws) — the header
+    // alone keeps every one of these non-empty. The try/catch stays as a
+    // safety net for the OTHER acceptable outcome the criterion names
+    // (throwing); it should not be read as evidence that throwing occurs.
     const malformed: unknown[] = [null, undefined, {}, { default_disposition: '', clauses: [] }]
     for (const bad of malformed) {
       let out: string | undefined
       try {
         out = renderTemperament(bad as Temperament)
       } catch {
-        continue // throwing is the acceptable outcome; returning "" is not
+        continue // throwing would also be an acceptable outcome; returning "" is not
       }
       expect(out ?? '').not.toBe('')
       expect((out ?? '').trim()).not.toBe('')
@@ -326,7 +343,12 @@ describe('[e1] renderReportGuidance — Call 3 policy prose', () => {
     expect(out).not.toContain('[보고 지침]')
   })
 
-  it('(i) malformed input never yields an empty string — it throws instead', () => {
+  it('(i) malformed input never yields an empty string', () => {
+    // D4 / spec S5: total renderer — missing facts/report_body fall back to
+    // their zero values, so the fixed prose around them keeps output
+    // non-empty without ever throwing. The catch below is a safety net for
+    // the criterion's other acceptable outcome (throwing), not evidence that
+    // this renderer throws.
     const malformed: unknown[] = [null, undefined, {}]
     for (const bad of malformed) {
       let out: string | undefined
