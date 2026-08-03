@@ -261,8 +261,8 @@ subjects, weight at the end of the sentence:
    the task framing and the §0–§5/§6 boundary in Korean. The persona line
    sets the register more than any instruction about register does.
 2. **Machine gate** —
-   `node infra/scenario-pipeline/compile-datapack.mjs <draft>` →
-   `node infra/scenario-pipeline/lint-datapack.mjs data/scenario/<slug>`.
+   `node authoring/compile-datapack.mjs <draft>` →
+   `node authoring/lint-datapack.mjs data/scenario/<slug>`.
    Compile errors and lint ERRORs that are **format-only** are fixed directly
    by the orchestrator (table columns, label shapes, id notation — **never
    change a single character of sentence text**). Errors format can't fix

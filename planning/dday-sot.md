@@ -51,7 +51,7 @@
 | 세계 데이터 (슬라이스) | v1: [slice.json](./dday-poc/poc/slice.json) / v2: [slice-terror.json](./dday-poc/poc-terror/slice-terror.json) |
 | 실험 하네스 | `.claude/agents/sim-field-*.md` (기질별 서브에이전트 정의) + `/poc-paper-test`, `/poc-paper-test-terror` 커맨드 + 각 폴더의 PAPER-TEST.md |
 | 런 원자료 (재현 불가 실측) | `planning/dday-poc/poc/runs/` · `poc-terror/runs/` |
-| **메커니즘 실측 프로그램** | [planning/dday-mechanism/](./dday-mechanism/README.md) — 진입점 README부터. 실험 계획은 [docs/dday-mechanism-deep-test.md](../docs/dday-mechanism-deep-test.md), 하네스는 `infra/test-harness/` |
+| **메커니즘 실측 프로그램** | [planning/dday-mechanism/](./dday-mechanism/README.md) — 진입점 README부터. 실험 계획은 [docs/dday-mechanism-deep-test.md](../docs/dday-mechanism-deep-test.md), 하네스는 `tools/probe/` |
 | 문장 풀 초안 (테러 슬라이스) | [SENTENCE-POOL-DRAFT.md](./dday-poc/poc-terror/SENTENCE-POOL-DRAFT.md) — 검토용, `slice-terror.json` 미편입 |
 
 ## 3. 페이퍼 테스트가 증명한 것

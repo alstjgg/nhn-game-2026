@@ -42,7 +42,7 @@ data flows, and invariants, read the architecture spec — do not restate them.
   same call and are part of the generation regime.
 - **Temperament is out-of-band and is a fixture, not a channel.** It lives in
   the call's system layer, composed with the base (in this harness:
-  `infra/test-harness/templates/judgment/temperament/<id>.md`, one file per
+  `tools/probe/fixtures/temperament/<id>.md`, one file per
   temperament, merged into the system prompt at compose time);
   player-composed material — blocks — travels in-band, while the priority
   list sits in the system base as **proxy-authored content the player may
@@ -171,7 +171,7 @@ for every call in this program.
 
 1. **Role isolation is a property of the transport, not a setting.** Judgment
    and reporter calls go out as direct Messages API calls
-   (`infra/test-harness`), granted exactly one tool — the output schema — with
+   (`tools/probe`), granted exactly one tool — the output schema — with
    no filesystem, no repository, and no session context. The prior harness used
    subagent definitions with `tools: []`; that turned out **not to be reliably
    honored** — the registry reported those definitions as holding all tools,
@@ -352,7 +352,7 @@ record observations when they surface; do not author probes for it.
     the call budget (§5.4).
     - *Build prerequisite.* The harness has a `reporter` call type but **no
       reporter template**, so B3b cannot run until one is authored
-      ([EXTENDING.md](../infra/test-harness/EXTENDING.md), "a new call type").
+      ([EXTENDING.md](../tools/probe/EXTENDING.md), "a new call type").
       Budget the authoring, not only the calls.
 - **B4 — Discoverability probe** (paper, zero calls, flagship-scoped).
   Materials are only what the player sees: sentence-block cards, the priority
@@ -466,7 +466,7 @@ reader must not be the probe author — the same separation as §3 rule 3.
 
 *Build prerequisite.* There is no narration call type in the harness at all —
 whoever owns this adds one plus a narrator template
-([EXTENDING.md](../infra/test-harness/EXTENDING.md), "a new call type").
+([EXTENDING.md](../tools/probe/EXTENDING.md), "a new call type").
 
 **Owner: unassigned.** Scheduling: before the variable list binds, not after —
 running it afterwards can only invalidate work already done. Its output is a
@@ -538,7 +538,7 @@ is not comparable evidence. Post-freeze changes are explicit re-binds, never
 silent edits.
 
 **System layer — base** (fixed; register: 너, matching the temperament files).
-Lives at `infra/test-harness/templates/judgment/base-v0.4.md`; the runner
+Lives at `proxy/prompts/judgment/base-v0.4.md`; the runner
 composes it with the temperament fixture and the per-probe slot values, and
 errors on any slot left unfilled:
 
@@ -728,16 +728,15 @@ advisory-log entries (§5.3).
 
 §7 defines what a probe is made of. This section is how one gets authored, run,
 and read, and it absorbs the former work order (now §8.7). Runner:
-[`infra/test-harness`](../infra/test-harness/README.md); extending it to other
-test programs: [EXTENDING.md](../infra/test-harness/EXTENDING.md).
+[`tools/probe`](../tools/probe/README.md); extending it to other
+test programs: [EXTENDING.md](../tools/probe/EXTENDING.md).
 
 ### 8.1 Setup (once per machine)
 
 Node ≥24. No install — the harness has no dependencies.
 
 ```bash
-cd infra/test-harness
-node lib/selftest.mjs           # offline checks; must pass before anything else
+node tools/probe/lib/selftest.mjs           # offline checks; must pass before anything else
 export ANTHROPIC_API_KEY=...    # env only (CLAUDE.md rule 6) — never a file, never a suite field
 ```
 
@@ -775,10 +774,10 @@ before its own build starts.
 Cheapest first. Each step can fail a probe before the next one costs anything.
 
 ```bash
-node lib/selftest.mjs                          # the harness itself
-node run.mjs <suite> --print-prompt=live       # read the composed prompt — free
-node run.mjs <suite> --dry-run --out=/tmp/dry  # whole pipeline, no charge
-node run.mjs <suite>                           # spends calls
+node tools/probe/lib/selftest.mjs                          # the harness itself
+node tools/probe/run.mjs <suite> --print-prompt=live       # read the composed prompt — free
+node tools/probe/run.mjs <suite> --dry-run --out=/tmp/dry  # whole pipeline, no charge
+node tools/probe/run.mjs <suite>                           # spends calls
 ```
 
 `--print-prompt` is the highest-yield check available: most authoring mistakes
@@ -857,7 +856,7 @@ at 3.
 
 | Step | Work | State |
 |---|---|---|
-| 3 | Fix the call shape; author suites (§8.2) | Runner and schema built (`infra/test-harness`); `E0` authored, rest pending |
+| 3 | Fix the call shape; author suites (§8.2) | Runner and schema built (`tools/probe`); `E0` authored, rest pending |
 | 4 | Shape re-validation, pipeline calibration, screening — below | (a)–(c) gate everything downstream; (e) gates step 5 |
 | 5 | Deep-test survivors × Tier A axes (§5.1); gate candidates also through Tier B (§5.2) | Pending |
 | 6 | Compile the mechanism spec (§8.4) | Pending |

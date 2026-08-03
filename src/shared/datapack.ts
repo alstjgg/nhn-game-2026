@@ -4,7 +4,7 @@
  * ⚠ GENERATED FILE — do not edit by hand.
  * Source: `data/scenario/_schema/*.schema.json` (normative — pipeline §3,
  * physical §3.1). Regenerate with
- * `node infra/scenario-pipeline/generate-datapack-types.mjs`;
+ * `node authoring/generate-datapack-types.mjs`;
  * `--check` fails on drift. If this file and the schemas disagree, this
  * file is stale — never the other way around.
  *

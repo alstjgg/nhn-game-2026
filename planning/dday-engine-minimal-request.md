@@ -15,7 +15,7 @@
 > single-variable probe → 0/5 once `PRESENT_NPCS` carried `side`) and the
 > paths to the raw run artifacts. Evidence lives in `planning/` by convention,
 > alongside `dday-mechanism/RUNLOG.md` and `runs/`, which is why this document
-> was archived rather than dissolved. `infra/test-harness/lint-beat.mjs`
+> was archived rather than dissolved. `tools/probe/lint-beat.mjs`
 > cites §6.1 as the rationale it enforces.
 >
 > **Requester:** L (LLM Infrastructure). **Source documents:**
@@ -74,7 +74,7 @@
 
 ### 2.1 조립의 구체안 — 드라이버가 손으로 짜 본 것
 
-배선을 실제로 이어 본 결과(`infra/test-harness/drive-beat.mjs`, 원자료
+배선을 실제로 이어 본 결과(`tools/driver/drive-beat.mjs`, 원자료
 `runs/BEAT-drive/`), 위 표가 "조립"이라고만 적은 부분이 이 정도로 구체적이어야
 한다는 것이 드러났다. 엔진은 최소한 이만큼을 정해야 한다.
 

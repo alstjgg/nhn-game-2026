@@ -34,6 +34,10 @@ transitions (planning → demo → production).
 
 ## Design constraints that affect code
 
+- **Four roots, four jobs.** `src/` is what the bundle ships; `proxy/` is a
+  separately-deployed tier that may not import `src/`; `tools/` is Node-only and
+  never reachable from `index.html`; `authoring/` runs before any of them exist. Experiment vocabulary (arm, channel,
+  placebo, harness) belongs to `tools/probe/` and nowhere else.
 - **Production phase structure:** the selected game (**DDAY**) is built at the repo
   root. The demos under `demos/<slug>/` are competition history — they stay deployed
   at `/<slug>/` by the Pages workflow but are not extended. The root's physical
@@ -67,12 +71,15 @@ and anything the harness isn't suited for.
 ## Layout
 
 ```
-src/            game source — layout bound by docs/spec-physical-architecture.md
+src/            the browser bundle + isomorphic core — bound by docs/spec-physical-architecture.md
+authoring/      authoring-time preprocessing: datapack compile · lint · type generation
+tools/          Node-only executables — probe runner, beat driver, shared call/compose libs
+proxy/          the LLM tier — Lambda + Bedrock, deployed separately from Pages
 demos/          playable demos, own stacks — each deployed at /<slug>/ by the Pages workflow
-planning/       planning-phase archive (concepts, scenarios, paper tests, meetings) — see planning/README.md
-services/       superseded reference implementations (agent-arena-api · apothecary-llm-layer)
+planning/       planning-phase archive (concepts, scenarios, paper tests, meetings, legacy-services) — see planning/README.md
 public/assets/  static assets (each one manifested — see rule 5)
-data/           balance-as-data
+data/           balance-as-data INPUTS — datapacks, policy, the user prompt layer
+artifacts/      measurement OUTPUTS — headless run records, metric reports
 docs/           living docs — project status, competition requirements, deliverable drafts
 .github/        Pages deploy workflow
 ```
@@ -80,7 +87,13 @@ docs/           living docs — project status, competition requirements, delive
 ## Commands
 
 ```bash
-npm run dev      # local dev server
-npm run build    # tsc + vite build → dist/
-npm run preview  # preview production build
+npm run dev              # local dev server
+npm run build            # check + vite build → dist/
+npm run preview          # preview production build
+npm run check            # tsc (core + client) + datapack type-drift gate
+
+npm run datapack:compile -- <draft.md>        # authoring stage 1
+npm run datapack:lint -- data/scenario/<slug> # authoring stage 2
+npm run probe:selftest                        # probe runner, offline, no key
+npm run probe -- <suite.json> --dry-run       # probe runner, no charge
 ```

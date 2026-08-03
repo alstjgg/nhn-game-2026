@@ -27,12 +27,14 @@ npm run preview  # preview the production build locally
 ## Layout
 
 ```
-src/            app source (placeholder render loop for now)
+src/            the browser bundle + isomorphic core (engine · composer · client)
+authoring/      authoring-time preprocessing: datapack compile · lint · type generation
+tools/          Node-only executables — probe runner, beat driver, shared call libs
+proxy/          the LLM tier — Lambda + Bedrock, deployed separately from Pages
 demos/          playable demos, own stacks — each deployed at /<slug>/ by the Pages workflow
-planning/       planning-phase archive (concepts, scenarios, paper tests, meetings) — see planning/README.md
-services/       superseded reference implementations (agent-arena-api · apothecary-llm-layer)
+planning/       planning-phase archive — concepts, scenarios, paper tests, meetings, legacy-services
 public/assets/  static assets served as-is
-data/           balance-as-data (future)
+data/           balance-as-data — datapacks, policy, the user prompt layer
 docs/           living docs — project status, competition requirements, deliverable drafts
 .github/        CI/CD (GitHub Pages deploy)
 ```

@@ -14,7 +14,7 @@ file is valid.
 | Artifact | Role | Drift guard |
 |---|---|---|
 | `data/scenario/_schema/*.schema.json` | **The law.** JSON Schema draft 2020-12, one per pack file. Field-level types are normative here | — |
-| `src/shared/datapack.ts` | Transcription, for TypeScript consumers | ✅ **Generated** by `infra/scenario-pipeline/generate-datapack-types.mjs`; `--check` exits non-zero on drift |
+| `src/shared/datapack.ts` | Transcription, for TypeScript consumers | ✅ **Generated** by `authoring/generate-datapack-types.mjs`; `--check` exits non-zero on drift |
 | `docs/scenario/gate-hardening-manual.md` §5 | The law for the **gate card**, which rides into `gates.json` verbatim | lint E1–E5 |
 | This document | Map + decisions in force | — |
 
@@ -111,11 +111,11 @@ promoted to a file rather than hardcoded anywhere.
 ## 3. Conformance — the lint stage
 
 A pack is conforming when `lint-datapack.mjs` reports no ERROR. Implementation:
-`infra/scenario-pipeline/lint-datapack.mjs` (zero LLM calls, zero dependencies).
+`authoring/lint-datapack.mjs` (zero LLM calls, zero dependencies).
 Lint consumes the schemas directly.
 
 ```bash
-node infra/scenario-pipeline/lint-datapack.mjs data/scenario/<slug>
+node authoring/lint-datapack.mjs data/scenario/<slug>
 # exit 0 = consumable (WARN and FLAG are reported, not blocking)
 # exit 1 = at least one ERROR
 ```
@@ -171,7 +171,7 @@ node infra/scenario-pipeline/lint-datapack.mjs data/scenario/<slug>
 - **The narrative half of the guide's ban list** (items 1 · 2 · 5 · 6 · 7) —
   these need sentence comprehension. The beat-level part of item 7 (a fixed event
   demanding a reply from the controller) is caught by
-  `infra/test-harness/lint-beat.mjs` once a suite exists.
+  `tools/probe/lint-beat.mjs` once a suite exists.
 - **Probing** — first gate only, and it belongs to the harness (manual §6).
 - **Overlay drift** — owned by the compiler, not lint. `hardening.json`'s event
   keys are positional, so the compiler's double guard (`time` + `text_head`

@@ -1,6 +1,6 @@
 ---
 name: read-mechanism-run
-description: Read the results of a DDAY mechanism probe run and write them up in the project's fixed format — probe setup, every call in every arm with the stance it chose and how it read the situation, stance-vs-belief signal comparison, then next moves framed as the three levers (stance set / default prompt / injection sentence). Use whenever asked to read, summarize, review, or report a run under planning/dday-mechanism/runs, or after executing a probe with infra/test-harness.
+description: Read the results of a DDAY mechanism probe run and write them up in the project's fixed format — probe setup, every call in every arm with the stance it chose and how it read the situation, stance-vs-belief signal comparison, then next moves framed as the three levers (stance set / default prompt / injection sentence). Use whenever asked to read, summarize, review, or report a run under planning/dday-mechanism/runs, or after executing a probe with tools/probe.
 ---
 
 # Reading a mechanism run
@@ -28,9 +28,8 @@ Then diff the composed prompts, so the write-up can state the manipulation
 exactly rather than describing it:
 
 ```bash
-cd infra/test-harness
-diff <(node run.mjs <suite> --print-prompt=baseline 2>/dev/null) \
-     <(node run.mjs <suite> --print-prompt=live 2>/dev/null)
+diff <(node tools/probe/run.mjs <suite> --print-prompt=baseline 2>/dev/null) \
+     <(node tools/probe/run.mjs <suite> --print-prompt=live 2>/dev/null)
 ```
 
 ## 2. Write it up — fixed section order

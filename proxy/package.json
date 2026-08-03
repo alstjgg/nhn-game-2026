@@ -1,0 +1,35 @@
+{
+  "name": "@nan2026/proxy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "DDAY runtime LLM tier: API Gateway → Lambda → Bedrock (haiku). Outside the root install by design (physical architecture §3.3).",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run prompts:check && npm run typecheck && npm test",
+    "sam:validate": "sam validate --lint --template-file template.yaml",
+    "sam:build": "sam build --template-file template.yaml",
+    "sam:smoke": "node scripts/bundle-smoke.cjs",
+    "aws:preflight": "node scripts/aws-preflight.mjs",
+    "prompts:bundle": "node scripts/generate-prompt-bundle.mjs",
+    "prompts:check": "node scripts/generate-prompt-bundle.mjs --check"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "3.1095.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.0",
+    "@types/node": "^24.0.0",
+    "esbuild": "0.28.1",
+    "typescript": "~6.0.2",
+    "vitest": "^4.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
+  }
+}

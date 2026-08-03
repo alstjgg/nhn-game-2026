@@ -21,5 +21,6 @@ DDAY 트랙의 확정 시점 기록·문서 지도는 [dday-sot.md](./dday-sot.m
 | `research/` | LLM 백엔드(Bedrock)·agent-arena API 리서치 + super-pipeline 게임 확장 스펙 |
 | `meetings/` | 미팅 기록 |
 | `handoffs/` | 세션 간 핸드오프 문서 |
+| `legacy-services/` | 배포되지 않는 백엔드 2종 (apothecary-llm-layer · agent-arena-api) — 참조 전용 |
 
 플레이어블 데모는 루트 `demos/`에 있다 (배포 워크플로가 스캔하는 위치).
