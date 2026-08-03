@@ -1,8 +1,8 @@
 # Agent Arena API 통합 가이드
 
 > 게임 백엔드가 Agent Arena API를 호출하는 전체 흐름. 요청·응답 스키마의 권위는
-> [`openapi.yaml`](../../services/agent-arena-api/openapi.yaml), 서버 실행·환경변수는
-> [서비스 README](../../services/agent-arena-api/README.md), 배포·BFF 경계의 상세는
+> [`openapi.yaml`](../legacy-services/agent-arena-api/openapi.yaml), 서버 실행·환경변수는
+> [서비스 README](../legacy-services/agent-arena-api/README.md), 배포·BFF 경계의 상세는
 > [백엔드 핸드오프](../handoffs/agent-arena-llm-backend.md)를 본다.
 
 ## 0. 빠른 참조

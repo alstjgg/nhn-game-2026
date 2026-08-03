@@ -6,7 +6,7 @@ Copy the block below into the implementation session as its goal.
 Goal:
 Implement and verify the production-shaped backend described in
 `docs/handoffs/agent-arena-llm-backend.md` under
-`services/agent-arena-api/`. Do not stop at planning or scaffolding. Deliver a
+`planning/legacy-services/agent-arena-api/`. Do not stop at planning or scaffolding. Deliver a
 complete keyless vertical slice plus working OpenAI Responses API and Claude
 Messages API adapters.
 
@@ -104,7 +104,7 @@ Required verification:
   compact/clear
 
 Required deliverables:
-- Complete implementation and tests under `services/agent-arena-api/`
+- Complete implementation and tests under `planning/legacy-services/agent-arena-api/`
 - Runnable `.env.example`, README, and openapi.yaml
 - Safe example model/card/harness registries
 - If live tests run, a redacted

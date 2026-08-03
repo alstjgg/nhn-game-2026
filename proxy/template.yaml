@@ -1,0 +1,276 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Stateless DDAY LLM proxy backed by Amazon Bedrock Converse (haiku).
+
+# Copied from apothecary-llm-layer/template.yaml. What changed and why:
+#   - ModelId is fixed to the haiku global profile (game spec §4), so the
+#     AllowedProfileMode parameter, its Rules block, and the four Nova IAM
+#     statements are all gone. One model, one policy, no conditions.
+#   - Routes: POST /dday/call and GET /dday/health.
+#   - All physical resources are new: stack name, API, log groups.
+# The bootstrap stack (OIDC provider, deploy roles, artifact bucket) is REUSED,
+# not redeclared — it is not in this template on purpose.
+
+Parameters:
+  AllowedOrigin:
+    Type: String
+    Default: https://alstjgg.github.io
+    AllowedPattern: ^https://[A-Za-z0-9.-]+(?::[0-9]+)?$
+    Description: Exact GitHub Pages origin, without a trailing slash.
+  MaxTokens:
+    Type: Number
+    Default: 2048
+    MinValue: 64
+    MaxValue: 4096
+    Description: A reporter body runs 20-30 sentences (call contracts §7-3).
+  ModelTimeoutMs:
+    Type: Number
+    Default: 7000
+    MinValue: 100
+    MaxValue: 7000
+  MaxBodyBytes:
+    Type: Number
+    Default: 131072
+    MinValue: 1024
+    MaxValue: 262144
+    Description: A judgment payload carries a timeline excerpt and mined blocks.
+  ReservedConcurrency:
+    Type: Number
+    Default: -1
+    MinValue: -1
+    MaxValue: 10
+    Description: -1 omits the reservation, 0 disables calls, positive values require sufficient account quota.
+  ThrottlingRateLimit:
+    Type: Number
+    Default: 2
+    MinValue: 1
+    MaxValue: 20
+  ThrottlingBurstLimit:
+    Type: Number
+    Default: 4
+    MinValue: 1
+    MaxValue: 40
+
+Conditions:
+  ConfigureReservedConcurrency:
+    Fn::Not:
+      - Fn::Equals:
+          - Ref: ReservedConcurrency
+          - -1
+
+Resources:
+  HttpApiAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/apigateway/${AWS::StackName}
+      RetentionInDays: 14
+
+  ProxyHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      FailOnWarnings: true
+      CorsConfiguration:
+        AllowOrigins:
+          - Ref: AllowedOrigin
+        AllowHeaders:
+          - content-type
+        AllowMethods:
+          - GET
+          - POST
+        ExposeHeaders:
+          - x-request-id
+          - x-llm-fallback
+          - x-fallback-code
+        MaxAge: 600
+      AccessLogSettings:
+        DestinationArn:
+          Fn::GetAtt:
+            - HttpApiAccessLogGroup
+            - Arn
+        Format: >-
+          {"requestId":"$context.requestId","routeKey":"$context.routeKey","status":"$context.status","responseLength":"$context.responseLength","integrationError":"$context.integrationErrorMessage"}
+      DefaultRouteSettings:
+        DetailedMetricsEnabled: true
+        ThrottlingRateLimit:
+          Ref: ThrottlingRateLimit
+        ThrottlingBurstLimit:
+          Ref: ThrottlingBurstLimit
+      DefinitionBody:
+        openapi: 3.0.1
+        info:
+          title: nan2026-dday-proxy
+          version: "1.0"
+        paths: {}
+      Tags:
+        Project: nhn-game-2026
+        Component: dday-proxy
+
+  ProxyExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: WriteFunctionLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  Fn::Sub: ${CallFunctionLogGroup.Arn}:*
+        # Three statements, not one: an invocation through a global inference
+        # profile is authorized against the profile ARN, the in-region model
+        # ARN, and the region-less model ARN, each with its own condition.
+        # Dropping any one of them produces an AccessDenied that names a
+        # resource the caller never mentioned.
+        - PolicyName: InvokeHaikuGlobalProfile
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: InvokeProfile
+                Effect: Allow
+                Action: bedrock:InvokeModel
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.anthropic.claude-haiku-4-5-20251001-v1:0
+                Condition:
+                  StringEquals:
+                    "aws:RequestedRegion":
+                      Ref: AWS::Region
+              - Sid: InvokeInRegionModelThroughProfile
+                Effect: Allow
+                Action: bedrock:InvokeModel
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0
+                Condition:
+                  StringEquals:
+                    "aws:RequestedRegion":
+                      Ref: AWS::Region
+                    "bedrock:InferenceProfileArn":
+                      Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.anthropic.claude-haiku-4-5-20251001-v1:0
+              - Sid: InvokeGlobalModelThroughProfile
+                Effect: Allow
+                Action: bedrock:InvokeModel
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:bedrock:::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0
+                Condition:
+                  StringEquals:
+                    "aws:RequestedRegion": unspecified
+                    "bedrock:InferenceProfileArn":
+                      Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.anthropic.claude-haiku-4-5-20251001-v1:0
+      Tags:
+        - Key: Project
+          Value: nhn-game-2026
+        - Key: Component
+          Value: dday-proxy
+
+  CallFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-call
+      Description: Serves the three DDAY call types through Bedrock.
+      CodeUri: .
+      Handler: src/handler.handler
+      Runtime: nodejs24.x
+      Architectures:
+        - arm64
+      MemorySize: 512
+      Timeout: 10
+      ReservedConcurrentExecutions:
+        Fn::If:
+          - ConfigureReservedConcurrency
+          - Ref: ReservedConcurrency
+          - Ref: AWS::NoValue
+      LoggingConfig:
+        LogFormat: JSON
+        ApplicationLogLevel: INFO
+        SystemLogLevel: INFO
+        LogGroup:
+          Ref: CallFunctionLogGroup
+      Role:
+        Fn::GetAtt:
+          - ProxyExecutionRole
+          - Arn
+      Environment:
+        Variables:
+          BEDROCK_REGION:
+            Ref: AWS::Region
+          MODEL_ID: global.anthropic.claude-haiku-4-5-20251001-v1:0
+          ALLOWED_MODEL_IDS: global.anthropic.claude-haiku-4-5-20251001-v1:0
+          MAX_TOKENS:
+            Ref: MaxTokens
+          MODEL_TIMEOUT_MS:
+            Ref: ModelTimeoutMs
+          ALLOWED_ORIGIN:
+            Ref: AllowedOrigin
+          MAX_BODY_BYTES:
+            Ref: MaxBodyBytes
+      Events:
+        Call:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: ProxyHttpApi
+            Path: /dday/call
+            Method: POST
+            PayloadFormatVersion: "2.0"
+            TimeoutInMillis: 9000
+        Health:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: ProxyHttpApi
+            Path: /dday/health
+            Method: GET
+            PayloadFormatVersion: "2.0"
+            TimeoutInMillis: 9000
+      Tags:
+        Project: nhn-game-2026
+        Component: dday-proxy
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/handler.ts
+        Format: cjs
+        Minify: true
+        Sourcemap: false
+        Target: es2024
+
+  CallFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/lambda/${AWS::StackName}-call
+      RetentionInDays: 14
+
+Outputs:
+  CallEndpoint:
+    Description: The single call endpoint; call_type travels in the body.
+    Value:
+      Fn::Sub: https://${ProxyHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/dday/call
+  HealthEndpoint:
+    Description: Service health endpoint that does not invoke a Bedrock model.
+    Value:
+      Fn::Sub: https://${ProxyHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/dday/health
+  ModelId:
+    Description: Operating model. The post-deploy smoke reads this, not a literal.
+    Value: global.anthropic.claude-haiku-4-5-20251001-v1:0
+  FunctionName:
+    Value:
+      Ref: CallFunction
+  ApiId:
+    Value:
+      Ref: ProxyHttpApi

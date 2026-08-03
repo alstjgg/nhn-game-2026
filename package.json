@@ -5,9 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "check": "tsc -p tsconfig.core.json && tsc",
+    "check": "tsc -p tsconfig.core.json && tsc && npm run datapack:check",
     "build": "npm run check && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "datapack:types": "node authoring/generate-datapack-types.mjs",
+    "datapack:check": "node authoring/generate-datapack-types.mjs --check",
+    "datapack:compile": "node authoring/compile-datapack.mjs",
+    "datapack:lint": "node authoring/lint-datapack.mjs",
+    "probe": "node tools/probe/run.mjs",
+    "probe:selftest": "node tools/probe/lib/selftest.mjs",
+    "drive:beat": "node tools/driver/drive-beat.mjs"
   },
   "devDependencies": {
     "typescript": "~6.0.2",
