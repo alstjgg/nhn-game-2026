@@ -1,5 +1,5 @@
 import { cpSync, existsSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
 
 // Project-site pathing for GitHub Pages: https://alstjgg.github.io/nhn-game-2026/
@@ -24,21 +24,14 @@ import { defineConfig, type Plugin } from 'vite'
 const PUBLISHED = ['scenario', 'policy']
 
 function copyPackData(): Plugin {
-  // The bundle's own output directory, resolved: `dist/` for the deployed
-  // build, and whatever `--outDir` names for a build that is not the deploy —
-  // the e2e runner serves one such build (C5) and it needs the pack too.
-  let outDir = join(process.cwd(), 'dist')
   return {
     name: 'dday-data',
-    configResolved(config) {
-      outDir = resolve(config.root, config.build.outDir)
-    },
-    // build only: copy into the bundle's outDir, which for the deploy is dist/
+    // build only: copy into dist/, which is what deploy.yml publishes
     closeBundle() {
       for (const dir of PUBLISHED) {
         const from = join(process.cwd(), 'data', dir)
         if (existsSync(from)) {
-          cpSync(from, join(outDir, 'data', dir), { recursive: true })
+          cpSync(from, join(process.cwd(), 'dist', 'data', dir), { recursive: true })
         }
       }
     },

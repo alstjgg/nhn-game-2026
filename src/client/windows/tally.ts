@@ -106,13 +106,27 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     driver.send({ op: 'new_run' })
   })
 
-  /** The taskbar's own attention mark, when the desk has a taskbar. */
-  function alert(on: boolean): void {
-    const task = document.querySelector('.task[data-win="tally"]')
-    if (task) task.classList.toggle('alert', on)
+  /** This window's taskbar button, once the desk has built one. */
+  function taskButton(): HTMLElement | null {
+    return document.querySelector<HTMLElement>('.task[data-win="tally"]')
   }
 
+  /** The taskbar's own attention mark, when the desk has a taskbar. */
+  function alert(on: boolean): void {
+    taskButton()?.classList.toggle('alert', on)
+  }
+
+  /**
+   * Reveal goes through the taskbar, exactly as the operator's would: the desk
+   * owns z-order, and the reference's `openWin()` raised the window as it
+   * unhid it. TALLY is a sheet over the middle of the desk (shell/layout.ts),
+   * so a reveal that only dropped `.hidden` would surface *underneath* whatever
+   * window the operator last touched. Closing needs no such help — a hidden
+   * window has no stacking to lose — and a desk with no taskbar yet (the unit
+   * tests mount the window bare) falls back to the class.
+   */
   function show(open: boolean): void {
+    if (open && win?.classList.contains('hidden')) taskButton()?.click()
     if (win) win.classList.toggle('hidden', !open)
     alert(open)
   }
