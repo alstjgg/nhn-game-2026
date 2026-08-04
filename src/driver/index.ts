@@ -34,3 +34,34 @@ export interface Driver {
 export function createDriver(_deps: DriverDeps): Driver {
   throw new Error('unimplemented: createDriver')
 }
+
+// ─── the live binding (e7) ───────────────────────────────────────────────────
+//
+// Added beside the skeleton above, never in place of it: `createDriver` is the
+// poll-shaped surface e0 froze and the scaffold suite still pins, while
+// `createLiveDriver` is the subscribe-shaped one the run actually drives. The
+// deps of the second are an intersection of the first's, so a host that can
+// build one can build the other.
+
+export { createLiveDriver } from './live-driver.ts'
+export { assertSeamClean } from './seam-guard.ts'
+export { createBlockStore } from './blocks.ts'
+export { createEmitter } from './emitter.ts'
+export { createMembrane } from './membrane.ts'
+
+export type {
+  BeatCursor,
+  BlockStore,
+  ComposerPort,
+  EnginePort,
+  LiveDriver,
+  LiveDriverDeps,
+  MutableBlockStore,
+  OpAck,
+  ReportSentences,
+  ScorerPort,
+  TransportPort,
+  ViewListener,
+} from './ports.ts'
+export type { Emitter, SeamGuard } from './emitter.ts'
+export type { Membrane } from './membrane.ts'
