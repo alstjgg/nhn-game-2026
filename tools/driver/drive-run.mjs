@@ -35,8 +35,16 @@ import {
 } from './run/record.mjs'
 import { formatValidation, validateMetaState, validateRunRecord } from './run/validate.mjs'
 
+export { bindRun } from './run/bind.mjs'
 export { loadGuidance, loadPack } from './run/pack.mjs'
-export { firstDiff, recordingTransport, reduceEvents, serializeRecord } from './run/record.mjs'
+export {
+  assembleRecord,
+  firstDiff,
+  provenanceOf,
+  recordingTransport,
+  reduceEvents,
+  serializeRecord,
+} from './run/record.mjs'
 export { validateMetaState, validateRunRecord } from './run/validate.mjs'
 
 /** Every provider a headless run may be pointed at. No network here. */
@@ -46,8 +54,10 @@ const PROVIDERS = {
 
 /**
  * One full run, pure of `fs` — the pack and the policy arrive already parsed so
- * a test can call this directly. Returns the record, the run loop's meta-state
- * and the raw event stream the record was reduced from.
+ * a test can call this directly. Returns the record, the run loop's meta-state,
+ * the raw event stream the record was reduced from, and the run's block store
+ * (the carry-over's landing place, so a caller can check what the run held
+ * rather than only what the record says it held).
  */
 export async function runHeadless({
   pack,
@@ -63,7 +73,10 @@ export async function runHeadless({
   // decision 2 — derived from (pack, provider, run index). No timestamp, no uuid.
   const id = runId ?? `${pack.slug}-${providerName ?? 'fixture'}-r${begun.run}`
 
-  const rig = bindRun({ pack, guidance, provider, run: begun.run })
+  // `begun.carried` is not decoration on the record: it is this run's starting
+  // block store. Recording a carry-over the run itself does not hold would make
+  // `injected_blocks` a claim about a run that never had those blocks.
+  const rig = bindRun({ pack, guidance, provider, run: begun.run, carried: begun.carried })
   while (await rig.driver.step()) {
     // The driver owns the loop's termination; this is the only place it turns.
   }
@@ -83,6 +96,9 @@ export async function runHeadless({
     journals: rig.journals,
     calls: rig.calls,
     carried: begun.carried,
+    // The provenance source for `injected_blocks[].mined_from_run`: every run
+    // that ended is in the archive, and only an ended run can have carried.
+    archive: runLoop.current().report_archive,
   })
 
   const meta = runLoop.endRun({
@@ -91,7 +107,7 @@ export async function runHeadless({
     carried: begun.carried,
   })
 
-  return { record, meta, events: rig.events }
+  return { record, meta, events: rig.events, blocks: rig.driver.blocks() }
 }
 
 // ─── CLI ─────────────────────────────────────────────────────────────────────
@@ -103,7 +119,10 @@ const USAGE = `usage: node tools/driver/drive-run.mjs --pack <slug> --provider <
 
   --pack=<slug>          scenario datapack under data/scenario/ (required)
   --provider=<name>      ${Object.keys(PROVIDERS).join(' | ')} (required)
-  --validate             validate the record against run-record.schema.json
+  --validate             report schema conformance in the summary line, and
+                         validate the meta-state too. The record itself is
+                         validated before EVERY write, flag or no flag — an
+                         invalid record is never persisted (stage 6 reads these)
   --determinism-check    run the pipeline twice in-process and compare the
                          serialized records; prints the first differing JSON
                          path — a path, never a whole-record dump
@@ -118,6 +137,44 @@ class CliError extends Error {}
 
 const die = (message) => {
   throw new CliError(message)
+}
+
+/**
+ * The only place a record reaches the disk — and it validates first, always
+ * (review finding C).
+ *
+ * The write used to sit outside the `--validate` branch, so the default
+ * invocation happily persisted a record the repo's own schema rejects. Stage 6
+ * reads these files: a record that exists is a record something downstream will
+ * trust, so conformance is a precondition of writing rather than a flag. Both
+ * files are validated before either is opened, so a bad meta-state cannot leave
+ * a half-written pair behind.
+ *
+ * `meta` is written only when supplied (`--emit-meta`).
+ */
+export function persistRun({ record, meta, outDir }) {
+  const result = validateRunRecord(record)
+  if (result.errors.length > 0 || result.unimplemented.length > 0) {
+    die(
+      `refusing to write ${record.run_id}: the record does not conform to ` +
+        `run-record.schema.json:\n${formatValidation(result)}`,
+    )
+  }
+  if (meta !== undefined) {
+    const metaResult = validateMetaState(meta)
+    if (metaResult.errors.length > 0 || metaResult.unimplemented.length > 0) {
+      die(`refusing to write the meta-state: it does not conform:\n${formatValidation(metaResult)}`)
+    }
+  }
+
+  mkdirSync(outDir, { recursive: true })
+  const recordPath = join(outDir, `${record.run_id}.json`)
+  writeFileSync(recordPath, serializeRecord(record))
+  if (meta === undefined) return { recordPath, metaPath: null }
+
+  const metaPath = join(outDir, `${record.run_id}.meta.json`)
+  writeFileSync(metaPath, serializeRecord(meta))
+  return { recordPath, metaPath }
 }
 
 function parseArgs(argv) {
@@ -214,10 +271,6 @@ async function main(argv) {
   const { record, meta } = await onePass(passArgs)
 
   if (flags.has('validate')) {
-    const result = validateRunRecord(record)
-    if (result.errors.length > 0 || result.unimplemented.length > 0) {
-      die(`record does not conform to run-record.schema.json:\n${formatValidation(result)}`)
-    }
     const metaResult = validateMetaState(meta)
     if (metaResult.errors.length > 0 || metaResult.unimplemented.length > 0) {
       die(`meta-state does not conform:\n${formatValidation(metaResult)}`)
@@ -225,12 +278,11 @@ async function main(argv) {
   }
 
   const outDir = opts.out ?? join(REPO, 'artifacts', 'runs')
-  mkdirSync(outDir, { recursive: true })
-  const recordPath = join(outDir, `${record.run_id}.json`)
-  writeFileSync(recordPath, serializeRecord(record))
-  if (flags.has('emit-meta')) {
-    writeFileSync(join(outDir, `${record.run_id}.meta.json`), serializeRecord(meta))
-  }
+  const { recordPath } = persistRun({
+    record,
+    meta: flags.has('emit-meta') ? meta : undefined,
+    outDir,
+  })
 
   process.stdout.write(
     `→ ${recordPath}\n` +

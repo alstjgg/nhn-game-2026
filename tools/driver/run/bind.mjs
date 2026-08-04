@@ -26,11 +26,37 @@ import { createBlockStore, createLiveDriver } from '../../../src/driver/index.ts
 import { recordingTransport } from './record.mjs'
 
 /**
+ * Carry-over, wired into the run. A block in the run loop's meta-state is one
+ * the player mined in an earlier run, so the run it is carried *into* has to
+ * know it: the composer resolves `BLOCKS` against this store, and
+ * `createMembrane` answers `deny('unknown_block')` to any `slot`/`deploy`
+ * naming an id the store never saw. A record whose `injected_blocks` names a
+ * block the driver cannot resolve is a record of a run that never had it.
+ *
+ * The store's only public path into the mined tier is absorb-then-mine, so that
+ * is the path taken here — no second store, no reach into the store's
+ * internals. `absorbLine` reads `sentence_id` and `text` and nothing else; the
+ * `kind`/`clock` below exist to satisfy the `FeedLine` shape. This line is not
+ * a view event: it is never emitted, never enters the feed and never reaches
+ * `timeline`.
+ */
+function seedCarried(blocks, carried) {
+  for (const block of carried) {
+    blocks.absorbLine({ kind: 'mark', clock: '00:00', text: block.text, sentence_id: block.id })
+    if (!blocks.mine(block.id)) {
+      throw new Error(`carried block ${JSON.stringify(block.id)} could not be seeded into the run`)
+    }
+  }
+}
+
+/**
  * Wires one run and hands back the driver plus the two seams the recorder
  * reads: the `ViewEvent` stream (with the recorder's own `(beat, gate, stance)`
  * annotation interleaved) and the Call 1 / Call 3 payloads, verbatim.
+ *
+ * `carried` is the run loop's carry-over **for this run** — `[]` on run 1.
  */
-export function bindRun({ pack, guidance, provider, run }) {
+export function bindRun({ pack, guidance, provider, run, carried = [] }) {
   // Read-only — see the file header. Never advanced, never applied to.
   const schedule = buildSchedule(pack.timeline, pack.gates)
 
@@ -61,6 +87,7 @@ export function bindRun({ pack, guidance, provider, run }) {
   }
 
   const blocks = createBlockStore()
+  seedCarried(blocks, carried)
   const composer = createComposer({ blocks, reportGuidance: guidance })
 
   // The record-numbering offset, applied once, plus the per-beat journal

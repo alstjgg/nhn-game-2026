@@ -24,6 +24,10 @@ import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 import {
+  assembleRecord,
+  bindRun,
+  persistRun,
+  provenanceOf,
   runHeadless,
   validateRunRecord,
   firstDiff,
@@ -35,7 +39,7 @@ import {
 
 import { createFixtureProvider } from '../../src/transport/fixture.ts'
 import { createMemoryMetaStore } from '../../src/runloop/store.ts'
-import { validate as validateAgainst, loadSchema } from '../../tests/runloop/schema.ts'
+import { validate as validateAgainst, loadSchema } from '../driver/run/schema.ts'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const REPO = path.resolve(HERE, '../..')
@@ -64,13 +68,17 @@ async function pass(overrides, runId = `${PACK}-fixture-r1`) {
   })
 }
 
-/** Spawn the CLI the way A1/A3 spell it, inheriting this node's exec flags. */
+/**
+ * Spawn the CLI the way A1/A3 spell it, inheriting this node's exec flags.
+ * `opts.script` points the run at a copy of the tool elsewhere (the ship test).
+ */
 function cli(args, opts = {}) {
-  return spawnSync(process.execPath, [...process.execArgv, SCRIPT, ...args], {
+  const { script = SCRIPT, ...spawnOpts } = opts
+  return spawnSync(process.execPath, [...process.execArgv, script, ...args], {
     cwd: REPO,
     encoding: 'utf8',
     timeout: 30_000,
-    ...opts,
+    ...spawnOpts,
   })
 }
 
@@ -89,11 +97,51 @@ function corrupt(record, mutate) {
 // A1 · A3 — the two acceptance commands, exactly as the unit spells them
 // ─────────────────────────────────────────────────────────────────────────────
 describe('A1 — the --validate command', () => {
-  test('exits 0 and writes artifacts/runs/<run_id>.json', () => {
-    const res = cli(['--pack', PACK, '--provider', 'fixture', '--validate'])
+  // Review finding D. This test used to invoke the CLI with no `--out`, so
+  // `npm run check` rewrote the tracked sample in place and then asserted it
+  // existed — the artifact confirmed itself and nothing was ever compared. The
+  // run now goes to a temp dir and the committed sample is the expectation.
+  test('exits 0 and writes <out>/<run_id>.json, byte-identical to the committed sample', () => {
+    const out = tmpOut('a1')
+    const res = cli(['--pack', PACK, '--provider', 'fixture', '--validate', `--out=${out}`])
     assert.equal(res.status, 0, `stderr:\n${res.stderr}`)
-    const written = path.join(REPO, 'artifacts/runs', `${PACK}-fixture-r1.json`)
+
+    const written = path.join(out, `${PACK}-fixture-r1.json`)
     assert.ok(fs.existsSync(written), `expected ${written} to exist`)
+
+    const committed = path.join(REPO, 'artifacts/runs', `${PACK}-fixture-r1.json`)
+    assert.ok(fs.existsSync(committed), `the reviewable sample ${committed} is missing`)
+
+    const fresh = fs.readFileSync(written, 'utf8')
+    const sample = fs.readFileSync(committed, 'utf8')
+    const diff = firstDiff(JSON.parse(sample), JSON.parse(fresh))
+    assert.equal(
+      diff,
+      null,
+      `the committed sample no longer matches a fresh run (first difference: ${diff}). ` +
+        'If the change is intended, regenerate it deliberately: ' +
+        'node tools/driver/drive-run.mjs --pack 우는다리 --provider fixture --validate',
+    )
+    assert.equal(fresh, sample, 'the sample must match byte for byte, key order included')
+  })
+
+  test('the tracked sample is left alone by the suite — no test rewrites it', () => {
+    const committed = path.join(REPO, 'artifacts/runs', `${PACK}-fixture-r1.json`)
+    const before = fs.readFileSync(committed)
+    const out = tmpOut('untouched')
+    assert.equal(cli(['--pack', PACK, '--provider', 'fixture', `--out=${out}`]).status, 0)
+    assert.deepEqual(fs.readFileSync(committed), before)
+    const sources = fs.readFileSync(fileURLToPath(import.meta.url), 'utf8')
+    // Only real invocations: the literal must open with a quoted argument.
+    for (const [, args] of sources.matchAll(/cli\(\['([^\]]*)\]/g)) {
+      assert.match(
+        args,
+        // `--help`, `--determinism-check` and the two rejected-argument cases
+        // all return before the write path; everything else must name a --out.
+        /--out|--help|--determinism-check|--nope|__no_such_provider__/,
+        `this suite invokes the CLI without --out, so it writes into artifacts/runs: ${args}`,
+      )
+    }
   })
 
   test('the written file is exactly JSON.stringify(record, null, 2) + newline', () => {
@@ -525,6 +573,243 @@ describe('record assembly', () => {
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
+// A failed Call 3 is not an empty report — review finding C.
+//
+// The recorder used to answer a reporter failure with `{facts: [], report_body:
+// ''}`, which `run-record.schema.json` rejects (`report_body` has minLength 1),
+// and the CLI wrote the file anyway because the write sat outside the
+// `--validate` branch. Both halves are asserted here.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The fixture provider, with Call 3 turned into a hard failure. No second provider. */
+function reporterFails(inner = createFixtureProvider()) {
+  return {
+    mode: inner.mode,
+    async send(request) {
+      if (request.call_type !== 'reporter') return inner.send(request)
+      return {
+        ok: false,
+        call_type: request.call_type,
+        fallback: true,
+        code: 'upstream_timeout',
+        message: 'seeded failure',
+        requestId: null,
+        attempts: 2,
+      }
+    },
+  }
+}
+
+describe('review finding C — a failed Call 3 never becomes an empty report', () => {
+  test('runHeadless refuses to record a run whose reporter call never landed', async () => {
+    await assert.rejects(
+      () =>
+        runHeadless({
+          pack: loadPack(PACK),
+          guidance: loadGuidance(),
+          provider: reporterFails(),
+          store: createMemoryMetaStore(),
+          runId: `${PACK}-fixture-r1`,
+        }),
+      /Call 3 never landed/,
+    )
+  })
+
+  test('the fabricated record the old path produced is one the schema rejects', () => {
+    const fabricated = {
+      run_id: 'x', pack_slug: PACK, policy: null, reached_clock: '09:25',
+      injected_blocks: [], beats: [], timeline: ['a'],
+      reports: { facts: [], report_body: '' },
+      score: null, fallbacks: [{ beat: 1, call: 3, code: 'upstream_timeout' }],
+    }
+    const res = validateRunRecord(fabricated)
+    assert.ok(
+      res.errors.some((e) => /report_body/.test(e)),
+      `expected a report_body minLength complaint, got ${JSON.stringify(res.errors)}`,
+    )
+  })
+
+  test('persistRun writes nothing when the record does not conform', () => {
+    const out = tmpOut('invalid')
+    const invalid = {
+      run_id: 'invalid-1', pack_slug: PACK, policy: null, reached_clock: '09:25',
+      injected_blocks: [], beats: [], timeline: ['a'],
+      reports: { facts: [], report_body: '' },
+      score: null, fallbacks: [],
+    }
+    assert.throws(() => persistRun({ record: invalid, outDir: out }), /does not conform/)
+    assert.deepEqual(fs.readdirSync(out), [], 'an invalid record must never reach the disk')
+  })
+
+  test('persistRun validates without being asked — the flag is not the guard', () => {
+    const out = tmpOut('nometa')
+    const invalid = {
+      run_id: 'invalid-2', pack_slug: PACK, policy: null, reached_clock: 'not-a-clock',
+      injected_blocks: [], beats: [], timeline: ['a'],
+      reports: { facts: ['f'], report_body: 'b' },
+      score: null, fallbacks: [],
+    }
+    assert.throws(() => persistRun({ record: invalid, outDir: out }), /does not conform/)
+    assert.deepEqual(fs.readdirSync(out), [])
+  })
+
+  test('a conforming record is still written, with and without a meta-state', async () => {
+    const { record, meta } = await pass()
+    const out = tmpOut('valid')
+    const paths = persistRun({ record, meta, outDir: out })
+    assert.equal(paths.metaPath !== null, true)
+    assert.deepEqual(fs.readdirSync(out).sort(), [
+      `${PACK}-fixture-r1.json`,
+      `${PACK}-fixture-r1.meta.json`,
+    ])
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Carry-over reaches the run — review finding A.
+//
+// e8 built carry-over *across* runs; the record used to name the carried blocks
+// while the run's own store stayed empty, so `membrane.deny('unknown_block')`
+// fired on the very block the record claimed was injected. These tests fail
+// against a `bindRun` that ignores `carried`.
+// ─────────────────────────────────────────────────────────────────────────────
+const CARRIED = { id: 'b-r1-f01', text: '이전 런에서 채굴한 문장이다.' }
+
+/** A store already holding one ended run and its carry-over — the run-2 case. */
+function carriedStore() {
+  return createMemoryMetaStore({
+    pack_slug: PACK,
+    run_count: 1,
+    exposure_clock_reached: '21:04+',
+    carried_blocks: [{ ...CARRIED }],
+    report_archive: [`${PACK}-fixture-r1`],
+  })
+}
+
+describe('carry-over — the record names only blocks the run actually holds', () => {
+  test('bindRun seeds the driver block store, so the composer can resolve the block', () => {
+    const rig = bindRun({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: createFixtureProvider(),
+      run: 2,
+      carried: [{ ...CARRIED }],
+    })
+    assert.deepEqual(rig.driver.blocks().get(CARRIED.id), { ...CARRIED })
+  })
+
+  test('the membrane accepts slot/deploy of a carried block — no unknown_block', () => {
+    const rig = bindRun({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: createFixtureProvider(),
+      run: 2,
+      carried: [{ ...CARRIED }],
+    })
+    assert.deepEqual(rig.driver.submit({ op: 'slot', block_id: CARRIED.id, slot: 0 }), { ok: true })
+    assert.deepEqual(rig.driver.submit({ op: 'deploy', blocks: [CARRIED.id] }), { ok: true })
+  })
+
+  test('seeding is exact — an id that was not carried is still unknown', () => {
+    const rig = bindRun({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: createFixtureProvider(),
+      run: 2,
+      carried: [{ ...CARRIED }],
+    })
+    assert.equal(rig.driver.blocks().get('b-r1-f99'), undefined)
+    assert.deepEqual(rig.driver.submit({ op: 'deploy', blocks: ['b-r1-f99'] }), {
+      ok: false,
+      reason: 'unknown_block',
+    })
+  })
+
+  test('runHeadless carries the meta-state blocks into the run it records', async () => {
+    const { record, blocks } = await runHeadless({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: createFixtureProvider(),
+      store: carriedStore(),
+      providerName: 'fixture',
+    })
+    assert.deepEqual(record.injected_blocks.map((b) => b.id), [CARRIED.id])
+    assert.deepEqual(
+      blocks.get(CARRIED.id),
+      { ...CARRIED },
+      'the record names a block the run itself must be able to resolve',
+    )
+  })
+
+  test('run 1 carries nothing — the seeding path invents no block', async () => {
+    const { record, blocks } = await pass()
+    assert.deepEqual(record.injected_blocks, [])
+    assert.equal(blocks.get(CARRIED.id), undefined)
+  })
+
+  // ── review finding B — mined_from_run is provenance, not a default ────────
+  test('a block minted in a previous run is attributed to that run, not to null', async () => {
+    const { record } = await runHeadless({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: createFixtureProvider(),
+      store: carriedStore(),
+      providerName: 'fixture',
+    })
+    assert.deepEqual(record.injected_blocks, [
+      { id: CARRIED.id, text: CARRIED.text, mined_from_run: `${PACK}-fixture-r1` },
+    ])
+  })
+
+  test('provenanceOf resolves the archived run id the block id names', () => {
+    const archive = [`${PACK}-fixture-r1`, `${PACK}-fixture-r2`]
+    assert.equal(provenanceOf({ id: 'b-r2-q07', text: 't' }, archive), `${PACK}-fixture-r2`)
+    assert.equal(provenanceOf({ id: 'b-r1-f01', text: 't' }, archive), `${PACK}-fixture-r1`)
+  })
+
+  test('null is reserved for the script timeline — an authored t-id, and only that', () => {
+    assert.equal(provenanceOf({ id: 't12', text: 't' }, []), null)
+  })
+
+  test('an unattributable block throws rather than claiming script provenance', () => {
+    assert.throws(
+      () => provenanceOf({ id: 'b-r9-f01', text: 't' }, [`${PACK}-fixture-r1`]),
+      /not in the report archive/,
+    )
+    assert.throws(() => provenanceOf({ id: 'not-an-id', text: 't' }, []), /neither the minted/)
+  })
+
+  test('a record carrying an unattributable block is never assembled', () => {
+    assert.throws(
+      () =>
+        assembleRecord({
+          runId: 'x-r2',
+          packSlug: PACK,
+          policy: null,
+          reduced: { beats: [], timeline: [], fallbacks: [], reachedClock: '09:00' },
+          journals: [],
+          calls: { stance: 's', facts: ['f'], reportBody: 'b' },
+          carried: [{ id: 'b-r1-f01', text: 't' }],
+          archive: [],
+        }),
+      /refusing to invent a run id/,
+    )
+  })
+
+  test('a carried run is still deterministic — two passes are byte-identical', async () => {
+    const one = await runHeadless({
+      pack: loadPack(PACK), guidance: loadGuidance(), provider: createFixtureProvider(),
+      store: carriedStore(), providerName: 'fixture',
+    })
+    const two = await runHeadless({
+      pack: loadPack(PACK), guidance: loadGuidance(), provider: createFixtureProvider(),
+      store: carriedStore(), providerName: 'fixture',
+    })
+    assert.equal(serialize(one.record), serialize(two.record))
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
 // A5 · A6 · A7 · A8 — source guards. Cheap, binary, and the reason a reviewer
 // does not have to re-read drive-run every merge.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -605,6 +890,41 @@ describe('A7 — import discipline', () => {
         assert.ok(!m[1].startsWith('@/'), `${path.relative(REPO, file)}: uses a path alias`)
       }
     }
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The tool ships without the test tree — review finding E.
+//
+// `validate.mjs` used to import its schema walker from `tests/runloop/`, so a
+// deployed `src` + `tools` + `data` tree could not run the driver at all. These
+// two tests are the cheap guard and the actual proof.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('layering — a shipped CLI never imports from tests/', () => {
+  test('no file under tools/driver imports out of the test tree', () => {
+    for (const file of driverSources()) {
+      const text = fs.readFileSync(file, 'utf8')
+      for (const m of text.matchAll(/from\s+['"]([^'"]+)['"]/g)) {
+        assert.ok(
+          !/(^|\/)tests\//.test(m[1]),
+          `${path.relative(REPO, file)}: imports "${m[1]}" — tests may import from tools, not the reverse`,
+        )
+      }
+    }
+  })
+
+  test('src + tools + data alone is a runnable tree', () => {
+    const ship = fs.mkdtempSync(path.join(os.tmpdir(), 'e9-ship-'))
+    for (const dir of ['src', 'tools', 'data']) {
+      fs.cpSync(path.join(REPO, dir), path.join(ship, dir), { recursive: true })
+    }
+    const out = tmpOut('ship-out')
+    const res = cli(['--pack', PACK, '--provider', 'fixture', '--validate', `--out=${out}`], {
+      cwd: ship,
+      script: path.join(ship, 'tools/driver/drive-run.mjs'),
+    })
+    assert.equal(res.status, 0, `the shipped tree could not run the driver:\n${res.stderr}`)
+    assert.deepEqual(fs.readdirSync(out), [`${PACK}-fixture-r1.json`])
   })
 })
 

@@ -6,9 +6,18 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import { driveRound } from './fixtures/rig.ts'
 import type { Driven } from './fixtures/rig.ts'
+import { ID_PATTERN, mintSentenceId } from '../../src/shared/id.ts'
 
-/** §8-8's grammar, verbatim. `t*` script ids are a separate family. */
-const MINTED = /^b-r\d+-[fbnqu]\d{2}$/
+/**
+ * §8-8's grammar, verbatim. `t*` script ids are a separate family.
+ *
+ * `\d{2,}`, not `\d{2}`: two digits is the zero-padded *minimum* width, not a
+ * cap (`src/shared/id.ts` — "a 100th sentence mints `b-r1-f100` rather than
+ * colliding with a truncated `b-r1-f10`"). The `\d{2}` this file used to carry
+ * was tighter than the minter, so a run with 100+ sentences on one channel
+ * would have failed the test rather than the code.
+ */
+const MINTED = /^b-r\d+-[fbnqu]\d{2,}$/
 const AUTHORED = /^t\d+$/
 
 /** Which channel letter each generated feed kind must carry. */
@@ -68,6 +77,17 @@ describe('§8-8 every generated feed line carries a well-formed, engine-minted i
       (kind) => !covered.has(kind),
     )
     expect(uncovered, 'an uncovered kind would slip past the id grammar').toEqual([])
+  })
+
+  it('§8-8 this census agrees with the minter, including past the 99th sentence', () => {
+    // The local grammar is a transcription of `src/shared/id.ts`'s, so it must
+    // accept everything that module mints. Two digits is a minimum width.
+    expect(mintSentenceId(1, 'f', 100)).toMatch(MINTED)
+    expect(mintSentenceId(12, 'b', 7)).toMatch(MINTED)
+    expect(ID_PATTERN.source).toContain('{2,}')
+    // …and reject what it must: a one-digit index, and the authored family.
+    expect('b-r1-f1').not.toMatch(MINTED)
+    expect('t12').not.toMatch(MINTED)
   })
 
   it('§8-8 Call 3 facts mint on `f` and the report body on `b`', () => {
