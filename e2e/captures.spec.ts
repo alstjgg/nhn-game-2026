@@ -328,4 +328,24 @@ test.describe('captures', () => {
     expect(fs.existsSync(OUT_DIR), 'no build-side shots were produced').toBe(true)
     expect(png(OUT_DIR)).toEqual(reference)
   })
+
+  test('captures — no two shots of one surface are the same frame', async () => {
+    // INT-7: the reference renderer once overshot the tally count-up, so
+    // `win-tally` and `tally-countup-final` were byte-identical and the pair
+    // silently compared one reference frame against two build states. Names
+    // that frame the same surface at different moments must differ in content
+    // — on both sides.
+    const pairs: readonly [string, string][] = [['win-tally.png', 'tally-countup-final.png']]
+    for (const dir of [REFERENCE_DIR, OUT_DIR].filter((d) => fs.existsSync(d))) {
+      for (const [a, b] of pairs) {
+        const fa = path.join(dir, a)
+        const fb = path.join(dir, b)
+        if (!fs.existsSync(fa) || !fs.existsSync(fb)) continue
+        expect(
+          fs.readFileSync(fa).equals(fs.readFileSync(fb)),
+          `${a} and ${b} under ${dir} are byte-identical — two names, one frame`,
+        ).toBe(false)
+      }
+    }
+  })
 })
