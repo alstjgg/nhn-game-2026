@@ -229,6 +229,22 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   rendered DOM`, `inv 2 · rendered DOM`), the only browser file u9's globs allow.
   At u11 they may want their own spec files.
 
+- [u1] **The design read-scope slice stops 5 lines short of the file.** The unit's
+  reading scope lists `docs/design/phase2-ui/desktop.css` up to `549–612 (tally +
+  toast)`, but the file is **617** lines: `#toast.on` (615) and `body.booting .win`
+  (617) sit outside every listed slice. Both are load-bearing — the toast never
+  shows without `.on`, and windows flash before the boot sweep without
+  `body.booting` — and were ported anyway. Slice authors should end a range at the
+  file's end, not at the last section heading · unit-spec owner.
+  (`discovery/u1.md` §4)
+- [u2] **§5.2 `meta` is explicitly provisional and the driver cannot narrow it.**
+  The ratified fence carries `// exact meta shape settles when 윤석 builds the
+  run-loop manager`, ported verbatim per [u2#c8]. The fixture driver therefore
+  treats `meta` as an opaque pass-through with no clock stamp — it rides the stamp
+  of the preceding stamped event (see the stamp-inheritance entry). If the run-loop
+  manager later gives `meta` its own stamp, `stampOf()` needs one more branch ·
+  윤석 / whoever ratifies the next §5.2 revision. (`discovery/u2.md` §2)
+
 ## Seam friction
 
 - [u2] The u2 worktree carries no `.claude/super/units/u2.md` and no
@@ -618,7 +634,10 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   `--port` derived from the worktree) ends the class · harness owner.
   *(Integrator note: still live — the C5 split pins 5174/5175/5176 by name, and a
   leftover preview server from the u11 worktree had to be killed before this
-  integration run could boot its own.)*
+  integration run could boot its own. u9d reported the same class from its side:
+  four `#debug-pane` failures that were u9's tree answering on 5174, cleared by a
+  throwaway config on port 5199 and by `CI=1` — `discovery/u9d.md` §D, so read this
+  entry as [u4/u4s/u5/u6/u9/u9d].)*
 - [u3/u4s/u5/u6/u9] **A built `dist/` renders an empty desk — by design, not a
   regression.** `demoRun()` returns `null` when `!import.meta.env.DEV`
   (spec-client §5.4 / inv 11), the boot falls back to `placeholderBootRun()` (one
@@ -751,6 +770,47 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   were re-checked by hand and were genuinely clean, but the guard is blind to an
   uncommitted unit. Have the loop commit before VERIFY, or have the guard consult
   `git status` too · harness owner.
+
+- [u8] **`page.clock` cannot drive the boot — deterministic captures are blocked
+  repo-wide.** Playwright 1.62.1's `page.clock.install({time:0})` before navigation
+  is what the capture protocol wants, so a screenshot lands on a fixed virtual
+  tick. It does not work here: with the virtual clock installed the shell never
+  publishes `window.__threads` / `window.__agentFile`, and pumping the clock in
+  250 ms slices up to 10 s of virtual time does not release it — the capture times
+  out at `waitForFunction`; without the clock the same sequence boots in ~2 s.
+  Something in the boot chain advances on a real-time source the virtual clock does
+  not drive. u8's VERIFY fell back to a fixed wall-clock settle and reported
+  `settle: "wallclock"` rather than claim determinism it did not get. Not u8's code
+  (the thread layer's redraw is synchronous and rAF-coalesced), but it blocks every
+  deterministic capture in this repo until the boot's time source is fake-able ·
+  whoever owns the boot's time source. (`discovery/u8.md` §14)
+- [u8] **A filled slot below the AGENT FILE fold has no thread — by [u8#c3]'s own
+  rule, and the desk's most memorable effect is invisible on arrival.** At the
+  default arrangement the dossier stands above the board, so slot 1 sits at y≈657
+  while the body ends at y≈576: the anchor is scrolled out of its own window,
+  `visibleRect` returns null and no string is drawn. The suite scrolls the board
+  into view (as the operator would) rather than bending the product code to draw to
+  an invisible anchor. **Layout note for whoever owns the file window: the board is
+  off-screen at 1280×800 until the operator scrolls** · window-layout owner.
+  (`discovery/u8.md` §8)
+- [u8] **The DEV debug pane's measured footprint.** `src/client/debug/pane.ts`
+  paints an opaque event table over roughly `x 0–533, y 466–800` at 1280×800 — on
+  top of the BLOCK STORE window and the desk floor, absent from the reference
+  desktop and not gated behind anything visible in dev. It also is the sole
+  offender named by the repo's `style-as-data` / `token-lint` colour-literal suites
+  (`#080d12`, `#23343d`, `#7fb0c4`, `#cfe3ea`, `font:11px/1.35 ui-monospace`).
+  Recorded because it silently degrades every full-desk capture. *(The literals
+  were later moved to `src/client/debug/pane.css`; the pointer/paint overlap is
+  carried in the [u11] pane entry above.)* (`discovery/u8.md` §15, `discovery/u7.md`
+  VERIFY 2, `discovery/u9d.md` §H)
+- [u1/u10] **Protocol — units wrote the root `DISCOVERY.md` directly.** u1's attempt
+  1 appended 23 lines and u10's commit `126c192` appended 15 lines to the shared
+  root file in addition to their own `discovery/<id>.md`. P1-F reserves
+  `DISCOVERY.md` for the integrator precisely because one shared append-target
+  conflicts at nearly every merge barrier. Both units asked the integrator to drop
+  their direct hunks and consolidate from the per-unit files instead — which is what
+  this document does · integrator / harness. (`discovery/u1.md` §8,
+  `discovery/u10.md` §6.2)
 
 ## Reference ambiguities
 
@@ -1065,3 +1125,27 @@ invariant wins and the compliant equivalent is recorded here.*
 - [u9] **Window bodies were empty at u9's merge** — all five panes rendered blank
   paper against a reference with full content. Expected (u4–u8 were out of scope
   at that point) and named only so the blank desk is not read as a regression.
+- [u1] **Adaptations logged under spec-client §8 ("pixel-exactness is not the
+  bar").** (a) *Grey consolidation* — the reference carries several visually
+  identical chrome greys (`#e4e7ea`/`#e2e8ed`/`#dfe6ec`/`#f0f3f6` → `--txt-hi`;
+  `#c3ccd4`/`#a9b5c1`/`#a8b4bf` → `--txt-2`; `rgba(0,0,0,.022|.025|.028)` →
+  `--sh-025`) which collapse onto one step of the scale; no colour is re-invented
+  and every `tokens.css` literal still occurs in `desktop.css` (`[u1#c2] (c)`).
+  (b) *`!important` removed, specificity used instead* — `.tr-i`/`.tr-b` padding
+  becomes `.tly-table td.tr-i`/`td.tr-b`, and `.win.collapsed{height:auto}` drops
+  its `!important`; required, because `24px!important` is not a token reference and
+  the spacing lint rejects it. (c) *`#app{height:100%}` added in `base.css`* — the
+  repo's `index.html` mounts into `<div id="app">` where the reference styles
+  `<body>` directly. (d) `--kraft-2`, `--fanfold-bar`, `--highlight`, `--ink-2/-3`
+  are declared but unreferenced — the reference does not use them either, and
+  `[u1#c2] (a)` ("nothing dropped") requires them to survive.
+  (`discovery/u1.md` §5)
+- [u7] **TALLY's reveal is routed through the taskbar, not through `openWin()`.**
+  The reference's `openWin()` unhid and raised in one call. The sheet overlaps the
+  columns, so dropping `.hidden` alone would surface it *underneath* whichever
+  window the operator last touched (`window-manager.focus()` raises `--z` on every
+  pointerdown, and TALLY's registry z-floor is the lowest thing left by then). u7
+  may not write `--z` (no inline geometry) and is handed no manager handle, so
+  `show(true)` clicks this window's own taskbar button — the desk's public
+  affordance — and falls back to the class when there is no taskbar (the unit tests
+  mount bare). (`discovery/u7.md` IMPLEMENT attempt 2 §2)
