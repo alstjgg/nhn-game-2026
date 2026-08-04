@@ -93,11 +93,51 @@ function corrupt(record, mutate) {
 // A1 · A3 — the two acceptance commands, exactly as the unit spells them
 // ─────────────────────────────────────────────────────────────────────────────
 describe('A1 — the --validate command', () => {
-  test('exits 0 and writes artifacts/runs/<run_id>.json', () => {
-    const res = cli(['--pack', PACK, '--provider', 'fixture', '--validate'])
+  // Review finding D. This test used to invoke the CLI with no `--out`, so
+  // `npm run check` rewrote the tracked sample in place and then asserted it
+  // existed — the artifact confirmed itself and nothing was ever compared. The
+  // run now goes to a temp dir and the committed sample is the expectation.
+  test('exits 0 and writes <out>/<run_id>.json, byte-identical to the committed sample', () => {
+    const out = tmpOut('a1')
+    const res = cli(['--pack', PACK, '--provider', 'fixture', '--validate', `--out=${out}`])
     assert.equal(res.status, 0, `stderr:\n${res.stderr}`)
-    const written = path.join(REPO, 'artifacts/runs', `${PACK}-fixture-r1.json`)
+
+    const written = path.join(out, `${PACK}-fixture-r1.json`)
     assert.ok(fs.existsSync(written), `expected ${written} to exist`)
+
+    const committed = path.join(REPO, 'artifacts/runs', `${PACK}-fixture-r1.json`)
+    assert.ok(fs.existsSync(committed), `the reviewable sample ${committed} is missing`)
+
+    const fresh = fs.readFileSync(written, 'utf8')
+    const sample = fs.readFileSync(committed, 'utf8')
+    const diff = firstDiff(JSON.parse(sample), JSON.parse(fresh))
+    assert.equal(
+      diff,
+      null,
+      `the committed sample no longer matches a fresh run (first difference: ${diff}). ` +
+        'If the change is intended, regenerate it deliberately: ' +
+        'node tools/driver/drive-run.mjs --pack 우는다리 --provider fixture --validate',
+    )
+    assert.equal(fresh, sample, 'the sample must match byte for byte, key order included')
+  })
+
+  test('the tracked sample is left alone by the suite — no test rewrites it', () => {
+    const committed = path.join(REPO, 'artifacts/runs', `${PACK}-fixture-r1.json`)
+    const before = fs.readFileSync(committed)
+    const out = tmpOut('untouched')
+    assert.equal(cli(['--pack', PACK, '--provider', 'fixture', `--out=${out}`]).status, 0)
+    assert.deepEqual(fs.readFileSync(committed), before)
+    const sources = fs.readFileSync(fileURLToPath(import.meta.url), 'utf8')
+    // Only real invocations: the literal must open with a quoted argument.
+    for (const [, args] of sources.matchAll(/cli\(\['([^\]]*)\]/g)) {
+      assert.match(
+        args,
+        // `--help`, `--determinism-check` and the two rejected-argument cases
+        // all return before the write path; everything else must name a --out.
+        /--out|--help|--determinism-check|--nope|__no_such_provider__/,
+        `this suite invokes the CLI without --out, so it writes into artifacts/runs: ${args}`,
+      )
+    }
   })
 
   test('the written file is exactly JSON.stringify(record, null, 2) + newline', () => {
