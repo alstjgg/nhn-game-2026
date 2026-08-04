@@ -34,6 +34,21 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   `.claude/super/units/u1.md` (the contract) + the design reference slices, and
   ignores the stale DESIGN artifact — whoever owns the unit-artifact writer
   should stop reusing a unit dir across runs, or stamp `run_id` into design.md.
+- [e10] `contract-engine-composer.md` §2.1 (and its echo in §8's open-items
+  list) still warns that **`AGENT_UTTERANCE` is missing from call contracts
+  §6's supplier table** — but that table now carries the row, and
+  `tests/acceptance/fixtures/closure.ts` parses it out with no special case.
+  The warning is stale, not the table — impact: a reader of §2.1 thinks a slot
+  is unassigned when the closure proves it is not · the owner of
+  `docs/contract-engine-composer.md` retracts §2.1 (`docs/**` is frozen here).
+- [e10] §8-1's supplier union (`GateView ∪ BeatView ∪ RoundView ∪ ComposerDeps
+  ∪ PROXY_OWNED_SLOTS`) has **no term for the player**, yet call contracts §6
+  assigns `BLOCKS` to the player and the composer only *resolves* the ids it is
+  handed. The executable closure adds an explicit sixth term,
+  `PLAYER_SUPPLIED_SLOTS = ['BLOCKS']`, and counts doubling as engine-side ∩
+  proxy-owned rather than set ∩ set — impact: none on `src/**`; §8's wording
+  should name the player · whoever next edits that contract. See
+  `discovery/e10.md` §2.
 
 ## Seam friction
 
