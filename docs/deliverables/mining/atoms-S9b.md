@@ -1441,3 +1441,149 @@ decide this" flags, and the review rebuttals — not in the drafting.
 - event: The fix moved ALLOWED_ORIGIN into the workflow's env block "alongside the stack name, bucket and role arns, and both probes read it. It must equal samconfig.toml's AllowedOrigin override — that is now one drift point instead of two literals, and the comment says why the probes need it at all."
 - tension: A small maintainability boundary — collapse duplicated literals to one source and document the coupling — applied even on a hotfix.
 - flags: boundary
+
+---
+
+## Balancing win-sweep 2026-08-05 (wins under revised bias)
+
+Coverage: re-read integration/dashboard PR **bodies** #116, #68, #33 in full (gate tables, unit
+inventories, integration-fix sections) and their **review-thread/issue-comment verdicts** — R1 and
+R3 round-1 "Verified myself, all green" blocks and R3's round-2 "all five resolved" on #116, the R2
+seam-architecture assessment + independent-repro block on #68. Re-read manual PR bodies #104
+(datapack compiler) and #138 (first proxy deploy) for the verification/milestone lines the
+failure-sweep left buried. Audit leads S9b-038/018/027/025/113/167 each re-examined for the success
+dimension. This sweep is APPEND-ONLY: no existing atom edited; buried wins get a new atom linking the
+original. Not re-mined: unit PRs and single-agent PRs (S9a's range); quiet manual PRs already listed
+skipped above. Caveat: I sampled the two *strongest* review-verdict comments per integration PR
+rather than every one of the 46/48/60 review submissions — additional smaller "resolved, verified"
+wins in the long tail are uncaptured by design (the concrete milestone/verification wins are here).
+
+### S9b-W001 — The entire left-of-seam engine went from empty to integration-green in one run
+- source: PR #116 (body, gate table + "Units")
+- date: 2026-08-04
+- lanes: 2 AI-building-the-game
+- event: The run built all five previously-empty modules (engine, composer, transport, live driver, run-loop) across 11 units and reported the full gate battery green on a clean checkout: `npm test` 876/876, `npm run check` green (66 checks), `npm run build` green, `probe:selftest` 44/44, `proxy` 39/39, and determinism goldens D1–D5 all passing; the pipeline's stage-5 output landed on disk for the data track's stage-6 consumer.
+- tension: A milestone the failure-sweep never stated plainly — the multi-agent run took a diagram whose whole left half was empty and delivered a bound, headless-runnable engine with every gate green, unblocking a standing cross-track dependency.
+- quote: "Before this run, every box on the left of that diagram was empty. All five now exist, are bound for real, and drive a complete `우는다리` run headless."
+- links: S9b-026, S9b-181
+- flags: milestone, win, measurement
+
+### S9b-W002 — An operator-lens reviewer re-ran every gate and proved D4 determinism was genuinely earned
+- source: PR #116 (issue comment, `[AGENT: R3]` round 1, "Verified myself, all green")
+- date: 2026-08-04
+- lanes: 2 AI-building-the-game
+- event: The Data-integrity/Operator reviewer independently re-ran the whole gate set (876/876, `check` clean, two byte-identical determinism passes, a fresh run byte-identical to the committed artifact) and then went past the self-reports: it grepped the entire run path for nondeterminism sources and found only two spec-stable numeric `.sort()`s, and it fed the shipped schema walker 27 deliberately malformed records, all 27 correctly rejected with pointers.
+- tension: The audit-target win — an adversarial reviewer not only reproduced the green board but proved the determinism claim was real ("not normalized away") and the validator non-vacuous, the kind of independent verification a company adopting AI most wants evidence of.
+- quote: "D4 determinism is *genuinely* earned, not normalized away … Nothing is being papered over."
+- links: S9b-026, S9b-027, S9b-033
+- flags: method-working, verification, measurement, ai-strength
+
+### S9b-W003 — Every panel-found defect on the engine build was fixed and independently re-verified, then approved
+- source: PR #116 (issue comment, `[AGENT: R3]` round 2, "All five of my threads are resolved")
+- date: 2026-08-04
+- lanes: 2 AI-building-the-game
+- event: In round 2 R3 confirmed all five of its round-1 threads resolved, re-running every repro at the new head rather than reading the diff — carry-over now truly reaches the run, provenance is recovered not guessed, no fabricated report survives, the golden gate reddens on a tampered delta, and the CLI ships without `tests/` — and independently re-hashed the regenerated artifact identical to the committed one before clearing its lens.
+- tension: The review-panel loop closing as designed: findings raised with repros, fixed at the source, then re-verified by the same skeptic on fresh runs before sign-off — the mechanism working end to end, not just catching faults.
+- quote: "All five of my threads are resolved. I re-ran every round-1 repro at `46348e0` rather than reading the diff; the evidence is in each thread."
+- links: S9b-038, S9b-031, S9b-032, S9b-033
+- flags: method-working, verification, milestone
+
+### S9b-W004 — The Darkest Context demo shipped as one continuous playable run, whole panel agreeing
+- source: PR #68 (body, integration gate table + "Three more answer the R1·R2·R3 panel review")
+- date: 2026-07-27
+- lanes: 2 AI-building-the-game
+- event: Thirteen units turned the prior run's 5/17 foundation into a single continuous playable run (전진/분기 → 전투 → 훈련장 → 회의 → 휴식 → 종료), verified by the Lead on the integration head: typecheck 0 errors, `npm test` 1270 passed, build OK, secret gate clean over 53 dist files, and Playwright 132 passed / 0 failed — with the full R1·R2·R3 panel's 13 threads all agreed and no rebuttals.
+- tension: A shipped-playable milestone plus a rare unanimous panel outcome — thirteen adversarial review threads all resolving by agreement rather than by author push-back.
+- quote: "Three more answer the R1·R2·R3 panel review of this PR (13 threads, all agreed — no rebuttals)"
+- links: S9b-017, S9b-018
+- flags: milestone, win, method-working
+
+### S9b-W005 — The adversarial domain reviewer judged the AI seam architecture "genuinely good"
+- source: PR #68 (review thread / issue comment, `[AGENT: R2]` seam assessment)
+- date: 2026-07-26
+- lanes: 2 AI-building-the-game
+- event: The Domain-fidelity reviewer, in the same review that filed a blocking empty-persona defect, assessed the seam's design a positive: one `isAgentDecision` shared by stub, live client, and proxy; context noise scoped only to the judgment input; and fallbacks cited to the unit's own default prompt — and it reproduced the invariant-holding results green independently rather than reading the PR body.
+- tension: A win buried inside a failure-flagged review — the same skeptic who found the blank-persona bug credited the agent-built architecture as sound, a design worth copying (single decision entrypoint, scoped noise, self-citing fallbacks).
+- quote: "The architecture of the seam is genuinely good: one `isAgentDecision` shared by stub, live client and the proxy; noise scoped to judgment input; fallbacks cited to the unit's own default prompt."
+- links: S9b-013, S9b-057
+- flags: ai-strength, technique-worth-copying, capability
+
+### S9b-W006 — Panel "no test can see this" findings were converted into four permanent regression gates
+- source: PR #68 (body, "The suite also grew four gates …" + "fixed, not excused")
+- date: 2026-07-27
+- lanes: 2 AI-building-the-game
+- event: The findings the panel raised were not just patched but each turned into a standing gate: the shipped page plays its own beats with no seam published, the decision line clears WCAG on its own bubble art, no bubble covers a hero sprite, and 「거울 방패」 is reachable — and the previously-flaky offline spec was made environment-independent (one `E2E_PORT`) so its green means "the bundle calls nothing," not "I own port 4174".
+- tension: The valuable pattern for an adopter — a review finding becomes an executable regression check, so the same class of defect cannot silently return; the fix table left "no hand-checked exception."
+- quote: "The previously non-green e2e spec is fixed, not excused. … No hand-checked exception is left in this table."
+- links: S9b-017, S9b-019, S9b-021, S9b-050
+- flags: technique-worth-copying, method-working
+
+### S9b-W007 — The shipped page was verified playable inside the judging window on the human path
+- source: PR #68 (review thread, `src/app/director.ts`, R3 replay)
+- date: 2026-07-26
+- lanes: 2 AI-building-the-game
+- event: After the autoplay fix, the Operator-advocate rebuilt and played a whole run clicking only player verbs and measured 3m34s door-to-door, first combat at 4.4s, zero page/console errors — inside the 3–5 minute judging window, on the URL a judge actually opens, confirmed by hand rather than through the test seam.
+- tension: The concrete game-facing win buried under the failure that preceded it (S9b-017's frozen combat) — the demo was measured genuinely playable at judge pace on the human path, the optimization target CLAUDE.md names.
+- quote: "**3 min 34 s door to door, first combat at 4.4 s, zero page/console errors.** That is inside the 3–5 minute judging window on the human path, not only through the gate seam."
+- links: S9b-017, S9b-018
+- flags: milestone, game-feel, measurement, win
+
+### S9b-W008 — The integration pass caught three cross-unit breaks the per-unit gates could not see
+- source: PR #33 (body, "Post-merge integration fixes")
+- date: 2026-07-25
+- lanes: 2 AI-building-the-game
+- event: On the apothecary v2 run, the integrator found and fixed on the integration branch three seams no single green unit owned before the human merged — a duplicated portrait validator, an NFR gate counting a prose comment as a second reduced-motion guard, and a `tier-variants.json` gap that made two patience tiers render byte-identical — then re-ran the whole gate battery on the integration head independently of unit self-reports.
+- tension: The integration-method-working win: green unit gates were each locally correct and jointly wrong, and the integration step existed precisely to catch that class before it reached main — exactly the cross-unit break-catch the sweep was asked to surface as a win.
+- quote: "Three integration commits sit on top of the merged units (cross-unit seams the per-unit gates could not see)"
+- links: S9b-006
+- flags: method-working, milestone, technique-worth-copying
+
+### S9b-W009 — The deterministic datapack compiler shipped and was verified correct against a hand-compiled pack
+- source: PR #104 (body, "Compile is deterministic code, not an LLM")
+- date: 2026-08-02
+- lanes: 4 AI-as-creator
+- event: The datapack compiler (`compile-datapack.mjs`, zero deps, zero LLM calls) shipped and compiled the first real pack (`우는다리`) to ERROR 0, and its correctness was checked by diffing its output against a hand-compiled pack — 10 residual diffs, all punctuation/free-text normalization — while the accompanying lint was negative-tested against schema breaks, broken refs, and symptom-order faults.
+- tension: The capability win the S9b-166 boundary atom leaves implicit: choosing deterministic code over an LLM here was not just principled, it produced a compiler that shipped and provably matched a human reference to the punctuation.
+- quote: "Verified by diffing compiler output against a hand-compiled pack (10 residual diffs, all punctuation/free-text normalization)."
+- links: S9b-166, S9b-167
+- flags: capability, milestone, technique-worth-copying
+
+### S9b-W010 — The LLM proxy tier went live and answered all three call types — first real Bedrock calls
+- source: PR #138 (body, "What this does")
+- date: 2026-08-04
+- lanes: 2 AI-building-the-game
+- event: The `nhn-game-proxy` stack was deployed live in `ap-northeast-2` and all three call types (judgment / narration / reporter) answered through it, closing status.md's long-standing "Not done: zero real Bedrock calls"; the engine build's transport was then compared against the deployed tier — path, three headers, every `template_version`, each call's slot set, and the §11 status map all matched, all three returning 200 live.
+- tension: The infrastructure milestone buried under S9b-183's by-hand-boundary framing and #139's later probe failure — the runtime AI tier the whole design points at actually came up and served all three contract calls for the first time.
+- quote: "The stack `nhn-game-proxy` is live in `ap-northeast-2` and all three call types have answered through it. This closes status.md's standing **\"Not done: zero real Bedrock calls.\"**"
+- links: S9b-183, S9b-046
+- flags: milestone, win, capability
+
+### S9b-W011 — The C-BLOCK mechanism validated at scale: 761 judgment calls, p=0.0000595
+- source: PR #138 (body, "Nova 2 Lite")
+- date: 2026-08-04
+- lanes: 1 AI-in-the-game
+- event: The model-choice section recorded that every C-BLOCK measurement rested on 761 haiku judgment calls yielding `p=0.0000595` — the accumulated evidence that the game's core AI mechanic (a structured block shifting the agent's judgment) works with strong statistical significance, cited as the reason not to swap the shipped model near deadline.
+- tension: A positive measurement at scale, distinct from the 10-call S9b-147 finding — the mechanism the whole game bets on is validated over hundreds of real calls, which the model-decision framing buries.
+- quote: "every C-BLOCK measurement — 761 judgment calls, the `p=0.0000595` result — is haiku."
+- links: S9b-147, S9b-186
+- flags: measurement, milestone, win
+
+### S9b-W012 — The membrane held on both fallback paths under a live adversary, criterion now in the suite
+- source: PR #116 (review thread, `src/engine/index.ts`, R2 resolve)
+- date: 2026-08-04
+- lanes: 1 AI-in-the-game
+- event: After R2 proved the agent's private `inner_note` could leak to the player as a certified fact, the Lead closed it at two layers and R2 mutation-tested both — removing each guard in a scratch tree to confirm the three new assertions redden — and ruled the fix sound, with the catching criterion now live in the suite.
+- tension: The defense-in-depth win the failure atom (S9b-024) sets up but does not state as a success: the project's core membrane rule was restored on every path and proven to stay caught under an adversary that had been "turned up," not merely patched.
+- quote: "The membrane holds on both paths, under a live adversary, with the criterion that catches it now in the suite."
+- links: S9b-024, S9b-025
+- flags: win, verification, method-working
+
+### S9b-W013 — The scenario factory's isolated loop caught an error it had itself introduced
+- source: PR #104 (body, "Scenario factory")
+- date: 2026-08-02
+- lanes: 4 AI-as-creator
+- event: The write-scenario orchestrator skill (write → compile → lint → paper-check → scoped fix → loop) ran the live `우는다리` scenario through and its closed paper-check caught and corrected a fault "including one error introduced by the loop's own earlier fix," and two checker-discipline rules plus two lint rules (W3/W4) were promoted from that live run into the standing pipeline.
+- tension: A technique worth copying — a bounded, contamination-isolated AI generation loop with human-authored guardrails that is self-correcting enough to catch its own regressions, buried in S9b-167 as a neutral process note.
+- quote: "including one error introduced by the loop's own earlier fix."
+- links: S9b-167, S9b-166
+- flags: technique-worth-copying, ai-strength, method-working

@@ -24,8 +24,12 @@ listed here.
 | 4 | **Story bank** — per theme, a narrative with every claim linked to evidence (SHA / PR # / doc §) | story bank |
 | 5 | **Assembly** — merge into deliverable #4's structure (subsuming the machine-drafted `../ai-utilization.draft.md` and its open TODOs); feed #2/#3/#5 | the document |
 
-Extraction bias, fixed up front: decisions over descriptions, failures over
-successes, human-kept-vs-AI-delegated boundaries over "impressive AI output".
+Extraction bias (revised 2026-08-05): the full arc weighted equally —
+successes and failures, impressive AI output and human-held boundaries,
+discoveries and shortcomings — because deliverable #4's reader is a game
+company evaluating AI for its own adoption, not only a judge of an "AI
+director." Decisions over descriptions; the reason behind a choice beats the
+choice itself.
 
 ## Lanes (open-ended)
 
@@ -60,6 +64,9 @@ Incremental sweeps mine only material past the marker, then advance it — the
 final sweep happens immediately before Phase 5 assembly.
 
 Known blind spots at the current snapshot:
+- atoms mined 2026-08-04 were captured under an earlier *failure-weighted*
+  extraction bias (revised 2026-08-05); successes and impressive AI output may
+  be under-sampled until a balancing sweep runs (audited before deciding);
 - work in flight on active super-pipeline run branches (lands on main later);
 - the super-pipeline harness's sibling repo — deliberately out of corpus; its
   design record inside this repo (`planning/research/super-pipeline-game-mod.md`)

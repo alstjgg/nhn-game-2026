@@ -33,10 +33,16 @@ Coverage: <what was read in full / sampled / skipped — no silent caps;
           boundary | fabrication | pivot | measurement | cost | …>
 ```
 
-## Extraction bias (fixed at Phase 0)
+## Extraction bias (revised 2026-08-05)
 
-- decisions over descriptions; failures over successes; human-kept vs
-  AI-delegated boundaries over "impressive AI output"
+- **The full arc, weighted equally: successes and failures, impressive AI
+  output and human-held boundaries, discoveries and shortcomings.** The reader
+  of deliverable #4 is a game company evaluating AI for its own use — what
+  worked and is worth adopting matters as much as what failed and had to be
+  bounded. Do not privilege the confession over the win, or the win over the
+  confession. (Supersedes the earlier "failures over successes" bias; atoms
+  mined 2026-08-04 predate this and may under-sample wins — see README.)
+- decisions over descriptions — capture the reasoned choice, not the surface
 - the *reason* recorded with the choice beats the choice itself
 - verbatim quotes beat paraphrase; Korean sources are quoted in Korean
 - an atom must cite a real, checkable source — no synthesis across sources

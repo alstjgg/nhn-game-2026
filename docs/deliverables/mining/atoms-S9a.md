@@ -812,3 +812,143 @@ Coverage:
 - **"3가지 데모 준비" → demo comparison → new-concept discussion → DDAY** — *confirmed in PR-level evidence.* Three demos are visible as build targets in this slice's window: apothecary (unit runs 20260724/20260725, PRs #18–#45), doodle-life (#16, playable demo), darkest-context (#42/#50/#53 + unit runs 20260725-153055/20260726-075042). Doodle-life was killed by an explicit concept decision on 07-25 (#16: "we decided not to continue on the doodle-life concept"). *New* concepts then appear after the demo phase: D-Day (#85, 07-28 — outside this slice but in the inventory) and field-report (#86, 07-28), matching OH-1's "데모 비교 이후 신규 컨셉 논의". DDAY's first appearance in this slice is #94 (07-30, mechanism direction) and #98 (07-31, call contracts); apothecary's live-LLM line (#83) was closed 07-29 and its infra archived (#90) as the pivot landed. Agent-arena appears only as #15 (manual, outside slice) — the PR record supports three *demos*, more than three *concepts*.
 - **Membrane rule as founding agreement** — *corroborated as enforced practice, not origin.* The membrane appears throughout unit reviews as a standing invariant checked in code ("멤브레인 준수(네이티브 폼 컨트롤 0)" #21/#25/#35; whitelist projection "물리적으로 강제" #36; INV-1 in #77), and #81's P2 thread shows the team *auditing* an overstated membrane claim in docs. Nothing in the PRs dates the agreement's origin — consistent with OH-1's claim that it predates the repo; origin remains oral-only.
 - **"게임 개발 자체에 AI를 쓰는 것은 당연하나, 인게임에도 AI를 넣어야할까?"** — *indirectly corroborated:* every demo PR pairs a build-side AI apparatus (super-pipeline unit PRs) with a deliberately bounded in-game AI seam (stub/live adapters #40, proxy #81, contracts #98), i.e., in-game AI was engineered as an *optional, degradable* layer — the shape one would expect if its inclusion had been a genuine open question.
+
+## Balancing win-sweep 2026-08-05 (wins under revised bias)
+Coverage: Re-read the full issue-comment review threads of PR #34, #35, #41 (apothecary unit reviews, both rounds), #107 (proxy single-agent), #98, #94, #86, #50, #53 (single-agent approvals); read the bodies of zero-activity engine-run unit PRs #122, #132, #134; cross-checked the zero-review-activity inventory in `corpus-prs.md` §Per-group / §Zero-review-activity. Re-framed the four audit-lead atoms (S9a-031, -059, -089, -026), which logged a caught defect as a failure but buried the fact that the review demonstrably *worked*. Cap: did not re-pull inline GraphQL review threads (Phase-1 mined those; these reframes and new wins draw on the issue-comment-level review summaries and the cited existing atoms' sources). ADDITIVE — no existing atom edited.
+
+### S9a-W001 — The review loop closes green: every reviewed apothecary unit reached a verified round-2 approval
+- source: PR #35 (review, round-2 approve); recurs PR #34, PR #41 (round-2 approve)
+- date: 2026-07-25
+- lanes: 2 AI-building-the-game
+- event: After changes-requested round 1, the Lead re-ran the fixed unit from a clean worktree, confirmed each requested change was actually reflected, and recorded an explicit approval — e.g. #35 round 2: "94/94 green", "360/360 green", every round-1 mutation now failing. The panel did not just find defects; it drove each reviewed unit to a re-verified green close.
+- tension: The win the failure-biased pass skipped: the multi-agent review is not only a defect net — its terminal state is a *verified* approval, reached on every reviewed unit PR in the run.
+- quote: "라운드 2 리뷰 — **approve**. 미해결 3건 모두 실제 반영을 검증하고 resolve했다."
+- links: S9a-031, S9a-033, S9a-008
+- flags: win, method-working, milestone
+
+### S9a-W002 — Trust-inversion's other result: the agent's self-reported gates were independently confirmed TRUE
+- source: PR #35 (review, round-1); recurs PR #34, PR #41 (round-1)
+- date: 2026-07-24 → 07-25
+- lanes: 2 AI-building-the-game
+- event: The Lead re-ran the author's claimed test/build/typecheck commands from a clean checkout and found the numbers accurate — #35: "57/57 · 323/323 · typecheck clean" 자기보고는 사실이다; #34: "AC 4개 모두 사실로 충족됨을 확인했다"; #41: the CSS-fallback robustness claim reproduced true. The failure-biased mining logged only the cases where re-verification broke a claim; the majority result was that the agent's green self-reports held up under independent replay.
+- tension: Trust inversion is usually cited as catching lies. Its equally-real output is a measurement of AI reliability: the build-agent's factual test/build claims were, when re-run, substantially true.
+- quote: "저자의 '57/57 · 323/323 · typecheck clean' 자기보고는 **사실이다**. 숫자에는 거짓이 없다."
+- links: S9a-008, S9a-018
+- flags: measurement, ai-strength, method-working
+
+### S9a-W003 — The review certifies, not only catches: a "잘한 점" ledger of correctly-held invariants
+- source: PR #35 (review, round-1 "잘한 점"); recurs PR #34, PR #41 ("좋았던 점")
+- date: 2026-07-25
+- lanes: 2 AI-building-the-game
+- event: Alongside its change requests, the Lead itemized what the unit got *right* and had independently verified: §3-3 self-timer ban honored in code and tests via a comment-stripping scan ("주석으로 눈속임하는 스캔이 아니다"), the membrane held (zero native form controls, `textContent`-only render), and `createSettleLatch`'s 8 tests were genuine behavior checks. Correct engineering was affirmatively recorded, not merely waved through.
+- tension: A review panel that only logs defects looks purely negative; this one issued positive certification of held invariants — evidence that the good work was recognized and confirmed, not just the bad work flagged.
+- quote: "§3-3(자체 타이머 금지)이 구현·테스트 양쪽에서 실제로 지켜진다 … 주석으로 눈속임하는 스캔이 아니다."
+- flags: win, method-working, ai-strength
+
+### S9a-W004 — Mutation testing worked as a repeatable teeth-test: each fix re-run showed the mutant now dies
+- source: PR #35 (review, round-2 mutation table)
+- date: 2026-07-25
+- lanes: 2 AI-building-the-game
+- event: The Lead re-applied the same two render mutations that had passed 92/92 before the fix and showed each now fails, plus a third; the tabulated before/after ("이전 라운드 92/92 green (미검출) → 현재 fail") demonstrated the tightened tests had real teeth. The technique — mutate the implementation, require the suite to redden — became the run's standard instrument for judging whether a gate actually gates.
+- tension: The buried win under S9a-031: mutation testing didn't just expose a vacuous gate, it *proved the repair*, and did so cheaply and repeatably enough to adopt as a convention.
+- quote: "`root.append(...)` → `lineEl` 제거 | 92/92 green (미검출) | fail"
+- links: S9a-031, S9a-037, S9a-050
+- flags: technique-worth-copying, measurement, method-working
+
+### S9a-W005 — Two independent measurements converged to the pixel before the fix was accepted
+- source: PR #41 (review, round-2 "독립 검증")
+- date: 2026-07-25
+- lanes: 2 AI-building-the-game
+- event: After the Lead's browser-canvas alpha measurement showed 6/8 jars mis-cropped, the author independently re-measured with Python/PIL and confirmed the reviewer's `contentRect` numbers to the pixel; at round 2 the Lead re-measured with its own PIL pass and recorded "24개 셀 전부 크롭 윈도우 ⊇ 항아리 bbox, 이웃 픽셀 bleed = 0", plus a mutation and a screenshot. Reviewer and author reached the same measured geometry from separate tooling.
+- tension: The buried win under S9a-059: the decisive evidence was not one party's assertion but two independent measurements agreeing — the strongest form of verification the run produced, and repeatable by anyone.
+- quote: "**알파 채널 재측정**(PIL): `contentRect` 수치가 실제 시트 기하와 일치. 24개 셀 전부 크롭 윈도우 ⊇ 항아리 bbox, **이웃 픽셀 bleed = 0**."
+- links: S9a-059, S9a-063
+- flags: measurement, method-working, technique-worth-copying
+
+### S9a-W006 — Spoiler leak caught AND closed: the answer key proven absent from the shipped bundle
+- source: PR #34 (review, round-1 build + round-2 verify)
+- date: 2026-07-24 → 07-25
+- lanes: 2 AI-building-the-game · 1 AI-in-the-game
+- event: After the Lead built the branch and showed a default JSON import would emit `hiddenCause` (the secret players must deduce) into the client bundle, the author switched to a named import and added a real-build regression test; the Lead rebuilt and inspected the artifact — "pixelate.bundle.js 5576 B, hiddenCause 없음" — confirming the secret is provably absent from what ships. The defect was not just found but demonstrably eliminated before merge.
+- tension: The buried win under S9a-026: this is the review panel doing exactly its job — a shipped-answer-key leak intercepted and its fix verified at the artifact level, pre-merge.
+- quote: "vite lib 빌드 산출물 직접 검사 | `pixelate.bundle.js` 5576 B, `hiddenCause` 없음"
+- links: S9a-026
+- flags: win, capability, measurement
+
+### S9a-W007 — An AI-built verification gate, mutation-tested by the human, "genuinely bites"
+- source: PR #107 (issue comment, alstjgg)
+- date: 2026-08-03
+- lanes: 2 AI-building-the-game
+- event: The prompt-parity gate the agent wrote to prove "the mechanism measurements describe the deployed system" was stress-tested by alstjgg with five mutations of his own; four were caught, and the sole survivor was exactly the gap the test itself already documents. The human's verdict certified the agent's guard as effective.
+- tension: The buried win under S9a-089: trust inversion turned on an agent-authored gate returned a *pass* — the AI-built verification apparatus was independently confirmed to work, its only hole being the one it already disclosed.
+- quote: "**The parity gate genuinely bites.** … Four caught. The survivor was the blank-run collapse, i.e. exactly the gap the test already documents … Independently confirmed."
+- links: S9a-089
+- flags: capability, measurement, win
+
+### S9a-W008 — Milestone: the agent institutionalized repo-wide CI in a single pass
+- source: PR #107 (issue comment, C9Boom7 + fix 55f87f9)
+- date: 2026-08-03
+- lanes: 2 AI-building-the-game
+- event: Told the parity gate ran nowhere, the agent widened the finding — *no* PR in the repo had ever run CI — and added `ci.yml` (root on node 22, proxy on node 24, `npm run check` on every PR) plus `proxy/.npmrc` with `engine-strict=true`, keeping `deploy.yml` the sole Pages path. First automated PR gate in the project, landed mid-competition without touching the deploy path.
+- tension: A capability the whole repo lacked, delivered correctly in one exchange: the fix reached past the reported symptom to institutionalize continuous verification.
+- quote: "New `ci.yml` … no PR here has ever run CI, root check included. Both are wired now."
+- links: S9a-090, S9a-091
+- flags: milestone, capability, win
+
+### S9a-W009 — One-shot delivery: the DDAY engine's units merged clean with zero review rounds
+- source: PR #132 (body), PR #134 (body); `corpus-prs.md` §Zero-review-activity
+- date: 2026-08-03 → 2026-08-04
+- lanes: 2 AI-building-the-game
+- event: The engine run (`super/20260804-000518`, e0–e10) merged as unit PRs #118, #119, #122–#125, #127, #128, #132–#134 with zero comments and zero review submissions each — every one carrying green gates on delivery. #132 (e7) bound five prior slices into a live driver with 166 driver tests green; #134 (e10) transcribed all ten §8 acceptance criteria over the shipped datapack at 878 tests, "0 failed", nothing re-implemented.
+- tension: The failure-biased pass over-sampled the contentious PRs; the modal outcome across the two production runs was the opposite — a unit that decomposed cleanly enough to merge first-pass, gates green, no round-trip needed.
+- quote: "56 files, 878 tests, 0 failed. `npm run check`, `npm run build`, `npm run probe:selftest` … all green"
+- links: S9a-092, S9a-093
+- flags: milestone, measurement, method-working
+
+### S9a-W010 — Capability delivered: a driver whose membrane and idempotence hold by construction
+- source: PR #132 (body)
+- date: 2026-08-03
+- lanes: 2 AI-building-the-game · 1 AI-in-the-game
+- event: e7's live driver made whole classes of bug unrepresentable rather than merely tested: two block tiers (seen / mined) so deploying an unmined id is "impossible by construction"; every `ViewEvent` passes `assertSeamClean` before any subscriber sees it (skipping the guard is a visible edit); `deploy` de-duplicated and code-unit sorted so two click orders compose byte-identical payloads. Shipped correct on first review-free merge.
+- tension: The membrane and determinism constraints from CLAUDE.md were satisfied structurally — the strongest way to hold an invariant — and delivered without a review round to force it.
+- quote: "two block tiers (seen / mined) so deploying an unmined id is impossible by construction … `deploy` is de-duplicated and code-unit sorted, so two click orders compose byte-identical payloads."
+- flags: capability, technique-worth-copying, win
+
+### S9a-W011 — Single-agent PRs approved clean: asset pack "LGTM", PRD in one pass
+- source: PR #53 (review, approve); PR #50 (review, approve)
+- date: 2026-07-25
+- lanes: 4 AI-as-creator · 3 AI-in-planning
+- event: The darkest-context final asset pack (#53, 10 finals posted as evidence) was approved with a bare "LGTM"; the Call-2 PRD revision (#50) was approved on content in one pass with only a non-blocking language suggestion. Single-agent sessions produced merge-ready deliverables the human accepted without a change request.
+- tension: Not every AI PR needed the adversarial gauntlet — some arrived correct and were merged on sight, which is itself a data point on where the heavy review process was and wasn't load-bearing.
+- quote: "LGTM"
+- links: S9a-066, S9a-068
+- flags: win, ai-strength
+
+### S9a-W012 — A robustness claim in the body, reproduced true by the reviewer
+- source: PR #41 (review, round-1)
+- date: 2026-07-25
+- lanes: 2 AI-building-the-game
+- event: The u7 body claimed CSS `url()` backgrounds degrade gracefully to a color when the asset is missing; the Lead tested it by pointing `bg-shop.png` at a non-existent file and running `vite build` — the build passed and only `--color-bg` remained. "AC4의 CSS 폴백 주장은 사실입니다." The author's degradation claim was independently confirmed.
+- tension: A concrete instance of the build-agent's non-trivial correctness claim surviving hostile re-testing — the graceful-degradation design worked as advertised.
+- quote: "CSS url() 폴백도 직접 확인 … `--color-bg`만 남습니다(원복 완료). AC4의 CSS 폴백 주장은 사실입니다."
+- flags: measurement, ai-strength, win
+
+### S9a-W013 — Independent replication as evidence: two measurement programs reached the same two conclusions
+- source: PR #94 (issue comment, alstjgg)
+- date: 2026-07-30
+- lanes: 3 AI-in-planning · 1 AI-in-the-game
+- event: alstjgg noted that #94 and #95 — two independently designed mechanism-measurement programs with different gates and different probe designs — converged on the same two conclusions (adopt C-BLOCK, close C-STRUCT), and flagged the convergence itself as strong material for the AI-utilization deliverable.
+- tension: The buried win under S9a-083: the ledger *collision* was the friction; the *convergence* was a positive replication result — the highest-confidence evidence the mechanism work produced, arrived at by two separate agent workstreams.
+- quote: "서로 독립적으로 설계한 두 측정 프로그램이 — 다른 gate, 다른 probe 설계로 — 같은 두 결론(C-BLOCK 채택 · C-STRUCT 종료)에 수렴한 것 자체가 AI 활용 문서에 쓸 좋은 재료입니다."
+- links: S9a-083
+- flags: measurement, milestone, win
+
+### S9a-W014 — Milestone: a live in-game LLM path ran end-to-end with measured latency inside budget
+- source: PR #81 (review thread, latency matrix); PR #83 (body, live evidence)
+- date: 2026-07-27
+- lanes: 1 AI-in-the-game · 3 AI-in-planning
+- event: The Apothecary dialogue Lambda deployed and answered real game payloads: a live Nova/Haiku latency matrix (7.4s–29.2s per combination, sitting inside the 25s fallback design's pauses) and, in the stacked #83, two live `200`s with `x-llm-fallback=false` alongside six automated screenshots and a network-evidence capture. The proxied in-game AI call worked against production for the first time.
+- tension: Before any of the review disputes, the underlying capability landed — an authenticated, degradable, latency-measured LLM-in-the-game path proven live, which is the thing the whole membrane/proxy architecture existed to make safe.
+- quote: "각 조합을 한 번씩 실행한 결과이므로 통계적인 성능 우열을 확정한 벤치마크는 아닙니다."
+- links: S9a-073, S9a-078
+- flags: milestone, capability, measurement

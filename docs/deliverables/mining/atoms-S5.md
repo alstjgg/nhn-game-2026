@@ -379,3 +379,141 @@ live-test doc and README). Git archaeology done only where an atom needed a date
 - event: The arena API README records that Anthropic-hosted MCP/Skill calls execute inside the provider before results stream back: the service counts them, rejects over-budget results, and applies deterministic fallback, but "cannot prevent already-executed hosted calls from consuming latency or provider resources" — directing users to the client-run function path when a strict pre-execution ceiling is required.
 - tension: A cost/latency control gap that is architecturally unfixable from the team's side is documented as a property of the design, with the workaround named — the honest edge of the "bounded AI" doctrine.
 - flags: ai-limit, cost, boundary
+
+## Balancing win-sweep 2026-08-05 (wins under revised bias)
+Coverage: re-read all 6 `planning/research/` docs and all 3 `planning/legacy-services/`
+READMEs in full (same set the 08-04 pass covered), this time hunting the WIN dimension the
+failure-weighted pass skipped or buried. Audit leads S5-005, S5-022, S5-033 followed. Legacy
+service **code** still not mined (out of corpus). 13 W-atoms appended; several explicitly
+surface a success buried inside an existing NEUTRAL/LIMIT/boundary atom and link it without
+editing the original.
+
+### S5-W001 — Full agentic stack verified live on BOTH providers, first try in production paths
+- source: planning/research/agent-arena-api-live-test-2026-07-24.md §Summary, §Scenario matrix
+- date: 2026-07-24
+- lanes: 1
+- event: The live verification passed all eight scenarios — including real remote-MCP execution and hosted-Skill execution — on both OpenAI and Anthropic, provider-agnostically, through the same server-to-server adapter layer.
+- tension: The win the 08-04 atom buried under "claim kept narrow": a two-provider agentic integration (function tools + remote MCP + hosted Skills + compact/clear context ops) actually *worked* end to end, proving the closed-action-decision architecture is provider-portable, not vendor-locked.
+- quote: "**All 8 scenarios passed on both providers** (matrix below), including real remote MCP and hosted-Skill execution."
+- links: S5-028 (same event, framed as measurement/boundary), S5-026
+- flags: win, capability, milestone, measurement
+
+### S5-W002 — A fully keyless deterministic suite went green across nine dimensions at once
+- source: planning/research/agent-arena-api-live-test-2026-07-24.md §Keyless and container evidence
+- date: 2026-07-24
+- lanes: 1
+- event: Alongside the paid live runs, the same source passed a broad keyless gate: 146 tests across 11 files, TypeScript typecheck, OpenAPI semantic + response-contract validation, a production build, `npm audit` with zero vulnerabilities, non-root Docker health/filesystem checks, and a four-turn mock HTTP E2E exercising three parallel agents, SSE replay, context continuity, compact replay, clear, and fresh-session continuation.
+- tension: The AI-backend was engineered to be almost entirely verifiable without any provider key or charge — a deep, mockable test surface is what let the team iterate cheaply and land live with only three adapter fixes (S5-029).
+- quote: "146 tests across 11 files · TypeScript typecheck · OpenAPI semantic and response-contract validation · production build · `npm audit` with zero vulnerabilities · non-root Docker health and filesystem checks · four-turn mock HTTP E2E with three parallel agents"
+- links: S5-W011, S5-029
+- flags: win, milestone, measurement, method-working
+
+### S5-W003 — Crash-safe at-most-once semantics wrapped around every paid provider call
+- source: planning/legacy-services/agent-arena-api/README.md §Idempotency and restart behavior
+- date: ~2026-07-23–24
+- lanes: 1
+- event: The arena service committed turn state and its matching lifecycle event in one SQLite transaction, and made every mutation (run/turn/compact/clear) at-most-once per idempotency key — compact "durably claims the key before contacting a provider, then stores context and the receipt atomically," so a mid-flight crash returns `operation_outcome_unknown` rather than silently double-charging.
+- tension: A capability worth copying: production-grade transactional/idempotency discipline applied specifically to non-idempotent, billable LLM calls, so restarts and retries can never leave authoritative state ahead of its replay stream or pay twice.
+- quote: "Compact durably claims the key before contacting a provider, then stores context and the receipt atomically."
+- links: S5-041
+- flags: win, capability, technique-worth-copying
+
+### S5-W004 — Three agent calls per turn collapsed to one wall-clock call
+- source: planning/research/agent-arena-examples.md §4.1 (호출 구조)
+- date: ~2026-07-22–24
+- lanes: 1
+- event: The multi-agent combat design issues one LLM call per unit every turn but fires them in parallel, so the wall-clock cost of a full party's turn stays at roughly a single call; selection-meeting calls are further hidden behind the walking animation.
+- tension: A concrete latency-hiding technique that works: fan-out N independent agent decisions concurrently and the player feels one call, not N — the same principle the arena backend implements ("runs all three agents in parallel").
+- quote: "매 턴, 유닛마다 1콜을 병렬로 보낸다 (벽시계 ≈ 1콜)."
+- links: S5-036
+- flags: win, capability, technique-worth-copying
+
+### S5-W005 — All five game-mods shipped, verified against source, and validated by a dry-run
+- source: planning/research/super-pipeline-game-mod.md header (Status)
+- date: 2026-07-29
+- lanes: 2
+- event: The game-development harness modifications reached done: all five mods (P0-A/B, P1-C/D, P2-E) landed live in the super-pipeline repo as OCP extensions, were verified against the harness source, and were validated end-to-end by the apothecary v2 dry-run against a real game repo before the production build depended on them.
+- tension: The milestone the 08-04 cost-framed atom underplayed: the deliberate, self-imposed harness extension program actually completed and passed its own validation gate — the plan from S5-001 became working infrastructure.
+- quote: "implemented & archived (2026-07-29). All five mods (P0-A/B, P1-C/D, P2-E) are live in the super-pipeline repo, verified against source; the apothecary v2 dry-run (§7) validated them."
+- links: S5-001, S5-010
+- flags: win, milestone, method-working
+
+### S5-W006 — Code-grounded AI review caught a whole-spec design flaw before a multi-hour run
+- source: planning/research/super-pipeline-frontend-mod.md header
+- date: 2026-08-03
+- lanes: 2
+- event: A super-pipeline review session, grounded in the harness's actual code, examined the v1 frontend-mod spec and correctly diagnosed that it was fidelity *governance* with no rendered pixel ever placed in front of an agent that could act on it; the verdict was accepted and drove the v2/v2.1 rewrite.
+- tension: The win buried inside the "v1 was killed" reversal atom: the team's own AI-assisted review mechanism *worked as designed* — it found a real architectural blind spot in a design document before that document could waste an autonomous run, exactly the value the review panels exist to deliver.
+- quote: "v2 revised 08-03 against the super-pipeline session's code-grounded review of v1 … The review's verdict is accepted"
+- links: S5-012
+- flags: win, method-working, technique-worth-copying
+
+### S5-W007 — "Guard by seeing": agents finally given real pixels to judge, using Claude Code's own image reads
+- source: planning/research/super-pipeline-frontend-mod.md §3 P0-C
+- date: 2026-08-03
+- lanes: 2
+- event: The v2 fix for "agents can't see rendered UI" put the reference PNG and the agent's own freshly-captured build PNG into the same VERIFY attempt, where the agent Reads both images (Claude Code renders PNGs visually) and judges divergence against the porting rule.
+- tension: A capability worth copying: rather than mandating more reading or hard pixel-diffs, the team exploited that the coding agent can actually *see* images, turning fidelity checking into an in-loop perception task the agent performs itself.
+- quote: "the agent captures its own build via `render_capture`, Reads both images (Claude Code renders PNGs visually), and judges divergence against the porting rule."
+- links: S5-013, S5-017
+- flags: win, capability, technique-worth-copying, ai-strength
+
+### S5-W008 — Deterministic screenshots of animation-driven UI via the browser's virtual clock
+- source: planning/research/super-pipeline-frontend-mod.md §3 P0-B
+- date: 2026-08-03
+- lanes: 2
+- event: Capture determinism for JS-timer-driven UI (thread redraw, ~9 s tally, typewriter chains, rAF loops) was achieved from the browser side — `page.clock.install()` advances to a fixed virtual tick per shot before the screenshot, the identical protocol for both the un-instrumentable frozen reference and the build.
+- tension: A portable technique worth copying: you can get pixel-deterministic captures of a moving UI *without* instrumenting the target, by driving a virtual clock in the harness — sidestepping the frozen reference's inability to take hooks.
+- quote: "`page.clock.install()` → advance to a fixed virtual tick per shot → screenshot; same protocol for reference and build"
+- links: S5-016
+- flags: win, technique-worth-copying
+
+### S5-W009 — The orchestration exhaust drafts the AI-utilization deliverable itself
+- source: planning/research/super-pipeline-game-mod.md §3 P2-E, §6
+- date: 2026-07-25
+- lanes: 2, 3
+- event: An end-of-run agent was specified to mine `board.json`, the backlog, run stats, the `[AGENT:]` commit/PR trail, and `assets-manifest.json` into a first draft of competition deliverable #4, on the premise that the harness's own run is already the "director of AI" story.
+- tension: A capability worth copying that the 08-04 atom framed only as unsettling self-reference: an orchestration system that emits, as a byproduct of running, the evidence and narrative that document how AI was used — near-automatic reporting straight from telemetry.
+- quote: "the harness itself *is* the 'director of AI' narrative; these deliberate, game-aware extensions show orchestration design, not just tool usage."
+- links: S5-007
+- flags: win, capability, technique-worth-copying
+
+### S5-W010 — Tool-use tests designed so the model could not fake a pass
+- source: planning/research/agent-arena-api-live-test-2026-07-24.md §Validated decisions (evidence)
+- date: 2026-07-24
+- lanes: 1
+- event: The verification held every scenario to evidence, not plausibility: a case passed only when the *validated* decision carried the expected completed tool trace, fixture marker, and card attribution — e.g. the MCP marker had to be formed from the tool's own response field, with the expected value withheld from the prompt.
+- tension: A testing technique worth copying, buried in the 08-04 fabrication atom: for LLM tool-use, assert on observable execution evidence (traces, tool-sourced markers) rather than on a plausible-looking answer, closing the "model echoed the answer without calling the tool" hole.
+- quote: "Pass criteria were evidence-based, not plausibility-based"
+- links: S5-030
+- flags: win, method-working, technique-worth-copying
+
+### S5-W011 — Live validation paid off: three provider-reality defects found, fixed, and re-verified green
+- source: planning/research/agent-arena-api-live-test-2026-07-24.md §Adjustments found by live validation
+- date: 2026-07-24
+- lanes: 1
+- event: Running real provider traffic surfaced three fixes the keyless suite could not (compact output-cap, OpenAI Skill-version string typing, capability latency/output envelope); all three landed, and "the final runs with these production paths passed every configured scenario."
+- tension: The win inside the failure-flagged atom: the team's insistence on a live pass *worked* — it caught three real bugs a fully green mock suite missed, and the follow-up runs went clean, validating live verification as a paying-off practice rather than only exposing a mock-suite limit.
+- quote: "The final runs with these production paths passed every configured scenario."
+- links: S5-029, S5-W002
+- flags: win, method-working, measurement
+
+### S5-W012 — Runtime AI priced and found cheap: about $0.48 per 100 playthroughs
+- source: planning/research/llm-backend-aws-bedrock.md §Open decision — model selection (question 1)
+- date: ~2026-08-02–03
+- lanes: 1
+- event: The backend decision record measured the deployed dialogue token shape and recorded the runtime model cost as "about $0.48 per 100 playthroughs," with latency degrading gracefully to the deterministic fallback rather than failing.
+- tension: A positive measurement worth surfacing for a company weighing AI adoption: at the game's actual bounded interaction shape, live LLM dialogue is nearly free to serve, making the model choice a quality question rather than a cost question.
+- quote: "cost is a real 2.5× ratio but about $0.48 per 100 playthroughs at the deployed token shape"
+- links: S5-024, S5-W001
+- flags: win, measurement, cost
+
+### S5-W013 — A retired service still paid off: its thin Lambda→Bedrock shape became the reusable template
+- source: planning/legacy-services/apothecary-llm-layer/README.md header
+- date: 2026-07-29
+- lanes: 1
+- event: When the apothecary LLM layer was archived after the DDAY decision, its architecture was explicitly retained as the template for the new runtime tier — "its thin Lambda→Bedrock shape is the template for the DDAY runtime layer, which will be built fresh at `infra/llm-layer/`."
+- tension: A build that got shelved still delivered lasting value: the validated thin-backend design proved reusable across two different games, so the killed service became infrastructure ROI rather than pure sunk cost.
+- quote: "its thin Lambda→Bedrock shape is the template for the DDAY runtime layer, which will be built fresh at `infra/llm-layer/`."
+- links: S5-038, S5-039
+- flags: win, technique-worth-copying, milestone
