@@ -23,11 +23,22 @@ Parameters:
     MinValue: 64
     MaxValue: 4096
     Description: A reporter body runs 20-30 sentences (call contracts §7-3).
+  # Three ceilings, and they must stay ordered: model < route < Lambda.
+  # 15000 < 18000 (Call/Health TimeoutInMillis) < 20000 (Function Timeout).
+  # The model deadline fires first so a slow call returns the tier's own 504 with
+  # x-llm-fallback and x-fallback-code, instead of API Gateway cutting the
+  # connection and leaving the engine with an unlabelled failure.
+  #
+  # Was 7000/9000/10000, carried over from apothecary. The first reporter
+  # measurement (2026-08-04) broke that premise: 7.31 / 7.48 / 8.58 s at the
+  # model, and 2 of 3 calls through the deployed tier returned 504
+  # bedrock_timeout. src/config.ts holds the same 15 s bound so the ordering
+  # cannot be misconfigured from the environment.
   ModelTimeoutMs:
     Type: Number
-    Default: 7000
+    Default: 15000
     MinValue: 100
-    MaxValue: 7000
+    MaxValue: 15000
   MaxBodyBytes:
     Type: Number
     Default: 131072
@@ -187,7 +198,9 @@ Resources:
       Architectures:
         - arm64
       MemorySize: 512
-      Timeout: 10
+      # Outlives the route (18 s) so API Gateway is never waiting on a function
+      # that has already been killed. See the ModelTimeoutMs note above.
+      Timeout: 20
       ReservedConcurrentExecutions:
         Fn::If:
           - ConfigureReservedConcurrency
@@ -226,7 +239,7 @@ Resources:
             Path: /dday/call
             Method: POST
             PayloadFormatVersion: "2.0"
-            TimeoutInMillis: 9000
+            TimeoutInMillis: 18000
         Health:
           Type: HttpApi
           Properties:
@@ -235,7 +248,7 @@ Resources:
             Path: /dday/health
             Method: GET
             PayloadFormatVersion: "2.0"
-            TimeoutInMillis: 9000
+            TimeoutInMillis: 18000
       Tags:
         Project: nhn-game-2026
         Component: dday-proxy

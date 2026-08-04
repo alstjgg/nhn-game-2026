@@ -67,7 +67,12 @@ describe("loadConfig", () => {
   });
 
   it("keeps the model timeout inside the API Gateway budget", () => {
-    expect(() => loadConfig(env({ MODEL_TIMEOUT_MS: "7001" }))).toThrow(
+    // 15 s is the deployed value and also the ceiling, so no environment can
+    // configure a model timeout that outlives the 18 s route.
+    expect(loadConfig(env({ MODEL_TIMEOUT_MS: "15000" })).modelTimeoutMs).toBe(
+      15000,
+    );
+    expect(() => loadConfig(env({ MODEL_TIMEOUT_MS: "15001" }))).toThrow(
       /MODEL_TIMEOUT_MS/,
     );
   });

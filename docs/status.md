@@ -3,6 +3,67 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-04) — the proxy is deployed, and the latency budget was wrong
+
+**The tier has made real Bedrock calls.** `nhn-game-proxy` is live in
+`ap-northeast-2`; all three call types answered through it. This closes the
+08-03 entry's "**Not done: zero real Bedrock calls**".
+
+Getting there took three IAM rounds, and each one was a real defect rather than
+a fumble. The bootstrap stack was **reused for the artifact bucket and the OIDC
+provider — correctly — but its execution role was reused too, and that role
+carries a policy literally named `UpdateLlmLayerResources`**: no
+`lambda:CreateFunction`, no `iam:CreateRole`, no `logs:CreateLogGroup`, and an
+`apigateway` grant pinned to apothecary's existing API id. It was authored to
+*update* one stack that already existed. `proxy/deploy/bootstrap.yaml` is the
+second execution role, scoped to this stack's names; the genuinely account-wide
+singletons stay shared. Two more actions surfaced only on a create path:
+`apigateway:TagResource` (its own action, not covered by the HTTP verbs) and the
+`logs:CreateLogDelivery` family (an HTTP API does not write its own access
+logs — it registers a vended log delivery).
+
+### First measurements — and the budget they broke
+
+| call | model latency | notes |
+|---|---|---|
+| judgment | 3.14 · 3.18 · 3.38 · 4.03 s | ~2 490 input tokens; the tier itself adds 3–7 ms |
+| narration | 3.59 s | first ever call; `npc_lines` kept id prefixes and the line/room split |
+| reporter | 6.80 · 6.95 · 9.20 · 9.54 · 10.00 s | ~1 080 output tokens |
+
+**The reporter did not fit.** Under the inherited 7 s model deadline, 2 of 3
+calls returned `504 bedrock_timeout`, and the one that passed did so by writing
+16 sentences where `REPORT_GUIDANCE` asks for 20–30 — it beat the clock by
+breaking the contract. The three ceilings are now **15 s model < 18 s route <
+20 s Lambda**, with the same 15 s bound in `proxy/src/config.ts` so the ordering
+cannot be misconfigured from the environment. Re-measured: 5/5 pass, 23–35
+sentences.
+
+The old 7 s came from apothecary's "API Gateway waits 9 s, keep 2 s for
+validation and fallback". The arithmetic was sound; the premise — that 7 s is
+enough for a call this tier had never made — was never tested.
+
+**Nova 2 Lite was measured and rejected.** Same rendered prompt, same
+scenario, straight at Converse: 4.19 s mean vs haiku's 7.79 s. But per output
+token it is only ~9 % faster (6.60 vs 7.23 ms/tok) — the gap is almost entirely
+that it writes **less**: 12–16 sentences against the contract's 20–30, and its
+`facts[0]` copied the input line verbatim where haiku rewrote it as a record.
+The same saving is available from haiku by asking for a shorter report, which
+makes model choice and length policy the same lever. Against that: Nova needs
+the loose tool spec (apothecary's `structuredOutputMode` split existed for
+exactly this), and every C-BLOCK measurement — 761 judgment calls, the
+`p=0.0000595` result — is haiku. Switching would decouple the measured
+mechanism from the shipped system six days before the deadline.
+
+**Deploys are automated and hold no secret.** `.github/workflows/proxy-deploy.yml`
+assumes `nhn-game-ci-proxy-github` over GitHub OIDC; the developer's 24-hour SSO
+session is a *deploy-time* credential only, and nothing in the runtime path
+authenticates to AWS at all — the browser posts to a public endpoint, and the
+Lambda uses its own execution role. `deploy.yml` (Pages) is untouched.
+
+**Still open:** the endpoint is public and unauthenticated (origin checking is
+CORS, not security); the retry budget and the single-origin lock are both
+recorded in [README §4](./README.md#4-open-cross-track-items).
+
 ## Status (2026-08-03)
 
 **Client track claimed — 민서, minimal-first.** The client layer now has an
