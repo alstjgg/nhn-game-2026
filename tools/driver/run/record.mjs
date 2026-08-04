@@ -2,6 +2,8 @@
 // assembly and the byte-diff. Nothing here computes anything the engine already
 // computed; every field below is a copy of something a seam handed over.
 
+import { isAuthoredSentenceId, tryParseSentenceId } from '../../../src/shared/id.ts'
+
 /**
  * The run-record's key order, taken from the schema's `required[]` verbatim
  * (decision 3). Serialization is compared byte for byte, so this order is part
@@ -114,10 +116,66 @@ const asDelta = (entry) => ({
 })
 
 /**
+ * `injected_blocks[].mined_from_run` — provenance, read off the id, never
+ * assumed (review finding B).
+ *
+ * The schema requires the field and documents `null` as "mined from the script
+ * timeline", so `block.mined_from_run ?? null` — over a `Block` that is
+ * `{id, text}` and nothing else — asserted *script provenance* for every
+ * carried block, including ones minted by a previous run. A definite wrong
+ * answer is worse than a loud one.
+ *
+ * Provenance is recoverable without widening any frozen type, because the id
+ * carries it: `src/shared/id.ts`'s grammar is `b-r<run>-<channel><nn>` for a
+ * minted sentence and `t<n>` for an authored script event. So:
+ *
+ *   - authored id  → `null`, which is now *true* rather than a default;
+ *   - minted id    → the archived `run_id` of the run named in the id;
+ *   - anything else, or a minting run absent from the archive → throw. The
+ *     recorder does not guess a run id (same rule as `reached_clock`, D-4).
+ *
+ * The archive is the run loop's `report_archive`: every run that ended is in
+ * it, and only a run that ended can have handed a block to the carry-over.
+ * `run_id`s are matched on the `-r<n>` suffix decision 2 mints them with.
+ */
+export function provenanceOf(block, archive) {
+  if (isAuthoredSentenceId(block.id)) return null
+
+  const parsed = tryParseSentenceId(block.id)
+  if (parsed === null) {
+    throw new Error(
+      `injected block ${JSON.stringify(block.id)} belongs to neither the minted nor the ` +
+        'authored id family — refusing to record a provenance for it',
+    )
+  }
+
+  const found = archive.find((runId) => {
+    const match = /-r([0-9]+)$/.exec(runId)
+    return match !== null && Number(match[1]) === parsed.run
+  })
+  if (found === undefined) {
+    throw new Error(
+      `injected block ${JSON.stringify(block.id)} was minted in run ${parsed.run}, which is ` +
+        `not in the report archive [${archive.join(', ')}] — refusing to invent a run id`,
+    )
+  }
+  return found
+}
+
+/**
  * The record, in `RECORD_KEYS` order. `policy` and `score` are `null` by
  * contract (decisions 5 and 6), not for want of a value.
  */
-export function assembleRecord({ runId, packSlug, policy, reduced, journals, calls, carried }) {
+export function assembleRecord({
+  runId,
+  packSlug,
+  policy,
+  reduced,
+  journals,
+  calls,
+  carried,
+  archive = [],
+}) {
   const deltasByBeat = new Map(journals.map((journal) => [journal.beat, journal.deltas]))
 
   return {
@@ -128,7 +186,7 @@ export function assembleRecord({ runId, packSlug, policy, reduced, journals, cal
     injected_blocks: carried.map((block) => ({
       id: block.id,
       text: block.text,
-      mined_from_run: block.mined_from_run ?? null,
+      mined_from_run: provenanceOf(block, archive),
     })),
     beats: reduced.beats.map((beat) => ({
       beat: beat.beat,

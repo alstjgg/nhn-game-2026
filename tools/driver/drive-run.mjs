@@ -37,7 +37,14 @@ import { formatValidation, validateMetaState, validateRunRecord } from './run/va
 
 export { bindRun } from './run/bind.mjs'
 export { loadGuidance, loadPack } from './run/pack.mjs'
-export { firstDiff, recordingTransport, reduceEvents, serializeRecord } from './run/record.mjs'
+export {
+  assembleRecord,
+  firstDiff,
+  provenanceOf,
+  recordingTransport,
+  reduceEvents,
+  serializeRecord,
+} from './run/record.mjs'
 export { validateMetaState, validateRunRecord } from './run/validate.mjs'
 
 /** Every provider a headless run may be pointed at. No network here. */
@@ -89,6 +96,9 @@ export async function runHeadless({
     journals: rig.journals,
     calls: rig.calls,
     carried: begun.carried,
+    // The provenance source for `injected_blocks[].mined_from_run`: every run
+    // that ended is in the archive, and only an ended run can have carried.
+    archive: runLoop.current().report_archive,
   })
 
   const meta = runLoop.endRun({

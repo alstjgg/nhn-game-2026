@@ -24,7 +24,9 @@ import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 import {
+  assembleRecord,
   bindRun,
+  provenanceOf,
   runHeadless,
   validateRunRecord,
   firstDiff,
@@ -605,6 +607,55 @@ describe('carry-over — the record names only blocks the run actually holds', (
     const { record, blocks } = await pass()
     assert.deepEqual(record.injected_blocks, [])
     assert.equal(blocks.get(CARRIED.id), undefined)
+  })
+
+  // ── review finding B — mined_from_run is provenance, not a default ────────
+  test('a block minted in a previous run is attributed to that run, not to null', async () => {
+    const { record } = await runHeadless({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: createFixtureProvider(),
+      store: carriedStore(),
+      providerName: 'fixture',
+    })
+    assert.deepEqual(record.injected_blocks, [
+      { id: CARRIED.id, text: CARRIED.text, mined_from_run: `${PACK}-fixture-r1` },
+    ])
+  })
+
+  test('provenanceOf resolves the archived run id the block id names', () => {
+    const archive = [`${PACK}-fixture-r1`, `${PACK}-fixture-r2`]
+    assert.equal(provenanceOf({ id: 'b-r2-q07', text: 't' }, archive), `${PACK}-fixture-r2`)
+    assert.equal(provenanceOf({ id: 'b-r1-f01', text: 't' }, archive), `${PACK}-fixture-r1`)
+  })
+
+  test('null is reserved for the script timeline — an authored t-id, and only that', () => {
+    assert.equal(provenanceOf({ id: 't12', text: 't' }, []), null)
+  })
+
+  test('an unattributable block throws rather than claiming script provenance', () => {
+    assert.throws(
+      () => provenanceOf({ id: 'b-r9-f01', text: 't' }, [`${PACK}-fixture-r1`]),
+      /not in the report archive/,
+    )
+    assert.throws(() => provenanceOf({ id: 'not-an-id', text: 't' }, []), /neither the minted/)
+  })
+
+  test('a record carrying an unattributable block is never assembled', () => {
+    assert.throws(
+      () =>
+        assembleRecord({
+          runId: 'x-r2',
+          packSlug: PACK,
+          policy: null,
+          reduced: { beats: [], timeline: [], fallbacks: [], reachedClock: '09:00' },
+          journals: [],
+          calls: { stance: 's', facts: ['f'], reportBody: 'b' },
+          carried: [{ id: 'b-r1-f01', text: 't' }],
+          archive: [],
+        }),
+      /refusing to invent a run id/,
+    )
   })
 
   test('a carried run is still deterministic — two passes are byte-identical', async () => {
