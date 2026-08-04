@@ -1,10 +1,12 @@
 /**
  * Payload composer — datapack + engine state + injected blocks → call slots.
  *
- * Owner: 윤석 (architecture track). Stub — but **not blocked on the engine**:
- * its input shape is fixed by
- * [contract-engine-composer.md](../../docs/contract-engine-composer.md) §3, so
- * this can be built against that contract before an engine exists.
+ * Owner: 윤석 (architecture track). This barrel carries e0's frozen public
+ * surface (the `Composer` interface and `ComposerDeps`) unchanged; the body
+ * — canonical block resolution, slot assembly, template versioning — is
+ * `./compose.ts`'s (e5). Re-exported here rather than duplicated, so a caller
+ * that needs a composer calls `createComposer` from this barrel, never
+ * `./compose.ts` directly.
  *
  * It does **not** read the datapack. Every scenario value arrives through an
  * engine view, so run position lives in one place (contract §7). And it does not
@@ -15,10 +17,6 @@
  * Same purity requirement as the engine (§2 constraint 1): the Node driver
  * composes byte-identical payloads to the ones the browser composes, so no
  * DOM, no `fs`, no `fetch`, no clock, no randomness in here.
- *
- * This file is the e0 skeleton: the full public surface as exported types,
- * with a stub factory. Behaviour lands with the unit that implements the
- * composer's body; nothing here runs yet.
  */
 
 import type { GateView, BeatView, RoundView } from '../engine/index.ts'
@@ -43,6 +41,12 @@ export interface Composer {
   reporter(view: RoundView): CallRequest
 }
 
-export function createComposer(_deps: ComposerDeps): Composer {
-  throw new Error('unimplemented: createComposer')
-}
+// ─── the real body (e5) ───────────────────────────────────────────────────────
+//
+// Added beside the skeleton above, never in place of it: `ComposerDeps` above
+// is e0's frozen construction-time shape; `ComposerRuntimeDeps` narrows
+// `reportGuidance` to its canonical type and adds the block store. A caller
+// that can build one can build the other.
+
+export { createComposer, TEMPLATE_VERSION } from './compose.ts'
+export type { BlockStore, ComposerRuntimeDeps } from './compose.ts'

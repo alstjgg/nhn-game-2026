@@ -172,8 +172,17 @@ describe('[e4#A12] import direction — feed/ depends only on src/shared and its
     ).toEqual([])
   })
 
-  it('(n) e4 edits no file outside src/engine/feed/ — src/engine/index.ts stays e0\'s', () => {
-    const engineIndex = fs.readFileSync(path.join(REPO, 'src/engine/index.ts'), 'utf8')
-    expect(engineIndex).not.toMatch(/from\s*['"]\.\/feed/)
+  it('(n) e4 never re-derives the feed builders — src/engine/feed/ is the only definition site', () => {
+    // Was: "src/engine/index.ts stays e0's [a throwing stub]" — true only while
+    // createEngine had no body. e7 is the sanctioned wiring point for the
+    // composition root (contract-engine-composer §2/§9: createEngine binds
+    // ./beat + ./state + ./feed into one object) and legitimately imports from
+    // ./feed; what this guards is narrower and still real — no file under
+    // src/engine/feed/ imports back out to src/engine/index.ts, which would
+    // make the dependency circular rather than one-directional.
+    const offenders = FILES()
+      .filter((f) => /from\s*['"]\.\.\/index\.ts['"]/.test(fs.readFileSync(f, 'utf8')))
+      .map(rel)
+    expect(offenders).toEqual([])
   })
 })

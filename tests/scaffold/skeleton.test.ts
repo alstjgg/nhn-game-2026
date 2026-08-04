@@ -118,11 +118,13 @@ const MODULES: readonly ModuleSpec[] = [
     folder: 'engine',
     factory: 'createEngine',
     exports: ['GateView', 'BeatView', 'RoundView', 'Engine', 'EngineDeps', 'createEngine'],
+    implemented: true, // e7 — the composition root landed; see createEngine's body above.
   },
   {
     folder: 'composer',
     factory: 'createComposer',
     exports: ['Composer', 'ComposerDeps', 'createComposer'],
+    implemented: true, // e7 — barrel re-exports e5's real createComposer from compose.ts.
   },
   {
     folder: 'transport',
