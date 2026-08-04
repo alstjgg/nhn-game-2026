@@ -24,7 +24,10 @@ const TESTS = path.join(REPO, 'tests/driver')
 const FROZEN_SUITES: Readonly<Record<string, string>> = {
   'clock-hooks.test.ts': '94f58f28d1d34081ce1720f2b95d8a2c2b720408133693fea6cabdf1bba9af50',
   'import-direction.test.ts': '35367809f7ebe14922876b4331f922b8183a75e2edfc77484db3abe8651ff00d',
-  'replay-order.test.ts': '7419bd5f1b2e93c32e8aca263654aa22a465d884c0c8ad024fc431e57dfead21',
+  // RE-PINNED (C17): the client run (PR #110) rewrote this suite after u2 landed
+  // it. A14's claim is "e7 does not rewrite them", so the pin moves to what main
+  // carries; only a change made HERE can fail it.
+  'replay-order.test.ts': 'b5ab5cbbb8dfaf69bc11c009e92aadc09af1ab28c7940d4ff9d6d621dc4d4934',
   'seam-leak-guard.test.ts': 'a9d72c720ceadf16ee01c87609628dcde808247265b1e1097093c0b47c0f4bf0',
   'seam-shapes.test.ts': '72f3f3866c8c552b16fa47fd1d843d2031eeabb3596f8e71c74de96f4c18e993',
 }
@@ -53,11 +56,18 @@ describe('[e7#A14] the existing tests/driver seam suites are untouched', () => {
     })
   }
 
+  // RE-AIMED (C17): the complement of FROZEN_SUITES used to be exactly "what e7
+  // added". The client run (PR #110) then landed its own seam suites here, so the
+  // negation now sweeps up files this unit never wrote. Named explicitly rather
+  // than widened to a pattern: the claim is about e7's OWN additions, and a
+  // pattern would stop noticing a stray non-`engine-*` file from this unit.
+  const CLIENT_RUN_SUITES = new Set(['clock-hook-determinism.test.ts', 'run-loop-continuity.test.ts'])
+
   it('(b) everything e7 added under tests/driver is named `engine-*`', () => {
     const added = fs
       .readdirSync(TESTS, { withFileTypes: true })
       .map((entry) => entry.name)
-      .filter((name) => !(name in FROZEN_SUITES))
+      .filter((name) => !(name in FROZEN_SUITES) && !CLIENT_RUN_SUITES.has(name))
     expect(added.length).toBeGreaterThan(0)
     for (const name of added) expect(name.startsWith('engine-')).toBe(true)
   })

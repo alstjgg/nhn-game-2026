@@ -2,9 +2,11 @@
  * The live driver — binds engine + composer + transport and speaks the
  * view-driver seam (spec-client §5.2): `ViewEvent`s out, `MembraneOp`s in.
  *
- * Owner: 윤석 (architecture track). Stub — the e0 skeleton: the full public
- * surface as exported types, with a stub factory. Behaviour lands with the
- * unit that implements it; nothing here runs yet.
+ * Owner: 윤석 (architecture track). IMPLEMENTED. `createDriver` below is still
+ * the e0 skeleton's poll-shaped factory and still throws — the scaffold suite
+ * pins that surface — but the driver the run actually uses, `createLiveDriver`,
+ * is bound and exercised end to end by `tools/driver/drive-run.mjs`. The
+ * "nothing here runs yet" this header used to carry has not been true since e7.
  *
  * Isomorphic (physical §3.1): the same binding also drives the headless
  * policy-bot run (e9), so it takes its three collaborators as injected

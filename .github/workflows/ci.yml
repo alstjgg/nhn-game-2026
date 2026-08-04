@@ -36,15 +36,12 @@ jobs:
       - run: npm ci
       - run: npm run check
       # `npm run check` (above) is tsc + datapack:check + tools/tests' node:test
-      # checks only — it never invokes vitest, so the 876 vitest tests under
-      # tests/** (engine, composer, transport, driver, runloop, acceptance) ran
-      # on no PR and no push to main until this step. `tests/scaffold/layout.test.ts`
-      # is excluded: it asserts u0's placeholder "empty src/client/" census, which
-      # the client view layer (PR #110) has since legitimately outgrown — that is
-      # pre-existing repo drift this run did not introduce and is not the job of
-      # this fix to resolve. Track re-inclusion once that scaffold test is updated
-      # or retired.
-      - run: npm test -- --exclude 'tests/scaffold/layout.test.ts'
+      # checks only — it never invokes vitest, so the tests under tests/** (engine,
+      # composer, transport, driver, runloop, client, invariants, acceptance) gated
+      # nothing until this step. The `--exclude` that used to sit here is gone:
+      # u0's empty-modules census was retired at the engine run and the remaining
+      # scaffold gates are re-aimed, so the whole suite runs.
+      - run: npm test
       # A16 and A17. `deploy.yml` already runs `npm run build`, but only on push
       # to main — i.e. after a merge, which is too late to gate one. The probe's
       # self-test ran in no job at all: `tools/probe/**` is a frozen input this
@@ -52,6 +49,39 @@ jobs:
       # offline (no key, no network).
       - run: npm run build
       - run: npm run probe:selftest
+
+  # Preview smoke only — the FULL Playwright suite stays manual (민서's call on
+  # PR #116). This job builds the production bundle, serves it, and runs
+  # `e2e/preview-smoke.spec.ts` against it: the one check that the artifact the
+  # judges load actually boots. It is short, and it does not carry the desk's
+  # window-stacking races.
+  #
+  # Worth knowing while the rest stays manual: no workflow ran Playwright at all
+  # before this, which is how `e2e/captures.spec.ts` came to depend on a
+  # gitignored directory and stay broken for everyone but the machine that ran
+  # the pipeline. The reference side is tracked at `e2e/reference-shots/` now, so
+  # a manual run works anywhere — but nothing automated is watching it.
+  preview-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --project=preview
+        env:
+          CI: '1'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
 
   # Proxy: prompt-bundle drift + typecheck + 36 tests, all offline (no AWS, no
   # Bedrock credentials needed — that is the point of the mocked provider).

@@ -606,3 +606,12 @@ only secret in the system stays inside the Lambda (physical §2 constraint 2).
 existing build step. `demos/apothecary/` hit exactly this and its build never set
 `VITE_AI_BASE_URL`, which is why that demo runs stub-only today — the precedent
 to not repeat.
+
+> **Mechanical note for whoever sets it (08-05).** A GitHub repository variable
+> is not visible to a workflow step unless that step declares it under `env:`, so
+> the settings entry alone does not reach `vite build`. Confirm the route before
+> the first live-provider run — this is a finding, not a proposal; the call is
+> 민서's (PR #116 · "a settings change, no code").
+
+**Still unconsumed.** Nothing in `src/client/` builds a transport yet, so Vite
+inlines no reference and the URL would not appear in today's bundle either way.

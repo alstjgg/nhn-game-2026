@@ -24,6 +24,10 @@ export type { FixtureDriver, FixtureStore, Frame, ViewListener } from './fixture
 
 export type { FixtureRun, OpResponse } from './fixtures/types.ts'
 
+export { demoRun } from './demo-run.ts'
+
+export { createRunLoopDriver, demoRunLoop } from './run-loop.ts'
+
 export {
   freezeAnimations,
   thawAnimations,
@@ -31,5 +35,8 @@ export {
   registerAnimation,
   serializeFrame,
   tickAnimations,
+  // C16 — u2's charter completion: the sim-clock half of the determinism hooks.
+  installClockHook,
+  clockHookOf,
 } from './test-hooks.ts'
-export type { AnimationTick } from './test-hooks.ts'
+export type { AnimationTick, ClockDriver, ClockHook } from './test-hooks.ts'

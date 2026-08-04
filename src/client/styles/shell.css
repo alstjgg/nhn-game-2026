@@ -50,6 +50,18 @@
   animation:sweepDown 1.5s cubic-bezier(.4,0,.2,1) .15s both}
 @keyframes sweepDown{to{top:110vh;opacity:0}}
 
+/* ═══ SKIP LINK (u3, PRD §4 a11y) ═════════════════════════════════════════
+   The keyboard's first stop: it jumps past the chrome onto the desk, and it
+   is the reason no window control is ever the document's first tab stop.
+   Off-screen until focused — never `display:none`, which would drop it out of
+   the tab order entirely. */
+.skip-link{position:fixed;left:var(--space-8);top:var(--space-8);z-index:960;
+  padding:var(--space-8) var(--space-14);
+  background:var(--chrome-hi);border:1px solid var(--seal);color:var(--txt-hi);
+  font-size:var(--fs-9-5);letter-spacing:.16em;text-decoration:none;
+  transform:translateY(-400%)}
+.skip-link:focus{transform:none}
+
 /* ═══ TOP BAR ═════════════════════════════════════════════════════════════ */
 #topbar{position:fixed;top:0;left:0;right:0;z-index:500;
   background:linear-gradient(to bottom,var(--chrome-hi),var(--chrome-lo));

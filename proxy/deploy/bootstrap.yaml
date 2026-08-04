@@ -1,0 +1,430 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Deployment roles for the nhn-game-proxy stack (create + update), trusted by GitHub Actions OIDC.
+
+# Why this exists, given that apothecary already has a bootstrap.
+#
+# proxy/README says the bootstrap stack is REUSED rather than copied, and that
+# is still right for the two things it created that are genuinely account-wide
+# singletons: the GitHub OIDC provider and the artifact bucket. This template
+# creates NEITHER — it takes both as parameters and points at the existing ones.
+#
+# What could not be reused is the execution role. `nhn-game-llm-cloudformation-exec`
+# carries a policy literally named `UpdateLlmLayerResources`, and it means it:
+# there is no lambda:CreateFunction, no iam:CreateRole, no logs:CreateLogGroup,
+# and its apigateway grant is pinned to one existing API id. It was authored to
+# UPDATE one stack that already existed. Pointing samconfig's role_arn at it (a
+# leftover from the apothecary copy) fails on the first CREATE_FAILED and takes
+# the stack to ROLLBACK_FAILED, because it cannot delete what it could not
+# create either. Verified against the account on 2026-08-04.
+#
+# So: a second execution role, scoped to this stack's resource names, with the
+# create and delete verbs the first deploy actually needs. Not a second
+# bootstrap — the shared pieces stay shared.
+#
+# Deploy with an administrator identity, once:
+#   aws cloudformation deploy \
+#     --template-file deploy/bootstrap.yaml \
+#     --stack-name nhn-game-proxy-bootstrap \
+#     --capabilities CAPABILITY_NAMED_IAM \
+#     --region ap-northeast-2 --profile nhn-game
+
+Parameters:
+  GitHubOwner:
+    Type: String
+    Default: alstjgg
+    AllowedPattern: ^[A-Za-z0-9_.-]+$
+  GitHubOwnerId:
+    Type: String
+    Default: "26458319"
+    AllowedPattern: ^[0-9]+$
+  GitHubRepository:
+    Type: String
+    Default: nhn-game-2026
+    AllowedPattern: ^[A-Za-z0-9_.-]+$
+  GitHubRepositoryId:
+    Type: String
+    Default: "1306590172"
+    AllowedPattern: ^[0-9]+$
+  GitHubBranch:
+    Type: String
+    Default: main
+    AllowedPattern: ^[A-Za-z0-9_./-]+$
+
+  OidcProviderArn:
+    Type: String
+    Default: arn:aws:iam::141840355276:oidc-provider/token.actions.githubusercontent.com
+    Description: >-
+      The EXISTING provider created by the nhn-game-github-actions stack.
+      Referenced, never created — an account may hold only one provider per URL,
+      and a second declaration would fight the stack that owns it.
+  ArtifactBucketName:
+    Type: String
+    Default: nhn-game-llm-artifacts-141840355276-ap-northeast-2
+    AllowedPattern: ^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$
+    Description: The EXISTING SAM artifact bucket. Referenced, never created.
+
+  ApplicationStackName:
+    Type: String
+    Default: nhn-game-proxy
+    AllowedPattern: ^[A-Za-z][A-Za-z0-9-]+$
+    Description: >-
+      Every resource grant below is derived from this name, so it must match
+      samconfig.toml's stack_name exactly. The Lambda is ${name}-call
+      (template.yaml's Fn::Sub on AWS::StackName), and the log groups follow it.
+  ArtifactPrefix:
+    Type: String
+    Default: nhn-game-proxy
+    AllowedPattern: ^[A-Za-z0-9][A-Za-z0-9/_-]*$
+    Description: Must match samconfig.toml's s3_prefix.
+
+  # These two are deliberately NOT prefixed with ApplicationStackName. The
+  # execution role holds iam:CreateRole/PutRolePolicy over
+  # role/${ApplicationStackName}-* so that it can manage the Lambda's execution
+  # role; if these roles matched that pattern, the execution role could rewrite
+  # its own policy and the least-privilege scoping would be decorative.
+  CloudFormationExecutionRoleName:
+    Type: String
+    Default: nhn-game-ci-proxy-cfn-exec
+    AllowedPattern: ^[A-Za-z0-9+=,.@_-]+$
+  DeployRoleName:
+    Type: String
+    Default: nhn-game-ci-proxy-github
+    AllowedPattern: ^[A-Za-z0-9+=,.@_-]+$
+
+Resources:
+  # ---------------------------------------------------------------------------
+  # The role CloudFormation assumes to touch this stack's resources.
+  # ---------------------------------------------------------------------------
+  CloudFormationExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Ref: CloudFormationExecutionRoleName
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: ManageProxyStackResources
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: InvokeServerlessTransform
+                Effect: Allow
+                Action:
+                  - cloudformation:CreateChangeSet
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:aws:transform/Serverless-2016-10-31
+
+              - Sid: ReadDeploymentArtifacts
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:s3:::${ArtifactBucketName}/${ArtifactPrefix}/*
+
+              # Create and Delete are present here and absent from the apothecary
+              # role. That difference is the whole reason this file exists.
+              - Sid: ManageLambda
+                Effect: Allow
+                Action:
+                  - lambda:AddPermission
+                  - lambda:CreateFunction
+                  - lambda:DeleteFunction
+                  - lambda:DeleteFunctionConcurrency
+                  - lambda:GetFunction
+                  - lambda:GetFunctionCodeSigningConfig
+                  - lambda:GetFunctionConcurrency
+                  - lambda:GetFunctionRecursionConfig
+                  - lambda:GetPolicy
+                  - lambda:GetRuntimeManagementConfig
+                  - lambda:ListTags
+                  - lambda:ListVersionsByFunction
+                  - lambda:PutFunctionConcurrency
+                  - lambda:PutRuntimeManagementConfig
+                  - lambda:RemovePermission
+                  - lambda:TagResource
+                  - lambda:UntagResource
+                  - lambda:UpdateFunctionCode
+                  - lambda:UpdateFunctionConfiguration
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ApplicationStackName}-call
+                  - Fn::Sub: arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ApplicationStackName}-call:*
+
+              # template.yaml declares ProxyExecutionRole without a RoleName, so
+              # CloudFormation generates ${ApplicationStackName}-ProxyExecutionRole-<suffix>.
+              # The wildcard covers that; see the note on the role names above
+              # for why the deploy roles are kept outside this pattern.
+              - Sid: ManageLambdaExecutionRole
+                Effect: Allow
+                Action:
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:DeleteRolePolicy
+                  - iam:GetRole
+                  - iam:GetRolePolicy
+                  - iam:ListAttachedRolePolicies
+                  - iam:ListRolePolicies
+                  - iam:ListRoleTags
+                  - iam:PutRolePolicy
+                  - iam:TagRole
+                  - iam:UntagRole
+                  - iam:UpdateAssumeRolePolicy
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ApplicationStackName}-*
+
+              - Sid: PassLambdaExecutionRole
+                Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ApplicationStackName}-*
+                Condition:
+                  StringEquals:
+                    "iam:PassedToService": lambda.amazonaws.com
+
+              # Unavoidably broader than apothecary's pinned /apis/${ApiId}: a
+              # stack that has never been created has no API id to pin, and POST
+              # /apis is how one comes into existence. A tag condition cannot
+              # narrow it either — CloudFormation creates first and tags after.
+              # Once this stack has deployed once, ApiId is knowable and this
+              # statement can be tightened to it; that is a follow-up, recorded
+              # rather than pretended away.
+              #
+              # TagResource/UntagResource are their own actions, NOT covered by
+              # the HTTP verbs. The apothecary role omits them and never noticed,
+              # because an update that changes no tag never calls them; a create
+              # always does. This cost one CREATE_FAILED on the stage before it
+              # was found (2026-08-04).
+              - Sid: ManageHttpApi
+                Effect: Allow
+                Action:
+                  - apigateway:DELETE
+                  - apigateway:GET
+                  - apigateway:PATCH
+                  - apigateway:POST
+                  - apigateway:PUT
+                  - apigateway:TagResource
+                  - apigateway:UntagResource
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis
+                  - Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis/*
+                  - Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}::/tags/*
+
+              - Sid: ManageStackLogGroups
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:DeleteLogGroup
+                  - logs:DeleteRetentionPolicy
+                  - logs:ListTagsForResource
+                  - logs:PutRetentionPolicy
+                  - logs:TagResource
+                  - logs:UntagResource
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ApplicationStackName}-call
+                  - Fn::Sub: arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ApplicationStackName}-call:*
+                  - Fn::Sub: arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${ApplicationStackName}
+                  - Fn::Sub: arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${ApplicationStackName}:*
+
+              # Describe* takes no resource scope in CloudWatch Logs; it is
+              # read-only and CloudFormation calls it during drift and rollback.
+              - Sid: DescribeLogGroups
+                Effect: Allow
+                Action:
+                  - logs:DescribeIndexPolicies
+                  - logs:DescribeLogGroups
+                  - logs:DescribeResourcePolicies
+                Resource: "*"
+
+              # template.yaml's Stage carries AccessLogSettings, and an HTTP API
+              # does not write those logs itself — it registers a *vended log
+              # delivery*, which is a separate CloudWatch Logs subsystem. None of
+              # these actions support resource-level permissions, so "*" is not a
+              # shortcut here; IAM rejects an ARN on them. PutResourcePolicy is
+              # the widest thing in this file: the delivery service uses it to
+              # let itself write to the destination log group, and it is
+              # account-wide by construction.
+              #
+              # Dropping AccessLogSettings from the Stage would remove the need
+              # for this whole statement. That trade — narrower deploy role vs.
+              # no API access logs — is a real one, and it belongs to whoever
+              # owns the proxy, not to this file. Recorded, not decided.
+              - Sid: ManageVendedLogDelivery
+                Effect: Allow
+                Action:
+                  - logs:CreateLogDelivery
+                  - logs:DeleteLogDelivery
+                  - logs:GetLogDelivery
+                  - logs:ListLogDeliveries
+                  - logs:PutResourcePolicy
+                  - logs:UpdateLogDelivery
+                Resource: "*"
+      Tags:
+        - Key: Project
+          Value: nhn-game-2026
+        - Key: Component
+          Value: proxy-cloudformation
+
+  # ---------------------------------------------------------------------------
+  # The role GitHub Actions assumes. No stored secret: the workflow presents an
+  # OIDC token and gets a short-lived session, which is why nothing here expires
+  # the way a developer's SSO session does.
+  # ---------------------------------------------------------------------------
+  GitHubActionsDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Ref: DeployRoleName
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated:
+                Ref: OidcProviderArn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                "token.actions.githubusercontent.com:aud": sts.amazonaws.com
+                "token.actions.githubusercontent.com:sub":
+                  Fn::Sub: repo:${GitHubOwner}@${GitHubOwnerId}/${GitHubRepository}@${GitHubRepositoryId}:ref:refs/heads/${GitHubBranch}
+                "token.actions.githubusercontent.com:repository":
+                  Fn::Sub: ${GitHubOwner}/${GitHubRepository}
+                "token.actions.githubusercontent.com:repository_id":
+                  Ref: GitHubRepositoryId
+                "token.actions.githubusercontent.com:repository_owner_id":
+                  Ref: GitHubOwnerId
+                "token.actions.githubusercontent.com:ref":
+                  Fn::Sub: refs/heads/${GitHubBranch}
+      Policies:
+        - PolicyName: DeployProxyStack
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # The condition is the load-bearing part: CI may only create a
+              # changeset that runs as the execution role above. Without it, CI
+              # could deploy the stack with its own (or no) role and every scope
+              # in this file would be bypassable from a workflow edit.
+              - Sid: CreateApplicationChangeSet
+                Effect: Allow
+                Action:
+                  - cloudformation:CreateChangeSet
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ApplicationStackName}/*
+                  - Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:aws:transform/Serverless-2016-10-31
+                Condition:
+                  ArnEquals:
+                    "cloudformation:RoleArn":
+                      Fn::GetAtt:
+                        - CloudFormationExecutionRole
+                        - Arn
+
+              - Sid: OperateApplicationChangeSet
+                Effect: Allow
+                Action:
+                  - cloudformation:DeleteChangeSet
+                  - cloudformation:DescribeChangeSet
+                  - cloudformation:DescribeStackEvents
+                  - cloudformation:DescribeStackResource
+                  - cloudformation:DescribeStackResources
+                  - cloudformation:DescribeStacks
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:GetTemplate
+                  - cloudformation:ListChangeSets
+                  - cloudformation:ListStackResources
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ApplicationStackName}/*
+
+              - Sid: ReadTemplateSummary
+                Effect: Allow
+                Action:
+                  - cloudformation:GetTemplateSummary
+                Resource: "*"
+
+              # Read-only on purpose, carried over from the apothecary bootstrap:
+              # a post-deploy check may verify the stack policy is attached, but
+              # granting SetStackPolicy would also let it remove the protection.
+              - Sid: VerifyApplicationStackPolicy
+                Effect: Allow
+                Action:
+                  - cloudformation:GetStackPolicy
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ApplicationStackName}/*
+
+              - Sid: PassCloudFormationExecutionRole
+                Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  Fn::GetAtt:
+                    - CloudFormationExecutionRole
+                    - Arn
+                Condition:
+                  StringEquals:
+                    "iam:PassedToService": cloudformation.amazonaws.com
+
+              - Sid: LocateArtifactBucket
+                Effect: Allow
+                Action:
+                  - s3:GetBucketLocation
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:s3:::${ArtifactBucketName}
+
+              - Sid: ListArtifactBucket
+                Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:s3:::${ArtifactBucketName}
+                Condition:
+                  StringLike:
+                    "s3:prefix":
+                      - Ref: ArtifactPrefix
+                      - Fn::Sub: ${ArtifactPrefix}/*
+
+              - Sid: ManageDeploymentArtifacts
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource:
+                  Fn::Sub: arn:${AWS::Partition}:s3:::${ArtifactBucketName}/${ArtifactPrefix}/*
+
+              - Sid: AuditApplicationLogs
+                Effect: Allow
+                Action:
+                  - logs:FilterLogEvents
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ApplicationStackName}-call
+                  - Fn::Sub: arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ApplicationStackName}-call:*
+      Tags:
+        - Key: Project
+          Value: nhn-game-2026
+        - Key: Component
+          Value: proxy-deploy
+
+Outputs:
+  CloudFormationExecutionRoleArn:
+    Description: Put this in samconfig.toml's role_arn and in the deploy workflow.
+    Value:
+      Fn::GetAtt:
+        - CloudFormationExecutionRole
+        - Arn
+  DeployRoleArn:
+    Description: role-to-assume for aws-actions/configure-aws-credentials.
+    Value:
+      Fn::GetAtt:
+        - GitHubActionsDeployRole
+        - Arn
+  TrustedSubject:
+    Description: The only OIDC subject the deploy role will accept.
+    Value:
+      Fn::Sub: repo:${GitHubOwner}@${GitHubOwnerId}/${GitHubRepository}@${GitHubRepositoryId}:ref:refs/heads/${GitHubBranch}

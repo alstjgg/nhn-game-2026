@@ -129,8 +129,16 @@ export function createFixtureDriver(run: FixtureRun): FixtureDriver {
     },
 
     advance(realMs: number) {
-      if (!started || !clock.running) return
-      tickAnimations(realMs)
+      if (!started) return
+      // THE ANIMATION PUMP OUTLIVES THE RUN (R4 on windows/reports.ts:55).
+      // 21:04 sets `clock.ended` in the very frame the terminal batch is
+      // released, so the `report` the day files arrived on a pump that had
+      // already stopped — the agent's report painted whole, in one frame, on
+      // the only path a player takes. The pump now keeps ticking once the run
+      // has closed; a PAUSED desk still holds everything still, which is what
+      // the operator asked for when they pressed ‖.
+      if (clock.running || clock.ended) tickAnimations(realMs)
+      if (!clock.running) return
       clock.advance(realMs)
       // The reference flushes what is left when the run closes (endRun).
       release(clock.ended ? null : clock.minute)

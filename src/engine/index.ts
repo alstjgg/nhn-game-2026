@@ -1,7 +1,9 @@
 /**
  * State engine — deterministic, isomorphic, DOM-free.
  *
- * Owner: 윤석 (architecture track). Stub.
+ * Owner: 윤석 (architecture track). IMPLEMENTED — the header said "Stub." from
+ * the e0 skeleton and was never updated when e2/e3/e4 filled it in. The public
+ * surface below is live and `createEngine` is bound by the composition root.
  *
  * Its **public surface** — what the composer may call — is fixed by
  * [contract-engine-composer.md](../../docs/contract-engine-composer.md) §2:

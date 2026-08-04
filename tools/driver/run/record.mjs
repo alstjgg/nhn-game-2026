@@ -178,17 +178,22 @@ export function assembleRecord({
 }) {
   const deltasByBeat = new Map(journals.map((journal) => [journal.beat, journal.deltas]))
 
-  // Review finding C. `reports` is the Call 3 payload verbatim (A12) and
-  // `report_body` has `minLength: 1` in the schema, so a run whose reporter
-  // call never landed has no report to record — `{facts: [], report_body: ''}`
-  // was a fabrication that no schema accepts and that stage 6 would read as a
-  // real, empty report. The fallback itself is already in `fallbacks[]`.
-  if (calls.facts === null || calls.reportBody === null) {
-    throw new Error(
-      `run ${runId}: Call 3 never landed — refusing to record an empty report ` +
-        '(the failure is in fallbacks[]; rejoining the segmented sentences is banned by A12)',
-    )
-  }
+  // Review finding C, revised. `reports` is the Call 3 payload verbatim (A12),
+  // so a run whose reporter call never landed has no report to record.
+  // `{facts: [], report_body: ''}` remains banned — it is not lossy but FALSE,
+  // and indistinguishable from a genuinely empty report.
+  //
+  // What changed: this used to THROW, which took the whole run with it — 19
+  // beats, the timeline, the journals, and `fallbacks[]`, the array that
+  // documents the very failure. Stage 6 is a measurement program, and a corpus
+  // that silently drops its failed runs measures the wrong thing
+  // (`discovery/live-provider-prerequisites.md` §2, sized as a prerequisite by
+  // r3). `reports` is nullable in the schema as of this change, so the run is
+  // recorded with `reports: null` and the failure stays legible in `fallbacks[]`.
+  const reports =
+    calls.facts === null || calls.reportBody === null
+      ? null
+      : { facts: [...calls.facts], report_body: calls.reportBody }
 
   return {
     run_id: runId,
@@ -208,10 +213,7 @@ export function assembleRecord({
       deltas: (deltasByBeat.get(beat.beat) ?? []).map(asDelta),
     })),
     timeline: [...reduced.timeline],
-    reports: {
-      facts: [...calls.facts],
-      report_body: calls.reportBody,
-    },
+    reports,
     score: null,
     fallbacks: reduced.fallbacks.map((entry) => ({
       beat: entry.beat,

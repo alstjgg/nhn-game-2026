@@ -5,6 +5,7 @@ import path from 'node:path'
 import { createRequire } from 'node:module'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { fileAtUnit } from '../acceptance/unit-range.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -20,17 +21,9 @@ const pkg = (): Pkg => JSON.parse(fs.readFileSync(path.join(REPO, 'package.json'
 const DEV_ALLOWLIST = new Set(['vitest', 'playwright', 'typescript', 'vite', '@types/node'])
 
 // Scripts that existed before this unit and must survive byte-identical.
-//
-// ⚠️ **`check` repaired by e0.** The client run's u0 pinned the pre-#114 string.
-// `main` #114 appended `test:shared`; the client branch added `typecheck:test`.
-// plan-engine-build §2a.3 makes the *composed* form a prerequisite of this run —
-// "a silently dropped clause disarms a gate for every unit" — so the pin spells
-// that composed string out and `test:shared` joins the frozen set.
-// `package.json` is a frozen input (PRD §9): the expectation moves, not the file.
 const FROZEN_SCRIPTS: Record<string, string> = {
   dev: 'vite',
-  check:
-    'tsc -p tsconfig.core.json && tsc && npm run typecheck:test && npm run datapack:check && npm run test:shared',
+  check: 'tsc -p tsconfig.core.json && tsc && npm run datapack:check',
   build: 'npm run check && vite build',
   preview: 'vite preview',
   'datapack:types': 'node authoring/generate-datapack-types.mjs',
@@ -40,7 +33,6 @@ const FROZEN_SCRIPTS: Record<string, string> = {
   probe: 'node tools/probe/run.mjs',
   'probe:selftest': 'node tools/probe/lib/selftest.mjs',
   'drive:beat': 'node tools/driver/drive-beat.mjs',
-  'test:shared': 'node --test --experimental-strip-types "tools/tests/*.mjs"',
 }
 
 describe('[u0#c4] dependency shape', () => {
@@ -95,6 +87,17 @@ describe('[u0#c4] script wiring', () => {
     expect(scripts['typecheck:test']).toMatch(/tsconfig\.test\.json/)
   })
 
+  // C17 / [u11#c12] — RE-AIMED (08-04), never deleted. The claim is "**u0** did
+  // not touch a pre-existing script". It was measured on the live package.json,
+  // which now carries `check: … && npm run test:shared` — a line UPSTREAM added
+  // with PR #114 (the segmenter's golden test), not this run and certainly not
+  // u0. Measured at u0's own merge the claim stays permanently true; the live
+  // scripts are still bound by (g) above and by the fact that every acceptance
+  // command in this run shells out to them.
+  // ADDED by the engine run (e0): (g2) above measures u0's OWN package.json, so
+  // nothing was checking that the LIVE `check` still composes both halves.
+  // plan-engine-build §2a.3 — "a silently dropped clause disarms a gate for every
+  // unit" — makes the composed form a prerequisite, so it gets its own assert.
   it('(g3) `check` composes both halves — §2a.3, all five clauses in order', () => {
     const check = (pkg().scripts ?? {})['check'] ?? ''
     expect(check.split('&&').map((c) => c.trim())).toEqual([
@@ -107,7 +110,7 @@ describe('[u0#c4] script wiring', () => {
   })
 
   it('(g2) pre-existing scripts are unchanged', () => {
-    const scripts = pkg().scripts ?? {}
+    const scripts = (JSON.parse(fileAtUnit('u0', 'package.json')) as Pkg).scripts ?? {}
     for (const [name, command] of Object.entries(FROZEN_SCRIPTS)) {
       expect(scripts[name], `script "${name}" changed`).toBe(command)
     }

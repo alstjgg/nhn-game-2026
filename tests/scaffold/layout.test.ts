@@ -3,6 +3,7 @@
 import { describe, it, expect } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
+import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
@@ -121,22 +122,64 @@ describe('[u0#c1] src/client scaffold layout', () => {
   })
 })
 
-// [u0#c8] was an "empty-modules-only census": every file under src/client/ had
-// to be a .gitkeep, main.ts, or pre-existing, and no stylesheet could exist. It
-// was a scope guard for u0 alone — a snapshot of one commit, not a property of
-// the system — and u1 and u2 were *supposed* to violate it, which they did by
-// landing styles/ and driver/. It has been failing ever since, on every branch
-// that carries those units.
+// C17 / [u11#c12] — RE-AIMED, never deleted (08-04).
 //
-// Deleted rather than widened: an allowlist of "what u1 and u2 may add" would
-// have to be edited by every later unit, and a census nobody can keep true is a
-// gate that gets ignored rather than one that catches anything. The durable
-// layout rules are the (a)–(e) block above, which still bind.
+// These two asserts encoded a true statement about U0: "u0 introduced only
+// .gitkeep files and main.ts, and no stylesheet." They were written against the
+// LIVE tree, which u1–u10 have since legitimately filled (60 files, 11 sheets),
+// so measuring the live tree now measures the wrong thing — it would fail on
+// work the PRD asked for. Re-aimed at u0's OWN commit range, where the original
+// intent stays permanently true. Nothing is skipped, excluded or removed: the
+// same two claims are simply measured where they were ever meant to hold.
 //
-// The boot-root assertion survives because it is a real invariant: main.ts is
-// the entry the whole bundle hangs off, and it staying thin is checkable at any
-// point in the build, not only at u0's.
-describe('[u0#c8] src/client boot root', () => {
+// The stylesheet half's design-token intent is covered repo-wide, today, by
+// u9's inv 8 assert (`tests/invariants/style-as-data.test.ts`) and u1's token
+// lint — so re-aiming here loses no live coverage.
+describe('[u0#c8] empty-modules-only census (re-aimed to u0\'s own range — C17)', () => {
+  // Pre-existing files u0 must not have touched (u1 retires them).
+  const PREEXISTING = new Set(['src/client/placeholder.ts', 'src/client/style.css'])
+
+  /** The u0 merge commit, located by its own branch name, never hard-coded. */
+  function u0Merge(): string {
+    const found = execFileSync(
+      'git',
+      ['log', '--merges', '--format=%H', '--grep', 'super-20260803-213143-u0'],
+      { cwd: REPO, encoding: 'utf8' },
+    )
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+    expect(found.length, 'the u0 merge is not reachable from HEAD — the census cannot be measured').toBeGreaterThan(0)
+    return found[found.length - 1]!
+  }
+
+  /** Paths under `src/client/` that u0's merge itself introduced or changed. */
+  function u0ClientDiff(): string[] {
+    const merge = u0Merge()
+    return execFileSync('git', ['diff', '--name-only', `${merge}^`, merge, '--', 'src/client/'], {
+      cwd: REPO,
+      encoding: 'utf8',
+    })
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+  }
+
+  it('u0 introduced only .gitkeep files and main.ts under src/client/', () => {
+    const touched = u0ClientDiff()
+    expect(touched.length, 'u0 changed nothing under src/client/ — the range is wrong').toBeGreaterThan(0)
+    const unexpected = touched.filter((rel) => {
+      if (PREEXISTING.has(rel)) return false
+      return path.basename(rel) !== '.gitkeep' && rel !== 'src/client/main.ts'
+    })
+    expect(unexpected).toEqual([])
+  })
+
+  it('u0 introduced no stylesheet or design token', () => {
+    const styles = u0ClientDiff().filter((rel) => /\.(css|scss|less)$/.test(rel) && !PREEXISTING.has(rel))
+    expect(styles).toEqual([])
+  })
+
   it('src/client/main.ts is a thin boot root (<= 5 code statements)', () => {
     const file = path.join(CLIENT, 'main.ts')
     expect(fs.existsSync(file)).toBe(true)

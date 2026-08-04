@@ -4,46 +4,20 @@
  * that the private half of a call never reaches a view.
  *
  * `src/client/driver/seam-guard.ts` holds the same rule for the fixture driver.
- * The duplication is deliberate (spec decision 7): `src/client/**` is frozen and
- * the isomorphic core may not reach into it, so the rule is re-stated here
- * rather than imported. Consolidating both into `src/shared/` is a later unit's
- * call — recorded in `discovery/e7.md`.
+ * The duplication used to be deliberate (spec decision 7): `src/client/**` was a
+ * frozen glob for the engine run and the isomorphic core may not reach into it,
+ * so the rule was re-stated here rather than imported. `discovery/e7.md` recorded
+ * the consolidation as a later unit's call, and this is it — the rule now lives
+ * once, in `src/shared/seam-keys.ts`, which neither side reaches into and both
+ * already depend on. The copies had drifted on `truths`; see that module.
  *
  * The whole `JudgmentResponse` legitimately crosses into the engine (its
  * `inner_note` is Call 3's input, contract-engine-composer §5), which is exactly
  * why the check belongs on the driver's *out*-edge and nowhere else.
  */
 
+import { assertNoBannedSeamKeys } from '../shared/seam-keys.ts'
 import type { ViewEvent } from '../shared/view-driver.ts'
-
-/** Whole keys that may never cross the seam. */
-const BANNED_EXACT: readonly string[] = ['inner_note', 'temperament']
-
-/** Key families that may never cross the seam. */
-const BANNED_PREFIX: readonly string[] = ['because_', 'rejected_', 'truths']
-
-function isBanned(key: string): boolean {
-  return BANNED_EXACT.includes(key) || BANNED_PREFIX.some((prefix) => key.startsWith(prefix))
-}
-
-function walk(node: unknown, seen: WeakSet<object>, path: string): void {
-  if (node === null || typeof node !== 'object') return
-  if (seen.has(node)) return
-  seen.add(node)
-
-  if (Array.isArray(node)) {
-    node.forEach((item, index) => walk(item, seen, `${path}[${index}]`))
-    return
-  }
-
-  for (const [key, value] of Object.entries(node)) {
-    const here = path === '' ? key : `${path}.${key}`
-    if (isBanned(key)) {
-      throw new Error(`view-driver seam leak: \`${key}\` may not cross the seam (at ${here})`)
-    }
-    walk(value, seen, here)
-  }
-}
 
 /**
  * Throws — naming the offending key — if anything reachable from `event` carries
@@ -54,6 +28,6 @@ function walk(node: unknown, seen: WeakSet<object>, path: string): void {
  * omission.
  */
 export function assertSeamClean(event: ViewEvent): ViewEvent {
-  walk(event, new WeakSet<object>(), '')
+  assertNoBannedSeamKeys(event)
   return event
 }

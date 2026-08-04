@@ -601,18 +601,29 @@ function reporterFails(inner = createFixtureProvider()) {
 }
 
 describe('review finding C — a failed Call 3 never becomes an empty report', () => {
-  test('runHeadless refuses to record a run whose reporter call never landed', async () => {
-    await assert.rejects(
-      () =>
-        runHeadless({
-          pack: loadPack(PACK),
-          guidance: loadGuidance(),
-          provider: reporterFails(),
-          store: createMemoryMetaStore(),
-          runId: `${PACK}-fixture-r1`,
-        }),
-      /Call 3 never landed/,
+  // REVISED. This used to assert the whole run was REFUSED. Refusing kept the
+  // fabrication out, but it also destroyed the record of the failure: the run's
+  // beats, timeline, journals and `fallbacks[]` went with the throw. Stage 6 is a
+  // measurement program, so a corpus that drops its failed runs measures the
+  // wrong thing (`discovery/live-provider-prerequisites.md` §2). `reports` is
+  // nullable now; the ban on the FABRICATION is unchanged and still asserted by
+  // the sibling test below.
+  test('a run whose reporter call never landed is recorded with reports: null', async () => {
+    const { record } = await runHeadless({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: reporterFails(),
+      store: createMemoryMetaStore(),
+      runId: `${PACK}-fixture-r1`,
+    })
+
+    assert.equal(record.reports, null, 'a report that never landed must not be invented')
+    assert.ok(record.timeline.length > 0, 'the run itself is still recorded')
+    assert.ok(
+      record.fallbacks.some((entry) => entry.call === 3),
+      'the Call 3 failure must survive in fallbacks[] — it is the whole point of keeping the run',
     )
+    assert.deepEqual(validateRunRecord(record).errors, [], 'the recorded run must validate')
   })
 
   test('the fabricated record the old path produced is one the schema rejects', () => {

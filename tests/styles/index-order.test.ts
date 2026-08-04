@@ -18,6 +18,7 @@ import {
   sheetsOnDisk,
   stripComments,
 } from './css-utils.ts'
+import { existedAtUnit, fileAtUnit } from '../acceptance/unit-range.ts'
 
 /** The imported specifiers of `css`, in source order. */
 function imports(css: string): string[] {
@@ -27,6 +28,15 @@ function imports(css: string): string[] {
 const indexCss = read(INDEX_CSS)
 const imported = imports(indexCss)
 const importedFiles = imported.map((s) => s.replace(/^\.\//, ''))
+
+// C17 / [u11#c12] — the u1-SCOPED half of this file is measured at u1's own
+// merge (08-04). u10 landed `fonts.css` and its one `@import`, exactly as this
+// file's header says it would, so the live manifest is now ten sheets and the
+// two census asserts below plus the "slot left for u10" pair can only ever be
+// true of the tree u1 handed over. Re-aimed, never deleted or skipped: the
+// live manifest is still bound by (a)/(c) above and by the whole "single
+// aggregation point" block, and u10's own suite binds the fonts.css import.
+const u1ImportedFiles = imports(fileAtUnit('u1', 'src/client/styles/index.css')).map((s) => s.replace(/^\.\//, ''))
 
 describe('[u1#c4] index.css is an import manifest', () => {
   it('(a) src/client/styles/index.css exists', () => {
@@ -53,7 +63,7 @@ describe('[u1#c4] the aggregation order is tokens → base → shell → paper �
   })
 
   it('(b) every remaining import is a per-window skin', () => {
-    const tail = importedFiles.slice(4)
+    const tail = u1ImportedFiles.slice(4)
     const strays = tail.filter((f) => !(WINDOW_SHEETS as readonly string[]).includes(f))
     expect(strays).toEqual([])
   })
@@ -64,7 +74,9 @@ describe('[u1#c4] the aggregation order is tokens → base → shell → paper �
   })
 
   it('(d) exactly the nine u1 sheets are imported, none twice', () => {
-    expect(importedFiles).toHaveLength(ALL_SHEETS.length)
+    expect(u1ImportedFiles).toHaveLength(ALL_SHEETS.length)
+    expect(new Set(u1ImportedFiles).size).toBe(u1ImportedFiles.length)
+    // the live manifest never imports one sheet twice either
     expect(new Set(importedFiles).size).toBe(importedFiles.length)
   })
 })
@@ -90,12 +102,12 @@ describe('[u1#c4] index.css is the *single* aggregation point', () => {
   })
 })
 
-describe('[u1#c4] the fonts.css slot is left for u10', () => {
+describe('[u1#c4] the fonts.css slot is left for u10 (re-aimed to u1\'s own range — C17)', () => {
   it('(a) u1 does not import fonts.css', () => {
-    expect(importedFiles).not.toContain('fonts.css')
+    expect(u1ImportedFiles).not.toContain('fonts.css')
   })
 
   it('(b) u1 does not create styles/fonts.css', () => {
-    expect(exists(path.join(STYLES_DIR, 'fonts.css'))).toBe(false)
+    expect(existedAtUnit('u1', 'src/client/styles/fonts.css')).toBe(false)
   })
 })

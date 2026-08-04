@@ -1,0 +1,186 @@
+name: Proxy deploy
+
+# The LLM tier's deploy path. Separate workflow from deploy.yml on purpose:
+# deploy.yml is the only route to GitHub Pages (CLAUDE.md rule 3) and stays
+# untouched, and this one never publishes a page. They share nothing but the repo.
+#
+# No stored AWS secret. The deploy job presents a GitHub OIDC token and assumes
+# nhn-game-ci-proxy-github, which trusts exactly one subject — this repo, this
+# branch (proxy/deploy/bootstrap.yaml, TrustedSubject output). That is why CI
+# deploys do not expire the way a developer's `aws sso login` session does.
+#
+# The transcription of a sequence that was run by hand first, on 2026-08-04,
+# through three IAM failures. Do not "simplify" the verify job away: sam:smoke is
+# what catches an esbuild bundle that dropped a module, and it runs before any
+# AWS credential is ever requested.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - proxy/**
+      - .github/workflows/proxy-deploy.yml
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: proxy-deploy
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-northeast-2
+  AWS_ACCOUNT_ID: "141840355276"
+  APPLICATION_STACK_NAME: nhn-game-proxy
+  ARTIFACT_BUCKET: nhn-game-llm-artifacts-141840355276-ap-northeast-2
+  ARTIFACT_PREFIX: nhn-game-proxy
+  DEPLOY_ROLE_ARN: arn:aws:iam::141840355276:role/nhn-game-ci-proxy-github
+  CFN_EXEC_ROLE_ARN: arn:aws:iam::141840355276:role/nhn-game-ci-proxy-cfn-exec
+  # Must equal samconfig.toml's AllowedOrigin override. src/handler.ts's origin
+  # guard runs ahead of route dispatch, so every post-deploy probe below has to
+  # carry this or it is answered 403 origin_forbidden before reaching a route.
+  ALLOWED_ORIGIN: https://alstjgg.github.io
+  SAM_CLI_TELEMETRY: "0"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # No AWS credential is requested in this job, which is the point: sam:smoke
+    # drives the built bundle and expects the provider call to fail on
+    # credentials. Disabling the IMDS probe keeps that failure immediate and
+    # identical on every runner instead of waiting out a metadata timeout.
+    env:
+      AWS_EC2_METADATA_DISABLED: "true"
+    defaults:
+      run:
+        working-directory: proxy
+    steps:
+      - uses: actions/checkout@v4
+      # Node 24, not 22: the Lambda runtime is nodejs24.x and proxy/package.json
+      # pins engines.node >= 24, which proxy/.npmrc enforces at install.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: proxy/package-lock.json
+      - uses: aws-actions/setup-sam@v2
+      - run: npm ci
+      - run: npm run check
+      - run: npm run sam:validate
+      - run: npm run sam:build
+      - run: npm run sam:smoke
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: proxy
+    outputs:
+      call_endpoint: ${{ steps.stack.outputs.call_endpoint }}
+      health_endpoint: ${{ steps.stack.outputs.health_endpoint }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: proxy/package-lock.json
+      - uses: aws-actions/setup-sam@v2
+      - run: npm ci
+      - run: npm run sam:build
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
+          role-session-name: nhn-game-proxy-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Verify AWS identity
+        run: test "$(aws sts get-caller-identity --query Account --output text)" = "$AWS_ACCOUNT_ID"
+
+      # Every value here is spelled out rather than read from samconfig.toml.
+      # The deploy role's grants are Fn::Sub'd from the same stack name, prefix
+      # and role arn, so a silent drift between the two files would surface as an
+      # AccessDenied naming a resource nobody mentioned — the exact failure mode
+      # that cost three rounds on 08-04.
+      - name: Deploy stack
+        run: >-
+          sam deploy
+          --stack-name "$APPLICATION_STACK_NAME"
+          --region "$AWS_REGION"
+          --capabilities CAPABILITY_IAM
+          --no-confirm-changeset
+          --no-fail-on-empty-changeset
+          --no-resolve-s3
+          --s3-bucket "$ARTIFACT_BUCKET"
+          --s3-prefix "$ARTIFACT_PREFIX/$GITHUB_SHA"
+          --role-arn "$CFN_EXEC_ROLE_ARN"
+          --no-progressbar
+          --on-failure ROLLBACK
+
+      - name: Read deployed endpoints
+        id: stack
+        run: |
+          OUTPUTS="$(aws cloudformation describe-stacks \
+            --stack-name "$APPLICATION_STACK_NAME" \
+            --region "$AWS_REGION" \
+            --query 'Stacks[0].Outputs' --output json)"
+          CALL_URL="$(jq -r '.[] | select(.OutputKey == "CallEndpoint") | .OutputValue' <<<"$OUTPUTS")"
+          HEALTH_URL="$(jq -r '.[] | select(.OutputKey == "HealthEndpoint") | .OutputValue' <<<"$OUTPUTS")"
+          test -n "$CALL_URL" && test -n "$HEALTH_URL"
+          {
+            echo "call_endpoint=$CALL_URL"
+            echo "health_endpoint=$HEALTH_URL"
+          } >>"$GITHUB_OUTPUT"
+
+      # The status and the body are captured before anything is asserted. The
+      # first form here was BODY="$(curl --fail-with-body …)", which under
+      # `bash -e` dies at the assignment and never reaches its own echo — the
+      # 403 that failed run 30891089347 said `origin_forbidden` in a body no
+      # log ever showed. Assert after printing, never instead of it.
+      - name: Health check
+        run: |
+          STATUS="$(curl -sS --max-time 20 -o /tmp/health.json -w '%{http_code}' \
+            -H "origin: $ALLOWED_ORIGIN" \
+            "${{ steps.stack.outputs.health_endpoint }}")"
+          echo "HTTP $STATUS"
+          cat /tmp/health.json; echo
+          test "$STATUS" = "200"
+          test "$(jq -r .ok </tmp/health.json)" = "true"
+
+      # The health route never touches Bedrock, so on its own it cannot tell a
+      # working deploy from one whose IAM cannot reach the model. This step is
+      # the only check that crosses the whole tier. It reuses events/call.json's
+      # body so the deployed smoke and the offline bundle smoke share one
+      # fixture — a payload that drifts from the validators fails both or neither.
+      - name: Real model call
+        run: |
+          PAYLOAD="$(jq -r .body events/call.json)"
+          STATUS="$(curl -sS --max-time 30 -o /tmp/call.json -w '%{http_code}' \
+            -D /tmp/headers.txt \
+            -X POST "${{ steps.stack.outputs.call_endpoint }}" \
+            -H 'content-type: application/json' \
+            -H "origin: $ALLOWED_ORIGIN" \
+            -d "$PAYLOAD")"
+          echo "HTTP $STATUS"
+          cat /tmp/call.json; echo
+          test "$STATUS" = "200"
+          grep -qi '^x-llm-fallback: false' /tmp/headers.txt
+          test -n "$(jq -r '.stance // empty' </tmp/call.json)"
+
+      - name: Summary
+        run: |
+          {
+            echo "### Proxy deployed"
+            echo
+            echo "- call: \`${{ steps.stack.outputs.call_endpoint }}\`"
+            echo "- health: \`${{ steps.stack.outputs.health_endpoint }}\`"
+          } >>"$GITHUB_STEP_SUMMARY"

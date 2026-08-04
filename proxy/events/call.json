@@ -25,6 +25,6 @@
       "userAgent": "smoke"
     }
   },
-  "body": "{\"call_type\":\"judgment\",\"template_version\":\"v0.4\",\"slots\":{}}",
+  "body": "{\"call_type\":\"judgment\",\"template_version\":\"v0.4\",\"slots\":{\"TEMPERAMENT\":\"기록된 것을 믿는다.\",\"TIMELINE_EXCERPT\":[\"09:40 회선 A 착신.\"],\"BLOCKS\":[{\"id\":\"f1\",\"text\":\"겁내고 있다.\"}],\"GATE_QUESTION\":\"첫 마디로 무엇을 하는가?\",\"STANCE_SET\":[{\"id\":\"a\",\"label\":\"듣는다\"},{\"id\":\"b\",\"label\":\"확인한다\"}]}}",
   "isBase64Encoded": false
 }
