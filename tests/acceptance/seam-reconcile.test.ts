@@ -126,12 +126,27 @@ describe('[u11#c14] the whole suite stays a real suite', () => {
     expect(vitestConfig).toContain("include: ['tests/**/*.test.ts']")
   })
 
-  it('(m) no test anywhere is DISABLED — the conditional guard form is the only skip allowed', () => {
-    // `test.skip(condition, reason)` inside a test body is a runtime guard on a
-    // precondition, not a disabled test (u8's overflow guard is one). What C17
-    // bans is the DECLARATION form — `it.skip('…')`, `describe.skip('…')`,
-    // `xit(…)`, `it.todo(…)`, `test.fixme('…')` — which removes a check.
+  it('(m) no test anywhere is DISABLED, and no test skips itself at runtime either', () => {
+    // Two forms, because #110 must not ship with any test excluded OR skipped:
+    //
+    // DISABLED is the DECLARATION form — `it.skip('…')`, `describe.skip('…')`,
+    // `xit(…)`, `it.todo(…)`, `test.fixme('…')` — which removes a check outright.
+    //
+    // CONDITIONAL is `test.skip(cond, reason)` in a test body. This one used to
+    // be waved through as "a runtime guard on a precondition, not a disabled
+    // test", and the regex above waved it through BY CONSTRUCTION: requiring a
+    // quote straight after the paren means a condition can never match it. That
+    // blind spot is how `e2e/red-thread.spec.ts`'s `test.skip(!scrolled, …)`
+    // shipped — [u8#c3]'s own scroll-out oracle, skipped in the full run, with
+    // this ledger reporting a clean tree. A skipped test is an unexercised
+    // criterion whatever the syntax, so it is counted here too, against an
+    // EXPLICIT allowlist. Nothing is on it: the one entry it would have carried
+    // was re-aimed instead (the case now makes its precondition with u3's resize
+    // grip and fails loudly if it cannot). Anything added here must name the
+    // criterion it leaves unmeasured and carry a DISCOVERY line.
     const DISABLED = /\b(it|test|describe)\.(skip|fixme)\s*\(\s*['"`]|\bx(it|describe)\s*\(|\b(it|test)\.todo\b/
+    const CONDITIONAL = /\b(it|test)\.skip\s*\(\s*(?!['"`])/
+    const ALLOWED_CONDITIONAL: readonly string[] = []
     const walk = (dir: string): string[] => {
       const out: string[] = []
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -142,12 +157,19 @@ describe('[u11#c14] the whole suite stays a real suite', () => {
       return out
     }
     const offenders: string[] = []
+    const conditional: string[] = []
     for (const file of [...walk(path.join(REPO, 'tests')), ...walk(path.join(REPO, 'e2e'))]) {
       const source = stripComments(fs.readFileSync(file, 'utf8'))
       for (const [i, line] of source.split('\n').entries()) {
-        if (DISABLED.test(line)) offenders.push(`${path.relative(REPO, file)}:${i + 1}`)
+        const at = `${path.relative(REPO, file)}:${i + 1}`
+        if (DISABLED.test(line)) offenders.push(at)
+        else if (CONDITIONAL.test(line)) conditional.push(at)
       }
     }
     expect(offenders, 'a test was disabled to make the full suite green (C17)').toEqual([])
+    expect(
+      conditional.filter((at) => !ALLOWED_CONDITIONAL.includes(at)),
+      'a test skips itself at runtime and is not on the allowlist — the criterion it covers is unexercised (C17)',
+    ).toEqual([])
   })
 })

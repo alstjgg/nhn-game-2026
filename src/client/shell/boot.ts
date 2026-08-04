@@ -113,15 +113,27 @@ export async function bootShell(): Promise<void> {
   driver.advance(0)
   driver.clock.setRate(0)
 
-  window.__shell = {
-    frame: () => driver.frame(),
-    drain: () => driver.drain(),
-  }
-  // C16 — the sim-clock hook rides the handle that already exists rather than
-  // minting a global, and only in DEV/TEST: the guard is a constant the bundler
-  // folds, so the player build drops the call and the name with it (inv 11).
+  // The dev/test handle, and the C16 sim-clock hook that rides it — DEV/TEST
+  // only. `import.meta.env.DEV` is a constant the bundler folds, so the player
+  // build drops the whole block and every name in it (inv 11).
+  //
+  // The gate used to cover the clock hook alone, which left
+  // `window.__shell={frame,drain}` — a live driver handle — in the shipped
+  // artefact, and inv 11's needle list could not see it either. [u3] routed that
+  // decision here and it is answered the way inv 11 answers the debug pane: a
+  // surface that exists to test the desk does not ship with the desk. Every spec
+  // that uses `__shell` keeps working — the e2e unit host is a
+  // `--mode development` build, where this is true.
+  //
+  // `clock` is listed first only so the C16 install stays inside the three-line
+  // window `tests/driver/clock-hook-determinism.test.ts (j)` reads back from a
+  // call site when it looks for this guard.
   if (import.meta.env.DEV) {
-    window.__shell.clock = installClockHook(driver)
+    window.__shell = {
+      clock: installClockHook(driver),
+      frame: () => driver.frame(),
+      drain: () => driver.drain(),
+    }
   }
 
   runPump(driver, clock.paint)

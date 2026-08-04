@@ -82,6 +82,11 @@ test.describe('preview smoke', () => {
       'createFixtureDriver',
       'freezeAnimations',
       'installClockHook',
+      // u3's dev/test driver handle. It was shipping — `window.__shell={frame:
+      // …,drain:…}` was in `dist/assets/index-*.js` — precisely because this
+      // list did not name it, so no gate could see it. `shell/boot.ts` now folds
+      // the whole assignment away outside DEV, and the needle keeps it that way.
+      '__shell',
     ]
     const hits: string[] = []
     for (const file of files) {

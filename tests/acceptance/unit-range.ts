@@ -74,12 +74,26 @@ export function dirAtUnit(unit: string, dir: string): string[] {
     .sort()
 }
 
-/** Whether a path existed at all when `unit` landed. */
+/**
+ * Whether a path existed at all when `unit` landed.
+ *
+ * Two things here are deliberate, and both exist because the earlier
+ * `try { cat-file -e } catch { return false }` form turned EVERY failure into
+ * "the path was not there" — an unresolvable range, a shallow clone, a typo in
+ * the path and a missing git all read as a PASS on the two callers that assert
+ * `false`, which is the opposite of this module's stated doctrine (see
+ * `unitMerge`).
+ *
+ * 1. `unitMerge` is resolved OUTSIDE any guard, so its own "no merge reachable"
+ *    throw reaches the runner instead of being swallowed into a false.
+ * 2. The probe is `ls-tree`, not `cat-file -e`. `cat-file -e` exits **128** for
+ *    an absent path AND for a bad rev — it cannot tell a missing file from a
+ *    missing range — and it prints `fatal: …` onto the suite's stderr on the way
+ *    (that is where `vitest run`'s two stray `fatal:` lines came from). `ls-tree`
+ *    answers an absent path with exit 0 and empty output, and still fails loudly
+ *    on a rev that is not a tree.
+ */
 export function existedAtUnit(unit: string, file: string): boolean {
-  try {
-    git(['cat-file', '-e', `${unitMerge(unit)}:${file}`])
-    return true
-  } catch {
-    return false
-  }
+  const merge = unitMerge(unit)
+  return git(['ls-tree', '--name-only', merge, '--', file]).trim() !== ''
 }

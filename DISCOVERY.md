@@ -53,14 +53,19 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   asserts exactly that and nothing more. Minting an event type to close the gap
   would be inventing seam surface, which this unit may not do; whoever ratifies
   the next §5.2 revision decides whether a `judgment` event exists.
-- [u11] **C16 — the sim-clock test hook is this unit's one production edit.**
-  u2's charter promised "clock pause/seed + animation-freeze hooks" and only the
-  freeze half shipped. `installClockHook` / `clockHookOf` / `ClockHook` now
-  complete it on `driver/test-hooks.ts`, re-exported from the driver barrel and
-  installed by `shell/boot.ts` onto `__shell.clock` behind `import.meta.env.DEV`
-  — inv 11 still binds, and `e2e/preview-smoke.spec.ts` greps the built bundle
-  for the name. It is what lets §7 #6 and the two TALLY captures REACH 21:04
-  instead of racing the clock at ×4.
+- [u11] **C16 — the sim-clock test hook is the FIRST of this unit's two
+  production edits.** u2's charter promised "clock pause/seed + animation-freeze hooks" and
+  only the freeze half shipped. `installClockHook` / `clockHookOf` / `ClockHook`
+  now complete it on `driver/test-hooks.ts`, re-exported from the driver barrel
+  and installed by `shell/boot.ts` onto `__shell.clock` behind
+  `import.meta.env.DEV` — inv 11 still binds, and `e2e/preview-smoke.spec.ts`
+  greps the built bundle for the name. It is what lets §7 #6 and the two TALLY
+  captures REACH 21:04 instead of racing the clock at ×4. **This entry used to
+  say "this unit's one production edit" and that was wrong**: the debug pane's
+  skin (below, `src/client/debug/pane.{ts,css}` — u9d's module) is a second one,
+  made under a carve-out rather than routed. C16 sanctions the hook; the carve-out
+  is what sanctions the other. The two entries contradicted each other until
+  integration; corrected here so the count is honest · 민서.
 - [u2f/u11] **Species is channel-derived, and the design target disagrees.**
   u2f recorded seven report sentences the reference hand-classifies against
   their channel (`b-r2-f02`/`b-r2-f07` as `quote`; `b-r1-b06`, `b-r2-b03`,
@@ -196,8 +201,17 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   `dist/assets/index-*.js`, and `e2e/preview-smoke.spec.ts`'s inv-11 needle list
   (`debug-pane` · `woodari` · `createFixtureDriver` · `freezeAnimations` ·
   `installClockHook`) does not cover it. Invariant 11 as written binds the debug
-  pane only, so this is an open decision rather than a proven violation — but it
-  is still open · 민서 / u11.
+  pane only, so this is an open decision rather than a proven violation.
+  **RULED at integration (08-04), the way inv 11 rules the pane: a surface that
+  exists to test the desk does not ship with the desk.** The whole
+  `window.__shell = {…}` assignment now sits behind `import.meta.env.DEV` in
+  `shell/boot.ts` (it previously wrapped only the C16 `clock` line, which is how
+  `frame`/`drain` kept shipping), and `__shell` joins the inv-11 needle list so
+  nothing can put it back unseen. No spec changes: the e2e unit host is a
+  `--mode development` build, where the handle is still installed. Note this
+  gates u3's handle ONLY — `__feed` / `__tally` / `__agentFile` / `__threads` are
+  the same class of dev handle and are still in the player bundle, which is a
+  wider decision than the one routed here · 민서 / u3.
 - [u9] **PRD §4 and `units/u9.md` disagree on the fourth invariant.** PRD §4 names
   inv 1 · 2 · 10 · 8 for P1-D; `units/u9.md` c4 replaces inv 10 with **inv 12**
   (seam integrity) and never mentions inv 10. The suite follows the unit
@@ -347,8 +361,20 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   shorthand in a template string (C11 / inv 8 admit none outside a stylesheet).
   The skin moved to `src/client/debug/pane.css`, all tokens, imported `?inline`
   and injected into the pane's own `<style>` — so the pane stays self-contained
-  and still rides the flagged chunk out of the player build. Owner u9d; recorded
-  here because u11 did not commission it.
+  and still rides the flagged chunk out of the player build.
+
+  **CARVE-OUT, and what this entry got wrong.** It read "Owner u9d; recorded here
+  because u11 did not commission it", which describes REPORTING the break and
+  routing it — and [u11#c8] says u11 reports and routes, never edits another
+  unit's production module. The diff did the edit anyway: `pane.ts` lost its
+  inline CSS template and `pane.css` is a new production file, both u9d's. The
+  work is kept rather than backed out — reverting re-reds inv 8 at a module whose
+  owning unit has already merged, and the fix is the one u9d would have made —
+  but it is kept as an **explicit carve-out, not as routing**: u11 made TWO
+  production edits (the C16 hook above and this skin), the second into another
+  unit's module. The seam ledger still names u9d as the OWNER of the break, which
+  is why `[u11#c14] (i)` stays green; ownership of the break and authorship of
+  the fix are not the same thing, and only this line said so · 민서 / u9d.
 - [u11] **The DEV debug pane steals the pointer over the desk's bottom-left
   quadrant — a HARNESS-STATE artefact, ruled the same way C14/C15 rule it for
   captures.** `vite.config.ts` folds `__DEBUG_PANE__` to `mode !== 'production'`,
@@ -392,6 +418,52 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
     because u7's loop files the same autopsy every day and spec-client §5.2's
     amendment makes that correct ("same sentence = same block across runs").
   · `e2e/fonts.spec.ts` — see the payload entry below.
+- [u8/u11] **The one test that was still skipping, and the guard that could not
+  see it — both closed at integration (08-04).** C17 binds #110 to ship with no
+  test excluded OR skipped. The tree carried exactly one skip:
+  `e2e/red-thread.spec.ts`'s `test.skip(!scrolled, …)` — and its subject is
+  [u8#c3] itself ("scrolling a source sentence out of its `.win-body` removes
+  that path"), so the criterion went unexercised in the full playwright run.
+  Two independent faults met here:
+  · **the skip's stated reason was false, and it fired on EVERY run.** It read
+    "the REPORTS body does not overflow in this run — nothing can scroll out of
+    view". Measured on the finished desk: REPORTS overflows fine — the first two
+    threaded sentences land in `article.doc.doc-facts`, scrollHeight 491 over
+    clientHeight 298, 193 px of travel. What the setup scrolled was `.win-body`,
+    and `.win-body` is `overflow-y: hidden`; `scrollTop` on it is a no-op, so the
+    condition was unconditionally true and the case NEVER ran, on any machine, in
+    any run. REPORTS puts its two documents in `article.doc` columns and those
+    are the scrollers. The case now finds the sentence's own scroller and moves
+    it the MINIMUM needed to lift that sentence past `body.top + THREAD_CLIP_PAD`
+    — minimum, not to the end, because the second sentence sits below the first
+    in the same column and must ride up and stay visible for the "count −1, no
+    stray line" claim to mean anything. Every unreachable branch returns a reason
+    and fails the setup assert, so an un-settable run is red, not green.
+    Verified: 3/3 with `--repeat-each=3`.
+  · `tests/acceptance/seam-reconcile.test.ts (m)` exempted "the conditional guard
+    form" and its `DISABLED` regex required a quote straight after the paren —
+    so `test.skip(cond, …)` could never match it BY CONSTRUCTION, and the ledger
+    reported a clean tree while a criterion was being skipped. (m) now counts
+    conditional skips too, against an explicit allowlist that is EMPTY. Anything
+    added to it must name the criterion it leaves unmeasured and appear here.
+- [u11] **C17 re-aims resolve their ranges through MERGE COMMITS, which a
+  squash-merge to `main` destroys.** `tests/acceptance/unit-range.ts` finds a
+  unit's range with `git log --merges` over the run's branch names, and roughly
+  a dozen asserts across eight files measure against it. That is correct on this
+  integration branch and on any merge-commit landing, but a **squash** of #110
+  into `main` leaves no merge commits at all: `unitMerge` then throws "no merge
+  for unit '<u>' is reachable from HEAD" and every re-aimed assert goes red on
+  `main` — loudly, which is the intended failure mode, but it will look like a
+  regression to whoever runs the suite there. Land #110 with a merge commit, or
+  re-aim these to tags cut at each unit's landing before squashing · 민서.
+  Related, and fixed here rather than recorded: `existedAtUnit` used to wrap the
+  range resolution in `try/catch` and answer EVERY failure with "the path did not
+  exist" — both callers assert `false`, so an unresolvable range, a shallow
+  clone, a bad path or a missing git all read as PASS, and a green `vitest run`
+  printed two `fatal: path … exists on disk, but not in 31b7687` lines while
+  reporting 824/824. It now resolves the range outside the guard and probes with
+  `ls-tree` (absent ⇒ exit 0 + empty output) instead of `cat-file -e` (exit 128
+  for an absent path and a bad rev alike).
 - [u11] **Font payload measured on the finished desk: 50 of 492 slices,
   ≈1.05 MB on first render — routed to u10, not absorbed.** u10 calibrated
   `e2e/fonts.spec.ts` against an EMPTY desk (24 files / 300 KB); u4–u7 then

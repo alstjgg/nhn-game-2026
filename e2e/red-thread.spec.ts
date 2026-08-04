@@ -621,17 +621,60 @@ test.describe('clipped to visible rect', () => {
     const ids = await thread(page, 2)
     await expect(page.locator(PATH)).toHaveCount(2)
 
-    // Scroll the REPORTS body until the FIRST threaded sentence leaves it.
-    const scrolled = await page.evaluate((id) => {
-      const node = document.querySelector(`#w-rep [data-sentence-id="${id}"]`)
-      const body = document.querySelector('#w-rep .win-body') as HTMLElement | null
-      if (!node || !body) return false
-      body.scrollTop = body.scrollHeight
-      const r = node.getBoundingClientRect()
-      const b = body.getBoundingClientRect()
-      return r.bottom < b.top + 2 || r.top > b.bottom - 2
-    }, ids[0])
-    test.skip(!scrolled, 'the REPORTS body does not overflow in this run — nothing can scroll out of view')
+    // C17 / [u11#c12] — RE-AIMED (08-04, integration). This case used to end at
+    // `test.skip(!scrolled, …)` "the REPORTS body does not overflow in this run",
+    // which meant [u8#c3]'s ONE scroll-out oracle never ran in the full suite.
+    // The stated reason was not the real one, and measuring it says so: REPORTS
+    // DOES overflow at the finished arrangement (`article.doc.doc-facts`,
+    // scrollHeight 491 over clientHeight 298 — 193 px of travel). What the old
+    // setup scrolled was `.win-body`, and `.win-body` is `overflow-y: hidden` —
+    // `scrollTop` on it is a no-op, so `scrolled` was false EVERY run and the
+    // skip fired unconditionally. REPORTS puts its two documents in `article.doc`
+    // columns and those are the scrollers.
+    //
+    // So the precondition is MADE, not hoped for: find the sentence's own
+    // scroller, and move it exactly far enough to lift that sentence clear of
+    // the body's top edge — `clipRect` drops an anchor whose bottom is above
+    // `body.top + THREAD_CLIP_PAD` (2). Scrolling by the minimum needed, rather
+    // than to the end, is what keeps this a ONE-thread test: the second sentence
+    // sits BELOW the first in the same column, so it rides up by the same amount
+    // and stays inside. Every branch that cannot reach the precondition returns
+    // a reason and fails the assert below — nothing is skipped.
+    const CLEAR = 8
+    const setup = await page.evaluate(
+      ([id, clear]) => {
+        const node = document.querySelector(`#w-rep [data-sentence-id="${id}"]`) as HTMLElement | null
+        const body = document.querySelector('#w-rep .win-body') as HTMLElement | null
+        if (!node || !body) return { ok: false, why: 'REPORTS renders no anchor for the first threaded sentence' }
+
+        const scrolls = (el: HTMLElement): boolean =>
+          /auto|scroll/.test(getComputedStyle(el).overflowY) && el.scrollHeight > el.clientHeight + 1
+        let scroller = node.parentElement
+        while (scroller && scroller !== body && !scrolls(scroller)) scroller = scroller.parentElement
+        if (!scroller || scroller === body) {
+          return { ok: false, why: 'no scrollable ancestor between the sentence and .win-body — nothing can scroll out' }
+        }
+
+        const need = node.getBoundingClientRect().bottom - body.getBoundingClientRect().top + (clear as number)
+        const range = scroller.scrollHeight - scroller.clientHeight
+        if (range < need) {
+          return { ok: false, why: `the sentence's column scrolls ${range}px but needs ${Math.ceil(need)}px to clear the body's top edge` }
+        }
+        scroller.scrollTop = need
+
+        const r = node.getBoundingClientRect()
+        const b = body.getBoundingClientRect()
+        if (!(r.bottom < b.top)) {
+          return { ok: false, why: `the sentence is still inside the body after scrolling (bottom ${r.bottom} vs body top ${b.top})` }
+        }
+        return { ok: true, why: '' }
+      },
+      [ids[0], CLEAR] as [string, number],
+    )
+    expect(
+      setup.ok,
+      `the [u8#c3] scroll-out precondition could not be reached, so the criterion is not being measured: ${setup.why}`,
+    ).toBe(true)
 
     await redraw(page)
     await expect(page.locator(PATH)).toHaveCount(1)
