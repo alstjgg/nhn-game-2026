@@ -225,13 +225,16 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     })
     .catch(() => undefined)
 
-  window.__tally = {
-    state: () => tally.state(),
-    rows: () => tally.rows(),
-    phase: () => store.get().phase,
-    meta: () => {
-      const meta = store.get().meta
-      return { run: meta.run, runs_left: meta.runsLeft, carried: [...meta.carried], archive: [...meta.archive] }
-    },
+  // DEV/TEST only — see `shell/boot.ts`'s note on `window.__shell` (inv 11).
+  if (import.meta.env.DEV) {
+    window.__tally = {
+      state: () => tally.state(),
+      rows: () => tally.rows(),
+      phase: () => store.get().phase,
+      meta: () => {
+        const meta = store.get().meta
+        return { run: meta.run, runs_left: meta.runsLeft, carried: [...meta.carried], archive: [...meta.archive] }
+      },
+    }
   }
 }

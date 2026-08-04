@@ -70,11 +70,19 @@ function seek(driver: FixtureDriver, at: string): void {
 /** Mounts this window's contents into the frame body the shell built. */
 export function mount(host: HTMLElement, driver: FixtureDriver): void {
   const feed = createRunFeed(host, driver)
-  window.__feed = {
-    count: () => feed.count(),
-    kinds: () => feed.kinds(),
-    stamps: () => feed.stamps(),
-    seek: (at: string) => seek(driver, at),
-    rate: (to: number) => driver.clock.setRate(asRate(to)),
+  // DEV/TEST only, on the same rule `shell/boot.ts` applies to `window.__shell`:
+  // a surface that exists to test the desk does not ship with the desk (inv 11).
+  // `import.meta.env.DEV` is a constant the bundler folds, so the player build
+  // drops the whole assignment and every name in it; `preview-smoke.spec.ts`'s
+  // inv-11 needle list names `__feed` to keep it that way. The mount itself stays
+  // unconditional — only the handle is gated.
+  if (import.meta.env.DEV) {
+    window.__feed = {
+      count: () => feed.count(),
+      kinds: () => feed.kinds(),
+      stamps: () => feed.stamps(),
+      seek: (at: string) => seek(driver, at),
+      rate: (to: number) => driver.clock.setRate(asRate(to)),
+    }
   }
 }

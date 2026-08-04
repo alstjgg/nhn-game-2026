@@ -63,8 +63,8 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   captures REACH 21:04 instead of racing the clock at ×4. **This entry used to
   say "this unit's one production edit" and that was wrong**: the debug pane's
   skin (below, `src/client/debug/pane.{ts,css}` — u9d's module) is a second one,
-  made under a carve-out rather than routed. C16 sanctions the hook; the carve-out
-  is what sanctions the other. The two entries contradicted each other until
+  made under a carve-out rather than routed. C16 sanctions the hook; **C21**
+  sanctions the other. The two entries contradicted each other until
   integration; corrected here so the count is honest · 민서.
 - [u2f/u11] **Species is channel-derived, and the design target disagrees.**
   u2f recorded seven report sentences the reference hand-classifies against
@@ -390,7 +390,17 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   production edits (the C16 hook above and this skin), the second into another
   unit's module. The seam ledger still names u9d as the OWNER of the break, which
   is why `[u11#c14] (i)` stays green; ownership of the break and authorship of
-  the fix are not the same thing, and only this line said so · 민서 / u9d.
+  the fix are not the same thing.
+
+  **Where the ruling lives (INT-10 follow-up).** This entry used to be the only
+  place the carve-out existed, which made the change that needed the sanction the
+  same change that asserted it. The ruling is now recorded where every other
+  ruling of this run is — `.claude/super/CONSTRAINTS.md` **C21**, alongside C16's
+  sanction of the other u11 production edit. C21 names the two paths
+  (`src/client/debug/pane.{ts,css}`), scopes the carve-out to the single skin
+  move, keeps the break's ownership with u9d, and states that this makes two
+  sanctioned u11 production edits. Read C21 as the authority; this entry is the
+  narrative · 민서 / u9d.
 - [u11] **The DEV debug pane steals the pointer over the desk's bottom-left
   quadrant — a HARNESS-STATE artefact, ruled the same way C14/C15 rule it for
   captures.** `vite.config.ts` folds `__DEBUG_PANE__` to `mode !== 'production'`,
@@ -404,6 +414,24 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   absent from the player bundle by inv 11. `e2e/fixtures/dev-surface.ts` now
   hides it for the specs that MEASURE the desk (shell, a11y); `e2e/debug-pane.spec.ts`,
   which owns the pane's own contract, never calls it. No production change.
+- [integration] **inv 11 covered one dev handle and missed its four siblings.**
+  Closing INT-4 gated `window.__shell` behind `import.meta.env.DEV` and added
+  `'__shell'` to `e2e/preview-smoke.spec.ts`'s inv-11 needle list — but the rule
+  `shell/boot.ts:116` adopted in the same breath ("a surface that exists to test
+  the desk does not ship with the desk") named a CLASS, and only one member of it
+  was closed. Measured on a real `npm run build`: `dist/assets/index-*.js` still
+  carried `window.__feed=`, `window.__tally=`, `window.__agentFile=` and
+  `window.__threads=`, so the gate could see one handle and not the four next to
+  it. All four assignments now fold away outside DEV
+  (`windows/live-feed.ts`, `windows/tally.ts`, `windows/agent-file.ts`,
+  `shell/boot.ts`) and all four names joined the needle list, so the check and the
+  rule finally cover the same set. Two notes on the shape of the fix:
+  `createThreadLayer()` carries the MOUNT side effect, so the call stays
+  unconditional and only the returned handle is gated — `const threads = …; if
+  (import.meta.env.DEV) window.__threads = threads`; and every spec that drives
+  these handles keeps working untouched, because the e2e unit host and the dev
+  hosts are `--mode development` builds (C5(a)/(b) — the preview smoke is the only
+  host that sees a player build, and it is the one asserting their absence).
 - [u11] **C12/C17 re-aims, second pass — the browser oracles the finished desk
   invalidated.** Same rule as the pass above: nothing deleted, excluded or
   `.skip`ped, each re-aim annotated `C17 / [u11#c12] — RE-AIMED` at its site.

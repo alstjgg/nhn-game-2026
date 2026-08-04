@@ -87,6 +87,16 @@ test.describe('preview smoke', () => {
       // list did not name it, so no gate could see it. `shell/boot.ts` now folds
       // the whole assignment away outside DEV, and the needle keeps it that way.
       '__shell',
+      // …and its four siblings. `__shell` was gated first and named here alone,
+      // which left a gate that could see one handle and not the rest: the window
+      // handles `__feed`/`__tally`/`__agentFile` and the shell's `__threads` were
+      // all still in `dist/assets/index-*.js`. Each assignment now folds away
+      // outside DEV and each name is a needle, so the list and the rule cover the
+      // same set.
+      '__feed',
+      '__tally',
+      '__agentFile',
+      '__threads',
     ]
     const hits: string[] = []
     for (const file of files) {

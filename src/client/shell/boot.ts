@@ -100,11 +100,15 @@ export async function bootShell(): Promise<void> {
   // 4b — the evidence threads. Decoration over the arranged desk: it reads the
   // slot and sentence anchors the windows already wrote and adds no state of
   // its own, so it can only exist once the desk it measures does ([u8#c7]).
-  window.__threads = threadLayer.createThreadLayer({
+  // `createThreadLayer` carries the mount side effect, so the call stays
+  // unconditional; only the dev handle it hands back is gated (inv 11, same rule
+  // as `__shell` below).
+  const threads = threadLayer.createThreadLayer({
     host: must<SVGSVGElement>('#threads'),
     root: must('#app'),
     slotted: () => Object.values(driver.frame().store.slots),
   })
+  if (import.meta.env.DEV) window.__threads = threads
 
   // 5 — open the run. `advance(0)` releases what is due at the opening minute
   // without moving the clock; the desk then waits on hold until the operator

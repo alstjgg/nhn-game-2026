@@ -127,16 +127,19 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     })
     .catch(() => undefined)
 
-  window.__agentFile = {
-    slots: () => board.cells(),
-    place: (blockId, slot) => board.place(blockId, slot),
-    clear: (slot) => board.clear(slot),
-    deployed: () => board.isLocked(),
-    index: (sentence) => {
-      sentences.set(sentence.id, sentence)
-      board.render()
-    },
-    pick: (blockId) => setPickedBlockId(blockId),
+  // DEV/TEST only — see `shell/boot.ts`'s note on `window.__shell` (inv 11).
+  if (import.meta.env.DEV) {
+    window.__agentFile = {
+      slots: () => board.cells(),
+      place: (blockId, slot) => board.place(blockId, slot),
+      clear: (slot) => board.clear(slot),
+      deployed: () => board.isLocked(),
+      index: (sentence) => {
+        sentences.set(sentence.id, sentence)
+        board.render()
+      },
+      pick: (blockId) => setPickedBlockId(blockId),
+    }
   }
 
   sync()
