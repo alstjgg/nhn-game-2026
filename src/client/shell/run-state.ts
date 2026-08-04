@@ -45,9 +45,27 @@ export interface RunState {
    * has not filed one yet. A report that lands during TALLY does not move the
    * phase — but it is the event the ledger's "the report is on the desk" line
    * and NEW RUN both wait on, so it is recorded rather than dropped
-   * (R4 on score-tally.ts:269).
+   * (R4 on score-tally.ts:258). It is a ROUND, never a run — see
+   * `hasFiledReport()` below for why the difference is load-bearing.
    */
   report: number | null
+}
+
+/**
+ * Has the run now on the desk filed its report?
+ *
+ * The honest predicate is "a `report` event has been seen since this run's
+ * `meta`" — which is exactly what `report` records, because the `meta` case
+ * below resets it to `null` on every run. It is deliberately NOT
+ * `state.report === state.meta.run`: `report.round` is a ROUND and `meta.run`
+ * is a RUN, and §5.2 (`spec-client.md:153`, `:179`) makes no guarantee that a
+ * day's last round carries its run's number — the demo fixture happens to set
+ * `round = run`, which is a property of one fixture and not of the seam. A
+ * client that keyed the wait on that equality hung forever on any day whose
+ * last round was numbered otherwise (R4 on score-tally.ts:258, round 2).
+ */
+export function hasFiledReport(state: RunState): boolean {
+  return state.report !== null
 }
 
 /** The one persistence key this unit owns (C4). */

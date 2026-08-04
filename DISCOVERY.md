@@ -892,6 +892,25 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   the driver — which may read the pack — resolves `label → baseline` and hands
   the window a `ViewEvent`. Either is a one-line change in `windows/tally.ts`
   once it exists · open. (final-PR review, R1 on `windows/tally.ts:218`)
+- [u7] **`report.round` and `meta.run` are two different namespaces, and no
+  ratified line says when they coincide.** §5.2 types the report event as
+  `{ type: 'report'; round: number }` (`spec-client.md:179`) and the loop as
+  `RUN → (per round) REPORT → … → (21:04) TALLY` (`:153`), so a day may close on
+  any round number; every fixture in the tree nonetheless ships `round = run`
+  (`driver/fixtures/woodari-run03.ts:157`, `driver/fixtures/run-loop.ts:110`),
+  which makes the conflation invisible to the whole suite. The TALLY hold was
+  keyed on `state.report === state.meta.run` and hung forever on the first day
+  whose last round was numbered otherwise; it is FIXED (08-05) to the honest
+  predicate — `run-state.ts` `hasFiledReport()`, "a `report` has been seen since
+  this run's `meta`" — and `[u7#c2] (n)` now fails any window that compares the
+  two. **Still open, and not this fix's to close:** `windows/reports.ts`
+  (`railEntries`, `:22-26`, `:103-104`) files reports under `event.round` and
+  then merges those keys into the archive rail's `entry.run` namespace, so on a
+  day where the two differ the rail grows a phantom entry. **Ask of the seam
+  owner:** either state in §5.2 that a day's closing round carries its run's
+  number (and pin it), or give the report event a `run` alongside its `round` so
+  a consumer never has to guess · open. (final-PR review, R4 on
+  `components/score-tally.ts:258`, round 2)
 - [u3] **Inheritor note (u3):** the five window bodies are `overflow:auto`
   (`.paper`) except LIVE FEED's `.fanfold`, and `WINDOW_REGISTRY`
   (`shell/window-registry.ts`) is the only place that names the five windows —

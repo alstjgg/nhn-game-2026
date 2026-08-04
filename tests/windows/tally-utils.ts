@@ -61,6 +61,8 @@ export interface RunState {
   phase: RunPhase
   meta: MetaState
   score: ScoreState | null
+  /** The round of the last `report` seen since this run's `meta`, or `null`. */
+  report: number | null
 }
 
 export interface RunStore {
@@ -72,6 +74,7 @@ export interface RunStateModule {
   META_KEY: string
   initialRunState(): RunState
   reduce(state: RunState, event: ViewEvent): RunState
+  hasFiledReport(state: RunState): boolean
   createRunState(driver: FixtureDriver, options?: { storage?: Storage }): RunStore
   getRunState(): RunStore | null
 }
@@ -83,12 +86,17 @@ export interface Pace {
   VERDICT_AFTER: number
   COUNT_MS: number
   TOTAL_MS: number
+  /** The ceiling of the tally's hold — the wait is long, never endless. */
+  HOLD_CEIL: number
 }
+
+export type SettleRelease = 'hold' | 'filed' | 'lapsed'
 
 export interface ScoreTallyModule {
   PACE: Pace
   settleMs(rowCount: number): number
   countUpAt(to: number, k: number): number
+  settleRelease(input: { counted: boolean; filed: boolean; lapsed: boolean }): SettleRelease
   createScoreTally: unknown
 }
 

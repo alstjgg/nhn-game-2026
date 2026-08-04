@@ -19,9 +19,9 @@ import type { FixtureDriver } from '../driver/index.ts'
 import { button, el } from '../shell/dom.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
-import { createRunState } from '../shell/run-state.ts'
+import { createRunState, hasFiledReport } from '../shell/run-state.ts'
 import type { MetaState, RunPhase, RunState, ScoreState } from '../shell/run-state.ts'
-import { PACE, createScoreTally } from '../components/score-tally.ts'
+import { PACE, createScoreTally, settleRelease } from '../components/score-tally.ts'
 import type { TallyModel, TallyState } from '../components/score-tally.ts'
 
 /** The wait line, verbatim from the reference — diegetic, never a spinner. */
@@ -48,6 +48,8 @@ const NEW_RUN_SUB_TAIL = '으로'
 
 /** The line the ledger settles on once the run's report is on the desk. */
 const FILED_TAIL = ' 보고서가 부검 창에 도착했습니다'
+/** …and the line it settles on when the hold ran out and none came. */
+const LAPSED_TAIL = ' 보고서는 아직 부검 창에 없습니다 — 다음 시행은 열려 있습니다'
 const RUN_CAPTION = 'RUN '
 
 /** The allotment is spent: `new_run` was refused, and the loop has no next day. */
@@ -89,26 +91,49 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   const newRunSub = el('span', 'bn-sub')
   newRun.append(el('span', 'bn-main', NEW_RUN_MAIN), newRunSub)
 
-  // The count-up is the FLOOR of the wait, not its length (R4 on
-  // score-tally.ts:269). The ledger reaches `final` on its own ~9 s cadence,
-  // but the line that says the report is on the desk — and the NEW RUN that
-  // ends the day — wait for the run's own `report` event, which the engine's
-  // worst case puts up to 30 s out. Until then the diegetic wait line stays up,
-  // which is exactly the beat that exists to absorb the generation.
+  // The count-up is the FLOOR of the wait and `PACE.HOLD_CEIL` is its CEILING
+  // (R4 on score-tally.ts:258, rounds 1 and 2). The ledger reaches `final` on
+  // its own ~9 s cadence, but the line that says the report is on the desk —
+  // and the NEW RUN that ends the day — wait for the run's own `report`, which
+  // the engine's worst case puts up to 30 s out. Until then the diegetic wait
+  // line stays up: that is the beat that exists to absorb the generation. Past
+  // the ceiling the day is handed back anyway, degraded and honest — NEW RUN
+  // opens and the green "it arrived" line is NOT printed, because nothing
+  // arrived. `settleRelease()` owns that decision; this window owns the clock.
   let settled = false
   let counted = false
+  let lapsed = false
+  let hold: ReturnType<typeof setTimeout> | null = null
 
-  /** The run's report is in hand when the round the seam filed is this run's. */
-  function filed(): boolean {
-    const state = store.get()
-    return state.report !== null && state.report === state.meta.run
+  function dropHold(): void {
+    if (hold === null) return
+    clearTimeout(hold)
+    hold = null
+  }
+
+  function armHold(): void {
+    dropHold()
+    hold = setTimeout(() => {
+      hold = null
+      lapsed = true
+      settle()
+    }, PACE.HOLD_CEIL)
   }
 
   function settle(): void {
-    if (settled || !counted || !filed()) return
+    if (settled) return
+    const release = settleRelease({ counted, filed: hasFiledReport(store.get()), lapsed })
+    if (release === 'hold') return
     settled = true
-    wait.classList.add('done')
-    wait.textContent = `${RUN_CAPTION}${pad2(store.get().meta.run)}${FILED_TAIL}`
+    dropHold()
+    const run = pad2(store.get().meta.run)
+    if (release === 'filed') {
+      wait.classList.add('done')
+      wait.textContent = `${RUN_CAPTION}${run}${FILED_TAIL}`
+    } else {
+      // No `.done`: the settled-green is the arrival's mark, and this is not one.
+      wait.textContent = `${RUN_CAPTION}${run}${LAPSED_TAIL}`
+    }
     newRun.disabled = false
   }
 
@@ -210,6 +235,10 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     printed = false
     counted = false
     settled = false
+    lapsed = false
+    // The ceiling runs from the close, so the whole hold — count-up included —
+    // is bounded by one number the operator can feel the end of.
+    armHold()
     tally.open()
     wait.classList.remove('done')
     wait.textContent = WAITING
@@ -230,6 +259,8 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     printed = false
     counted = false
     settled = false
+    lapsed = false
+    dropHold()
     show(false)
     tally.reset()
     wait.classList.remove('done')

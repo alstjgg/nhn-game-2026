@@ -60,7 +60,13 @@ export interface Scheduler {
  * `OPEN_DELAY` is `endRun`'s 900 ms wait before the window opens; `LEAD`,
  * `ROW_STEP` and `VERDICT_AFTER` are `runTally`'s 500 / 640 / +300; `COUNT_MS`
  * is `countUp`'s 3400. `TOTAL_MS` is the README's ~9 s target, which the
- * settle is solved against.
+ * settle is solved against — the FLOOR of the wait.
+ *
+ * `HOLD_CEIL` is its CEILING: the longest the window may hold the day closed
+ * waiting on the run's `report`. The engine's one retry puts the generation's
+ * worst case near 30 s (`e2e/run-loop.spec.ts:488`), so a wait that has run
+ * past it has stopped being a beat. The waiting rhythm is long, never endless
+ * (R4 on score-tally.ts:258, round 2).
  */
 export const PACE = {
   OPEN_DELAY: 900,
@@ -69,7 +75,30 @@ export const PACE = {
   VERDICT_AFTER: 300,
   COUNT_MS: 3400,
   TOTAL_MS: 9000,
+  HOLD_CEIL: 30_000,
 } as const
+
+/** What the ledger's wait line may do while the hold is up. */
+export type SettleRelease =
+  /** The beat is still running: the count-up, or the report, or both are out. */
+  | 'hold'
+  /** The count-up finished AND the run's report is on the desk. */
+  | 'filed'
+  /** `HOLD_CEIL` passed with no report — release the day, claim nothing. */
+  | 'lapsed'
+
+/**
+ * The hold's whole decision, as a pure function of the three facts the window
+ * has. Between the floor and the ceiling the wait belongs to the report:
+ * `counted` alone never releases (that was the round-1 defect — a wall clock
+ * announcing a delivery it never checked), and `filed` alone never cuts the
+ * count-up short. Past the ceiling the desk is given back regardless, because a
+ * player who is never handed the day back has been handed a bug, not a beat.
+ */
+export function settleRelease(input: { counted: boolean; filed: boolean; lapsed: boolean }): SettleRelease {
+  if (input.counted && input.filed) return 'filed'
+  return input.lapsed ? 'lapsed' : 'hold'
+}
 
 /** The settle may never race the count-up, nor leave the desk waiting. */
 const SETTLE_FLOOR = 1400

@@ -453,6 +453,82 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
     expect(offenders(/spinner|loading|is-busy|throbber/i)).toEqual([])
     expect(sourceOf(TALLY_TS)).toContain('……보고서 정리 중')
   })
+
+  // R4 on score-tally.ts:258 (round 1): the count-up may not ANNOUNCE a
+  // delivery it never checked. (Round 2): and the hold it replaced the wall
+  // clock with may not be endless.
+  it('(j) the hold has a ceiling, and the ceiling is past every count-up the seam can produce', async () => {
+    const t = await scoreTally()
+    expect(t.PACE.HOLD_CEIL, 'the 30 s worst case the engine`s one retry puts the generation at').toBe(30_000)
+    const total = (rows: number): number => t.PACE.OPEN_DELAY + t.PACE.LEAD + rows * t.PACE.ROW_STEP + t.settleMs(rows)
+    for (let rows = 0; rows <= 12; rows += 1) {
+      expect(t.PACE.HOLD_CEIL, `${rows} rows out-counts the ceiling`).toBeGreaterThan(total(rows))
+    }
+  })
+
+  it('(k) between floor and ceiling the wait belongs to the report — neither half releases alone', async () => {
+    const t = await scoreTally()
+    const release = (counted: boolean, filed: boolean, lapsed: boolean): string =>
+      t.settleRelease({ counted, filed, lapsed })
+
+    expect(release(false, false, false), 'nothing has happened yet').toBe('hold')
+    expect(release(true, false, false), 'the count-up alone released — a wall clock, not an absorber').toBe('hold')
+    expect(release(false, true, false), 'the report cut the count-up short — the floor is gone').toBe('hold')
+    expect(release(true, true, false), 'the ledger counted AND the report landed').toBe('filed')
+  })
+
+  it('(l) past the ceiling the day is handed back — degraded, and claiming nothing', async () => {
+    const t = await scoreTally()
+    const release = (counted: boolean, filed: boolean, lapsed: boolean): string =>
+      t.settleRelease({ counted, filed, lapsed })
+
+    expect(release(true, false, true), 'the hold ran past the ceiling and never released').toBe('lapsed')
+    expect(release(false, false, true), 'a ledger that never counted is still owed its day back').toBe('lapsed')
+    expect(release(true, true, true), 'a report in hand at the ceiling is still an arrival').toBe('filed')
+
+    // …and 'lapsed' says something else: the arrival copy is the arrival's, so
+    // a release that saw no report may not borrow it.
+    const text = sourceOf(TALLY_TS)
+    const filedLine = /const FILED_TAIL = '([^']*)'/.exec(text)?.[1] ?? ''
+    const lapsedLine = /const LAPSED_TAIL = '([^']*)'/.exec(text)?.[1] ?? ''
+    expect(filedLine, 'the arrival line is gone').toContain('도착')
+    expect(lapsedLine, 'the degraded release has no line of its own').toBeTruthy()
+    expect(lapsedLine, 'the degraded release claims an arrival it never saw').not.toBe(filedLine)
+    expect(lapsedLine).not.toMatch(/도착했습니다/)
+    // It is a beat, not an error report (inv 5 — no dead UI, ever).
+    for (const dead of [/timed?\s*out/i, /timeout/i, /응답\s*없음/, /다시\s*시도/, /요청\s*실패/, /연결\s*끊/]) {
+      expect(lapsedLine, `the degraded line reads as dead UI: ${dead}`).not.toMatch(dead)
+    }
+  })
+
+  it('(m) the release predicate is contract-backed: a report is the run`s because it is ITS report', async () => {
+    const m = await runState()
+    // §5.2 types `report` with a ROUND (`spec-client.md:179`) and `meta` with a
+    // RUN. A day whose last round is not numbered like its run is a legal seam
+    // value — the demo fixture`s `round = run` is a fixture property.
+    let state = m.reduce(m.initialRunState(), metaEvent({ run: 3, runsLeft: 7 }))
+    expect(m.hasFiledReport(state), 'a fresh run opened with a report already in hand').toBe(false)
+
+    state = m.reduce(state, reportEvent(2))
+    state = m.reduce(state, runEndEvent(3))
+    state = m.reduce(state, scoreEvent(7, [{ label: 'a', value: 1 }]))
+    expect(state.phase).toBe('tally')
+    expect(state.report, 'the round the seam filed was rewritten to the run number').toBe(2)
+    expect(m.hasFiledReport(state), 'RUN 03 filed round 2 and the desk did not count it — the hold hangs').toBe(true)
+
+    // The next run starts owing its own report; the previous day`s cannot pay.
+    state = m.reduce(state, metaEvent({ run: 4, runsLeft: 6 }))
+    expect(m.hasFiledReport(state), 'the new run inherited the last run`s report').toBe(false)
+  })
+
+  it('(n) source: no window keys the wait on `round === run`', () => {
+    for (const source of scannedSources()) {
+      expect(
+        source.text,
+        `${source.file} compares a report ROUND against meta.run — a guarantee §5.2 does not make`,
+      ).not.toMatch(/report\s*===\s*[A-Za-z.]*meta\.run|meta\.run\s*===\s*[A-Za-z.]*\.report/)
+    }
+  })
 })
 
 /* ══ [u7#c6] no storage api ═════════════════════════════════════════════ */
