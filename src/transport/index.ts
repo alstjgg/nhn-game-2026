@@ -102,16 +102,23 @@ export type TransportDeps = {
 }
 
 /**
- * §11: the fallback header is only ever sent on the two retryable statuses.
- * Everywhere else it is dropped before grading — a 4xx or the hard 500 must
- * never have an injected (or buggy) header override its fixed outcome
- * (decision 2 / A2). Reading this off the row's own `retry` flag, rather than
- * naming 502/504, keeps a future retryable row a one-row table edit (OCP).
+ * §11: the fallback header is only ever sent on a status that is already a
+ * fallback situation. Everywhere else it is dropped before grading — a 4xx or
+ * the hard 500 must never have an injected (or buggy) header override its fixed
+ * outcome (decision 2 / A2). Reading this off the row's own flag, rather than
+ * naming statuses, keeps a future row a one-row table edit (OCP).
+ *
+ * The flag read here is `fallback`, not `retry`. It was `retry` while those two
+ * were the same set; 504 leaving the retry set (see status-map.ts) separated
+ * them, and only `fallback` expresses what this function is for. Reading
+ * `retry` would still produce the right answer for today's table — 504's row
+ * already sets `fallback: true`, so the dropped header changes nothing — which
+ * is exactly why it is worth fixing now rather than after a row makes it wrong.
  */
 function headerForGrading(status: number | null, header: GradeHeaders): GradeHeaders {
   if (status === null) return header
   const row = STATUS_ROWS[status]
-  if (row && !row.retry) return { fallback: null, code: header.code }
+  if (row && !row.fallback) return { fallback: null, code: header.code }
   return header
 }
 

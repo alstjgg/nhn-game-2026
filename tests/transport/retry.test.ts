@@ -30,12 +30,11 @@ async function run(steps: readonly StubStep[]) {
   return { result, wireCalls: stub.calls.length }
 }
 
-// ─── A4 — the retry set is {502, 504, network}, and nothing else ─────────────
+// ─── A4 — the retry set is {502, network}, and nothing else ──────────────────
 
 describe('[e6#A4] retryable failures are called exactly twice', () => {
   const retryable: readonly { label: string; steps: readonly StubStep[] }[] = [
     { label: '502 invalid_model_output', steps: [{ status: 502, headers: fallbackHeaders('invalid_model_output'), body: errorBody('invalid_model_output') }] },
-    { label: '504 bedrock_timeout', steps: [{ status: 504, headers: fallbackHeaders('bedrock_timeout'), body: errorBody('bedrock_timeout') }] },
     { label: 'a rejected fetch', steps: [{ reject: 'ECONNRESET' }] },
   ]
 
@@ -69,6 +68,11 @@ describe('[e6#A4] non-retryable failures are called exactly once', () => {
     { label: '413 request_too_large', status: 413, code: 'request_too_large' },
     { label: '415 unsupported_media_type', status: 415, code: 'unsupported_media_type' },
     { label: '500 internal_error', status: 500, code: 'internal_error' },
+    // 504 is a fallback situation but NOT a retry one: the model missed a
+    // deadline that now sits well above its measured cost (#138), so a re-call
+    // spends another full deadline on a cause likely to repeat. engine spec §5
+    // — only hard validation failures trigger a re-call.
+    { label: '504 bedrock_timeout', status: 504, code: 'bedrock_timeout' },
   ]
 
   for (const { label, status, code } of once) {

@@ -42,7 +42,18 @@ export const STATUS_ROWS: Readonly<Record<number, StatusRow>> = {
     codes: ['invalid_config', 'unfilled_slot', 'internal_error'],
   },
   502: { fallback: true, retry: true, codes: ['invalid_model_output'] },
-  504: { fallback: true, retry: true, codes: ['bedrock_timeout'] },
+  // Retryable when the §11 table was first written; not any more. A 504 means
+  // the model did not answer inside MODEL_TIMEOUT_MS, which is not a hard
+  // validation failure — and engine spec §5's rule has always been that only
+  // hard validation failures trigger a re-call. The two documents disagreed and
+  // the implementation followed §11; the measurement settled which one was right.
+  //
+  // The deadline moved 7 s → 15 s after the first reporter measurement (#138):
+  // reporter costs 6.8-10.0 s, so the budget now sits well above the observed
+  // maximum and a 504 means something genuinely wrong rather than a tight
+  // budget. Retrying would spend another full deadline on a request whose cause
+  // is likely to repeat, turning a 15 s failure into a 30 s one.
+  504: { fallback: true, retry: false, codes: ['bedrock_timeout'] },
 }
 
 /** The graded outcome of one wire attempt, before attempts/requestId land. */

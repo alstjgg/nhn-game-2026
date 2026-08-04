@@ -568,19 +568,30 @@ a client bug with an authored default, and the bug would never surface.
 | 415 | `unsupported_media_type` | no | Content-Type is not `application/json` |
 | 500 | `invalid_config` · `unfilled_slot` · `internal_error` | no | This tier's bug. `unfilled_slot` means a template slot had no value — a contract break, not a client error |
 | 502 | `invalid_model_output` | **yes** | The model returned no tool call, or output that failed validation |
-| 504 | `bedrock_timeout` | **yes** | The model did not answer inside `MODEL_TIMEOUT_MS` |
+| 504 | `bedrock_timeout` | no | The model did not answer inside `MODEL_TIMEOUT_MS`. **Fallback yes, retry no** — see below |
 
 The 4xx/5xx split is the load-bearing line: **4xx means fix the caller, 5xx-with-
-a-fallback-header means apply the authored default and carry on.**
+a-fallback-header means apply the authored default and carry on.** Fallback and
+retry are separate properties, and 504 is the row where they differ.
 
 ### Retries belong to the engine
 
 One retry, two calls total (engine spec §5), and **the engine owns the counter** —
-the proxy never retries a model call. API Gateway allows the whole request 9
-seconds and `MODEL_TIMEOUT_MS` already consumes 7, so a proxy-side retry would
+the proxy never retries a model call. API Gateway allows the whole request 18
+seconds and `MODEL_TIMEOUT_MS` already consumes 15, so a proxy-side retry would
 land outside the budget and return a gateway error instead of a usable fallback.
 The probe uses 2 retries against a different budget; the two numbers differing is
 deliberate.
+
+**504 left the retry set on 2026-08-04**
+([PR #138](https://github.com/alstjgg/nhn-game-2026/pull/138)). This table
+originally marked it retryable, which contradicted engine spec §5's standing
+rule that only *hard validation failures* trigger a re-call; a timeout is not
+one. The contradiction was harmless while `MODEL_TIMEOUT_MS` was 7 s and a
+timeout plausibly meant "the budget was too tight". The A4 measurement moved the
+deadline to 15 s against a measured reporter maximum of 10.0 s, so a 504 now
+means something genuinely wrong — and a retry would spend a second full deadline
+on a cause likely to repeat. §5 was right; this table was not.
 
 ### Endpoint configuration
 

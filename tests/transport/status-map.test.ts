@@ -323,12 +323,25 @@ describe('[e6#A1] gradeStatus() is a pure lookup over the §11 table', () => {
     ])
   })
 
-  it('retry is a property of the row — only 502 and 504 carry it', () => {
+  it('retry is a property of the row — only 502 carries it', () => {
     const retryable = Object.entries(STATUS_ROWS)
       .filter(([, row]) => row.retry)
       .map(([status]) => Number(status))
       .sort((a, b) => a - b)
-    expect(retryable).toEqual([502, 504])
+    expect(retryable).toEqual([502])
+  })
+
+  // The two flags used to select the same set, and this asserts that they no
+  // longer do — 504 is a fallback situation without being a retry one. A change
+  // that quietly re-merged them would pass every other test in this file.
+  it('fallback and retry are separate properties — 504 has one without the other', () => {
+    expect(STATUS_ROWS[504]).toMatchObject({ fallback: true, retry: false })
+    expect(STATUS_ROWS[502]).toMatchObject({ fallback: true, retry: true })
+    const fallbackRows = Object.entries(STATUS_ROWS)
+      .filter(([, row]) => row.fallback)
+      .map(([status]) => Number(status))
+      .sort((a, b) => a - b)
+    expect(fallbackRows).toEqual([502, 504])
   })
 
   it('every mapped row lists the §11 codes for its status', () => {
