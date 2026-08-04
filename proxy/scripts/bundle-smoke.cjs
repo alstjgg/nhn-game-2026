@@ -4,9 +4,15 @@
 // shape: drive the built artifact with two events and assert the status codes,
 // which catches a bundle that imports something esbuild did not include.
 //
-// Expected codes here are 501 (the call routes are stubbed — see
-// src/call-service.ts) and 200 (health). When the routes land, the call event
-// should carry a real payload and this expectation becomes 200/200.
+// The call routes have landed, so `events/call.json` carries a real judgment
+// payload and the assertion is no longer a status literal. What this smoke can
+// prove offline is that the bundle got *past* rendering and tool-building and
+// into the provider: either a 200 (credentials happened to be in the
+// environment, so a real Bedrock call answered) or a non-2xx carrying
+// `x-llm-fallback` (the provider was reached and failed — offline that is
+// CredentialsProviderError). A 4xx means validation rejected the fixture and a
+// throw means esbuild dropped something from the module graph; both are the
+// failures this smoke exists to catch.
 const fs = require("node:fs");
 const Module = require("node:module");
 const path = require("node:path");
@@ -54,7 +60,10 @@ Promise.all([
   compiled.exports.handler(callEvent, { awsRequestId: "bundle-smoke-call" }),
   compiled.exports.handler(healthEvent, { awsRequestId: "bundle-smoke-health" }),
 ]).then(([callResult, healthResult]) => {
-  if (callResult.statusCode !== 501 || healthResult.statusCode !== 200) {
+  const reachedProvider =
+    callResult.statusCode === 200 ||
+    callResult.headers?.["x-llm-fallback"] === "true";
+  if (!reachedProvider || healthResult.statusCode !== 200) {
     throw new Error(
       `Unexpected bundle responses: ${JSON.stringify({ callResult, healthResult })}`,
     );
@@ -63,6 +72,7 @@ Promise.all([
     JSON.stringify({
       ok: true,
       callStatusCode: callResult.statusCode,
+      callFallbackCode: callResult.headers?.["x-fallback-code"] ?? null,
       healthStatusCode: healthResult.statusCode,
     }),
   );
