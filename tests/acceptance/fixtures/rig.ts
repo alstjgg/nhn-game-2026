@@ -8,10 +8,11 @@
 // is pure of `fs`, so somebody upstream has to do it), the two adapters e3's
 // ports ask for, and two recorders that watch seams without changing them.
 //
-// e7's `createScriptedEngine` is reused rather than copied: it is the one
-// existing `EnginePort` over the merged leaves, it is parameterised by pack, and
-// §8's criteria are about what that port and its collaborators produce — not
-// about a second binding written for this suite.
+// The run rig below uses the shipped `createEngine` (`src/engine/index.ts`)
+// rather than a rig-local rebuild of it: it is the one existing `EnginePort`
+// over the merged leaves, it is parameterised by pack, and §8's criteria are
+// about what that factory and its collaborators produce — not about a second
+// binding written for this suite.
 //
 // The pack is the frozen 우는다리 datapack, deliberately: §8-2 asks for a beat
 // whose effect moves `trust`, §8-8 for a run that generates lines on every
@@ -34,6 +35,7 @@ import { createBlockStore, createLiveDriver } from '../../../src/driver/index.ts
 import type { ComposerPort, MutableBlockStore } from '../../../src/driver/ports.ts'
 import { createFixtureProvider } from '../../../src/transport/index.ts'
 import type { Transport, TransportResult } from '../../../src/transport/index.ts'
+import { createEngine } from '../../../src/engine/index.ts'
 import type { GateView, BeatView, RoundView } from '../../../src/engine/index.ts'
 import type { Composer } from '../../../src/composer/index.ts'
 import type { CallRequest, CallType } from '../../../src/shared/contracts.ts'
@@ -46,7 +48,6 @@ import type {
 } from '../../../src/shared/datapack.ts'
 import type { ReportGuidance } from '../../../src/shared/report-guidance.ts'
 import type { FeedLine, ViewEvent } from '../../../src/shared/view-driver.ts'
-import { createScriptedEngine } from '../../driver/engine-fixtures/scripted-engine.ts'
 import type { EnginePack } from '../../driver/engine-fixtures/pack.ts'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
@@ -248,7 +249,7 @@ async function runOnce(): Promise<Run> {
   const pack = loadPack()
   const guidance = loadGuidance()
   const blocks = createBlockStore()
-  const engine = createScriptedEngine({ pack, run: 1 })
+  const engine = createEngine({ pack, run: 1 })
   const inner = createComposer({ blocks, reportGuidance: guidance })
   const recorder = recordingTransport(createFixtureProvider())
 

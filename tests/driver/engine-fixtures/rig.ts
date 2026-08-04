@@ -6,6 +6,10 @@
 // status grading (e6) each carry their own suite. These files assert what the
 // DRIVER adds — the ordered ViewEvent stream, the MembraneOp round-trip, and
 // the leak guarantee.
+//
+// The engine itself is the shipped `createEngine` (`src/engine/index.ts`),
+// not a rig-local rebuild of it — `EngineHandle` is a structural superset of
+// `EnginePort`, so it plugs in unchanged.
 import { createFixtureProvider } from '../../../src/transport/index.ts'
 import type { Transport, TransportResult } from '../../../src/transport/index.ts'
 import { createComposer } from '../../../src/composer/compose.ts'
@@ -18,6 +22,7 @@ import type {
   MutableBlockStore,
   ReportSentences,
 } from '../../../src/driver/ports.ts'
+import { createEngine } from '../../../src/engine/index.ts'
 import type { GateView, BeatView, RoundView } from '../../../src/engine/index.ts'
 import type {
   CallRequest,
@@ -28,7 +33,6 @@ import type {
   ReporterResponse,
 } from '../../../src/shared/contracts.ts'
 import type { FeedLine, ViewEvent } from '../../../src/shared/view-driver.ts'
-import { createScriptedEngine } from './scripted-engine.ts'
 import type { EnginePack } from './pack.ts'
 import { reportGuidance, scriptedRound } from './pack.ts'
 
@@ -188,7 +192,7 @@ export type RigOptions = {
 export function makeRig(options: RigOptions = {}): Rig {
   const pack = options.pack ?? scriptedRound()
   const blocks = createBlockStore()
-  const baseEngine = createScriptedEngine({ pack, run: options.run })
+  const baseEngine = createEngine({ pack, run: options.run })
   const engine = options.wrapEngine ? options.wrapEngine(baseEngine) : baseEngine
   const baseComposer = createComposer({ reportGuidance: reportGuidance(), blocks })
   const composer = options.wrapComposer ? options.wrapComposer(baseComposer) : baseComposer
