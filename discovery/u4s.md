@@ -163,3 +163,30 @@ and scope gaps the integrator (u11 / C12) owns.
       `[u3#c10]` window stubs, `[u10#c8]` sheet hashes, `[u2#c9]` fixture
       content, `[u9#c3]`/`[u1#c1]` literal scans over later units' sources),
       byte-identical to HEAD.
+
+## E. VERIFY (attempt 1) — measured, for the integrator
+
+17. **`dist` cannot reach a populated BLOCK STORE — §B 2 confirmed with numbers.**
+    Same deterministic capture protocol (1280×800, virtual clock installed before
+    navigation + `runFor(2000)`, reduced motion + an animation/transition kill
+    sheet) run twice: against `npm run build` + `vite preview`, `#w-store` renders
+    **0 cards** with `#storeEmpty.on` and every filter reading `0`; against the
+    dev server `playwright.config.ts` actually drives, the same page renders
+    **9 cards** (`전체 9 · 사실 5 · 자기서술 4`). Cause is unchanged — `demoRun()`
+    is behind `import.meta.env.DEV`, so a built bundle boots `placeholderBootRun`
+    with `carried: []`. Whoever re-points the runner to `preview` per C5 must give
+    the player build a stream first, or the store/reports e2e layer goes vacuous.
+    Shots: `../_shots/u4s/{build-win-block-store,build-dev-win-block-store}.png`.
+18. **No `reference-shots/win-block-store.png` exists (§B 3), so the visual check
+    rendered `docs/design/phase2-ui/index.html` itself** under the identical
+    protocol (`../_shots/u4s/ref-win-block-store.png`). The reference tree was read
+    only — never written. Region inventory matches one-for-one; the only deltas are
+    the two already-recorded seam gaps (`.bc-src` provenance, §C 5 / §D 15, and the
+    `UNRESOLVED_TEXT` placeholder on carried ids, F1 / u4 D13) plus a window
+    subtitle/mark copy mismatch (`보관함 — 채굴한 문장` `■` vs `블록 보관함 —
+    채굴된 문장` `▤`) that lives in `src/client/shell/window-registry.ts`, outside
+    this unit's globs. u6 logged the same class of registry mismatch — one u11 fix.
+19. **`npx vitest run` clobbers `dist/`.** A suite test rebuilds into a
+    `flag-off-check` layout and leaves no `dist/index.html`, so any later
+    `vite preview` 404s until `npm run build` is re-run. Harmless for CI ordering
+    today, but it will surprise the first person who serves `dist` after a test run.
