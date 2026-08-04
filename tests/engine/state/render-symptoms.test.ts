@@ -195,6 +195,43 @@ describe('renderSymptoms — §2.3-2 flags', () => {
   it('renders `unset` on a true → false transition', () => {
     expect(renderSymptoms([flag('tip_traced', true, false)], pack)).toEqual(['조회가 풀렸다'])
   })
+
+  // [#116 finding F] — §2.3-1's drop is phrased as arithmetic ("magnitude ===
+  // 0"), and flags have no magnitude, so the literal rule only ever reached
+  // scalars. Its REASON — "state did not move, so there is no symptom to show"
+  // — applies unchanged to a flag write that changes nothing, and a symptom for
+  // a change that did not happen is a lie told to the player about run state.
+  it('drops a true → true write — it is a no-op, exactly like a magnitude-0 delta', () => {
+    expect(renderSymptoms([flag('tip_traced', true, true)], pack)).toEqual(['(변화 없음)'])
+  })
+
+  it('drops a false → false write for the same reason', () => {
+    expect(renderSymptoms([flag('tip_traced', false, false)], pack)).toEqual(['(변화 없음)'])
+  })
+
+  it('drops the no-op while still rendering its neighbours, and keeps their order', () => {
+    const journal = [
+      flag('tip_traced', true, true),
+      scalar('trust', 0, 5),
+      flag('logs_saved', false, true),
+    ]
+    expect(renderSymptoms(journal, pack)).toEqual(['조금 올랐다', '봉인 봉투에 담겼다'])
+  })
+
+  it('the real transition still renders when the same flag is asserted twice', () => {
+    // The 우는다리 idiom: two buckets each assert one flag. The first write moves
+    // it, the second does not — and only the first is a symptom.
+    const journal = [flag('tip_traced', false, true), flag('tip_traced', true, true)]
+    expect(renderSymptoms(journal, pack)).toEqual(['조회가 걸렸다'])
+  })
+
+  it('a no-op flag with no authored sentence does not raise §2.3-2 — it is dropped first', () => {
+    // Same staging as the scalar leg: the drop is a stage BEFORE rule 2, so an
+    // unauthored `unset` cannot be reached by a write that never happened.
+    const setOnly = fixture({ flags: { logs_saved: { set: '봉인 봉투에 담겼다' } } })
+    expect(() => renderSymptoms([flag('logs_saved', true, true)], setOnly)).not.toThrow()
+    expect(renderSymptoms([flag('logs_saved', true, true)], setOnly)).toEqual(['(변화 없음)'])
+  })
 })
 
 describe('renderSymptoms — §2.3-3 sort key (kind_rank, −magnitude, journal order)', () => {
