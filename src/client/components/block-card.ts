@@ -146,3 +146,75 @@ export function buildBlockCard(model: BlockCardModel, options: BlockCardOptions)
 
   return card
 }
+
+/* ══ the store card (u4s) — a decorator, never a second builder ══════════ */
+
+/**
+ * The four states spec-client §6 requires to be visually distinct. They are a
+ * single union because a card is in exactly one of them: a seated block is
+ * `slotted` whatever else is true of it, and a board that cannot take the card
+ * (`at-cap`, which a deployed file also produces) outranks the archive mark —
+ * it is the state that blocks the interaction.
+ */
+export type BlockCardState = 'in-store' | 'slotted' | 'at-cap' | 'archived'
+
+/** The class each state wears; `in-store` is the bare card. */
+const STORE_STATE_CLASS: Readonly<Record<BlockCardState, string>> = {
+  'in-store': '',
+  slotted: 'in-slot',
+  'at-cap': 'at-cap',
+  archived: 'archived',
+}
+
+export interface StoreCardOptions {
+  state: BlockCardState
+  /** This card holds the pick channel's arm. */
+  picked: boolean
+  /** The file is deployed — nothing in the deck is operable. */
+  locked: boolean
+  /** Toggle the pick. Never called while the card is frozen. */
+  onPick(): void
+}
+
+/**
+ * A store-deck card: `buildBlockCard` plus the state, the pick and the a11y the
+ * deck needs. The base builder is called, never forked — u4 owns what a card
+ * IS, u4s owns what the store's copy of it can DO ([u4s#c7]).
+ *
+ * A11y (PRD §4): the card is a `role=button` with `tabindex=0` and a pressed
+ * state, and Enter/Space arm it, so the click-then-click slotting path is
+ * operable with no pointer at all. A native `<button>` would need a skin reset
+ * this unit is not allowed to write.
+ */
+export function buildStoreCard(model: BlockCardModel, options: StoreCardOptions): HTMLElement {
+  const card = buildBlockCard(model, { inSlot: false })
+  const stateClass = STORE_STATE_CLASS[options.state]
+  if (stateClass.length > 0) card.classList.add(stateClass)
+
+  // A frozen card is reached by every handler and refuses inside it — the state
+  // is what stops the op, never the card's unreachability ([u4s#c3]).
+  const frozen = options.locked || options.state === 'at-cap'
+
+  card.setAttribute('role', 'button')
+  card.tabIndex = 0
+  card.setAttribute('aria-pressed', options.picked ? 'true' : 'false')
+  if (options.picked) card.classList.add('picked')
+  if (frozen) {
+    card.setAttribute('aria-disabled', 'true')
+    card.draggable = false
+  }
+
+  const pick = (): void => {
+    if (frozen) return
+    options.onPick()
+  }
+  card.addEventListener('click', pick)
+  card.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    // Space would scroll the deck out from under the card it just armed.
+    event.preventDefault()
+    pick()
+  })
+
+  return card
+}
