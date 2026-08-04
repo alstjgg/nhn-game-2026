@@ -20,10 +20,38 @@ function distTextFiles(): string[] {
   return walk(DIST).filter((p) => TEXT_EXT.test(p))
 }
 
+/**
+ * A JSON-Schema `$schema` value inside a copied PACK file.
+ *
+ * C19 / [u11#c14] — reconciled 08-04, not relaxed. `%s` is a meta-schema
+ * IDENTIFIER, the same class of string as the `www.w3.org` XML namespace
+ * already on `ALLOWED_HOSTS`: no runtime ever dereferences it, and both live in
+ * DATA the §3.7 pack-copy plugin publishes verbatim from the frozen
+ * `data/scenario/_schema/` inputs. The exemption is deliberately narrow — the
+ * `$schema` keyword, in a file under `dist/data/`, and nothing else — because
+ * the real finding is upstream of this suite and stays open: the deploy
+ * artefact ships authoring-only schemas at all. Routed to the §3.7 plugin's
+ * owner (seam ledger row `u2f-base/no-third-party-url-b`, DISCOVERY.md).
+ */
+function isSchemaKeyword(file: string, text: string, url: string): boolean {
+  if (!rel(file).startsWith(`dist${path.sep}data${path.sep}`) && !rel(file).startsWith('dist/data/')) return false
+  return text.includes(`"$schema": ${JSON.stringify(url)}`) || text.includes(`"$schema":${JSON.stringify(url)}`)
+}
+
 function urlsIn(text: string): string[] {
   return [...text.matchAll(/(?:https?:)?\/\/[a-z0-9.-]+\.[a-z]{2,}[^\s"'`)\\]*/gi)].map((m) => m[0])
 }
 
+// C17 / [u11#c12] — RE-AIMED (08-04), never deleted, and this one was measuring
+// the WRONG ARTEFACT. Vitest runs with `NODE_ENV=test`, the child build
+// inherited it, and `import.meta.env.DEV` follows NODE_ENV before `--mode`
+// (the same trap `playwright.config.ts` documents for the e2e host). So this
+// suite rebuilt `dist/` as a DEV-flavoured bundle — fixtures and all — and then
+// greped that for inv 10. Two failures in one: the grep was not looking at the
+// player build, and it LEFT `dist/` dev-flavoured for every later reader, which
+// is what turned `tests/fixtures/dev-only.test.ts (d)` red on the next run
+// (order-dependent, and only inside a full run — the [u11#c4] gate). Pinning
+// NODE_ENV makes `dist/` the artefact judges see, which is what u10 meant.
 beforeAll(() => {
   fs.rmSync(DIST, { recursive: true, force: true })
   execFileSync('npx', ['vite', 'build', '--logLevel', 'error'], {
@@ -31,6 +59,7 @@ beforeAll(() => {
     encoding: 'utf8',
     stdio: 'pipe',
     timeout: BUILD_TIMEOUT,
+    env: { ...process.env, NODE_ENV: 'production' },
   })
 }, BUILD_TIMEOUT)
 
@@ -69,7 +98,9 @@ describe('[u10#c5] no third-party URL survives into dist/', () => {
   it('(b) no absolute or protocol-relative URL at all, beyond the static allowlist', () => {
     const hits: string[] = []
     for (const file of distTextFiles()) {
-      for (const url of urlsIn(fs.readFileSync(file, 'utf8'))) {
+      const text = fs.readFileSync(file, 'utf8')
+      for (const url of urlsIn(text)) {
+        if (isSchemaKeyword(file, text, url)) continue
         const host = url.replace(/^https?:/, '').replace(/^\/\//, '').split(/[/:?#]/)[0]
         if (!ALLOWED_HOSTS.includes(host.toLowerCase())) hits.push(`${rel(file)} → ${url}`)
       }

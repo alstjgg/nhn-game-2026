@@ -11,6 +11,7 @@ node_modules
 dist
 dist-e2e
 dist-ssr
+dist-flag-off
 *.local
 
 # Test runner output (vitest / playwright)

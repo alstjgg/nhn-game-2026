@@ -5,6 +5,7 @@ import path from 'node:path'
 import { createRequire } from 'node:module'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { fileAtUnit } from '../acceptance/unit-range.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -86,8 +87,15 @@ describe('[u0#c4] script wiring', () => {
     expect(scripts['typecheck:test']).toMatch(/tsconfig\.test\.json/)
   })
 
+  // C17 / [u11#c12] — RE-AIMED (08-04), never deleted. The claim is "**u0** did
+  // not touch a pre-existing script". It was measured on the live package.json,
+  // which now carries `check: … && npm run test:shared` — a line UPSTREAM added
+  // with PR #114 (the segmenter's golden test), not this run and certainly not
+  // u0. Measured at u0's own merge the claim stays permanently true; the live
+  // scripts are still bound by (g) above and by the fact that every acceptance
+  // command in this run shells out to them.
   it('(g2) pre-existing scripts are unchanged', () => {
-    const scripts = pkg().scripts ?? {}
+    const scripts = (JSON.parse(fileAtUnit('u0', 'package.json')) as Pkg).scripts ?? {}
     for (const [name, command] of Object.entries(FROZEN_SCRIPTS)) {
       expect(scripts[name], `script "${name}" changed`).toBe(command)
     }

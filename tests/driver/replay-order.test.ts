@@ -9,6 +9,7 @@ import type { ViewEvent, MembraneOp } from '../../src/shared/view-driver.ts'
 import type { FixtureRun } from '../../src/client/driver/fixtures/types.ts'
 import { createFixtureDriver } from '../../src/client/driver/fixture-driver.ts'
 import { MS_PER_SIM_MIN } from '../../src/client/driver/clock.ts'
+import { dirAtUnit } from '../acceptance/unit-range.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -198,11 +199,17 @@ describe('[u2#c3] canned MembraneOp responses', () => {
   })
 })
 
-describe('[u2#c9] fixture content stays out of this unit', () => {
+// C17 / [u11#c12] — RE-AIMED (08-04), never deleted. The claim is "u2 did not
+// author fixture CONTENT"; it was measured on the live `fixtures/` directory,
+// which u2f (the 우는다리 material) and u7 (`run-loop.ts`) have since filled by
+// contract. Measured at u2's own merge the same claim stays permanently true,
+// and the reconciliation costs no coverage: u2f's own suites bind the content
+// that replaced the placeholders (C3).
+describe('[u2#c9] fixture content stays out of this unit (re-aimed to u2\'s own range — C17)', () => {
   const FIXTURES = path.join(REPO, 'src/client/driver/fixtures')
 
   it('(p) fixtures/ holds only the shape module and the minimal synthetic stream', () => {
-    const files = fs.readdirSync(FIXTURES).filter((f) => f.endsWith('.ts')).sort()
+    const files = dirAtUnit('u2', 'src/client/driver/fixtures').filter((f) => f.endsWith('.ts'))
     expect(files).toEqual(['minimal.ts', 'types.ts'])
   })
 

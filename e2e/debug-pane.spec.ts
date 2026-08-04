@@ -168,6 +168,20 @@ test.describe('debug pane', () => {
     await expect(page.locator('input, textarea, select')).toHaveCount(0)
 
     // The desk keeps all five windows; the pane is additive, not a replacement.
-    for (const id of WINDOW_IDS) await expect(page.locator(`#${id}`)).toBeVisible()
+    //
+    // C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted: all five are
+    // still checked. `#w-tally` boots `class="win hidden"` and comes up at
+    // 21:04 (u7), which C15 rules CORRECT behaviour rather than a bug, so the
+    // tally is asserted to be ON THE DESK — attached, and held only by its own
+    // phase class — instead of being asserted visible before its phase.
+    for (const id of WINDOW_IDS) {
+      const node = page.locator(`#${id}`)
+      await expect(node).toBeAttached()
+      if (await node.evaluate((n) => n.classList.contains('hidden'))) {
+        expect(id, 'a window is hidden and it is not the phase-held tally').toBe('w-tally')
+      } else {
+        await expect(node).toBeVisible()
+      }
+    }
   })
 })

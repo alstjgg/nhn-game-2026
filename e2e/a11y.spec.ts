@@ -24,6 +24,7 @@
 // `-g` filters in later units may target these describe names.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
+import { hideDebugPane } from './fixtures/dev-surface.ts'
 
 /** The five windows, in the taskbar order `window-registry.ts` emits. */
 const WINDOW_IDS = ['w-feed', 'w-file', 'w-store', 'w-rep', 'w-tally'] as const
@@ -39,9 +40,22 @@ const NPC_TEXT_SELECTOR = '.fl-npc .fl-c, .fl-symptom .fl-c'
 /** Digit-bearing surfaces that are score or chrome, never NPC state. */
 const EXCLUDED_DIGIT_SELECTOR = '.fl-t, .clk-digits, .tb-clock, .dd-value, .dd-runs, .ledger, .tly-table, .th-v, .tr-v'
 
+// C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted. This helper waited
+// for all FIVE windows to be VISIBLE. `#w-tally` boots `class="win hidden"` and
+// comes up only at 21:04 — u7 made it a floating sheet again and C15 rules that
+// display:none-by-class before its phase is CORRECT behaviour, not a bug. So the
+// wait is now: every window is ATTACHED, and every window not held by its phase
+// is visible. Nothing is skipped; the desk census below still counts all five.
 async function boot(page: Page): Promise<void> {
   await page.goto('./')
-  for (const id of WINDOW_IDS) await expect(page.locator(`#${id}`)).toBeVisible()
+  for (const id of WINDOW_IDS) {
+    const window = page.locator(`#${id}`)
+    await expect(window).toBeAttached()
+    if (!(await window.evaluate((n) => n.classList.contains('hidden')))) await expect(window).toBeVisible()
+  }
+  // C14 / [u11#c12] — the DEV-only debug pane covers the desk's bottom-left
+  // quadrant and steals the pointer there. See `fixtures/dev-surface.ts`.
+  await hideDebugPane(page)
 }
 
 interface ControlMeta {
@@ -89,9 +103,27 @@ async function tabWalk(page: Page, limit = 60): Promise<TabStop[]> {
       const el = document.activeElement as HTMLElement | null
       if (!el || el === document.body) return null
       const r = el.getBoundingClientRect()
+      // C17 / [u11#c12] — RE-AIMED (08-04): positions are recorded in the
+      // surface's CONTENT frame, not the viewport's. Tabbing into a control
+      // below the fold scrolls its window body (AGENT FILE's body is
+      // 956 px tall inside a 662 px window), so two stops read in different
+      // scroll states are not comparable — the later one can measure a SMALLER
+      // viewport `top` than the earlier one and read as "backwards" while the
+      // visual order is in fact forwards. Adding the scroller's offset back
+      // undoes the scroll and compares like with like; the ordering rule below
+      // is untouched.
+      const scrolled = (axis: 'scrollTop' | 'scrollLeft'): number => {
+        let node: HTMLElement | null = el.parentElement
+        let sum = 0
+        while (node) {
+          sum += node[axis]
+          node = node.parentElement
+        }
+        return sum
+      }
       return {
-        top: Math.round(r.top),
-        left: Math.round(r.left),
+        top: Math.round(r.top + scrolled('scrollTop')),
+        left: Math.round(r.left + scrolled('scrollLeft')),
         where: `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ''}.${el.className || ''}`,
         win: el.closest('.win')?.id ?? '(chrome)',
       }
@@ -125,7 +157,14 @@ test.describe('a11y — landmarks and roles', () => {
     expect(windows).toHaveLength(WINDOW_IDS.length)
     // The role may be implicit: a named `<section>` IS a region. What matters
     // is the computed role, so the count is read through the role selector.
-    await expect(page.getByRole('region')).toHaveCount(WINDOW_IDS.length)
+    //
+    // C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted, and NOT loosened:
+    // the count is still all five. `includeHidden` is what keeps it at five now
+    // that `#w-tally` boots `class="win hidden"` and comes up at 21:04 — C15
+    // rules that display:none-by-class before its phase is CORRECT behaviour, so
+    // the fifth window is counted where it is instead of being dropped from the
+    // a11y contract. `e2e/shell.spec.ts` carries the same re-aim.
+    await expect(page.getByRole('region', { includeHidden: true })).toHaveCount(WINDOW_IDS.length)
 
     const named = await page.locator('.win').evaluateAll((nodes) =>
       nodes.map((n) => ({
@@ -223,24 +262,47 @@ test.describe('a11y — keyboard reach', () => {
     await expect(node).toBeVisible()
   })
 
+  // C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted and not narrowed by
+  // selector: the sweep still visits every `.wc, .task, .win-bar, .rate-btn,
+  // [data-op]` in the document. What changed is that a control with NO LAYOUT
+  // BOX is now reported as such instead of being counted as unringed. The three
+  // that failed were `#w-tally`'s own bar and its two window controls: the tally
+  // boots `class="win hidden"` and comes up at 21:04, and a `display:none`
+  // element cannot take focus at all — `el.focus()` is a no-op there, so the
+  // before/after snapshot could only ever be identical. C15 rules that state
+  // CORRECT behaviour, and this suite's own "a hidden window contributes no tab
+  // stop" pins the same thing from the other side. The oracle is unchanged for
+  // every control the operator can actually reach.
   test('a11y — every focusable control paints a visible focus indicator', async ({ page }) => {
     await page.keyboard.press('Tab')
-    const unringed = await page.evaluate(() => {
+    const measured = await page.evaluate(() => {
       const snap = (el: Element): string => {
         const s = getComputedStyle(el)
         return `${s.outlineStyle}|${s.outlineWidth}|${s.outlineColor}|${s.boxShadow}`
       }
-      const out: string[] = []
+      const unringed: string[] = []
+      const heldByPhase: string[] = []
+      let reachable = 0
       for (const el of document.querySelectorAll<HTMLElement>('.wc, .task, .win-bar, .rate-btn, [data-op]')) {
+        const name = `${el.tagName.toLowerCase()}.${el.className}`
+        if (el.getClientRects().length === 0) {
+          heldByPhase.push(`${el.closest('.win')?.id ?? '(no window)'} ${name}`)
+          continue
+        }
+        reachable += 1
         const before = snap(el)
         el.focus()
         const after = snap(el)
         el.blur()
-        if (after === before || /^none\|0px/.test(after)) out.push(`${el.tagName.toLowerCase()}.${el.className}`)
+        if (after === before || /^none\|0px/.test(after)) unringed.push(name)
       }
-      return out
+      return { unringed, heldByPhase, reachable }
     })
-    expect(unringed, 'these controls give no visible focus feedback').toEqual([])
+    expect(measured.reachable, 'no reachable control was measured — the sweep is vacuous').toBeGreaterThan(0)
+    expect(measured.unringed, 'these controls give no visible focus feedback').toEqual([])
+    for (const held of measured.heldByPhase) {
+      expect(held, 'a control with no layout box outside a phase-held window').toMatch(/^w-tally /)
+    }
   })
 })
 

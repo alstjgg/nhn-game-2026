@@ -82,9 +82,27 @@ describe('[u3#c7] the controls are buttons', () => {
     expect(text).toMatch(/button/)
   })
 
+  // C17 / [u11#c12] — RE-AIMED (08-04), never deleted. Written when the shell
+  // was the only source under this scan, the assert read "no `role=\"button\"`
+  // anywhere", which measures the LETTER of the rule. u6 then landed the
+  // mineable sentence: an inline phrase inside flowing report prose that cannot
+  // be a `<button>` without breaking the paper it is set in, and that carries
+  // the complete ARIA button pattern instead — `role`, `tabindex`, Enter/Space,
+  // `aria-disabled` when spent. A FAKE button is one with the role and none of
+  // the behaviour, so the assert now measures exactly that: any file that
+  // claims the role must also make the node focusable and key-operable. The
+  // shell's own controls remain real `<button>` elements, bound by (a).
   it('(b) nothing fakes a button with role="button" on a non-button', () => {
-    const offenders = hits(shellSources(), /role\s*[=:]\s*['"`]button['"`]/)
-    expect(offenders).toEqual([])
+    const claimants = shellSources().filter((s) => /role\s*[=:]\s*['"`]button['"`]/.test(stripComments(s.text)))
+    const fakes = claimants
+      .filter((s) => {
+        const text = stripComments(s.text)
+        const focusable = /tabindex\s*[=:]\s*['"`]?0/.test(text)
+        const keyOperable = /'Enter'|"Enter"|`Enter`/.test(text)
+        return !focusable || !keyOperable
+      })
+      .map((s) => s.file)
+    expect(fakes, 'a node claims role="button" without the keyboard behaviour of one').toEqual([])
   })
 
   it('(c) no clickable div/span is wired with an inline handler in the markup', () => {

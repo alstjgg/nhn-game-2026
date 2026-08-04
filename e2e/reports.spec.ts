@@ -102,6 +102,33 @@ function reportsOf(f: Frame): ReportEvent[] {
   return f.events.filter((e) => e.type === 'report') as unknown as ReportEvent[]
 }
 
+/**
+ * C17 / [u11#c12] — RE-AIMED support (08-04), never deleted.
+ *
+ * u6 was written against a fixture that opened with SEVERAL filed reports in
+ * the stream. u7's run loop opens on ONE day: the desk boots RUN 03, files its
+ * report when the day ends, and the next document only exists once the operator
+ * takes the next run (`#btnNewRun` on the TALLY sheet, u7). So the two switch
+ * oracles below stopped having a second run to switch TO — not because the
+ * REPORTS window lost the ability, but because nothing had filed a second
+ * document yet.
+ *
+ * The fix is to play the loop the way the operator does before asserting, so
+ * the asserts themselves stay exactly as u6 wrote them.
+ */
+async function fileAnotherRun(page: Page): Promise<void> {
+  await drain(page)
+  const tally = page.locator('#w-tally')
+  await expect(tally, 'the run ended but the TALLY sheet never came up').not.toHaveClass(/\bhidden\b/, {
+    timeout: 30_000,
+  })
+  const newRun = page.locator('#w-tally #btnNewRun')
+  await expect(newRun, 'the tally never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
+  await newRun.click()
+  await drain(page)
+  await page.locator(`${REP} .win-bar`).click()
+}
+
 function metaOf(f: Frame): MetaEvent | null {
   const metas = f.events.filter((e) => e.type === 'meta') as unknown as MetaEvent[]
   return metas.length > 0 ? metas[metas.length - 1]! : null
@@ -330,7 +357,17 @@ test.describe('archive segmentation and highlight marks', () => {
     expect(meta, 'the boot run emits no `meta` event — the rail has nothing to segment').toBeTruthy()
     expect(meta!.archive.length, 'the archive is empty — the rail scan is vacuous').toBeGreaterThan(0)
 
-    await expect(page.locator(OPTION)).toHaveCount(meta!.archive.length)
+    // C17 / [u11#c12] — RE-AIMED (08-04), never deleted and not loosened: the
+    // rail carries one segment per run the desk KNOWS, which is the archive
+    // plus any run whose report the stream has already filed. u6 measured that
+    // against a fixture whose archive already contained the filed run; u7's run
+    // loop keeps the archive to the days BEFORE the current one and files the
+    // current day's report as it ends, so the rail is legitimately one longer
+    // after a drain. Both halves are still counted, and the per-entry label
+    // check below is untouched.
+    const filed = [...new Set(reportsOf(await frame(page)).map((r) => r.round))]
+    const known = [...new Set([...meta!.archive.map((a) => a.run), ...filed])]
+    await expect(page.locator(OPTION)).toHaveCount(known.length)
     const labels = await page.locator(OPTION).evaluateAll((nodes) => nodes.map((n) => (n.textContent ?? '').trim()))
     for (const [i, entry] of meta!.archive.entries()) {
       expect(labels[i]).toMatch(new RegExp(`RUN\\s*0*${entry.run}\\b`))
@@ -375,6 +412,9 @@ test.describe('archive segmentation and highlight marks', () => {
   test('archive segmentation and highlight marks — switching runs re-renders that run’s document', async ({
     page,
   }) => {
+    // C17 / [u11#c12] — the second document is TAKEN, not assumed (see
+    // `fileAnotherRun`). The assert itself is u6's, unchanged.
+    await fileAnotherRun(page)
     const reports = reportsOf(await frame(page))
     const rounds = [...new Set(reports.map((r) => r.round))]
     expect(rounds.length, 'the stream carries fewer than two runs — the switch is untestable').toBeGreaterThan(1)
@@ -393,6 +433,9 @@ test.describe('archive segmentation and highlight marks', () => {
   test('archive segmentation and highlight marks — mined marks survive a run switch, keyed by id', async ({
     page,
   }) => {
+    // C17 / [u11#c12] — same re-aim as the switch oracle above: play the loop
+    // until a second document exists, then assert exactly what u6 asserted.
+    await fileAnotherRun(page)
     const reports = reportsOf(await frame(page))
     const rounds = [...new Set(reports.map((r) => r.round))]
     expect(rounds.length).toBeGreaterThan(1)
@@ -406,8 +449,18 @@ test.describe('archive segmentation and highlight marks', () => {
     await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bmined\b/)
     expect((await frame(page)).store.mined).toContain(target.id)
 
+    // C17 / [u11#c12] — RE-AIMED (08-04), never deleted. This step proved "the
+    // rail really switched documents" by looking for the HOME id to disappear.
+    // That reading was only ever available because u6's fixture gave each run a
+    // different body; u7's loop files the SAME autopsy every day, and
+    // spec-client §5.2's amendment makes that correct rather than lazy —
+    // "authored script lines … are run-independent (same sentence = same block
+    // across runs)". So the switch is proved where it is unambiguous — the
+    // rail's own selection and a re-rendered body — and the id-keyed mark, which
+    // is what this test is actually about, is still asserted below.
     await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${away}\\b`) }).first().click()
-    await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveCount(0)
+    expect(await activeRun(page), 'the rail did not switch to the other run').toBe(away)
+    await expect(page.locator(`${BODY} .sent`), 'the away document rendered nothing').not.toHaveCount(0)
 
     await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${home}\\b`) }).first().click()
     await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bmined\b/)

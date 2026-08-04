@@ -1,0 +1,125 @@
+// u11 — C5(b): the PREVIEW smoke, against `npm run preview` of a real build.
+//
+// The C5 split (08-04) says the preview directive was always about ARTEFACT
+// TRUTHS, never about the fixture round: `driver/demo-run.ts` returns null when
+// `!import.meta.env.DEV`, so a player build boots an empty desk — no feed
+// lines, 0 mined, no thread — by design (inv 11 / §5.4 / u2f#c9). This file
+// therefore asserts what only a BUILT artefact can prove and deliberately does
+// NOT attempt the §7 round; that lives in `acceptance.spec.ts` on the dev host.
+//
+// Titles are load-bearing: [u11#c10] runs the whole file.
+import { expect, test } from 'playwright/test'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { watchWire } from './fixtures/harness.ts'
+import { CHROME, FREE_TEXT, WIN } from './fixtures/selectors.ts'
+
+const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const DIST = path.join(REPO, 'dist')
+
+/** Every emitted CODE artefact — `dist/data/**` is the pack, not code. */
+function bundleCode(): string[] {
+  const out: string[] = []
+  const walk = (dir: string): void => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name)
+      if (entry.isDirectory()) walk(full)
+      else if (/\.(js|mjs|css|html)$/.test(entry.name)) out.push(full)
+    }
+  }
+  walk(DIST)
+  return out.filter((f) => !path.relative(DIST, f).split(path.sep).includes('data'))
+}
+
+test.describe('preview smoke', () => {
+  test('preview smoke — the shell boots from the built artefact', async ({ page }) => {
+    const errors: string[] = []
+    page.on('pageerror', (e) => errors.push(String(e)))
+
+    await page.goto('./')
+    await expect(page.locator(CHROME.app)).toHaveCount(1)
+    await expect(page.locator(WIN.any)).toHaveCount(5)
+    await expect(page.locator(CHROME.caseName)).not.toBeEmpty()
+    expect(errors, 'the built desk threw on boot').toEqual([])
+  })
+
+  test('preview smoke — the pack is served from dist/data/', async ({ page }) => {
+    const packRequests: string[] = []
+    page.on('response', (res) => {
+      if (/\/data\/(scenario|policy)\//.test(res.url())) packRequests.push(`${res.status()} ${res.url()}`)
+    })
+
+    await page.goto('./')
+    await expect(page.locator(CHROME.caseName)).not.toBeEmpty()
+
+    expect(
+      fs.existsSync(path.join(DIST, 'data/scenario')),
+      'the §3.7 pack-copy plugin emitted no dist/data/scenario',
+    ).toBe(true)
+    expect(packRequests.length, 'the built desk fetched no pack from dist/data/').toBeGreaterThan(0)
+    expect(packRequests.filter((r) => !r.startsWith('200')), 'a pack request did not answer 200').toEqual([])
+  })
+
+  test('preview smoke — the built page reaches no third-party origin (inv 10)', async ({ page, baseURL }) => {
+    const wire = watchWire(page, baseURL!)
+    await page.goto('./')
+    await expect(page.locator(WIN.any)).toHaveCount(5)
+    await page.waitForLoadState('networkidle')
+    expect(wire.thirdParty(), 'the player build reached a third-party origin').toEqual([])
+  })
+
+  test('preview smoke — no debug-pane and no fixture code reached the bundle (inv 11)', async () => {
+    expect(fs.existsSync(DIST), 'no dist/ to grep — run `npm run build` first').toBe(true)
+    const files = bundleCode()
+    expect(files.length, 'dist/ emitted no code at all').toBeGreaterThan(0)
+
+    const needles = [
+      'nhn:debug-pane',
+      'data-debug-table',
+      'debug-pane',
+      'woodari',
+      'createFixtureDriver',
+      'freezeAnimations',
+      'installClockHook',
+    ]
+    const hits: string[] = []
+    for (const file of files) {
+      const source = fs.readFileSync(file, 'utf8')
+      for (const needle of needles) {
+        if (source.includes(needle)) hits.push(`${path.relative(REPO, file)} ← ${JSON.stringify(needle)}`)
+      }
+    }
+    expect(hits, 'the player build carries debug, fixture or test-hook code').toEqual([])
+  })
+
+  test('preview smoke — the built page carries no free-text surface (inv 1)', async ({ page }) => {
+    await page.goto('./')
+    await expect(page.locator(WIN.any)).toHaveCount(5)
+    expect(await page.locator(FREE_TEXT).count(), 'a free-text surface reached the player build').toBe(0)
+  })
+
+  test('preview smoke — the load budget holds at ~1 s', async ({ page }) => {
+    const started = Date.now()
+    await page.goto('./', { waitUntil: 'load' })
+    await expect(page.locator(CHROME.app)).toHaveCount(1)
+    const elapsed = Date.now() - started
+
+    const timing = await page.evaluate(() => {
+      const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+      return nav ? nav.loadEventEnd - nav.startTime : null
+    })
+    expect(elapsed, `the built page took ${elapsed} ms to reach load (§7 #11 budget ~1 s)`).toBeLessThan(1500)
+    if (timing !== null) expect(timing, 'the navigation timing exceeds the ~1 s budget').toBeLessThan(1500)
+  })
+
+  test('preview smoke — the fixture round is absent by design, and not attempted here', async ({ page }) => {
+    await page.goto('./')
+    await expect(page.locator(WIN.any)).toHaveCount(5)
+
+    // C5(a)/(c): a player build boots an empty desk. That is the CORRECT
+    // artefact truth — asserting a round here would be asserting a bug.
+    const feedLines = await page.locator('#w-feed #feedList .fl').count()
+    expect(feedLines, 'the player build replayed a fixture round — inv 11 is broken').toBe(0)
+  })
+})

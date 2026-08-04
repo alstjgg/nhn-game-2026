@@ -21,6 +21,7 @@ import {
   stripComments,
   tsFiles,
 } from './shell-utils.ts'
+import { dirAtUnit, fileAtUnit } from '../acceptance/unit-range.ts'
 
 const html = (): string => read(INDEX_HTML)
 
@@ -91,17 +92,30 @@ describe('[u3#c3] the clock is driver-fed', () => {
   })
 })
 
-describe('[u3#c10] the windows are stubs in this unit', () => {
+// C17 / [u11#c12] — RE-AIMED (08-04), never deleted. "The windows are stubs"
+// was true of u3 and is false of the finished desk on purpose: u4–u7 were
+// commissioned to fill exactly these five modules. Measured at u3's own merge
+// the claim stays permanently true, and no live coverage is lost — each window
+// is bound today by its own unit's suite and by `e2e/acceptance.spec.ts`.
+describe('[u3#c10] the windows are stubs in this unit (re-aimed to u3\'s own range — C17)', () => {
+  /** The five window modules as u3's merge left them. */
+  function u3Windows(): { file: string; text: string }[] {
+    return dirAtUnit('u3', 'src/client/windows')
+      .filter((f) => f.endsWith('.ts'))
+      .map((f) => ({ file: f, text: fileAtUnit('u3', `src/client/windows/${f}`) }))
+  }
+
   it('(a) no window module renders content into its host', () => {
-    for (const f of tsFiles(WINDOWS_DIR)) {
-      const text = stripComments(read(f))
-      expect(text, `${rel(f)} must stay a stub in u3`).not.toMatch(/appendChild|append\s*\(|innerHTML/)
+    const windows = u3Windows()
+    expect(windows.length, 'u3 landed no window module — the range is wrong').toBeGreaterThan(0)
+    for (const { file, text } of windows) {
+      expect(stripComments(text), `${file} must stay a stub in u3`).not.toMatch(/appendChild|append\s*\(|innerHTML/)
     }
   })
 
   it('(b) the window stubs stay small', () => {
-    for (const f of tsFiles(WINDOWS_DIR)) {
-      expect(read(f).split('\n').length, `${rel(f)} is not a stub`).toBeLessThan(40)
+    for (const { file, text } of u3Windows()) {
+      expect(text.split('\n').length, `${file} is not a stub`).toBeLessThan(40)
     }
   })
 })

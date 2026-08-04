@@ -1,0 +1,51 @@
+/* The debug pane's skin — spec-client §3 invariant 8 (style is data).
+ *
+ * It lives in a stylesheet rather than in `pane.ts` because inv 8 / C11 admit
+ * no color, size or type literal outside a stylesheet, and every value here is
+ * a `tokens.css` custom property. It is imported `?inline` by `pane.ts` and
+ * injected into the pane's own `<style>` element, so the pane still carries its
+ * skin with it and the player build still drops both with the flagged chunk
+ * (inv 11) — nothing reaches `styles/index.css`.
+ */
+#debug-pane {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 9000;
+  box-sizing: border-box;
+  max-width: 46vw;
+  max-height: 42vh;
+  overflow: auto;
+  padding: var(--space-6);
+  background: var(--chrome-deep);
+  color: var(--txt);
+  font-family: var(--mono);
+  font-size: var(--fs-11);
+  line-height: 1.35;
+}
+
+#debug-pane table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: var(--space-6);
+}
+
+#debug-pane th,
+#debug-pane td {
+  border: 1px solid var(--ink-line);
+  padding: var(--space-1) var(--space-4);
+  text-align: left;
+  vertical-align: top;
+  white-space: pre;
+}
+
+#debug-pane th {
+  color: var(--gauge-2);
+  font-weight: 400;
+}
+
+#debug-pane td {
+  max-width: 34em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

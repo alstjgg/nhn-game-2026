@@ -365,3 +365,177 @@ test.describe('new run unlocks and files the report', () => {
     await expect(page.locator(LEDGER)).toHaveAttribute('data-tally-state', 'final', { timeout: 20_000 })
   })
 })
+
+/* ══ [u11#c13] C18 latency — the deployed proxy measures 6.8–10.0 s, ceiling
+ *    15 s, worst case ~30 s with the engine's one retry. The desk must hold
+ *    that long DIEGETICALLY: no client-side timeout, no spinner, no dead UI.
+ *    Appended by u11 (design D9) — no test above is touched, and a red here is
+ *    a DISCOVERY entry plus a fix at the OWNING unit, never a pacing redesign.
+ *    Filter: `-g 'latency'`.
+ *
+ *    WHERE THE REPORTER'S 6.8–10 s LANDS (measured 08-04, recorded in
+ *    DISCOVERY.md). C18 names `waiting.for='report'`; the ported design does
+ *    not spend it on a feed line. `docs/design/phase2-ui/README.md:58-60` — the
+ *    loop this suite mirrors — closes the day as "feed closes, TALLY opens and
+ *    counts up over ~9 s → NEW RUN … files RUN 03's report into the archive",
+ *    and [u7#c2] is written as "the count-up pacing ABSORBS the report call".
+ *    So the reporter's latency is covered by the TALLY count-up (third test
+ *    below), and the feed's waiting marker covers the radio calls (first two).
+ *    The `report` phrasing stays implemented in `components/waiting-marker.ts`
+ *    for a live driver that does open one; nothing here asserts that the FIXTURE
+ *    must emit one (C3 forbids binding to fixture content, and the demo stream
+ *    is faithful to the reference on this point). What every test below asserts
+ *    is the client property C18 is actually about: whatever wait is open, it
+ *    holds past 9 s, survives 30 s, and never turns into dead UI.
+ *    ═══════════════════════════════════════════════════════════════════════ */
+
+/** The three diegetic wait phrasings (components/waiting-marker.ts). */
+const WAIT_PHRASE = {
+  judgment: '무전 회신 대기 중',
+  narration: '현장 상황 수신 대기 중',
+  report: '보고서 회신 대기 중',
+} as const
+
+/**
+ * Copy that would mean the CLIENT gave up. Deliberately narrow: 실패 / 오류 are
+ * part of the scenario's own vocabulary (a run can fail diegetically), so only
+ * machine-failure phrasings and retry prompts count as dead UI here.
+ */
+const DEAD_UI = [/timed?\s*out/i, /timeout/i, /응답\s*없음/, /다시\s*시도/, /요청\s*실패/, /연결\s*끊/]
+
+async function seekTo(page: Page, at: string): Promise<void> {
+  await page.evaluate((stamp) => {
+    const handle = (window as unknown as { __feed?: { seek(at: string): void } }).__feed
+    if (!handle) throw new Error('window.__feed is not exposed by the LIVE FEED window')
+    handle.seek(stamp)
+  }, at)
+}
+
+async function holdRate(page: Page, to: number): Promise<void> {
+  await page.evaluate((r) => {
+    const handle = (window as unknown as { __feed?: { rate(to: number): void } }).__feed
+    if (!handle) throw new Error('window.__feed is not exposed by the LIVE FEED window')
+    handle.rate(r)
+  }, to)
+}
+
+/** The sim minute a `waiting` event is released on: the last stamp before it. */
+function waitDue(f: Frame, forWhat: string): string | null {
+  let carried: string | null = null
+  for (const event of f.events) {
+    const line = (event as { line?: { clock?: string } }).line
+    if (event.type === 'feed' && line?.clock) carried = line.clock
+    if (event.type === 'beat_start' || event.type === 'beat_end') {
+      const clock = (event as unknown as { clock?: string }).clock
+      if (clock) carried = clock
+    }
+    const waiting = event as unknown as { type: string; active?: boolean; for?: string }
+    if (waiting.type === 'waiting' && waiting.active === true && waiting.for === forWhat) return carried
+  }
+  return null
+}
+
+test.describe('latency', () => {
+  test.setTimeout(120_000)
+
+  test('latency — the open call holds past 9 s and stays diegetic', async ({ page }) => {
+    await boot(page)
+    await drain(page)
+
+    const f = await frame(page)
+    const waits = f.events.filter((e) => e.type === 'waiting') as unknown as {
+      active: boolean
+      for: string
+    }[]
+    expect(waits.length, 'the stream opens no waiting window at all').toBeGreaterThan(0)
+    const opened = [...new Set(waits.map((w) => w.for))]
+    for (const kind of opened) {
+      expect(
+        Object.keys(WAIT_PHRASE),
+        `the run waits on '${kind}', which has no diegetic phrasing`,
+      ).toContain(kind)
+    }
+
+    // The releasable minute is read off the DRAINED stream — a freshly booted
+    // desk has released nothing yet, so its frame carries no wait to look up.
+    const kind = opened[0]!
+    const due = waitDue(f, kind)
+    expect(due, `the '${kind}' wait has no releasable minute`).toBeTruthy()
+
+    // Re-open the run and park exactly on that wait, sim paused.
+    await page.reload()
+    await boot(page)
+    await seekTo(page, due!)
+    await holdRate(page, 0)
+
+    const phrase = WAIT_PHRASE[kind as keyof typeof WAIT_PHRASE]
+    const wait = page.locator('#w-feed .fl-wait, #w-feed [data-kind="wait"]').last()
+    await expect(wait).toBeVisible()
+    await expect(wait).toContainText(phrase)
+
+    // Hold past the 9 s the proxy actually takes.
+    await page.waitForTimeout(9_500)
+    await expect(wait, 'the wait line vanished on its own — a client-side timeout').toBeVisible()
+    await expect(wait).toContainText(phrase)
+
+    // No spinner, no percentage, no error copy anywhere on the desk (inv 5).
+    const desk = await page.locator('#app').innerText()
+    for (const dead of DEAD_UI) expect(desk, `the desk rendered dead-UI copy: ${dead}`).not.toMatch(dead)
+    expect(await page.locator('#app progress, #app [role="progressbar"], #app .spinner').count()).toBe(0)
+    expect(desk, 'the wait rendered a percentage — it must carry no measure').not.toMatch(/\d+\s*%/)
+  })
+
+  test('latency — the open call survives the 30 s worst case with a live desk', async ({ page }) => {
+    await boot(page)
+    await drain(page)
+    const f = await frame(page)
+    const waits = f.events.filter(
+      (e) => e.type === 'waiting' && (e as unknown as { active: boolean }).active,
+    ) as unknown as { for: string }[]
+    expect(waits.length, 'the stream opens no waiting window at all').toBeGreaterThan(0)
+    const kind = waits[0]!.for
+    const due = waitDue(f, kind)
+    expect(due, `the '${kind}' wait has no releasable minute`).toBeTruthy()
+
+    await page.reload()
+    await boot(page)
+    await seekTo(page, due!)
+    await holdRate(page, 0)
+
+    const wait = page.locator('#w-feed .fl-wait, #w-feed [data-kind="wait"]').last()
+    await expect(wait).toBeVisible()
+
+    // The engine's one retry puts the ceiling near 30 s.
+    await page.waitForTimeout(30_000)
+    await expect(wait, 'the wait died before the 30 s worst case').toBeVisible()
+    await expect(wait).toContainText(WAIT_PHRASE[kind as keyof typeof WAIT_PHRASE])
+
+    // The desk is not dead: a window control still answers.
+    const rep = page.locator('#w-rep')
+    await page.locator('#w-rep .wc-min').click()
+    await expect(rep).toHaveClass(/collapsed/)
+    await page.locator('#w-rep .wc-min').click()
+    await expect(rep).not.toHaveClass(/collapsed/)
+  })
+
+  test('latency — the TALLY count-up holds past 9 s and completes inside the 30 s worst case', async ({ page }) => {
+    await boot(page)
+    await drain(page)
+
+    await expect(page.locator(TALLY)).not.toHaveClass(/\bhidden\b/, { timeout: 5_000 })
+    const started = Date.now()
+
+    // At 9 s the ledger is still counting or has just landed — either way it is
+    // ALIVE: rows are painting and NEW RUN has not been offered early.
+    await page.waitForTimeout(9_000)
+    const deskAt9 = await page.locator('#app').innerText()
+    for (const dead of DEAD_UI) expect(deskAt9, `dead-UI copy during the count-up: ${dead}`).not.toMatch(dead)
+    expect(await page.locator(ROWS).count(), 'the ledger painted no row in 9 s').toBeGreaterThan(0)
+    expect(await page.locator('#app [role="alert"], #app .error, #app [data-state="error"]').count()).toBe(0)
+
+    await expect(page.locator(LEDGER)).toHaveAttribute('data-tally-state', 'final', { timeout: 30_000 })
+    const elapsed = Date.now() - started
+    expect(elapsed, 'the count-up did not survive the 30 s worst case').toBeLessThan(35_000)
+    await expect(page.locator(NEW_RUN)).toBeEnabled()
+  })
+})

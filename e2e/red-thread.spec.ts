@@ -288,6 +288,7 @@ test.describe('endpoints track windows during drag', () => {
   }) => {
     const bar = await box(page, `${FILE} .win-bar`)
     const before = await slotEndpoint(page)
+    const windowBefore = await box(page, FILE)
     const start = { x: bar.x + bar.width / 2, y: bar.y + bar.height / 2 }
     const dx = -80
     const dy = 60
@@ -302,8 +303,22 @@ test.describe('endpoints track windows during drag', () => {
 
     await expect(page.locator(FILE)).toHaveClass(/\bdragging\b/)
     const during = await slotEndpoint(page)
-    near(during[0] - before[0], dx)
-    near(during[1] - before[1], dy)
+    // C17 / [u11#c12] — RE-AIMED (08-04), never deleted: the endpoint is
+    // compared to what the WINDOW did, not to what the pointer asked for. u3's
+    // drag clamp (`window-manager.ts:105` — `maxY = innerHeight - height +
+    // EDGE_SLACK`) leaves AGENT FILE 54 px of downward travel at the finished
+    // desk arrangement (y 94, h 692, viewport 800), so a 60 px pull moves the
+    // window 54 px and a string that tracks it perfectly still reads 54. The
+    // contract this test owns is "the endpoint tracks the window MID-drag", and
+    // that is now what it measures — a lagging string still fails, and the
+    // window is asserted to have actually moved so the check cannot go vacuous.
+    const windowDuring = await box(page, FILE)
+    const movedX = windowDuring.x - windowBefore.x
+    const movedY = windowDuring.y - windowBefore.y
+    expect(Math.abs(movedX), 'the window did not move at all — the drag never started').toBeGreaterThan(8)
+    expect(Math.abs(movedY), 'the window did not move at all — the drag never started').toBeGreaterThan(8)
+    near(during[0] - before[0], movedX)
+    near(during[1] - before[1], movedY)
 
     await page.mouse.up()
     await redraw(page)

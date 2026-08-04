@@ -6,9 +6,9 @@
 // window bodies stay empty here, [u3 · c10]), never computes the time (the
 // driver's clock is the only clock, [u3#c3]) and never counts runs (the `meta`
 // event does, spec-client §5.2 amendment d).
-import { createRunLoopDriver, demoRunLoop } from '../driver/index.ts'
+import { createRunLoopDriver, demoRunLoop, installClockHook } from '../driver/index.ts'
 import { placeholderBootRun } from './boot-run.ts'
-import type { ClockRate, FixtureDriver, Frame } from '../driver/index.ts'
+import type { ClockHook, ClockRate, FixtureDriver, Frame } from '../driver/index.ts'
 import { createGameClock } from '../components/game-clock.ts'
 import { createRunCounter } from '../components/run-counter.ts'
 import { holdDesk, revealDesk } from '../components/desktop-dressing.ts'
@@ -27,6 +27,12 @@ import * as threadLayer from './thread-layer.ts'
 export interface ShellHandle {
   frame(): Frame
   drain(): void
+  /**
+   * The C16 sim-clock hook — seed/advance/at. Present in DEV/TEST builds only
+   * (inv 11): the player build never installs it, so this stays undefined and
+   * the name is folded out of the bundle with the guarded call site below.
+   */
+  clock?: ClockHook
 }
 
 declare global {
@@ -110,6 +116,12 @@ export async function bootShell(): Promise<void> {
   window.__shell = {
     frame: () => driver.frame(),
     drain: () => driver.drain(),
+  }
+  // C16 — the sim-clock hook rides the handle that already exists rather than
+  // minting a global, and only in DEV/TEST: the guard is a constant the bundler
+  // folds, so the player build drops the call and the name with it (inv 11).
+  if (import.meta.env.DEV) {
+    window.__shell.clock = installClockHook(driver)
   }
 
   runPump(driver, clock.paint)
