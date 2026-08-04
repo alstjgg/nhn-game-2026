@@ -176,3 +176,20 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   bring one), it bans this unit from pulling a copy-plugin PACKAGE
   (`viteStaticCopy`/`rollup-plugin-copy`), from adding `alias`, and from changing
   `base`. If #114 merges before integration, that suite stays green untouched.
+- [u8] BLOCKER on this base: `src/client/shell/boot-run.ts:12` imports
+  `loadDemoRun` from `driver/index.ts`, which exports the same function as
+  `demoRun` (`driver/demo-run.ts:18`). The shell module throws at evaluation, so
+  **no window mounts at all** — `e2e/shell.spec.ts` (u3's own, green at merge)
+  fails identically, and every window-level e2e including `e2e/red-thread.spec.ts`
+  is red for a reason unrelated to the unit under test. Introduced by the u5↔u6
+  merge (45b51f9); both files are outside u8's globs. Whoever owns the demo-run
+  seam picks the authoritative name. Detail in `discovery/u8.md` §1.
+- [u8] Read-scope gap: the prompt's slice names "slot pin anchor nodes carrying
+  data-block-id", but `slot-board.ts` writes the attribute on TWO nodes per
+  filled slot (`.slot` l.180 and `.slot-pin` l.185). A node-count gate doubles
+  every thread, so the RED suites pin one plan per DISTINCT id at both levels.
+- [u8] `.claude/super/reference-shots/red-thread-overlay.png` (named in the
+  prompt as the rendered reference) does not exist; the run's shots dir holds
+  boot-scanline / shell-desktop / topbar only. The RED geometry is pinned to
+  `docs/design/phase2-ui/app.js:566–602` verbatim instead. BUILD still owes the
+  captured shot.
