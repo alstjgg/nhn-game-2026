@@ -68,6 +68,14 @@ export function bindRun({ pack, guidance, provider, run, carried = [] }) {
   // The stance is Call 1's, and the beat it belongs to is the driver's cursor
   // at the moment the call returns. No `ViewEvent` carries the pairing, so the
   // recorder writes it down here, on the same stream, in the same order.
+  //
+  // `ok` is not enough to read a stance off the body. A 200 that lands without
+  // one is *unusable*, not a judgment — `readJudgment` in the live driver
+  // narrows on `'stance' in body` for exactly that reason, and the recorder has
+  // to agree with it or the two disagree about the same call. Reading
+  // `result.body.stance` off an ok-but-empty body yielded `undefined`, which is
+  // not a legal `beats[].stance`, so `persistRun` refused the whole record and
+  // a run with seven correctly-graded fallbacks produced no artifact at all.
   const transport = {
     mode: recorder.transport.mode,
     async send(request) {
@@ -75,11 +83,12 @@ export function bindRun({ pack, guidance, provider, run, carried = [] }) {
       if (request.call_type === 'judgment') {
         const cursor = engine.current()
         const gate = schedule[cursor.index].gate
+        const judged = result.ok && 'stance' in result.body
         events.push({
           type: 'gate_stance',
           beat: cursor.index + 1,
           gate: gate.id,
-          stance: result.ok ? result.body.stance : gate.defaultStance,
+          stance: judged ? result.body.stance : gate.defaultStance,
         })
       }
       return result

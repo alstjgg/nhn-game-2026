@@ -954,3 +954,64 @@ describe('A8 — no new dependency', () => {
     }
   })
 })
+
+/**
+ * Review finding (r1, round 2) — the recorder disagreed with the live driver
+ * about what counts as a judgment.
+ *
+ * `readJudgment` in `src/driver/live-driver.ts` narrows on `'stance' in body`,
+ * so a 200 that lands without one is graded `unusable_payload` and the default
+ * stance is submitted. The recorder branched on `result.ok` alone and read
+ * `result.body.stance` off that same empty body — `undefined`, which is not a
+ * legal `beats[].stance`. A run with seven correctly-graded fallbacks then
+ * failed validation seven times and `persistRun` refused it, so the artifact
+ * that documents the failure was the one the failure destroyed.
+ */
+describe('[r1#D] an ok-but-unusable Call 1 is recorded as the default stance', () => {
+  /** A 200 whose judgment body carries no `stance` — landed, unusable. */
+  function unusableJudgment() {
+    const inner = createFixtureProvider()
+    return {
+      mode: 'fixture',
+      async send(request) {
+        const result = await inner.send(request)
+        if (request.call_type !== 'judgment') return result
+        const body = { ...result.body }
+        delete body.stance
+        return { ...result, body }
+      },
+    }
+  }
+
+  test('no beat records an undefined stance, and the record still validates', async () => {
+    const { record, events } = await runHeadless({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: unusableJudgment(),
+      store: createMemoryMetaStore(),
+      runId: `${PACK}-unusable-r1`,
+    })
+
+    const stances = record.beats.map((beat) => beat.stance)
+    assert.equal(
+      stances.filter((stance) => stance === undefined).length,
+      0,
+      'an ok-but-unusable judgment must not leave `undefined` in beats[].stance',
+    )
+
+    // Every gate beat falls back to its own default, which is a real stance id.
+    for (const beat of record.beats) {
+      if (beat.stance === null) continue
+      const gate = record.beats.indexOf(beat) >= 0 ? beat.gate : undefined
+      if (gate && STANCE_SET.has(gate)) {
+        assert.ok(STANCE_SET.get(gate).has(beat.stance), `${gate}: "${beat.stance}" is not one of its stances`)
+      }
+    }
+
+    assert.deepEqual(validateRunRecord(record).errors, [], 'the record must remain schema-legal')
+
+    // The grading itself must survive: the run still reports the calls as failed.
+    const graded = events.filter((event) => JSON.stringify(event).includes('unusable_payload'))
+    assert.ok(graded.length > 0, 'the unusable payloads must still be graded as fallbacks')
+  })
+})
