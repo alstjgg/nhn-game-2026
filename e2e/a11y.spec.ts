@@ -220,6 +220,56 @@ test.describe('a11y — landmarks and roles', () => {
       .poll(async () => ((await toast.textContent()) ?? '') !== said[0], { timeout: 15_000 })
       .toBe(true)
   })
+
+  // ADDED 08-05 (R2 on windows/tally.ts:135): the assert above rides the STREAM,
+  // and every line it can observe comes off a `ViewEvent`. The tally's hold is
+  // the desk's own — it opens on the run's close and releases up to 30 s later
+  // on a decision no event carries — so it announced nothing at either end. An
+  // operator got the close, then ~30 s of silence indistinguishable from a hung
+  // desk, then a tab stop appearing and the wait line flipping to the opposite
+  // meaning, both mute. This pins BOTH ends of that hold.
+  //
+  // `?drill=tally-lapse` (shell/boot.ts, DEV only) boots the demo loop with its
+  // `report` events withheld — the day whose generation never files, which the
+  // authored loop never produces and which is the whole reason `HOLD_CEIL`
+  // exists. The 30 s wait is the real ceiling, deliberately: the failure this
+  // guards against is a TIMING change that re-silences the release, so the test
+  // waits on the clock the product ships with.
+  test('a11y — the tally’s hold, and the lapse that ends it, are announced', async ({ page }) => {
+    test.setTimeout(150_000)
+    const toast = page.locator('#toast')
+    const wait = page.locator('#w-tally .tly-wait')
+    const newRun = page.locator('#w-tally #btnNewRun')
+
+    await page.goto('./?drill=tally-lapse')
+    await page.waitForFunction(() => Boolean((window as { __shell?: unknown }).__shell))
+    await hideDebugPane(page)
+
+    // Drive the day to its close; the ledger comes up ~900 ms later.
+    await page.evaluate(() => {
+      const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
+      if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
+      handle.drain()
+    })
+    await expect(page.locator('#w-tally')).not.toHaveClass(/\bhidden\b/, { timeout: 20_000 })
+
+    // (1) the hold is a fact an operator can HEAR, not only a line on the sheet.
+    await expect(toast, 'the desk closed the run and held it in silence').toContainText('보고서 정리 중', {
+      timeout: 20_000,
+    })
+    await expect(wait).toHaveText('……보고서 정리 중')
+    await expect(newRun, 'NEW RUN is offered while the hold is still up').toBeDisabled()
+
+    // (2) …and so is the release. The wait line changing to the opposite meaning
+    // is not an announcement: `.tly-wait` is a plain node with no live-region
+    // ancestor, which is exactly why the toast has to carry this.
+    await expect(toast, 'the hold lapsed and the desk said nothing').toContainText(
+      '보고서가 도착하지 않았습니다',
+      { timeout: 60_000 },
+    )
+    await expect(wait).toContainText('보고서는 아직 부검 창에 없습니다')
+    await expect(newRun, 'the day was never handed back').toBeEnabled()
+  })
 })
 
 /* ══ keyboard reach ══════════════════════════════════════════════════════ */

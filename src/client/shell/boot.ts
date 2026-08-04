@@ -43,6 +43,25 @@ declare global {
   }
 }
 
+/**
+ * DEV DRILL — `?drill=tally-lapse` boots the demo loop with its `report` events
+ * withheld, so the tally's hold reaches `PACE.HOLD_CEIL` and LAPSES. That is the
+ * one release the desk owns end to end and the one the authored loop can never
+ * produce, so `e2e/a11y.spec.ts` has no other way to watch the announcement land
+ * (R2 on `windows/tally.ts:135`).
+ *
+ * DEV/TEST only, exactly like `__shell` below (inv 11): `import.meta.env.DEV` is
+ * a constant the bundler folds, so the player build drops the read and the
+ * fixture branch behind it. The shell owns the read because a driver module may
+ * touch no DOM global (`tests/driver/import-direction.test.ts (j)`).
+ */
+const LAPSE_DRILL = 'tally-lapse'
+
+function lapseDrill(): boolean {
+  if (!import.meta.env.DEV) return false
+  return new URLSearchParams(window.location.search).get('drill') === LAPSE_DRILL
+}
+
 function renderIdentity(identity: ScenarioIdentity): void {
   must('#portalName').textContent = PORTAL.portal
   must('#portalCode').textContent = PORTAL.portalCode
@@ -75,9 +94,10 @@ export async function bootShell(): Promise<void> {
   // The loop opens on the run the tab left off at (§7 #8): the persisted `meta`
   // is read here, before the driver exists, because the opening `meta` of
   // `runs[0]` would otherwise land in the same tick and overwrite the restore.
-  const driver = createRunLoopDriver((await demoRunLoop()) ?? [placeholderBootRun(identity)], {
-    openAt: restoredRun(),
-  })
+  const driver = createRunLoopDriver(
+    (await demoRunLoop({ withoutReports: lapseDrill() })) ?? [placeholderBootRun(identity)],
+    { openAt: restoredRun() },
+  )
 
   // 3 — the chrome the driver feeds.
   const clock = createGameClock({

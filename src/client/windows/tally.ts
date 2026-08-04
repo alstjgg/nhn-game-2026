@@ -16,6 +16,7 @@
 // no sibling window import, nothing from engine or composer (C8 / inv 12), and
 // no fixture module.
 import type { FixtureDriver } from '../driver/index.ts'
+import { announce } from '../shell/announcer.ts'
 import { button, el } from '../shell/dom.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
@@ -54,6 +55,30 @@ const RUN_CAPTION = 'RUN '
 
 /** The allotment is spent: `new_run` was refused, and the loop has no next day. */
 const SPENT = '잔여 시행 없음 — 마지막 집계입니다'
+
+/**
+ * WHAT THE DESK SAYS while the hold runs — the wait line only PRINTS.
+ *
+ * The hold and both of its releases are purely client-side: `announcer.ts`
+ * routes off the §5.2 stream, and the stream has no event for "the ledger let
+ * the day go". So an operator driving by ear got the run's close and then up to
+ * 30 s of nothing, after which a tab stop appeared and the wait line changed to
+ * the OPPOSITE meaning — silently, both times. A desk that is deliberately
+ * holding and a desk that has hung were indistinguishable in the accessible
+ * tree (R2 on tally.ts:135).
+ *
+ * These go through `#toast`, the desk's ONE live region, and not through a
+ * second `aria-live` on `.tly-wait`: two polite regions carrying the same
+ * sentence make assistive tech speak it twice. The wait line stays a plain node
+ * an operator can browse to; the toast is what is spoken.
+ *
+ * The release lines both end on NEW RUN, because the control's own arrival is
+ * mute — it is `disabled` while the hold is up, so it is not even a tab stop
+ * until the release puts it back in the order.
+ */
+const SAY_HOLD_TAIL = ' 집계 대기 · 보고서 정리 중'
+const SAY_FILED_TAIL = ' 집계 완료 · 다음 시행을 시작할 수 있습니다'
+const SAY_LAPSED_TAIL = ' 보고서가 도착하지 않았습니다 · 다음 시행을 시작할 수 있습니다'
 
 /** The dev/test handle, exactly as `shell/boot.ts` exposes `window.__shell`. */
 export interface TallyHandle {
@@ -130,9 +155,13 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (release === 'filed') {
       wait.classList.add('done')
       wait.textContent = `${RUN_CAPTION}${run}${FILED_TAIL}`
+      announce(`${RUN_CAPTION}${run}${SAY_FILED_TAIL}`)
     } else {
       // No `.done`: the settled-green is the arrival's mark, and this is not one.
       wait.textContent = `${RUN_CAPTION}${run}${LAPSED_TAIL}`
+      // …and the lapse is SAID, above all: it is the release nothing else on the
+      // desk echoes, and the one that hands back a degraded day.
+      announce(`${RUN_CAPTION}${run}${SAY_LAPSED_TAIL}`)
     }
     newRun.disabled = false
   }
@@ -160,6 +189,9 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (driver.send({ op: 'new_run' }).ok) return
     wait.classList.add('done')
     wait.textContent = SPENT
+    // The refusal is client-side too: the button the operator just pressed goes
+    // dead and the only answer is a line they may not be looking at.
+    announce(SPENT)
   })
 
   /** This window's taskbar button, once the desk has built one. */
@@ -250,6 +282,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       revealed = true
       show(true)
       print(store.get())
+      // The hold is now up, and it is said HERE rather than at the close: the
+      // stream's own `run_end` line ("시뮬레이션 종료 · 집계 개시") is announced
+      // in the close's tick, and a second write in that same tick would replace
+      // it before anything read it. 900 ms later the two lines queue.
+      if (!settled) announce(`${RUN_CAPTION}${pad2(store.get().meta.run)}${SAY_HOLD_TAIL}`)
     }, PACE.OPEN_DELAY)
   }
 

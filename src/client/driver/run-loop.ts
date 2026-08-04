@@ -159,9 +159,26 @@ export function createRunLoopDriver(
   }
 }
 
+export interface DemoLoopOptions {
+  /**
+   * DEV DRILL — open the loop on days that file NO `report`, so the tally's hold
+   * runs to `PACE.HOLD_CEIL` and lapses. The authored loop files one every day,
+   * which leaves the lapse — a release the operator is told about and nothing
+   * else on the desk echoes — with no way to be exercised from a booted desk
+   * (R2 on `windows/tally.ts:135`). The caller that sets it is `shell/boot.ts`,
+   * off a DEV-only query flag; the flag, this option and the stream behind it
+   * are all folded out of the player build with `import.meta.env.DEV`.
+   */
+  withoutReports?: boolean
+}
+
 /** The authored demo LOOP in a DEV build; `null` in a player build (§5.4). */
-export async function demoRunLoop(): Promise<FixtureRun[] | null> {
+export async function demoRunLoop(options: DemoLoopOptions = {}): Promise<FixtureRun[] | null> {
   if (!import.meta.env.DEV) return null
+  if (options.withoutReports === true) {
+    const drill = await import('./fixtures/no-report.ts')
+    return drill.noReportRunLoop
+  }
   const demo = await import('./fixtures/run-loop.ts')
   return demo.woodariRunLoop
 }
