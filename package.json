@@ -15,10 +15,16 @@
     "probe": "node tools/probe/run.mjs",
     "probe:selftest": "node tools/probe/lib/selftest.mjs",
     "drive:beat": "node tools/driver/drive-beat.mjs",
-    "test:shared": "node --test --experimental-strip-types \"tools/tests/*.mjs\""
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:shared": "node --test --experimental-strip-types \"tools/tests/*.mjs\"",
+    "typecheck:test": "tsc -p tsconfig.test.json"
   },
   "devDependencies": {
+    "@types/node": "^26.1.2",
+    "playwright": "^1.62.1",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "vitest": "^4.1.10"
   }
 }

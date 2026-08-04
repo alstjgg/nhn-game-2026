@@ -1,0 +1,111 @@
+// u11 — the selector vocabulary the acceptance suite speaks.
+//
+// One place, because §7 is a run-THROUGH: the same twelve items walk every
+// window in one page session, and a selector typo in item 9 must not read as a
+// shell defect in item 3. Nothing here is new markup — every id/class below is
+// already asserted by a unit spec (u3 shell, u4 file, u5 feed, u6 reports,
+// u7 tally, u8 threads, u9d pane); u11 only re-uses them (design D3).
+export const WINDOWS = {
+  feed: '#w-feed',
+  file: '#w-file',
+  store: '#w-store',
+  rep: '#w-rep',
+  tally: '#w-tally',
+} as const
+
+export type WindowKey = keyof typeof WINDOWS
+
+/** The five window ids without the `#`, in default-layout order (C9/C15). */
+export const WINDOW_IDS = ['w-feed', 'w-file', 'w-rep', 'w-store', 'w-tally'] as const
+
+/* ── chrome (item 1, item 6) ─────────────────────────────────────────────── */
+export const CHROME = {
+  app: '#app',
+  desktop: '#desktop',
+  topbar: '#topbar',
+  taskbar: '#taskbar',
+  caseName: '#caseName',
+  runNum: '#runNum',
+  ddayNum: '#ddayNum',
+  clockDigits: '#clockDigits',
+  threads: '#threads',
+} as const
+
+/* ── window chrome ops (item 9) ──────────────────────────────────────────── */
+export const WIN = {
+  any: '.win',
+  bar: '.win-bar',
+  body: '.win-body',
+  grip: '.win-grip',
+  collapse: '.wc-min',
+  close: '.wc-close',
+  task: '.task',
+} as const
+
+/* ── feed (items 2, 7) ───────────────────────────────────────────────────── */
+export const FEED = {
+  list: '#w-feed #feedList',
+  scroll: '#w-feed #feedScroll',
+  line: '#w-feed #feedList .fl',
+} as const
+
+/** `(변화 없음)` — the empty symptom set's own copy (§7 #2), not fixture text. */
+export const EMPTY_SYMPTOM = '(변화 없음)'
+
+/** The three diegetic wait phrasings by `waiting.for` (design README 74–76). */
+export const WAIT_PHRASE = {
+  judgment: '무전 회신 대기 중',
+  narration: '현장 상황 수신 대기 중',
+  report: '보고서 회신 대기 중',
+} as const
+
+/* ── reports + mining (items 4, 5) ───────────────────────────────────────── */
+export const REPORTS = {
+  bodyList: '#w-rep #bodyList',
+  factsList: '#w-rep #factsList',
+  rail: '#w-rep .arch-rail',
+  option: '#w-rep .arch-rail [role="option"]',
+  minedCount: '#w-rep #minedCount',
+  sentence: '#w-rep [data-sentence-id]',
+  mineable: '#w-rep .min',
+  mined: '#w-rep .min.mined',
+} as const
+
+/* ── store + slots (items 5, 10) ─────────────────────────────────────────── */
+export const STORE = {
+  list: '#w-store #storeList',
+  empty: '#w-store #storeEmpty',
+  filter: '#w-store #storeFilter',
+  card: '#w-store #storeList .bcard',
+} as const
+
+export const FILE = {
+  board: '#w-file #slotBoard',
+  slot: '#w-file .slot',
+  filled: '#w-file .slot.filled',
+  pin: '#w-file .slot-pin',
+  slotCount: '#w-file #slotCount',
+  deploy: '#w-file #btnDeploy',
+  stamp: '#w-file #deployStamp',
+  state: '#w-file #deployState',
+} as const
+
+/* ── tally (item 6) ──────────────────────────────────────────────────────── */
+export const TALLY = {
+  root: '#w-tally',
+  ledger: '#w-tally [data-tally-state]',
+  rows: '#w-tally .tly-table tr',
+  big: '#w-tally #tlyBig',
+  wait: '#w-tally .tly-wait',
+  newRun: '#w-tally #btnNewRun',
+} as const
+
+/* ── debug pane (items 3, 5, 12) ─────────────────────────────────────────── */
+export const DEBUG = {
+  pane: '#debug-pane',
+  events: '[data-debug-table="events"]',
+  ops: '[data-debug-table="ops"]',
+} as const
+
+/** inv 1 — every free-text surface §7 #12 forbids on the player build. */
+export const FREE_TEXT = 'input, textarea, select, form, [contenteditable]:not([contenteditable="false"])'
