@@ -43,7 +43,7 @@ export function createDriver(_deps: DriverDeps): Driver {
 // deps of the second are an intersection of the first's, so a host that can
 // build one can build the other.
 
-export { createLiveDriver } from './live-driver.ts'
+export { createLiveDriver, UNUSABLE_PAYLOAD_CODE } from './live-driver.ts'
 export { assertSeamClean } from './seam-guard.ts'
 export { createBlockStore } from './blocks.ts'
 export { createEmitter } from './emitter.ts'

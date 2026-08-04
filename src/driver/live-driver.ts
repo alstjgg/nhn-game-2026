@@ -59,18 +59,25 @@ type CallNumber = 1 | 2 | 3
 /** Any of the three response bodies — narrowed below by the field only it has. */
 type AnyBody = CallResponse[CallType]
 
-function readJudgment(body: AnyBody | null): CallResponse['judgment'] | null {
-  if (body === null) return null
+/**
+ * The `code` on a `fallback` the DRIVER minted rather than the transport.
+ *
+ * The transport's codes come off the wire (contract-calls §11: `bedrock_timeout`,
+ * `invalid_model_output`, `network_error`, …). This one has no status behind it
+ * — the proxy answered 200 and the payload was still unusable — so it is its own
+ * code rather than a borrowed one, and a run record can tell the two apart.
+ */
+export const UNUSABLE_PAYLOAD_CODE = 'unusable_payload'
+
+function readJudgment(body: AnyBody): CallResponse['judgment'] | null {
   return 'stance' in body ? body : null
 }
 
-function readNarration(body: AnyBody | null): CallResponse['narration'] | null {
-  if (body === null) return null
+function readNarration(body: AnyBody): CallResponse['narration'] | null {
   return 'timeline_entries' in body ? body : null
 }
 
-function readReporter(body: AnyBody | null): CallResponse['reporter'] | null {
-  if (body === null) return null
+function readReporter(body: AnyBody): CallResponse['reporter'] | null {
   return 'report_body' in body ? body : null
 }
 
@@ -105,18 +112,37 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
   }
 
   /**
-   * One transport round-trip inside its `waiting` bracket. Returns the body, or
-   * `null` when the call did not land — the engine decides what `null` means.
+   * One transport round-trip inside its `waiting` bracket, narrowed by `read`.
+   * Returns the usable body, or `null` — the engine decides what `null` means.
+   *
+   * **Two ways to get `null`, and both are fallbacks.** The call can fail to
+   * land (`!result.ok`), or it can land and come back unusable — a 200 whose
+   * body is missing the one field this call exists to produce. The engine's §5
+   * recovery is identical either way, and that is precisely why the DIFFERENCE
+   * has to be recorded here: the run record's `fallbacks` is the only place a
+   * substituted stance is separable from a chosen one, and a driver that
+   * emitted nothing for the second case left the record asserting that the
+   * model judged a gate it never judged.
+   *
+   * `read` runs inside the bracket so decision 5 still holds — the `fallback`
+   * lands between the bracket's two edges, whichever way the call went wrong.
    */
-  async function call(number: CallNumber, request: CallRequest): Promise<AnyBody | null> {
+  async function call<T>(
+    number: CallNumber,
+    request: CallRequest,
+    read: (body: AnyBody) => T | null,
+  ): Promise<T | null> {
     const waitingFor = WAITING_FOR[number]
     emit({ type: 'waiting', active: true, for: waitingFor })
     const result = await transport.send(request)
+    const usable = result.ok ? read(result.body) : null
     if (!result.ok) {
       emit({ type: 'fallback', call: number, code: result.code, beat: beatIndex })
+    } else if (usable === null) {
+      emit({ type: 'fallback', call: number, code: UNUSABLE_PAYLOAD_CODE, beat: beatIndex })
     }
     emit({ type: 'waiting', active: false, for: waitingFor })
-    return result.ok ? result.body : null
+    return usable
   }
 
   /** Fires exactly once, whichever path reaches the end of the run. */
@@ -141,22 +167,21 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
       emit({ type: 'beat_start', beat: beat.index, clock: beat.clock })
 
       if (beat.kind === 'gate') {
-        const judgment = await call(1, composer.judgment(engine.gateView(), membrane.deployed()))
-        engine.submitStance(readJudgment(judgment))
+        const request = composer.judgment(engine.gateView(), membrane.deployed())
+        engine.submitStance(await call(1, request, readJudgment))
       }
 
       engine.applyBeatEffects()
       flush()
 
-      const narration = await call(2, composer.narration(engine.beatView()))
-      engine.applyNarration(readNarration(narration))
+      engine.applyNarration(await call(2, composer.narration(engine.beatView()), readNarration))
       flush()
 
       emit({ type: 'beat_end', beat: beat.index, clock: beat.clock })
 
       if (beat.isRoundLast && beat.roundIndex !== null) {
-        const reporter = await call(3, composer.reporter(engine.roundView()))
-        const report = engine.applyReport(readReporter(reporter))
+        const reporter = await call(3, composer.reporter(engine.roundView()), readReporter)
+        const report = engine.applyReport(reporter)
         blocks.absorbSentences(report)
         emit({
           type: 'report',

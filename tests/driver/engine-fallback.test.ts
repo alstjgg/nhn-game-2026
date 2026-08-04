@@ -15,13 +15,17 @@
 // resolved outcome per call and emits at most one `fallback` for it.
 import { describe, it, expect } from 'vitest'
 import type { ViewEvent } from '../../src/shared/view-driver.ts'
+import { UNUSABLE_PAYLOAD_CODE } from '../../src/driver/index.ts'
 import {
+  createRecorder,
   drain,
   failingTransport,
   feedLines,
   makeRig,
+  recordEngine,
   sentinelJudgment,
   shape,
+  unusableTransport,
 } from './engine-fixtures/rig.ts'
 import { twoRounds } from './engine-fixtures/pack.ts'
 
@@ -149,6 +153,80 @@ describe('[e7#A5] Call 3 fails', () => {
     // reach the log, so this is a withheld line and not an empty assembly.
     expect(texts.some((text) => text.includes('기록을 남긴다.'))).toBe(true)
     expect(texts).toContain('남측 관측소가 신호를 놓쳤다.')
+  })
+})
+
+// [#116 finding D] — `!result.ok` is not the only way a call fails. A 200 whose
+// body is missing the one field the call exists to produce reaches the engine as
+// the SAME `null`, and the engine's §5 recovery runs identically — but before
+// this, nothing was emitted for it, so the run record's `fallbacks` stayed empty
+// and thereby asserted that the model had judged a gate it never judged.
+describe('[#116 D] a call that lands unusable is a fallback too', () => {
+  it('(a) a 200 judgment with no `stance` emits fallback{call:1} inside the bracket', async () => {
+    const events = await drain(makeRig({ transport: unusableTransport('judgment', 'stance') }))
+    expect(shape(events).slice(0, 4)).toEqual([
+      'beat_start',
+      'waiting:judgment:on',
+      'fallback:1',
+      'waiting:judgment:off',
+    ])
+    expect(fallbacks(events)).toEqual([
+      { type: 'fallback', call: 1, code: UNUSABLE_PAYLOAD_CODE, beat: 0 },
+    ])
+  })
+
+  it('(b) the engine got `null` AND the stream said so — the two records agree', async () => {
+    const recorder = createRecorder()
+    const rig = makeRig({
+      transport: unusableTransport('judgment', 'stance'),
+      wrapEngine: (engine) => recordEngine(engine, recorder),
+    })
+    const events = await drain(rig)
+    const submitted = recorder.log
+      .filter((entry) => entry.name === 'engine.submitStance')
+      .map((entry) => entry.value)
+
+    // The bug was exactly this pair disagreeing: `[null]` with `[]`.
+    expect(submitted).toEqual([null])
+    expect(fallbacks(events).length).toBe(1)
+    // …and the recovery is unchanged: a substituted stance mints no `u` line.
+    expect(feedLines(events).filter((line) => line.kind === 'radio')).toEqual([])
+  })
+
+  it('(c) the code is the driver’s own, not a status code borrowed from the wire', async () => {
+    const events = await drain(makeRig({ transport: unusableTransport('judgment', 'stance') }))
+    expect(fallbacks(events).map((event) => event.code)).toEqual([UNUSABLE_PAYLOAD_CODE])
+    expect(UNUSABLE_PAYLOAD_CODE).not.toBe('LLM_TIMEOUT')
+  })
+
+  it('(d) the same holds for Call 2 — one per beat, and no `n`/`q` lines that beat', async () => {
+    const events = await drain(
+      makeRig({ transport: unusableTransport('narration', 'timeline_entries') }),
+    )
+    expect(fallbacks(events).map((event) => event.call)).toEqual([2, 2])
+    const minted = feedLines(events).flatMap((line) => (line.sentence_id ?? '').match(/-[nq]\d+$/) ?? [])
+    expect(minted).toEqual([])
+  })
+
+  it('(e) the same holds for Call 3 — the substitute body, not a silent empty report', async () => {
+    const events = await drain(
+      makeRig({ transport: unusableTransport('reporter', 'report_body') }),
+    )
+    expect(fallbacks(events).map((event) => event.call)).toEqual([3])
+    const reports = events.flatMap((event) => (event.type === 'report' ? [event] : []))
+    expect(reports.length).toBe(1)
+    expect(reports[0]!.report_body.length).toBeGreaterThan(0)
+  })
+
+  it('(f) a well-formed run emits none of these — the guard is not firing on success', async () => {
+    const events = await drain(makeRig({ pack: twoRounds() }))
+    expect(fallbacks(events)).toEqual([])
+  })
+
+  it('(g) every `waiting` is still paired when the unusable payload arrives', async () => {
+    const events = await drain(makeRig({ transport: unusableTransport('judgment', 'stance') }))
+    const edges = events.flatMap((e) => (e.type === 'waiting' && e.for === 'judgment' ? [e.active] : []))
+    expect(edges).toEqual([true, false])
   })
 })
 

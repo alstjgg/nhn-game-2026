@@ -89,6 +89,33 @@ export function failingTransport(
   }
 }
 
+/**
+ * A transport that **succeeds** and hands back a body the driver cannot use:
+ * the fixture's own response with one required field removed.
+ *
+ * This is the case `!result.ok` cannot see — the proxy answered 200, the call
+ * "landed", and the field the call exists to produce is not there. Built by
+ * deleting a key off a real body rather than by declaring a fake one, so the
+ * result stays a genuine `CallResponse[T]` minus exactly one field.
+ */
+export function unusableTransport(only: CallType, drop: string): SpyTransport {
+  const fixture = createFixtureProvider()
+  const sent: CallRequest[] = []
+  return {
+    mode: 'live',
+    sent,
+    types: () => sent.map((request) => request.call_type),
+    async send<T extends CallType>(request: CallRequest<T>): Promise<TransportResult<T>> {
+      sent.push(request)
+      const result = await fixture.send(request)
+      if (!result.ok || request.call_type !== only) return result
+      const body = { ...result.body }
+      delete (body as Record<string, unknown>)[drop]
+      return { ...result, body }
+    },
+  }
+}
+
 // ── the call-order recorder (A6 · A7) ────────────────────────────────────────
 
 export type CallRecord = { name: string; value: unknown }
