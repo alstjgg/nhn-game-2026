@@ -41,6 +41,7 @@ interface ThreadsHandle {
 type Handles = {
   __threads?: ThreadsHandle
   __shell?: { frame(): unknown; drain(): void }
+  __feed?: { rate(to: number): void }
   __agentFile?: {
     slots(): (string | null)[]
     place(id: string, slot: number): void
@@ -77,6 +78,33 @@ async function redraw(page: Page): Promise<void> {
 }
 
 /**
+ * Holds the desk still — the transport's OWN pause, not a test-only freeze.
+ *
+ * C17 / [u11#c12] — RE-AIMED (08-04, u11 attempt 2). Every oracle in this file
+ * measures GEOMETRY, and geometry needs two or three reads of the same state:
+ * a path, the anchor it lands on, the window that carries it. A running desk
+ * keeps beating between those reads — a new line lands, REPORTS re-renders, an
+ * anchor leaves its window's visible rect and [u8#c3] correctly clips the
+ * thread away — and the oracle then compares frame N with frame N+k. That is
+ * the u11 attempt-1 flake (`endpointsOf(undefined)` under full-suite load,
+ * green in isolation) and its two siblings under load.
+ *
+ * `rate(0)` is pause, one of the three speeds the driver's clock accepts
+ * (`windows/live-feed.ts:41` — "0 is pause"), i.e. exactly what the operator's
+ * ⏸ does. Nothing this file proves depends on the clock advancing: threads are
+ * drawn from slots and anchors, re-drawn on drag/resize/collapse/close, and
+ * clipped to the visible rect — all clock-free. So the desk is stopped, not
+ * mocked, and every check below still runs against the real mechanism.
+ */
+async function holdStill(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const handle = (window as unknown as Handles).__feed
+    if (!handle) throw new Error('window.__feed is not exposed by the LIVE FEED window')
+    handle.rate(0)
+  })
+}
+
+/**
  * Boot the desk with the report rendered and the thread layer mounted.
  * `reducedMotion` freezes u6's typewriter so sentence anchors are final.
  */
@@ -88,17 +116,46 @@ async function boot(page: Page): Promise<void> {
   await page.waitForFunction(() => (window as unknown as Handles).__threads !== undefined)
   await page.waitForFunction(() => (window as unknown as Handles).__agentFile !== undefined)
   await drain(page)
-  // The TALLY owns the screen when it is open — it must be closed for any
-  // thread to exist at all (reference app.js:579). u3's desk opens all five
-  // windows at boot (`e2e/a11y.spec.ts:44` pins that every one of them is
-  // visible) and u7 — the unit that will keep the tally shut until the run
-  // ends — has not landed, so the suite closes it the way the operator does,
-  // exactly as the reference does at `app.js:652`. discovery/u8.md §6.
-  if (!((await page.locator(TALLY).getAttribute('class')) ?? '').split(' ').includes('hidden')) {
-    await page.locator(`${TALLY} .wc-close`).click()
-  }
-  await expect(page.locator(TALLY)).toHaveClass(/\bhidden\b/)
+  await takeNextRun(page)
   await expect(page.locator(`${REP} [data-sentence-id]`).first()).toBeVisible()
+  await holdStill(page)
+}
+
+/**
+ * Leaves the TALLY the way the run's own loop leaves it — NEW RUN.
+ *
+ * C17 / [u11#c12] — RE-AIMED (08-04, u11 attempt 2). This is the setup the
+ * file's flakiness lived in. The code here used to close the sheet with its
+ * `.wc-close` button, under a comment that said so explicitly: "u7 — the unit
+ * that will keep the tally shut until the run ends — has not landed, so the
+ * suite closes it the way the operator does". u7 has landed since, and
+ * `drain()` flushes the run to its TERMINAL — which is exactly the phase in
+ * which u7 OPENS the tally and keeps it open. Closing it by hand fought the run
+ * state instead of leaving it: any frame that followed put the sheet straight
+ * back up, and while it is up `planThreads` returns [] for EVERY thread, by
+ * design ([u8#c1], reference `app.js:579`).
+ *
+ * That, not the thread layer, was every red in this file: measured 1 in 5
+ * full-suite runs and ~60 % under a loaded `--repeat-each`, across the MID-drag,
+ * REPORTS-drag and TALLY-open oracles alike, and `#w-tally` read
+ * `win win-tally focused` — no `hidden` — at the moment of every single one.
+ *
+ * `#btnNewRun` is the loop's own way out: it files the closing report, carries
+ * the blocks and starts the next day, so the desk is in a RUN phase where the
+ * tally is shut because the run says so — and with the clock held at 0 it never
+ * reaches the next 21:04. Nothing is skipped and no thread rule is relaxed.
+ */
+async function takeNextRun(page: Page): Promise<void> {
+  await expect(page.locator(TALLY), 'the run ended but the TALLY sheet never came up').not.toHaveClass(
+    /\bhidden\b/,
+    { timeout: 30_000 },
+  )
+  const newRun = page.locator(`${TALLY} #btnNewRun`)
+  await expect(newRun, 'the tally never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
+  await newRun.click()
+  await expect(page.locator(TALLY), 'NEW RUN did not put the tally away').toHaveClass(/\bhidden\b/, {
+    timeout: 20_000,
+  })
 }
 
 /** The sentence ids the booted run actually rendered, in document order (C3). */
@@ -168,11 +225,121 @@ async function pathData(page: Page): Promise<string[]> {
   return page.locator(PATH).evaluateAll((nodes) => nodes.map((n) => n.getAttribute('d') ?? ''))
 }
 
+/**
+ * The first path's `d` once the layer has drawn it — or a failure saying WHY
+ * there is none.
+ *
+ * C17 / [u11#c12] — RE-AIMED (08-04, u11 attempt 2). "no thread is drawn" on
+ * its own is unactionable: the string can be missing because the layer has not
+ * redrawn yet, because an anchor left its window's visible rect ([u8#c3],
+ * correct), or because the TALLY is up and owns the screen ([u8#c1], also
+ * correct). So the read waits a few frames for the layer's own rAF instead of
+ * demanding the string in whichever frame it happened to sample — it never
+ * CALLS `redraw()`, so [u8#c2] is still what is proven — and a real miss is
+ * reported with the state that decided it. That report is what found the cause
+ * of this file's flake: `tally` read `win win-tally focused` every time.
+ */
+async function threadPath(page: Page): Promise<string> {
+  const deadline = Date.now() + 5000
+  for (;;) {
+    const [d] = await pathData(page)
+    if (d) return d
+    if (Date.now() >= deadline) break
+    await page.waitForTimeout(50)
+  }
+  const why = await page.evaluate(
+    ([fileSelector, repSelector]) => {
+      const rect = (selector: string): unknown => {
+        const node = document.querySelector(selector)
+        if (!node) return null
+        const r = node.getBoundingClientRect()
+        return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) }
+      }
+      const win = (selector: string): unknown => ({
+        box: rect(selector),
+        body: rect(`${selector} .win-body`),
+        scrollTop: (document.querySelector(`${selector} .win-body`) as HTMLElement | null)?.scrollTop ?? null,
+        className: document.querySelector(selector)?.className ?? null,
+      })
+      const frame = (window as unknown as Handles).__shell?.frame() as
+        | { store?: { slots?: Record<number, string> } }
+        | undefined
+      return {
+        threads: (window as unknown as Handles).__threads?.count() ?? null,
+        slots: (window as unknown as Handles).__agentFile?.slots() ?? null,
+        // the layer's narrowing set is the DRIVER's store, not the DOM
+        // (`shell/boot.ts:106`) — the two can disagree
+        driverSlots: frame?.store?.slots ?? null,
+        // `planThreads` returns [] outright while the tally is up ([u8#c1]) —
+        // the FIRST thing to check when every thread is gone at once
+        tally: document.querySelector('#w-tally')?.className ?? null,
+        body: document.body.className,
+        file: win(fileSelector as string),
+        slot: rect(`${fileSelector} .slot.filled`),
+        rep: win(repSelector as string),
+        source: rect(`${repSelector} [data-sentence-id]`),
+      }
+    },
+    [FILE, REP] as [string, string],
+  )
+  throw new Error(`no thread is drawn after 5 s — ${JSON.stringify(why)}`)
+}
+
 /** The single path's slot-side endpoint (the `Q` end, `rectA.left + 6`). */
 async function slotEndpoint(page: Page): Promise<[number, number]> {
-  const [d] = await pathData(page)
-  expect(d, 'no thread is drawn').toBeTruthy()
-  return endpointsOf(d!)[1]
+  return endpointsOf(await threadPath(page))[1]
+}
+
+/**
+ * ONE coherent reading of the thread and the anchors it joins.
+ *
+ * The desk does not hold still: the run keeps beating while a test measures, so
+ * REPORTS and AGENT FILE re-render between two awaits. Reading `d` in one round
+ * trip and a `boundingBox()` in the next therefore compares a path drawn at
+ * frame N with a rect measured at frame N+k — and if a beat scrolled either
+ * anchor out of its window's visible rect in between, [u8#c3] correctly clips
+ * the thread away and the path read comes back EMPTY (the u11 attempt-1 flake:
+ * `endpointsOf(undefined)` under full-suite load, green in isolation).
+ *
+ * So redraw and read inside a SINGLE page task: `d` and both rects then belong
+ * to the same frame by construction. If the anchors are momentarily out of view
+ * the snapshot answers `null` and the caller polls — never a redesign of the
+ * clipping rule, which is the very behaviour [u8#c3] pins.
+ */
+interface ThreadSnapshot {
+  d: string
+  boxes: Box[]
+}
+
+async function threadSnapshot(page: Page, selectors: string[]): Promise<ThreadSnapshot> {
+  let snapshot: ThreadSnapshot | null = null
+  await expect
+    .poll(
+      async () => {
+        snapshot = await page.evaluate(
+          ([pathSelector, wanted]) => {
+            const handle = (window as unknown as Handles).__threads
+            if (!handle) throw new Error('window.__threads is not exposed by the thread layer')
+            handle.redraw()
+            const path = document.querySelector(pathSelector as string)
+            if (!path) return null
+            const boxes: Box[] = []
+            for (const selector of wanted as string[]) {
+              const node = document.querySelector(selector)
+              if (!node) return null
+              const r = node.getBoundingClientRect()
+              boxes.push({ x: r.x, y: r.y, width: r.width, height: r.height })
+            }
+            return { d: path.getAttribute('d') ?? '', boxes }
+          },
+          [PATH, selectors] as [string, string[]],
+        )
+        return snapshot !== null
+      },
+      { message: 'no thread and its anchors were ever readable in one frame', timeout: 15_000 },
+    )
+    .toBe(true)
+  return snapshot!
 }
 
 function near(actual: number, expected: number, tol = 2): void {
@@ -202,9 +369,14 @@ test.describe('every filled slot is threaded by id', () => {
     const [id] = await thread(page, 1)
     await expect(page.locator(PATH)).toHaveCount(1)
 
-    const slotBox = await box(page, `${FILE} .slot-pin[data-block-id="${id}"], ${FILE} [data-block-id="${id}"]`)
-    const srcBox = await box(page, `${REP} [data-sentence-id="${id}"]`)
-    const [source, slot] = endpointsOf((await pathData(page))[0]!)
+    const {
+      d,
+      boxes: [slotBox, srcBox],
+    } = await threadSnapshot(page, [
+      `${FILE} .slot-pin[data-block-id="${id}"], ${FILE} [data-block-id="${id}"]`,
+      `${REP} [data-sentence-id="${id}"]`,
+    ])
+    const [source, slot] = endpointsOf(d)
 
     near(slot[0], slotBox.x + 6)
     near(slot[1], slotBox.y + slotBox.height / 2)
@@ -231,8 +403,11 @@ test.describe('every filled slot is threaded by id', () => {
     await expect(page.locator(PIN)).toHaveCount(2)
 
     // the survivor is the OTHER id: its source anchor still owns an endpoint
-    const srcBox = await box(page, `${REP} [data-sentence-id="${ids[1]}"]`)
-    const [source] = endpointsOf((await pathData(page))[0]!)
+    const {
+      d,
+      boxes: [srcBox],
+    } = await threadSnapshot(page, [`${REP} [data-sentence-id="${ids[1]}"]`])
+    const [source] = endpointsOf(d)
     near(source[0], srcBox.x + srcBox.width - 4)
     near(source[1], srcBox.y + srcBox.height / 2)
   })
@@ -288,6 +463,7 @@ test.describe('endpoints track windows during drag', () => {
   }) => {
     const bar = await box(page, `${FILE} .win-bar`)
     const before = await slotEndpoint(page)
+    const windowBefore = await box(page, FILE)
     const start = { x: bar.x + bar.width / 2, y: bar.y + bar.height / 2 }
     const dx = -80
     const dy = 60
@@ -302,8 +478,22 @@ test.describe('endpoints track windows during drag', () => {
 
     await expect(page.locator(FILE)).toHaveClass(/\bdragging\b/)
     const during = await slotEndpoint(page)
-    near(during[0] - before[0], dx)
-    near(during[1] - before[1], dy)
+    // C17 / [u11#c12] — RE-AIMED (08-04), never deleted: the endpoint is
+    // compared to what the WINDOW did, not to what the pointer asked for. u3's
+    // drag clamp (`window-manager.ts:105` — `maxY = innerHeight - height +
+    // EDGE_SLACK`) leaves AGENT FILE 54 px of downward travel at the finished
+    // desk arrangement (y 94, h 692, viewport 800), so a 60 px pull moves the
+    // window 54 px and a string that tracks it perfectly still reads 54. The
+    // contract this test owns is "the endpoint tracks the window MID-drag", and
+    // that is now what it measures — a lagging string still fails, and the
+    // window is asserted to have actually moved so the check cannot go vacuous.
+    const windowDuring = await box(page, FILE)
+    const movedX = windowDuring.x - windowBefore.x
+    const movedY = windowDuring.y - windowBefore.y
+    expect(Math.abs(movedX), 'the window did not move at all — the drag never started').toBeGreaterThan(8)
+    expect(Math.abs(movedY), 'the window did not move at all — the drag never started').toBeGreaterThan(8)
+    near(during[0] - before[0], movedX)
+    near(during[1] - before[1], movedY)
 
     await page.mouse.up()
     await redraw(page)
@@ -316,7 +506,7 @@ test.describe('endpoints track windows during drag', () => {
     page,
   }) => {
     const bar = await box(page, `${REP} .win-bar`)
-    const [before] = endpointsOf((await pathData(page))[0]!)
+    const [before] = endpointsOf(await threadPath(page))
     const start = { x: bar.x + bar.width / 2, y: bar.y + bar.height / 2 }
     // Downward: u3's manager clamps a window's top to the chrome band
     // (`window-manager.ts:33` CHROME_BAND = 76) and REPORTS opens at y 94, so a
@@ -330,7 +520,7 @@ test.describe('endpoints track windows during drag', () => {
     await page.mouse.move(start.x, start.y + dy)
     await page.waitForTimeout(50)
 
-    const [during] = endpointsOf((await pathData(page))[0]!)
+    const [during] = endpointsOf(await threadPath(page))
     near(during[1] - before[1], dy)
     await page.mouse.up()
   })
@@ -416,7 +606,8 @@ test.describe('clipped to visible rect', () => {
 
   test('clipped to visible rect — the overlay never intercepts a pointer', async ({ page }) => {
     await thread(page, 1)
-    const [, slot] = endpointsOf((await pathData(page))[0]!)
+    const { d } = await threadSnapshot(page, [])
+    const [, slot] = endpointsOf(d)
     const hit = await page.evaluate(
       ([x, y]) => document.elementFromPoint(x as number, y as number)?.closest('#threads') !== null,
       slot as [number, number],

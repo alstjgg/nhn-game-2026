@@ -2,7 +2,7 @@
 // build contains NONE of the pane's code.
 //
 // The check is a real one: this suite runs `vite build --mode production` into
-// `dist/flag-off-check/` and greps every emitted asset for the pane's module
+// `dist-flag-off/` and greps every emitted asset for the pane's module
 // markers. A source-level guard alone would not prove exclusion — only the
 // bundler's output does. The source guard is here too, because it is what makes
 // the exclusion possible: a static `__DEBUG_PANE__` guard around a DYNAMIC
@@ -31,7 +31,14 @@ import {
   walk,
 } from './debug-utils.ts'
 
-const OUT_REL = 'dist/flag-off-check'
+// C17 / [u11#c12] — RE-AIMED (08-04), never deleted: the OUT DIR moved out of
+// `dist/`. Nested inside it, this hermetic check build (a) was greped by
+// u10's inv-10 dist walk as if it were the artefact, (b) raced that suite's
+// own `rm -rf dist` + rebuild inside one `vitest run`, and (c) left `dist/`
+// without an `index.html` for the next `vite preview` — u4s finding 19,
+// which the C5 preview host turned from a nuisance into a gate failure.
+// The claim under test is unchanged; only where it builds is.
+const OUT_REL = 'dist-flag-off'
 const OUT_ABS = path.join(REPO, OUT_REL)
 const VITE_BIN = path.join(REPO, 'node_modules/vite/bin/vite.js')
 
@@ -48,7 +55,10 @@ beforeAll(() => {
     execFileSync(
       process.execPath,
       [VITE_BIN, 'build', '--mode', 'production', '--outDir', OUT_REL, '--emptyOutDir', '--logLevel', 'error'],
-      { cwd: REPO, stdio: 'pipe', encoding: 'utf8' },
+      // NODE_ENV first, `--mode` second: vitest's own `NODE_ENV=test` would
+      // otherwise leave `import.meta.env.DEV` true and this would not be the
+      // PLAYER build whose emptiness inv 11 is about.
+      { cwd: REPO, stdio: 'pipe', encoding: 'utf8', env: { ...process.env, NODE_ENV: 'production' } },
     )
   } catch (e) {
     const err = e as { stderr?: string; stdout?: string; message?: string }

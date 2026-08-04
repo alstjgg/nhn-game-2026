@@ -8,6 +8,12 @@
 // a table part; nothing is ever built from an HTML string either, which keeps
 // event text (operator-facing prose) out of the parser.
 import type { MembraneOp, ViewEvent } from '../driver/index.ts'
+// The pane's skin as TEXT, not as a document stylesheet: the pane injects it
+// into its own `<style>` element below, so it stays self-contained and rides
+// the flagged chunk out of the player build with the rest of `debug/`
+// (inv 11). It is a `.css` file because inv 8 admits no color, size or type
+// literal in a `.ts` — every value there is a `tokens.css` custom property.
+import CSS from './pane.css?inline'
 
 /** The pane's root element id — one of the two markers inv 11 greps for. */
 export const PANE_ID = 'debug-pane'
@@ -20,17 +26,6 @@ const OP_COLUMNS = ['seq', 'op', 'payload'] as const
 
 /** What the clock column shows for an event the seam gave no stamp. */
 const NO_STAMP = '—'
-
-const CSS = `
-#debug-pane{position:fixed;left:0;bottom:0;z-index:9000;box-sizing:border-box;
-  max-width:46vw;max-height:42vh;overflow:auto;padding:6px;
-  background:#080d12;color:#cfe3ea;font:11px/1.35 ui-monospace,monospace}
-#debug-pane table{border-collapse:collapse;width:100%;margin-bottom:6px}
-#debug-pane th,#debug-pane td{border:1px solid #23343d;padding:1px 4px;
-  text-align:left;vertical-align:top;white-space:pre}
-#debug-pane th{color:#7fb0c4;font-weight:400}
-#debug-pane td{max-width:34em;overflow:hidden;text-overflow:ellipsis}
-`
 
 /** One cell, tagged with the column it belongs to. */
 function cell(column: string, text: string): HTMLTableCellElement {

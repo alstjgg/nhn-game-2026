@@ -28,6 +28,7 @@ import {
   stripComments,
   walk,
 } from './font-assets.ts'
+import { unitDiff } from '../acceptance/unit-range.ts'
 
 const baseline = () =>
   readJson<{ sha256: Record<string, string>; indexImports: string[] }>(
@@ -149,14 +150,27 @@ describe('[u10#c4] first-render behaviour is declared in the sheet', () => {
   })
 })
 
-describe('[u10#c8] HARD CONSTRAINT — u1 stylesheets are untouched', () => {
+// C17 / [u11#c12] — RE-AIMED (08-04), never deleted. The claim is "**u10** may
+// not edit a stylesheet u1 owns", and the baseline hashes were taken on u10's
+// own RED-time base. They no longer match the live tree because **u3** —
+// which merged after that baseline was taken (507669c, PR #117) — edited
+// `shell.css`, which is u3's own chrome work and none of u10's business.
+// Comparing the live tree to u10's baseline therefore measures u3, not u10.
+// Re-aimed at u10's own merge, where the claim is exactly what it says: the
+// files u10's merge touched under `styles/` are index.css and fonts.css only.
+describe('[u10#c8] HARD CONSTRAINT — u1 stylesheets are untouched (re-aimed to u10\'s own range — C17)', () => {
   it('(a) every u1 sheet except index.css is byte-identical to its RED-time hash', () => {
     const { sha256 } = baseline()
-    const changed = Object.entries(sha256)
-      .filter(([file]) => file !== 'index.css')
-      .filter(([file, hash]) => sha(read(path.join(STYLES_DIR, file))) !== hash)
-      .map(([file]) => file)
+    const owned = Object.keys(sha256).filter((file) => file !== 'index.css')
+    const changed = unitDiff('u10', 'src/client/styles/')
+      .map((f) => path.basename(f))
+      .filter((f) => owned.includes(f))
     expect(changed, 'u10 may not edit any stylesheet u1 owns').toEqual([])
+    // and what u10 DID land under styles/ is the one sheet it owns.
+    expect(unitDiff('u10', 'src/client/styles/').map((f) => path.basename(f)).sort()).toEqual([
+      'fonts.css',
+      'index.css',
+    ])
   })
 
   it('(b) tokens.css in particular is unchanged', () => {

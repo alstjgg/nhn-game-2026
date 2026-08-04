@@ -5,7 +5,8 @@
 //         is enforced in token-lint.test.ts; this suite covers the u1-local pair.
 import { describe, it, expect } from 'vitest'
 import path from 'node:path'
-import { REPO, STYLES_DIR, exists, read, rel, sheetsOnDisk, walk } from './css-utils.ts'
+import { STYLES_DIR, read, rel, sheetsOnDisk, walk } from './css-utils.ts'
+import { dirAtUnit, existedAtUnit, fileAtUnit } from '../acceptance/unit-range.ts'
 
 describe('[u1#c6] src/client/styles ships CSS only', () => {
   it('(a) no .ts / .js file lives under src/client/styles', () => {
@@ -27,21 +28,35 @@ describe('[u1#c6] src/client/styles ships CSS only', () => {
   })
 })
 
-describe('[u1#c7] fonts belong to u10', () => {
+// C17 / [u11#c12] — RE-AIMED (08-04), never deleted. "Fonts belong to u10" is
+// a statement about what U1 shipped, and it was measured on the live styles
+// directory — which u10 has since filled with `fonts.css` and
+// `public/assets/fonts/`, precisely as this file's header says it must. Measured
+// at u1's own merge the claim stays permanently true; the live self-hosting is
+// bound by u10's own suite (`tests/assets/fonts-css.test.ts`) and by
+// `e2e/acceptance.spec.ts` #11, so nothing goes unchecked.
+describe('[u1#c7] fonts belong to u10 (re-aimed to u1\'s own range — C17)', () => {
+  /** Every stylesheet as u1's merge left it. */
+  function u1Sheets(): { file: string; css: string }[] {
+    const files = dirAtUnit('u1', 'src/client/styles').filter((f) => f.endsWith('.css'))
+    expect(files.length, 'u1 landed no stylesheet — the range is wrong').toBeGreaterThan(0)
+    return files.map((file) => ({ file, css: fileAtUnit('u1', `src/client/styles/${file}`) }))
+  }
+
   it('(a) no @font-face in any u1 stylesheet', () => {
-    const offenders = sheetsOnDisk().filter((f) => /@font-face/i.test(read(path.join(STYLES_DIR, f))))
+    const offenders = u1Sheets().filter(({ css }) => /@font-face/i.test(css)).map(({ file }) => file)
     expect(offenders).toEqual([])
   })
 
   it('(b) no font-file reference in any u1 stylesheet', () => {
-    const offenders = sheetsOnDisk().filter((f) =>
-      /\.(woff2?|ttf|otf|eot)\b/i.test(read(path.join(STYLES_DIR, f))),
-    )
+    const offenders = u1Sheets()
+      .filter(({ css }) => /\.(woff2?|ttf|otf|eot)\b/i.test(css))
+      .map(({ file }) => file)
     expect(offenders).toEqual([])
   })
 
   it('(c) u1 does not create public/assets/fonts/', () => {
-    expect(exists(path.join(REPO, 'public/assets/fonts'))).toBe(false)
+    expect(existedAtUnit('u1', 'public/assets/fonts')).toBe(false)
   })
 
   it('(d) tokens.css still carries the font-family stacks (the part u1 does own)', () => {

@@ -120,10 +120,26 @@ describe('[u1#c1] no color literal outside tokens.css', () => {
   })
 })
 
+/**
+ * Blank out `@font-face` blocks, keeping line numbers.
+ *
+ * C17 / [u11#c12] — RE-AIMED (08-04), never deleted, and this is the defect
+ * [u9#c8] reported and deliberately did not fix: `@font-face{font-family:'Nanum
+ * Myeongjo'}` is where a face is DECLARED — the definition `--myeong` points at
+ * — not a consumption-site literal. u1's lint was written before u10's
+ * `fonts.css` existed, so it scanned the declaration site too and would leave
+ * inv 8 with no legal place to name a font at all. u9's repo-wide assert
+ * (`tests/invariants/style-as-data.test.ts`, the binding one per C12) already
+ * makes exactly this exemption; the two now measure the same thing.
+ */
+function withoutFontFace(css: string): string {
+  return css.replace(/@font-face\s*\{[^}]*\}/g, (m) => m.replace(/[^\n]/g, ' '))
+}
+
 describe('[u1#c1] type faces and type sizes are tokens', () => {
   it('(a) font-family / font-size / font values outside tokens.css are var()-driven', () => {
     const offenders = nonTokenSheets().flatMap(({ file, css }) =>
-      declarations(scannable(css))
+      declarations(withoutFontFace(scannable(css)))
         .filter((d) => FONT_PROP_RE.test(d.prop))
         .filter((d) => !VAR_ONLY_RE.test(d.value) && !/^(inherit|initial|unset|revert)$/.test(d.value))
         .map((d) => `${file}: ${d.prop}: ${d.value}`),

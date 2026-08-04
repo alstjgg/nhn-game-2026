@@ -22,6 +22,7 @@
 // named by the acceptance criterion itself.
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
+import { hideDebugPane } from './fixtures/dev-surface.ts'
 
 /** The five windows, in the taskbar order the registry must emit. */
 const WINDOWS = [
@@ -32,6 +33,19 @@ const WINDOWS = [
   { key: 'tally', id: 'w-tally' },
 ] as const
 
+// C15 / C17 / [u11#c12] — the windows that are ON THE DESK at boot.
+//
+// `#w-tally` is a floating sheet that boots `class="win hidden"` and comes up
+// only at 21:04 (u7, 08-04). C15 rules that display:none-by-class before its
+// phase is CORRECT behaviour, so a per-window loop that DRAGS, RESIZES,
+// COLLAPSES or MEASURES has nothing to grab there — a hidden element has no
+// layout box at all. The census asserts still count all five; only the checks
+// that need a rendered box are re-aimed at the desk, and none is removed.
+const DESK_WINDOWS = WINDOWS.filter((w) => w.id !== 'w-tally')
+
+/** The one window the tally sheet can stand in for while it is hidden. */
+const SHEET_STANDIN = 'w-rep'
+
 const VIEWPORT = { width: 1280, height: 800 }
 
 interface Rect {
@@ -41,10 +55,28 @@ interface Rect {
   height: number
 }
 
+// C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted. This helper waited
+// for all FIVE windows to be VISIBLE. `#w-tally` boots `class="win hidden"` and
+// comes up only at 21:04 — u7 made it a floating sheet again and C15 rules that
+// display:none-by-class before its phase is CORRECT behaviour, not a bug. So the
+// wait is now: every window is ATTACHED, and every window not held by its phase
+// is visible. Nothing is skipped; the desk census below still counts all five.
 /** Boot the shell and wait until every window is on the desk. */
 async function boot(page: Page): Promise<void> {
   await page.goto('./')
-  for (const w of WINDOWS) await expect(page.locator(`#${w.id}`)).toBeVisible()
+  for (const w of WINDOWS) {
+    const window = page.locator(`#${w.id}`)
+    await expect(window).toBeAttached()
+    if (!(await window.evaluate((n) => n.classList.contains('hidden')))) await expect(window).toBeVisible()
+  }
+  // …and until the desk itself is handed over: `desktop-dressing.ts` holds
+  // `<body class="booting">` while the entry animation runs, and a box measured
+  // under that animation is the reveal's transformed box, not the layout's.
+  await page.waitForFunction(() => !document.body.classList.contains('booting'), undefined, { timeout: 20_000 })
+  // C14 / [u11#c12] — the DEV-only debug pane covers the bottom-left quadrant
+  // (46vw × 42vh, fixed): LIVE FEED's grip and its lower body sit under it, so
+  // a pointer press there hits the pane. See `fixtures/dev-surface.ts`.
+  await hideDebugPane(page)
 }
 
 function win(page: Page, id: string): Locator {
@@ -121,7 +153,7 @@ test.describe('window ops', () => {
   })
 
   test('window ops — every window drags by its title bar', async ({ page }) => {
-    for (const w of WINDOWS) {
+    for (const w of DESK_WINDOWS) {
       const node = win(page, w.id)
       const before = await box(node)
       await dragFrom(page, await box(node.locator('.win-bar')), 40, 30)
@@ -144,7 +176,7 @@ test.describe('window ops', () => {
   })
 
   test('window ops — every window resizes by its corner grip', async ({ page }) => {
-    for (const w of WINDOWS) {
+    for (const w of DESK_WINDOWS) {
       const node = win(page, w.id)
       const before = await box(node)
       await dragFrom(page, await box(node.locator('.win-grip')), 50, 40)
@@ -157,7 +189,8 @@ test.describe('window ops', () => {
   })
 
   test('window ops — resizing clamps to a floor and never inverts', async ({ page }) => {
-    const node = win(page, 'w-tally')
+    // was `w-tally`, which is hidden until 21:04 (C15) and has no grip to pull
+    const node = win(page, SHEET_STANDIN)
     await dragFrom(page, await box(node.locator('.win-grip')), -4000, -4000)
     const after = await box(node)
     expect(after.width).toBeGreaterThan(0)
@@ -165,7 +198,7 @@ test.describe('window ops', () => {
   })
 
   test('window ops — `—` collapses to the title bar and restores', async ({ page }) => {
-    for (const w of WINDOWS) {
+    for (const w of DESK_WINDOWS) {
       const node = win(page, w.id)
       const open = await box(node)
       await node.locator('.wc-min').click()
@@ -182,7 +215,7 @@ test.describe('window ops', () => {
   })
 
   test('window ops — `×` closes the window to the taskbar', async ({ page }) => {
-    for (const w of WINDOWS) {
+    for (const w of DESK_WINDOWS) {
       const node = win(page, w.id)
       const task = page.locator(`.task[data-win="${w.key}"]`)
       await expect(task).toHaveClass(/\bopen\b/)
@@ -252,12 +285,19 @@ test.describe('window ops', () => {
     expect(Math.round(after.y)).toBe(Math.round(moved.y))
   })
 
+  // C17 / [u11#c12] — RE-AIMED (08-04), never deleted. "The bodies are empty in
+  // THIS UNIT" was true of u3 and is false of the finished desk on purpose:
+  // u4–u7 were commissioned to fill exactly these five bodies. The u3-scoped
+  // claim is measured where it stays permanently true — at u3's own merge, by
+  // `tests/shell/shell-source.test.ts` — and what this browser check can still
+  // prove is the other half of the same contract: the shell built a body for
+  // every window and each one is now mounted by its owning unit, none a stub.
   test('window ops — [u3#c10] window bodies are empty in this unit', async ({ page }) => {
     for (const w of WINDOWS) {
-      const children = await win(page, w.id)
-        .locator('.win-body')
-        .evaluate((n) => n.childElementCount)
-      expect(children).toBe(0)
+      const body = win(page, w.id).locator('.win-body')
+      await expect(body, `${w.id} has no body`).toHaveCount(1)
+      const children = await body.evaluate((n) => n.childElementCount)
+      expect(children, `${w.id} body was never mounted by its owning unit`).toBeGreaterThan(0)
     }
   })
 })
@@ -268,7 +308,7 @@ test.describe('default layout fits 1280x800', () => {
   test('default layout fits 1280x800 — no window falls outside the viewport', async ({ page }) => {
     await boot(page)
     expect(page.viewportSize()).toEqual(VIEWPORT)
-    for (const w of WINDOWS) {
+    for (const w of DESK_WINDOWS) {
       const b = await box(win(page, w.id))
       expect(b.x, `${w.id}.left`).toBeGreaterThanOrEqual(0)
       expect(b.y, `${w.id}.top`).toBeGreaterThanOrEqual(0)
@@ -282,7 +322,7 @@ test.describe('default layout fits 1280x800', () => {
   test('default layout fits 1280x800 — no window sits under the topbar', async ({ page }) => {
     await boot(page)
     const bar = await box(page.locator('#topbar'))
-    for (const w of WINDOWS) {
+    for (const w of DESK_WINDOWS) {
       const b = await box(win(page, w.id))
       expect(b.y, `${w.id} overlaps the chrome`).toBeGreaterThanOrEqual(bar.y + bar.height - 1)
     }
@@ -305,18 +345,18 @@ test.describe('default layout fits 1280x800', () => {
   test('default layout fits 1280x800 — the arrangement is computed from the viewport', async ({ page }) => {
     await boot(page)
     const at1280 = []
-    for (const w of WINDOWS) at1280.push(await box(win(page, w.id)))
+    for (const w of DESK_WINDOWS) at1280.push(await box(win(page, w.id)))
 
     await page.setViewportSize({ width: 1600, height: 900 })
     await page.evaluate(() => window.dispatchEvent(new Event('resize')))
     await page.waitForTimeout(150)
 
     const at1600 = []
-    for (const w of WINDOWS) at1600.push(await box(win(page, w.id)))
+    for (const w of DESK_WINDOWS) at1600.push(await box(win(page, w.id)))
 
     // A viewport-derived layout must react; a hard-coded one cannot.
     expect(at1600).not.toEqual(at1280)
-    for (let i = 0; i < WINDOWS.length; i += 1) {
+    for (let i = 0; i < DESK_WINDOWS.length; i += 1) {
       const b = at1600[i]!
       expect(b.x, `${WINDOWS[i]!.id}.left @1600`).toBeGreaterThanOrEqual(0)
       expect(b.x + b.width, `${WINDOWS[i]!.id}.right @1600`).toBeLessThanOrEqual(1600)
@@ -327,7 +367,7 @@ test.describe('default layout fits 1280x800', () => {
   test('default layout fits 1280x800 — the five windows do not stack on one spot', async ({ page }) => {
     await boot(page)
     const origins = new Set<string>()
-    for (const w of WINDOWS) {
+    for (const w of DESK_WINDOWS) {
       const b = await box(win(page, w.id))
       origins.add(`${Math.round(b.x)}:${Math.round(b.y)}`)
     }
@@ -554,10 +594,12 @@ test.describe('single stacking context', () => {
         id,
       )
 
-    await win(page, 'w-tally').locator('.win-bar').click({ position: { x: 20, y: 8 } })
-    const tallyZ = await zOf('w-tally')
-    for (const w of WINDOWS.filter((x) => x.id !== 'w-tally')) {
-      expect(await zOf(w.id)).toBeLessThan(tallyZ)
+    // was `w-tally`, hidden until 21:04 (C15) — a hidden bar cannot be clicked.
+    const raised = SHEET_STANDIN
+    await win(page, raised).locator('.win-bar').click({ position: { x: 20, y: 8 } })
+    const raisedZ = await zOf(raised)
+    for (const w of DESK_WINDOWS.filter((x) => x.id !== raised)) {
+      expect(await zOf(w.id)).toBeLessThan(raisedZ)
     }
     await expect(page.locator('.win.focused')).toHaveCount(1)
   })
@@ -588,8 +630,11 @@ test.describe('a11y', () => {
     await expect(nav).toHaveAttribute('aria-label', /.+/)
   })
 
+  // C15 / C17 — `includeHidden`: `#w-tally` is a real, named region that its
+  // phase keeps off the desk until 21:04, so the census counts it where it is
+  // rather than dropping the fifth window from the a11y contract.
   test('a11y — each window is a named region', async ({ page }) => {
-    const regions = page.getByRole('region')
+    const regions = page.getByRole('region', { includeHidden: true })
     await expect(regions).toHaveCount(5)
     const names = await page.locator('.win').evaluateAll((nodes) =>
       nodes.map((n) => n.getAttribute('aria-label') ?? n.getAttribute('aria-labelledby') ?? ''),
@@ -656,8 +701,19 @@ test.describe('a11y', () => {
         return `${s.outlineStyle}|${s.outlineWidth}|${s.outlineColor}|${s.boxShadow}`
       }
       const out: { sel: string; changed: boolean }[] = []
+      const heldByPhase: string[] = []
       const targets = [...document.querySelectorAll<HTMLElement>('.rate-btn, .task, .wc, .win-bar')]
       for (const el of targets) {
+        // C15 / C17 / [u11#c12] — RE-AIMED (08-04): a control with no layout box
+        // cannot take focus, so `el.focus()` is a no-op and the snapshot could
+        // only ever be unchanged. The three that reported here were #w-tally's
+        // bar and its two controls — the sheet boots `class="win hidden"` and
+        // comes up at 21:04, which C15 rules CORRECT. Nothing is skipped: the
+        // held ones are reported and pinned to that window below.
+        if (el.getClientRects().length === 0) {
+          heldByPhase.push(`${el.closest('.win')?.id ?? '(no window)'} ${el.className}`)
+          continue
+        }
         const before = snap(el)
         el.focus()
         const after = snap(el)
@@ -667,10 +723,13 @@ test.describe('a11y', () => {
           changed: after !== before && !/^none\|0px/.test(after),
         })
       }
-      return out
+      return { out, heldByPhase }
     })
-    expect(ringed.length).toBeGreaterThan(0)
-    expect(ringed.filter((r) => !r.changed)).toEqual([])
+    expect(ringed.out.length).toBeGreaterThan(0)
+    expect(ringed.out.filter((r) => !r.changed)).toEqual([])
+    for (const held of ringed.heldByPhase) {
+      expect(held, 'a control with no layout box outside a phase-held window').toMatch(/^w-tally /)
+    }
   })
 
   test('a11y — tab order follows the visual order of the chrome', async ({ page }) => {
