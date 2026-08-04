@@ -83,9 +83,20 @@ export function minedCount(model: ReportModel, marks: MarkSets): number {
 
 /* ── the DOM side ────────────────────────────────────────────────────────── */
 
+export interface RenderOptions {
+  /**
+   * Whether this render is the document's FIRST arrival, and so the one the
+   * replay belongs to. A re-render caused by anything else — the archive rail
+   * gaining an entry when the next day opens, a re-selection on the rail —
+   * repaints the document whole (R4 on windows/reports.ts:90). Defaults to
+   * `true`: a caller that says nothing gets the arrival behaviour.
+   */
+  replay?: boolean
+}
+
 export interface ReportView {
-  /** Draws a round's two documents from scratch and starts the replay. */
-  render(model: ReportModel, marks: MarkSets): void
+  /** Draws a round's two documents from scratch, replaying on first arrival. */
+  render(model: ReportModel, marks: MarkSets, options?: RenderOptions): void
   /** Repaints every anchor's state and the mined tally, in place. */
   refresh(marks: MarkSets): void
   /** Plays the tear flash on one anchor, keyed by its authored id. */
@@ -101,14 +112,6 @@ export interface ReportViewOptions {
   rail: HTMLElement
   /** Called with the authored id when the operator tears a sentence out. */
   onMine(id: string): void
-  /**
-   * Whether the driver's animation pump can still tick. The pump rides the sim
-   * clock, and the round report is released as the run closes — so a report
-   * that lands on a stopped clock would freeze mid-sentence. It is painted
-   * whole instead: a replay nobody can watch is not a replay (see
-   * `discovery/u6.md`).
-   */
-  pumped(): boolean
 }
 
 interface Anchor {
@@ -176,10 +179,19 @@ export function createReportView(options: ReportViewOptions): ReportView {
     return node
   }
 
-  /** The operator asked for no motion, the determinism gate is closed, or the
-   * pump has stopped — in all three the document is already whole on paper. */
+  /**
+   * The operator asked for no motion, or the determinism gate is closed — in
+   * both the document is already whole on paper.
+   *
+   * The third case used to be "the driver's pump has stopped", which is what
+   * killed the beat: the run's own report is released in the same frame the
+   * clock reaches 21:04, so the ONE report a player actually sees was the one
+   * that never wrote itself out (R4 on windows/reports.ts:55). The pump now
+   * outlives the run (`driver/fixture-driver.ts`), so there is no stopped-pump
+   * case left to special-case.
+   */
   function motionless(): boolean {
-    if (animationsFrozen() || !options.pumped()) return true
+    if (animationsFrozen()) return true
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }
 
@@ -198,9 +210,9 @@ export function createReportView(options: ReportViewOptions): ReportView {
     nodes[cursor.sentence]?.after(caret)
   }
 
-  function replay(sentences: Sentence[], nodes: HTMLElement[]): void {
+  function replay(sentences: Sentence[], nodes: HTMLElement[], animate: boolean): void {
     const lengths = sentences.map((s) => s.text.length)
-    if (motionless()) {
+    if (!animate || motionless()) {
       paint({ sentence: lengths.length, chars: 0, done: true }, sentences, nodes)
       return
     }
@@ -222,7 +234,7 @@ export function createReportView(options: ReportViewOptions): ReportView {
   }
 
   return {
-    render(model: ReportModel, marks: MarkSets): void {
+    render(model: ReportModel, marks: MarkSets, options?: RenderOptions): void {
       if (stopReplay !== null) stopReplay()
       stopReplay = null
       caret.remove()
@@ -248,7 +260,7 @@ export function createReportView(options: ReportViewOptions): ReportView {
       })
 
       tally(marks)
-      replay(model.report_body, bodyNodes)
+      replay(model.report_body, bodyNodes, options?.replay ?? true)
     },
 
     refresh(marks: MarkSets): void {

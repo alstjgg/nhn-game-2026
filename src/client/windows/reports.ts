@@ -50,9 +50,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   const view = createReportView({
     host,
     rail: rail.root,
-    // Paused is not stopped — the operator can still press ▶ and watch the
-    // rest. Only the run's terminal minute ends the pump for good.
-    pumped: () => !driver.clock.ended,
     onMine: (id: string) => {
       const outcome = mine(id, marks())
       for (const op of outcome.ops) driver.send(op)
@@ -61,11 +58,23 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     },
   })
 
-  /** The selected run's filed report, or an empty document when none exists. */
+  /**
+   * The selected run's filed report, or an empty document when none exists.
+   *
+   * The replay belongs to a report's FIRST arrival and to nothing else. NEW RUN
+   * used to re-animate it: the next day's `meta` re-entered `sync()`, the rail
+   * gained an entry, and the still-selected document blanked itself and re-typed
+   * for ~4 s over the opening of a day the operator had already moved on to
+   * (R4 on windows/reports.ts:90). A round replays once, then repaints whole.
+   */
+  const replayed = new Set<number>()
+
   function drawDocument(): void {
     if (active === null) return
     const model = filed.get(active) ?? { round: active, facts: [], report_body: [] }
-    view.render(model, marks())
+    const first = model.report_body.length > 0 && !replayed.has(model.round)
+    if (first) replayed.add(model.round)
+    view.render(model, marks(), { replay: first })
   }
 
   function sync(): void {

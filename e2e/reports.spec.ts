@@ -327,6 +327,85 @@ test.describe('typewriter is replay', () => {
     await expect(page.locator(`${REP} .caret`)).toHaveCount(0)
   })
 
+  // ADDED 08-05 (R4 on windows/reports.ts:55): every oracle above reaches the
+  // report through `drain()`, a dev/test hook no player ever calls. The one path
+  // the player HAS — the clock running into 21:04 — was the one path never
+  // asserted, and it was the one that painted the whole body in a single frame.
+  test('typewriter is replay — it plays on the path the player takes, with the clock closing the run', async ({
+    page,
+  }) => {
+    await boot(page, { reduced: false })
+    // One sim-minute short of the terminal, then let the clock run there itself.
+    await page.evaluate(() => {
+      const feed = (window as unknown as { __feed?: { seek(at: string): void; rate(to: number): void } }).__feed
+      if (!feed) throw new Error('window.__feed is not exposed by the LIVE FEED window')
+      feed.seek('21:03')
+      feed.rate(4)
+    })
+
+    // The body must be caught PART-written: 0 < painted < whole.
+    let partial = 0
+    await expect
+      .poll(
+        async () => {
+          const painted = await page.locator(BODY).evaluate((n) => (n.textContent ?? '').length)
+          if (painted > 0 && partial === 0) partial = painted
+          return painted
+        },
+        { timeout: 30_000, intervals: [40] },
+      )
+      .toBeGreaterThan(0)
+
+    // The total comes from the EVENT, never from the pane — the pane is exactly
+    // what is under test, and mid-replay it reads short.
+    const report = reportsOf(await frame(page)).pop()
+    expect(report, 'the run filed no report event — the oracle is vacuous').toBeTruthy()
+    const whole = report!.report_body.map((s) => s.text).join('').length
+    expect(whole).toBeGreaterThan(0)
+    expect(
+      partial,
+      'the report painted whole in one frame on the clock path — the write-out is not watchable',
+    ).toBeLessThan(whole)
+  })
+
+  // ADDED 08-05 (R4 on windows/reports.ts:90): NEW RUN re-entered `sync()`, the
+  // rail gained an entry, and the document the tally had just sent the operator
+  // to read blanked itself and re-typed for ~4 s over the next day's opening.
+  test('typewriter is replay — opening the next day does not re-type the document already on the desk', async ({
+    page,
+  }) => {
+    await boot(page, { reduced: false })
+    await drain(page)
+    const report = reportsOf(await frame(page)).pop()
+    expect(report, 'the boot run filed no report event — the oracle is vacuous').toBeTruthy()
+    const whole = report!.report_body.map((s) => s.text).join('').length
+    expect(whole).toBeGreaterThan(0)
+
+    // Let the replay finish first: what must not happen is a SECOND write-out.
+    await page.evaluate(() => {
+      const feed = (window as unknown as { __feed?: { rate(to: number): void } }).__feed
+      if (!feed) throw new Error('window.__feed is not exposed by the LIVE FEED window')
+      feed.rate(4)
+    })
+    await expect
+      .poll(async () => page.locator(BODY).evaluate((n) => (n.textContent ?? '').length), { timeout: 30_000 })
+      .toBeGreaterThanOrEqual(whole)
+
+    const newRun = page.locator('#w-tally #btnNewRun')
+    await expect(newRun, 'the tally never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
+    await newRun.click()
+
+    const samples: number[] = []
+    for (let i = 0; i < 8; i += 1) {
+      samples.push(await page.locator(BODY).evaluate((n) => (n.textContent ?? '').length))
+      await page.waitForTimeout(250)
+    }
+    expect(
+      Math.min(...samples),
+      'the filed document was wiped and re-typed when the next day opened',
+    ).toBeGreaterThanOrEqual(whole)
+  })
+
   test('typewriter is replay — the unit owns no timer of its own', () => {
     const sources = unitSources()
     expect(sources.filter((s) => s.text.trim().length === 0).map((s) => s.file)).toEqual([])
