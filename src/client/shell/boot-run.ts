@@ -9,7 +9,7 @@
 //
 // What is NOT synthetic: the clock band. `end` is the scenario's own terminal
 // out of the pack, so the desk really does run toward the case's 21:04.
-import { loadDemoRun } from '../driver/index.ts'
+import { demoRun } from '../driver/index.ts'
 import type { FixtureRun } from '../driver/index.ts'
 import type { ScenarioIdentity } from './pack.ts'
 
@@ -30,7 +30,7 @@ const RUNS_LEFT = 7
  * the driver — the shell only asks, through the barrel (C8 / inv 12).
  */
 export async function bootRun(identity: ScenarioIdentity): Promise<FixtureRun> {
-  return (await loadDemoRun()) ?? placeholderBootRun(identity)
+  return (await demoRun()) ?? placeholderBootRun(identity)
 }
 
 export function placeholderBootRun(identity: ScenarioIdentity): FixtureRun {
