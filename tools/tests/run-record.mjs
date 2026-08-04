@@ -24,6 +24,7 @@ import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 import {
+  bindRun,
   runHeadless,
   validateRunRecord,
   firstDiff,
@@ -521,6 +522,101 @@ describe('record assembly', () => {
       reduced.beats.map((b) => ({ beat: b.beat, clock: b.clock, gate: b.gate, stance: b.stance })),
       record.beats.map((b) => ({ beat: b.beat, clock: b.clock, gate: b.gate, stance: b.stance })),
     )
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Carry-over reaches the run — review finding A.
+//
+// e8 built carry-over *across* runs; the record used to name the carried blocks
+// while the run's own store stayed empty, so `membrane.deny('unknown_block')`
+// fired on the very block the record claimed was injected. These tests fail
+// against a `bindRun` that ignores `carried`.
+// ─────────────────────────────────────────────────────────────────────────────
+const CARRIED = { id: 'b-r1-f01', text: '이전 런에서 채굴한 문장이다.' }
+
+/** A store already holding one ended run and its carry-over — the run-2 case. */
+function carriedStore() {
+  return createMemoryMetaStore({
+    pack_slug: PACK,
+    run_count: 1,
+    exposure_clock_reached: '21:04+',
+    carried_blocks: [{ ...CARRIED }],
+    report_archive: [`${PACK}-fixture-r1`],
+  })
+}
+
+describe('carry-over — the record names only blocks the run actually holds', () => {
+  test('bindRun seeds the driver block store, so the composer can resolve the block', () => {
+    const rig = bindRun({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: createFixtureProvider(),
+      run: 2,
+      carried: [{ ...CARRIED }],
+    })
+    assert.deepEqual(rig.driver.blocks().get(CARRIED.id), { ...CARRIED })
+  })
+
+  test('the membrane accepts slot/deploy of a carried block — no unknown_block', () => {
+    const rig = bindRun({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: createFixtureProvider(),
+      run: 2,
+      carried: [{ ...CARRIED }],
+    })
+    assert.deepEqual(rig.driver.submit({ op: 'slot', block_id: CARRIED.id, slot: 0 }), { ok: true })
+    assert.deepEqual(rig.driver.submit({ op: 'deploy', blocks: [CARRIED.id] }), { ok: true })
+  })
+
+  test('seeding is exact — an id that was not carried is still unknown', () => {
+    const rig = bindRun({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: createFixtureProvider(),
+      run: 2,
+      carried: [{ ...CARRIED }],
+    })
+    assert.equal(rig.driver.blocks().get('b-r1-f99'), undefined)
+    assert.deepEqual(rig.driver.submit({ op: 'deploy', blocks: ['b-r1-f99'] }), {
+      ok: false,
+      reason: 'unknown_block',
+    })
+  })
+
+  test('runHeadless carries the meta-state blocks into the run it records', async () => {
+    const { record, blocks } = await runHeadless({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: createFixtureProvider(),
+      store: carriedStore(),
+      providerName: 'fixture',
+    })
+    assert.deepEqual(record.injected_blocks.map((b) => b.id), [CARRIED.id])
+    assert.deepEqual(
+      blocks.get(CARRIED.id),
+      { ...CARRIED },
+      'the record names a block the run itself must be able to resolve',
+    )
+  })
+
+  test('run 1 carries nothing — the seeding path invents no block', async () => {
+    const { record, blocks } = await pass()
+    assert.deepEqual(record.injected_blocks, [])
+    assert.equal(blocks.get(CARRIED.id), undefined)
+  })
+
+  test('a carried run is still deterministic — two passes are byte-identical', async () => {
+    const one = await runHeadless({
+      pack: loadPack(PACK), guidance: loadGuidance(), provider: createFixtureProvider(),
+      store: carriedStore(), providerName: 'fixture',
+    })
+    const two = await runHeadless({
+      pack: loadPack(PACK), guidance: loadGuidance(), provider: createFixtureProvider(),
+      store: carriedStore(), providerName: 'fixture',
+    })
+    assert.equal(serialize(one.record), serialize(two.record))
   })
 })
 

@@ -35,6 +35,7 @@ import {
 } from './run/record.mjs'
 import { formatValidation, validateMetaState, validateRunRecord } from './run/validate.mjs'
 
+export { bindRun } from './run/bind.mjs'
 export { loadGuidance, loadPack } from './run/pack.mjs'
 export { firstDiff, recordingTransport, reduceEvents, serializeRecord } from './run/record.mjs'
 export { validateMetaState, validateRunRecord } from './run/validate.mjs'
@@ -46,8 +47,10 @@ const PROVIDERS = {
 
 /**
  * One full run, pure of `fs` — the pack and the policy arrive already parsed so
- * a test can call this directly. Returns the record, the run loop's meta-state
- * and the raw event stream the record was reduced from.
+ * a test can call this directly. Returns the record, the run loop's meta-state,
+ * the raw event stream the record was reduced from, and the run's block store
+ * (the carry-over's landing place, so a caller can check what the run held
+ * rather than only what the record says it held).
  */
 export async function runHeadless({
   pack,
@@ -63,7 +66,10 @@ export async function runHeadless({
   // decision 2 — derived from (pack, provider, run index). No timestamp, no uuid.
   const id = runId ?? `${pack.slug}-${providerName ?? 'fixture'}-r${begun.run}`
 
-  const rig = bindRun({ pack, guidance, provider, run: begun.run })
+  // `begun.carried` is not decoration on the record: it is this run's starting
+  // block store. Recording a carry-over the run itself does not hold would make
+  // `injected_blocks` a claim about a run that never had those blocks.
+  const rig = bindRun({ pack, guidance, provider, run: begun.run, carried: begun.carried })
   while (await rig.driver.step()) {
     // The driver owns the loop's termination; this is the only place it turns.
   }
@@ -91,7 +97,7 @@ export async function runHeadless({
     carried: begun.carried,
   })
 
-  return { record, meta, events: rig.events }
+  return { record, meta, events: rig.events, blocks: rig.driver.blocks() }
 }
 
 // ─── CLI ─────────────────────────────────────────────────────────────────────
