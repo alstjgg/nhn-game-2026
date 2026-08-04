@@ -143,3 +143,23 @@ and scope gaps the integrator (u11 / C12) owns.
     Ported as the compliant equivalent: no stagger, the sheet's own `cardIn`
     animation only. Reference `cardNode` also prints `· at · src` provenance,
     which the seam does not carry (§C 5) — the card keeps u4's `런 nn` alone.
+16. **Correction to #11, measured after the commit landed.** `[u4#c9] (h)` reads
+    `git diff HEAD -- windows/block-store.ts`, i.e. the *working tree*, so it is
+    red only while u4s' work is uncommitted and green again once it is. Nothing
+    is left for u11 there. The committed tree is `npx vitest run` →
+    **676 passed / 20 failed**, versus **617 / 21** at HEAD, and the failure set
+    is strictly smaller:
+    - fixed by §D 9: `[u9d#c2] (a)` and `(b)` — `vite build` itself.
+    - newly *visible* (it could not run while the build was broken):
+      `tests/assets/no-third-party-url.test.ts [u10#c5] (b)` — the ten
+      `"$schema": "https://json-schema.org/draft/2020-12/schema"` lines that the
+      §3.7 pack-copy plugin now emits into `dist/data/scenario/_schema/`. The
+      source files are **frozen inputs** (`data/scenario/_schema/**`), so the fix
+      is u10's allowlist (or excluding `_schema/` from the pack copy), never an
+      edit to the schemas. The file previously failed as a whole-file error, so
+      the FAIL count is unchanged by it.
+    - the remaining 17 are the stale unit-scoped asserts C12 hands to u11
+      (`[u0#c8]` census, `[u1#c4]`/`[u1#c7]` fonts-belong-to-u10,
+      `[u3#c10]` window stubs, `[u10#c8]` sheet hashes, `[u2#c9]` fixture
+      content, `[u9#c3]`/`[u1#c1]` literal scans over later units' sources),
+      byte-identical to HEAD.
