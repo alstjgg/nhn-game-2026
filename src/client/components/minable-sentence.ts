@@ -73,6 +73,10 @@ export function sentenceClass(state: MinableState): string {
 export function sentenceAttrs(sentence: Sentence): Readonly<Record<string, string>> {
   return {
     'data-sentence-id': sentence.id,
+    // The membrane marker the a11y contract binds on (R2 on e2e/a11y.spec.ts:35):
+    // `MEMBRANE_SELECTOR` matched nothing in the shipped desk, so three PRD §4
+    // asserts were quantified over the empty set. This anchor IS the `mine` op.
+    'data-op': 'mine',
     role: 'button',
     tabindex: '0',
   }

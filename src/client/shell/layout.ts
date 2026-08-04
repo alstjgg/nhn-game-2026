@@ -34,6 +34,21 @@ export const WINDOW_KEYS = ['feed', 'file', 'store', 'rep', 'tally'] as const
 
 export type WindowKey = (typeof WINDOW_KEYS)[number]
 
+/**
+ * The desk's READING order — the order the arrangement below puts the windows
+ * in on screen, row by row and left to right: LIVE FEED (x14) · REPORTS (x369)
+ * · AGENT FILE (x891) on the top row, BLOCK STORE under REPORTS, and the TALLY
+ * sheet, which is hidden until 21:04, last.
+ *
+ * `#desktop`'s child order follows THIS, not `WINDOW_KEYS`. Tab used to walk
+ * the registry order (feed · file · store · rep) while the desk was laid out
+ * feed · rep · file · store, so three of the four window transitions sent focus
+ * somewhere the eye did not predict — WCAG 2.4.3 Focus Order (Level A), and the
+ * defect `e2e/a11y.spec.ts` quarantined under `test.fail` because u9 was not
+ * allowed to touch u3's shell. The registry/taskbar order is unchanged.
+ */
+export const DESK_ORDER: readonly WindowKey[] = ['feed', 'rep', 'file', 'store', 'tally']
+
 export interface Viewport {
   width: number
   height: number

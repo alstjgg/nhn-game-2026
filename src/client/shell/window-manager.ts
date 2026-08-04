@@ -13,7 +13,7 @@
 import type { FixtureDriver } from '../driver/index.ts'
 import type { WindowDef } from './window-registry.ts'
 import type { Viewport, WindowKey, WinRect } from './layout.ts'
-import { applyLayout } from './layout.ts'
+import { applyLayout, DESK_ORDER } from './layout.ts'
 import { buildWindowFrame } from '../components/window-frame.ts'
 import type { WindowFrame } from '../components/window-frame.ts'
 import { button, el } from './dom.ts'
@@ -138,8 +138,22 @@ export function createWindowManager(deps: Deps): WindowManager {
       if (!delta) return
       event.preventDefault()
       const rect = frame.root.getBoundingClientRect()
+      // Shift+arrow RESIZES where arrow moves (R2 on window-frame.ts:55): resize
+      // was pointer-only, and two of the four booted windows ship clipped — the
+      // block deck is 843 px tall inside a 257 px body — so a keyboard operator
+      // could not see the deck at all (WCAG 2.1.1, Level A). Same MIN_W/MIN_H
+      // clamp as the drag; the bar's accessible name says so.
+      if (event.shiftKey) {
+        resize(frame, rect.width + delta[0], rect.height + delta[1])
+        return
+      }
       move(frame, rect.left + delta[0], rect.top + delta[1])
     })
+  }
+
+  function resize(frame: WindowFrame, width: number, height: number): void {
+    setPx(frame.root, '--w', Math.max(MIN_W, width))
+    setPx(frame.root, '--h', Math.max(MIN_H, height))
   }
 
   function wireResize(frame: WindowFrame): void {
@@ -152,8 +166,7 @@ export function createWindowManager(deps: Deps): WindowManager {
       frame.grip.setPointerCapture(event.pointerId)
 
       const onMove = (ev: PointerEvent): void => {
-        setPx(frame.root, '--w', Math.max(MIN_W, rect.width + ev.clientX - sx))
-        setPx(frame.root, '--h', Math.max(MIN_H, rect.height + ev.clientY - sy))
+        resize(frame, rect.width + ev.clientX - sx, rect.height + ev.clientY - sy)
       }
       const onUp = (): void => {
         frame.grip.removeEventListener('pointermove', onMove)
@@ -210,8 +223,17 @@ export function createWindowManager(deps: Deps): WindowManager {
     frame.root.style.setProperty('--z', String(Z_BASE + index))
     frame.def.mount(frame.body, deps.driver)
     wire(frame)
-    deps.desk.append(frame.root)
   })
+  // Mounted in REGISTRY order (the taskbar's), placed on the desk in READING
+  // order: `#desktop`'s child order is the tab order, and it has to match what
+  // `applyLayout` puts on screen (WCAG 2.4.3 — see `DESK_ORDER`). Stacking is
+  // unaffected: every `.win` is z-ordered by its own `--z`.
+  for (const key of DESK_ORDER) {
+    const frame = byKey.get(key)
+    if (frame) deps.desk.append(frame.root)
+  }
+  // A registry entry `DESK_ORDER` does not name still reaches the desk.
+  for (const frame of frames) if (!frame.root.isConnected) deps.desk.append(frame.root)
   buildTaskbar()
   syncTaskbar()
 

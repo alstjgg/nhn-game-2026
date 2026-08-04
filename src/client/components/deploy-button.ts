@@ -72,6 +72,8 @@ export function buildDeployZone(onDeploy: () => void): DeployPart {
 
   const deploy = button('btn-deploy', '배치 — 요원 파일을 이번 시행 동안 잠급니다', '')
   deploy.id = 'btnDeploy'
+  // The `deploy` op's control, marked for the PRD §4 membrane census.
+  deploy.dataset.op = 'deploy'
   deploy.append(el('span', 'bd-main', 'DEPLOY'), el('span', 'bd-sub', '배치 · 파일 잠금'))
   deploy.addEventListener('click', onDeploy)
 

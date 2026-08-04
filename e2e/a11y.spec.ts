@@ -198,6 +198,28 @@ test.describe('a11y — landmarks and roles', () => {
     await expect(toast).toHaveAttribute('role', 'status')
     await expect(toast).toHaveAttribute('aria-live', 'polite')
   })
+
+  // ADDED 08-05 (R2 on index.html:125): the assert above measured the region's
+  // ATTRIBUTES on a node nothing ever wrote to — 30 s of a live run produced
+  // zero mutations, so the announcement channel read as tested while carrying
+  // nothing at all. This one observes an actual announcement.
+  test('a11y — the live region actually carries the run’s announcements', async ({ page }) => {
+    const toast = page.locator('#toast')
+    await expect(toast, 'the desk opened a run and announced nothing').not.toBeEmpty({ timeout: 15_000 })
+
+    const said: string[] = []
+    said.push((await toast.textContent()) ?? '')
+    // Drive the run to its close: the wait, the fallback, the filed report and
+    // the tally all have to reach an operator who is not watching pixels.
+    await page.evaluate(() => {
+      const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
+      if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
+      handle.drain()
+    })
+    await expect
+      .poll(async () => ((await toast.textContent()) ?? '') !== said[0], { timeout: 15_000 })
+      .toBe(true)
+  })
 })
 
 /* ══ keyboard reach ══════════════════════════════════════════════════════ */
@@ -247,6 +269,91 @@ test.describe('a11y — keyboard reach', () => {
     expect(dragOnly, 'a membrane op is reachable only by dragging').toEqual([])
   })
 
+  // ADDED 08-05 (R2 on line 35): `MEMBRANE_SELECTOR` matched nothing in the
+  // shipped desk, so the three asserts above were universally quantified over
+  // the EMPTY set and reported green. The five controls now carry `data-op`,
+  // and this census makes a missing one fail the suite instead of emptying it.
+  // The desk is driven first: `mine` only exists once a report has been filed.
+  test('a11y — all five membrane ops have a marked, keyboard-operable control', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.reload()
+    await hideDebugPane(page)
+    await page.evaluate(() => {
+      const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
+      if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
+      handle.drain()
+    })
+    await expect(page.locator('[data-op="mine"]').first()).toBeAttached({ timeout: 15_000 })
+
+    // `unslot` only exists once a seat is filled, so the desk is driven through
+    // mine → pick → slot first. Driving it is the point: a census taken before
+    // the operator has done anything is exactly the empty one this replaces.
+    await page.locator('[data-op="mine"]').first().click()
+    await page.locator('#storeList .bcard').first().click()
+    await page.locator('[data-op="slot"]').first().click()
+    await expect(page.locator('[data-op="unslot"]').first()).toBeAttached({ timeout: 15_000 })
+
+    const found = await page
+      .locator(MEMBRANE_SELECTOR)
+      .evaluateAll((nodes) => [...new Set(nodes.map((n) => n.getAttribute('data-op') ?? ''))].sort())
+    expect(found, 'a membrane op has no marked control on the desk').toEqual([...MEMBRANE_OPS].sort())
+
+    for (const c of await census(page, MEMBRANE_SELECTOR)) {
+      const nativelyFocusable = c.tag === 'button' || c.tag === 'a'
+      expect(
+        nativelyFocusable || (c.tabindex !== null && Number(c.tabindex) >= 0),
+        `${c.where} performs a membrane op but cannot be reached from the keyboard`,
+      ).toBe(true)
+      if (!nativelyFocusable) {
+        expect(c.role, `${c.where} is not a <button> and declares no role`).toBe('button')
+      }
+    }
+  })
+
+  // ADDED 08-05 (R2 on window-frame.ts:55): resize was pointer-only and the grip
+  // was an `aria-hidden` div assistive tech could not even discover, while two
+  // of the four booted windows ship clipped — the block deck is 843 px tall
+  // inside a 257 px body. WCAG 2.1.1 (Level A). The path is the ALTERNATIVE R2
+  // named: Shift+arrow on the title bar, announced in the bar's own name, so the
+  // desk does not gain a fifth tab stop per window that the focus-order contract
+  // could not place.
+  test('a11y — window resize has a keyboard path, and it is announced', async ({ page }) => {
+    const grips = await census(page, '.win-grip')
+    expect(grips.length, 'the desk has no resize grip — the census is vacuous').toBeGreaterThan(0)
+    for (const g of grips) {
+      expect(g.tag, `${g.where} is not a <button>`).toBe('button')
+      expect(g.name.length, `${g.where} has no accessible name`).toBeGreaterThan(0)
+    }
+    const hidden = await page
+      .locator('.win-grip')
+      .evaluateAll((nodes) => nodes.filter((n) => n.getAttribute('aria-hidden') === 'true').length)
+    expect(hidden, 'the resize grip is hidden from assistive tech').toBe(0)
+
+    const bar = page.locator('#w-store .win-bar')
+    expect(
+      (await bar.getAttribute('aria-label')) ?? '',
+      'the bar does not announce its resize path — an undiscoverable path is not a path',
+    ).toMatch(/Shift/)
+
+    const boxOf = async (): Promise<{ w: number; h: number }> =>
+      page.locator('#w-store').evaluate((n) => {
+        const r = n.getBoundingClientRect()
+        return { w: Math.round(r.width), h: Math.round(r.height) }
+      })
+    const before = await boxOf()
+    await bar.focus()
+    await page.keyboard.press('Shift+ArrowDown')
+    await page.keyboard.press('Shift+ArrowDown')
+    const after = await boxOf()
+    expect(after.h, 'Shift+ArrowDown on the focused bar did not resize the window').toBeGreaterThan(before.h)
+
+    // …and plain arrows still MOVE, unchanged.
+    const topBefore = await page.locator('#w-store').evaluate((n) => Math.round(n.getBoundingClientRect().top))
+    await page.keyboard.press('ArrowDown')
+    const topAfter = await page.locator('#w-store').evaluate((n) => Math.round(n.getBoundingClientRect().top))
+    expect(topAfter, 'the arrow-key move path regressed').toBeGreaterThan(topBefore)
+  })
+
   test('a11y — collapse and close work from the keyboard, and the taskbar restores', async ({ page }) => {
     const node = page.locator('#w-rep')
     await node.locator('.wc-min').focus()
@@ -283,7 +390,11 @@ test.describe('a11y — keyboard reach', () => {
       const unringed: string[] = []
       const heldByPhase: string[] = []
       let reachable = 0
-      for (const el of document.querySelectorAll<HTMLElement>('.wc, .task, .win-bar, .rate-btn, [data-op]')) {
+      // `.win-grip` joined the sweep on 08-05 with its keyboard path (R2 on
+      // window-frame.ts:55) — a control the operator can now reach has to ring.
+      for (const el of document.querySelectorAll<HTMLElement>(
+        '.wc, .task, .win-bar, .win-grip, .rate-btn, [data-op]',
+      )) {
         const name = `${el.tagName.toLowerCase()}.${el.className}`
         if (el.getClientRects().length === 0) {
           heldByPhase.push(`${el.closest('.win')?.id ?? '(no window)'} ${name}`)
@@ -350,22 +461,16 @@ test.describe('a11y — focus order follows visual order at 1280x800', () => {
   })
 
   test('a11y — the windows are tabbed in the order they are laid out on the desk', async ({ page }) => {
-    // ── KNOWN DEFECT, OWNED BY u3 — quarantined, not weakened, not deleted ──
-    // Tab visits the windows in registry/DOM order (feed · file · store · rep ·
-    // tally) while `shell/layout.ts` places them feed(x14,y94) · rep(x369,y94) ·
-    // file(x~880,y94) · store(x369,below) · tally(bottom band), i.e. visual order
-    // feed · rep · file · store · tally. The fix is the `#desktop` child order in
-    // u3's shell — production code this unit may not touch ([u9#c8]: tests only,
-    // defects are reported). [u9#c6] equally forbids gating u9's own slice on
-    // another unit's defect, so the assert runs UNCHANGED under `test.fail()`:
-    // the body below still executes, the failure is still reported, and the
-    // moment u3 reorders the desk this test fails as "expected to fail but
-    // passed" — which forces this annotation off rather than letting it rot.
-    // See discovery/u9.md › Seam friction.
-    test.fail(
-      true,
-      'u3 defect: #desktop child order is registry order, the desk layout is not — discovery/u9.md',
-    )
+    // ── QUARANTINE LIFTED 08-05 (final-PR review, R2 on this line) ──
+    // The assert below is EXACTLY as u9 wrote it; what changed is the desk. u9
+    // could only report the defect (tests only, [u9#c8]) — Tab walked the
+    // registry order feed · file · store · rep while `shell/layout.ts` placed
+    // the windows feed · rep · file · store, so three of the four window
+    // transitions sent focus somewhere the eye did not predict (WCAG 2.4.3,
+    // Level A). The integration PR is where that constraint lifts:
+    // `shell/layout.ts` now exports `DESK_ORDER` and `window-manager.ts` appends
+    // `#desktop`'s children in it. The `test.fail()` annotation is therefore
+    // gone rather than the assert.
     const stops = await tabWalk(page)
     const order: string[] = []
     for (const s of stops) if (s.win !== '(chrome)' && !order.includes(s.win)) order.push(s.win)
@@ -413,6 +518,60 @@ test.describe('a11y — focus order follows visual order at 1280x800', () => {
       return s.display !== 'none' && s.visibility !== 'hidden'
     })
     expect(reachable).toBe(false)
+  })
+})
+
+/* ══ reduced motion ══════════════════════════════════════════════════════ */
+
+// ADDED 08-05 (R2 on styles/shell.css:41): the client honoured
+// `prefers-reduced-motion` in exactly one place (the reports typewriter) out of
+// 21 `animation:` declarations, six of them `infinite` — a full-viewport grain
+// overlay stepping every 7 s and a taskbar alert pulsing every second, with no
+// in-game motion toggle either. WCAG 2.2.2 (Pause, Stop, Hide, Level A).
+test.describe('a11y — the desk stops moving when the operator asks it to', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+  })
+
+  test('a11y — no animation loops forever under prefers-reduced-motion', async ({ page }) => {
+    await boot(page)
+    expect(
+      await page.evaluate(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+      'the context did not actually ask for reduced motion — the check is vacuous',
+    ).toBe(true)
+
+    // Give the 1 ms collapse a beat to finish, then look for anything still going.
+    await page.waitForTimeout(250)
+    const running = await page.evaluate(() =>
+      document
+        .getAnimations()
+        .filter((a) => a.playState === 'running')
+        .map((a) => {
+          const effect = a.effect as KeyframeEffect | null
+          const target = effect?.target as Element | null
+          const iterations = effect?.getTiming().iterations ?? 1
+          return {
+            name: (a as unknown as { animationName?: string }).animationName ?? '(unnamed)',
+            where: target ? `${target.tagName.toLowerCase()}.${target.className}` : '(no target)',
+            iterations,
+          }
+        })
+        .filter((a) => a.iterations === Infinity)
+        .map((a) => `${a.name} on ${a.where}`),
+    )
+    expect(running, 'these animations still loop forever with Reduce Motion set').toEqual([])
+  })
+
+  test('a11y — the desk is still legible: the reveals landed on their end state', async ({ page }) => {
+    await boot(page)
+    // `animation:none` would have left every `… both` reveal at its invisible
+    // opening keyframe. Every booted window must still be painted.
+    const invisible = await page.locator('.win:not(.hidden)').evaluateAll((nodes) =>
+      nodes
+        .filter((n) => Number(getComputedStyle(n).opacity) < 0.9)
+        .map((n) => `${n.id} opacity=${getComputedStyle(n).opacity}`),
+    )
+    expect(invisible, 'reduced motion hid the desk instead of stilling it').toEqual([])
   })
 })
 

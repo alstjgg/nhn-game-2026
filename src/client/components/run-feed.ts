@@ -176,6 +176,12 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
 
   const list = el('ol')
   list.id = 'feedList'
+  // A running record an operator may be listening to rather than watching: new
+  // lines are announced where they land, politely and additions-only, instead
+  // of being re-read as toasts (R2 on index.html:125).
+  list.setAttribute('role', 'log')
+  list.setAttribute('aria-live', 'polite')
+  list.setAttribute('aria-relevant', 'additions')
   const tail = el('div', 'feed-tail')
   tail.id = 'feedTail'
 

@@ -12,6 +12,7 @@ import type { ClockHook, ClockRate, FixtureDriver, Frame } from '../driver/index
 import { createGameClock } from '../components/game-clock.ts'
 import { createRunCounter } from '../components/run-counter.ts'
 import { holdDesk, revealDesk } from '../components/desktop-dressing.ts'
+import { createAnnouncer } from './announcer.ts'
 import { must } from './dom.ts'
 import { fetchScenarioIdentity } from './pack.ts'
 import type { ScenarioIdentity } from './pack.ts'
@@ -89,6 +90,11 @@ export async function bootShell(): Promise<void> {
   driver.subscribe((event) => {
     if (event.type === 'meta') runs.render(event.run, event.runs_left)
   })
+  // 3b — the live region. `#toast` has been in the markup since u3 and nothing
+  // ever wrote to it, so an operator driving the desk by ear heard none of the
+  // state changes (R2 on index.html:125). It is bound before the windows mount
+  // so the opening `meta` is announced like every later one.
+  createAnnouncer(must('#toast'), driver)
 
   // 4 — the five windows and the taskbar, then the computed desk arrangement.
   const desk = createWindowManager({

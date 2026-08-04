@@ -23,3 +23,31 @@ body{
 #app{height:100%}
 
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════════════════
+   WCAG 2.2.2 (Pause, Stop, Hide). The desk shipped 21 `animation:` rules, six
+   of them `infinite` — #grain crawling over the whole viewport every 7 s, the
+   taskbar alert pulsing once a second — and honoured `prefers-reduced-motion`
+   in exactly one place (the reports typewriter). An operator with vestibular
+   or photosensitivity triggers had no escape hatch at all.
+
+   The collapse is deliberately NOT `animation:none`: u1's reveals are
+   `animation … both`, so killing them outright would leave every window,
+   feed line and card stuck at its INVISIBLE opening keyframe. One 1 ms pass,
+   never a loop, lands each of them on its END state instead.
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:1ms!important;
+    animation-iteration-count:1!important;
+    animation-delay:0s!important;
+    transition-duration:1ms!important;
+    transition-delay:0s!important;
+  }
+  /* The three signals whose loop CARRIES the state degrade to a static
+     distinguishing style rather than settling on their own dim keyframe —
+     C18: a desk that is waiting must still look like it is waiting. */
+  .win-dot.live{opacity:1}
+  .fl-wait .dots i{opacity:.9}
+  .caret{opacity:1}
+}

@@ -11,6 +11,7 @@
 // Every op leaves through `emit()`, which treats a throwing or refusing seam as
 // a rejection and keeps the board's state untouched (R4).
 import type { MembraneOp, Sentence } from '../driver/index.ts'
+import { announce } from '../shell/announcer.ts'
 import { button, el } from '../shell/dom.ts'
 import { blockCardModel, buildBlockCard, pad2, pickedBlockId, setPickedBlockId } from './block-card.ts'
 
@@ -51,6 +52,13 @@ export type SlotAction =
   | { kind: 'place'; blockId: string; slot: number }
   | { kind: 'clear'; slot: number }
   | { kind: 'deploy' }
+
+/** What the desk says out loud when the membrane accepts an action (PRD §4). */
+export function announcementOfAction(action: SlotAction): string {
+  if (action.kind === 'deploy') return '배치 완료 — 요원 파일이 잠겼습니다'
+  const no = pad2(action.slot + 1)
+  return action.kind === 'place' ? `슬롯 ${no} 배치` : `슬롯 ${no} 해제`
+}
 
 export interface OpPlan {
   ops: MembraneOp[]
@@ -163,6 +171,10 @@ export function createSlotBoard(options: SlotBoardOptions): SlotBoard {
     slots = plan.slots
     deployed = plan.deployed
     render()
+    // The membrane ACCEPTED it. `deploy` and `unslot` have no event echo on the
+    // ratified seam, so the op's own answer is the only signal an operator
+    // driving by ear ever gets (R2 on index.html:125).
+    announce(announcementOfAction(action))
     options.onChange([...slots], deployed)
   }
 
@@ -187,6 +199,8 @@ export function createSlotBoard(options: SlotBoardOptions): SlotBoard {
       node.append(card, pin)
       if (!deployed) {
         const unset = button('slot-unset', `슬롯 ${no} 해제`, '해제')
+        // The `unslot` op's control, marked for the PRD §4 membrane census.
+        unset.dataset.op = 'unslot'
         unset.addEventListener('click', (event) => {
           event.stopPropagation()
           apply({ kind: 'clear', slot: cell.slot })
@@ -198,7 +212,10 @@ export function createSlotBoard(options: SlotBoardOptions): SlotBoard {
     } else {
       // A real button, so the membrane op is reachable by keyboard alone
       // (inv 1 + PRD §4 a11y). Enter and Space both fire its click.
-      node.append(button('slot-empty slot-target', `슬롯 ${no}에 배치`, EMPTY_HINT))
+      const target = button('slot-empty slot-target', `슬롯 ${no}에 배치`, EMPTY_HINT)
+      // The `slot` op's control, marked for the PRD §4 membrane census.
+      target.dataset.op = 'slot'
+      node.append(target)
     }
 
     node.addEventListener('click', () => {

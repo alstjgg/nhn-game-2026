@@ -83,6 +83,8 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
 
   const newRun = button('btn-newrun', NEW_RUN_MAIN, '')
   newRun.id = 'btnNewRun'
+  // The `new_run` op's control, marked for the PRD §4 membrane census.
+  newRun.dataset.op = 'new_run'
   newRun.disabled = true
   const newRunSub = el('span', 'bn-sub')
   newRun.append(el('span', 'bn-main', NEW_RUN_MAIN), newRunSub)
