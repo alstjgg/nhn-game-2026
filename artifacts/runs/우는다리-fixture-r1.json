@@ -22,13 +22,13 @@
           "variable": "trust",
           "before": 40,
           "after": 20,
-          "cause": "G1:pressed"
+          "cause": "G1:a"
         },
         {
           "variable": "fear",
           "before": 55,
           "after": 65,
-          "cause": "G1:pressed"
+          "cause": "G1:a"
         }
       ]
     },
@@ -98,13 +98,13 @@
           "variable": "trust",
           "before": 20,
           "after": -5,
-          "cause": "G4:pressed"
+          "cause": "G4:a"
         },
         {
           "variable": "fear",
           "before": 65,
           "after": 80,
-          "cause": "G4:pressed"
+          "cause": "G4:a"
         }
       ]
     },
@@ -118,7 +118,7 @@
           "variable": "logs_destroyed",
           "before": 0,
           "after": 1,
-          "cause": "t13"
+          "cause": "event:t13"
         }
       ]
     },
@@ -132,7 +132,7 @@
           "variable": "kang_detained",
           "before": 0,
           "after": 1,
-          "cause": "t14"
+          "cause": "event:t14"
         }
       ]
     },
@@ -153,7 +153,7 @@
           "variable": "caller_arrested",
           "before": 0,
           "after": 1,
-          "cause": "t16"
+          "cause": "event:t16"
         }
       ]
     },
@@ -167,13 +167,13 @@
           "variable": "trust",
           "before": -5,
           "after": -30,
-          "cause": "G7:suppressed"
+          "cause": "G7:a"
         },
         {
           "variable": "fear",
           "before": 80,
           "after": 100,
-          "cause": "G7:suppressed"
+          "cause": "G7:a"
         }
       ]
     },
@@ -187,7 +187,7 @@
           "variable": "crowd_on_bridge",
           "before": 0,
           "after": 1,
-          "cause": "t17"
+          "cause": "event:t17"
         }
       ]
     },
@@ -201,7 +201,7 @@
           "variable": "bridge_collapsed",
           "before": 0,
           "after": 1,
-          "cause": "t18"
+          "cause": "event:t18"
         }
       ]
     },

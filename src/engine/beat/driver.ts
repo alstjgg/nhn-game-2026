@@ -35,8 +35,38 @@ import { cloneDeep, windowLines } from './views.ts'
  */
 export type BeatPhase = 'stance' | 'effects' | 'narration' | 'report' | 'done'
 
-/** The one field of Call 1's response that has state authority, plus the line. */
-export type StanceSubmission = { stance: string; utterance: string }
+/**
+ * The one field of Call 1's response that has state authority, plus the line.
+ *
+ * `fallback` is not a fourth field of the response — Call 1 either landed or it
+ * did not, and only the engine knows which, because only the engine holds the
+ * authored `default_stance` it substitutes (spec-engine §5). It exists so the
+ * journal can say so; see `FALLBACK_CALL1_CAUSE`.
+ */
+export type StanceSubmission = { stance: string; utterance: string; fallback?: boolean }
+
+/**
+ * spec-engine §2.1 · §5 — the `cause` a delta gets when the stance behind it is
+ * the authored `default_stance` substituted after Call 1 failed, rather than a
+ * stance any model chose.
+ *
+ * §5's table writes this literal out: "Proceed with `gates.json`'s
+ * `default_stance`. That delta entry's `cause` is `"fallback:call1"`". It is
+ * load-bearing rather than cosmetic — the journal rides verbatim into the run
+ * record, and architecture spec §2's position is that an outcome you cannot
+ * explain is a bug. Without it a run where every gate fell back is byte-
+ * identical, in the one place attribution is recorded, to a run the model
+ * judged; the run record then asserts a model judgment that never happened.
+ */
+export const FALLBACK_CALL1_CAUSE = 'fallback:call1'
+
+/**
+ * spec-engine §2.1 — a script event's deltas are attributed `event:<id>`
+ * (`"event:t12"` in the spec's own type comment), never the bare id. The
+ * namespace is what keeps an event id from colliding with anything else the
+ * grammar admits once a run record is read back.
+ */
+export const EVENT_CAUSE_PREFIX = 'event:'
 
 /** What the stance resolved to, and where the gate routes next. */
 export type StanceOutcome = { bucketId: string; nextNode: string | null }
@@ -161,7 +191,15 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
       const beat = beatNow()
       const gate = gateNow()
       const bucket = resolveBucket(gate, submission.stance)
-      const cause = `${gate.id}:${bucket.id}`
+      // §2.1: `<gates[].gate>:<stances[].id>`. The STANCE, not the bucket — a
+      // bucket is a many-to-one collapse, so `G1:ba` cannot say which of the
+      // stances sharing it was chosen, and the journal is where that is
+      // recorded for good. §5 outranks the form entirely on the fallback path:
+      // the whole point of that entry is that no model chose the stance.
+      const cause =
+        submission.fallback === true
+          ? FALLBACK_CALL1_CAUSE
+          : `${gate.id}:${submission.stance}`
 
       // §4.1 — the deltas land BEFORE anything reads state for routing.
       state.applyDeltas(bucket.deltas, cause)
@@ -181,11 +219,14 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
       const beat = beatNow()
 
       // §4.2 — every event's effects, in events[] order, deltas before flags.
+      // §2.1 fixes the attribution as `event:<events[].id>`; the bare id is a
+      // different string, and the run record stores whichever one it was given.
       for (const event of beat.events) {
         const effects = event.effects
         if (effects === null || effects === undefined) continue
-        state.applyDeltas(effects.deltas, event.id)
-        state.applyFlags(effects.flags, event.id)
+        const cause = `${EVENT_CAUSE_PREFIX}${event.id}`
+        state.applyDeltas(effects.deltas, cause)
+        state.applyFlags(effects.flags, cause)
       }
       // Closes this beat's journal, which is what the symptom renderer reads.
       state.journal()

@@ -268,15 +268,18 @@ export function createEngine(deps: EngineDeps): EngineHandle {
       if (beat.gate === null) throw new Error(`beat ${beat.index} carries no gate`)
       // §5 recovery: the authored default stance, which `gateView()` does not
       // expose — this is why substituting it has to be the engine's move.
-      const stance = response === null ? beat.gate.defaultStance : response.stance
-      utterance = response === null ? '' : response.utterance
+      const fallback = response === null
+      const stance = fallback ? beat.gate.defaultStance : response.stance
+      utterance = fallback ? '' : response.utterance
       if (beat.roundIndex !== null) {
         roundGates.set(beat.roundIndex, {
           utterance,
-          inner_note: response === null ? '' : response.inner_note,
+          inner_note: fallback ? '' : response.inner_note,
         })
       }
-      beats.submitStance({ stance, utterance })
+      // The journal is the only place a substituted stance is distinguishable
+      // from a chosen one after the fact (§2.1's `fallback:call1`).
+      beats.submitStance({ stance, utterance, fallback })
     },
 
     applyBeatEffects(): void {

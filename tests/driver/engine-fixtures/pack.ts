@@ -115,6 +115,38 @@ export function scriptedRound(): EnginePack {
 }
 
 /**
+ * One round whose gate bucket actually MOVES state, so the delta journal has
+ * entries to attribute. `scriptedRound()` authors no deltas anywhere, which is
+ * fine for the ordering suites and useless for anything reading `cause`.
+ *
+ * Both stances land in ONE bucket on purpose: spec-engine §2.1 writes `cause`
+ * from `stances[].id`, and a bucket is a many-to-one collapse, so this is the
+ * fixture where writing the bucket id instead is observable.
+ */
+export function attributedRound(): EnginePack {
+  const base = scriptedRound()
+  const authored = base.gates.gates[0]!
+  return {
+    ...base,
+    gates: {
+      gates: [
+        {
+          ...authored,
+          buckets: [{ id: 'ba', stances: ['hold', 'escalate'], deltas: { trust: -20 }, flags: {} }],
+        },
+      ],
+    },
+    symptoms: {
+      flags: {},
+      trust: {
+        up: [{ min: 1, text: '발신자의 말이 조금 길어졌다' }],
+        down: [{ min: 1, text: '발신자가 한 박자 늦게 답했다' }],
+      },
+    },
+  }
+}
+
+/**
  * Two whole rounds. Round 0's report therefore lands on a beat that is NOT the
  * run's last, which is the only way to observe "the run continues after a
  * failed Call 3".
