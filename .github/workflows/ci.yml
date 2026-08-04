@@ -28,7 +28,21 @@ jobs:
   root:
     runs-on: ubuntu-latest
     steps:
+      # Full history, not the default depth-1 checkout. A large part of this
+      # suite measures assertions against GIT RANGES rather than the live tree —
+      # that is the C17 discipline: a unit-scoped claim that later work has
+      # legitimately outgrown gets re-aimed at the range where it stays true,
+      # never deleted. `tests/scaffold/layout.test.ts` resolves u0's own merge
+      # (`git log --merges --grep`), `deps.test.ts` reads `package.json` as of
+      # u0, and the frozen-path and RED-time-hash guards diff against their unit's
+      # base. On a shallow clone none of that history exists and they fail with
+      # "the u0 merge is not reachable from HEAD".
+      #
+      # This was masked, not absent: `--exclude 'tests/scaffold/layout.test.ts'`
+      # hid the loudest one, and dropping that exclude is what surfaced the rest.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
