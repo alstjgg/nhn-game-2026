@@ -36,7 +36,13 @@ const EMPTY_COPY = '아직 채굴한 문장이 없습니다.'
 
 export interface StoreBlock {
   id: string
-  species: Species
+  /**
+   * `null` for an id whose channel the client cannot read. It used to be a
+   * `Species`, because `blockCardModel` failed open onto the certified `'fact'`
+   * for anything it could not parse (R1 on block-card.ts:70); an unreadable id
+   * now says so instead, and the species filter simply never matches it.
+   */
+  species: Species | null
   /** The run opened holding this one — it was mined in an earlier run. */
   carried: boolean
 }

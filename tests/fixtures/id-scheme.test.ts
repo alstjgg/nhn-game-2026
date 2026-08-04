@@ -80,6 +80,32 @@ describe('[u2f#c2] id scheme', () => {
     expect(bad).toEqual([])
   })
 
+  // ADDED 08-05 (R1 on woodari-run03.ts:121). (d) checked that a claimed `t*` id
+  // EXISTS in timeline.json and that the clocks agree — not that the line says
+  // what the pack says. Eleven of the thirteen did not: 09:25 claimed `t2` for a
+  // sentence the pack never wrote, 19:10 claimed `t15` for another scene. The id
+  // is the identity (§5.2 — same sentence, same block, every run), so this pins
+  // the text itself.
+  it('(k) an authored `t*` id carries timeline.json’s sentence, verbatim', () => {
+    const byId = new Map(timelineEvents().map((e) => [e.id, e]))
+    const used = feedLines(woodariRun03.events).filter(
+      (l) => typeof l.sentence_id === 'string' && AUTHORED.test(l.sentence_id),
+    )
+    expect(used.length, 'the fixture claims no `t*` id at all — the check is vacuous').toBeGreaterThan(0)
+    const wrong: string[] = []
+    for (const line of used) {
+      const authored = byId.get(line.sentence_id as string)
+      if (!authored) {
+        wrong.push(`${line.sentence_id} is not a timeline.json event`)
+        continue
+      }
+      if (nfc(authored.text) !== nfc(line.text)) {
+        wrong.push(`${line.sentence_id}: the fixture line is not the authored sentence`)
+      }
+    }
+    expect(wrong, 'a `t*` id names prose the pack never wrote').toEqual([])
+  })
+
   it('(e) an authored `t*` id carries exactly one text across the whole fixture', () => {
     const texts = new Map<string, Set<string>>()
     for (const s of all()) {

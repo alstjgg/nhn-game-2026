@@ -38,10 +38,32 @@ export const SPECIES_DISPLAY: Readonly<Record<Species, SpeciesDisplay>> = {
 }
 
 /** The authored id grammar `b-r<run>-<channel><nn>` (contract-engine-composer §2.0). */
-const AUTHORED_ID = /^b-r(\d+)-([a-z])\d+$/
+const AUTHORED_ID = /^b-r([1-9]\d*)-([a-z])(\d{2})$/
 
-const CHANNELS: readonly string[] = ['f', 'b', 'n', 'q', 'u']
+/** An authored SCRIPT id — `timeline.json`'s `t*`, run-independent by contract. */
+const SCRIPT_ID = /^t\d+$/
+
+/**
+ * The channel set, DERIVED rather than copied (R1 on block-card.ts:70). It used
+ * to be a hand-written `['f','b','n','q','u']` beside an import of `SPECIES_OF`
+ * itself, so a channel added upstream would have fallen silently through to the
+ * default instead of failing to compile — the duplicated-union drift risk
+ * `src/shared/species.ts` names in its own header.
+ */
+const CHANNELS: readonly string[] = Object.keys(SPECIES_OF)
 const isChannel = (value: string): value is Channel => CHANNELS.includes(value)
+
+/**
+ * What a card prints for an id it cannot resolve to a channel at all.
+ *
+ * This expression used to fail OPEN onto `AUTHORED_SPECIES` — `'fact'`, one of
+ * the two CERTIFIED species that `contract-datapack` E2 lets onto the solution
+ * path. An id the client cannot parse is exactly the one thing it must not
+ * certify, and it was reachable: `driver/fixtures/minimal.ts` ships `m-s01` /
+ * `m-r1-f01`, and either rendered as a card printed 사실. `AUTHORED_SPECIES` is
+ * right for `t*` ids, which is where it now applies and nowhere else.
+ */
+export const UNKNOWN_DISPLAY: SpeciesDisplay = { ko: '미상', mark: '?', cls: 'sp-unknown' }
 
 /**
  * F1 (u4 D13) — an id the window cannot resolve to a `Sentence` still renders a
@@ -52,7 +74,8 @@ export const UNRESOLVED_TEXT = '(원문은 부검 기록에 있습니다)'
 
 export interface BlockCardModel {
   id: string
-  species: Species
+  /** `null` for an id whose channel the client cannot read — never a guess. */
+  species: Species | null
   ko: string
   mark: string
   cls: string
@@ -62,13 +85,28 @@ export interface BlockCardModel {
   text: string
 }
 
+/**
+ * The species an id NAMES, or `null` when it names none.
+ *
+ * "Species derives from the channel, never from classification" (spec-client
+ * §5.2) — so when the id parses, the channel is the answer and the payload's own
+ * `species` field does not get to overrule it. The payload is only ever a value
+ * for an id the grammar cannot read, and such an id is not certified either.
+ */
+export function speciesOfId(id: string): Species | null {
+  const parsed = AUTHORED_ID.exec(id)
+  if (parsed !== null) {
+    const channel = parsed[2] ?? ''
+    return isChannel(channel) ? SPECIES_OF[channel] : null
+  }
+  return SCRIPT_ID.test(id) ? AUTHORED_SPECIES : null
+}
+
 /** Pure: an authored id (+ whatever the window resolved for it) → what a card prints. */
 export function blockCardModel(id: string, sentence: Sentence | null): BlockCardModel {
   const parsed = AUTHORED_ID.exec(id)
-  const channel = parsed === null ? '' : parsed[2]
-  const species: Species =
-    sentence?.species ?? (isChannel(channel) ? SPECIES_OF[channel] : AUTHORED_SPECIES)
-  const display = SPECIES_DISPLAY[species]
+  const species = speciesOfId(id)
+  const display = species === null ? UNKNOWN_DISPLAY : SPECIES_DISPLAY[species]
   const model: BlockCardModel = {
     id,
     species,

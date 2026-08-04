@@ -36,7 +36,7 @@ export interface FilterOption {
 }
 
 /** Anything the filter can count: it reads `species` and nothing else (inv 3). */
-export type Countable = { species: Species }
+export type Countable = { species: Species | null }
 
 /** Pure: the five options with their counts over the whole deck. */
 export function filterOptions(blocks: readonly Countable[]): FilterOption[] {

@@ -117,21 +117,25 @@ const FEED: FeedRow[] = [
  * Feed `event` rows that render a fixed script event, by clock. The rows that
  * are not here are the ones the narration call would have produced, and they are
  * minted on the `n` channel instead.
+ *
+ * NARROWED 08-05 (R1 on this file). This map used to claim thirteen `t*` ids for
+ * rows carrying the design reference's demo prose (`docs/design/phase2-ui/data.js`
+ * FEED, which has no ids at all), and eleven of the thirteen did not say what
+ * `data/scenario/우는다리/timeline.json` says — 09:25 claimed `t2` for a sentence
+ * that appears nowhere in the pack, 19:10 claimed `t15` for a different scene
+ * entirely. A `t*` id is an IDENTITY (spec-client §5.2: same sentence = same
+ * block across runs, which is what makes archive highlighting behave), so an id
+ * minted here must not name prose this pack never wrote.
+ *
+ * Two rows carry the authored sentence verbatim, and they keep their ids. The
+ * other eleven give theirs up and mint on the `n` channel like their neighbours
+ * — the conforming fix that does not put words into the pack's mouth. Pinned by
+ * `tests/fixtures/id-scheme.test.ts` (k), which now compares every claimed `t*`
+ * id's text against `timeline.json` directly.
  */
 const AUTHORED_ID: Partial<Record<string, string>> = {
-  '08:50': 't1',
-  '09:25': 't2',
-  '09:40': 't3',
-  '10:40': 't4',
   '11:07': 't6',
-  '11:30': 't7',
-  '12:00': 't8',
-  '13:05': 't9',
-  '14:20': 't10',
   '15:10': 't11',
-  '16:40': 't12',
-  '17:30': 't13',
-  '19:10': 't15',
 }
 
 /** Which channel a generated line of each kind is minted on (§5.2 amendment). */

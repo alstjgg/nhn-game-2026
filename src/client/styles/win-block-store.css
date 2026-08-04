@@ -52,6 +52,9 @@
 .sp-self{color:var(--kind-self)}
 .sp-emo{color:var(--seal-2)}
 .sp-quote{color:var(--kind-quote)}
+/* An id whose channel the client cannot read: 미상, and deliberately NOT one of
+   the four species colours — an unparsed id may not look certified. */
+.sp-unknown{color:var(--txt-5)}
 .bc-axis{font-family:var(--myeong);font-size:var(--fs-8-5);color:var(--faded);
   border-bottom:1px solid var(--faded);padding-bottom:var(--space-1)}
 .bc-id{margin-left:auto;font-size:var(--fs-7-5);color:var(--pap-6);letter-spacing:.06em}

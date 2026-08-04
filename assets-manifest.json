@@ -192,6 +192,24 @@
       "source": "Google Fonts webfont API (css2) — WOFF2 per-unicode-range slices, vendored into the repo by tools/fonts/vendor-google-webfonts.mjs",
       "license": "SIL Open Font License 1.1",
       "note": "Self-hosted 'Nanum Gothic Coding' — Korean monospace for LIVE FEED radio lines. 2 weights (400/700), sliced per unicode-range like the other Korean family."
+    },
+    {
+      "file": "docs/design/phase2-ui/index.html — webfont 'IBM Plex Mono'",
+      "source": "Google Fonts (fonts.googleapis.com), loaded at runtime; not vendored into the repo",
+      "license": "SIL Open Font License 1.1",
+      "note": "Machine chrome (top bar, taskbar, window titles, labels, teleprinter feed). THE DESIGN REFERENCE'S OWN RUNTIME LOAD, restored 08-05 — this row was re-pointed at the self-hosted copy when the client vendored the family, which left docs/design/phase2-ui/index.html:7-9 (a read-only binding reference, still live in this repo) with no manifest entry at all. CLAUDE.md rule 5 admits no exceptions. The PLAYER build is unaffected: it resolves this family from public/assets/fonts/** and makes no third-party request (spec-client §3 inv 10)."
+    },
+    {
+      "file": "docs/design/phase2-ui/index.html — webfont 'Nanum Myeongjo'",
+      "source": "Google Fonts (fonts.googleapis.com), loaded at runtime; not vendored into the repo",
+      "license": "SIL Open Font License 1.1",
+      "note": "Korean document bodies (dossier, reports, block cards, tally). THE DESIGN REFERENCE'S OWN RUNTIME LOAD, restored 08-05 — this row was re-pointed at the self-hosted copy when the client vendored the family, which left docs/design/phase2-ui/index.html:7-9 (a read-only binding reference, still live in this repo) with no manifest entry at all. CLAUDE.md rule 5 admits no exceptions. The PLAYER build is unaffected: it resolves this family from public/assets/fonts/** and makes no third-party request (spec-client §3 inv 10)."
+    },
+    {
+      "file": "docs/design/phase2-ui/index.html — webfont 'Nanum Gothic Coding'",
+      "source": "Google Fonts (fonts.googleapis.com), loaded at runtime; not vendored into the repo",
+      "license": "SIL Open Font License 1.1",
+      "note": "Korean monospace for LIVE FEED radio lines. THE DESIGN REFERENCE'S OWN RUNTIME LOAD, restored 08-05 — this row was re-pointed at the self-hosted copy when the client vendored the family, which left docs/design/phase2-ui/index.html:7-9 (a read-only binding reference, still live in this repo) with no manifest entry at all. CLAUDE.md rule 5 admits no exceptions. The PLAYER build is unaffected: it resolves this family from public/assets/fonts/** and makes no third-party request (spec-client §3 inv 10)."
     }
   ]
 }
