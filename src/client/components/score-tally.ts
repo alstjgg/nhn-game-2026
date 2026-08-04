@@ -94,23 +94,12 @@ export function countUpAt(to: number, k: number): number {
   return Math.round(to * eased)
 }
 
-/**
- * `label → baseline` out of the scenario pack's `score.json`. Authored data,
- * read as authored: an axis the pack does not name gets no baseline at all
- * rather than an invented one.
- */
-export function baselineIndex(rawScoreJson: unknown): Map<string, string> {
-  const index = new Map<string, string>()
-  if (typeof rawScoreJson !== 'object' || rawScoreJson === null) return index
-  const units = (rawScoreJson as { units?: unknown }).units
-  if (!Array.isArray(units)) return index
-  for (const unit of units) {
-    if (typeof unit !== 'object' || unit === null) continue
-    const row = unit as { label?: unknown; baseline?: unknown }
-    if (typeof row.label === 'string' && typeof row.baseline === 'string') index.set(row.label, row.baseline)
-  }
-  return index
-}
+// `baselineIndex()` lived here and read `data/scenario/<slug>/score.json` for
+// the ledger's 기준 column. REMOVED (R1 on tally.ts:218): `architecture-map.md`
+// §2.1 assigns `score.json` to the engine and gives the view exactly one pack
+// file (`meta.json`), and inv 12 says a window consumes `ViewEvent`s only. The
+// baseline belongs on the seam or nowhere; a resolver kept "for later" here
+// would just be the same in-channel with the fetch moved one file away.
 
 /** The mark each delta prints in the `.tr-d` column (reference `runTally`). */
 const DELTA_MARK: Record<TallyRowModel['delta'], string> = { good: '▲', flat: '=', bad: '▼' }

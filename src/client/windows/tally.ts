@@ -21,7 +21,7 @@ import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
 import { createRunState } from '../shell/run-state.ts'
 import type { MetaState, RunPhase, RunState, ScoreState } from '../shell/run-state.ts'
-import { PACE, baselineIndex, createScoreTally } from '../components/score-tally.ts'
+import { PACE, createScoreTally } from '../components/score-tally.ts'
 import type { TallyModel, TallyState } from '../components/score-tally.ts'
 
 /** The wait line, verbatim from the reference — diegetic, never a spinner. */
@@ -50,6 +50,9 @@ const NEW_RUN_SUB_TAIL = '으로'
 const FILED_TAIL = ' 보고서가 부검 창에 도착했습니다'
 const RUN_CAPTION = 'RUN '
 
+/** The allotment is spent: `new_run` was refused, and the loop has no next day. */
+const SPENT = '잔여 시행 없음 — 마지막 집계입니다'
+
 /** The dev/test handle, exactly as `shell/boot.ts` exposes `window.__shell`. */
 export interface TallyHandle {
   state(): TallyState
@@ -72,8 +75,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   const store = createRunState(driver)
   const win = host.closest('.win')
 
-  let baselines = new Map<string, string>()
-  let note: string | null = null
   let slug = ''
   let title = ''
 
@@ -86,12 +87,34 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   const newRunSub = el('span', 'bn-sub')
   newRun.append(el('span', 'bn-main', NEW_RUN_MAIN), newRunSub)
 
+  // The count-up is the FLOOR of the wait, not its length (R4 on
+  // score-tally.ts:269). The ledger reaches `final` on its own ~9 s cadence,
+  // but the line that says the report is on the desk — and the NEW RUN that
+  // ends the day — wait for the run's own `report` event, which the engine's
+  // worst case puts up to 30 s out. Until then the diegetic wait line stays up,
+  // which is exactly the beat that exists to absorb the generation.
+  let settled = false
+  let counted = false
+
+  /** The run's report is in hand when the round the seam filed is this run's. */
+  function filed(): boolean {
+    const state = store.get()
+    return state.report !== null && state.report === state.meta.run
+  }
+
+  function settle(): void {
+    if (settled || !counted || !filed()) return
+    settled = true
+    wait.classList.add('done')
+    wait.textContent = `${RUN_CAPTION}${pad2(store.get().meta.run)}${FILED_TAIL}`
+    newRun.disabled = false
+  }
+
   const tally = createScoreTally({
     host,
     onFinal: () => {
-      wait.classList.add('done')
-      wait.textContent = `${RUN_CAPTION}${pad2(store.get().meta.run)}${FILED_TAIL}`
-      newRun.disabled = false
+      counted = true
+      settle()
     },
   })
 
@@ -103,7 +126,13 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     // Disabled BEFORE the op leaves: one activation is exactly one `new_run`,
     // and the way back in is the next run's `run_end` ([u7#c3]).
     newRun.disabled = true
-    driver.send({ op: 'new_run' })
+    // …but a REFUSED op never comes back that way, and swallowing the response
+    // left the desk on a dead button with the sheet still up (R3 on
+    // tally.ts:106). `send()`'s answer is the only signal the client gets, so a
+    // refusal is rendered: the allotment is spent, and the ledger says so.
+    if (driver.send({ op: 'new_run' }).ok) return
+    wait.classList.add('done')
+    wait.textContent = SPENT
   })
 
   /** This window's taskbar button, once the desk has built one. */
@@ -141,15 +170,24 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
         label: HEADLINE_LABEL,
         value: score.total,
         unit: HEADLINE_UNIT,
-        baseline: baselines.get(HEADLINE_LABEL) ?? null,
+        // NO BASELINE ON THE SEAM, SO NONE ON THE PAPER (R1 on tally.ts:218).
+        // This window used to `fetch` `data/scenario/<slug>/score.json` for the
+        // baseline column and the summary note. `architecture-map.md:93` assigns
+        // that file to the ENGINE — the pack's only view consumer is `meta.json`
+        // (:85) — and inv 12 says windows consume `ViewEvent`s only, so the read
+        // was a second in-channel the driver never saw and `assertSeamClean`
+        // could not inspect. The ratified §5.2 fence (`src/shared/view-driver.ts`)
+        // may not be widened from a client unit either, so the baseline waits on
+        // the seam owner rather than being smuggled in here.
+        baseline: null,
       },
       rows: score.rows.map((row) => ({
         label: row.label,
         value: String(row.value),
-        baseline: baselines.get(row.label) ?? null,
+        baseline: null,
         delta: 'flat' as const,
       })),
-      note,
+      note: null,
       verdict: null,
     }
   }
@@ -168,6 +206,8 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     closing = true
     revealed = false
     printed = false
+    counted = false
+    settled = false
     tally.open()
     wait.classList.remove('done')
     wait.textContent = WAITING
@@ -186,6 +226,8 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     closing = false
     revealed = false
     printed = false
+    counted = false
+    settled = false
     show(false)
     tally.reset()
     wait.classList.remove('done')
@@ -206,22 +248,21 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     }
     // The ledger cannot reach FINAL before the `score` event: if 21:04 arrived
     // first, the count-up starts the moment the score does (spec §3 inv 5).
-    if (state.phase === 'tally' && revealed) print(state)
+    if (state.phase !== 'tally' || !revealed) return
+    print(state)
+    // …and a report that lands AFTER the count-up has finished releases the
+    // settle it was holding.
+    settle()
   })
 
+  // `meta.json` — the ONE pack file the consumer map gives the view shell
+  // (`architecture-map.md:85`), read through the shell's own helper.
   void fetchScenarioIdentity()
     .then((identity) => {
       slug = identity.slug
       const [hour, minute] = identity.end.split(':')
       title = `${hour ?? ''}${TITLE_AT}${minute ?? ''}${TITLE_TAIL}`
       newRunSub.textContent = `${NEW_RUN_SUB}${identity.start}${NEW_RUN_SUB_TAIL}`
-      return fetch(new URL(`data/scenario/${identity.slug}/score.json`, document.baseURI))
-    })
-    .then((response) => (response.ok ? (response.json() as Promise<unknown>) : null))
-    .then((raw) => {
-      baselines = baselineIndex(raw)
-      const summary = (raw as { baseline_summary?: unknown } | null)?.baseline_summary
-      note = typeof summary === 'string' ? summary : null
     })
     .catch(() => undefined)
 

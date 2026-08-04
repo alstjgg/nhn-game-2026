@@ -40,6 +40,14 @@ export interface RunState {
   phase: RunPhase
   meta: MetaState
   score: ScoreState | null
+  /**
+   * The round of the last `report` event seen, or `null` when the current run
+   * has not filed one yet. A report that lands during TALLY does not move the
+   * phase — but it is the event the ledger's "the report is on the desk" line
+   * and NEW RUN both wait on, so it is recorded rather than dropped
+   * (R4 on score-tally.ts:269).
+   */
+  report: number | null
 }
 
 /** The one persistence key this unit owns (C4). */
@@ -47,7 +55,12 @@ export const META_KEY = 'ndsp:meta:v1'
 
 /** The desk opens in BUILD with no score in hand and nothing carried. */
 export function initialRunState(): RunState {
-  return { phase: 'build', meta: { run: 0, runsLeft: 0, carried: [], archive: [] }, score: null }
+  return {
+    phase: 'build',
+    meta: { run: 0, runsLeft: 0, carried: [], archive: [] },
+    score: null,
+    report: null,
+  }
 }
 
 /**
@@ -70,20 +83,26 @@ export function reduce(state: RunState, event: ViewEvent): RunState {
           archive: event.archive.map((entry) => ({ run: entry.run, label: entry.label })),
         },
         score: null,
+        report: null,
       }
     case 'score':
       return {
         phase: 'tally',
         meta: state.meta,
         score: { total: event.total, rows: event.rows.map((row) => ({ label: row.label, value: row.value })) },
+        report: state.report,
       }
     case 'run_end':
-      return { phase: 'tally', meta: state.meta, score: state.score }
+      return { phase: 'tally', meta: state.meta, score: state.score, report: state.report }
     case 'report':
-      return state.phase === 'tally' ? state : { phase: 'report', meta: state.meta, score: state.score }
+      return state.phase === 'tally'
+        ? { ...state, report: event.round }
+        : { phase: 'report', meta: state.meta, score: state.score, report: event.round }
     case 'beat_start':
     case 'feed':
-      return state.phase === 'tally' ? state : { phase: 'run', meta: state.meta, score: state.score }
+      return state.phase === 'tally'
+        ? state
+        : { phase: 'run', meta: state.meta, score: state.score, report: state.report }
     default:
       return state
   }
@@ -125,6 +144,20 @@ function restored(storage: Storage | null): ViewEvent | null {
     // parse. Neither is worth a crashed boot: the desk simply opens cold.
     return null
   }
+}
+
+/**
+ * The run a refresh should re-open on, or `null` for a cold desk.
+ *
+ * The restore used to lose a race it could not see: `createRunState` rebuilt
+ * the state from the slot inside `tally.mount()`, and the driver — always
+ * opened at `runs[0]` — then emitted the pack's opening `meta` in the same boot
+ * tick and overwrote it (R3 on run-state.ts:151). The persisted run is now read
+ * BEFORE the driver is built, so the loop opens on the day the operator left.
+ */
+export function restoredRun(options: RunStateOptions = {}): number | null {
+  const event = restored(options.storage ?? defaultStorage())
+  return event !== null && event.type === 'meta' ? event.run : null
 }
 
 /** Writes the `meta` event verbatim; a refusing Storage degrades to memory. */

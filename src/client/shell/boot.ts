@@ -16,6 +16,7 @@ import { must } from './dom.ts'
 import { fetchScenarioIdentity } from './pack.ts'
 import type { ScenarioIdentity } from './pack.ts'
 import { PORTAL, TASKBAR_HINT } from './portal-identity.ts'
+import { restoredRun } from './run-state.ts'
 import { WINDOW_REGISTRY } from './window-registry.ts'
 import { createWindowManager } from './window-manager.ts'
 // A namespace import on purpose: the overlay may only be mounted once the desk
@@ -70,7 +71,12 @@ export async function bootShell(): Promise<void> {
   renderIdentity(identity)
 
   // 2 — the driver behind the §5.2 seam. Nothing above this line knows it.
-  const driver = createRunLoopDriver((await demoRunLoop()) ?? [placeholderBootRun(identity)])
+  // The loop opens on the run the tab left off at (§7 #8): the persisted `meta`
+  // is read here, before the driver exists, because the opening `meta` of
+  // `runs[0]` would otherwise land in the same tick and overwrite the restore.
+  const driver = createRunLoopDriver((await demoRunLoop()) ?? [placeholderBootRun(identity)], {
+    openAt: restoredRun(),
+  })
 
   // 3 — the chrome the driver feeds.
   const clock = createGameClock({

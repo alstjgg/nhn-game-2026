@@ -305,10 +305,18 @@ test.describe('acceptance 8', () => {
     // The desk's OPENING meta — what a tab that never played would show. The
     // fixture opens mid-campaign, so "clean" means "this baseline", not "empty".
     const opening = await meta(page)
-    await drain(page)
 
+    // RE-AIMED (08-05, R3 on shell/run-state.ts:151), never weakened: this used
+    // to capture `before` after `drain()` alone, so `before` WAS the opening
+    // meta and (b) below passed identically whether the restore worked or the
+    // desk cold-booted. One `new_run` moves the state off the pack baseline
+    // first, so the assertions can now tell the two apart.
+    await newRun(page)
     const before = await meta(page)
     expect(before.archive.length + before.run, 'nothing happened to persist').toBeGreaterThan(0)
+    expect(before.run, 'the state never left the pack baseline — the restore check is vacuous').not.toBe(
+      opening.run,
+    )
 
     // (a) the tab's own storage is where it went — C4.
     const stored = await page.evaluate(() => ({

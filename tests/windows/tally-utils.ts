@@ -89,7 +89,6 @@ export interface ScoreTallyModule {
   PACE: Pace
   settleMs(rowCount: number): number
   countUpAt(to: number, k: number): number
-  baselineIndex(rawScoreJson: unknown): Map<string, string>
   createScoreTally: unknown
 }
 

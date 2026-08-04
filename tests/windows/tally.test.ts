@@ -19,6 +19,7 @@
 // synthetic (shape only) or read back out of whatever fixture ships in the
 // tree, so the suite survives fixture content being replaced wholesale.
 import { describe, expect, it } from 'vitest'
+import fs from 'node:fs'
 import path from 'node:path'
 import type { MembraneOp, ViewEvent } from '../../src/shared/view-driver.ts'
 import { createFixtureDriver } from '../../src/client/driver/fixture-driver.ts'
@@ -315,20 +316,29 @@ describe('[u7#c4] digits are score only', () => {
     }
   })
 
-  it('(c) baselines come from the pack, matched by label — an unmatched row invents none', async () => {
-    const t = await scoreTally()
-    const pack = {
-      units: [
-        { id: 'u1', label: '가', baseline: '기준 하나' },
-        { id: 'u2', label: '나', baseline: '기준 둘' },
-      ],
+  // RE-AIMED (08-05, R1 on tally.ts:218), never weakened: this case used to
+  // assert that `baselineIndex()` resolved `label → baseline` out of the pack's
+  // `score.json`. That read was the defect — `architecture-map.md` §2.1 gives
+  // the view `meta.json` and nothing else, and inv 12 says a window consumes
+  // `ViewEvent`s only. The helper is gone with the fetch, so the case now pins
+  // the RULE that replaced it: no client surface opens `score.json` at all.
+  it('(c) no client surface reads `score.json` — the baseline waits on the seam (inv 12)', () => {
+    // Scanned across the whole client, not just u7: the file is the engine's,
+    // whichever window would like its numbers.
+    const files: string[] = []
+    const walk = (dir: string): void => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name)
+        if (entry.isDirectory()) walk(full)
+        else if (entry.name.endsWith('.ts')) files.push(full)
+      }
     }
-    const index = t.baselineIndex(pack)
-    expect(index.get('가')).toBe('기준 하나')
-    expect(index.get('나')).toBe('기준 둘')
-    expect(index.get('없는 항목')).toBeUndefined()
-    expect(t.baselineIndex({}).size).toBe(0)
-    expect(t.baselineIndex(null).size).toBe(0)
+    walk(path.join(REPO, 'src/client'))
+    expect(files.length, 'the scan is vacuous — no client source was read').toBeGreaterThan(0)
+    const offenders = files
+      .filter((file) => /score\.json/.test(stripComments(read(file))))
+      .map((file) => rel(file))
+    expect(offenders, 'a client surface opens the engine-owned score.json').toEqual([])
   })
 
   it('(d) u7 paints digits only into selectors the inv-2 scan excludes by name', () => {

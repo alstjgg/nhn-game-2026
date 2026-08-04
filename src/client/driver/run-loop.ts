@@ -28,13 +28,33 @@ import type { FixtureRun, OpResponse } from './fixtures/types.ts'
 /** The run refused: the allotment is spent and no further day opens. */
 const REFUSED: OpResponse = { ok: false }
 
-export function createRunLoopDriver(runs: readonly FixtureRun[]): FixtureDriver {
+export interface RunLoopOptions {
+  /**
+   * Open on the day whose `meta` names this run instead of on the first one —
+   * what a mid-loop refresh restores (spec-client §7 #8). An unknown run (or
+   * `null`) opens the loop at its head, so a stale slot degrades to a cold boot.
+   */
+  openAt?: number | null
+}
+
+/** The run number a day opens with, read off its own `meta` event. */
+export function openingRun(run: FixtureRun): number | null {
+  for (const event of run.events) if (event.type === 'meta') return event.run
+  return null
+}
+
+export function createRunLoopDriver(
+  runs: readonly FixtureRun[],
+  options: RunLoopOptions = {},
+): FixtureDriver {
   if (runs.length === 0) throw new Error('run loop: no run to open')
 
   const listeners = new Set<ViewListener>()
   const seen: ViewEvent[] = []
-  let index = 0
-  let inner = createFixtureDriver(runs[0]!)
+  const wanted = options.openAt ?? null
+  const found = wanted === null ? -1 : runs.findIndex((run) => openingRun(run) === wanted)
+  let index = found === -1 ? 0 : found
+  let inner = createFixtureDriver(runs[index]!)
   let started = false
 
   function fanout(event: ViewEvent): void {
@@ -47,6 +67,14 @@ export function createRunLoopDriver(runs: readonly FixtureRun[]): FixtureDriver 
   /** Opens the next day underneath the listeners that are already bound. */
   function rebuild(): void {
     const rate: ClockRate = inner.clock.rate
+    // What the operator built stays theirs across the swap. `frame()` already
+    // merges the EVENT stream across runs; leaving the store behind made the
+    // two halves of the same snapshot disagree — mine a block, open the next
+    // day, and the card was deleted off the desk while the slot board still
+    // showed it (R3 on run-loop.ts:115, boot.ts:109). `deployed` is NOT carried:
+    // a new day has not been deployed, which is what `SlotBoard.unlock()`
+    // already assumes on the run change.
+    const kept: FixtureStore = inner.store()
     detach()
     index += 1
     inner = createFixtureDriver(runs[index]!)
@@ -58,6 +86,15 @@ export function createRunLoopDriver(runs: readonly FixtureRun[]): FixtureDriver 
     // over: a desk that was paused stays paused, and 08:50 waits for ▶.
     inner.advance(0)
     inner.clock.setRate(rate)
+    carry(kept)
+  }
+
+  /** Replays the kept meta-state into the new day through the ops that made it. */
+  function carry(kept: FixtureStore): void {
+    for (const id of kept.mined) inner.send({ op: 'mine', sentence_id: id })
+    for (const [slot, id] of Object.entries(kept.slots)) {
+      inner.send({ op: 'slot', block_id: id, slot: Number(slot) })
+    }
   }
 
   const clock: Clock = {
