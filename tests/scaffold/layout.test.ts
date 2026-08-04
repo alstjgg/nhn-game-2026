@@ -121,24 +121,22 @@ describe('[u0#c1] src/client scaffold layout', () => {
   })
 })
 
-describe('[u0#c8] empty-modules-only census', () => {
-  // Pre-existing files this unit must not touch (u1 retires them).
-  const PREEXISTING = new Set(['src/client/placeholder.ts', 'src/client/style.css'])
-
-  it('every file under src/client/ is a .gitkeep, main.ts, or pre-existing', () => {
-    const unexpected = walk(CLIENT).filter((rel) => {
-      if (PREEXISTING.has(rel)) return false
-      const base = path.basename(rel)
-      return base !== '.gitkeep' && rel !== 'src/client/main.ts'
-    })
-    expect(unexpected).toEqual([])
-  })
-
-  it('no stylesheet or design token is introduced by this unit', () => {
-    const styles = walk(CLIENT).filter((rel) => /\.(css|scss|less)$/.test(rel) && !PREEXISTING.has(rel))
-    expect(styles).toEqual([])
-  })
-
+// [u0#c8] was an "empty-modules-only census": every file under src/client/ had
+// to be a .gitkeep, main.ts, or pre-existing, and no stylesheet could exist. It
+// was a scope guard for u0 alone — a snapshot of one commit, not a property of
+// the system — and u1 and u2 were *supposed* to violate it, which they did by
+// landing styles/ and driver/. It has been failing ever since, on every branch
+// that carries those units.
+//
+// Deleted rather than widened: an allowlist of "what u1 and u2 may add" would
+// have to be edited by every later unit, and a census nobody can keep true is a
+// gate that gets ignored rather than one that catches anything. The durable
+// layout rules are the (a)–(e) block above, which still bind.
+//
+// The boot-root assertion survives because it is a real invariant: main.ts is
+// the entry the whole bundle hangs off, and it staying thin is checkable at any
+// point in the build, not only at u0's.
+describe('[u0#c8] src/client boot root', () => {
   it('src/client/main.ts is a thin boot root (<= 5 code statements)', () => {
     const file = path.join(CLIENT, 'main.ts')
     expect(fs.existsSync(file)).toBe(true)
