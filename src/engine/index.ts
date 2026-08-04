@@ -289,6 +289,10 @@ export function createEngine(deps: EngineDeps): EngineHandle {
       present = view.PRESENT_NPCS
       const record = recordOf(beat)
       record.present = present
+      // The round assembler classifies npc lines against THIS beat's utterance,
+      // exactly as `buildFeed` does below — `''` on a script beat. Recording it
+      // per beat is what keeps the two from diverging (contract §5).
+      record.judgment = { utterance }
       // The pre-narration slice: authored script lines, the utterance, symptoms
       // (spec decision 1). `narration` is deliberately absent, so no `n`/`q` is
       // minted before Call 2 has answered.

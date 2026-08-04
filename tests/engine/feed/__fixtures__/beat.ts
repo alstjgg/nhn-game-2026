@@ -82,10 +82,40 @@ export const GOLDEN_ROUND: RoundInput = {
   beats: [
     {
       scriptLines: [SCRIPT_LINE],
+      // The gate beat's OWN utterance. `RoundBeatInput` carries it per beat
+      // because the npc echo rule is per beat — see `assembleExperienced`.
+      judgment: { utterance: UTTERANCE },
       narration: {
         timeline_entries: [...TIMELINE_ENTRIES],
         npc_lines: [...NPC_LINES],
       },
+      present: PRESENT,
+    },
+  ],
+  temperament: TEMPERAMENT,
+}
+
+/**
+ * The divergence #116's finding G names: a round whose SCRIPT beat carries an
+ * npc line word-for-word identical to the round's gate utterance.
+ *
+ * On the timeline that line survives — a script beat has no utterance, so the
+ * echo rule is off. Reading the round's gate utterance in the assembler instead
+ * dropped it, and the round then disagreed with the timeline it is supposed to
+ * be a view of.
+ */
+export const ECHO_ON_SCRIPT_BEAT: RoundInput = {
+  gate: { utterance: UTTERANCE, inner_note: INNER_NOTE },
+  beats: [
+    {
+      judgment: { utterance: UTTERANCE },
+      narration: { timeline_entries: [], npc_lines: [`n1: ${UTTERANCE}`] },
+      present: PRESENT,
+    },
+    {
+      // A script beat: no Call 1 ran, so no utterance and no echo rule.
+      judgment: { utterance: '' },
+      narration: { timeline_entries: [], npc_lines: [`n2: ${UTTERANCE}`] },
       present: PRESENT,
     },
   ],

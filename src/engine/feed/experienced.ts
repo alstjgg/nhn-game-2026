@@ -58,11 +58,16 @@ function assemble(round: RoundInput, audience: Audience): string[] {
       out.push(`${EXPERIENCED_PREFIX.TIMELINE}${entry}`)
     }
 
-    // Same classifier the feed uses, so a line the timeline dropped cannot
-    // re-enter the round through the prompt.
+    // Same classifier the feed uses, with the same argument the feed passes:
+    // THIS beat's utterance, which is `''` on a script beat and so switches the
+    // echo rule off there exactly as it is switched off on the timeline. Using
+    // the round's gate utterance here instead made the two disagree, and a line
+    // the timeline kept then went missing from the round — the "second,
+    // divergent log" §5 exists to rule out. A line the timeline dropped still
+    // cannot re-enter the round, because the classifier is the same one.
     const { kept } = classifyNpcLines(beat.narration?.npc_lines ?? [], {
       present: beat.present,
-      utterance: round.gate.utterance,
+      utterance: beat.judgment?.utterance ?? '',
     })
     for (const npcLine of kept) {
       out.push(`${EXPERIENCED_PREFIX.NPC}${npcLine.speakerName}: ${npcLine.text}`)

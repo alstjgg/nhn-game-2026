@@ -15,6 +15,8 @@ import {
   assembleExperienced,
 } from '../../../src/engine/feed/index.ts'
 import {
+  CLOCK,
+  ECHO_ON_SCRIPT_BEAT,
   GOLDEN_BEAT,
   GOLDEN_ROUND,
   EMPTY_ROSTER_BEAT,
@@ -103,6 +105,34 @@ describe('[e4#A5] a foreign speaker is soft — the line is dropped, the beat su
     }
     expect(feed(beat).drops).toEqual([])
     expect(feed(beat).lines.filter((l) => l.kind === 'npc')).toHaveLength(1)
+  })
+
+  // [#116 finding G] — the echo rule is a function of THIS beat's utterance,
+  // which is `''` on a script beat (no Call 1 ran there). The assembler read the
+  // round's GATE utterance on every beat, so a script-beat line identical to the
+  // gate utterance was kept on the timeline and dropped from `EXPERIENCED` —
+  // making the round a second, divergent log, which contract §5 rules out.
+  it('(i2) a script beat’s line matching the gate utterance survives in EXPERIENCED', () => {
+    const lines = assembleExperienced(ECHO_ON_SCRIPT_BEAT)
+    // The gate beat's own echo is still dropped: that beat HAS an utterance, so
+    // the rule is on there, exactly as it is on the timeline.
+    expect(lines).not.toContain(`박 주임: ${UTTERANCE}`)
+    // The script beat's identical line is kept, because its utterance is ''.
+    expect(lines).toContain(`이 반장: ${UTTERANCE}`)
+  })
+
+  it('(i3) the timeline agrees with it line for line — that is the invariant', () => {
+    const kept = (beat: (typeof ECHO_ON_SCRIPT_BEAT)['beats'][number]): string[] =>
+      buildFeed({ clock: CLOCK, ...beat }, createIdAllocator(1))
+        .lines.filter((line) => line.kind === 'npc')
+        .map((line) => `${line.speaker}: ${line.text}`)
+
+    const timeline = ECHO_ON_SCRIPT_BEAT.beats.flatMap(kept)
+    const round = assembleExperienced(ECHO_ON_SCRIPT_BEAT).filter((line) =>
+      line.includes(': '),
+    )
+    expect(timeline).toEqual([`이 반장: ${UTTERANCE}`])
+    expect(round).toEqual(timeline)
   })
 })
 

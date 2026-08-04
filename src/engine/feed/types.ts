@@ -72,8 +72,21 @@ export type ReportInput = {
   readonly report_body: ReporterResponse['report_body']
 }
 
-/** What the round assembler reads from one beat. No clock, no symptoms: §5's table. */
-export type RoundBeatInput = Pick<BeatFeedInput, 'scriptLines' | 'narration' | 'present'>
+/**
+ * What the round assembler reads from one beat. No clock, no symptoms: §5's
+ * table.
+ *
+ * `judgment` is here for one reason: the npc-line drop rules are a function of
+ * **this beat's** utterance (`''` on a script beat), and contract §5 requires
+ * `EXPERIENCED` to be the timeline's own ordering rather than "a second,
+ * divergent log". Reading the round's gate utterance on every beat made the two
+ * classifiers disagree, and a line the timeline kept then vanished from the
+ * round.
+ */
+export type RoundBeatInput = Pick<
+  BeatFeedInput,
+  'scriptLines' | 'narration' | 'present' | 'judgment'
+>
 
 export type RoundInput = {
   /** The round's gate beat. `inner_note` lives here and reaches Call 3 only. */
