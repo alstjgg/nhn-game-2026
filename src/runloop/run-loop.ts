@@ -64,6 +64,31 @@ export function createRunLoop(deps: RunLoopDeps): RunLoop {
   let state: MetaState =
     loaded !== null && loaded.pack_slug === packSlug ? cloneMetaState(loaded) : emptyMetaState(packSlug)
 
+  /**
+   * `run_id` → the run number that produced it, for runs THIS session closed.
+   *
+   * `report_archive` is an append-ordered list of run ids, and its position is
+   * not the run number: `startRun` advances the counter (see its comment — a run
+   * that never ends still counts) while `endRun` appends, so start 3 and end
+   * only 1 and 3 and the second archived id belongs to run 3, not run 2.
+   *
+   * The pairing is recorded at `endRun`, where `run_count` still holds the run
+   * in flight — nothing advances it between a run's start and its end.
+   *
+   * **It cannot be persisted, and that is a schema limit, not an oversight.**
+   * `data/runs/_schema/meta-state.schema.json` fixes `report_archive` as
+   * `{"type": "array", "items": {"type": "string", "minLength": 1}}` under
+   * `additionalProperties: false`, so the ratified shape has nowhere to put a
+   * number; and `run_id` is `{"type": "string", "minLength": 1}` with no
+   * documented grammar anywhere in `docs/`, so no number can be read back out
+   * of it either. `metaEvent` therefore falls back to position for ids archived
+   * by a PREVIOUS session — which is exact whenever
+   * `report_archive.length === run_count` (every started run ended) and a lower
+   * bound otherwise. Recorded in `discovery/e8.md`; lifting it needs a
+   * `data/runs/_schema` revision, which is not this module's to make.
+   */
+  const runOf = new Map<string, number>()
+
   /** Commit `next` and hand back an independent copy of what was written. */
   function persist(next: MetaState): MetaState {
     state = next
@@ -90,7 +115,11 @@ export function createRunLoop(deps: RunLoopDeps): RunLoop {
       const next = cloneMetaState(state)
       next.carried_blocks = carried.map((b) => ({ id: b.id, text: b.text }))
       next.exposure_clock_reached = deeperClock(next.exposure_clock_reached, reachedClock)
-      if (!next.report_archive.includes(runId)) next.report_archive.push(runId)
+      if (!next.report_archive.includes(runId)) {
+        next.report_archive.push(runId)
+        // The run in flight: `run_count` last moved when this run started.
+        runOf.set(runId, next.run_count)
+      }
       return persist(next)
     },
 
@@ -99,7 +128,7 @@ export function createRunLoop(deps: RunLoopDeps): RunLoop {
       run: state.run_count,
       runs_left: Math.max(0, totalRuns - state.run_count),
       carried: state.carried_blocks.map((b) => b.id),
-      archive: state.report_archive.map((label, i) => ({ run: i + 1, label })),
+      archive: state.report_archive.map((label, i) => ({ run: runOf.get(label) ?? i + 1, label })),
     }),
   }
 }
