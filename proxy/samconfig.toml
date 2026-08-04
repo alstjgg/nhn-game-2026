@@ -4,17 +4,27 @@ version = 0.1
 # physical resources (§3.6), and no [elevated] profile — that existed only to
 # rewrite the execution role when AllowedProfileMode changed, and DDAY has no
 # such parameter (haiku is bound by the game spec, so the IAM policy is fixed).
-# The artifact bucket and the CloudFormation execution role are the EXISTING
-# bootstrap stack's, reused rather than duplicated.
+#
+# The artifact BUCKET is the existing bootstrap stack's, reused. The execution
+# ROLE is not, and the original comment here claiming otherwise was the bug:
+# `nhn-game-llm-cloudformation-exec` holds a policy named UpdateLlmLayerResources
+# with no Create* action in it, so the first deploy died at CREATE_FAILED and
+# then at ROLLBACK_FAILED (2026-08-04). The role below comes from
+# deploy/bootstrap.yaml — deploy that stack before deploying this one.
+#
+# stack_name and s3_prefix are load-bearing: every grant in bootstrap.yaml is
+# Fn::Sub'd from ApplicationStackName and ArtifactPrefix. Change one here and
+# the bootstrap stack must be updated with it, or the deploy fails on a scope
+# mismatch rather than on anything informative.
 
 [default.deploy.parameters]
-stack_name = "nhn-game-dday-proxy"
+stack_name = "nhn-game-proxy"
 region = "ap-northeast-2"
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = false
 s3_bucket = "nhn-game-llm-artifacts-141840355276-ap-northeast-2"
-s3_prefix = "nhn-game-dday-proxy"
-role_arn = "arn:aws:iam::141840355276:role/nhn-game-llm-cloudformation-exec"
+s3_prefix = "nhn-game-proxy"
+role_arn = "arn:aws:iam::141840355276:role/nhn-game-ci-proxy-cfn-exec"
 fail_on_empty_changeset = false
 parameter_overrides = "AllowedOrigin=\"https://alstjgg.github.io\" MaxTokens=\"2048\" ModelTimeoutMs=\"7000\" MaxBodyBytes=\"131072\" ReservedConcurrency=\"-1\" ThrottlingRateLimit=\"2\" ThrottlingBurstLimit=\"4\""
