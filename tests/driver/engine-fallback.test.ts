@@ -15,7 +15,14 @@
 // resolved outcome per call and emits at most one `fallback` for it.
 import { describe, it, expect } from 'vitest'
 import type { ViewEvent } from '../../src/shared/view-driver.ts'
-import { drain, failingTransport, feedLines, makeRig, shape } from './engine-fixtures/rig.ts'
+import {
+  drain,
+  failingTransport,
+  feedLines,
+  makeRig,
+  sentinelJudgment,
+  shape,
+} from './engine-fixtures/rig.ts'
 import { twoRounds } from './engine-fixtures/pack.ts'
 
 function fallbacks(events: ViewEvent[]): Extract<ViewEvent, { type: 'fallback' }>[] {
@@ -119,6 +126,29 @@ describe('[e7#A5] Call 3 fails', () => {
     // to emit an unminable sentence.
     expect(report?.facts.every((s) => /-f\d+$/.test(s.id))).toBe(true)
     expect(report?.report_body.every((s) => /-b\d+$/.test(s.id))).toBe(true)
+  })
+
+  // The objective log is NOT `EXPERIENCED`. §5's Call 3 row and contract §5's
+  // input table are two different audiences: the prompt gets the `inner_note`,
+  // the player's `f` channel does not (call contracts §6, "never shown to the
+  // player directly"). Before this guard, a Call 3 fallback minted the note as
+  // `facts` with NO model in the loop at all.
+  it('(d) the objective log withholds this round’s `inner_note` — it is not Call 3’s prompt', async () => {
+    const events = await drain(
+      makeRig({
+        transport: failingTransport('reporter', 'LLM_TIMEOUT', { judgment: sentinelJudgment() }),
+      }),
+    )
+    const reports = events.flatMap((event) => (event.type === 'report' ? [event] : []))
+    expect(reports.length).toBe(1)
+    const texts = reports[0]!.facts.map((sentence) => sentence.text)
+
+    expect(texts.filter((text) => text.includes('SENTINEL-INNER-NOTE'))).toEqual([])
+    expect(JSON.stringify(events)).not.toContain('SENTINEL-INNER-NOTE')
+    // Not vacuous: the SAME Call 1's utterance and the round's script events did
+    // reach the log, so this is a withheld line and not an empty assembly.
+    expect(texts.some((text) => text.includes('기록을 남긴다.'))).toBe(true)
+    expect(texts).toContain('남측 관측소가 신호를 놓쳤다.')
   })
 })
 

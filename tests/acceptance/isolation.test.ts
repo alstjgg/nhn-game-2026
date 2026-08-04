@@ -67,6 +67,37 @@ describe('§8-5 inner_note reaches Call 3 and nothing else', () => {
     expect(strings(feedEvents).filter((text) => text.includes(note))).toEqual([])
   })
 
+  // The `feed`-only scan above is how a leaking run stayed GREEN: the `report`
+  // ViewEvent is the OTHER half of the player's out-channel (§2.0's two output
+  // surfaces), it carries `Sentence[]` rather than `FeedLine`s, and nothing here
+  // looked at it. §5's "reaches the player only through the report" is about the
+  // reporter's prose, not about handing the note back verbatim as a minable
+  // fact — so the scan is now the whole event stream, by event type, with no
+  // allow-list to fall out of date.
+  it('§8-5 (c) it appears in NO emitted ViewEvent — `report` included', () => {
+    const note = innerNote()
+    const offenders = driven.events
+      .map((event, index) => ({ index, event }))
+      .filter(({ event }) => strings(event).some((text) => text.includes(note)))
+      .map(({ index, event }) => `${index}:${event.type}`)
+    expect(offenders, 'an emitted ViewEvent carried the inner note').toEqual([])
+  })
+
+  it('§8-5 (c) the scan is not vacuous — the run really emitted `report` events', () => {
+    const reports = driven.events.filter((event) => event.type === 'report')
+    expect(reports.length).toBeGreaterThan(0)
+    for (const report of reports) {
+      expect(report.type === 'report' && report.facts.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('§8-5 (c) no minted `f` sentence is the note — a leaked fact would be minable', () => {
+    const note = innerNote()
+    const facts = driven.events.flatMap((event) => (event.type === 'report' ? event.facts : []))
+    expect(facts.length).toBeGreaterThan(0)
+    expect(facts.filter((sentence) => sentence.text.includes(note))).toEqual([])
+  })
+
   it('§8-5 the trace is not vacuous — the note is a real, non-trivial string', () => {
     const note = innerNote()
     expect(note.length).toBeGreaterThan(4)

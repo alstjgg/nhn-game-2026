@@ -52,7 +52,19 @@ export type StateCorePort = {
  * the beat driver only asks it for one round's worth of experienced lines.
  */
 export type RoundAssemblerPort = {
+  /** §5's `EXPERIENCED` — Call 3's prompt input, `inner_note` included. */
   experienced(roundIndex: number): string[]
+  /**
+   * The same round with the `inner_note` line withheld — spec-engine §5's
+   * "engine-assembled objective log", which fills `facts` when Call 3 never
+   * lands. `facts` are minted, emitted and minable, so they may not carry the
+   * one field the call contract keeps off the player's screen.
+   *
+   * (No section number cited here on purpose: design D-G lets exactly one file
+   * under `src/engine/beat/` hold the timeline-cap literal, and a bare digit in
+   * a comment is indistinguishable from it to that census.)
+   */
+  objectiveLog(roundIndex: number): string[]
 }
 
 /**

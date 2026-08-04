@@ -33,7 +33,10 @@ export const EXPERIENCED_PREFIX = {
   NPC: '',
 } as const
 
-export function assembleExperienced(round: RoundInput): string[] {
+/** Which of the two §5 assemblies is being built — see `assembleObjectiveLog`. */
+type Audience = 'call3' | 'objective'
+
+function assemble(round: RoundInput, audience: Audience): string[] {
   const out: string[] = []
 
   round.beats.forEach((beat, index) => {
@@ -43,7 +46,7 @@ export function assembleExperienced(round: RoundInput): string[] {
 
     // The gate belongs to the round, and it is decided once, at its beat.
     if (index === 0) {
-      if (round.gate.inner_note !== '') {
+      if (audience === 'call3' && round.gate.inner_note !== '') {
         out.push(`${EXPERIENCED_PREFIX.INNER_NOTE}${round.gate.inner_note}`)
       }
       if (round.gate.utterance !== '') {
@@ -67,6 +70,31 @@ export function assembleExperienced(round: RoundInput): string[] {
   })
 
   return out
+}
+
+/** §5's `EXPERIENCED` — Call 3's input, `inner_note` included. Prompt-only. */
+export function assembleExperienced(round: RoundInput): string[] {
+  return assemble(round, 'call3')
+}
+
+/**
+ * The same round, **minus the one line no player may be handed** — the round's
+ * `inner_note`.
+ *
+ * spec-engine §5's Call 3 row fills `facts` "from the engine-assembled objective
+ * log" when the reporter never lands. Those facts are minted on the `f` channel,
+ * are certified minable by contract-datapack E2, and are emitted verbatim in the
+ * `report` ViewEvent — i.e. they are shown to the player directly, which call
+ * contracts §6 forbids for `inner_note` ("**Call 3 only.** Never shown to the
+ * player directly"). So the fallback's log is a *different* assembly from Call
+ * 3's prompt, not the same one reused: the agent's private deliberation is not
+ * an objective event, and it is the only §5 row that is not.
+ *
+ * Everything else — script events, timeline entries, npc lines, the utterance —
+ * was already on the player's timeline this round, so it stays.
+ */
+export function assembleObjectiveLog(round: RoundInput): string[] {
+  return assemble(round, 'objective')
 }
 
 /**

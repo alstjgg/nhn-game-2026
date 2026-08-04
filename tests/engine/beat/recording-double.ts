@@ -115,6 +115,10 @@ export function createRecordingAssembler(lines: string[] = ['ex-1', 'ex-2']): Re
       log.push({ op: 'experienced', args: [roundIndex] })
       return this.instanceFor(roundIndex)
     },
+    objectiveLog(roundIndex) {
+      log.push({ op: 'objectiveLog', args: [roundIndex] })
+      return this.instanceFor(roundIndex)
+    },
   }
 }
 

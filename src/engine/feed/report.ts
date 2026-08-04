@@ -24,6 +24,39 @@ import type { ReportInput } from './types.ts'
 
 export type ReportSentences = { facts: Sentence[]; report_body: Sentence[] }
 
+/**
+ * The membrane guard on Call 3's `facts` (CLAUDE.md's membrane rule; call
+ * contracts §6's consumer table).
+ *
+ * `inner_note` is Call 3's INPUT. Everything minted on the `f` channel is
+ * output: it lands in the `report` ViewEvent, contract-datapack E2 certifies it
+ * as minable, and the player can mine it into the next Call 1's `BLOCKS`. So a
+ * fact that reproduces the note verbatim is exactly the thing §6 forbids —
+ * "**Call 3 only.** Never shown to the player directly."
+ *
+ * This guard exists because the model is not the only way the note can get
+ * there. It has two sources, and both are real:
+ *
+ * 1. the engine's own §5 fallback, which fills `facts` from an assembled log —
+ *    closed structurally by `assembleObjectiveLog`;
+ * 2. a reporter that echoes its own prompt back into `facts`, which no engine
+ *    can prevent upstream. The offline fixture provider does exactly this,
+ *    deliberately, so this guard is under test on every acceptance run.
+ *
+ * **Verbatim containment is the whole test.** §6 says the note "leaks only
+ * through the report", so a `report_body` that reflects the deliberation in the
+ * reporter's own words is the SANCTIONED path and is left alone; a similarity
+ * heuristic would start eating those too, and the drop set feeds the `f`
+ * numbering, which D1 pins byte-for-byte. The line is dropped whole rather than
+ * redacted in place: a "fact" quoting the agent's private deliberation is not a
+ * fact about the round.
+ */
+export function withholdInnerNote(facts: readonly string[], innerNote: string): string[] {
+  const note = innerNote.trim()
+  if (note === '') return [...facts]
+  return facts.filter((fact) => !fact.includes(note))
+}
+
 export function buildReportSentences(report: ReportInput, ids: IdAllocator): ReportSentences {
   // Species derives from the channel, never from classification (species.ts).
   const facts: Sentence[] = report.facts.map((text) => ({

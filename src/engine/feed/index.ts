@@ -14,10 +14,15 @@ export type { NpcClassification, NpcLineContext } from './drops.ts'
 
 export { buildFeed } from './feed.ts'
 
-export { buildReportSentences } from './report.ts'
+export { buildReportSentences, withholdInnerNote } from './report.ts'
 export type { ReportSentences } from './report.ts'
 
-export { assembleExperienced, roundSlots, EXPERIENCED_PREFIX } from './experienced.ts'
+export {
+  assembleExperienced,
+  assembleObjectiveLog,
+  roundSlots,
+  EXPERIENCED_PREFIX,
+} from './experienced.ts'
 
 export { PROXY_OWNED_SLOTS, COMPOSER_DEP_SLOTS } from './slots.ts'
 

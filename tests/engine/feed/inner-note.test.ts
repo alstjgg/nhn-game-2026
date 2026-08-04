@@ -20,7 +20,9 @@ import {
   buildFeed,
   buildReportSentences,
   assembleExperienced,
+  assembleObjectiveLog,
   roundSlots,
+  withholdInnerNote,
 } from '../../../src/engine/feed/index.ts'
 import {
   GOLDEN_BEAT,
@@ -37,8 +39,16 @@ import {
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..')
 const FEED_DIR = path.join(REPO, 'src/engine/feed')
 
-/** Files allowed to name `inner_note` at all (design D-4). */
-const INNER_NOTE_OWNERS = new Set(['experienced.ts', 'types.ts'])
+/**
+ * Files allowed to name `inner_note` at all (design D-4).
+ *
+ * `report.ts` joined the set in the #116 review: the note's one live route to
+ * the player was Call 3's `facts`, and the guard that closes it
+ * (`withholdInnerNote`) has to name the thing it withholds. A census that only
+ * ever grows is not a test, so (h2)/(h3) below pin the guard's BEHAVIOUR — and
+ * (o)–(r) pin the second assembly the fallback path now reads.
+ */
+const INNER_NOTE_OWNERS = new Set(['experienced.ts', 'types.ts', 'report.ts'])
 
 function walk(dir: string): string[] {
   if (!fs.existsSync(dir)) return []
@@ -109,8 +119,63 @@ describe('[e4#A4] source text — src/engine/feed/** never writes inner_note int
     expect(offenders.map((f) => path.relative(REPO, f))).toEqual([])
   })
 
+  it('(h2) `withholdInnerNote` drops a fact that carries the note, and only that fact', () => {
+    const facts = ['관측소가 신호를 놓쳤다.', `[속내] ${INNER_NOTE}`, '회선이 닫혔다.']
+    expect(withholdInnerNote(facts, INNER_NOTE)).toEqual([
+      '관측소가 신호를 놓쳤다.',
+      '회선이 닫혔다.',
+    ])
+  })
+
+  it('(h3) a reporter echoing the note into `facts` mints nothing that carries it', () => {
+    // The success path: Call 3 answered, and its answer quoted its own prompt.
+    const echoed = { facts: [`[속내] ${INNER_NOTE}`, UTTERANCE], report_body: '기록을 남겼다.' }
+    const minted = buildReportSentences(
+      { ...echoed, facts: withholdInnerNote(echoed.facts, INNER_NOTE) },
+      createIdAllocator(1),
+    )
+    expect(JSON.stringify(minted)).not.toContain(INNER_NOTE)
+    // Not vacuous, and the withheld line consumed no `f` sequence number.
+    expect(minted.facts.map((s) => s.text)).toEqual([UTTERANCE])
+    expect(minted.facts.map((s) => s.id)).toEqual(['b-r1-f01'])
+  })
+
+  it('(h4) an empty note withholds nothing — a script beat has no deliberation', () => {
+    const facts = ['관측소가 신호를 놓쳤다.', '']
+    expect(withholdInnerNote(facts, '')).toEqual(facts)
+    expect(withholdInnerNote(facts, '   ')).toEqual(facts)
+  })
+
   it('(i) the module folder exists and is not empty (the guard has something to guard)', () => {
     expect(walk(FEED_DIR).length).toBeGreaterThan(0)
+  })
+})
+
+// spec-engine §5's Call 3 row fills `facts` from "the engine-assembled objective
+// log". Before the #116 review that log WAS `assembleExperienced` — so a round
+// whose reporter never landed minted the note on the `f` channel with no model
+// in the loop. The two assemblies have different audiences and are now two
+// functions; these pin the difference to exactly one line.
+describe('[e4] §5 the objective log is not the Call 3 prompt', () => {
+  it('(o) assembleObjectiveLog omits the inner_note line', () => {
+    expect(assembleObjectiveLog(GOLDEN_ROUND).some((l) => l.includes(INNER_NOTE))).toBe(false)
+  })
+
+  it('(p) …and differs from EXPERIENCED in exactly that one line', () => {
+    const full = assembleExperienced(GOLDEN_ROUND)
+    const objective = assembleObjectiveLog(GOLDEN_ROUND)
+    expect(objective).toEqual(full.filter((line) => !line.includes(INNER_NOTE)))
+    expect(objective.length).toBe(full.length - 1)
+  })
+
+  it('(q) the utterance stays — it was already on the player’s timeline this round', () => {
+    expect(assembleObjectiveLog(GOLDEN_ROUND).some((l) => l.includes(UTTERANCE))).toBe(true)
+    expect(assembleObjectiveLog(GOLDEN_ROUND)[0]).toBe(assembleExperienced(GOLDEN_ROUND)[0])
+  })
+
+  it('(r) with no note authored the two assemblies are identical', () => {
+    const noteless = { ...GOLDEN_ROUND, gate: { ...GOLDEN_ROUND.gate, inner_note: '' } }
+    expect(assembleObjectiveLog(noteless)).toEqual(assembleExperienced(noteless))
   })
 })
 

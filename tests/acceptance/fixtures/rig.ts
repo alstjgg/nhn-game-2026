@@ -141,7 +141,7 @@ export function viewRig(): ViewRig {
   // §8-2 and §8-3 read `gateView`/`beatView` only; the assembler is here
   // because `createBeatDriver` requires one, and it is the real one.
   const beats: Beat[] = schedule
-  const assembler: RoundAssemblerPort = { experienced: () => [] }
+  const assembler: RoundAssemblerPort = { experienced: () => [], objectiveLog: () => [] }
   const driver = createBeatDriver({ schedule, state, assembler, pack })
 
   const advance = (): boolean => {

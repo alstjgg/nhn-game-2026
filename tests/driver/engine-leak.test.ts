@@ -46,10 +46,12 @@ function line(): FeedLine {
 }
 
 /**
- * Overridden so the fixture reporter does not echo `EXPERIENCED` back verbatim.
- * That echo is a property of the offline double, not of the driver — see
- * `discovery/e7.md`, which records that a *value*-level echo of the note is a
- * reporter-prompt concern the key-level guard cannot and should not catch.
+ * A reporter that does not echo `EXPERIENCED` back verbatim, so the suites below
+ * test the KEY-level guard on its own. The value-level echo has its own suite at
+ * the bottom of this file — `discovery/e7.md` originally deferred it as "a
+ * reporter-prompt concern the key-level guard cannot and should not catch", and
+ * the first half of that is still true: the guard cannot catch it, so something
+ * else has to.
  */
 function cleanReporter() {
   return {
@@ -96,6 +98,44 @@ describe('[e7#A8] the private half of Call 1 never reaches the stream', () => {
     await expect(rig.driver.step()).rejects.toThrow(/rejected_stance/)
     // Nothing polluted was handed to a subscriber before the throw.
     expect(JSON.stringify(rig.events)).not.toContain('POLLUTION')
+  })
+})
+
+// The key-level guard reads KEYS. `{id, text, species}` is a legal `Sentence`
+// whatever prose sits in `text`, so a reporter that copies its own prompt into
+// `facts` walks straight past it — and the offline provider does exactly that
+// (`facts: [...request.slots.EXPERIENCED]`). Deliberately left echoing: "fix"
+// the double and this suite goes green over an engine with no guard at all,
+// while a real reporter holding the same prompt still leaks.
+describe('[e7#A8] the VALUE-level echo — the note may not return as a minable fact', () => {
+  it('(a) the reporter echoes its whole prompt into `facts` and the note is still not on the stream', async () => {
+    const events = await drain(
+      makeRig({
+        pack: twoRounds(),
+        transport: createFixtureProvider({ judgment: sentinelJudgment() }),
+      }),
+    )
+    const facts = events.flatMap((event) => (event.type === 'report' ? event.facts : []))
+    expect(facts.length).toBeGreaterThan(0)
+    expect(facts.filter((sentence) => sentence.text.includes('SENTINEL-INNER-NOTE'))).toEqual([])
+    expect(JSON.stringify(events)).not.toContain('SENTINEL-INNER-NOTE')
+  })
+
+  it('(b) not vacuous — the echo really is on, so the rest of the prompt DID come back', async () => {
+    const events = await drain(
+      makeRig({ transport: createFixtureProvider({ judgment: sentinelJudgment() }) }),
+    )
+    const texts = events.flatMap((event) => (event.type === 'report' ? event.facts : [])).map((s) => s.text)
+    // `[통제실] ` + the utterance: an `EXPERIENCED` line, verbatim, in `facts`.
+    expect(texts.some((text) => text.includes('기록을 남긴다.'))).toBe(true)
+  })
+
+  it('(c) the withheld fact consumes no `f` sequence number — the channel stays gapless', async () => {
+    const events = await drain(
+      makeRig({ transport: createFixtureProvider({ judgment: sentinelJudgment() }) }),
+    )
+    const ids = events.flatMap((event) => (event.type === 'report' ? event.facts : [])).map((s) => s.id)
+    expect(ids).toEqual(ids.map((_, index) => `b-r1-f${String(index + 1).padStart(2, '0')}`))
   })
 })
 

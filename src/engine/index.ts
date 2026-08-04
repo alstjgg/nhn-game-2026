@@ -61,12 +61,14 @@ import { applyEffects, initState, renderSymptoms as renderBeatSymptoms } from '.
 import type { RunState } from './state/index.ts'
 import {
   assembleExperienced,
+  assembleObjectiveLog,
   buildReportSentences,
   classifyNpcLines,
   createIdAllocator,
   buildFeed,
+  withholdInnerNote,
 } from './feed/index.ts'
-import type { ReportSentences, RoundBeatInput, ScriptLine } from './feed/index.ts'
+import type { ReportSentences, RoundBeatInput, RoundInput, ScriptLine } from './feed/index.ts'
 
 /**
  * The engine's temperament view — contract-engine-composer §2's
@@ -205,14 +207,18 @@ export function createEngine(deps: EngineDeps): EngineHandle {
   const records: BeatRecord[] = []
   const roundGates = new Map<number, { utterance: string; inner_note: string }>()
 
+  /** This round's §5 input table, shared by both assemblies below. */
+  function roundInput(roundIndex: number): RoundInput {
+    return {
+      gate: roundGates.get(roundIndex) ?? { utterance: '', inner_note: '' },
+      beats: records.filter((record) => record.roundIndex === roundIndex),
+      temperament: pack.temperament,
+    }
+  }
+
   const assembler: RoundAssemblerPort = {
-    experienced(roundIndex: number): string[] {
-      return assembleExperienced({
-        gate: roundGates.get(roundIndex) ?? { utterance: '', inner_note: '' },
-        beats: records.filter((record) => record.roundIndex === roundIndex),
-        temperament: pack.temperament,
-      })
-    },
+    experienced: (roundIndex: number): string[] => assembleExperienced(roundInput(roundIndex)),
+    objectiveLog: (roundIndex: number): string[] => assembleObjectiveLog(roundInput(roundIndex)),
   }
 
   const beats = createBeatDriver({ schedule, state: core.port, assembler, pack })
@@ -327,10 +333,15 @@ export function createEngine(deps: EngineDeps): EngineHandle {
       const roundIndex = beat.roundIndex
       if (roundIndex === null) throw new Error(`beat ${beat.index} belongs to no round`)
       // §5 recovery: with no reporter body, facts fall back to the objective
-      // log — the assembled round events, which owe nothing to the model.
-      const facts = response === null ? assembler.experienced(roundIndex) : response.facts
+      // log — the assembled round events, which owe nothing to the model. NOT
+      // `experienced()`: that one carries the `inner_note`, and `facts` are
+      // minted, emitted and minable (see `withholdInnerNote`).
+      const facts = response === null ? assembler.objectiveLog(roundIndex) : response.facts
       const body = response === null ? SUBSTITUTE_REPORT_BODY : response.report_body
-      return buildReportSentences({ facts, report_body: body }, ids)
+      // The membrane, held on both paths: a reporter that echoed its own prompt
+      // would put the note back on the `f` channel by itself.
+      const note = roundGates.get(roundIndex)?.inner_note ?? ''
+      return buildReportSentences({ facts: withholdInnerNote(facts, note), report_body: body }, ids)
     },
 
     advance(): boolean {

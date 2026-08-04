@@ -61,8 +61,12 @@ export function spyOn(inner: Transport): SpyTransport {
  * Fails past the retry budget on `only` (or on everything when it is omitted),
  * with the `x-llm-fallback` outcome shape e6 grades a 504 into.
  */
-export function failingTransport(only?: CallType, code = 'LLM_TIMEOUT'): SpyTransport {
-  const fixture = createFixtureProvider()
+export function failingTransport(
+  only?: CallType,
+  code = 'LLM_TIMEOUT',
+  responses?: Partial<CallResponse>,
+): SpyTransport {
+  const fixture = createFixtureProvider(responses)
   const sent: CallRequest[] = []
   return {
     mode: 'live',
