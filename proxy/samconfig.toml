@@ -27,4 +27,4 @@ s3_bucket = "nhn-game-llm-artifacts-141840355276-ap-northeast-2"
 s3_prefix = "nhn-game-proxy"
 role_arn = "arn:aws:iam::141840355276:role/nhn-game-ci-proxy-cfn-exec"
 fail_on_empty_changeset = false
-parameter_overrides = "AllowedOrigin=\"https://alstjgg.github.io\" MaxTokens=\"2048\" ModelTimeoutMs=\"7000\" MaxBodyBytes=\"131072\" ReservedConcurrency=\"-1\" ThrottlingRateLimit=\"2\" ThrottlingBurstLimit=\"4\""
+parameter_overrides = "AllowedOrigin=\"https://alstjgg.github.io\" MaxTokens=\"2048\" ModelTimeoutMs=\"15000\" MaxBodyBytes=\"131072\" ReservedConcurrency=\"-1\" ThrottlingRateLimit=\"2\" ThrottlingBurstLimit=\"4\""

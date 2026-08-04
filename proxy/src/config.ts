@@ -135,8 +135,22 @@ export function loadConfig(env: NodeJS.ProcessEnv): RuntimeConfig {
     // Wider than apothecary's 16..512: a reporter body is 20-30 sentences
     // (call contracts §7-3), which does not fit in 512.
     maxTokens: boundedInteger(env, "MAX_TOKENS", 16, 4_096),
-    // API Gateway waits 9 seconds. Keep 2 seconds for validation + fallback.
-    modelTimeoutMs: boundedInteger(env, "MODEL_TIMEOUT_MS", 100, 7_000),
+    // Ceiling derived from the route timeout, keeping 3 seconds for validation
+    // and the fallback envelope: API Gateway waits 18 s, so the model gets 15 s.
+    //
+    // It was 7_000, inherited from apothecary where the route waited 9 s. That
+    // premise did not survive the first reporter measurement (2026-08-04): three
+    // production-shaped reporter calls took 7.31 / 7.48 / 8.58 s at the model,
+    // and through the deployed tier 2 of 3 came back 504 bedrock_timeout. The
+    // one that passed did so by writing 16 sentences where REPORT_GUIDANCE asks
+    // for 20-30 — it beat the clock by breaking the contract instead.
+    //
+    // The reporter is a round-boundary call, which is where architecture spec §9
+    // says latency is allowed to live. Judgment, which does sit inside the beat,
+    // measures 3.1-4.0 s and is nowhere near this ceiling.
+    // The bound IS the invariant: no env value can push the model past the
+    // route, so "model < route < Lambda" cannot be misconfigured into failing.
+    modelTimeoutMs: boundedInteger(env, "MODEL_TIMEOUT_MS", 100, 15_000),
     allowedOrigin: parseOrigin(required(env, "ALLOWED_ORIGIN")),
     maxBodyBytes: boundedInteger(env, "MAX_BODY_BYTES", 1_024, 262_144),
   };
