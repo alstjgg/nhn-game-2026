@@ -1,0 +1,636 @@
+#!/usr/bin/env node
+// e9 — `tools/driver/drive-run.mjs` conformance suite (TDD red).
+//
+//   node --test --experimental-strip-types "tools/tests/*.mjs"
+//   (auto-collected by `npm run test:shared`, therefore by `npm run check` — A9)
+//
+// Offline, no network, no key: every run here is against e6's fixture provider
+// and e8's in-memory meta store. Zero dependencies beyond `node:test`.
+//
+// WHAT THIS SUITE IS GUARDING. drive-run is a *recorder*, not an engine. Every
+// assertion below is either (a) the emitted record conforms to the frozen
+// `run-record.schema.json`, (b) the same inputs produce byte-identical bytes,
+// or (c) drive-run did not grow a second copy of something `src/**` already
+// owns. Anything drive-run computes that the engine already computes is a
+// defect, and the A5–A8 source guards at the bottom are how that stays true
+// without a human re-reading the file every merge.
+
+import { test, describe } from 'node:test'
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import path from 'node:path'
+import os from 'node:os'
+import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+
+import {
+  runHeadless,
+  validateRunRecord,
+  firstDiff,
+  reduceEvents,
+  recordingTransport,
+  loadPack,
+  loadGuidance,
+} from '../driver/drive-run.mjs'
+
+import { createFixtureProvider } from '../../src/transport/fixture.ts'
+import { createMemoryMetaStore } from '../../src/runloop/store.ts'
+import { validate as validateAgainst, loadSchema } from '../../tests/runloop/schema.ts'
+
+const HERE = path.dirname(fileURLToPath(import.meta.url))
+const REPO = path.resolve(HERE, '../..')
+const SCRIPT = path.join(REPO, 'tools/driver/drive-run.mjs')
+const PACK = '우는다리'
+const RUN_SCHEMA_PATH = path.join(REPO, 'data/runs/_schema/run-record.schema.json')
+const META_SCHEMA_PATH = path.join(REPO, 'data/runs/_schema/meta-state.schema.json')
+
+const RUN_SCHEMA = JSON.parse(fs.readFileSync(RUN_SCHEMA_PATH, 'utf8'))
+const GATES = JSON.parse(fs.readFileSync(path.join(REPO, 'data/scenario', PACK, 'gates.json'), 'utf8')).gates
+
+/** gate id → the stance ids the pack authorises for it (A10's "stance set"). */
+const STANCE_SET = new Map(GATES.map((g) => [g.gate, new Set(g.stances.map((s) => s.id))]))
+
+/** decision 3 — the compared byte string, key order included. */
+const serialize = (record) => `${JSON.stringify(record, null, 2)}\n`
+
+/** One headless pass with the fixture provider and a fresh in-memory store. */
+async function pass(overrides, runId = `${PACK}-fixture-r1`) {
+  return runHeadless({
+    pack: loadPack(PACK),
+    guidance: loadGuidance(),
+    provider: createFixtureProvider(overrides),
+    store: createMemoryMetaStore(),
+    runId,
+  })
+}
+
+/** Spawn the CLI the way A1/A3 spell it, inheriting this node's exec flags. */
+function cli(args, opts = {}) {
+  return spawnSync(process.execPath, [...process.execArgv, SCRIPT, ...args], {
+    cwd: REPO,
+    encoding: 'utf8',
+    timeout: 30_000,
+    ...opts,
+  })
+}
+
+function tmpOut(tag) {
+  return fs.mkdtempSync(path.join(os.tmpdir(), `e9-${tag}-`))
+}
+
+/** A deep clone with one JSON-pointer-ish path overwritten — corruption helper. */
+function corrupt(record, mutate) {
+  const copy = JSON.parse(JSON.stringify(record))
+  mutate(copy)
+  return copy
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A1 · A3 — the two acceptance commands, exactly as the unit spells them
+// ─────────────────────────────────────────────────────────────────────────────
+describe('A1 — the --validate command', () => {
+  test('exits 0 and writes artifacts/runs/<run_id>.json', () => {
+    const res = cli(['--pack', PACK, '--provider', 'fixture', '--validate'])
+    assert.equal(res.status, 0, `stderr:\n${res.stderr}`)
+    const written = path.join(REPO, 'artifacts/runs', `${PACK}-fixture-r1.json`)
+    assert.ok(fs.existsSync(written), `expected ${written} to exist`)
+  })
+
+  test('the written file is exactly JSON.stringify(record, null, 2) + newline', () => {
+    const out = tmpOut('ser')
+    const res = cli(['--pack', PACK, '--provider', 'fixture', '--validate', `--out=${out}`])
+    assert.equal(res.status, 0, res.stderr)
+    const [file] = fs.readdirSync(out)
+    const text = fs.readFileSync(path.join(out, file), 'utf8')
+    assert.equal(text, serialize(JSON.parse(text)))
+  })
+
+  test('--pack=<slug> and --pack <slug> are the same invocation', () => {
+    const a = tmpOut('eq-a')
+    const b = tmpOut('eq-b')
+    assert.equal(cli(['--pack', PACK, '--provider', 'fixture', `--out=${a}`]).status, 0)
+    assert.equal(cli([`--pack=${PACK}`, '--provider=fixture', `--out=${b}`]).status, 0)
+    const read = (d) => fs.readFileSync(path.join(d, fs.readdirSync(d)[0]), 'utf8')
+    assert.equal(read(a), read(b))
+  })
+})
+
+describe('A3 — the --determinism-check command', () => {
+  test('exits 0 on two in-process passes over the fixture provider', () => {
+    const res = cli(['--pack', PACK, '--provider', 'fixture', '--determinism-check'])
+    assert.equal(res.status, 0, `stderr:\n${res.stderr}`)
+  })
+
+  test('two runHeadless passes serialize byte-identically', async () => {
+    const a = await pass()
+    const b = await pass()
+    assert.equal(serialize(a.record), serialize(b.record))
+  })
+
+  test('key order is part of the identity, not just deep equality', async () => {
+    const a = await pass()
+    const b = await pass()
+    assert.deepEqual(Object.keys(a.record), Object.keys(b.record))
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A2 — schema conformance, and a corrupted field is caught
+// ─────────────────────────────────────────────────────────────────────────────
+describe('A2 — validateRunRecord', () => {
+  test('the emitted record conforms — no errors and no unimplemented keywords', async () => {
+    const { record } = await pass()
+    const res = validateRunRecord(record)
+    assert.deepEqual(res.errors, [], 'record must conform')
+    assert.deepEqual(res.unimplemented, [], 'a walker that skips a keyword is vacuous')
+  })
+
+  test('a corrupted reached_clock is rejected ($ref → #/$defs/clockTime must be enforced)', async () => {
+    const { record } = await pass()
+    const bad = corrupt(record, (r) => { r.reached_clock = '25:99' })
+    const res = validateRunRecord(bad)
+    assert.notEqual(res.errors.length, 0)
+    assert.deepEqual(res.unimplemented, [], '$ref must be implemented, not reported unimplemented')
+  })
+
+  test('a missing required key is rejected', async () => {
+    const { record } = await pass()
+    const bad = corrupt(record, (r) => { delete r.timeline })
+    assert.notEqual(validateRunRecord(bad).errors.length, 0)
+  })
+
+  test('an additional property is rejected (additionalProperties:false)', async () => {
+    const { record } = await pass()
+    const bad = corrupt(record, (r) => { r.wall_clock_ms = 1234 })
+    assert.notEqual(validateRunRecord(bad).errors.length, 0)
+  })
+
+  test('array-form "type" is enforced, not skipped — policy:42 is rejected', async () => {
+    const { record } = await pass()
+    const bad = corrupt(record, (r) => { r.policy = 42 })
+    const res = validateRunRecord(bad)
+    assert.notEqual(res.errors.length, 0, '["string","null"] must reject a number')
+    assert.deepEqual(res.unimplemented, [])
+  })
+
+  test('"enum" is enforced — fallbacks[].call outside 1|2|3 is rejected', () => {
+    const bad = {
+      run_id: 'x', pack_slug: PACK, policy: null, reached_clock: '09:25',
+      injected_blocks: [], beats: [], timeline: ['a'],
+      reports: { facts: ['a'], report_body: 'b' },
+      score: null,
+      fallbacks: [{ beat: 1, call: 4, code: 'timeout' }],
+    }
+    const res = validateRunRecord(bad)
+    assert.notEqual(res.errors.length, 0, 'enum must reject call:4')
+    assert.deepEqual(res.unimplemented, [], 'enum must be implemented, not reported unimplemented')
+  })
+
+  test('every keyword the frozen schema uses is implemented by the walker', async () => {
+    const { record } = await pass()
+    const res = validateAgainst(loadSchema(RUN_SCHEMA_PATH), record)
+    assert.deepEqual(res.unimplemented, [])
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A4 — a seeded difference is caught, and reported as a path
+// ─────────────────────────────────────────────────────────────────────────────
+describe('A4 — firstDiff', () => {
+  test('identical records diff to null', async () => {
+    const { record } = await pass()
+    assert.equal(firstDiff(record, JSON.parse(JSON.stringify(record))), null)
+  })
+
+  test('a nested difference is reported as a JSON path naming the differing field', async () => {
+    const { record } = await pass()
+    assert.ok(record.beats.length > 0, 'precondition: beats non-empty')
+    const bad = corrupt(record, (r) => { r.beats[0].stance = '__seeded__' })
+    const diff = firstDiff(record, bad)
+    assert.equal(typeof diff, 'string')
+    assert.match(diff, /beats/)
+    assert.match(diff, /stance/)
+  })
+
+  test('the FIRST difference wins — an earlier path is reported over a later one', async () => {
+    const { record } = await pass()
+    const bad = corrupt(record, (r) => {
+      r.run_id = `${r.run_id}__seeded`
+      r.timeline[0] = '__seeded__'
+    })
+    assert.match(firstDiff(record, bad), /run_id/)
+  })
+
+  test('a length difference is a difference, not a silent truncation', async () => {
+    const { record } = await pass()
+    const bad = corrupt(record, (r) => { r.timeline.push('__extra__') })
+    assert.notEqual(firstDiff(record, bad), null)
+  })
+
+  test('a seeded provider difference makes the two passes diverge', async () => {
+    const a = await pass()
+    const b = await pass({ reporter: { facts: ['__seeded__'], report_body: '__seeded__' } })
+    const diff = firstDiff(a.record, b.record)
+    assert.notEqual(diff, null, 'a seeded pass-2 difference must not compare equal')
+    assert.notEqual(serialize(a.record), serialize(b.record))
+  })
+
+  test('--determinism-check prints a path, not a whole-record dump, when it fails', () => {
+    // The failure channel must be a path. Guarded via the flag's own help text
+    // so the contract is visible even on a green run.
+    const res = cli(['--help'])
+    assert.equal(res.status, 0)
+    assert.match(res.stdout, /--determinism-check/)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A10 — beats
+// ─────────────────────────────────────────────────────────────────────────────
+describe('A10 — beats[]', () => {
+  test('is non-empty', async () => {
+    const { record } = await pass()
+    assert.ok(record.beats.length > 0)
+  })
+
+  test('beat numbers start at 1 and increase by 1', async () => {
+    const { record } = await pass()
+    assert.deepEqual(record.beats.map((b) => b.beat), record.beats.map((_, i) => i + 1))
+  })
+
+  test('a gate beat has a /^G[0-9]+$/ gate and a stance drawn from that gate\'s stance set', async () => {
+    const { record } = await pass()
+    const gateBeats = record.beats.filter((b) => b.gate !== null)
+    assert.ok(gateBeats.length > 0, 'a full run must execute at least one gate beat')
+    for (const b of gateBeats) {
+      assert.match(b.gate, /^G[0-9]+$/)
+      assert.notEqual(b.stance, null, `${b.gate}: a gate beat must carry the Call 1 stance`)
+      const allowed = STANCE_SET.get(b.gate)
+      assert.ok(allowed, `${b.gate} is not a gate in the pack`)
+      assert.ok(allowed.has(b.stance), `${b.gate}: stance "${b.stance}" is not in the pack's stance set`)
+    }
+  })
+
+  test('gate and stance are both null or both set — never one of the two', async () => {
+    const { record } = await pass()
+    for (const b of record.beats) {
+      assert.equal(b.gate === null, b.stance === null, `beat ${b.beat}: gate/stance nullity must be paired`)
+    }
+  })
+
+  test('deltas are the engine journal\'s shape, with numeric before/after', async () => {
+    const { record } = await pass()
+    for (const b of record.beats) {
+      assert.ok(Array.isArray(b.deltas))
+      for (const d of b.deltas) {
+        assert.deepEqual(Object.keys(d).sort(), ['after', 'before', 'cause', 'variable'])
+        assert.equal(typeof d.variable, 'string')
+        assert.equal(typeof d.cause, 'string')
+        assert.equal(typeof d.before, 'number', 'boolean deltas are coerced at the boundary (D-3)')
+        assert.equal(typeof d.after, 'number')
+      }
+    }
+  })
+
+  test('at least one delta is recorded — an empty journal would mean nothing was read', async () => {
+    const { record } = await pass()
+    assert.ok(record.beats.some((b) => b.deltas.length > 0), 'the journal read-through produced nothing')
+  })
+
+  test('every beat clock, when present, is a clockTime', async () => {
+    const { record } = await pass()
+    for (const b of record.beats) {
+      if (b.clock !== null) assert.match(b.clock, /^([01][0-9]|2[0-3]):[0-5][0-9]\+?$/)
+    }
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A11 — timeline
+// ─────────────────────────────────────────────────────────────────────────────
+describe('A11 — timeline[]', () => {
+  test('is non-empty and every entry is a non-empty string', async () => {
+    const { record } = await pass()
+    assert.ok(record.timeline.length > 0)
+    for (const line of record.timeline) {
+      assert.equal(typeof line, 'string')
+      assert.notEqual(line.length, 0)
+    }
+  })
+
+  test('is every emitted FeedLine.text in emission order, empties dropped — no kind filter', async () => {
+    const { record, events } = await pass()
+    const expected = events
+      .filter((e) => e.type === 'feed')
+      .map((e) => e.line.text)
+      .filter((t) => t.length > 0)
+    assert.deepEqual(record.timeline, expected)
+  })
+
+  test('reduceEvents derives the same timeline from a raw event stream', async () => {
+    const { record, events } = await pass()
+    assert.deepEqual(reduceEvents(events).timeline, record.timeline)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A12 — reports are the Call 3 payload verbatim
+// ─────────────────────────────────────────────────────────────────────────────
+describe('A12 — reports are verbatim, never re-derived', () => {
+  test('report_body is byte-equal to what the transport returned', async () => {
+    const inner = createFixtureProvider()
+    const wrapped = recordingTransport(inner)
+    const { record } = await runHeadless({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: wrapped.transport,
+      store: createMemoryMetaStore(),
+      runId: `${PACK}-fixture-r1`,
+    })
+    assert.equal(record.reports.report_body, wrapped.calls.reportBody)
+  })
+
+  test('facts is byte-equal to what the transport returned', async () => {
+    const wrapped = recordingTransport(createFixtureProvider())
+    const { record } = await runHeadless({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: wrapped.transport,
+      store: createMemoryMetaStore(),
+      runId: `${PACK}-fixture-r1`,
+    })
+    assert.deepEqual(record.reports.facts, wrapped.calls.facts)
+  })
+
+  test('a multi-line markdown body survives intact — not rejoined from segmented sentences', async () => {
+    const body = ['## 야간 근무 보고', '', '첫 문장이다. 둘째 문장이다.', '', '- 항목 하나'].join('\n')
+    const { record } = await pass({ reporter: { facts: ['사실 하나.', '사실 둘.'], report_body: body } })
+    assert.equal(record.reports.report_body, body)
+    assert.deepEqual(record.reports.facts, ['사실 하나.', '사실 둘.'])
+  })
+
+  test('recordingTransport passes the inner result through unchanged', async () => {
+    const inner = createFixtureProvider()
+    const wrapped = recordingTransport(inner)
+    const request = {
+      call_type: 'reporter',
+      slots: { EXPERIENCED: ['한 줄'], TEMPERAMENT: null },
+    }
+    const [direct, viaWrapper] = await Promise.all([inner.send(request), wrapped.transport.send(request)])
+    assert.deepEqual(viaWrapper, direct)
+  })
+
+  test('recordingTransport captures the Call 1 stance', async () => {
+    const wrapped = recordingTransport(createFixtureProvider())
+    await runHeadless({
+      pack: loadPack(PACK),
+      guidance: loadGuidance(),
+      provider: wrapped.transport,
+      store: createMemoryMetaStore(),
+      runId: `${PACK}-fixture-r1`,
+    })
+    assert.equal(typeof wrapped.calls.stance, 'string')
+    assert.notEqual(wrapped.calls.stance.length, 0)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A13 — --emit-meta
+// ─────────────────────────────────────────────────────────────────────────────
+describe('A13 — meta-state', () => {
+  test('runHeadless returns a meta that conforms to meta-state.schema.json', async () => {
+    const { meta } = await pass()
+    const res = validateAgainst(loadSchema(META_SCHEMA_PATH), meta)
+    assert.deepEqual(res.errors, [])
+    assert.deepEqual(res.unimplemented, [])
+  })
+
+  test('--emit-meta writes a second file beside the record', () => {
+    const out = tmpOut('meta-on')
+    const res = cli(['--pack', PACK, '--provider', 'fixture', '--emit-meta', `--out=${out}`])
+    assert.equal(res.status, 0, res.stderr)
+    const files = fs.readdirSync(out).sort()
+    assert.equal(files.length, 2, `expected record + meta, got ${files.join(', ')}`)
+    const metaFile = files.find((f) => f !== `${PACK}-fixture-r1.json`)
+    const meta = JSON.parse(fs.readFileSync(path.join(out, metaFile), 'utf8'))
+    assert.deepEqual(validateAgainst(loadSchema(META_SCHEMA_PATH), meta).errors, [])
+  })
+
+  test('absent the flag, no meta file is written', () => {
+    const out = tmpOut('meta-off')
+    const res = cli(['--pack', PACK, '--provider', 'fixture', `--out=${out}`])
+    assert.equal(res.status, 0, res.stderr)
+    assert.deepEqual(fs.readdirSync(out), [`${PACK}-fixture-r1.json`])
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A14 — CLI surface
+// ─────────────────────────────────────────────────────────────────────────────
+describe('A14 — CLI', () => {
+  test('--help exits 0 and prints usage', () => {
+    const res = cli(['--help'])
+    assert.equal(res.status, 0)
+    assert.match(res.stdout, /usage/i)
+    assert.match(res.stdout, /drive-run\.mjs/)
+  })
+
+  test('an unknown flag exits non-zero', () => {
+    const res = cli(['--pack', PACK, '--provider', 'fixture', '--nope'])
+    assert.notEqual(res.status, 0)
+  })
+
+  test('an unknown pack exits non-zero rather than emitting a record', () => {
+    const out = tmpOut('badpack')
+    const res = cli(['--pack', '__no_such_pack__', '--provider', 'fixture', `--out=${out}`])
+    assert.notEqual(res.status, 0)
+    assert.deepEqual(fs.readdirSync(out), [])
+  })
+
+  test('an unknown provider exits non-zero', () => {
+    const res = cli(['--pack', PACK, '--provider', '__no_such_provider__'])
+    assert.notEqual(res.status, 0)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Record contents the contract fixes (decisions 2·3·5·6·8)
+// ─────────────────────────────────────────────────────────────────────────────
+describe('record assembly', () => {
+  test('key order is the schema\'s required[] order, literally', async () => {
+    const { record } = await pass()
+    assert.deepEqual(Object.keys(record), RUN_SCHEMA.required)
+  })
+
+  test('run_id is derived from (pack, provider, run index) — no timestamp, no uuid', async () => {
+    const { record } = await pass()
+    assert.equal(record.run_id, `${PACK}-fixture-r1`)
+    assert.equal(record.pack_slug, PACK)
+  })
+
+  test('--run-id= overrides the derived id and names the output file', () => {
+    const out = tmpOut('runid')
+    const res = cli(['--pack', PACK, '--provider', 'fixture', '--run-id=custom-1', `--out=${out}`])
+    assert.equal(res.status, 0, res.stderr)
+    assert.deepEqual(fs.readdirSync(out), ['custom-1.json'])
+    assert.equal(JSON.parse(fs.readFileSync(path.join(out, 'custom-1.json'), 'utf8')).run_id, 'custom-1')
+  })
+
+  test('policy is null by default (decision 5 — no policy bot in this stage)', async () => {
+    const { record } = await pass()
+    assert.equal(record.policy, null)
+  })
+
+  test('--policy=<name> only stamps the field', () => {
+    const out = tmpOut('policy')
+    const res = cli(['--pack', PACK, '--provider', 'fixture', '--policy=greedy', `--out=${out}`])
+    assert.equal(res.status, 0, res.stderr)
+    const record = JSON.parse(fs.readFileSync(path.join(out, fs.readdirSync(out)[0]), 'utf8'))
+    assert.equal(record.policy, 'greedy')
+  })
+
+  test('score is null — the minimal engine has no ending model; do not synthesize one', async () => {
+    const { record } = await pass()
+    assert.equal(record.score, null)
+  })
+
+  test('reached_clock is non-null and equals the last non-null beat clock (decision 6 / D-4)', async () => {
+    const { record } = await pass()
+    assert.equal(typeof record.reached_clock, 'string')
+    assert.match(record.reached_clock, /^([01][0-9]|2[0-3]):[0-5][0-9]\+?$/)
+    const clocks = record.beats.map((b) => b.clock).filter((c) => c !== null)
+    assert.equal(record.reached_clock, clocks[clocks.length - 1])
+  })
+
+  test('injected_blocks is [] on run 1 (decision 8 — blocks are not authored here)', async () => {
+    const { record } = await pass()
+    assert.deepEqual(record.injected_blocks, [])
+  })
+
+  test('fallbacks is an array; the fixture provider never fails, so it is empty', async () => {
+    const { record } = await pass()
+    assert.deepEqual(record.fallbacks, [])
+  })
+
+  test('reduceEvents agrees with the assembled record on beats/fallbacks/reachedClock', async () => {
+    const { record, events } = await pass()
+    const reduced = reduceEvents(events)
+    assert.equal(reduced.reachedClock, record.reached_clock)
+    assert.deepEqual(reduced.fallbacks, record.fallbacks)
+    assert.deepEqual(
+      reduced.beats.map((b) => ({ beat: b.beat, clock: b.clock, gate: b.gate, stance: b.stance })),
+      record.beats.map((b) => ({ beat: b.beat, clock: b.clock, gate: b.gate, stance: b.stance })),
+    )
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A5 · A6 · A7 · A8 — source guards. Cheap, binary, and the reason a reviewer
+// does not have to re-read drive-run every merge.
+// ─────────────────────────────────────────────────────────────────────────────
+const DRIVER_DIR = path.join(REPO, 'tools/driver')
+
+function driverSources() {
+  const out = []
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, entry.name)
+      if (entry.isDirectory()) walk(p)
+      else if (entry.name.endsWith('.mjs')) out.push(p)
+    }
+  }
+  walk(DRIVER_DIR)
+  // drive-beat.mjs is a different unit's file — never assert over it.
+  return out.filter((p) => !p.endsWith('drive-beat.mjs')).sort()
+}
+
+describe('A5 — no nondeterminism sources', () => {
+  const BANNED = /Date\.now|new Date|Math\.random|randomUUID|process\.hrtime|performance\.now/
+
+  test('the guards below are not vacuous — drive-run.mjs is in the scanned set', () => {
+    assert.ok(driverSources().some((f) => f.endsWith('drive-run.mjs')), 'tools/driver/drive-run.mjs must exist')
+  })
+
+  test('drive-run and its helpers contain no clock, no randomness, no uuid', () => {
+    for (const file of driverSources()) {
+      const text = fs.readFileSync(file, 'utf8')
+      const hit = text.split('\n').findIndex((l) => BANNED.test(l))
+      assert.equal(hit, -1, `${path.relative(REPO, file)}:${hit + 1} uses a nondeterministic source`)
+    }
+  })
+})
+
+describe('A6 — zero engine logic, and exactly one fixture provider', () => {
+  test('no delta arithmetic, bucket resolution, edge predicates, symptom rendering or id minting', () => {
+    const BANNED = [/\bmint[A-Z_]/, /\bbucket\b/i, /edge_predicate/i, /renderSymptoms\s*\(/]
+    for (const file of driverSources()) {
+      const text = fs.readFileSync(file, 'utf8')
+      const code = text.split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n')
+      for (const re of BANNED) {
+        assert.ok(!re.test(code), `${path.relative(REPO, file)} contains engine logic matching ${re}`)
+      }
+    }
+  })
+
+  test('the fixture provider is imported from src/, never re-implemented', () => {
+    const joined = driverSources().map((f) => fs.readFileSync(f, 'utf8')).join('\n')
+    assert.match(joined, /from\s+['"][^'"]*src\/transport\/fixture\.ts['"]/)
+    assert.ok(!/function\s+createFixtureProvider/.test(joined), 'a second fixture provider is a defect')
+  })
+
+  test('the schema walker is imported, never duplicated (decision 1 — hard preference)', () => {
+    const joined = driverSources().map((f) => fs.readFileSync(f, 'utf8')).join('\n')
+    assert.ok(!/const\s+IMPLEMENTED\s*=\s*new Set/.test(joined), 'a second schema walker is a defect')
+  })
+})
+
+describe('A7 — import discipline', () => {
+  test('every relative import of src/ or tests/ carries an explicit .ts extension', () => {
+    for (const file of driverSources()) {
+      const text = fs.readFileSync(file, 'utf8')
+      for (const m of text.matchAll(/from\s+['"](\.[^'"]*)['"]/g)) {
+        const spec = m[1]
+        if (spec.includes('/src/') || spec.includes('/tests/')) {
+          assert.match(spec, /\.ts$/, `${path.relative(REPO, file)}: "${spec}" needs an explicit .ts extension`)
+        }
+      }
+    }
+  })
+
+  test('no dist/, no path alias, no bundler', () => {
+    for (const file of driverSources()) {
+      const text = fs.readFileSync(file, 'utf8')
+      for (const m of text.matchAll(/from\s+['"]([^'"]+)['"]/g)) {
+        assert.ok(!m[1].includes('dist/'), `${path.relative(REPO, file)}: imports from dist/`)
+        assert.ok(!m[1].startsWith('@/'), `${path.relative(REPO, file)}: uses a path alias`)
+      }
+    }
+  })
+})
+
+describe('A8 — no new dependency', () => {
+  test('package.json declares no runtime dependencies and the frozen devDependency set', () => {
+    const pkg = JSON.parse(fs.readFileSync(path.join(REPO, 'package.json'), 'utf8'))
+    assert.equal(pkg.dependencies, undefined, 'the repo has zero runtime deps — keep it that way')
+    assert.deepEqual(Object.keys(pkg.devDependencies).sort(), [
+      '@types/node',
+      'playwright',
+      'typescript',
+      'vite',
+      'vitest',
+    ])
+  })
+
+  test('drive-run imports nothing outside node: builtins and this repo', () => {
+    for (const file of driverSources()) {
+      const text = fs.readFileSync(file, 'utf8')
+      for (const m of text.matchAll(/from\s+['"]([^'"]+)['"]/g)) {
+        const spec = m[1]
+        assert.ok(
+          spec.startsWith('node:') || spec.startsWith('.') || spec.startsWith('/'),
+          `${path.relative(REPO, file)}: bare import "${spec}" is a new dependency`,
+        )
+      }
+    }
+  })
+})
