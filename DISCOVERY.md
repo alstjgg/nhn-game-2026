@@ -840,6 +840,44 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   this document does · integrator / harness. (`discovery/u1.md` §8,
   `discovery/u10.md` §6.2)
 
+- [u10] **Upstream's webfont slices are not disjoint — the partition is ours.**
+  `tests/assets/unicode-range-coverage.test.ts` requires the slices of one Korean
+  family/weight to be non-overlapping; Google's own sheet is not (each Korean
+  weight ends with a "most common glyphs" slice and a `latin` slice that
+  re-declare codepoints the numbered block slices already carry, and the cascade
+  resolves each codepoint to the *last* face that claims it). So
+  `tools/fonts/vendor-google-webfonts.mjs` bakes the cascade into the
+  declarations — walking each family/weight backwards, a face keeps only what no
+  later face claimed. Coverage is byte-for-byte upstream's; the declarations are
+  a deliberate divergence from upstream's literal `unicode-range` strings, and
+  re-running the vendor script is the only supported way to regenerate them ·
+  u10, recorded for whoever next touches the sheet. (`discovery/u10.md` §2)
+- [u4s] **A slotted card cannot start a drag, so "drag a card out of a slot"
+  has no source at the seam.** `buildBlockCard` attaches `dragstart` only when
+  `inSlot` is false, and the in-slot card is u4-owned DOM inside `slot-board.ts`
+  which [u4s#c7] forbids u4s from editing; design D6's "click a slotted card to
+  unslot" is likewise delegated to u4's `.slot-unset` button.
+  `e2e/block-store.spec.ts` therefore drives that direction synthetically — id on
+  a `DataTransfer`, `dragover`/`drop` on `#w-store .win-body`, the half u4s owns.
+  If the design intends a real mouse drag out of a slot, u4's card builder needs
+  `draggable` in the slotted branch · u4. (`discovery/u4s.md` §C 6)
+- [u11] **`e2e/red-thread.spec.ts:201` was time-flaky under full-suite load —
+  closed at u11 attempt 2, recorded so it is not re-derived.** The case asserted
+  `toHaveCount(1)` on a re-drawn thread while the layer was still settling under
+  six workers; the cause was the test's wait, not the thread layer, and the fix
+  stayed test-side (`__shell.drain()` + a `pathData()` comparison). Green at
+  230/230 on the integration branch · closed. (`discovery/u11.md` VERIFY 1 §2 /
+  VERIFY 2)
+- [u9] **All five window bodies were blank paper at u9's merge**, against a
+  reference with full content — expected (u4–u8 were out of scope at that point,
+  C1) and named only so a reader of that snapshot does not take the empty desk
+  for a regression. Superseded on the integrated branch, where every pane
+  renders · closed. (`discovery/u9.md` §3)
+- [u3] **Inheritor note (u3):** the five window bodies are `overflow:auto`
+  (`.paper`) except LIVE FEED's `.fanfold`, and `WINDOW_REGISTRY`
+  (`shell/window-registry.ts`) is the only place that names the five windows —
+  any unit adding a pane goes through it · u3. (`discovery/u3.md` §D 14)
+
 ## Reference ambiguities
 
 
@@ -1037,6 +1075,33 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   `flag-off-check` layout and leaves no `dist/index.html`, so any later
   `vite preview` 404s until `npm run build` is re-run. (Promoted from nuisance to
   gate failure by the C5 split and fixed test-side at u11 — see Seam friction.)
+
+- [u0] **The reference shots are time-bearing, so a downstream visual check needs
+  a *driven* clock, not merely a settled one.**
+  `.claude/super/reference-shots/boot-scanline.png` shows live values (`SIM 13:18`,
+  `D-DAY −07`, `RUN 03 / 10`). u0's capture used `page.clock.install({time:0})`
+  before navigation plus `clock.runFor(1200)`, which sufficed for the rAF-driven
+  placeholder (at tick 0 the canvas is blank), but any unit reproducing those
+  values must reach the *driver* state behind them — a fixed virtual tick alone
+  will not · every capture-owning unit. (`discovery/u0.md` verify §3; compare the
+  [u8] `page.clock` finding under Seam friction, and C16's seed/advance hook,
+  which is the answer this run shipped.)
+- [u11] **The P0-B shot list cannot frame the AGENT FILE masthead and the red
+  thread in the same shot.** `drawThread()` seats the run's first two blocks and
+  then scrolls the last filled slot into view — [u8#c3]'s visible-rect
+  requirement — which pushes the file's masthead (`문서번호 …` ·
+  `현장 요원 운용 파일` · `호출부호 ECHO-1`) out of the window body before the
+  shot. The element itself is fine: on a settled dev host `#w-file .fh-title`
+  computes `visibility:visible` at `(913,157) 164×24` with `scrollTop === 0`. So
+  on this build the reference's file header and the reference's thread are
+  mutually exclusive framings; a spec that wants both needs a taller AGENT FILE
+  body or a slot seeded high enough to need no scroll — a shot-list question,
+  not a defect · shot-list owner. (`discovery/u11.md` VERIFY 2 §1)
+- [u0] **`index.html`'s `<title>` was still "NHN Game 2026 — placeholder"** at
+  u0, against a reference that is an NDSP-2 / 우는다리 case surface; u0 owns the
+  file but the rename belongs to whoever mounts the shell. **RESOLVED on the
+  integration branch** — `index.html:7` now reads
+  `NDSP-2 · 우는다리 — 운영자 단말`. (`discovery/u0.md` verify §2)
 
 ## Invariant-vs-reference deviations
 
