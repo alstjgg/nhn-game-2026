@@ -26,6 +26,7 @@ import { fileURLToPath } from 'node:url'
 import {
   assembleRecord,
   bindRun,
+  persistRun,
   provenanceOf,
   runHeadless,
   validateRunRecord,
@@ -524,6 +525,99 @@ describe('record assembly', () => {
       reduced.beats.map((b) => ({ beat: b.beat, clock: b.clock, gate: b.gate, stance: b.stance })),
       record.beats.map((b) => ({ beat: b.beat, clock: b.clock, gate: b.gate, stance: b.stance })),
     )
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A failed Call 3 is not an empty report — review finding C.
+//
+// The recorder used to answer a reporter failure with `{facts: [], report_body:
+// ''}`, which `run-record.schema.json` rejects (`report_body` has minLength 1),
+// and the CLI wrote the file anyway because the write sat outside the
+// `--validate` branch. Both halves are asserted here.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The fixture provider, with Call 3 turned into a hard failure. No second provider. */
+function reporterFails(inner = createFixtureProvider()) {
+  return {
+    mode: inner.mode,
+    async send(request) {
+      if (request.call_type !== 'reporter') return inner.send(request)
+      return {
+        ok: false,
+        call_type: request.call_type,
+        fallback: true,
+        code: 'upstream_timeout',
+        message: 'seeded failure',
+        requestId: null,
+        attempts: 2,
+      }
+    },
+  }
+}
+
+describe('review finding C — a failed Call 3 never becomes an empty report', () => {
+  test('runHeadless refuses to record a run whose reporter call never landed', async () => {
+    await assert.rejects(
+      () =>
+        runHeadless({
+          pack: loadPack(PACK),
+          guidance: loadGuidance(),
+          provider: reporterFails(),
+          store: createMemoryMetaStore(),
+          runId: `${PACK}-fixture-r1`,
+        }),
+      /Call 3 never landed/,
+    )
+  })
+
+  test('the fabricated record the old path produced is one the schema rejects', () => {
+    const fabricated = {
+      run_id: 'x', pack_slug: PACK, policy: null, reached_clock: '09:25',
+      injected_blocks: [], beats: [], timeline: ['a'],
+      reports: { facts: [], report_body: '' },
+      score: null, fallbacks: [{ beat: 1, call: 3, code: 'upstream_timeout' }],
+    }
+    const res = validateRunRecord(fabricated)
+    assert.ok(
+      res.errors.some((e) => /report_body/.test(e)),
+      `expected a report_body minLength complaint, got ${JSON.stringify(res.errors)}`,
+    )
+  })
+
+  test('persistRun writes nothing when the record does not conform', () => {
+    const out = tmpOut('invalid')
+    const invalid = {
+      run_id: 'invalid-1', pack_slug: PACK, policy: null, reached_clock: '09:25',
+      injected_blocks: [], beats: [], timeline: ['a'],
+      reports: { facts: [], report_body: '' },
+      score: null, fallbacks: [],
+    }
+    assert.throws(() => persistRun({ record: invalid, outDir: out }), /does not conform/)
+    assert.deepEqual(fs.readdirSync(out), [], 'an invalid record must never reach the disk')
+  })
+
+  test('persistRun validates without being asked — the flag is not the guard', () => {
+    const out = tmpOut('nometa')
+    const invalid = {
+      run_id: 'invalid-2', pack_slug: PACK, policy: null, reached_clock: 'not-a-clock',
+      injected_blocks: [], beats: [], timeline: ['a'],
+      reports: { facts: ['f'], report_body: 'b' },
+      score: null, fallbacks: [],
+    }
+    assert.throws(() => persistRun({ record: invalid, outDir: out }), /does not conform/)
+    assert.deepEqual(fs.readdirSync(out), [])
+  })
+
+  test('a conforming record is still written, with and without a meta-state', async () => {
+    const { record, meta } = await pass()
+    const out = tmpOut('valid')
+    const paths = persistRun({ record, meta, outDir: out })
+    assert.equal(paths.metaPath !== null, true)
+    assert.deepEqual(fs.readdirSync(out).sort(), [
+      `${PACK}-fixture-r1.json`,
+      `${PACK}-fixture-r1.meta.json`,
+    ])
   })
 })
 

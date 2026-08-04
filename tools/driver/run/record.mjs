@@ -178,6 +178,18 @@ export function assembleRecord({
 }) {
   const deltasByBeat = new Map(journals.map((journal) => [journal.beat, journal.deltas]))
 
+  // Review finding C. `reports` is the Call 3 payload verbatim (A12) and
+  // `report_body` has `minLength: 1` in the schema, so a run whose reporter
+  // call never landed has no report to record — `{facts: [], report_body: ''}`
+  // was a fabrication that no schema accepts and that stage 6 would read as a
+  // real, empty report. The fallback itself is already in `fallbacks[]`.
+  if (calls.facts === null || calls.reportBody === null) {
+    throw new Error(
+      `run ${runId}: Call 3 never landed — refusing to record an empty report ` +
+        '(the failure is in fallbacks[]; rejoining the segmented sentences is banned by A12)',
+    )
+  }
+
   return {
     run_id: runId,
     pack_slug: packSlug,
@@ -197,8 +209,8 @@ export function assembleRecord({
     })),
     timeline: [...reduced.timeline],
     reports: {
-      facts: calls.facts === null ? [] : [...calls.facts],
-      report_body: calls.reportBody === null ? '' : calls.reportBody,
+      facts: [...calls.facts],
+      report_body: calls.reportBody,
     },
     score: null,
     fallbacks: reduced.fallbacks.map((entry) => ({
