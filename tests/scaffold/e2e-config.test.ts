@@ -57,12 +57,17 @@ describe('[u0#c5] playwright.config.ts resolved value', () => {
     expect(viewport).toEqual({ width: 1280, height: 800 })
   })
 
-  it('(c) webServer runs the vite dev server on fixed port 5174 (C5)', async () => {
+  // C5 (updated 08-04): the §3.7 pack-copy plugin landed, so the e2e runner
+  // serves a real build through `vite preview` instead of the dev server. The
+  // previous ruling — and this case's `not.toMatch(/preview/)` — are obsolete;
+  // reconciled here rather than deleted, per C12.
+  it('(c) webServer serves a real build with vite preview on fixed port 5174 (C5)', async () => {
     const command = (await loadConfig()).webServer?.command ?? ''
-    expect(command).toMatch(/npm run dev/)
+    expect(command).toMatch(/npm run preview/)
+    expect(command).toMatch(/npm run build/)
     expect(command).toContain('--port 5174')
     expect(command).toContain('--strictPort')
-    expect(command, 'e2e must not serve dist/ — §3.7 pack-copy plugin is absent').not.toMatch(/preview/)
+    expect(command, 'the e2e server is the preview of a build, never the dev server').not.toMatch(/npm run dev/)
   })
 
   it('(d) baseURL is the dev server plus the vite base', async () => {

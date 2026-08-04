@@ -26,6 +26,8 @@ export type { FixtureRun, OpResponse } from './fixtures/types.ts'
 
 export { demoRun } from './demo-run.ts'
 
+export { createRunLoopDriver, demoRunLoop } from './run-loop.ts'
+
 export {
   freezeAnimations,
   thawAnimations,
