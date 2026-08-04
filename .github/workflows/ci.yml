@@ -45,6 +45,13 @@ jobs:
       # this fix to resolve. Track re-inclusion once that scaffold test is updated
       # or retired.
       - run: npm test -- --exclude 'tests/scaffold/layout.test.ts'
+      # A16 and A17. `deploy.yml` already runs `npm run build`, but only on push
+      # to main — i.e. after a merge, which is too late to gate one. The probe's
+      # self-test ran in no job at all: `tools/probe/**` is a frozen input this
+      # build must not break, and nothing was checking. Both are cheap and
+      # offline (no key, no network).
+      - run: npm run build
+      - run: npm run probe:selftest
 
   # Proxy: prompt-bundle drift + typecheck + 36 tests, all offline (no AWS, no
   # Bedrock credentials needed — that is the point of the mocked provider).

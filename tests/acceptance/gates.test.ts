@@ -2,9 +2,22 @@
 //
 // The five integration gates (A14–A19) are COMMANDS, not vitest cases: `cd
 // proxy && npm ci` mutates `proxy/node_modules`, and shelling out would make
-// this suite non-hermetic (design D6). What is testable here is that each gate
-// was run and its result written down, so a green suite cannot hide a gate
-// nobody executed.
+// this suite non-hermetic (design D6).
+//
+// **What this file does and does not prove** (r2, review round 2). It is a
+// PRESENCE census: it asserts that each gate command appears in
+// `discovery/e10.md`. It does NOT assert that the command ran, and it does not
+// look for a result — a prose line mentioning `npm ci` satisfies its check as
+// surely as a recorded pass would. An earlier version of this comment claimed
+// "a green suite cannot hide a gate nobody executed", which is not what the
+// assertions below do; the claim is withdrawn.
+//
+// Execution is enforced where it belongs — in CI, which is not hermetic and is
+// allowed to shell out. `.github/workflows/ci.yml`'s root job runs `npm run
+// check`, the vitest suite, `npm run build` (A16) and `npm run probe:selftest`
+// (A17); the `proxy` job runs A18. A19 (frozen inputs) is still enforced by
+// VERIFY's `git diff` guard during a run and by review afterwards, not by any
+// job — that gap is real and is recorded in `discovery/e10.md`.
 import { describe, expect, it } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
