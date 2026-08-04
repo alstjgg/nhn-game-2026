@@ -39,7 +39,7 @@ import {
 
 import { createFixtureProvider } from '../../src/transport/fixture.ts'
 import { createMemoryMetaStore } from '../../src/runloop/store.ts'
-import { validate as validateAgainst, loadSchema } from '../../tests/runloop/schema.ts'
+import { validate as validateAgainst, loadSchema } from '../driver/run/schema.ts'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const REPO = path.resolve(HERE, '../..')
@@ -68,13 +68,17 @@ async function pass(overrides, runId = `${PACK}-fixture-r1`) {
   })
 }
 
-/** Spawn the CLI the way A1/A3 spell it, inheriting this node's exec flags. */
+/**
+ * Spawn the CLI the way A1/A3 spell it, inheriting this node's exec flags.
+ * `opts.script` points the run at a copy of the tool elsewhere (the ship test).
+ */
 function cli(args, opts = {}) {
-  return spawnSync(process.execPath, [...process.execArgv, SCRIPT, ...args], {
+  const { script = SCRIPT, ...spawnOpts } = opts
+  return spawnSync(process.execPath, [...process.execArgv, script, ...args], {
     cwd: REPO,
     encoding: 'utf8',
     timeout: 30_000,
-    ...opts,
+    ...spawnOpts,
   })
 }
 
@@ -886,6 +890,41 @@ describe('A7 — import discipline', () => {
         assert.ok(!m[1].startsWith('@/'), `${path.relative(REPO, file)}: uses a path alias`)
       }
     }
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The tool ships without the test tree — review finding E.
+//
+// `validate.mjs` used to import its schema walker from `tests/runloop/`, so a
+// deployed `src` + `tools` + `data` tree could not run the driver at all. These
+// two tests are the cheap guard and the actual proof.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('layering — a shipped CLI never imports from tests/', () => {
+  test('no file under tools/driver imports out of the test tree', () => {
+    for (const file of driverSources()) {
+      const text = fs.readFileSync(file, 'utf8')
+      for (const m of text.matchAll(/from\s+['"]([^'"]+)['"]/g)) {
+        assert.ok(
+          !/(^|\/)tests\//.test(m[1]),
+          `${path.relative(REPO, file)}: imports "${m[1]}" — tests may import from tools, not the reverse`,
+        )
+      }
+    }
+  })
+
+  test('src + tools + data alone is a runnable tree', () => {
+    const ship = fs.mkdtempSync(path.join(os.tmpdir(), 'e9-ship-'))
+    for (const dir of ['src', 'tools', 'data']) {
+      fs.cpSync(path.join(REPO, dir), path.join(ship, dir), { recursive: true })
+    }
+    const out = tmpOut('ship-out')
+    const res = cli(['--pack', PACK, '--provider', 'fixture', '--validate', `--out=${out}`], {
+      cwd: ship,
+      script: path.join(ship, 'tools/driver/drive-run.mjs'),
+    })
+    assert.equal(res.status, 0, `the shipped tree could not run the driver:\n${res.stderr}`)
+    assert.deepEqual(fs.readdirSync(out), [`${PACK}-fixture-r1.json`])
   })
 })
 
