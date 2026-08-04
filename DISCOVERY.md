@@ -873,6 +873,25 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   C1) and named only so a reader of that snapshot does not take the empty desk
   for a regression. Superseded on the integrated branch, where every pane
   renders · closed. (`discovery/u9.md` §3)
+- [integration] **The closing tally's baseline has no seam to arrive on.** The
+  §5.2 `score` event is `{ total; rows: { label; value }[] }` — no baseline text,
+  no summary — while the reference ledger prints a 기준 column and
+  `기준선 대비 — 무개입 하루가 기준이다` under the title. u7 answered that by
+  having `windows/tally.ts` `fetch` `data/scenario/<slug>/score.json` directly;
+  the final-PR review (R1) correctly rules that out on two counts —
+  `architecture-map.md` §2.1 assigns `score.json` to the ENGINE and gives the
+  view exactly one pack file (`meta.json`, :85), and inv 12 says a window
+  consumes `ViewEvent`s only, so the fetch was a second in-channel
+  `driver/seam-guard.ts` never saw. The fetch and its `baselineIndex()` helper
+  are REMOVED (08-05) and the ledger now prints no baseline at all.
+  `src/shared/view-driver.ts` states its own rule for the rest: "the only edit
+  this module is allowed to make is prefixing `export` … if a shape here causes
+  friction downstream, that goes to DISCOVERY, not into the type." So it goes
+  here. **Ask of the seam owner:** either widen the `score` event
+  (`rows[].baseline?: string`, plus the run's `baseline_summary`), or rule that
+  the driver — which may read the pack — resolves `label → baseline` and hands
+  the window a `ViewEvent`. Either is a one-line change in `windows/tally.ts`
+  once it exists · open. (final-PR review, R1 on `windows/tally.ts:218`)
 - [u3] **Inheritor note (u3):** the five window bodies are `overflow:auto`
   (`.paper`) except LIVE FEED's `.fanfold`, and `WINDOW_REGISTRY`
   (`shell/window-registry.ts`) is the only place that names the five windows —
