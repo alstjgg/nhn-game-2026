@@ -76,7 +76,7 @@
     {
       "id": "u6",
       "label": "계측 일지 원본",
-      "tallies": "소실 / 사본만 / 원본 확보 / 원본+증언",
+      "tallies": "(원본) 소실 / 원본 확보 / 원본+증언",
       "baseline": "3권 전량 파쇄",
       "attributed_gates": [
         "G5"
@@ -84,8 +84,7 @@
       "predicates": [
         "logs_saved and insider_testimony => 원본+증언",
         "logs_saved => 원본 확보",
-        "logs_requested => 사본만",
-        "=> 소실"
+        "=> (원본) 소실"
       ]
     },
     {
