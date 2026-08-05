@@ -11,6 +11,7 @@
 // not a rig-local rebuild of it — `EngineHandle` is a structural superset of
 // `EnginePort`, so it plugs in unchanged.
 import { createFixtureProvider } from '../../../src/transport/index.ts'
+import type { ScorerPort } from '../../../src/driver/ports.ts'
 import type { Transport, TransportResult } from '../../../src/transport/index.ts'
 import { createComposer } from '../../../src/composer/compose.ts'
 import { createBlockStore, createLiveDriver } from '../../../src/driver/index.ts'
@@ -213,7 +214,8 @@ export type RigOptions = {
   run?: number
   transport?: Transport
   responses?: Partial<CallResponse>
-  scorer?: { score(): { total: number; rows: { label: string; value: number }[] } }
+  /** The port itself — one definition, so a widened seam reaches the rig too. */
+  scorer?: ScorerPort
   /** Wrap the constructed collaborators — used by the recording and leak suites. */
   wrapEngine?: (engine: EnginePort) => EnginePort
   wrapComposer?: (composer: ComposerPort) => ComposerPort

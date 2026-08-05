@@ -195,7 +195,15 @@ describe('[e7#decision 3] `score` is optional', () => {
 
   it('(b) with a scorer, `score` is emitted immediately before `run_end`', async () => {
     const events = await drain(
-      makeRig({ scorer: { score: () => ({ total: 7, rows: [{ label: '정확도', value: 7 }] }) } }),
+      makeRig({
+        scorer: {
+          score: () => ({
+            total: 7,
+            baseline_total: 9,
+            rows: [{ label: '정확도', value: 7, baseline: 9 }],
+          }),
+        },
+      }),
     )
     expect(events.slice(-2).map((event) => event.type)).toEqual(['score', 'run_end'])
   })

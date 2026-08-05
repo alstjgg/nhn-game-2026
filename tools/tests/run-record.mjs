@@ -1067,7 +1067,11 @@ describe('the record and the §5.2 seam agree on what a scored value is', () => 
       // search reports agreement against a seam that cannot carry a string
       // value at all — this guard's first draft did exactly that and stayed
       // green through the change it was written to catch.
-      const carried = /rows: \{ label: string; value: ([^}]*)\}/.exec(flatten(file))?.[1]
+      // …and it stops at the FIELD, not the closing brace. Amendment h put
+      // `baseline` after `value`, so a match that ran to `}` would compare
+      // `string | number; baseline: string | number | null` against the
+      // record's two types and fail on a seam that is perfectly correct.
+      const carried = /rows: \{ label: string; value: ([^;}]*)[;}]/.exec(flatten(file))?.[1]
       assert.ok(carried, `${file} no longer carries \`score.rows[].value\``)
       assert.deepEqual(
         carried.split('|').map((t) => t.trim()).filter(Boolean).sort(),
@@ -1084,7 +1088,10 @@ describe('the record and the §5.2 seam agree on what a scored value is', () => 
     // feeds is 사망 · 명 — a count whose whole movement in `score-tally.ts` is
     // counting one up. Widening it would be a design change wearing a type
     // change's clothes.
-    assert.match(seam, /type: 'score'; total: number;/)
-    assert.match(flatten('src/driver/ports.ts'), /score\(\): \{ total: number;/)
+    // The delimiter is `;` in the seam's one-line union member and a space in
+    // the port's multi-line object, so both are allowed — the claim is about
+    // `total`'s TYPE, not about how either file is formatted.
+    assert.match(seam, /type: 'score'; total: number[;\s]/)
+    assert.match(flatten('src/driver/ports.ts'), /score\(\): \{ total: number[;\s]/)
   })
 })
