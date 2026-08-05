@@ -521,6 +521,7 @@ buckets:
     - => 24
   임차복:
     - caretaker_evacuated => 0
+    - cancel_requested => 0
     - => 1
   둔치의 사람들:
     - cancel_requested => 0

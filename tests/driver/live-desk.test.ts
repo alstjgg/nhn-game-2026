@@ -52,6 +52,9 @@ const PACK: LivePack = {
   characters: readJson(`data/scenario/${SLUG}/characters.json`),
   temperament: readJson(`data/scenario/${SLUG}/temperament.json`),
   symptoms: readJson(`data/scenario/${SLUG}/symptoms.json`),
+  // The seventh file, since the tally stopped being empty: `bindLiveRun` builds
+  // a scorer over it and the day closes on what it resolves.
+  score: readJson(`data/scenario/${SLUG}/score.json`),
 } as LivePack
 
 const GUIDANCE = readJson('data/policy/report-guidance.json') as ReportGuidance
@@ -120,14 +123,28 @@ describe('(A) the live desk plays its day to the end', () => {
     // death took with it — the run used to stop with 18 beats and 6 reports.
     expect(events.filter((e) => e.type === 'report')).toHaveLength(7)
 
-    // NOT asserted: `score`. `live-driver.ts` emits one only when it is handed
-    // a `ScorerPort`, and nothing in this repo builds one — the port is
-    // declared, `data/scenario/<slug>/score.json` is authored, and both
-    // composition roots (`live/bind.ts` and `tools/driver/run/bind.mjs`) leave
-    // the dep out. So TALLY opens with an empty ledger on the live desk AND on
-    // the headless run. That is a gap this file deliberately does not pin shut:
-    // the guard here is that the day CLOSES, and the scorer is somebody's
-    // design call, not a fix.
+    // AND THE LEDGER. This comment used to say the opposite — that `score` is
+    // not asserted because nothing in the repo builds a `ScorerPort`, so TALLY
+    // opened empty on the live desk and on the headless run alike. `bind.ts`
+    // now builds one over `score.json`, and this is the guard the gap left
+    // behind: the day does not merely close, it closes on a ledger.
+    //
+    // Without it the sheet still opens — and then holds for the 30 s
+    // `HOLD_CEIL` before releasing through the LAPSED path, because `counted`
+    // never becomes true (`windows/tally.ts`'s `settleRelease`). An empty
+    // ledger is not a missing feature the desk hides; it is a minute of dead
+    // air at the end of every run.
+    const score = events.find((e) => e.type === 'score')
+    expect(score, 'the day closed with no ledger — TALLY has nothing to count').toBeDefined()
+    const ledger = score as Extract<ViewEvent, { type: 'score' }>
+    expect(ledger.rows).toHaveLength(9)
+    // The no-intervention day: 다리 위 24 · 임차복 1 · 둔치 1, which is the
+    // 사망 26 `score.json`'s `baseline_summary` has always claimed. The fixture
+    // provider takes every gate's default stance, so this run intervenes in
+    // nothing — the headline being the baseline is the point.
+    expect(ledger.total).toBe(26)
+    // §5.2 amendment g, on the real chain: a row's value may be a word.
+    expect(ledger.rows.some((row) => typeof row.value === 'string')).toBe(true)
   }, 120_000)
 })
 
