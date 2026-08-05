@@ -23,7 +23,7 @@
 // re-points `playwright.config.ts` per C5) — nothing below assumes a dev server.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
-import { awaitTallyReveal } from './fixtures/harness.ts'
+import { awaitTallyReveal, expectTallyOpen } from './fixtures/harness.ts'
 
 const THREADS = '#threads'
 const PATH = `${THREADS} path`
@@ -446,7 +446,10 @@ test.describe('every filled slot is threaded by id', () => {
     await expect(page.locator(PATH)).toHaveCount(2)
 
     await page.locator('#taskbar [data-win="tally"]').click()
-    await expect(page.locator(TALLY)).not.toHaveClass(/\bhidden\b/)
+    // Opened by hand, mid-run — no close crossed, so there is no reveal to
+    // wait out. Visibility is the whole assertion (`expectTallyOpen`), and it
+    // is the harness that knows how the sheet spells "hidden".
+    await expectTallyOpen(page)
     await redraw(page)
     await expect(page.locator(PATH)).toHaveCount(0)
   })

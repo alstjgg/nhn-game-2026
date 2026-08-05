@@ -101,15 +101,68 @@ export async function frame(page: Page): Promise<Frame> {
  * legitimately overridden, which is precisely the residue `retries: 2` used
  * to report as flaky. Playing by the rule means waiting the reveal out before
  * raising anything — raises AFTER it survive, because nothing re-steals.
+ *
+ * ── What this waits ON, and why it is not the class ─────────────────────────
+ *
+ * A REVEAL, not a state. `not.toHaveClass(/\bhidden\b/)` answers "the sheet is
+ * up", which is the same fact only when the sheet was down to begin with:
+ * `windows/tally.ts`'s `show(true)` clicks the taskbar *only* on a hidden
+ * window, so a TALLY the operator already opened by hand (`red-thread.spec.ts`
+ * does exactly that) reveals with no class change and never takes the front —
+ * and a wait on the class returns instantly, before the 900 ms gap it exists to
+ * wait out. `__tally.revealed()` is the reveal itself: false from the close,
+ * true once `PACE.OPEN_DELAY` has run, in both shapes.
+ *
+ * ⚠️ REAL TIME ONLY. The reveal is a real `setTimeout(…, 900)`, so this cannot
+ * resolve under a virtual clock. A spec that calls `settle()` — which installs
+ * `page.clock` — and then `drain()` will sit here for the full timeout unless it
+ * drives the clock with `advance()`. No spec does that today (`settle(` has no
+ * call sites); this note is here so the first one to try does not lose an
+ * afternoon to it.
  */
 export async function awaitTallyReveal(page: Page): Promise<void> {
+  // Named up front, like every other handle reader here: a missing `__tally`
+  // is a boot problem, and letting it fall through to the poll below would
+  // report it as a 20 s timeout on a reveal that was never coming.
+  await page.waitForFunction(
+    () => Boolean((window as unknown as { __tally?: unknown }).__tally),
+    undefined,
+    { timeout: 20_000 },
+  )
+  await page.waitForFunction(
+    () => (window as unknown as { __tally?: { revealed(): boolean } }).__tally?.revealed() === true,
+    undefined,
+    { timeout: 20_000 },
+  )
+}
+
+/**
+ * The sheet is UP — visibility alone, with no claim about a reveal.
+ *
+ * The one place that knows how TALLY spells "hidden". Distinct from
+ * `awaitTallyReveal` on purpose: a spec that opens the window from the taskbar
+ * wants this, and a spec that crossed a run close wants that one. Collapsing
+ * them would give the manual-open case a 900 ms wait it has no reason to serve,
+ * and the close case an assertion that its own reveal already satisfied.
+ */
+export async function expectTallyOpen(page: Page): Promise<void> {
   await expect(page.locator('#w-tally')).not.toHaveClass(/\bhidden\b/, { timeout: 20_000 })
 }
 
 /**
  * Flushing releases the whole remaining stream — `run_end` included — so every
- * drain crosses run close. The reveal wait is folded in HERE so that no caller
- * can interact inside the close→reveal gap the u7 ruling gives to TALLY.
+ * drain crosses run close. The reveal wait is folded in HERE, so a caller that
+ * reaches the desk through THIS helper cannot interact inside the close→reveal
+ * gap the u7 ruling gives to TALLY.
+ *
+ * THAT IS A PROPERTY OF THIS FUNCTION, NOT OF THE SUITE. Specs that call
+ * `__shell.drain()` directly are outside the rule, and three still do:
+ * `shell.spec.ts:108` (its own local `drain`), `captures.spec.ts` (`:163`,
+ * `:210`) and `debug-pane.spec.ts:120`. None of them raises a window after
+ * draining, so there is no live race today — but `shell.spec.ts` is the file
+ * that owns the taskbar stacking contract, so the nearest spec to this race is
+ * the one furthest outside the guard. Read the sentence above as scoped, not as
+ * a suite-wide guarantee, and route new drains through here.
  */
 export async function drain(page: Page): Promise<void> {
   await page.evaluate(() => {
