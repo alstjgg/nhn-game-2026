@@ -19,6 +19,7 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 import { createFixtureProvider } from '../../src/transport/fixture.ts'
 import { createMemoryMetaStore } from '../../src/runloop/store.ts'
@@ -291,7 +292,10 @@ async function main(argv) {
   )
 }
 
-if (import.meta.main) {
+// `import.meta.main` exists only from Node 22.18 / 24.2 — below that it reads
+// `undefined` and a bare check makes this CLI a silent no-op that exits 0. The
+// fallback answers the same question on any Node that got this far.
+if (import.meta.main ?? pathToFileURL(process.argv[1]).href === import.meta.url) {
   try {
     await main(process.argv.slice(2))
   } catch (error) {

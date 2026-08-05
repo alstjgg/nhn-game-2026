@@ -3,6 +3,36 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-05) — the tally ledger is empty, and the reason is authoring, not wiring
+
+**Symptom:** `run_end` opens the TALLY sheet with no score rows — on the live
+desk and the headless run alike. The wiring gap is real (`ScorerPort` is
+declared in `src/driver/ports.ts` but neither composition root —
+`src/client/driver/live/bind.ts`, `tools/driver/run/bind.mjs` — supplies one),
+but wiring is not the blocker: **the data is.** Every one of the 8 units in
+`data/scenario/우는다리/score.json` has `predicates: []`, and the schema calls
+predicates a 하드닝 산출물 — empty is legal at compile time, and
+`npm run datapack:lint` already FLAGs all eight as the hardening worklist. The
+same worklist shows the character meters unbound (c3–c7: 통제욕 has no state
+variable), and predicates need bound variables to read — same piece of work.
+
+**Order of operations** (authoring + engine, not client): (1) bind the
+character meters to state variables; (2) author the 8 units' predicates;
+(3) implement a `ScorerPort` that evaluates them against `RunState`; (4) wire
+it in the two composition roots. The view side is done waiting —
+`components/score-tally.ts` renders rows, `windows/tally.ts` carries the
+headline axis, and `score.json`'s `baseline_summary` is the 무개입 baseline the
+ledger grades against.
+
+**Also fixed on this branch:** `tools/driver/drive-run.mjs` guarded its
+entrypoint with a bare `import.meta.main`, which is `undefined` below Node
+22.18 — the CLI exited 0 having done nothing, and `test:shared` then failed 13
+tests downstream on artifacts that were never written, pointing at missing data
+rather than the cause. The guard now falls back to a `process.argv[1]` URL
+comparison (version-proof), and the floor is declared: `engines.node >=22.18`
+in `package.json` plus an `.nvmrc`. CI's Node 22/24 both resolve above the
+floor, which is exactly why it could never catch this.
+
 ## Status (2026-08-04) — the proxy is deployed, and the latency budget was wrong
 
 **The tier has made real Bedrock calls.** `nhn-game-proxy` is live in
