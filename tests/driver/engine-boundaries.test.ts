@@ -23,7 +23,13 @@ const TESTS = path.join(REPO, 'tests/driver')
 /** SHA-256 of every `tests/driver` file that existed before e7 (u2's suites). */
 const FROZEN_SUITES: Readonly<Record<string, string>> = {
   'clock-hooks.test.ts': '94f58f28d1d34081ce1720f2b95d8a2c2b720408133693fea6cabdf1bba9af50',
-  'import-direction.test.ts': '35367809f7ebe14922876b4331f922b8183a75e2edfc77484db3abe8651ff00d',
+  // RE-PINNED (2026-08-05, the live-desk wiring). A14's claim is "e7 does not
+  // rewrite them", and it still holds — this move was made after both runs
+  // merged, by hand, for a reason the suite itself now states: (e) used to
+  // assert that even `driver/` imports no engine "YET", and the wiring is what
+  // that word was waiting for. The guard was narrowed to `driver/live/` rather
+  // than dropped, so the fixture driver is still held engine-free.
+  'import-direction.test.ts': 'ab49d08566058a5670ffc3905a266605105ae3d29d8c41dd3451daf99464dc81',
   // RE-PINNED (C17): the client run (PR #110) rewrote this suite after u2 landed
   // it. A14's claim is "e7 does not rewrite them", so the pin moves to what main
   // carries; only a change made HERE can fail it.
