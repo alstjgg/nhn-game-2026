@@ -18,6 +18,23 @@ import { CHROME, FREE_TEXT, WIN } from './fixtures/selectors.ts'
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const DIST = path.join(REPO, 'dist')
 
+/**
+ * The proxy origin this repo declares, read from the same `.env.production` the
+ * build read. `null` when unset — in which case nothing external is admitted and
+ * inv 10 binds exactly as it did before the endpoint existed.
+ */
+function declaredProxyOrigin(): string | null {
+  const file = path.join(REPO, '.env.production')
+  if (!fs.existsSync(file)) return null
+  const match = /^\s*VITE_PROXY_BASE_URL\s*=\s*(\S+)\s*$/m.exec(fs.readFileSync(file, 'utf8'))
+  if (match === null) return null
+  try {
+    return new URL(match[1]!).origin
+  } catch {
+    return null
+  }
+}
+
 /** Every emitted CODE artefact — `dist/data/**` is the pack, not code. */
 function bundleCode(): string[] {
   const out: string[] = []
@@ -66,7 +83,14 @@ test.describe('preview smoke', () => {
     await page.goto('./')
     await expect(page.locator(WIN.any)).toHaveCount(5)
     await page.waitForLoadState('networkidle')
-    expect(wire.thirdParty(), 'the player build reached a third-party origin').toEqual([])
+    // The LLM tier is the one origin inv 10 admits, and it is admitted by NAME:
+    // the host comes from the same `.env.production` the build read, so a second
+    // origin — or a stale one after a stack recreation — still fails here.
+    // Reaching it is the point; whether it ANSWERS is not this test's business,
+    // and from localhost it will not (the proxy is origin-locked to Pages).
+    const declared = declaredProxyOrigin()
+    const foreign = wire.thirdParty().filter((url) => declared === null || !url.startsWith(declared))
+    expect(foreign, 'the player build reached a third-party origin').toEqual([])
   })
 
   test('preview smoke — no debug-pane and no fixture code reached the bundle (inv 11)', async () => {
@@ -128,13 +152,27 @@ test.describe('preview smoke', () => {
     if (timing !== null) expect(timing, 'the navigation timing exceeds the ~1 s budget').toBeLessThan(1500)
   })
 
-  test('preview smoke — the fixture round is absent by design, and not attempted here', async ({ page }) => {
+  test('preview smoke — the player build boots the LIVE desk, not a fixture', async ({ page }) => {
     await page.goto('./')
     await expect(page.locator(WIN.any)).toHaveCount(5)
 
-    // C5(a)/(c): a player build boots an empty desk. That is the CORRECT
-    // artefact truth — asserting a round here would be asserting a bug.
+    // This asserted ZERO feed lines until 2026-08-05, and it was right to: a
+    // player build had no driver behind it, so a line on the desk could only
+    // have come from a fixture that failed to tree-shake. `src/client/driver/live/`
+    // gave the desk an engine, and an empty desk became the bug instead of the
+    // guarantee.
+    //
+    // inv 11 itself has not moved, and it is not measured by counting lines —
+    // the sibling test greps the bundle for fixture and debug-pane needles, which
+    // is the check that can actually tell the two apart. What survives here is
+    // the browser-side half: the desk that booted is the LIVE one.
     const feedLines = await page.locator('#w-feed #feedList .fl').count()
-    expect(feedLines, 'the player build replayed a fixture round — inv 11 is broken').toBe(0)
+    expect(feedLines, 'the player build booted a desk with no run behind it').toBeGreaterThan(0)
+
+    // The run counter is the tell. e8's run loop opens on its own allotment;
+    // the placeholder stream `shell/boot-run.ts` hardcodes RUN 3 of 10, so these
+    // two can never be confused for one another.
+    await expect(page.locator('#ddayUnit')).toContainText('RUN 01')
+    await expect(page.locator('#ddayUnit')).toContainText('/ 4')
   })
 })

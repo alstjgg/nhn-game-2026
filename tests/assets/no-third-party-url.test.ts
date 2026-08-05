@@ -12,7 +12,32 @@ import { DIST, REPO, THIRD_PARTY_MARKERS, exists, rel, walk } from './font-asset
 const BUILD_TIMEOUT = 240_000
 
 /** Hosts a static, self-hosted build may legitimately mention (never network-fetched). */
-const ALLOWED_HOSTS = ['www.w3.org', 'localhost', '127.0.0.1']
+/**
+ * The proxy origin this repo DECLARES, read from `.env.production` rather than
+ * written here.
+ *
+ * inv 10's point is that no *unvetted* origin survives into the bundle, and the
+ * LLM tier is the one vetted exception — the browser cannot reach the model
+ * without it (contract-calls §11). Deriving the host from the same file the
+ * build reads makes this stricter than a hardcoded entry would: the allowance
+ * is exactly the endpoint that is declared, so a second host, a typo'd host, or
+ * a stale host left behind after a stack recreation all still fail (b).
+ *
+ * Absent file ⇒ no allowance, and the guard behaves exactly as it did before.
+ */
+function declaredProxyHosts(): string[] {
+  const file = path.join(REPO, '.env.production')
+  if (!fs.existsSync(file)) return []
+  const match = /^\s*VITE_PROXY_BASE_URL\s*=\s*(\S+)\s*$/m.exec(fs.readFileSync(file, 'utf8'))
+  if (match === null) return []
+  try {
+    return [new URL(match[1]!).host.toLowerCase()]
+  } catch {
+    return []
+  }
+}
+
+const ALLOWED_HOSTS = ['www.w3.org', 'localhost', '127.0.0.1', ...declaredProxyHosts()]
 
 const TEXT_EXT = /\.(html|css|js|mjs|json|map|svg|webmanifest)$/i
 
