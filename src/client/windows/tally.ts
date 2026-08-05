@@ -23,7 +23,7 @@ import { PORTAL } from '../shell/portal-identity.ts'
 import { createRunState, hasFiledReport } from '../shell/run-state.ts'
 import type { MetaState, RunPhase, RunState, ScoreState } from '../shell/run-state.ts'
 import { PACE, createScoreTally, settleRelease } from '../components/score-tally.ts'
-import type { TallyModel, TallyState } from '../components/score-tally.ts'
+import type { TallyModel, TallyRowModel, TallyState } from '../components/score-tally.ts'
 
 /** The wait line, verbatim from the reference — diegetic, never a spinner. */
 const WAITING = '……보고서 정리 중'
@@ -234,6 +234,28 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     alert(open)
   }
 
+  /**
+   * ▲ / = / ▼ — and ONLY for an axis that counts.
+   *
+   * The mark is a judgement about direction, and a number has one: fewer dead
+   * is better, so a value under its baseline is ▲. A word does not. "테러 혐의
+   * 구속" → "공식 입회 증인" is unmistakably a different ending and arguably a
+   * better one, but the ledger has no vocabulary for "changed" — the three
+   * marks are good, flat and bad — and printing ▲ would be the sheet claiming
+   * an improvement nobody computed. A changed outcome shows as itself, beside
+   * the 기준 cell holding what it changed FROM, which is the comparison the
+   * reader actually needs.
+   */
+  const deltaOf = (
+    value: string | number,
+    baseline: string | number | null,
+  ): TallyRowModel['delta'] => {
+    if (baseline === null) return 'flat'
+    if (typeof value !== 'number' || typeof baseline !== 'number') return 'flat'
+    if (value === baseline) return 'flat'
+    return value < baseline ? 'good' : 'bad'
+  }
+
   function modelOf(meta: MetaState, score: ScoreState): TallyModel {
     return {
       doc: `${DOC_CAPTION}${PORTAL.portalCode}/TL/${slug}/${pad2(meta.run)}`,
@@ -244,22 +266,20 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
         label: HEADLINE_LABEL,
         value: score.total,
         unit: HEADLINE_UNIT,
-        // NO BASELINE ON THE SEAM, SO NONE ON THE PAPER (R1 on tally.ts:218).
-        // This window used to `fetch` `data/scenario/<slug>/score.json` for the
-        // baseline column and the summary note. `architecture-map.md:93` assigns
-        // that file to the ENGINE — the pack's only view consumer is `meta.json`
-        // (:85) — and inv 12 says windows consume `ViewEvent`s only, so the read
-        // was a second in-channel the driver never saw and `assertSeamClean`
-        // could not inspect. The ratified §5.2 fence (`src/shared/view-driver.ts`)
-        // may not be widened from a client unit either, so the baseline waits on
-        // the seam owner rather than being smuggled in here.
-        baseline: null,
+        // THE BASELINE ARRIVES ON THE SEAM NOW (§5.2 amendment h). It used to be
+        // `null` here with a comment explaining why: this window once `fetch`ed
+        // `data/scenario/<slug>/score.json` for the baseline column, and that
+        // read was removed as a defect (R1 on tally.ts:218) — a second
+        // in-channel the driver never saw and `assertSeamClean` could not
+        // inspect. The fix was never to smuggle it back; it was for the seam to
+        // carry it, which is what amendment h does.
+        baseline: String(score.baselineTotal),
       },
       rows: score.rows.map((row) => ({
         label: row.label,
         value: String(row.value),
-        baseline: null,
-        delta: 'flat' as const,
+        baseline: row.baseline === null ? null : String(row.baseline),
+        delta: deltaOf(row.value, row.baseline),
       })),
       note: null,
       verdict: null,

@@ -77,6 +77,52 @@ function mdTable(sectionLines, expectedHeader, where) {
   });
 }
 
+/**
+ * The `집계 규칙:` fence in §8 — `Map<unit label, predicate[]>`.
+ *
+ * Shape (two-space unit, four-space rule):
+ *
+ *     ```
+ *     집계 규칙:
+ *       다리 위의 인파:
+ *         - cancel_requested => 0
+ *         - => 24
+ *     ```
+ *
+ * Not `parseCard`: that one keys on `^[a-z_]+:` and every unit label here is
+ * Korean prose. Deliberately dumb — it carries lines across verbatim and judges
+ * none of them. Whether a rule is well-formed, names something the pack
+ * declares, or ends in a fallback is lint's, through `src/shared/predicates.ts`
+ * (contract-datapack §3.6). Compile is extraction, not authoring.
+ */
+function readScoreRules(sectionLines) {
+  const open = sectionLines.findIndex((l) => l.trim() === '```');
+  if (open === -1) return { rules: new Map(), rest: sectionLines };
+  const close = sectionLines.findIndex((l, i) => i > open && l.trim() === '```');
+  if (close === -1) die('점수: 집계 규칙 fence is unterminated');
+  const body = sectionLines.slice(open + 1, close);
+  if (body[0]?.trim() !== '집계 규칙:') die(`점수: fence does not open with "집계 규칙:"`);
+
+  const rest = [...sectionLines.slice(0, open), ...sectionLines.slice(close + 1)];
+  const out = new Map();
+  let unit = null;
+  for (const line of body.slice(1)) {
+    if (!line.trim()) continue;
+    const rule = line.match(/^ {4}- (.+)$/);
+    if (rule) {
+      if (unit === null) die(`점수 집계 규칙: rule before any unit — "${line.trim()}"`);
+      out.get(unit).push(rule[1].trim());
+      continue;
+    }
+    const head = line.match(/^ {2}(\S.*):$/);
+    if (!head) die(`점수 집계 규칙: unparseable line "${line}"`);
+    unit = head[1].trim();
+    if (out.has(unit)) die(`점수 집계 규칙: 단위 "${unit}" appears twice`);
+    out.set(unit, []);
+  }
+  return { rules: out, rest };
+}
+
 // bullets with indentation: '- ' at depth 0, '  - ' at depth 1; continuation
 // lines (indented, no dash) join onto the previous bullet
 function parseBullets(sectionLines) {
@@ -483,12 +529,32 @@ let score;
 {
   const secLines = sections['점수'];
   const rows = mdTable(secLines, ['단위', '무엇이 집계되나', '무개입 기준', '소급되는 갈림길'], '점수');
+  // The `집계 규칙:` block below the table, keyed by unit label. It lives in a
+  // fence rather than a sixth table column because a unit carries three or four
+  // ORDERED rules and the values already contain every separator a cell could
+  // use (`"단순 추락" 유지 / 재조사 개시`). The table says what is counted; the
+  // block says how. Absent ⇒ every unit compiles with `predicates: []`, which
+  // is the pre-hardening state lint has always FLAGged (F3).
+  // `rest` is the section WITHOUT the fence: the block's own `    - ` lines are
+  // indented bullets to `parseBullets`, which reads the baseline summary and the
+  // variance notes from the same section and dies on a bullet with no parent.
+  const { rules: ruleBlock, rest: prose } = readScoreRules(secLines);
+
   const units = rows.map(([label, tallies, baseline, gatesCell], i) => {
     const attributed_gates = [...new Set([...gatesCell.matchAll(/G(\d+)/g)].map((m) => `G${m[1]}`))];
     if (!attributed_gates.length) die(`점수 단위 "${label}": 소급되는 갈림길 칸에 GN 표기가 없다`);
-    return { id: `u${i + 1}`, label, tallies, baseline, attributed_gates, predicates: [] };
+    const predicates = ruleBlock.get(label) ?? [];
+    ruleBlock.delete(label);
+    return { id: `u${i + 1}`, label, tallies, baseline, attributed_gates, predicates };
   });
-  const bl = parseBullets(secLines).map((b) => stripBold(b.text));
+  // A rule block naming a unit the table does not have is a typo that would
+  // otherwise vanish: the unit keeps `predicates: []`, lint FLAGs it as merely
+  // un-hardened, and the rules the author wrote go nowhere. Compile is
+  // extraction, and extraction that drops its input is a lie.
+  if (ruleBlock.size > 0) {
+    die(`점수 집계 규칙: 표에 없는 단위 ${[...ruleBlock.keys()].map((k) => JSON.stringify(k)).join(', ')}`);
+  }
+  const bl = parseBullets(prose).map((b) => stripBold(b.text));
   const find = (label) => {
     const hit = bl.find((t) => t.startsWith(label));
     if (!hit) die(`점수: "- **${label}** …" 글머리가 없다`);

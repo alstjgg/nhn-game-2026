@@ -89,6 +89,10 @@ describe('[e7#A14] the existing tests/driver seam suites are untouched', () => {
     // pack, offline) rather than asserting anything about it, which is why it
     // is registered here rather than named `engine-*`.
     'live-desk.test.ts',
+    // The scorer: `score.json`'s units read against the state a run ended in.
+    // It reads the engine's snapshot rather than asserting anything about the
+    // engine, and it is `src/driver/`'s composition-facing half, not e7's.
+    'scorer.test.ts',
   ])
 
   it('(b) everything e7 added under tests/driver is named `engine-*`', () => {

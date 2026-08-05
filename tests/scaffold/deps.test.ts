@@ -98,13 +98,20 @@ describe('[u0#c4] script wiring', () => {
   // nothing was checking that the LIVE `check` still composes both halves.
   // plan-engine-build §2a.3 — "a silently dropped clause disarms a gate for every
   // unit" — makes the composed form a prerequisite, so it gets its own assert.
-  it('(g3) `check` composes both halves — §2a.3, all five clauses in order', () => {
+  it('(g3) `check` composes both halves — §2a.3, in order, with the pack lint', () => {
+    // SIX clauses since the score-predicate hardening (08-05). `datapack:lint`
+    // is what enforces the predicate rule set (contract-datapack §3.6 E-P1…E-P4)
+    // and it was in no gate at all — not here, not in `ci.yml` — so a pack
+    // could ship a predicate that names a flag nothing sets and no run would
+    // say so. `datapack:check` is the type-drift check and is a different
+    // question; the two are not substitutes.
     const check = (pkg().scripts ?? {})['check'] ?? ''
     expect(check.split('&&').map((c) => c.trim())).toEqual([
       'tsc -p tsconfig.core.json',
       'tsc',
       'npm run typecheck:test',
       'npm run datapack:check',
+      'npm run datapack:lint -- data/scenario/우는다리',
       'npm run test:shared',
     ])
   })

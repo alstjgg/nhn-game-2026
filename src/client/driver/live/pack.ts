@@ -15,11 +15,20 @@
 // name, so the pack ships with the bundle.
 
 import type { EnginePack } from '../../../engine/index.ts'
+import type { ScorePack } from '../../../driver/index.ts'
 
 /**
- * The six files the run reads. `places` / `truths` / `score` / `draft` are
- * authoring surfaces no seam on this path consumes — fetching them would invent
- * a dependency and cost four requests on the judge's first load.
+ * The seven files the run reads. `places` / `truths` / `draft` remain authoring
+ * surfaces no seam on this path consumes — fetching them would invent a
+ * dependency and cost three more requests on the judge's first load.
+ *
+ * `score` JOINED THE LIST when the tally stopped being empty. The comment here
+ * used to name it alongside the other three, and that was true for as long as
+ * nothing built a `ScorerPort`: the file was an authoring surface because no
+ * seam read it. It is now the only input to the ledger the run closes on, so
+ * the choice is one more small parallel GET at boot or a TALLY that opens
+ * blank. `copyPackData()` already ships the whole directory (physical §3.7), so
+ * nothing about the deploy changes.
  */
 const PACK_FILES = [
   'meta',
@@ -28,10 +37,11 @@ const PACK_FILES = [
   'characters',
   'temperament',
   'symptoms',
+  'score',
 ] as const
 
 /** The pack plus the slug it declares — what `bindLiveRun` needs to open a run. */
-export type LivePack = EnginePack & { slug: string }
+export type LivePack = EnginePack & { slug: string; score: ScorePack }
 
 /**
  * Only what a GET of a JSON file needs. Deliberately NOT the transport's
@@ -86,6 +96,7 @@ export async function fetchPack(source: PackSource, slug: string): Promise<LiveP
     characters: pack.characters,
     temperament: pack.temperament,
     symptoms: pack.symptoms,
+    score: pack.score,
   } as LivePack
 }
 

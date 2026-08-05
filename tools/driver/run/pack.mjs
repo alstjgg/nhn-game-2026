@@ -17,11 +17,17 @@ export const REPO = resolve(HERE, '..', '..', '..')
 const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'))
 
 /**
- * The five pack files the run actually reads. `places` / `truths` / `score` /
- * `draft` are authoring surfaces no seam on this path consumes — loading them
- * would be inventing a dependency.
+ * The seven pack files the run actually reads. `places` / `truths` / `draft`
+ * remain authoring surfaces no seam on this path consumes — loading them would
+ * be inventing a dependency.
+ *
+ * `score` joined the list when the run record stopped writing `score: null`.
+ * It was an authoring surface for exactly as long as nothing built a
+ * `ScorerPort`; it is now the only input to the ledger. Kept in step with the
+ * browser loader's list (`src/client/driver/live/pack.ts`) deliberately — the
+ * two loaders may disagree about transport, never about content.
  */
-const PACK_FILES = ['meta', 'timeline', 'gates', 'characters', 'temperament', 'symptoms']
+const PACK_FILES = ['meta', 'timeline', 'gates', 'characters', 'temperament', 'symptoms', 'score']
 
 /**
  * One parsed scenario pack. Throws — naming the file — when the pack is absent
@@ -48,6 +54,7 @@ export function loadPack(slug) {
     characters: pack.characters,
     temperament: pack.temperament,
     symptoms: pack.symptoms,
+    score: pack.score,
   }
 }
 
