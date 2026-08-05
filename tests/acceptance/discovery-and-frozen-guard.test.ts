@@ -207,17 +207,52 @@ describe('[u11#c6] the run\'s own decisions are logged too', () => {
 })
 
 describe('[u11#c6] frozen inputs stayed frozen (C1 / C13 / C20)', () => {
+  // RE-AIMED (C17) at the post-merge reconcile (08-05). The freeze was pipeline
+  // discipline — the run must not rewrite its own inputs — and for two paths
+  // that premise expired at the run's merge (#110): `docs/spec-client.md`
+  // revises by its owner's hand post-run (spec-client §9), and
+  // `src/shared/species.ts` carried its own deletion order for the duplicate
+  // `Species` union. The claim stays asserted where it stayed true — over the
+  // run's own merge range, in (m); the live checks keep the still-frozen set.
+  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts']
   const FROZEN = [
     'data/scenario/우는다리/',
     'data/scenario/_schema/',
     'docs/design/',
-    'docs/spec-client.md',
     'src/shared/segment.ts',
-    'src/shared/species.ts',
     'tools/tests/segment.golden.mjs',
   ]
 
-  it('(m) this run\'s commits introduce no diff under a frozen path', () => {
+  /** The run's merge into main — resolved from history, not from a branch ref. */
+  function runMerge(): string {
+    const found = git([
+      'log',
+      '--merges',
+      '--fixed-strings',
+      '--grep',
+      'pull request #110 from alstjgg/super/20260803-213143',
+      '--format=%H',
+    ])
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+    expect(
+      found.length,
+      'the run merge (#110) is not reachable from HEAD — this guard needs full history (fetch-depth: 0)',
+    ).toBeGreaterThan(0)
+    return found[found.length - 1]!
+  }
+
+  it('(m) this run\'s commits introduced no diff under a frozen path', () => {
+    const merge = runMerge()
+    const changed = git(['diff', '--name-only', `${merge}^1`, merge, '--'])
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+    expect(changed.filter((f) => [...FROZEN, ...RELEASED].some((p) => f.startsWith(p)))).toEqual([])
+  })
+
+  it('(m2) later work introduces no diff under a still-frozen path', () => {
     const changed = git(['diff', '--name-only', runMergeBase(), '--'])
       .split('\n')
       .map((l) => l.trim())
@@ -225,7 +260,7 @@ describe('[u11#c6] frozen inputs stayed frozen (C1 / C13 / C20)', () => {
     expect(changed.filter((f) => FROZEN.some((p) => f.startsWith(p)))).toEqual([])
   })
 
-  it('(n) the working tree carries no uncommitted edit under a frozen path either', () => {
+  it('(n) the working tree carries no uncommitted edit under a still-frozen path either', () => {
     const dirty = git(['status', '--porcelain', '--', ...FROZEN])
       .split('\n')
       .map((l) => l.trim())
