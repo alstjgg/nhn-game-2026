@@ -19,7 +19,7 @@ import type { Locator, Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { raiseWindow } from './fixtures/harness.ts'
+import { awaitTallyReveal, raiseWindow } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -89,6 +89,8 @@ async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
+  // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
+  await awaitTallyReveal(page)
 }
 
 /** Boot the desk with REPORTS raised. `reduced` freezes the typewriter's replay. */

@@ -23,7 +23,7 @@
 // Titles are load-bearing — [u9#c5]'s verification runs this whole file, and
 // `-g` filters in later units may target these describe names.
 import { expect, test } from 'playwright/test'
-import { raiseWindow } from './fixtures/harness.ts'
+import { awaitTallyReveal, drain, raiseWindow } from './fixtures/harness.ts'
 import type { Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
 
@@ -211,12 +211,9 @@ test.describe('a11y — landmarks and roles', () => {
     const said: string[] = []
     said.push((await toast.textContent()) ?? '')
     // Drive the run to its close: the wait, the fallback, the filed report and
-    // the tally all have to reach an operator who is not watching pixels.
-    await page.evaluate(() => {
-      const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
-      if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
-      handle.drain()
-    })
+    // the tally all have to reach an operator who is not watching pixels. Via
+    // the harness, so this spec is inside the u7 gap rule rather than beside it.
+    await drain(page)
     await expect
       .poll(async () => ((await toast.textContent()) ?? '') !== said[0], { timeout: 15_000 })
       .toBe(true)
@@ -246,13 +243,10 @@ test.describe('a11y — landmarks and roles', () => {
     await page.waitForFunction(() => Boolean((window as { __shell?: unknown }).__shell))
     await hideDebugPane(page)
 
-    // Drive the day to its close; the ledger comes up ~900 ms later.
-    await page.evaluate(() => {
-      const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
-      if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
-      handle.drain()
-    })
-    await expect(page.locator('#w-tally')).not.toHaveClass(/\bhidden\b/, { timeout: 20_000 })
+    // Drive the day to its close; the ledger comes up ~900 ms later. The
+    // harness `drain` is the close AND the reveal wait, which is exactly the
+    // pair this was spelling out by hand.
+    await drain(page)
 
     // (1) the hold is a fact an operator can HEAR, not only a line on the sheet.
     await expect(toast, 'the desk closed the run and held it in silence').toContainText('보고서 정리 중', {
@@ -329,11 +323,19 @@ test.describe('a11y — keyboard reach', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.reload()
     await hideDebugPane(page)
+    // The reload restarts the boot, and under a loaded worker pool `__shell`
+    // can lag the first paint — draining before it exists threw, intermittently.
+    // Same wait idiom as red-thread's boot(): gate on the handle, then drive.
+    await page.waitForFunction(
+      () => (window as unknown as { __shell?: unknown }).__shell !== undefined,
+    )
     await page.evaluate(() => {
       const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
       if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
       handle.drain()
     })
+    // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
+    await awaitTallyReveal(page)
     await expect(page.locator('[data-op="mine"]').first()).toBeAttached({ timeout: 15_000 })
 
     // `unslot` only exists once a seat is filled, so the desk is driven through

@@ -16,6 +16,7 @@
 // suite binds to whatever run the shell boots.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
+import { awaitTallyReveal } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -61,6 +62,8 @@ async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
+  // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
+  await awaitTallyReveal(page)
 }
 
 async function phase(page: Page): Promise<string> {

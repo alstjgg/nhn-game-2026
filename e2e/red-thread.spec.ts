@@ -23,6 +23,7 @@
 // re-points `playwright.config.ts` per C5) — nothing below assumes a dev server.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
+import { awaitTallyReveal, expectTallyOpen } from './fixtures/harness.ts'
 
 const THREADS = '#threads'
 const PATH = `${THREADS} path`
@@ -65,6 +66,8 @@ async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
+  // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
+  await awaitTallyReveal(page)
 }
 
 /** Force one synchronous redraw, then let the layer's own rAF settle. */
@@ -443,7 +446,10 @@ test.describe('every filled slot is threaded by id', () => {
     await expect(page.locator(PATH)).toHaveCount(2)
 
     await page.locator('#taskbar [data-win="tally"]').click()
-    await expect(page.locator(TALLY)).not.toHaveClass(/\bhidden\b/)
+    // Opened by hand, mid-run — no close crossed, so there is no reveal to
+    // wait out. Visibility is the whole assertion (`expectTallyOpen`), and it
+    // is the harness that knows how the sheet spells "hidden".
+    await expectTallyOpen(page)
     await redraw(page)
     await expect(page.locator(PATH)).toHaveCount(0)
   })
@@ -535,9 +541,19 @@ test.describe('endpoints track windows during drag', () => {
       .poll(async () => (await page.locator(THREADS).getAttribute('viewBox')) ?? '')
       .toBe('0 0 1440 900')
 
+    // The layer re-draws on its OWN rAF after the resize re-flows the desk —
+    // that self-driven convergence is the claim, so nothing forces a redraw
+    // here. But a one-shot read can land mid-convergence under a loaded worker
+    // pool (measured: endpoint at the old layout, slot box at the new one), so
+    // the read polls until the thread has re-fit to where the slot now is.
+    await expect
+      .poll(async () => {
+        const [x] = await slotEndpoint(page)
+        const b = await box(page, `${FILE} [data-block-id]`)
+        return Math.abs(x - (b.x + 6))
+      }, { message: 'the slot endpoint never re-fit to the resized layout' })
+      .toBeLessThanOrEqual(2)
     const after = await slotEndpoint(page)
-    const slotBox = await box(page, `${FILE} [data-block-id]`)
-    near(after[0], slotBox.x + 6)
     expect(after[0] === before[0] && after[1] === before[1]).toBe(false)
   })
 

@@ -85,6 +85,21 @@ export interface TallyHandle {
   state(): TallyState
   rows(): number
   phase(): RunPhase
+  /**
+   * Whether the run's close has REACHED its reveal — false from the close, true
+   * once the `PACE.OPEN_DELAY` callback has run.
+   *
+   * The reveal is what the u7 ruling gives TALLY the front for, and until now a
+   * spec could only infer it from `#w-tally` losing `.hidden`. That is the same
+   * fact only when the sheet was hidden to begin with: `show(true)` clicks the
+   * taskbar *only* on a hidden window, so a TALLY the operator already opened by
+   * hand reveals with no class change and no front-taking at all, and a wait on
+   * the class answers instantly — before the gap it exists to wait out.
+   *
+   * A flag the reveal itself sets has neither shape. DEV/TEST only, like every
+   * member of this handle (inv 11).
+   */
+  revealed(): boolean
   /** The run-loop numbers as the `meta` event carries them. */
   meta(): { run: number; runs_left: number; carried: string[]; archive: { run: number; label: string }[] }
 }
@@ -342,6 +357,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       state: () => tally.state(),
       rows: () => tally.rows(),
       phase: () => store.get().phase,
+      revealed: () => revealed,
       meta: () => {
         const meta = store.get().meta
         return { run: meta.run, runs_left: meta.runsLeft, carried: [...meta.carried], archive: [...meta.archive] }

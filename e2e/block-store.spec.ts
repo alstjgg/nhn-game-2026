@@ -24,7 +24,7 @@
 // whose stream carries no blocks at all is reported as such rather than passing
 // vacuously.
 import { expect, test } from 'playwright/test'
-import { raiseWindow } from './fixtures/harness.ts'
+import { awaitTallyReveal, raiseWindow } from './fixtures/harness.ts'
 import type { Locator, Page } from 'playwright/test'
 
 /* ── seam shapes this suite reads back ───────────────────────────────────── */
@@ -117,6 +117,8 @@ async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
+  // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
+  await awaitTallyReveal(page)
 }
 
 async function place(page: Page, id: string, slot: number): Promise<void> {
