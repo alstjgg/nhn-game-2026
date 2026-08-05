@@ -10,7 +10,11 @@
         "G7",
         "G4"
       ],
-      "predicates": []
+      "predicates": [
+        "cancel_requested => 0",
+        "entry_capped => 7",
+        "=> 24"
+      ]
     },
     {
       "id": "u2",
@@ -20,7 +24,10 @@
       "attributed_gates": [
         "G7"
       ],
-      "predicates": []
+      "predicates": [
+        "caretaker_evacuated => 0",
+        "=> 1"
+      ]
     },
     {
       "id": "u3",
@@ -30,7 +37,10 @@
       "attributed_gates": [
         "G6"
       ],
-      "predicates": []
+      "predicates": [
+        "cancel_requested => 0",
+        "=> 1"
+      ]
     },
     {
       "id": "u4",
@@ -43,7 +53,12 @@
         "G4",
         "G7"
       ],
-      "predicates": []
+      "predicates": [
+        "caller_named and hatch_opened => 공식 입회 증인",
+        "caller_named => 참고인",
+        "cancel_requested => 협박 입건",
+        "=> 테러 혐의 구속"
+      ]
     },
     {
       "id": "u5",
@@ -53,7 +68,10 @@
       "attributed_gates": [
         "G2"
       ],
-      "predicates": []
+      "predicates": [
+        "tip_traced => 오인 체포 없음",
+        "=> 6시간 구금"
+      ]
     },
     {
       "id": "u6",
@@ -63,7 +81,12 @@
       "attributed_gates": [
         "G5"
       ],
-      "predicates": []
+      "predicates": [
+        "logs_saved and insider_testimony => 원본+증언",
+        "logs_saved => 원본 확보",
+        "logs_requested => 사본만",
+        "=> 소실"
+      ]
     },
     {
       "id": "u7",
@@ -74,7 +97,11 @@
         "G3",
         "G5"
       ],
-      "predicates": []
+      "predicates": [
+        "chief_confronted and logs_saved => 은폐 규명",
+        "originals_read => 재조사 개시",
+        "=> \"단순 추락\" 유지"
+      ]
     },
     {
       "id": "u8",
@@ -85,7 +112,27 @@
         "G5",
         "G7"
       ],
-      "predicates": []
+      "predicates": [
+        "logs_saved and cancel_requested => 결함 공식 확인 · 재개통 없음",
+        "logs_saved => 결함 공식 확인",
+        "cancel_requested => 미확인 — 재개통 예정",
+        "=> 붕괴로만 확인"
+      ]
+    },
+    {
+      "id": "u9",
+      "label": "부상자",
+      "tallies": "21:04 시점 부상 인원",
+      "baseline": "부상 71",
+      "attributed_gates": [
+        "G6",
+        "G7"
+      ],
+      "predicates": [
+        "cancel_requested => 0명",
+        "entry_capped => 19명",
+        "=> 71명"
+      ]
     }
   ],
   "baseline_summary": "무개입 기준 점수(자연 기준): 사망 26 · 부상 71 · 오인 구금 1건(6시간) · 발신자 테러범 구속 · 일지 소실 · 은폐 유지. 고정 타임라인의 테러가 예정대로 \"일어난\" 결과가 그대로 기준이다.",

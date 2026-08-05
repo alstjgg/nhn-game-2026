@@ -203,9 +203,23 @@ describe('[u11#c6] frozen inputs stayed frozen (C1 / C13 / C20)', () => {
   // `src/shared/species.ts` carried its own deletion order for the duplicate
   // `Species` union. The claim stays asserted where it stayed true — over the
   // run's own merge range, in (m); the live checks keep the still-frozen set.
-  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts']
+  //
+  // RELEASED again (08-05, the score-predicate hardening):
+  // `data/scenario/우는다리/` is the pack, and the pack is the game's content.
+  // The freeze said "the run must not rewrite its OWN inputs", which stopped
+  // being a live claim the moment that run merged — the same argument that
+  // released `spec-client.md` above. Left as it was, the pack could never be
+  // hardened: `predicates`, `edge_predicates` and the meter bindings are all
+  // authored INTO it, and lint has been reporting them as the hardening
+  // worklist (F1–F4) with nowhere to do the work.
+  //
+  // `data/scenario/_schema/` stays frozen, and the distinction is the point:
+  // the pack is content and revises with the scenario; the schemas are the
+  // ratified law that content is checked against, and nothing about the run's
+  // merge expired that. §3.6's grammar was deliberately sized to fit the
+  // already-ratified `string[]` so hardening never needs to touch them.
+  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts', 'data/scenario/우는다리/']
   const FROZEN = [
-    'data/scenario/우는다리/',
     'data/scenario/_schema/',
     'docs/design/',
     'src/shared/segment.ts',

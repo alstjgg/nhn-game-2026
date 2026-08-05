@@ -412,7 +412,9 @@
             "a"
           ],
           "deltas": {},
-          "flags": {}
+          "flags": {
+            "logs_requested": true
+          }
         },
         {
           "id": "seized",

@@ -19,6 +19,11 @@
 
 import { readFileSync } from 'node:fs';
 import { join, resolve, basename } from 'node:path';
+// The predicate grammar has ONE implementation, and this is how lint reaches it
+// rather than carrying a second (contract-datapack §3.6). `datapack:lint` runs
+// with `--experimental-strip-types` for this import; the floor that needs
+// (Node 22.6) sits under `engines.node`'s `>=22.12`.
+import { identifiers, problems } from '../src/shared/predicates.ts';
 
 const packDir = process.argv[2];
 if (!packDir) {
@@ -387,6 +392,64 @@ for (const c of pack.characters.characters ?? []) {
 }
 for (const u of pack.score.units ?? []) {
   if (!u.predicates.length) flags.push(`score ${u.id} (${u.label}): predicates empty`);
+}
+
+/* ── E-P1…E-P4 — the predicate rule set (contract-datapack §3.6) ─────────── */
+
+// Every name a predicate is allowed to say. Flags come from wherever the pack
+// SETS one — a gate bucket or a timeline event — and scalars from the meters
+// that are actually bound, so an unbound meter (F2) is not a name a predicate
+// may read yet.
+const settableFlags = new Set();
+for (const g of pack.gates.gates ?? []) {
+  for (const b of g.buckets ?? []) for (const f of Object.keys(b.flags ?? {})) settableFlags.add(f);
+}
+// Flags only the fixed timeline sets. These are the ones a condition may not
+// read: the timeline fires unconditionally, so `bridge_collapsed` does not mean
+// "the bridge fell" — it means the day reached its end, and a predicate that
+// branches on it branches on nothing (§3.6).
+const timelineOnlyFlags = new Set();
+for (const e of pack.timeline.events ?? []) {
+  for (const f of Object.keys(e.effects?.flags ?? {})) {
+    settableFlags.add(f);
+    if (!(pack.gates.gates ?? []).some((g) => (g.buckets ?? []).some((b) => f in (b.flags ?? {})))) {
+      timelineOnlyFlags.add(f);
+    }
+  }
+}
+const boundScalars = new Set();
+for (const c of pack.characters.characters ?? []) {
+  for (const m of c.meters) if (m.variable !== null) boundScalars.add(m.variable);
+}
+
+for (const u of pack.score.units ?? []) {
+  const where = `score ${u.id} (${u.label})`;
+  u.predicates.forEach((predicate, i) => {
+    for (const problem of problems(predicate)) {
+      errors.push(`${where} predicate[${i}]: ${problem} — "${predicate}"`); // E-P1
+    }
+    for (const name of identifiers(predicate)) {
+      if (!settableFlags.has(name) && !boundScalars.has(name)) {
+        errors.push(`${where} predicate[${i}]: nothing in the pack sets or binds "${name}"`); // E-P2
+      } else if (timelineOnlyFlags.has(name)) {
+        // E-P3
+        errors.push(
+          `${where} predicate[${i}]: "${name}" is set by the fixed timeline alone — it is always true at 21:04, so branching on it branches on nothing. Read an intervention flag instead`,
+        );
+      }
+    }
+  });
+  // E-P4 — the fallback. A unit whose rules can all miss has no value at all,
+  // and one written early makes every rule below it dead: the reader takes the
+  // FIRST match and cannot see that the lines after it are unreachable.
+  if (u.predicates.length) {
+    const fallbacks = u.predicates.filter((p) => p.trim().startsWith('=>'));
+    if (!fallbacks.length) errors.push(`${where}: no fallback — every rule can miss, leaving the unit unscored`);
+    else if (fallbacks.length > 1) errors.push(`${where}: ${fallbacks.length} fallbacks — all but the first are dead`);
+    else if (!u.predicates[u.predicates.length - 1].trim().startsWith('=>')) {
+      errors.push(`${where}: the fallback is not last — every rule after it is dead`);
+    }
+  }
 }
 for (const e of pack.timeline.events ?? []) {
   if (e.exposure.extra_condition) flags.push(`timeline ${e.id}: exposure has free-text extra_condition — promote to a predicate`);

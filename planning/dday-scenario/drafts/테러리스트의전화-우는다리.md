@@ -373,7 +373,7 @@ false_leads:
   - "옳은 정서, 틀린 사람 — '오세라는 세명건설 이야기가 나오자 말을 돌렸다'(19:10 축제 본부). 회피의 냄새는 진짜지만 그녀가 감춘 것은 결함이 아니라 결재선 공포다."
 predicted_shift: "a → b"
 buckets:
-  - { id: paperwork, stances: [a], deltas: {} }
+  - { id: paperwork, stances: [a], deltas: {}, flags: { logs_requested: true } }
   - { id: seized, stances: [b], deltas: {}, flags: { logs_saved: true } }
   - { id: leveraged, stances: [c], deltas: {}, flags: { logs_saved: true, insider_testimony: true } }
 ```
@@ -494,6 +494,59 @@ buckets:
 | 계측 일지 원본 | 소실 / 사본만 / 원본 확보 / 원본+증언 | 3권 전량 파쇄 | G5 |
 | 노민석의 이름 | "단순 추락" 유지 / 재조사 개시 / 은폐 규명 | 은폐 유지 | G3 · G5 |
 | 다리의 진실 | 결함의 공식 확인 여부 (미확인이면 재개통 예정으로 남는다) | 붕괴로만 확인 — 사후 확인 | G5 · G7 |
+| 부상자 | 21:04 시점 부상 인원 | 부상 71 | G6 · G7 |
+
+표는 무엇을 세는지 말하고, 아래 블록은 어떻게 세는지 말한다. 한 유닛의 규칙은
+**위에서부터 첫 매치가 이긴다** — 조건 없는 마지막 줄이 무개입 기준이다.
+
+숫자로 쓴 값만 집계표 머리글(사망 · 명)에 합산된다. 그래서 사람이 죽는 세 유닛만
+숫자이고, 결말·구금 시간·부상자 수는 문자열이다 — 구금 6시간이 사망 6명에
+더해지는 일은 없어야 한다. 무개입 런의 합은 24 + 1 + 1 = 26으로, 아래 기준
+점수와 맞는다.
+
+조건은 **개입 flag**만 읽는다. `bridge_collapsed`·`crowd_on_bridge`처럼 고정
+타임라인이 무조건 세우는 flag는 "그날이 끝까지 갔다"는 뜻이라 언제나 참이고,
+그것으로 갈래를 나누면 아무것도 나누지 못한다.
+
+```
+집계 규칙:
+  다리 위의 인파:
+    - cancel_requested => 0
+    - entry_capped => 7
+    - => 24
+  임차복:
+    - caretaker_evacuated => 0
+    - => 1
+  둔치의 사람들:
+    - cancel_requested => 0
+    - => 1
+  서지형의 결말:
+    - caller_named and hatch_opened => 공식 입회 증인
+    - caller_named => 참고인
+    - cancel_requested => 협박 입건
+    - => 테러 혐의 구속
+  강필주:
+    - tip_traced => 오인 체포 없음
+    - => 6시간 구금
+  계측 일지 원본:
+    - logs_saved and insider_testimony => 원본+증언
+    - logs_saved => 원본 확보
+    - logs_requested => 사본만
+    - => 소실
+  노민석의 이름:
+    - chief_confronted and logs_saved => 은폐 규명
+    - originals_read => 재조사 개시
+    - => "단순 추락" 유지
+  다리의 진실:
+    - logs_saved and cancel_requested => 결함 공식 확인 · 재개통 없음
+    - logs_saved => 결함 공식 확인
+    - cancel_requested => 미확인 — 재개통 예정
+    - => 붕괴로만 확인
+  부상자:
+    - cancel_requested => 0명
+    - entry_capped => 19명
+    - => 71명
+```
 
 - **무개입 기준 점수(자연 기준):** 사망 26 · 부상 71 · 오인 구금 1건(6시간) ·
   발신자 테러범 구속 · 일지 소실 · 은폐 유지. 고정 타임라인의 테러가 예정대로
