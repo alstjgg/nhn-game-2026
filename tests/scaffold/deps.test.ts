@@ -94,6 +94,21 @@ describe('[u0#c4] script wiring', () => {
   // u0. Measured at u0's own merge the claim stays permanently true; the live
   // scripts are still bound by (g) above and by the fact that every acceptance
   // command in this run shells out to them.
+  // ADDED by the engine run (e0): (g2) above measures u0's OWN package.json, so
+  // nothing was checking that the LIVE `check` still composes both halves.
+  // plan-engine-build §2a.3 — "a silently dropped clause disarms a gate for every
+  // unit" — makes the composed form a prerequisite, so it gets its own assert.
+  it('(g3) `check` composes both halves — §2a.3, all five clauses in order', () => {
+    const check = (pkg().scripts ?? {})['check'] ?? ''
+    expect(check.split('&&').map((c) => c.trim())).toEqual([
+      'tsc -p tsconfig.core.json',
+      'tsc',
+      'npm run typecheck:test',
+      'npm run datapack:check',
+      'npm run test:shared',
+    ])
+  })
+
   it('(g2) pre-existing scripts are unchanged', () => {
     const scripts = (JSON.parse(fileAtUnit('u0', 'package.json')) as Pkg).scripts ?? {}
     for (const [name, command] of Object.entries(FROZEN_SCRIPTS)) {

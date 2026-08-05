@@ -40,27 +40,42 @@ import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
-import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { advance, freezeAt, firstPaint, runToMount, settled } from './fixtures/harness.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
-/** The run's shot dirs live in `.claude/super/`, which is not tracked in a
- *  worktree — resolve through the git COMMON dir so a worktree run finds the
- *  same reference side the dashboard PR shows. */
-function superDir(): string {
-  const candidate = path.join(REPO, '.claude/super')
-  if (fs.existsSync(path.join(candidate, 'reference-shots'))) return candidate
-  const common = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], {
-    cwd: REPO,
-    encoding: 'utf8',
-  }).trim()
-  return path.join(path.dirname(common), '.claude/super')
-}
+// The reference side is TRACKED IN THE REPO (`e2e/reference-shots/`).
+//
+// It used to live in `.claude/super/reference-shots/`, the super-pipeline's
+// runtime state — which CLAUDE.md rule 4 gitignores. That made these ten tests
+// pass on exactly one machine (the one that ran the pipeline) and fail
+// everywhere else, including CI and any fresh clone; the pipeline's own shots
+// have since been lost with that directory, so there was nothing left to point
+// at. Nothing detected it because no workflow ran Playwright at all.
+//
+// What the pair means has moved with it, deliberately. The original reference
+// side was a render of the design target, and comparing against it was a
+// one-time PORTING check that has already served its purpose. The tracked
+// baseline is a VISUAL-REGRESSION baseline: these ten framed surfaces must keep
+// rendering, non-empty and error-free, as the engine gets bound in behind them.
+// That is the check with value for the work that is still ahead.
+//
+// Regenerate deliberately, never as a side effect of a normal run:
+//   CAPTURE_BASELINE=1 SHOT_OUT=e2e/reference-shots \
+//     npx playwright test e2e/captures.spec.ts --project=dev
+//
+// `CAPTURE_BASELINE` exists because the pairing preconditions below would
+// otherwise make the baseline unbootstrappable: each shot asserts its reference
+// twin EXISTS before it captures, which is exactly the assert a first run cannot
+// satisfy. It suppresses only those preconditions — every liveness assert (the
+// file was written, it is non-empty, the page threw nothing) still runs, so a
+// baseline can never be refreshed from a broken desk.
+const REFERENCE_DIR = path.join(REPO, 'e2e/reference-shots')
+const OUT_DIR = process.env.SHOT_OUT ?? path.join(REPO, 'test-results/build-shots')
 
-const REFERENCE_DIR = path.join(superDir(), 'reference-shots')
-const OUT_DIR = process.env.SHOT_OUT ?? path.join(superDir(), 'build-shots')
+/** Refreshing the tracked baseline — see the note above. */
+const BASELINE = process.env.CAPTURE_BASELINE === '1'
 const NOTE = path.join(OUT_DIR, 'capture-note.md')
 
 interface Shot {
@@ -202,10 +217,12 @@ test.describe('captures', () => {
 
   for (const shot of SHOTS) {
     test(`captures — ${shot.name} pairs with its reference shot`, async ({ page }) => {
-      expect(
-        fs.existsSync(path.join(REFERENCE_DIR, `${shot.name}.png`)),
-        `no reference shot named ${shot.name}.png under ${REFERENCE_DIR}`,
-      ).toBe(true)
+      if (!BASELINE) {
+        expect(
+          fs.existsSync(path.join(REFERENCE_DIR, `${shot.name}.png`)),
+          `no reference shot named ${shot.name}.png under ${REFERENCE_DIR}`,
+        ).toBe(true)
+      }
 
       const errors: string[] = []
       page.on('pageerror', (e) => errors.push(String(e)))
@@ -321,6 +338,10 @@ test.describe('captures', () => {
         .readdirSync(dir)
         .filter((f) => f.endsWith('.png'))
         .sort()
+    // No baseline special-case: refreshing writes INTO the reference dir, so
+    // `OUT_DIR === REFERENCE_DIR` and every assert below holds on its own. The
+    // count and the name-for-name pairing still bind in that mode, which is what
+    // keeps a refresh from quietly shipping nine shots.
     expect(fs.existsSync(REFERENCE_DIR), `reference shots are missing at ${REFERENCE_DIR}`).toBe(true)
     const reference = png(REFERENCE_DIR)
     expect(reference.length, 'the reference side is not the expected ten shots').toBe(10)

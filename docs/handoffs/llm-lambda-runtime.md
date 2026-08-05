@@ -360,8 +360,13 @@ aws logs tail /aws/lambda/nhn-game-llm-layer-turn \
 The static client receives only the API root at build time:
 
 ```text
-VITE_AI_BASE_URL=https://zcyeajmv11.execute-api.ap-northeast-2.amazonaws.com
+VITE_PROXY_BASE_URL=https://zcyeajmv11.execute-api.ap-northeast-2.amazonaws.com
 ```
+
+> **Key name.** The root DDAY client reads `VITE_PROXY_BASE_URL`
+> (`src/transport/index.ts`, contract-calls §11); nothing sets it yet — see that
+> section. `VITE_AI_BASE_URL` is `demos/apothecary/`'s own key and stays that
+> demo's — the two stacks are deployed separately and do not share config.
 
 If health or dialogue fails, the client must continue with bundled authored
 data. Portraits always use bundled, manifested assets.

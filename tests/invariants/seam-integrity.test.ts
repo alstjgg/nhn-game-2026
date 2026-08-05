@@ -32,6 +32,24 @@ const DRIVER_PREFIX = 'src/client/driver/'
 const CLIENT_PREFIX = 'src/client/'
 const CORE_RE = /^src\/(engine|composer)(\/|$)/
 
+// RE-AIMED (C17) when the engine build landed. inv 12 governs what crosses the
+// view-driver seam FROM THE VIEW SIDE: "windows and components consume
+// `ViewEvent`s only". It was written while `src/engine` and `src/composer` were
+// empty stubs, so "everything that is not `src/client/driver/`" was an exact
+// description of the view side. It stopped being one the moment the isomorphic
+// tier (physical §3.1) was implemented: `src/engine`, `src/composer`,
+// `src/transport`, `src/driver` and `src/runloop` live BELOW the seam, and an
+// edge among them is the architecture, not a breach of it.
+//
+// Nothing is skipped or excluded to go green — the ban still covers every
+// module above the seam, which is the set the invariant was ever about.
+const BELOW_SEAM_RE = /^src\/(engine|composer|transport|driver|runloop)(\/|$)/
+
+/** The view side: everything that is neither a seam module nor below the seam. */
+function aboveSeam(file: string): boolean {
+  return !file.startsWith(DRIVER_PREFIX) && !BELOW_SEAM_RE.test(file)
+}
+
 function allSources(): string[] {
   return filesUnder(SRC, '.ts').map(rel)
 }
@@ -77,14 +95,14 @@ describe('[u9#c4] inv 12 — the import graph is non-vacuous', () => {
 
 describe('[u9#c4] nothing outside driver/ imports engine or composer', () => {
   it('(a) no module outside src/client/driver/ reaches engine or composer', () => {
-    const outside = allSources().filter((f) => !f.startsWith(DRIVER_PREFIX))
+    const outside = allSources().filter(aboveSeam)
     const offenders = graph(outside).filter((e) => CORE_RE.test(e.to))
     expect(formatAll(asHits(offenders))).toEqual([])
   })
 
   it('(b) the ban covers dynamic import() too, not just static specifiers', () => {
     const offenders: Hit[] = []
-    for (const file of allSources().filter((f) => !f.startsWith(DRIVER_PREFIX))) {
+    for (const file of allSources().filter(aboveSeam)) {
       const text = blank(read(abs(file)), 'ts')
       offenders.push(...locate(file, text, /\bimport\(\s*['"][^'"]*\/(engine|composer)(\/|['"])/))
     }
@@ -93,7 +111,7 @@ describe('[u9#c4] nothing outside driver/ imports engine or composer', () => {
 
   it('(c) no module outside driver/ names an engine or composer symbol via a bare specifier', () => {
     const offenders: Hit[] = []
-    for (const file of allSources().filter((f) => !f.startsWith(DRIVER_PREFIX))) {
+    for (const file of allSources().filter(aboveSeam)) {
       const bare = specifiersOf(file).filter((s) => !s.startsWith('.') && /^(engine|composer)(\/|$)/.test(s))
       for (const spec of bare) {
         const text = blank(read(abs(file)), 'ts')
@@ -134,17 +152,39 @@ describe('[u9#c4] the driver seam is the only path to the view', () => {
     expect(specifiersOf('src/shared/view-driver.ts')).toEqual([])
   })
 
-  it('(b) every relative import out of driver/ lands in driver/ or src/shared/', () => {
+  // RE-AIMED (C17): `src/client/driver/` is the ONE module spec-client §2.1
+  // licenses to reach the core — "(later) live driver binding engine+composer …
+  // may import: `shared`; live driver only: `engine`, `composer`". Landing in the
+  // isomorphic tier is therefore the seam working, not a leak. Everything else
+  // out of `driver/` is still confined to `driver/` and `src/shared/`.
+  it('(b) every relative import out of driver/ lands in driver/, src/shared/ or the isomorphic tier', () => {
     const driverFiles = filesUnder(DRIVER, '.ts').map(rel)
     const offenders = graph(driverFiles).filter(
-      (e) => !e.to.startsWith(DRIVER_PREFIX) && !e.to.startsWith('src/shared/'),
+      (e) =>
+        !e.to.startsWith(DRIVER_PREFIX) && !e.to.startsWith('src/shared/') && !BELOW_SEAM_RE.test(e.to),
     )
     expect(formatAll(asHits(offenders))).toEqual([])
   })
 
-  it('(c) the player build graph contains no engine or composer module', () => {
-    const inBuild = [...playerBuildGraph()].filter((f) => CORE_RE.test(f)).sort()
-    expect(inBuild, 'engine/composer code reached the player bundle (C8: fixture-only)').toEqual([])
+  // RE-AIMED (C17). This asserted that NO core module may appear in the player
+  // build graph at all, with the message "C8: fixture-only". C8 was a scope
+  // exclusion of the client run, not a structural rule —
+  // `docs/plan-client-build.md` §1: "**Does NOT do (run-level):** the live
+  // driver's engine/composer binding (*engine does not exist yet*; build to the
+  // seam, fixture-only)". The premise expired when the engine landed, and
+  // `docs/spec-client.md` has always planned the opposite (§2.1 module table;
+  // §5.1 "connect driver: fixture (default until proxy lands) | live"; §5.2 "the
+  // same seam, live … windows cannot tell the difference").
+  //
+  // What was ever structural survives, and is now measured on the BUILD GRAPH
+  // instead of the source tree: a core module may ship, but only a driver module
+  // may be what pulled it in. A window or component reaching past the seam still
+  // fails here, which is the thing inv 12 exists to catch.
+  it('(c) in the player build graph, only driver modules reach engine or composer', () => {
+    const offenders = [...playerBuildGraph()]
+      .filter(aboveSeam)
+      .flatMap((file) => graph([file]).filter((e) => CORE_RE.test(e.to)))
+    expect(formatAll(asHits(offenders))).toEqual([])
   })
 })
 

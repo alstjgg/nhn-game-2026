@@ -44,6 +44,21 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   `.claude/super/units/u1.md` (the contract) + the design reference slices, and
   ignores the stale DESIGN artifact — whoever owns the unit-artifact writer
   should stop reusing a unit dir across runs, or stamp `run_id` into design.md.
+- [e10] `contract-engine-composer.md` §2.1 (and its echo in §8's open-items
+  list) still warns that **`AGENT_UTTERANCE` is missing from call contracts
+  §6's supplier table** — but that table now carries the row, and
+  `tests/acceptance/fixtures/closure.ts` parses it out with no special case.
+  The warning is stale, not the table — impact: a reader of §2.1 thinks a slot
+  is unassigned when the closure proves it is not · the owner of
+  `docs/contract-engine-composer.md` retracts §2.1 (`docs/**` is frozen here).
+- [e10] §8-1's supplier union (`GateView ∪ BeatView ∪ RoundView ∪ ComposerDeps
+  ∪ PROXY_OWNED_SLOTS`) has **no term for the player**, yet call contracts §6
+  assigns `BLOCKS` to the player and the composer only *resolves* the ids it is
+  handed. The executable closure adds an explicit sixth term,
+  `PLAYER_SUPPLIED_SLOTS = ['BLOCKS']`, and counts doubling as engine-side ∩
+  proxy-owned rather than set ∩ set — impact: none on `src/**`; §8's wording
+  should name the player · whoever next edits that contract. See
+  `discovery/e10.md` §2.
 
 - [u11] **§7 #3 has no seam event to observe.** The item asks for the gate's
   judgment (delta → bucket → edge) to be observable in the debug pane while only
@@ -916,9 +931,128 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   (`shell/window-registry.ts`) is the only place that names the five windows —
   any unit adding a pane goes through it · u3. (`discovery/u3.md` §D 14)
 
+## Cross-run reconciliation — the engine build meeting the client build
+
+Both runs independently repaired the same u0-era gates that upstream PR #114 had
+made stale, so merging them carried two different repairs of one assert. None was
+deleted, excluded or `.skip`ped — every one is re-aimed and logged here (C12/C17).
+
+  The two runs' repairs use two different mechanisms, and which one survives the
+  merge is decided per file by whether its baseline still moves once this lands
+  on `main` — not by which run wrote it (민서's dry-run table on PR #116 reaches
+  the same three answers independently):
+
+- [merge] `tests/scaffold/isomorphism-guard.test.ts` — **engine run's**. The
+  client run's repair measures `git diff merge-base(HEAD, origin/main)…HEAD`,
+  which goes VACUOUS the moment this lands: the merge-base becomes HEAD and the
+  diff it inspects is empty by construction. The engine run's SHA pin plus the
+  six-folder census keeps measuring something.
+- [merge] `tests/scaffold/layout.test.ts` · `tests/scaffold/deps.test.ts` —
+  **client run's**, kept whole. These do NOT go vacuous: they resolve u0's own
+  merge range (`u0Merge()` / `fileAtUnit('u0', …)`), which stays fixed for ever,
+  so the claims still hold exactly where they were meant to. The engine run's
+  versions DELETE the u0 census and re-point (g2) at the live file — and C17's
+  whole rule is that a stale assert is re-aimed, never deleted. `deps.test.ts`
+  keeps BOTH sides: the client run's u0-range (g2) with its u0-era
+  `FROZEN_SCRIPTS`, and the engine run's new (g3), which is the assert that the
+  LIVE `check` still composes all five clauses. They measure different things and
+  neither is redundant.
+- [merge] `tests/invariants/seam-integrity.test.ts` — inv 12's "everything that
+  is not `src/client/driver/`" described the view side only while `src/engine`
+  and `src/composer` were empty stubs. Re-aimed to `aboveSeam()`: the isomorphic
+  tier (`src/engine`, `src/composer`, `src/transport`, `src/driver`,
+  `src/runloop`) lives BELOW the seam, so an edge among those folders is the
+  architecture. The ban still covers every module above the seam.
+- [merge] `tests/driver/engine-boundaries.test.ts` — A14's `replay-order.test.ts`
+  byte pin re-pinned to what `main` carries (the client run rewrote that suite
+  after u2 landed it), and (b)'s "complement of FROZEN_SUITES = e7's additions"
+  named explicitly, since the client run landed its own suites under
+  `tests/driver/`.
+
+### C8 (`fixture-only`) has expired — the player build may carry the engine
+
+`tests/invariants/seam-integrity.test.ts` `(c)` asserted that **no** engine or
+composer module may appear in the player build graph, and named its reason in the
+failure message: `C8: fixture-only`.
+
+C8 was a **run-scope exclusion**, not a structural rule.
+[`docs/plan-client-build.md`](docs/plan-client-build.md) §1 states it with the
+reason attached: *"**Does NOT do (run-level):** the live driver's engine/composer
+binding (**engine does not exist yet**; build to the seam, fixture-only)"*. That
+premise expired when the engine landed.
+
+[`docs/spec-client.md`](docs/spec-client.md) has always specified the opposite end
+state, in three places: §2.1's module table gives `driver/` the "(later) live
+driver binding engine+composer" and lists its imports as "`shared`; **live driver
+only: `engine`, `composer`**"; §5.1's boot sequence reads "connect driver: fixture
+(**default until proxy lands**) | live"; §5.2 reads "the same seam, live: the
+driver binds engine + composer and forwards ops; windows cannot tell the
+difference (invariant 12)".
+
+So `(c)` and `(b)` are re-aimed rather than relaxed. `(c)` now measures the build
+graph for *who pulled the core in* — a core module may ship, but only a driver
+module may be the importer, so a window or component reaching past the seam still
+fails. `(b)` adds the isomorphic tier to `driver/`'s permitted landing zones,
+which is the crossing §2.1 licenses. **Both are vacuous until the browser-side
+binding lands** (nothing in `src/client/` imports the core yet) — they are re-aimed
+now so that the binding is not blocked by a guard whose premise is gone · 민서/윤석.
+
+### The e2e suite ran in no workflow, and what that hid
+
+- [merge] **`e2e/captures.spec.ts` could only ever pass on one machine.** Its
+  reference side was `.claude/super/reference-shots/` — super-pipeline runtime
+  state, which CLAUDE.md rule 4 gitignores — so all ten pairs plus the one-for-one
+  census failed on CI, on a teammate's clone and in any fresh checkout. The
+  pipeline's own shots have since been lost with that directory. Nothing caught it
+  because **no workflow ran Playwright at all**: `ci.yml` ran `check`, `test`,
+  `build` and `probe:selftest`; `deploy.yml` ran `build`. Fixed by tracking the
+  baseline at `e2e/reference-shots/`, so a manual run now works on any machine.
+  CI gains a `preview-smoke` job only — the full suite stays manual by 민서's
+  call on PR #116, so **nothing automated watches the other 237 tests**; that is
+  a known, deliberate gap, not an oversight.
+  The pair's MEANING moved with it, deliberately: comparing against a render of
+  the design target was a one-time porting check that has already served its
+  purpose, so the tracked shots are a visual-REGRESSION baseline for the work
+  still ahead. Refresh with `CAPTURE_BASELINE=1 SHOT_OUT=e2e/reference-shots …`.
+- [merge] **TALLY can take the front back mid-test, and the desk has no way to
+  stop it · u7.** `windows/tally.ts:show()` re-clicks its own taskbar button
+  whenever it needs to be open and finds itself hidden, and TALLY is a sheet over
+  the middle of the desk sharing one `z-index: var(--z)` order with every other
+  window. So a click meant for the window underneath can be swallowed:
+
+  > `<div class="tly-head">…</div>` from `<section id="w-tally" …>` subtree
+  > intercepts pointer events
+
+  This is the cause of a flake that had been read as one bad test in
+  `block-store.spec.ts`; it is actually systemic and reached `reports.spec.ts`,
+  `a11y.spec.ts` and `run-loop.spec.ts` as soon as the captures lane began doing
+  real work and changed the timing. The deterministic half is fixed —
+  `e2e/fixtures/harness.ts:raiseWindow` raises from the TASKBAR, which is chrome
+  and never under a window — and the `dev` project now runs after `chromium`
+  rather than beside it, because sharing a worker pool starved the wall-clock
+  assertions on both sides.
+
+  What is left is a genuine race between the sheet and the test, and `retries: 2`
+  under CI is a mitigation, not a fix — a test that only passes on retry is still
+  reported as `flaky`. **The question is a product one and it is u7's:** should a
+  window the operator has just raised be able to keep the front while TALLY is
+  counting? Answering it is what removes the retries — and it should be answered
+  before the full suite is ever made a blocking gate.
+
 ## Reference ambiguities
 
-
+- [e5] `contract-engine-composer.md` §3 says the composer resolves block ids
+  "through the block store the driver passes in", but the `ComposerDeps` literal
+  in the same section carries only `reportGuidance` — and the views are frozen by
+  §2, so the store cannot ride in one. Read as: the store is a **construction**
+  dependency. `createComposer` takes
+  `ComposerDeps & { reportGuidance: ReportGuidance; blocks: BlockStore }`; the
+  same intersection narrows e0's `reportGuidance: unknown` to e1's canonical
+  type without redeclaring it. Details and the reversal path: `discovery/e5.md`.
+- [e5] The contract does not say what happens when an injected block id has no
+  entry in the store. Read as: **throw**, resolve-all-then-emit, nothing partial
+  emitted. Skip-and-continue would let two runs with "the same" block set compose
+  different bytes, which is the property §8-10 exists to protect.
 - [u0] No deviation applied yet. This unit creates empty module directories only
   and ports nothing from `docs/design/phase2-ui/`; the §8 porting rule
   (CSS vendored & re-tokenized · JS rewritten in TS · markup structure ported)

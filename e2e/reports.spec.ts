@@ -19,6 +19,7 @@ import type { Locator, Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { raiseWindow } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -427,6 +428,9 @@ test.describe('archive segmentation and highlight marks', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page, { reduced: true })
     await drain(page)
+    // `drain()` opens TALLY over the desk — raise REPORTS before any test in
+    // this block clicks into it. See `raiseWindow`.
+    await raiseWindow(page, 'rep')
   })
 
   test('archive segmentation and highlight marks — the rail is segmented by run and time', async ({
@@ -572,6 +576,9 @@ test.describe('a11y', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page, { reduced: true })
     await drain(page)
+    // `drain()` opens TALLY over the desk — raise REPORTS before any test in
+    // this block clicks into it. See `raiseWindow`.
+    await raiseWindow(page, 'rep')
   })
 
   test('a11y — every sentence is a keyboard-reachable button', async ({ page }) => {

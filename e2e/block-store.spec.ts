@@ -24,6 +24,7 @@
 // whose stream carries no blocks at all is reported as such rather than passing
 // vacuously.
 import { expect, test } from 'playwright/test'
+import { raiseWindow } from './fixtures/harness.ts'
 import type { Locator, Page } from 'playwright/test'
 
 /* ── seam shapes this suite reads back ───────────────────────────────────── */
@@ -242,8 +243,24 @@ async function dropOn(page: Page, id: string, target: string): Promise<void> {
 
 /** Mine one report sentence through the REPORTS window, and return its id. */
 async function mineOne(page: Page): Promise<string> {
-  await page.locator(`${REP} .win-bar`).click()
+  // DRAIN FIRST, focus second. `driver.drain()` releases the whole remaining
+  // stream — `run_end` included — so TALLY opens as a floating sheet. Raising
+  // REPORTS before the drain therefore left the sheet on top of it, and the
+  // sentence click below was intercepted:
+  //
+  //   <div class="tly-head">…</div> from <section id="w-tally" …> subtree
+  //   intercepts pointer events
+  //
+  // It surfaced as a FLAKE rather than a failure because whether the sheet
+  // covered the one sentence this helper picks depended on where that sentence
+  // sat. Focusing after the drain raises REPORTS above the sheet for good, which
+  // is the window manager doing exactly what a bar click asks of it.
   await drain(page)
+
+  // `drain()` opens TALLY over the desk; REPORTS has to be raised from the
+  // taskbar before the sentence click, or the sheet intercepts it.
+  await raiseWindow(page, 'rep')
+
   const f = await frame(page)
   const held = new Set(membership(f))
   const candidate = reportsOf(f)

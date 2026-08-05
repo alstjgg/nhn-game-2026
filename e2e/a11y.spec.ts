@@ -23,6 +23,7 @@
 // Titles are load-bearing — [u9#c5]'s verification runs this whole file, and
 // `-g` filters in later units may target these describe names.
 import { expect, test } from 'playwright/test'
+import { raiseWindow } from './fixtures/harness.ts'
 import type { Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
 
@@ -338,8 +339,17 @@ test.describe('a11y — keyboard reach', () => {
     // `unslot` only exists once a seat is filled, so the desk is driven through
     // mine → pick → slot first. Driving it is the point: a census taken before
     // the operator has done anything is exactly the empty one this replaces.
+    //
+    // Each window is RAISED before it is used. `drain()` above released
+    // `run_end`, so TALLY is open as a floating sheet over the desk, and a click
+    // that lands on the sheet does nothing — this test failed intermittently
+    // with `unslot` never attaching, because the `slot` click had been swallowed.
+    // See `raiseWindow`.
+    await raiseWindow(page, 'rep')
     await page.locator('[data-op="mine"]').first().click()
+    await raiseWindow(page, 'store')
     await page.locator('#storeList .bcard').first().click()
+    await raiseWindow(page, 'file')
     await page.locator('[data-op="slot"]').first().click()
     await expect(page.locator('[data-op="unslot"]').first()).toBeAttached({ timeout: 15_000 })
 

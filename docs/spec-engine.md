@@ -404,8 +404,10 @@ is fixed now because hardening is waiting on a vocabulary to fill that field.
 
 ## 5. Behavior on call failure (request §6-3 · contract open #5)
 
-The retry budget is **one retry (two calls total)**. Only hard validation
-failures trigger a re-call (call contracts §1 rule 6).
+The retry budget is **one retry (two calls total), and it applies to `502
+invalid_model_output` only.** Only hard validation failures trigger a re-call
+(call contracts §1 rule 6) — a `504 bedrock_timeout` is not one, and grades
+straight to the table below without a second call.
 
 The harness uses `maxRetries = 2`
 ([drive-beat.mjs](../tools/driver/drive-beat.mjs)), but the production
@@ -415,8 +417,33 @@ make the judgment call worst-case three calls, and that latency is a charge
 against architecture spec §4 latency rule 2's prefetch buffer. The harness value
 stays as it is; the two numbers differing is deliberate.
 
-This value is **provisional** for the same reason as §3.2 — the
-production-payload latency measurement (A4) is the retuning trigger.
+**No longer provisional — A4 has been measured** (2026-08-04,
+[PR #138](https://github.com/alstjgg/nhn-game-2026/pull/138)). Against the
+deployed proxy, on production-shaped payloads:
+
+| Call | model latency | against the deadline |
+|---|---|---|
+| 1 Judgment | 3.14 · 3.18 · 3.38 · 4.03 s | far inside |
+| 2 Narration | 3.59 s | far inside |
+| 3 Reporter | 6.80 · 6.95 · 9.20 · 9.54 · 10.00 s | inside, with ~5 s of margin |
+
+`MODEL_TIMEOUT_MS` moved 7 s → 15 s in the same change, because at 7 s two of
+three reporter calls returned 504 and the one that passed did so by writing 16
+sentences where `REPORT_GUIDANCE` asks for 20–30 — it beat the clock by breaking
+the contract, not by being fast.
+
+**That is what removes 504 from the retry set.** The deadline now sits well
+above the measured maximum, so a timeout means something genuinely wrong rather
+than a budget too tight for the work; retrying would spend a second full 15 s on
+a cause likely to repeat, and turn a 15 s failure into a 30 s one. A 502 is the
+opposite case — the model answered and the answer failed validation, so the
+retry is bounded by the same latency as the first call and has a real chance of
+succeeding.
+
+The retry budget stays **uniform across the three call types.** Splitting it per
+call was considered and rejected: the useful distinction is what kind of failure
+happened, not which call it happened in, and a per-call table would have to be
+re-derived every time a prompt's length policy changed.
 
 | Call | On final failure | Grade |
 |---|---|---|

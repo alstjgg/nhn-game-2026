@@ -44,6 +44,17 @@ const desktop = { ...devices['Desktop Chrome'], viewport: { width: 1280, height:
 
 export default defineConfig({
   testDir: './e2e',
+  // CI retries. The desk's windows are draggable sheets sharing one stacking
+  // order, and `windows/tally.ts:show()` re-clicks its own taskbar button to take
+  // the top back whenever it needs to be open — so TALLY can reclaim the front
+  // mid-test, during its ~9 s count-up, and swallow a click meant for the window
+  // under it. `raiseWindow` removes the deterministic half of that; what is left
+  // is a genuine race between the sheet and the test, and it belongs to the
+  // window's owner, not to a timeout. Logged in DISCOVERY for u7.
+  //
+  // Retries make the residue visible as `flaky` in the report rather than hiding
+  // it: a test that only passes on retry is still named in the summary.
+  retries: process.env.CI ? 2 : 0,
   use: { viewport: { width: 1280, height: 800 } },
   projects: [
     {
@@ -52,8 +63,20 @@ export default defineConfig({
       use: { ...desktop, baseURL: unitURL },
     },
     {
+      // Runs AFTER `chromium`, never beside it. `captures.spec.ts` boots the desk
+      // ten times, freezes each one and holds the tally count-up for eleven real
+      // seconds; `acceptance.spec.ts` drives whole runs. Sharing a worker pool
+      // with the unit-hosted suite starved the wall-clock-driven assertions on
+      // BOTH sides — `#w-tally [data-tally-state]` sat at `pending` past its 20 s
+      // budget, and feed lines were reported outside the viewport mid-scroll.
+      //
+      // This was invisible until the captures suite began doing real work: it had
+      // been failing instantly on a missing reference directory, so it consumed
+      // nothing. Serialising the heavy lane is the fix; widening the timeouts
+      // would only move the threshold.
       name: 'dev',
       testMatch: DEV_HOSTED,
+      dependencies: ['chromium'],
       use: { ...desktop, baseURL: devURL },
     },
     {

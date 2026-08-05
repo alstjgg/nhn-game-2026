@@ -297,3 +297,31 @@ export async function runToMount(page: Page, mode: 'virtual-clock' | 'wallclock'
   await advance(page, mode, 3000)
   return page.evaluate(() => document.querySelectorAll('.win').length)
 }
+
+/**
+ * Raises `#w-<key>` from the TASKBAR and waits until it is focused.
+ *
+ * Draining a run releases `run_end`, so TALLY opens as a floating sheet and takes
+ * focus. Every window is a `.win` with `z-index: var(--z)`, so the sheet can sit
+ * over another window's title bar — and a bar click that lands on the sheet
+ * raises nothing, leaving every later click into that window intercepted:
+ *
+ *   <div class="tly-head">…</div> from <section id="w-tally" …> subtree
+ *   intercepts pointer events
+ *
+ * It reads as flakiness rather than failure because whether the sheet covers the
+ * specific target depends on layout. The taskbar is chrome — never under a
+ * window — so raising from there is the one move that cannot be intercepted.
+ *
+ * Guarded on `focused` because a second taskbar click on an already-focused
+ * window HIDES it (`e2e/shell.spec.ts` — "the taskbar raises an unfocused window
+ * before hiding it").
+ */
+export async function raiseWindow(page: Page, key: string): Promise<void> {
+  const win = page.locator(`#w-${key}`)
+  if (!((await win.getAttribute('class')) ?? '').includes('focused')) {
+    await page.locator(`.task[data-win="${key}"]`).click()
+  }
+  await expect(win).toHaveClass(/\bfocused\b/)
+}
+
