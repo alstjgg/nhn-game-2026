@@ -116,9 +116,7 @@ export async function createLiveRunDriver(deps: LiveRunDeps): Promise<FixtureDri
    */
   const held = runLoop.current()
   const begun =
-    held.run_count > 0
-      ? { run: held.run_count, carried: held.carried_blocks, exposureClock: held.exposure_clock_reached }
-      : runLoop.startRun()
+    held.run_count > 0 ? { run: held.run_count, carried: held.carried_blocks } : runLoop.startRun()
   const first = openRun(begun.carried, begun.run)
   let current = begun.run
 
@@ -133,20 +131,37 @@ export async function createLiveRunDriver(deps: LiveRunDeps): Promise<FixtureDri
     return meta.type === 'meta' && meta.runs_left > 0
   }
 
+  /**
+   * Hands the closing day to the run loop: its report id into the archive, its
+   * deployed set as the next day's carry-over, its clock into the exposure
+   * depth. The one place `endRun` is called from, so a day that closes on the
+   * refusal and a day that closes into the next one are recorded identically.
+   */
+  const closeRun = (close: RunClose): void => {
+    runLoop.endRun({
+      runId: runIdOf(deps.slug, current),
+      reachedClock: close.reachedClock,
+      carried: close.carried,
+    })
+  }
+
   return createLiveAdapter({
     first,
     canOpenNext,
+    closeRun,
     async next(close: RunClose): Promise<BoundRun | null> {
-      runLoop.endRun({
-        runId: runIdOf(deps.slug, current),
-        reachedClock: close.reachedClock,
-        carried: close.carried,
-      })
+      closeRun(close)
       // The allotment is spent — `new_run` is refused and the desk stays on the
       // day it is on, exactly as the fixture loop's last run answers. Read off
       // the meta event rather than `current()`: `runs_left` is derived from the
       // configured total, which the persisted `MetaState` deliberately does not
       // carry (config is never persisted).
+      //
+      // A BACKSTOP, not the refusal. `endRun` does not move `run_count`, so this
+      // cannot fire behind `canOpenNext()` — which is the point: the desk needs
+      // its answer synchronously (see `LiveAdapterDeps.canOpenNext`), and by the
+      // time this promise settles it has already been told `ok`. It stays as the
+      // invariant a second caller of `next()` would have to honour.
       const remaining = runLoop.metaEvent()
       if (remaining.type === 'meta' && remaining.runs_left <= 0) return null
 

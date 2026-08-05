@@ -23,6 +23,9 @@ import { fileURLToPath } from 'node:url'
 import { createLiveAdapter } from '../../src/client/driver/live/adapter.ts'
 import type { BoundRun } from '../../src/client/driver/live/adapter.ts'
 import { bindLiveRun } from '../../src/client/driver/live/bind.ts'
+import type { BindDeps } from '../../src/client/driver/live/bind.ts'
+import type { LivePack, PackFetch } from '../../src/client/driver/live/pack.ts'
+import type { ReportGuidance } from '../../src/shared/report-guidance.ts'
 import { createLiveRunDriver } from '../../src/client/driver/live/index.ts'
 import { registerAnimation, thawAnimations } from '../../src/client/driver/test-hooks.ts'
 import { mm } from '../../src/client/driver/clock.ts'
@@ -35,37 +38,40 @@ const SLUG = '우는다리'
 
 const readJson = (rel: string): unknown => JSON.parse(fs.readFileSync(path.join(REPO, rel), 'utf8'))
 
-const PACK = {
+// Asserted to the SAME types the production loader asserts to (`pack.ts:82`),
+// not to `never`: the shape is what this file is measuring against, so the pack
+// losing a part has to be a type error here rather than an `undefined` that
+// only surfaces as a failed assertion halfway through a 19-beat run.
+const PACK: LivePack = {
   slug: SLUG,
   timeline: readJson(`data/scenario/${SLUG}/timeline.json`),
   gates: readJson(`data/scenario/${SLUG}/gates.json`),
   characters: readJson(`data/scenario/${SLUG}/characters.json`),
   temperament: readJson(`data/scenario/${SLUG}/temperament.json`),
   symptoms: readJson(`data/scenario/${SLUG}/symptoms.json`),
-} as never
+} as LivePack
 
-const GUIDANCE = readJson('data/policy/report-guidance.json') as never
+const GUIDANCE = readJson('data/policy/report-guidance.json') as ReportGuidance
 
 /** One run of the real chain, offline — the binder's own wiring, unmodified. */
 function realRun(run: number): BoundRun {
-  return bindLiveRun(
-    {
-      pack: PACK,
-      guidance: GUIDANCE,
-      // Unset ⇒ e6's fixture provider (contract-calls §11). No key, no network.
-      proxyBaseUrl: null,
-      fetch: (() => {
-        throw new Error('the offline chain must not reach for a network')
-      }) as never,
+  const bindDeps: BindDeps = {
+    pack: PACK,
+    guidance: GUIDANCE,
+    // Unset ⇒ e6's fixture provider (contract-calls §11). No key, no network.
+    proxyBaseUrl: null,
+    fetch: () => {
+      throw new Error('the offline chain must not reach for a network')
     },
-    {
-      run,
-      carried: [],
-      start: '08:50',
-      end: '21:04',
-      meta: { type: 'meta', run, runs_left: 4 - run, carried: [], archive: [] } as never,
-    },
-  )
+  }
+  const meta: Extract<ViewEvent, { type: 'meta' }> = {
+    type: 'meta',
+    run,
+    runs_left: 4 - run,
+    carried: [],
+    archive: [],
+  }
+  return bindLiveRun(bindDeps, { run, carried: [], start: '08:50', end: '21:04', meta })
 }
 
 /** Pumps the adapter like `shell/boot.ts`'s frame callback, until `done`. */
@@ -92,6 +98,7 @@ describe('(A) the live desk plays its day to the end', () => {
     const adapter = createLiveAdapter({
       first: realRun(1),
       canOpenNext: () => true,
+      closeRun: () => {},
       next: async () => null,
     })
     const events: ViewEvent[] = []
@@ -137,6 +144,7 @@ describe('(B) the driver pumps the animations the desk registers', () => {
       const adapter = createLiveAdapter({
         first: realRun(1),
         canOpenNext: () => true,
+        closeRun: () => {},
         next: async () => null,
       })
       adapter.start()
@@ -157,6 +165,7 @@ describe('(B) the driver pumps the animations the desk registers', () => {
       const adapter = createLiveAdapter({
         first: realRun(1),
         canOpenNext: () => true,
+        closeRun: () => {},
         next: async () => null,
       })
       adapter.start()
@@ -184,12 +193,19 @@ describe('(C) a reload resumes the day rather than spending one', () => {
     }
   }
 
-  /** Serves the pack off disk, the way `dist/data/**` serves it in a build. */
+  /**
+   * Serves the pack off disk, the way `dist/data/**` serves it in a build.
+   *
+   * `LiveRunDeps.fetch` is `typeof globalThis.fetch` because the transport's
+   * POST needs the real thing; this path only ever takes the `PackFetch` route
+   * through it (`{ok, status, json}`), which is what the stub answers and all
+   * the cast is standing in for.
+   */
   const diskFetch = (async (url: string | URL) => {
     const rel = decodeURIComponent(new URL(String(url)).pathname).replace(/^\//, '')
     if (!fs.existsSync(path.join(REPO, rel))) return { ok: false, status: 404, json: async () => null }
     return { ok: true, status: 200, json: async () => readJson(rel) }
-  }) as never
+  }) satisfies PackFetch as unknown as typeof globalThis.fetch
 
   const boot = (storage: StorageLike): Promise<FixtureDriver> =>
     createLiveRunDriver({
@@ -239,6 +255,7 @@ describe('(D) the deck is a set — a repeated MINE deals one card', () => {
     const adapter = createLiveAdapter({
       first: realRun(1),
       canOpenNext: () => true,
+      closeRun: () => {},
       next: async () => null,
     })
     const events: ViewEvent[] = []

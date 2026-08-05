@@ -89,6 +89,18 @@ export type LiveAdapterDeps = {
    * `send({op:'new_run'})` — the same place the fixture loop rebuilds.
    */
   next(close: RunClose): Promise<BoundRun | null>
+  /**
+   * Closes the day WITHOUT opening another — the refusal path's counterpart to
+   * `next()`, which is the only other thing that ends a run.
+   *
+   * `canOpenNext()` answers false on the last run of a sitting, and the refusal
+   * returns before `rebuild()` is ever reached, so `next()` — and with it the
+   * run loop's `endRun` — never ran for that run: its report id never entered
+   * the archive, its carry-over was never written, and the exposure clock never
+   * deepened past the second-to-last day. The refusal is the DESK's answer, not
+   * the run's. The day ended either way and the run loop has to hear about it.
+   */
+  closeRun(close: RunClose): void
 }
 
 /**
@@ -119,6 +131,8 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
   let finished = false
   let started = false
   let rebuilding = false
+  /** Whether the run currently bound has already been handed to the run loop. */
+  let closed = false
 
   // Mirrored from the ops this facade passes through, because `LiveDriver`'s
   // surface answers a different question than the desk asks. It exposes
@@ -218,24 +232,36 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
 
   bind(bound)
 
-  /** Opens the next day underneath the listeners that are already bound. */
-  async function rebuild(): Promise<void> {
-    rebuilding = true
-    const rate: ClockRate = clock.rate
-    // Resolved before the driver is swapped — afterwards this store is the new
-    // run's and knows nothing of the day being closed.
+  /**
+   * What the closing day hands on, whether another one opens or not.
+   *
+   * Resolved before the driver is swapped — afterwards this store is the new
+   * run's and knows nothing of the day being closed.
+   */
+  function closingState(): RunClose {
     const store = bound.driver.blocks()
     const carried: Block[] = []
     for (const id of deployed) {
       const block = store.get(id)
       if (block !== undefined) carried.push({ id, text: block.text })
     }
+    return { reachedClock: clock.at(), carried }
+  }
+
+  /** Opens the next day underneath the listeners that are already bound. */
+  async function rebuild(): Promise<void> {
+    rebuilding = true
+    const rate: ClockRate = clock.rate
+    const close = closingState()
     let opened: BoundRun | null = null
     try {
-      opened = await deps.next({ reachedClock: clock.at(), carried })
+      opened = await deps.next(close)
     } finally {
       rebuilding = false
     }
+    // `next()` ended the run on its way in, so the day it closed is spoken for
+    // either way; only a day that OPENS resets this.
+    closed = opened === null
     if (opened === null) return
     detach()
     pending = []
@@ -253,7 +279,7 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
     // `slots` clears rather than carries because a new day has not been built
     // yet — which is what `SlotBoard.unlock()` assumes on the run change, and
     // why the fixture loop does not carry `deployed` either.
-    mined = carried.map((block) => block.id)
+    mined = close.carried.map((block) => block.id)
     slots = new Map()
     deployed = []
     clock = createClock({ start: opened.start, end: opened.end, rate })
@@ -357,7 +383,21 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
         // answer as "the day turned": it disables NEW RUN before sending and
         // only prints `SPENT` on a refusal, so an `ok` on the last run leaves a
         // dead button under a sheet that never closes.
-        if (rebuilding || !deps.canOpenNext()) return REFUSED
+        if (rebuilding) return REFUSED
+        if (!deps.canOpenNext()) {
+          // Refused, but CLOSED — the last day of a sitting ends like any other.
+          // `next()` is the only other thing that reaches the run loop's
+          // `endRun`, and the line above returns before `rebuild()` can call it,
+          // so the final run used to leave no record at all: nothing in the
+          // archive, no carry-over written, no exposure clock deepened. Guarded
+          // rather than repeated, because the desk keeps answering this op for
+          // as long as the sheet is open and the clock keeps moving under it.
+          if (!closed) {
+            closed = true
+            deps.closeRun(closingState())
+          }
+          return REFUSED
+        }
         void rebuild()
       }
       return { ok: true }

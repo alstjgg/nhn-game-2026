@@ -45,6 +45,7 @@ describe('the live adapter refuses `new_run` the way the fixture loop does', () 
     const adapter = createLiveAdapter({
       first: stubRun(1, []),
       canOpenNext: () => false,
+      closeRun: () => {},
       next: async () => null,
     })
     adapter.start()
@@ -59,6 +60,7 @@ describe('the live adapter refuses `new_run` the way the fixture loop does', () 
     const adapter = createLiveAdapter({
       first: stubRun(1, []),
       canOpenNext: () => true,
+      closeRun: () => {},
       next: async () => stubRun(2, []),
     })
     adapter.start()
@@ -72,6 +74,7 @@ describe('the live adapter refuses `new_run` the way the fixture loop does', () 
     const adapter = createLiveAdapter({
       first: stubRun(1, []),
       canOpenNext: () => true,
+      closeRun: () => {},
       next: async () => {
         opened += 1
         await settle()
@@ -86,6 +89,31 @@ describe('the live adapter refuses `new_run` the way the fixture loop does', () 
     await settle()
     expect(opened).toBe(1)
   })
+
+  it('(f) the refused day still CLOSES — the last run of a sitting is recorded', async () => {
+    const closes: RunClose[] = []
+    const adapter = createLiveAdapter({
+      first: stubRun(1, [B1]),
+      canOpenNext: () => false,
+      next: async () => null,
+      closeRun: (close) => closes.push(close),
+    })
+    adapter.start()
+    adapter.send({ op: 'mine', sentence_id: B1.id } as never)
+    adapter.send({ op: 'deploy', blocks: [B1.id] } as never)
+
+    // `next()` is the only other route to the run loop's `endRun`, and (a)'s
+    // refusal returns before `rebuild()` can reach it — so the final run of a
+    // sitting left no archive entry, no carry-over and no deepened exposure
+    // clock. The refusal is the DESK's answer; the day ended either way.
+    expect(adapter.send({ op: 'new_run' } as never)).toEqual({ ok: false })
+    expect(closes).toHaveLength(1)
+    expect(closes[0].carried).toEqual([B1])
+
+    // Once. The sheet stays open and the desk keeps answering the op under it.
+    expect(adapter.send({ op: 'new_run' } as never)).toEqual({ ok: false })
+    expect(closes).toHaveLength(1)
+  })
 })
 
 describe('the store the desk shows is the store the new run has', () => {
@@ -93,6 +121,7 @@ describe('the store the desk shows is the store the new run has', () => {
     const adapter = createLiveAdapter({
       first: stubRun(1, [B1, B2]),
       canOpenNext: () => true,
+      closeRun: () => {},
       // Only B1 was deployed, so only B1 is seeded into the next run.
       next: async () => stubRun(2, [B1]),
     })
@@ -122,6 +151,7 @@ describe('the store the desk shows is the store the new run has', () => {
     const adapter = createLiveAdapter({
       first: stubRun(1, [B1, B2]),
       canOpenNext: () => true,
+      closeRun: () => {},
       next: async (close) => {
         seen = close
         return stubRun(2, [B2])
