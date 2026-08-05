@@ -17,7 +17,7 @@
 // on this path: the same pack and the same provider must produce byte-identical
 // output, and `--determinism-check` is the gate that proves it.
 
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, realpathSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -295,7 +295,17 @@ async function main(argv) {
 // `import.meta.main` exists only from Node 22.18 / 24.2 — below that it reads
 // `undefined` and a bare check makes this CLI a silent no-op that exits 0. The
 // fallback answers the same question on any Node that got this far.
-if (import.meta.main ?? pathToFileURL(process.argv[1]).href === import.meta.url) {
+//
+// `realpathSync` IS THE FALLBACK, not decoration. `import.meta.url` is always
+// the resolved real path, while `process.argv[1]` is whatever the caller typed
+// — so the two disagree the moment the script is reached through a symlink, and
+// the guard then reads false on a file that IS the entrypoint. That is the same
+// silent no-op this fallback exists to remove, and it is not hypothetical:
+// `os.tmpdir()` is `/var/folders/…` → `/private/var/folders/…` on macOS, so the
+// "src + tools + data alone is a runnable tree" test in `tools/tests/
+// run-record.mjs` copies the tree into a symlinked directory and hit it every
+// time on a Node old enough to need the fallback at all.
+if (import.meta.main ?? pathToFileURL(realpathSync(process.argv[1])).href === import.meta.url) {
   try {
     await main(process.argv.slice(2))
   } catch (error) {

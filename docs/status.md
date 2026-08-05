@@ -28,10 +28,22 @@ ledger grades against.
 entrypoint with a bare `import.meta.main`, which is `undefined` below Node
 22.18 — the CLI exited 0 having done nothing, and `test:shared` then failed 13
 tests downstream on artifacts that were never written, pointing at missing data
-rather than the cause. The guard now falls back to a `process.argv[1]` URL
-comparison (version-proof), and the floor is declared: `engines.node >=22.18`
-in `package.json` plus an `.nvmrc`. CI's Node 22/24 both resolve above the
-floor, which is exactly why it could never catch this.
+rather than the cause. The guard now falls back to comparing
+`pathToFileURL(realpathSync(process.argv[1]))` against `import.meta.url`. The
+`realpathSync` is load-bearing: `import.meta.url` is always the resolved real
+path while `argv[1]` is whatever the caller typed, so without it the fallback
+reads false through a symlink — and `os.tmpdir()` is one on macOS, which made
+the shipped-tree test fail in exactly the silent way the fallback removes.
+
+**There is no longer a `import.meta.main` floor**, so `engines.node` is
+`>=22.12` — the real dependency floor (vite 8 asks `^20.19 || >=22.12`, and
+`--experimental-strip-types` in `test:shared` needs ≥22.6), not the 22.18/24.2
+feature floor the bare guard imposed. `.nvmrc` pins 24, matching ci.yml's upper
+job. Verified green on v22.16.0 — below the old floor, above the real one.
+Deliberately NOT `engine-strict`: the failure below a dependency floor is a
+loud install error, and the silent no-op that would have justified a hard block
+is the thing this branch removes. CI's Node 22/24 both sit above either floor,
+which is why CI could never catch the original.
 
 ## Status (2026-08-04) — the proxy is deployed, and the latency budget was wrong
 
