@@ -23,7 +23,7 @@
 // Titles are load-bearing — [u9#c5]'s verification runs this whole file, and
 // `-g` filters in later units may target these describe names.
 import { expect, test } from 'playwright/test'
-import { raiseWindow } from './fixtures/harness.ts'
+import { awaitTallyReveal, raiseWindow } from './fixtures/harness.ts'
 import type { Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
 
@@ -329,11 +329,19 @@ test.describe('a11y — keyboard reach', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.reload()
     await hideDebugPane(page)
+    // The reload restarts the boot, and under a loaded worker pool `__shell`
+    // can lag the first paint — draining before it exists threw, intermittently.
+    // Same wait idiom as red-thread's boot(): gate on the handle, then drive.
+    await page.waitForFunction(
+      () => (window as unknown as { __shell?: unknown }).__shell !== undefined,
+    )
     await page.evaluate(() => {
       const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
       if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
       handle.drain()
     })
+    // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
+    await awaitTallyReveal(page)
     await expect(page.locator('[data-op="mine"]').first()).toBeAttached({ timeout: 15_000 })
 
     // `unslot` only exists once a seat is filled, so the desk is driven through

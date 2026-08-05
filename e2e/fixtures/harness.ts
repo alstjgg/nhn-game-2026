@@ -92,12 +92,32 @@ export async function frame(page: Page): Promise<Frame> {
   })
 }
 
+/**
+ * u7 ruling (민서 08-05, ruled on #116): between run close and TALLY's reveal
+ * the front belongs to TALLY — the sheet takes it exactly ONCE, at its 900 ms
+ * reveal, and never again until the next run closes. TALLY is the loop's
+ * pivot (round over · result · go again), so its reveal outranks whatever the
+ * operator raised in the gap; a raise issued in that gap succeeds and is then
+ * legitimately overridden, which is precisely the residue `retries: 2` used
+ * to report as flaky. Playing by the rule means waiting the reveal out before
+ * raising anything — raises AFTER it survive, because nothing re-steals.
+ */
+export async function awaitTallyReveal(page: Page): Promise<void> {
+  await expect(page.locator('#w-tally')).not.toHaveClass(/\bhidden\b/, { timeout: 20_000 })
+}
+
+/**
+ * Flushing releases the whole remaining stream — `run_end` included — so every
+ * drain crosses run close. The reveal wait is folded in HERE so that no caller
+ * can interact inside the close→reveal gap the u7 ruling gives to TALLY.
+ */
 export async function drain(page: Page): Promise<void> {
   await page.evaluate(() => {
     const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
+  await awaitTallyReveal(page)
 }
 
 /** Jumps the sim clock to `at` and releases everything due by then (u5's seek). */
@@ -312,6 +332,11 @@ export async function runToMount(page: Page, mode: 'virtual-clock' | 'wallclock'
  * It reads as flakiness rather than failure because whether the sheet covers the
  * specific target depends on layout. The taskbar is chrome — never under a
  * window — so raising from there is the one move that cannot be intercepted.
+ *
+ * The OTHER half of the old flake — a raise landing in the 900 ms close→reveal
+ * gap and being overridden by the sheet — is retired by the u7 ruling (see
+ * `awaitTallyReveal`): `drain()` waits the reveal out, so by the time a caller
+ * raises, TALLY has taken the front once and will not take it again.
  *
  * Guarded on `focused` because a second taskbar click on an already-focused
  * window HIDES it (`e2e/shell.spec.ts` — "the taskbar raises an unfocused window

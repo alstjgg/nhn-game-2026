@@ -44,17 +44,15 @@ const desktop = { ...devices['Desktop Chrome'], viewport: { width: 1280, height:
 
 export default defineConfig({
   testDir: './e2e',
-  // CI retries. The desk's windows are draggable sheets sharing one stacking
-  // order, and `windows/tally.ts:show()` re-clicks its own taskbar button to take
-  // the top back whenever it needs to be open — so TALLY can reclaim the front
-  // mid-test, during its ~9 s count-up, and swallow a click meant for the window
-  // under it. `raiseWindow` removes the deterministic half of that; what is left
-  // is a genuine race between the sheet and the test, and it belongs to the
-  // window's owner, not to a timeout. Logged in DISCOVERY for u7.
-  //
-  // Retries make the residue visible as `flaky` in the report rather than hiding
-  // it: a test that only passes on retry is still named in the summary.
-  retries: process.env.CI ? 2 : 0,
+  // NO retries — the race they used to absorb has an owner's ruling now.
+  // The residue was TALLY's 900 ms reveal overriding a raise issued in the
+  // close→reveal gap; the u7 ruling (민서 08-05, on #116) gives that gap to
+  // TALLY outright — it takes the front exactly once, at reveal, and never
+  // again until the next run closes. The rule is deterministic, so the suite
+  // encodes it instead of retrying around it: every drain waits the reveal
+  // out (`e2e/fixtures/harness.ts`, `awaitTallyReveal`) and raises after.
+  // A failure here is a real failure; nothing is masked.
+  retries: 0,
   use: { viewport: { width: 1280, height: 800 } },
   projects: [
     {
