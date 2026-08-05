@@ -1026,3 +1026,54 @@ describe('[r1#D] an ok-but-unusable Call 1 is recorded as the default stance', (
     assert.ok(graded.length > 0, 'the unusable payloads must still be graded as fallbacks')
   })
 })
+
+describe('the record and the §5.2 seam agree on what a scored value is', () => {
+  // WHY THIS LIVES HERE, AND NOT IN `tests/driver/seam-shapes.test.ts`. That
+  // file is the natural home and is byte-pinned by `engine-boundaries
+  // (a:seam-shapes.test.ts)` — adding a case to it breaks a different suite.
+  // Here is the next best place: beside the schema this measures against.
+  //
+  // WHAT IT IS FOR. `ScorerPort` exists to fill the §5.2 `score` event, and this
+  // schema stores the same numbers — so a value the record accepts and the seam
+  // refuses is a scorer nobody can wire. That was the state of the repo: the
+  // seam typed `rows[].value: number` while `run-record.schema.json` had always
+  // typed the same field `string | number`, and `score.json` authors outcomes
+  // that are words. Nothing pinned the two together, so the disagreement went
+  // unseen until someone tried to build a scorer and found the port could not
+  // express its own data. §5.2 amendment g settled it on this schema's side.
+  //
+  // It reads the SCHEMA rather than restating it, so authoring that widens or
+  // narrows the record has to come back through here.
+  const seam = fs
+    .readFileSync(path.join(REPO, 'src/shared/view-driver.ts'), 'utf8')
+    .replace(/\/\/.*$/gm, '')
+    .replace(/\s+/g, ' ')
+
+  test('(a) `score.rows[].value` carries exactly the types the record stores', () => {
+    const schema = JSON.parse(fs.readFileSync(RUN_SCHEMA_PATH, 'utf8'))
+    const stored = [...schema.properties.score.properties.units.items.properties.value.type].sort()
+
+    // The `value:` FIELD, not the union member. `rows: { label: string; … }`
+    // puts the word `string` in every version of this line, so a member-wide
+    // search reports agreement against a seam that cannot carry a string value
+    // at all — this guard's first draft did exactly that and stayed green
+    // through the change it was written to catch.
+    const carried = /rows: \{ label: string; value: ([^}]*)\}/.exec(seam)?.[1]
+    assert.ok(carried, 'the seam no longer carries `score.rows[].value`')
+    assert.deepEqual(
+      carried.split('|').map((t) => t.trim()).filter(Boolean).sort(),
+      stored,
+      'the record stores a score value the seam cannot carry',
+    )
+  })
+
+  test('(b) `total` is NOT held to that rule, and must not be', () => {
+    // The record allows `null` there because a run with no scorer records one.
+    // The seam's answer to that same state is to emit no `score` event at all
+    // (`live-driver.ts`, the `scorer !== undefined` guard), and the axis it
+    // feeds is 사망 · 명 — a count whose whole movement in `score-tally.ts` is
+    // counting one up. Widening it would be a design change wearing a type
+    // change's clothes.
+    assert.match(seam, /type: 'score'; total: number;/)
+  })
+})

@@ -190,7 +190,14 @@ type ViewEvent =
   | { type: 'waiting';  active: boolean; for: 'judgment' | 'narration' | 'report' }
   | { type: 'fallback'; call: 1 | 2 | 3; code: string; beat: number }
   | { type: 'report';   round: number; facts: Sentence[]; report_body: Sentence[] }
-  | { type: 'score';    total: number; rows: { label: string; value: number }[] }
+  | { type: 'score';    total: number; rows: { label: string; value: string | number }[] }
+                        // AMENDED 08-05 (amendment g): a scored unit's value
+                        // may be a WORD — `score.json` tallies outcomes as
+                        // often as counts, and contract-run-artifacts' record
+                        // has always typed the same field `string | number`.
+                        // `total` does NOT widen: it is the 사망 count the
+                        // tally headline counts up, and a run with no scorer
+                        // emits no `score` event rather than an empty one
   | { type: 'run_end';  run: number }
   | { type: 'meta';     run: number; runs_left: number; carried: string[];
                         archive: { run: number; label: string }[] };

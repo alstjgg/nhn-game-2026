@@ -33,7 +33,8 @@ export interface MetaState {
 /** The closing tally, exactly as the `score` event carries it. */
 export interface ScoreState {
   total: number
-  rows: { label: string; value: number }[]
+  /** §5.2 amendment g — a scored unit's value may be a word, not only a count. */
+  rows: { label: string; value: string | number }[]
 }
 
 export interface RunState {
