@@ -18,7 +18,7 @@ import type { Block } from '../../../shared/contracts.ts'
 import type { ReportGuidance } from '../../../shared/report-guidance.ts'
 import { createEngine } from '../../../engine/index.ts'
 import { createComposer } from '../../../composer/index.ts'
-import { createBlockStore, createLiveDriver, createScorer } from '../../../driver/index.ts'
+import { createBlockStore, createLiveDriver, createScorer, untouchedState } from '../../../driver/index.ts'
 import type { MutableBlockStore } from '../../../driver/index.ts'
 import { createTransport } from '../../../transport/index.ts'
 import type { FetchLike } from '../../../transport/index.ts'
@@ -79,7 +79,9 @@ export function bindLiveRun(deps: BindDeps, open: OpenRunDeps): BoundRun {
   // immediately before `run_end` (transport decision 3). Built here rather than
   // inside the driver because the pack is this file's to thread — the driver
   // knows ports, never files.
-  const scorer = createScorer(deps.pack.score, () => engine.snapshot())
+  // The untouched day is a property of the PACK, not of this run, so it is
+  // computed once per bound run from the same pack the engine got.
+  const scorer = createScorer(deps.pack.score, () => engine.snapshot(), untouchedState(deps.pack))
 
   const driver = createLiveDriver({ engine, composer, transport, blocks, scorer, run: open.run })
 

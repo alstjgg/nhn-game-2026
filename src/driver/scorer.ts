@@ -28,8 +28,51 @@ export type ScoreUnit = {
 /** `score.json`. Its baseline prose and variance notes are authoring surfaces. */
 export type ScorePack = { units: readonly ScoreUnit[] }
 
-/** A unit that resolved. */
-export type ScoredUnit = { id: string; label: string; value: PredicateValue }
+/**
+ * What computing the UNTOUCHED day needs: which flags an unattended run ends
+ * holding. `gates.json` and `timeline.json`, narrowed to the two fields that
+ * answer it.
+ */
+export type OutcomePack = {
+  gates: { gates: readonly { default_stance: string; buckets: readonly { stances: readonly string[]; flags?: Record<string, boolean> }[] }[] }
+  timeline: { events: readonly { effects: { flags?: Record<string, boolean> } | null }[] }
+}
+
+/**
+ * The state a run with NO INTERVENTION ends in.
+ *
+ * "무개입" is not "nobody did anything" — it is "the agent injected nothing",
+ * and with nothing injected every gate falls to its authored `default_stance`.
+ * So the untouched day is the fixed timeline's flags plus the flags of whichever
+ * bucket each gate's default lands in. On 우는다리 that is the five disaster
+ * flags plus `logs_requested`, because G5's default is 공식 요청 — which is why
+ * the pack's own u6 baseline had to be restated rather than the flag removed.
+ *
+ * Computed rather than authored, so it cannot drift from what the day actually
+ * scores. Flags only: no predicate reads a scalar today, and twelve of the
+ * fourteen meters are unbound (lint F2), so a scalar baseline would be
+ * describing variables that do not exist.
+ */
+export function untouchedState(pack: OutcomePack): PredicateState {
+  const state: PredicateState = {}
+  for (const event of pack.timeline.events) {
+    for (const [flag, on] of Object.entries(event.effects?.flags ?? {})) state[flag] = on
+  }
+  for (const gate of pack.gates.gates) {
+    const bucket = gate.buckets.find((b) => b.stances.includes(gate.default_stance))
+    for (const [flag, on] of Object.entries(bucket?.flags ?? {})) state[flag] = on
+  }
+  return state
+}
+
+/** A unit that resolved, beside what the untouched day scored on its axis. */
+export type ScoredUnit = {
+  id: string
+  label: string
+  value: PredicateValue
+  /** §5.2 amendment h. `null` when the same rules matched nothing untouched. */
+  baseline: PredicateValue | null
+}
 
 /**
  * Every unit whose rules matched, in the pack's order.
@@ -41,11 +84,26 @@ export type ScoredUnit = { id: string; label: string; value: PredicateValue }
  * fallback an ERROR, so a dropped unit means the pack shipped unlinted, and a
  * short ledger is the honest way for that to show.
  */
-export function scoreUnits(pack: ScorePack, state: PredicateState): ScoredUnit[] {
+export function scoreUnits(
+  pack: ScorePack,
+  state: PredicateState,
+  untouched: PredicateState = state,
+): ScoredUnit[] {
   const scored: ScoredUnit[] = []
   for (const unit of pack.units) {
     const value = resolve(unit.predicates, state)
-    if (value !== null) scored.push({ id: unit.id, label: unit.label, value })
+    if (value === null) continue
+    scored.push({
+      id: unit.id,
+      label: unit.label,
+      value,
+      // The SAME rules, read against the day nobody touched. Not the unit's
+      // authored `baseline`, which is prose for a human — "812명 진입, 사망 24 ·
+      // 부상 71" is four numbers in one sentence and no run produces it as a
+      // value. Deriving it instead means the two can never disagree, which is
+      // exactly how the pack's u6 baseline came to be wrong.
+      baseline: resolve(unit.predicates, untouched),
+    })
   }
   return scored
 }
@@ -75,7 +133,11 @@ export function totalOf(units: readonly ScoredUnit[]): number {
  * ENDED in. A scorer that captured a snapshot at construction would score the
  * opening beat every time.
  */
-export function createScorer(pack: ScorePack, read: () => PredicateState): ScorerPort {
+export function createScorer(
+  pack: ScorePack,
+  read: () => PredicateState,
+  untouched: PredicateState,
+): ScorerPort {
   // Checked HERE rather than in `score()`. A composition root that forgot to
   // thread `score.json` in is a wiring defect, and the difference between the
   // two places is when the run finds out: at boot, loudly, or at 21:04 — inside
@@ -84,10 +146,20 @@ export function createScorer(pack: ScorePack, read: () => PredicateState): Score
   if (!pack?.units) throw new Error('scorer: the pack carries no `score.units`')
   return {
     score() {
-      const units = scoreUnits(pack, read())
+      const units = scoreUnits(pack, read(), untouched)
       return {
         total: totalOf(units),
-        rows: units.map((unit) => ({ label: unit.label, value: unit.value })),
+        // The headline the day would have had. Computed here rather than summed
+        // by the client, which does no arithmetic on the authority's numbers
+        // (§5.3) — the same rule that makes `total` a field.
+        baseline_total: totalOf(
+          units.map((unit) => ({ ...unit, value: unit.baseline ?? unit.value })),
+        ),
+        rows: units.map((unit) => ({
+          label: unit.label,
+          value: unit.value,
+          baseline: unit.baseline,
+        })),
       }
     },
   }
@@ -103,8 +175,13 @@ export function createScorer(pack: ScorePack, read: () => PredicateState): Score
 export function scoreRecord(
   pack: ScorePack,
   state: PredicateState,
+  untouched: PredicateState = state,
 ): { units: { id: string; value: PredicateValue }[]; total: number } | null {
-  const units = scoreUnits(pack, state)
+  // The record carries no baseline: `run-record.schema.json` is
+  // `additionalProperties: false` over `{units, total}`, and a baseline is
+  // recomputable from the pack at any time. `untouched` is threaded anyway so
+  // both halves come from one `scoreUnits` call shape.
+  const units = scoreUnits(pack, state, untouched)
   if (units.length === 0) return null
   return { units: units.map((unit) => ({ id: unit.id, value: unit.value })), total: totalOf(units) }
 }
