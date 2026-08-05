@@ -608,3 +608,177 @@ that the concept funnel was still running at the moment DDAY was confirmed.
 record refines it to *two super-pipeline-built playable demos* (apothecary,
 darkest-context), with Doodle Life cut pre-build and DDAY arriving 07-29 as the
 post-demo new concept — never itself a demo. No contradiction with S1 or S4.
+
+---
+
+## Balancing win-sweep 2026-08-05 (success events under the revised extraction bias)
+
+Coverage: re-read (bodies + `git show`) the audit-lead commits and their
+neighbours — d0d057d, e6bab6d/39555a0 (apothecary run 1), 783246e (darkest ship
++ u7 primitives), 765fcd3 (call-chain driver), ff33795 (data pipeline P0),
+3b38a54 (isomorphism scaffold), b5bd1c3 (parity), e6cedc6 (mechanism plan /
+probe runner), e3b5021 (spec v1 + scenario skill), ce75482 (field-report bench),
+ac6e374 + 179fcf1 (IAM/deploy), 3ab77fa + 47e119e (Bedrock latency). Focus:
+capability milestones and passing measurements that the 2026-08-04 failure-bias
+recorded as neutral/limit or buried inside a confession atom. Not re-mined: the
+full-log identity/convention atoms (S8-056/57/62) — no win hides there. S8-040
+(stance p=0.00006) is already captured (S8-040) and is not duplicated.
+Re-neutralized 2026-08-05: asserted-wins → neutral success-event atoms (factual
+titles, plain tension lines, neutral flags; the verdict flags win /
+method-working / ai-strength / technique-worth-copying / capability were
+removed). W010 was split into W010 (e3b5021 — write-scenario skill + spec v1) and
+W015 (ff33795 — factory-orchestrator rework). Lane fixes: W012 / W013 / W014
+moved 1 → 2 (deploy-role IAM, latency ceiling, OIDC Lambda deploy are
+build/infra events, not in-game). No atoms dropped; after the W010 split every
+atom records a single event and no cross-source generalization remains
+(S8-W002 cites two commits for one event); no contradiction atoms created.
+
+### S8-W001 — First commit renders a placeholder canvas so the deploy pipeline can be verified visually
+- source: commit d0d057d
+- date: 2026-07-20
+- lanes: 2 AI-building-the-game
+- event: The repo's first commit was an engine-agnostic skeleton that renders a placeholder canvas "so the GitHub Pages deploy pipeline can be verified visually before the engine/genre is chosen," with Vite + strict TS and Pages-deploy-on-push wired. The canvas renders, making visual verification of the deploy target possible.
+- tension: The deploy target was stood up and rendered before any engine or genre decision, so the pipeline could be checked visually from the empty state rather than after the product existed.
+- quote: "Renders a placeholder canvas so the GitHub Pages deploy pipeline can be verified visually before the engine/genre is chosen."
+- links: S8-001 (same commit, captured there as a boundary)
+- flags: milestone, deploy, boundary
+
+### S8-W002 — First super-pipeline run merged a playable apothecary shell; closing e2e gate recorded green
+- source: commits e6bab6d (#17), 39555a0
+- date: 2026-07-24
+- lanes: 2 AI-building-the-game
+- event: The first super-pipeline run (`run-20260724-145432`, 9 units built by parallel agents in worktrees) merged as an apothecary UI/UX shell. Its closing unit's e2e "plays both customers end to end in the real app," observes a returning customer's outcome arrive mid-conversation, reaches the end screen with "zero console errors + zero external requests," and captured 6 phase screenshots. Gates recorded: "playwright 32 passed (incl full-loop + subpath), vitest 259, tsc + vite build clean."
+- tension: The first parallel-agent run's closing e2e ran the assembled demo end to end in the real app and made zero external requests; the recorded pass counts are the run's own final gate.
+- quote: "playwright 32 passed (incl full-loop + subpath), vitest 259, tsc + vite build clean."
+- links: S8-014 (run seeded), S8-018 (same gate, captured as measurement/boundary)
+- flags: milestone, green-build, measurement
+
+### S8-W003 — Darkest Context playable demo shipped; removing a conflict marker revived 99 tests to 662
+- source: commit 783246e (#84)
+- date: 2026-07-27
+- lanes: 2 AI-building-the-game
+- event: The second super-pipeline demo shipped playable (`[run-20260726-075042] Ship the Darkest Context playable demo`), deployed under `demos/darkest-context`. A stray conflict marker had silently disabled a test file; removing the one line "revives 99 tests (563 -> 662)."
+- tension: A second, mechanically different game concept reached a shipped, deployed playable demo through the same harness, and a broken gate that had suppressed 99 tests was found and removed before the ship, moving the suite 563 → 662.
+- quote: "Removing the one stray line revives 99 tests (563 -> 662)."
+- links: S8-028 (same commit, captured as failure)
+- flags: milestone, shipped, green-build
+
+### S8-W004 — Chaining the three DDAY calls recorded an LLM-generated line as an objective fact
+- source: commit 765fcd3 (#98)
+- date: 2026-08-01
+- lanes: 1 AI-in-the-game
+- event: Wiring the three DDAY calls in sequence for the first time produced a report whose `facts` array contained a line recording that a controller NPC had asked "녹음은 받았나?" — an LLM-generated utterance written into the objective log as a fact, the case an engine-only log cannot produce.
+- tension: Whether an LLM-generated line can be recorded as an objective fact (design option 2's premise) was decidable only once the calls were actually chained; the chained run produced the recorded fact.
+- quote: "방금 LLM이 생성한 대사가 객관로그의 사실로 기록된 것이다 ... 2안 채택의 근거가 논증에서 실물로 바뀌었다."
+- links: S8-044 (same commit, captured as measurement)
+- flags: milestone, measurement, boundary
+
+### S8-W005 — The scenario loop emitted the first datapack (우는다리) at lint 0 ERROR
+- source: commit ff33795 (#104)
+- date: 2026-08-02
+- lanes: 4 AI-as-creator
+- event: The write → compile → lint → paper-check loop ran end to end and emitted the first datapack: "첫 데이터팩 data/scenario/우는다리/ (8 JSON + draft.md): 린트 ERROR 0 · WARN 4 · FLAG 43." A second paper-check pass added two lint rules (W3/W4); the commit notes those rules would have mechanically caught 7 findings a human had found by hand.
+- tension: An AI-written scenario was compiled by deterministic code and passed lint with zero consumer-blocking errors, and the human paper-check findings were converted into machine lint rules so they recur automatically.
+- quote: "2회차 실증 발견 7건이 기계로 잡혔을 결함"
+- links: S8-048 (same commit, captured as boundary), S8-043
+- flags: milestone, measurement
+
+### S8-W006 — tsconfig.core.json strips DOM; verified that using document in the engine fails TS2584
+- source: commit 3b38a54 (#103)
+- date: 2026-08-02
+- lanes: 2 AI-building-the-game
+- event: A `tsconfig.core.json` stripped DOM from `lib` and emptied `types` so `document`/`window`/`fetch` do not resolve inside shared/engine/composer, and the change was checked against its own claim: "검증함: engine에 document를 쓰면 TS2584로 실패한다."
+- tension: The headless-purity constraint (§2 제약 1) was moved from a review comment to a compile error, and the failure was verified to fire — writing `document` in the engine fails with TS2584.
+- quote: "§2 제약 1이 리뷰 코멘트가 아니라 컴파일 에러가 된다. 검증함: engine에 document를 쓰면 TS2584로 실패한다"
+- links: S8-047 (same commit, captured as boundary), S8-W007
+- flags: boundary, green-build, measurement
+
+### S8-W007 — The darkest-context UI primitive layer has no code path to a text-entry control
+- source: commit 783246e (sub: u7 UI primitives)
+- date: 2026-07-27
+- lanes: 1 AI-in-the-game
+- event: The darkest-context UI primitive layer was built so that "verbs are real `<button>`s; the layer cannot build a text-entry control" (INV-1), and a malformed citation throws instead of rendering (INV-3).
+- tension: The no-free-text-to-LLM membrane rule is enforced by construction — the component factory has no code path to a text field, so an agent cannot re-open the channel.
+- quote: "verbs are real <button>s; the layer cannot build a text-entry control"
+- links: S8-029 (same source, captured as boundary), S8-W006
+- flags: boundary
+
+### S8-W008 — Two prompt renderers held byte-identical by a mutation-tested parity gate
+- source: commit b5bd1c3 (#107)
+- date: 2026-08-03
+- lanes: 2 AI-building-the-game
+- event: After prompt rendering moved into the proxy, a `prompt-parity.test.ts` holds the probe renderer and the proxy renderer to byte identity, and the guard was mutation-tested: "eight of nine renderer mutations turn it red, and the ninth is unreachable with the current templates." Recorded: the three call types compose byte-identical system and user messages before and after the move; probe selftest 44/44; proxy 36/36; npm run build green.
+- tension: The probe-vs-proxy renderer duplication is pinned by a parity test whose sensitivity was measured by mutation, the boundary that keeps the mechanism measurements describing the deployed system.
+- quote: "eight of nine renderer mutations turn it red, and the ninth is unreachable with the current templates rather than uncovered."
+- links: S8-053 (same commit)
+- flags: measurement, boundary, green-build
+
+### S8-W009 — DDAY's mechanism-validation program designed with placebo control and pre-registration
+- source: commit e6cedc6 (#92)
+- date: 2026-07-30
+- lanes: 1 AI-in-the-game
+- event: DDAY's "판단 조작 메커니즘 검증 프로그램" was specified with channels split from effects, "플라시보 대조 필수화," a run-integrity protocol enforced by the execution environment, a model-side/game-side validity split, and human-held pre-registered sheets, verdict cards, and gate/texture/drop procedures. AI runs the probes; a person issues the verdict.
+- tension: The "does the LLM feature actually work" question was set up as a placebo-controlled, pre-registered experiment with the verdict held by a human rather than judged by inspection.
+- quote: "플라시보 대조 필수화"
+- links: S8-034 (same commit), S8-042
+- flags: measurement, boundary, decision
+
+### S8-W010 — write-scenario skill, generation guide, and gate-hardening manual added against a clean-compiled spec v1
+- source: commit e3b5021 (#100)
+- date: 2026-08-01
+- lanes: 4 AI-as-creator
+- event: The AI-authoring lane was given a `scenario-generation-guide.md`, a `gate-hardening-manual.md`, and a `write-scenario` Claude Code skill ("집필 세션 커맨드 (가이드만 읽기, 카드 yaml 산출)"), alongside architecture spec v1, which "클린 컴파일 — 규범 서술만, 죽은 메커니즘 본문 언급 0회."
+- tension: Content generation was given a fixed rule set and a skill command, and the spec agents read was scrubbed of every retired mechanism so they build against nothing dead.
+- quote: ".claude/skills/write-scenario: 집필 세션 커맨드 (가이드만 읽기, 카드 yaml 산출)"
+- links: S8-043 (same commit, captured as decision), S8-W005, S8-W015
+- flags: shipped, boundary
+
+### S8-W011 — Field-report shipped with a Bedrock Converse benchmark and a measured model recommendation
+- source: commit ce75482 (#86)
+- date: 2026-07-29
+- lanes: 1 AI-in-the-game
+- event: The field-report concept shipped with a Bedrock Converse benchmark harness and raw responses producing the recommendation "effort는 Haiku 4.5 미지원, Sonnet 4.6은 low~max; 모델 권고: Nova 2 Lite 1차 / Haiku 4.5(thinking off) 2차," alongside four measured play paths reaching endings A/A'/C and a failure state.
+- tension: The runtime-model choice was recorded against a Bedrock benchmark measuring effort-parameter support and tier ordering rather than left to a guess.
+- quote: "모델 권고: Nova 2 Lite 1차 / Haiku 4.5(thinking off) 2차"
+- links: S8-032 (same commit)
+- flags: measurement, milestone
+
+### S8-W012 — Deploy role scoped with iam:simulate-principal-policy before first use
+- source: commit ac6e374
+- date: 2026-08-04
+- lanes: 2 AI-building-the-game
+- event: The proxy bootstrap role that can create (not only update) the stack was landed with its IAM scoping checked ahead of running it: "Verified with `iam:simulate-principal-policy` before first use: CreateChangeSet (with the RoleArn condition), ExecuteChangeSet, DescribeStacks, PutObject, ListBucket (with the prefix condition) and PassRole all evaluate to `allowed`." The two role names sit outside the app stack's pattern so the role cannot rewrite its own policy.
+- tension: The exact deploy actions were simulated to confirm they evaluate to allowed before the first deploy, and the role names were placed outside the stack's pattern so a role that could edit its own policy would make the scoping decorative.
+- quote: "if these matched it too, it could rewrite its own policy and the scoping would be decorative."
+- links: S8-061 (same deploy path, captured as failure)
+- flags: deploy, boundary, measurement
+
+### S8-W013 — Reporter call re-measured at 5/5 pass behind ordered fallback ceilings
+- source: commit 3ab77fa
+- date: 2026-08-04
+- lanes: 2 AI-building-the-game
+- event: The corrected model budget was re-measured against real Bedrock traffic: "Re-measured after deploying: 5/5 pass, 6.80–10.00 s, 23–35 sentences." The ceilings were ordered `model 15 s < route 18 s < Lambda 20 s` so the model deadline fires first and a slow call returns the tier's own labelled 504 (`x-llm-fallback`) instead of an unlabelled API-Gateway cut, with `src/config.ts` pinned to the same 15 s so no environment can outlive it.
+- tension: After the earlier budget failed on real traffic, the reporter call re-measured 5/5 pass at 6.80–10.00 s; the ceilings were ordered so the model deadline fires first and a slow call returns a labelled 504 rather than an unlabelled gateway cut.
+- quote: "Re-measured after deploying: 5/5 pass, 6.80–10.00 s, 23–35 sentences."
+- links: S8-060 (same fix, captured as failure/limit)
+- flags: measurement, latency, deploy
+
+### S8-W014 — First live Bedrock Lambda deployed over OIDC with a self-mutation-safe role split
+- source: commit 179fcf1 (#81)
+- date: 2026-07-28
+- lanes: 2 AI-building-the-game
+- event: The Apothecary dialogue Lambda — the project's first live LLM runtime — was deployed with SAM infrastructure and a GitHub OIDC deploy workflow. When the IAM-allowlist-narrowing path proved undeployable under the restricted CI role, the fix added an "elevated" samconfig environment running under the operator's own SSO identity rather than granting the CI role `iam:PutRolePolicy` (which "would let it write an administrator policy onto a role it already reaches"). Recorded: "npm run check (52 tests), sam:validate, bootstrap:validate."
+- tension: A first Bedrock-backed runtime shipped through OIDC CI without granting automation `iam:PutRolePolicy`; the privilege that would let the CI role write an administrator policy onto a role it already reaches was moved to a human-gated SSO environment.
+- quote: "granting it iam:PutRolePolicy over role/nhn-game-llm-layer-* would let it write an administrator policy onto a role it already reaches through the Lambda"
+- links: S8-058 (same commit, captured for placeholder identity), S8-061
+- flags: milestone, deploy, boundary
+
+### S8-W015 — write-scenario reworked into a factory orchestrator with sub-agent and deterministic stages
+- source: commit ff33795 (#104)
+- date: 2026-08-02
+- lanes: 4 AI-as-creator
+- event: `write-scenario` was reworked into a factory orchestrator (§6 공정): "집필·종이 검사·수정은 서브에이전트, 컴파일·린트는 결정론 스크립트, 루프 최대 3회" — the write, paper-check, and revise steps run as sub-agents while compile and lint run as deterministic scripts, under a cap of three loops.
+- tension: The authoring process split its steps by kind — generative sub-agents for writing and revision, deterministic scripts for compile and lint — bounded by a fixed retry limit.
+- quote: "write-scenario를 공장 오케스트레이터로 개편(§6 공정): 집필·종이 검사·수정은 서브에이전트, 컴파일·린트는 결정론 스크립트, 루프 최대 3회"
+- links: S8-W010 (initial skill, same lane), S8-W005 (same commit, datapack), S8-043
+- flags: milestone, boundary

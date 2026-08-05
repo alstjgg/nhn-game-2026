@@ -798,124 +798,135 @@ agent-arena-llm-backend-goal.md, apothecary-demo.md, apothecary-demo-contract.md
 apothecary-demo-harness-note.md, demo-prd-guide.md, demo-playability-guide.md, llm-layer.md).
 Hunted for lane-3 (AI-in-planning) and lane-4 (AI-as-creator) wins the 2026-08-04 pass skipped or
 buried inside NEUTRAL/LIMIT/failure atoms. Audit leads S4-008, S4-026, S4-051 all resolved to
-buried wins (W001, W003, W012). ADDITIVE only — no existing atom edited. Nothing skipped.
+buried success events (W001, W003, W012). ADDITIVE only — no existing atom edited. Nothing skipped.
+Re-neutralized 2026-08-05 (asserted-wins → neutral success-event atoms): all 12 W-atoms rewritten
+to factual single-event raw material; verdict flags (win, method-working, ai-strength,
+technique-worth-copying) removed in favor of neutral vocab; tensions stripped of "why it's a win"
+and of meta-commentary about the mining bias / "buried under S4-0xx". Count unchanged at 12 (W001–W012).
+W001 narrowed to its single source (dropped the unsupported "record every later meeting quotes
+without correction" cross-corpus claim). W003 narrowed to the measured fact (dropped the
+"strongest form of verification / solid enough to close the phase" editorializing; flagged the
+S9a-W013 duplicate for that agent to narrow/drop). W004 narrowed from a three-file bundle to the
+single llm-layer.md decision-record demotion — the goal-prompt-seeding (S4-039) and
+status-handoff carry-forward (S4-036) events were DROPPED. No new contradiction atoms created; no
+atoms added or removed, so numbering stays contiguous.
 
-### S4-W001 — AI meeting-summarization succeeded: a 91-min recording became the project's evidence base
+### S4-W001 — Structured minutes generated from a ~91-minute demo mid-check recording
 - source: planning/meetings/2026-07-24-demo-mid-check.md (whole document; §8 "약 91분 — 전사 원본 기준")
 - date: 2026-07-24
 - lanes: 3
-- event: AI summarization turned a ~91-minute demo mid-check recording into a complete, usable decision document — TL;DR, 10-line core summary, per-topic detail, an 8-row decision table with a rationale column, owner/deadline action items, per-attendee positions, a 6-row disagreements table, open questions, a numbers/proper-nouns table, and a 5-minute summary — and this artifact became the reliable record every later meeting and handoff quotes without correction.
-- tension: The win buried under S4-008's neutral "artifact" framing: not merely that the minutes are AI-made, but that the summarization *worked* — the output was structured and accurate enough to anchor founding decisions and survive downstream citation.
-- quote: "**길이:** 약 91분" / decision-table 근거: "실제 플레이 후 재미·대사·지연 개선 비용이 커서 남은 두 기획에 집중하는 편이 낫다고 판단"
-- links: S4-008 (same event, neutral/artifact framing); S4-021 (later meetings build on this record)
-- flags: win, technique-worth-copying, ai-strength, method-working
+- event: AI summarization produced a structured minutes document from a ~91-minute demo mid-check recording ("전사 원본 기준"): TL;DR, a 10-line core summary, per-topic detail, an 8-row decision table with a rationale column, owner/deadline action items, per-attendee positions, a 6-row disagreements table, open questions, a numbers/proper-nouns table, and a 5-minute summary. The source transcript is not in the repo.
+- tension: This one meeting record — the evidence base for several founding decisions — is itself an AI-produced artifact; the atom captures the document's structure as generated from the single recording.
+- quote: "**길이:** 약 91분" / "전사 원본 기준"
+- links: S4-008 (same event, artifact framing); S4-021
+- flags: artifact, milestone
 
-### S4-W002 — Living-ledger annotations cleanly closed 8 of 9 tracked verification items
+### S4-W002 — Post-meeting annotations mapped 8 of 9 tracked verification items to closed
 - source: planning/meetings/2026-07-30-mechanism-close-spec-first.md §1 결정 2 (추가)
 - date: 2026-07-30/31
 - lanes: 3
-- event: The 07-30 minutes' post-meeting annotations did real bookkeeping: by cross-referencing REPORT.md's "Open items — collected", they closed test items T1–T6 and human-coding items H1–H2 and named the single survivor (H3), each mapped to its source section — nothing silently dropped.
-- tension: The win inside S4-032's neutral "living document / convention" framing: the AI-assisted annotation practice actually resolved a tracked open-item set and left an auditable close-out, not just accreted notes.
+- event: The 07-30 minutes' post-meeting annotations cross-referenced REPORT.md's "Open items — collected" and marked test items T1–T6 and human-coding items H1–H2 as closed, naming H3 as the single survivor, each mapped to its source section.
+- tension: An AI-assisted annotation pass reconciled a tracked open-item list against a source report, recording which items closed (8) and which remained (1).
 - quote: "이 결정으로 REPORT.md 'Open items — collected'의 시험 항목 T1(B2 누적) … T6(E-DISC 동시 주입)과 휴먼 코딩 H1(B3a blind coding) · H2(B4)가 사실상 닫힌다. H3 … 만 살아 있다."
 - links: S4-032 (same document, artifact framing); S4-033
-- flags: win, method-working, milestone
+- flags: measurement, milestone
 
-### S4-W003 — Independent replication delivered a verdict solid enough to close the whole phase
+### S4-W003 — Two measurement programs reached the same two conclusions
 - source: planning/meetings/2026-07-30-mechanism-close-spec-first.md §1 결정 1, §3
 - date: 2026-07-30
 - lanes: 1, 3
-- event: Two independently designed measurement programs (#94, #95) reached the same two conclusions — adopt C-BLOCK, close C-STRUCT — and that convergence gave the team enough confidence to end mechanism verification outright and spend no more calls; it was flagged as prime AI-utilization-deliverable material.
-- tension: The win dimension of S4-026's "measurement/meta" framing: replication was not just noted, it *worked as a decision standard* — the agreement was trusted enough to stop an entire program on.
+- event: Two separately designed measurement programs (#94, #95), both same-team AI probes, reached the same two conclusions — adopt C-BLOCK, close C-STRUCT. The convergence was cited as the basis for ending mechanism verification and spending no more calls, and was flagged as AI-utilization-deliverable material.
+- tension: Convergence of two same-team measurement programs was used as the decision standard for closing the verification phase.
 - quote: "양쪽 측정 프로그램(#94 · #95)이 독립적으로 같은 결론에 수렴했다." / "서로 독립 설계한 두 측정 프로그램이 같은 두 결론(C-BLOCK 채택 · C-STRUCT 종료)에 수렴"
-- links: S4-026 (measurement/meta framing); S4-025
-- flags: win, measurement, milestone, method-working
+- links: S4-026 (measurement/meta framing); S4-025; S9a-W013 (duplicate copy — narrow/drop there)
+- flags: measurement, milestone
 
-### S4-W004 — Handoff lifecycle transferred context across sessions and a reversal without loss
-- source: planning/handoffs/llm-layer.md (header blockquote); planning/handoffs/agent-arena-llm-backend-goal.md; agent-arena-llm-backend.md §Next work
-- date: ~2026-07-24 → ~2026-07-26
+### S4-W004 — LLM-layer handoff demoted to a decision record after implementation
+- source: planning/handoffs/llm-layer.md (header blockquote)
+- date: ~2026-07-26
 - lanes: 3
-- event: A three-stage handoff lifecycle moved context cleanly across AI sessions: a goal-prompt handoff seeds a session, a status handoff records what it built with an explicit carry-forward list, and the document is finally demoted to a decision record keeping only "the decisions that survived implementation and live testing." Each stage shed what the next reader did not need, and context survived an architecture reversal intact.
-- tension: A clean handoff that *worked* — S4-070's neutral "convention" reframed as the win: the curated-carry-forward practice preserved exactly the right context through multiple session boundaries and a full concept's supersession.
+- event: After implementation and live testing, the Apothecary LLM-layer handoff was rewritten as a decision record keeping only "the decisions that survived implementation and live testing"; live operations were delegated to the Lambda/Bedrock operating guide.
+- tension: A handoff document given a post-implementation lifecycle stage — reduced to the decisions that outlived the build.
 - quote: "This file records the decisions that survived implementation and live testing; it is not an operating runbook."
-- links: S4-070, S4-036, S4-039
-- flags: win, technique-worth-copying, method-working
+- links: S4-070
+- flags: convention
 
-### S4-W005 — Cheap human-in-loop bake-off froze a coherent, shippable art direction
+### S4-W005 — Visual style frozen by a human-in-the-loop bake-off of AI style sheets
 - source: planning/handoffs/demo-playability-guide.md §1.2
 - date: 2026-07-24/25
 - lanes: 4
-- event: A low-cost human-in-the-loop bake-off successfully froze the project's visual style: 3–5 candidate style strings, one low-quality AI sheet each, a human picks the winner, and it is frozen as one sentence prepended to every image call — pack and runtime alike — keeping backgrounds, items, and runtime-generated NPCs in one visual register. The pick (strict low-res pixel art) also survived downscaling best.
-- tension: Lane 4's select-from-AI-candidates pattern that actually delivered a coherent, live-verified art direction at trivial cost — the win under S4-063's "convention/decision" framing.
+- event: The project's visual style was fixed by a low-cost bake-off: 3–5 candidate style strings, one low-quality AI sheet each, a human picks the winner, and the choice is frozen as one sentence prepended to every image call — pack and runtime alike — keeping backgrounds, items, and runtime-generated NPCs in one register. The pick was strict low-res pixel art.
+- tension: AI generates candidates, a human selects, and the result is frozen as data governing all later image calls — the select-from-candidates pattern applied to art direction.
 - quote: "3–5 candidate style strings, one low-quality sheet each, human picks the winner. Freeze it as **one sentence prepended to every image call**"
 - links: S4-063
-- flags: win, technique-worth-copying, ai-strength
+- flags: decision, milestone
 
-### S4-W006 — Sheets-not-images technique produced consistent multi-state characters from one call
+### S4-W006 — Sheets-not-images: all variants of a subject packed into one generation
 - source: planning/handoffs/demo-playability-guide.md §1.3
 - date: 2026-07-24/25
 - lanes: 4
-- event: The sheets-not-images technique reliably solved cross-call character inconsistency: every variant of one subject is packed into a single grid in one call (expressions×blink 4×2, quantity states 4×3) and sliced via CSS `background-position`, yielding a consistent multi-state character from one generation — live-verified in the shipped apothecary asset pipeline.
-- tension: A hard model limit ("character consistency across separate calls does not exist") converted into a dependable authoring win — S4-062's ai-limit framing carries the technique that made consistent characters actually achievable.
+- event: The shipped apothecary image pipeline packs every variant of one subject into a single grid in one call (expressions×blink 4×2, quantity states 4×3) and slices them at runtime via CSS `background-position`, producing a multi-state character from one generation. The stated rule: one call per subject.
+- tension: The model limit "character consistency across separate calls does not exist" (S4-062) is handled by never splitting a subject across calls — a single-generation authoring rule.
 - quote: "Pack every variant of one subject into one grid in one call … **One call per subject, ever**"
 - links: S4-062
-- flags: win, technique-worth-copying
+- flags: shipped, convention
 
-### S4-W007 — Pixel pipeline made generation artifacts vanish and shrank files
+### S4-W007 — Pixel pipeline: generate large, downscale by a shared factor
 - source: planning/handoffs/demo-playability-guide.md §1.5
 - date: 2026-07-24/25
 - lanes: 4
-- event: The pixel pipeline turned messy AI image output into clean uniform assets: generate at 1024/1536, downscale by one shared factor (4), and a true pixel grid emerges while generation artifacts vanish and files shrink; runtime generations get the same offscreen-canvas treatment so their density matches the pre-generated pack.
-- tension: A concrete, repeatable technique that made AI image output production-clean — a win buried inside S4-064's catalog of what image models can't do.
+- event: The image pipeline generates at 1024/1536, downscales by one shared factor (4) so a true pixel grid emerges and generation artifacts drop out and files shrink, and applies the same offscreen-canvas treatment to runtime generations so their density matches the pre-generated pack.
+- tension: A fixed generate-then-downscale procedure applied uniformly to pack and runtime assets to keep pixel density consistent.
 - quote: "generate at 1024/1536 → downscale by one shared factor (we use 4) → a true pixel grid emerges, generation artifacts vanish, files shrink"
 - links: S4-064
-- flags: win, technique-worth-copying
+- flags: shipped, convention
 
-### S4-W008 — Doodle Life v2: AI brought player drawings to life as characters
+### S4-W008 — Doodle Life v2 rendered player drawings as characters
 - source: planning/meetings/2026-07-24-demo-mid-check.md §2.3
 - date: 2026-07-24
 - lanes: 1, 4
-- event: Doodle Life v2's closed-judgment structure produced a genuinely impressive AI output — player drawings were interpreted and visually brought to life as characters — recorded explicitly as a strength even as the whole track was cut for latency and dialogue quality.
-- tension: A striking AI-generation success preserved *inside* the cut decision (S4-010/S4-011 failure framing): the drawing→character visual pipeline worked even though the game around it did not.
+- event: Doodle Life v2's closed-judgment structure interpreted player drawings and rendered them as characters; the minutes record this visual result as the concept's strength, in the same section that cuts the track for latency and dialogue quality.
+- tension: A drawing-to-character visual result recorded as a strength inside the section that removed the track — the output noted beside the decision to cut.
 - quote: "장점은 닫힌 판정 경계와 그림이 캐릭터로 살아나는 시각적 결과였다."
 - links: S4-011, S4-010
-- flags: win, ai-strength
+- flags: milestone
 
-### S4-W009 — super-pipeline autonomously built and merged a green, deployable demo shell
+### S4-W009 — super-pipeline built and merged a green, deployable demo shell
 - source: planning/handoffs/apothecary-demo.md §Status (2026-07-24 — v2)
 - date: 2026-07-24
 - lanes: 2
-- event: From a one-page PRD, the super-pipeline multi-agent harness autonomously produced a working, all-gates-green, deployable demo shell — decompose → parallel worktree agents → panel-reviewed PRs → merge — shipped and merged as apothecary v1 (run 20260724-145432, PR #17).
-- tension: The capability win buried under S4-043's playtest failure: whatever the playtest verdict on fun, the harness *did* deliver a coherent, merged, green artifact autonomously — the method's core claim demonstrated on a real project.
+- event: From a one-page PRD, the super-pipeline multi-agent harness (decompose → parallel worktree agents → panel-reviewed PRs → merge) produced an all-gates-green, deployable demo shell, shipped and merged as apothecary v1 (run 20260724-145432, PR #17). The same v1 later failed its human playtest (S4-043).
+- tension: The harness produced a merged, green artifact autonomously; the same v1 did not pass the human playtest — both recorded of the one build.
 - quote: "**v1 shipped and merged** (run 20260724-145432, PR #17): shell works, all gates green."
 - links: S4-043
-- flags: win, capability, milestone
+- flags: shipped, milestone
 
-### S4-W010 — LLM backend live-verified across both providers, MCP, and Skills for pennies
+### S4-W010 — LLM backend live-verified across both providers, MCP, and Skills
 - source: planning/handoffs/agent-arena-llm-backend.md §Status, §Verification state
 - date: 2026-07-24
 - lanes: 2
-- event: A full LLM backend was built and live-verified end-to-end cheaply: 146 tests across 11 files green, plus live OpenAI (`gpt-5.4-mini`) and Claude (`claude-haiku-4-5`) runs of 5 turns + compaction, live remote-MCP `calculate` traces, and live hosted-Skill traces on both providers — total recorded model cost ≈ $0.059.
-- tension: The verified-capability win under S4-035's "shelved/reversal" framing: before supersession the backend actually worked against real providers, MCP, and Skills, proven for six cents.
+- event: The Agent Arena LLM backend passed 146 tests across 11 files plus live runs against OpenAI (`gpt-5.4-mini`) and Claude (`claude-haiku-4-5`) — 5 turns + compaction, remote-MCP `calculate` traces, and hosted-Skill traces on both providers — at a recorded model cost of ≈ $0.059. It was superseded a day later (S4-035).
+- tension: The backend was measured working end-to-end against real providers, MCP, and Skills at ≈ $0.059, then shelved undeployed.
 - quote: "All live scenarios (core matrix, remote MCP, hosted Skill, MCP-only hardening) passed on both providers … (≈ $0.059 total recorded model tokens)"
 - links: S4-035, S4-037
-- flags: win, capability, measurement, milestone
+- flags: measurement, cost
 
 ### S4-W011 — Apothecary live-AI runtime shipped and passed live verification
 - source: planning/handoffs/llm-layer.md §Final outcome, §Decisions retained
 - date: ~2026-07-26
 - lanes: 1
-- event: The Apothecary live-AI runtime landed and works: a thin stateless path (Pages → API Gateway → Lambda → Bedrock Converse) with two endpoints, one Bedrock call producing a validated dialogue beat plus four choices, Nova 2 Lite confirmed by live access/schema verification, and a deterministic playable fallback flagged by an `x-llm-fallback` header.
-- tension: The production milestone under S4-071's "reversal" framing — after every architectural reduction, a real live-AI game runtime actually shipped and passed live verification, not just a plan.
+- event: The Apothecary live-AI runtime landed: a stateless path (Pages → API Gateway → Lambda → Bedrock Converse) with two endpoints, one Bedrock call producing a validated dialogue beat plus four choices, Nova 2 Lite confirmed by live access/schema verification, and a deterministic playable fallback flagged by an `x-llm-fallback` header.
+- tension: A live-AI runtime reached deployment after the successive architectural reductions recorded in S4-071, verified against live access and schema behavior.
 - quote: "Nova 2 Lite operates on live verification of access and schema behavior" / "Valid requests degrade to a deterministic playable response"
 - links: S4-071, S4-072
-- flags: win, milestone, capability
+- flags: shipped, milestone
 
-### S4-W012 — Timeboxed harness tweak landed within its cut-license as a clean pure extension
+### S4-W012 — Timeboxed harness tweak built as a pure extension
 - source: planning/handoffs/apothecary-demo-harness-note.md §What was built, §Validation done
 - date: 2026-07-23
 - lanes: 2
-- event: The harness tweak scoped with a pre-authorized ≤1h cut-license instead succeeded: `demo_publish` was BUILT as a pure extension modifying no existing stage, validated on a throwaway fixture with the full suite green (37 unit tests + 5 control-flow scripts, existing wave-gate/fast-tail tests still passing).
-- tension: The win dimension of S4-051 and the positive outcome of S4-050's budgeted-failure discipline: a task explicitly licensed to be abandoned found the clean seam and shipped without breaking harness determinism.
+- event: The ≤1h-timeboxed harness tweak, licensed to be cut if no clean seam existed (S4-050), was BUILT: `demo_publish` added as a pure extension modifying no existing stage, validated on a throwaway fixture with the full suite green (37 unit tests + 5 control-flow scripts; existing wave-gate/fast-tail tests still passing).
+- tension: A task pre-authorized to be abandoned reached BUILT as a non-modifying extension, with the harness suite still green.
 - quote: "Status: **BUILT** (not cut)." / "Full `bun run validate` green (37 unit tests + 5 control-flow scripts)"
 - links: S4-051, S4-050
-- flags: win, milestone, method-working
+- flags: shipped, milestone
