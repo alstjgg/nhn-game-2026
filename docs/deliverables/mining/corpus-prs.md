@@ -196,4 +196,18 @@ Top 15 by comments + review submissions. (Inline thread volume likely correlates
 
 ## Sweep marker
 
-Snapshot: 2026-08-04, PRs #1–#139 inventoried (139 PRs, no gaps in numbering). PRs after #139 are unswept. Inline review-thread contents are unswept for all PRs.
+Snapshot: 2026-08-04, PRs #1–#139 inventoried (139 PRs, no gaps in numbering).
+
+**Unswept is defined by merge time, not by number.** Everything merged after
+2026-08-04T13:19Z is unswept, which includes PRs numbered *below* #139:
+
+| PR | merged | why it is unswept |
+|---|---|---|
+| #139 | 08-04 13:19 | at the marker boundary |
+| #140 | 08-04 13:28 | after |
+| #110 | 08-04 18:39 | merged after; number below the marker |
+| #116 | 08-05 02:45 | merged after; number below the marker |
+
+#110 and #116 are the two run-integration PRs (`20260803-213143`,
+`20260804-000518`) — the densest lane-2 evidence in the corpus. Inline
+review-thread contents remain unswept for all PRs.

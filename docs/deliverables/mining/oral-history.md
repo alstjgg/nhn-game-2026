@@ -248,17 +248,19 @@ the pre-repo period and for causal ordering between decisions.
   (closed graph + scenario gates; freedom as *designed* illusion). Two narrators,
   no contact, same mechanism → the deliverable's central design claim is
   well-founded, not one person's gloss.
-- **Divergence — the in-game-AI decision's valence.** OH-2 frames the membrane
-  as a *compromise* between 민서 (against in-game AI) and 윤석 (for it). OH-3
-  doesn't mention a disagreement at all — 윤석 presents the LLM-in-game sweet
-  spot as the shared goal. Same decision, different emotional memory (concession
-  vs consensus). Neither is "wrong"; the gap itself is the finding. → Round-1.
-- **Persistent oral-vs-written divergence — "3 demos."** Both 민서 (OH-2) and
-  윤석 (OH-3, "데모 3개의 실패") remember *three* demos; the written record
-  (S1/S4/S8) shows only *two* BUILT (apothecary, darkest-context; Doodle Life
-  cut pre-build). Two independent memories agree with each other but not the
-  repo → resolve (did a third demo exist in some form, or is "3" the
-  concept-track count remembered as demos?).
+- **Agreement, previously mis-flagged as divergence — the in-game-AI decision.**
+  OH-2 calls the membrane a *compromise* (민서 against in-game AI, 윤석 for it);
+  OH-3 presents the sweet spot as a shared goal. Logged as a valence divergence
+  until 민서 resolved it (OH-4): the two words name one event — "we each wanted
+  different things, and met in the middle." Both narrators corroborate the
+  settlement. Not a Round-1 question.
+- **Oral corrects written — three demos were built.** Both 민서 (OH-2) and 윤석
+  (OH-3, "데모 3개의 실패") remember *three* demos; the written record (S1/S4/S8)
+  shows only *two* BUILT (apothecary, darkest-context) and records Doodle Life as
+  cut pre-build. Resolved by OH-4: Doodle Life *was* built, was never deployed to
+  the repo, and survives only as screenshots. The repo is missing the artifact,
+  not the narrators the memory. Corrected sequence: three demos built → none won
+  → a fourth new concept (DDAY) won. See OH-4 for the corpus consequences.
 
 ### Round-1 corroboration hooks (now that three accounts exist)
 
@@ -269,6 +271,62 @@ the pre-repo period and for causal ordering between decisions.
   method.
 - "research standard format first" (§1) — check S1/S6 for an industry-format-
   grounded design doc / spec.
+
+---
+
+## OH-4 — 민서, resolution of the two OH-3 divergences
+
+- **Given:** 2026-08-05, in-session, in response to the two divergences flagged
+  in OH-3's cross-account section. A targeted resolution, not a fresh account.
+- **Nature:** the narrator of OH-1/OH-2 reading the divergence list and saying
+  what the flags got wrong. Ranks below written sources on conflict — except
+  where the written record is silent because an artifact was never committed,
+  which is exactly case (2) below.
+
+> On the two divergences in the oral interview; the first one isn't actually a
+> divergence. Compromise and consensus means the same thing - when you read my
+> story and his, we are both saying the same thing; we each wanted different
+> things, and met in the middle.
+>
+> On the second one: doodle-life was built into a demo, but I don't think it was
+> deployed to the repo. Only the screenshots remain, and that is why the miners
+> thought that this was a divergence. 3 demos were built, and one new one became
+> the winner.
+
+### Resolutions
+
+1. **Divergence 1 is withdrawn — the accounts agree.** "Compromise" (OH-2) and
+   "consensus" (OH-3) name the same event from two seats: each wanted something
+   different, and they met in the middle. The mining pass read a difference in
+   *wording* as a difference in *memory*. The membrane-as-settlement finding is
+   therefore corroborated by both narrators, not contested — it moves from "the
+   gap is the finding" to the strongest support the oral record can offer.
+2. **Divergence 2 resolves in favor of the oral record: three demos were built.**
+   Doodle Life *was* built into a demo; it was never deployed to the repo, and
+   only screenshots survive. Both narrators were right and the written record is
+   incomplete. Corrected sequence: **three demos built → none won → a fourth,
+   new concept (DDAY) became the winner.**
+
+### Consequences for the corpus
+
+- **Atom-level correction required.** S8's mining concluded "3 concept tracks but
+  only 2 BUILT demos (apothecary, darkest-context); Doodle Life cut pre-build."
+  That conclusion is wrong. Per the contradiction rule it is captured, not
+  silently overwritten — a `contradiction`-flagged atom is owed against the
+  S8/S1/S4 finding, to be written during the pre-Phase-3 sweep.
+- **Method finding for deliverable #4.** A repo-mined history cannot see work
+  whose artifact was never committed: the absence of Doodle Life from `demos/`
+  was read by independent mining agents as evidence the demo never existed. The
+  oral channel caught it. This is the concrete argument for why S10 exists, and
+  it generalizes — any team auditing itself through its own repo will
+  systematically under-count work that never landed.
+- **New corpus target: the Doodle Life screenshots** (off-repo). Locate, and
+  decide inclusion. If they enter the repo they need `assets-manifest.json`
+  entries per hard rule 5. They are the only surviving evidence of a demo the
+  deliverable's trial-and-error phase now depends on.
+- **OH-2's inclusion question (a) is larger than it looked** — the write-up of
+  "the three demoed-but-unpicked concepts" covers three *built* demos, one of
+  which the repo cannot evidence.
 
 ---
 

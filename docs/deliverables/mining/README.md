@@ -59,9 +59,14 @@ may split, merge, or die as evidence accumulates:
 ## Sweep protocol
 
 The game is still being built while mining runs, so the corpus moves. Every
-manifest carries a snapshot marker (commit SHA, highest PR number, date).
-Incremental sweeps mine only material past the marker, then advance it — the
-final sweep happens immediately before Phase 5 assembly.
+manifest carries a snapshot marker: the `main` commit SHA, the date, and — for
+PRs — the latest **merge timestamp** covered. Never the highest PR number. PR
+numbers record when a PR was *opened*, not when it landed: at the 2026-08-04
+snapshot the marker read "PRs after #139 are unswept", but #110 and #116 both
+merged *after* that snapshot, so a number-ordered marker silently excluded the
+two largest integration PRs in the corpus. Incremental sweeps mine everything
+merged after the marker timestamp, then advance it — the final sweep happens
+immediately before Phase 5 assembly.
 
 Known blind spots at the current snapshot:
 - atoms mined 2026-08-04 were captured under an earlier *failure-weighted*
