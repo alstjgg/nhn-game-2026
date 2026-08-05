@@ -33,8 +33,13 @@ export interface MetaState {
 /** The closing tally, exactly as the `score` event carries it. */
 export interface ScoreState {
   total: number
-  /** §5.2 amendment g — a scored unit's value may be a word, not only a count. */
-  rows: { label: string; value: string | number }[]
+  /** §5.2 amendment h — the same headline on the untouched day. */
+  baselineTotal: number
+  /**
+   * §5.2 amendment g — a scored unit's value may be a word, not only a count.
+   * Amendment h — and it carries what that axis scored with no intervention.
+   */
+  rows: { label: string; value: string | number; baseline: string | number | null }[]
 }
 
 export interface RunState {
@@ -108,7 +113,15 @@ export function reduce(state: RunState, event: ViewEvent): RunState {
       return {
         phase: 'tally',
         meta: state.meta,
-        score: { total: event.total, rows: event.rows.map((row) => ({ label: row.label, value: row.value })) },
+        score: {
+          total: event.total,
+          baselineTotal: event.baseline_total,
+          rows: event.rows.map((row) => ({
+            label: row.label,
+            value: row.value,
+            baseline: row.baseline,
+          })),
+        },
         report: state.report,
       }
     case 'run_end':

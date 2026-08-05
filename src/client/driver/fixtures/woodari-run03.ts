@@ -34,6 +34,7 @@ import {
   RUN,
   RUNS_LEFT,
   WOODARI_SCORE_ROWS,
+  WOODARI_SCORE_BASELINE_TOTAL,
   WOODARI_SCORE_TOTAL,
 } from './woodari-meta.ts'
 
@@ -225,7 +226,12 @@ export const woodariRun03: FixtureRun = {
     { type: 'meta', run: RUN, runs_left: RUNS_LEFT, carried: CARRIED, archive: ARCHIVE },
     ...stream(),
     { type: 'report', round: FINAL_ROUND, facts: filed.facts, report_body: filed.report_body },
-    { type: 'score', total: WOODARI_SCORE_TOTAL, rows: WOODARI_SCORE_ROWS },
+    {
+      type: 'score',
+      total: WOODARI_SCORE_TOTAL,
+      baseline_total: WOODARI_SCORE_BASELINE_TOTAL,
+      rows: WOODARI_SCORE_ROWS,
+    },
     { type: 'run_end', run: RUN },
   ],
   responses: {

@@ -222,3 +222,16 @@ export function identifiers(predicate: string): string[] {
 export function problems(predicate: string): string[] {
   return parse(predicate).problems
 }
+
+/**
+ * Does this predicate carry a `=> value` part — is it the F3 form?
+ *
+ * `problems()` cannot answer this: `=> 24` is a perfectly well-formed F3 rule,
+ * so it reports nothing — yet authored into a BOOLEAN slot (`availability`,
+ * `edge_predicates`, `extra_condition`) it is a defect `holds()` papers over by
+ * ignoring the value. Slot-form validation is lint's job, and without this
+ * export lint would need a second parse to do it.
+ */
+export function hasValue(predicate: string): boolean {
+  return parse(predicate).value !== null
+}

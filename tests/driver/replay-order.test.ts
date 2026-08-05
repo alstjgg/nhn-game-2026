@@ -33,7 +33,7 @@ function syntheticRun(): FixtureRun {
       facts: [{ id: 'b-r1-f01', text: 'F1', species: 'fact' }],
       report_body: [{ id: 'b-r1-b01', text: 'B1', species: 'selfnarr' }],
     },
-    { type: 'score', total: 10, rows: [{ label: 'L', value: 10 }] },
+    { type: 'score', total: 10, baseline_total: 10, rows: [{ label: 'L', value: 10, baseline: 10 }] },
     { type: 'meta', run: 1, runs_left: 9, carried: [], archive: [] },
     { type: 'run_end', run: 1 },
   ]

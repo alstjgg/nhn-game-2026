@@ -152,7 +152,15 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
     ended = true
     if (scorer !== undefined) {
       const score = scorer.score()
-      emit({ type: 'score', total: score.total, rows: score.rows })
+      // Forwarded whole. The driver decides WHEN a score is emitted (decision
+      // 3: only when a scorer was supplied, and immediately before `run_end`);
+      // what a score IS belongs to the port.
+      emit({
+        type: 'score',
+        total: score.total,
+        baseline_total: score.baseline_total,
+        rows: score.rows,
+      })
     }
     emit({ type: 'run_end', run })
   }

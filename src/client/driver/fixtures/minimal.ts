@@ -30,7 +30,7 @@ export const minimalRun: FixtureRun = {
       facts: [{ id: 'm-r1-f01', text: 'synthetic fact', species: 'fact' }],
       report_body: [{ id: 'm-r1-b01', text: 'synthetic body', species: 'selfnarr' }],
     },
-    { type: 'score', total: 0, rows: [{ label: 'synthetic', value: 0 }] },
+    { type: 'score', total: 0, baseline_total: 0, rows: [{ label: 'synthetic', value: 0, baseline: 0 }] },
     { type: 'meta', run: 1, runs_left: 0, carried: [], archive: [] },
     { type: 'run_end', run: 1 },
   ],
