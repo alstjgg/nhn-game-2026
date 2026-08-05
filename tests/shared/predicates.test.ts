@@ -12,7 +12,7 @@
 //     names and reject syntax without a second copy of the grammar. A test that
 //     only exercised `holds`/`resolve` would let those two rot.
 import { describe, it, expect } from 'vitest'
-import { holds, identifiers, problems, resolve } from '../../src/shared/predicates.ts'
+import { hasValue, holds, identifiers, problems, resolve } from '../../src/shared/predicates.ts'
 import type { PredicateState } from '../../src/shared/predicates.ts'
 
 /** A run that capped entry and named the caller, with 서지형's two meters bound. */
@@ -118,17 +118,18 @@ describe('resolution — the F3 form', () => {
   })
 })
 
-describe('totality — a malformed predicate costs a row, never the run', () => {
-  const BROKEN = [
-    'Entry_Capped', // identifiers are lower snake_case
-    '3ntry',
-    'trust >= many',
-    'trust >=',
-    'not ',
-    'entry_capped and',
-    '=>',
-  ]
+/** Every way a predicate can break. Totality runs on it, and so does `problems`. */
+const BROKEN = [
+  'Entry_Capped', // identifiers are lower snake_case
+  '3ntry',
+  'trust >= many',
+  'trust >=',
+  'not ',
+  'entry_capped and',
+  '=>',
+]
 
+describe('totality — a malformed predicate costs a row, never the run', () => {
   it('(k) nothing throws, for any of them', () => {
     for (const predicate of BROKEN) {
       expect(() => holds(predicate, STATE), predicate).not.toThrow()
@@ -167,10 +168,22 @@ describe('one parser — what lint reads the grammar through', () => {
     for (const good of ['entry_capped', 'not logs_saved', 'trust >= 20', 'a and b => x', '=> 24']) {
       expect(problems(good), good).toEqual([])
     }
-    for (const bad of BROKEN_FOR_PROBLEMS) {
+    // The same list totality runs on — every way a predicate can break is a
+    // way `problems()` must be able to name.
+    for (const bad of BROKEN) {
       expect(problems(bad).length, bad).toBeGreaterThan(0)
     }
   })
-})
 
-const BROKEN_FOR_PROBLEMS = ['Entry_Capped', '3ntry', 'trust >= many', 'not ', 'entry_capped and']
+  it('(p) `hasValue` tells the F3 form apart — `problems` alone cannot', () => {
+    // `=> 24` is a well-formed F3 rule, so `problems()` reports nothing — yet
+    // in a boolean slot it is a defect `holds()` papers over by ignoring the
+    // value. This is what lets lint reject a slot-form mismatch without a
+    // second parse.
+    expect(hasValue('=> 24')).toBe(true)
+    expect(hasValue('cancel_requested => 0')).toBe(true)
+    expect(hasValue('entry_capped')).toBe(false)
+    expect(hasValue('entry_capped and not cancel_requested')).toBe(false)
+    expect(hasValue('trust >= 20')).toBe(false)
+  })
+})
