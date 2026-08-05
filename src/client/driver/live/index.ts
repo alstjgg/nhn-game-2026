@@ -95,7 +95,30 @@ export async function createLiveRunDriver(deps: LiveRunDeps): Promise<FixtureDri
     })
   }
 
-  const begun = runLoop.startRun()
+  /**
+   * A RELOAD RESUMES THE DAY; it does not spend one.
+   *
+   * `startRun()` advances `run_count` and persists it, so calling it on every
+   * boot meant the tab's fourth refresh reached `runs_left === 0` — the counter
+   * reading RUN 04 with no allotment behind it and NEW RUN refused for the rest
+   * of the tab's life, for the crime of pressing ⌘R. A judge does that.
+   *
+   * The fixture path never could: it restores through `openAt: restoredRun()`
+   * and spends nothing (§7 #8, `shell/boot.ts`). This is that same restore with
+   * the persisted `MetaState` as its source — a run already counted is re-opened
+   * with the carry-over it was counted with, and only a genuinely new sitting
+   * (`run_count === 0`) starts one.
+   *
+   * The day itself replays from its opening beat, because nothing persists a
+   * run MID-flight and inventing that is a `data/runs/_schema` revision, not
+   * this module's call. The counter, the pips and the allotment stay honest,
+   * which is what the reload was breaking.
+   */
+  const held = runLoop.current()
+  const begun =
+    held.run_count > 0
+      ? { run: held.run_count, carried: held.carried_blocks, exposureClock: held.exposure_clock_reached }
+      : runLoop.startRun()
   const first = openRun(begun.carried, begun.run)
   let current = begun.run
 

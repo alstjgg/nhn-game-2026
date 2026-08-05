@@ -78,6 +78,11 @@ describe('[e7#A14] the existing tests/driver seam suites are untouched', () => {
     // The live-desk wiring: `src/client/driver/live/`'s run transition. Client
     // side, not e7's, and deliberately not named `engine-*` for that reason.
     'live-adapter-run-transition.test.ts',
+    // The live desk played to its end — the run's final beat, the animation
+    // pump, the reload, and the deck. It DRIVES the engine (against the real
+    // pack, offline) rather than asserting anything about it, which is why it
+    // is registered here rather than named `engine-*`.
+    'live-desk.test.ts',
   ])
 
   it('(b) everything e7 added under tests/driver is named `engine-*`', () => {

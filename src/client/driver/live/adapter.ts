@@ -41,6 +41,7 @@ import { createClock, MS_PER_SIM_MIN, mm } from '../clock.ts'
 import type { Clock, ClockRate } from '../clock.ts'
 import type { FixtureDriver, FixtureStore, Frame, ViewListener } from '../fixture-driver.ts'
 import type { OpResponse } from '../fixtures/types.ts'
+import { tickAnimations } from '../test-hooks.ts'
 
 /** The run refused: the allotment is spent and no further day opens. */
 const REFUSED: OpResponse = { ok: false }
@@ -190,12 +191,20 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
         release()
         kick()
       })
-      .catch(() => {
+      .catch((cause: unknown) => {
         // `LiveDriver` grades its own failures into `fallback` events and never
         // rejects (transport decision 1). A rejection here is therefore a defect
         // rather than a model failure — stop the run instead of spinning on it.
+        //
+        // AND SAY SO. This swallowed one: `mm()` rejected the authored `21:04+`
+        // stamp inside `absorb`, the throw unwound through the emitter into
+        // `step()`, and the run died on its final beat — no `run_end`, no
+        // score, no TALLY — leaving a desk that looked merely slow. A defect
+        // the desk cannot show has to at least leave a trace in the console,
+        // which is all this path has while the live chain has no e2e.
         stepping = false
         finished = true
+        console.error('live run stopped — the driver rejected mid-beat', cause)
       })
   }
 
@@ -293,6 +302,21 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
     },
 
     advance(realMs: number) {
+      if (!started) return
+      // THE ANIMATION PUMP IS THE DRIVER'S, on this path too. `report-view.ts`
+      // owns no timer by design — its typewriter is a pure function of elapsed
+      // milliseconds fed through `registerAnimation`, and `tickAnimations` is
+      // the only thing that feeds it. The fixture driver pumped it and this
+      // facade did not, so on a player build the agent's report painted its
+      // opening cursor — every sentence empty — and stayed there forever, while
+      // the objective log beside it filed whole. `freezeAnimations()` still
+      // gates the pump, so determinism is unchanged.
+      //
+      // The condition is the fixture's, verbatim, and for its reason (R4 on
+      // windows/reports.ts:55): a PAUSED desk holds everything still, but a
+      // desk whose run has CLOSED keeps pumping, because the day's last report
+      // arrives on the same frame the clock reaches its terminal minute.
+      if (clock.running || clock.ended) tickAnimations(realMs)
       // The clamp. `room` is whole sim minutes to the frontier; converting it
       // back to real milliseconds at the current rate is what stops the clock
       // landing past a beat the engine has not produced yet.
@@ -318,7 +342,12 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
       const ack = bound.driver.submit(op)
       if (!ack.ok) return { ok: false }
 
-      if (op.op === 'mine') mined = [...mined, op.sentence_id]
+      // A SET, mirroring the fixture's `if (!mined.includes(...))`. The ack
+      // cannot stand in for the check: `blocks.mine()` answers `true` for an id
+      // it has already mined, so the membrane acks a second MINE on the same
+      // sentence — and this list is what the block store window deals from, so
+      // appending blindly dealt the same card twice.
+      if (op.op === 'mine' && !mined.includes(op.sentence_id)) mined = [...mined, op.sentence_id]
       if (op.op === 'slot') slots.set(op.slot, op.block_id)
       if (op.op === 'unslot') slots.delete(op.slot)
       if (op.op === 'deploy') deployed = [...new Set(op.blocks)].sort()
