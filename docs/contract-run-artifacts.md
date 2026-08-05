@@ -23,11 +23,19 @@ the engine's**, and this document never reaches into them.
 
 | File | Contents | Consumer |
 |---|---|---|
-| `run-record` | run id · pack slug · policy (`null` = human) · reached clock · injected blocks · beats (gate · stance · **delta journal** `{variable, before, after, cause}`) · rendered timeline lines (the mining surface, W2) · the two reports (W1/W3) · score at terminal clock · fallbacks `{beat, call, code}` (engine spec §5) | metric stage · report viewer · mining UI |
+| `run-record` | run id · pack slug · policy (`null` = human) · reached clock · injected blocks · beats (gate · stance · **delta journal** `{variable, before, after, cause}`) · rendered timeline lines (the mining surface, W2) · the two reports (W1/W3), **`null` when Call 3 fell back** · score at terminal clock · fallbacks `{beat, call, code}` (engine spec §5) | metric stage · report viewer · mining UI |
 | `meta-state` | pack slug · run count · max exposure clock reached (drives `visible_from` gating) · carried blocks (prompt carry-over) · report archive | run-loop manager |
 | `metric-report` | per-policy rows (n, mean, variance) · policy gap · score variance · route coverage · vein yield · near-miss trace rate · source run ids | bake-off verdicts ([`plan-pipeline.md`](./plan-pipeline.md) §4) |
 
 ## 2. Decisions in force
+
+**A run that could not report is still a run.** `reports` is nullable. Call 3
+falling back does not void the beats, the delta journals, the timeline or —
+above all — `fallbacks[]`, the array that documents the failure. Stage 6 is a
+measurement program, and a corpus that drops its failed runs measures the wrong
+thing. What stays banned is the FABRICATION: `{facts: [], report_body: ""}` is
+not lossy but false, and indistinguishable from a genuinely empty report, so the
+schema rejects it (`report_body` keeps `minLength: 1` inside the object branch).
 
 **Unmeasurable ≠ zero.** Every metric is nullable. A metric that could not be
 computed is `null`, never `0`. This is RUNLOG A20 applied to the output format:

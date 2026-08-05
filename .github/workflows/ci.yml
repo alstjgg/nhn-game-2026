@@ -28,13 +28,79 @@ jobs:
   root:
     runs-on: ubuntu-latest
     steps:
+      # Full history, not the default depth-1 checkout. A large part of this
+      # suite measures assertions against GIT RANGES rather than the live tree —
+      # that is the C17 discipline: a unit-scoped claim that later work has
+      # legitimately outgrown gets re-aimed at the range where it stays true,
+      # never deleted. `tests/scaffold/layout.test.ts` resolves u0's own merge
+      # (`git log --merges --grep`), `deps.test.ts` reads `package.json` as of
+      # u0, and the frozen-path and RED-time-hash guards diff against their unit's
+      # base. On a shallow clone none of that history exists and they fail with
+      # "the u0 merge is not reachable from HEAD".
+      #
+      # This was masked, not absent: `--exclude 'tests/scaffold/layout.test.ts'`
+      # hid the loudest one, and dropping that exclude is what surfaced the rest.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run check
+      # `npm run check` (above) is tsc + datapack:check + tools/tests' node:test
+      # checks only — it never invokes vitest, so the tests under tests/** (engine,
+      # composer, transport, driver, runloop, client, invariants, acceptance) gated
+      # nothing until this step. The `--exclude` that used to sit here is gone:
+      # u0's empty-modules census was retired at the engine run and the remaining
+      # scaffold gates are re-aimed, so the whole suite runs.
+      - run: npm test
+      # A16 and A17. `deploy.yml` already runs `npm run build`, but only on push
+      # to main — i.e. after a merge, which is too late to gate one. The probe's
+      # self-test ran in no job at all: `tools/probe/**` is a frozen input this
+      # build must not break, and nothing was checking. Both are cheap and
+      # offline (no key, no network).
+      - run: npm run build
+      - run: npm run probe:selftest
+
+  # Preview smoke only — the FULL Playwright suite stays manual (민서's call on
+  # PR #116). This job builds the production bundle, serves it, and runs
+  # `e2e/preview-smoke.spec.ts` against it: the one check that the artifact the
+  # judges load actually boots. It is short, and it does not carry the desk's
+  # window-stacking races.
+  #
+  # Worth knowing while the rest stays manual: no workflow ran Playwright at all
+  # before this, which is how `e2e/captures.spec.ts` came to depend on a
+  # gitignored directory and stay broken for everyone but the machine that ran
+  # the pipeline. The reference side is tracked at `e2e/reference-shots/` now, so
+  # a manual run works anywhere — but nothing automated is watching it.
+  preview-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # PW_LANE=preview keeps Playwright from booting all three webServer
+      # lanes: it starts every entry in the array regardless of `--project`,
+      # so without the gate this job pays for a dev-mode build, a dev server
+      # and the real build — the config filters the array on this variable.
+      - run: npx playwright test --project=preview
+        env:
+          CI: '1'
+          PW_LANE: preview
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
 
   # Proxy: prompt-bundle drift + typecheck + 36 tests, all offline (no AWS, no
   # Bedrock credentials needed — that is the point of the mocked provider).

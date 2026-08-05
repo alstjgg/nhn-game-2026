@@ -36,6 +36,10 @@ env:
   ARTIFACT_PREFIX: nhn-game-proxy
   DEPLOY_ROLE_ARN: arn:aws:iam::141840355276:role/nhn-game-ci-proxy-github
   CFN_EXEC_ROLE_ARN: arn:aws:iam::141840355276:role/nhn-game-ci-proxy-cfn-exec
+  # Must equal samconfig.toml's AllowedOrigin override. src/handler.ts's origin
+  # guard runs ahead of route dispatch, so every post-deploy probe below has to
+  # carry this or it is answered 403 origin_forbidden before reaching a route.
+  ALLOWED_ORIGIN: https://alstjgg.github.io
   SAM_CLI_TELEMETRY: "0"
 
 jobs:
@@ -137,11 +141,20 @@ jobs:
             echo "health_endpoint=$HEALTH_URL"
           } >>"$GITHUB_OUTPUT"
 
+      # The status and the body are captured before anything is asserted. The
+      # first form here was BODY="$(curl --fail-with-body …)", which under
+      # `bash -e` dies at the assignment and never reaches its own echo — the
+      # 403 that failed run 30891089347 said `origin_forbidden` in a body no
+      # log ever showed. Assert after printing, never instead of it.
       - name: Health check
         run: |
-          BODY="$(curl -sS --fail-with-body --max-time 20 "${{ steps.stack.outputs.health_endpoint }}")"
-          echo "$BODY"
-          test "$(jq -r .ok <<<"$BODY")" = "true"
+          STATUS="$(curl -sS --max-time 20 -o /tmp/health.json -w '%{http_code}' \
+            -H "origin: $ALLOWED_ORIGIN" \
+            "${{ steps.stack.outputs.health_endpoint }}")"
+          echo "HTTP $STATUS"
+          cat /tmp/health.json; echo
+          test "$STATUS" = "200"
+          test "$(jq -r .ok </tmp/health.json)" = "true"
 
       # The health route never touches Bedrock, so on its own it cannot tell a
       # working deploy from one whose IAM cannot reach the model. This step is
@@ -151,15 +164,17 @@ jobs:
       - name: Real model call
         run: |
           PAYLOAD="$(jq -r .body events/call.json)"
-          BODY="$(curl -sS --fail-with-body --max-time 30 \
+          STATUS="$(curl -sS --max-time 30 -o /tmp/call.json -w '%{http_code}' \
             -D /tmp/headers.txt \
             -X POST "${{ steps.stack.outputs.call_endpoint }}" \
             -H 'content-type: application/json' \
-            -H 'origin: https://alstjgg.github.io' \
+            -H "origin: $ALLOWED_ORIGIN" \
             -d "$PAYLOAD")"
-          echo "$BODY"
+          echo "HTTP $STATUS"
+          cat /tmp/call.json; echo
+          test "$STATUS" = "200"
           grep -qi '^x-llm-fallback: false' /tmp/headers.txt
-          test -n "$(jq -r '.stance // empty' <<<"$BODY")"
+          test -n "$(jq -r '.stance // empty' </tmp/call.json)"
 
       - name: Summary
         run: |

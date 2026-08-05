@@ -3,9 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "dev": "vite",
-    "check": "tsc -p tsconfig.core.json && tsc && npm run datapack:check && npm run test:shared",
+    "check": "tsc -p tsconfig.core.json && tsc && npm run typecheck:test && npm run datapack:check && npm run test:shared",
     "build": "npm run check && vite build",
     "preview": "vite preview",
     "datapack:types": "node authoring/generate-datapack-types.mjs",
@@ -15,10 +18,16 @@
     "probe": "node tools/probe/run.mjs",
     "probe:selftest": "node tools/probe/lib/selftest.mjs",
     "drive:beat": "node tools/driver/drive-beat.mjs",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck:test": "tsc -p tsconfig.test.json",
     "test:shared": "node --test --experimental-strip-types \"tools/tests/*.mjs\""
   },
   "devDependencies": {
+    "@types/node": "^26.1.2",
+    "playwright": "^1.62.1",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "vitest": "^4.1.10"
   }
 }

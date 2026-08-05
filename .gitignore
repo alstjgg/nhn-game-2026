@@ -9,13 +9,32 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-e2e
 dist-ssr
+dist-flag-off
 *.local
+
+# Test runner output (vitest / playwright)
+test-results/
+playwright-report/
+blob-report/
 
 # Env / secrets
 .env
 .env.*
 !.env.example
+# The one exception, and it is not a secret. `VITE_PROXY_BASE_URL` is a public
+# API Gateway endpoint that ships INSIDE the bundle — the browser has to know it
+# to play, so it is published the moment the game deploys. contract-calls §11
+# says so outright: "It is not a secret; the origin check and throttling are the
+# access control", and the only real secret in the system stays in the Lambda
+# (physical §2 constraint 2).
+#
+# It is committed rather than passed as a repository variable because
+# `deploy.yml`'s build step is a bare `npm run build` with no `env:` and no
+# `${{ vars.* }}`, and that workflow may not change (physical §2 constraint 4).
+# Vite reads this file itself on a production build, so nothing else has to.
+!.env.production
 
 # Super-pipeline runtime state must stay out of git
 .claude/super/
