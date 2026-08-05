@@ -2,6 +2,7 @@
 // out of the player build. [u2f#c10] — the frozen scenario pack, the design
 // target and the shared modules are read-only inputs (C1/C13).
 import { describe, it, expect } from 'vitest'
+import { runMerge } from '../acceptance/unit-range.ts'
 import fs from 'node:fs'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
@@ -39,19 +40,6 @@ const DYNAMIC_IMPORT = /import\s*\(\s*['"]([^'"]+)['"]\s*\)/g
 
 function git(args: string[]): string {
   return execFileSync('git', args, { cwd: REPO, encoding: 'utf8' })
-}
-
-/** The commit this run branched from — the same idiom as the isomorphism guard. */
-function runMergeBase(): string {
-  const errors: string[] = []
-  for (const ref of ['origin/main', 'main']) {
-    try {
-      return git(['merge-base', 'HEAD', ref]).trim()
-    } catch (err) {
-      errors.push(`${ref}: ${(err as Error).message}`)
-    }
-  }
-  throw new Error(`cannot resolve a merge-base against main\n${errors.join('\n')}`)
 }
 
 describe('[u2f#c9] the demo fixture is reachable from dev only', () => {
@@ -113,18 +101,42 @@ describe('[u2f#c10] frozen inputs are read, never written', () => {
   // progress.json's `frozen_globs` + the design target. NOTE: `src/shared/` as a
   // whole is NOT frozen — `view-driver.ts` is this run's own seam (u2). The two
   // consume-only modules of C13 are.
+  //
+  // RE-AIMED (C17) at the post-merge reconcile (08-05). The freeze was pipeline
+  // discipline — a run must not rewrite its own inputs — and for two of the
+  // paths that premise expired when the run merged (#110): `docs/spec-client.md`
+  // revises by its owner's hand post-run (spec-client §9, "bind by revision of
+  // this document"), and `src/shared/species.ts` carried its own deletion order
+  // for the duplicate `Species` union ("delete this the moment view-driver.ts
+  // lands" — view-driver.ts landed with this run). The original claim stays
+  // asserted where it stayed true: over the run's own merge range, in (e). The
+  // live checks keep the paths that remain frozen.
+  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts']
   const FROZEN = [
     'data/scenario/',
     'docs/design/',
     'src/shared/segment.ts',
-    'src/shared/species.ts',
     'tools/tests/segment.golden.mjs',
-    'docs/spec-client.md',
   ]
 
-  it('(e) this unit introduces no diff under any frozen path', () => {
-    const base = runMergeBase()
-    const changed = git(['diff', '--name-only', base, '--'])
+  it('(e) this run introduced no diff under any frozen path', () => {
+    const merge = runMerge()
+    const changed = git(['diff', '--name-only', `${merge}^1`, merge, '--'])
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+    const touched = changed.filter((f) => [...FROZEN, ...RELEASED].some((p) => f.startsWith(p)))
+    expect(touched).toEqual([])
+  })
+
+  it('(e2) work landed since the run introduces no diff under a still-frozen path', () => {
+    // `runMerge()..HEAD`, not the merge-base against main: the merge-base IS
+    // HEAD once this sits on main, which turns the diff empty by construction
+    // and the guard vacuous — the same shape isomorphism-guard took the SHA-pin
+    // form to avoid. Measuring from the run's landing is always non-empty and
+    // says the actual claim: nothing since #110 touched a still-frozen path.
+    // (The working tree is (f)'s job.)
+    const changed = git(['diff', '--name-only', `${runMerge()}..HEAD`, '--'])
       .split('\n')
       .map((l) => l.trim())
       .filter(Boolean)
@@ -132,7 +144,7 @@ describe('[u2f#c10] frozen inputs are read, never written', () => {
     expect(touched).toEqual([])
   })
 
-  it('(f) the working tree has no uncommitted edit under a frozen path either', () => {
+  it('(f) the working tree has no uncommitted edit under a still-frozen path either', () => {
     const dirty = git(['status', '--porcelain', '--', ...FROZEN])
       .split('\n')
       .map((l) => l.trim())

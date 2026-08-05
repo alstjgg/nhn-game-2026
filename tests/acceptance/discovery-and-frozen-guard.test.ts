@@ -18,6 +18,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { runMerge } from './unit-range.ts'
 
 const SELF = fileURLToPath(import.meta.url)
 const REPO = path.resolve(path.dirname(SELF), '../..')
@@ -98,18 +99,6 @@ function discoveryBase(): string {
 
 function git(args: string[]): string {
   return execFileSync('git', args, { cwd: REPO, encoding: 'utf8' })
-}
-
-function runMergeBase(): string {
-  const errors: string[] = []
-  for (const ref of ['origin/main', 'main']) {
-    try {
-      return git(['merge-base', 'HEAD', ref]).trim()
-    } catch (err) {
-      errors.push(`${ref}: ${(err as Error).message}`)
-    }
-  }
-  throw new Error(`cannot resolve a merge-base against main\n${errors.join('\n')}`)
 }
 
 describe('[u11#c6] DISCOVERY.md is populated with the run\'s findings', () => {
@@ -207,25 +196,42 @@ describe('[u11#c6] the run\'s own decisions are logged too', () => {
 })
 
 describe('[u11#c6] frozen inputs stayed frozen (C1 / C13 / C20)', () => {
+  // RE-AIMED (C17) at the post-merge reconcile (08-05). The freeze was pipeline
+  // discipline — the run must not rewrite its own inputs — and for two paths
+  // that premise expired at the run's merge (#110): `docs/spec-client.md`
+  // revises by its owner's hand post-run (spec-client §9), and
+  // `src/shared/species.ts` carried its own deletion order for the duplicate
+  // `Species` union. The claim stays asserted where it stayed true — over the
+  // run's own merge range, in (m); the live checks keep the still-frozen set.
+  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts']
   const FROZEN = [
     'data/scenario/우는다리/',
     'data/scenario/_schema/',
     'docs/design/',
-    'docs/spec-client.md',
     'src/shared/segment.ts',
-    'src/shared/species.ts',
     'tools/tests/segment.golden.mjs',
   ]
 
-  it('(m) this run\'s commits introduce no diff under a frozen path', () => {
-    const changed = git(['diff', '--name-only', runMergeBase(), '--'])
+  it('(m) this run\'s commits introduced no diff under a frozen path', () => {
+    const merge = runMerge()
+    const changed = git(['diff', '--name-only', `${merge}^1`, merge, '--'])
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+    expect(changed.filter((f) => [...FROZEN, ...RELEASED].some((p) => f.startsWith(p)))).toEqual([])
+  })
+
+  it('(m2) work landed since the run introduces no diff under a still-frozen path', () => {
+    // `runMerge()..HEAD`, not the merge-base against main — on main the
+    // merge-base is HEAD and the guard goes vacuous. See dev-only (e2).
+    const changed = git(['diff', '--name-only', `${runMerge()}..HEAD`, '--'])
       .split('\n')
       .map((l) => l.trim())
       .filter(Boolean)
     expect(changed.filter((f) => FROZEN.some((p) => f.startsWith(p)))).toEqual([])
   })
 
-  it('(n) the working tree carries no uncommitted edit under a frozen path either', () => {
+  it('(n) the working tree carries no uncommitted edit under a still-frozen path either', () => {
     const dirty = git(['status', '--porcelain', '--', ...FROZEN])
       .split('\n')
       .map((l) => l.trim())

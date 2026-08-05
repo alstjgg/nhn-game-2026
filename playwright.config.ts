@@ -42,6 +42,14 @@ const PREVIEW_HOSTED = /preview-smoke\.spec\.ts/
 
 const desktop = { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } }
 
+// `lane`, not `host`: Playwright's own webServer config declares `host?: string`
+// ("Host to use when starting the web server"), so a label named `host` would
+// silently eat a genuine `host: '0.0.0.0'` the day a container needs one.
+function lanes<T extends { lane: string }>(servers: T[]): Omit<T, 'lane'>[] {
+  const only = process.env.PW_LANE
+  return servers.filter((s) => !only || s.lane === only).map(({ lane: _, ...rest }) => rest)
+}
+
 export default defineConfig({
   testDir: './e2e',
   // CI retries. The desk's windows are draggable sheets sharing one stacking
@@ -85,8 +93,13 @@ export default defineConfig({
       use: { ...desktop, baseURL: previewURL },
     },
   ],
-  webServer: [
+  // PW_LANE gates which lanes boot: Playwright starts EVERY entry in this
+  // array regardless of `--project`, so a CI job that only runs the preview
+  // smoke would otherwise pay for a dev-mode build, a dev server and a real
+  // build. Unset (the local default) boots all three, as before.
+  webServer: lanes([
     {
+      lane: 'unit',
       command: `npm run build -- --mode development --outDir ${OUT_DIR} --emptyOutDir && node tools/e2e/mirror-pack.mjs ${OUT_DIR} && npm run preview -- --outDir ${OUT_DIR} --port ${UNIT_PORT} --strictPort`,
       // `--mode development` alone is not enough: `vite build` pins NODE_ENV to
       // production, and `import.meta.env.DEV` follows NODE_ENV first. Without
@@ -97,12 +110,14 @@ export default defineConfig({
       timeout: 180_000,
     },
     {
+      lane: 'dev',
       command: `npm run dev -- --port ${DEV_PORT} --strictPort`,
       url: devURL,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
     },
     {
+      lane: 'preview',
       // The full build, not `vite build` alone: `npm run build` is what the DoD
       // gates on, and its `check` step is what keeps the datapack honest.
       command: `npm run build && npm run preview -- --port ${PREVIEW_PORT} --strictPort`,
@@ -110,5 +125,5 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 240_000,
     },
-  ],
+  ]),
 })

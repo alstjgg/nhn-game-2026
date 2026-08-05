@@ -31,8 +31,10 @@ export type ViewEvent =
   | { type: 'run_end';  run: number }
   | { type: 'meta';     run: number; runs_left: number; carried: string[];
                         archive: { run: number; label: string }[] };
-                        // exact `meta` shape settles when 윤석 builds the
-                        // run-loop manager; the channel itself is ratified
+                        // SETTLED 08-05: e8's run-loop manager emits exactly
+                        // this shape (src/runloop/run-loop.ts, metaEvent());
+                        // its MetaState is internal persistence, translated
+                        // at the boundary — the seam shape never moved
 
 export type MembraneOp =
   | { op: 'slot';    block_id: string; slot: number }
