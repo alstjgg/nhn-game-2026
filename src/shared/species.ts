@@ -25,18 +25,13 @@
  */
 
 /**
- * ⚠️ **Temporary local declaration.** `Species` is a view-driver seam type and
- * belongs in `src/shared/view-driver.ts`, which the client build's u2 creates
- * (spec-client §5.2 — "types land in `src/shared/view-driver.ts`"). That file
- * does not exist yet and is not mine to write.
- *
- * The four literals are reproduced **verbatim from the ratified seam**. The
- * moment `view-driver.ts` lands, delete this and
- * `import type { Species } from './view-driver.ts'` — a duplicated union is a
- * drift risk, and this one is tolerated only because the alternative is
- * blocking u2 on a file u2 itself has not written.
+ * `Species` lives in `src/shared/view-driver.ts` — the ratified seam module.
+ * The duplicate union this file carried while `view-driver.ts` did not exist
+ * ("delete this the moment view-driver.ts lands") is deleted per its own
+ * instruction; the re-export keeps every consumer's import path working.
  */
-export type Species = 'fact' | 'selfnarr' | 'emotion' | 'quote'
+import type { Species } from './view-driver.ts'
+export type { Species }
 
 /**
  * The five minted channels. `t*` ids are inherited from `timeline.json` and

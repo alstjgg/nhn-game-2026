@@ -4,9 +4,14 @@
 > **Language:** TypeScript (vanilla, **zero runtime dependencies**) · **Home:**
 > `src/client/` — the only place DOM exists; nothing imports it
 > ([physical §3.1–3.2](./spec-physical-architecture.md)).
-> **Status: draft v3.1** — v3 + 윤석's PR #108 ratification: the §5.2 seam
-> is ratified with six amendments, persistence is resolved
-> (`sessionStorage`), scaffolding and pack-copy answered (§9).
+> **Status: draft v3.2** — v3.1 + the post-merge revision (08-05, PRs #110 +
+> #116 on main): the §5.2 seam is implemented on both sides (fixture driver
+> and e7's live driver in `src/driver/`), the run-loop manager exists (e8,
+> `src/runloop/`), the `meta` shape settled **unchanged**, the sentence-id
+> channel set gained `u`, and the §3.7 pack-copy plugin is built.
+> v3.1 was v3 + 윤석's PR #108 ratification: the §5.2 seam ratified with six
+> amendments, persistence resolved (`sessionStorage`), scaffolding and
+> pack-copy answered (§9).
 >
 > This document **references and consumes** the laws it sits under — it never
 > redefines them. Conflict order:
@@ -23,7 +28,8 @@
 The client renders the operator's desktop: it displays a run as it plays,
 carries the player's entire input surface (the membrane), and doubles as the
 **engine's verification test base** — every input it consumes can come from
-fixtures, so the full UI runs offline before engine and proxy land.
+fixtures, so the full UI runs offline (which is how it was built before
+engine and proxy landed, and how it is still tested).
 
 1. **Shell.** Persistent chrome (portal identity · game clock → 21:04 with
    progress bar and rate control · D-DAY counter + run pips) · taskbar ·
@@ -39,8 +45,8 @@ fixtures, so the full UI runs offline before engine and proxy land.
    view-driver seam (§5.2); the client renders and animates but never
    derives game state.
 5. **Fixture mode.** A fixture driver replays a scripted run (§5.4) with no
-   proxy, no key, no engine — the seam the real engine later implements
-   unchanged.
+   proxy, no key, no engine — the same seam the live driver implements
+   unchanged (§5.4).
 
 **Does NOT do:** compute state, judge gates, render symptoms from the delta
 journal (engine-side, [engine §2.3](./spec-engine.md)) · compose or send LLM
@@ -55,21 +61,22 @@ CLAUDE.md).
 
 | Dir | What | Law |
 |---|---|---|
-| in | `data/scenario/<slug>/` as static JSON (fetch at boot; reaches the browser via the physical §3.7 copy plugin — **unbuilt**, see §9) | [contract-datapack](./contract-datapack.md); per-file consumers: [architecture-map §2.1](./architecture-map.md) |
-| in | `ViewEvent` stream ← view driver (fixture or live engine) | §5.2 — **proposed seam, ratification with 윤석 pending** |
-| in | run/meta view (`meta` events **on the same stream**, amendment d): run counter · carried blocks · report archive ← run-loop manager via the driver (fixture-simulated until it exists) | §5.2 · [contract-run-artifacts](./contract-run-artifacts.md); stored in `sessionStorage` (§9) |
+| in | `data/scenario/<slug>/` as static JSON (fetch at boot; reaches the browser via the physical §3.7 copy plugin — built, verified by the preview smoke: the pack loads from `dist/data/`) | [contract-datapack](./contract-datapack.md); per-file consumers: [architecture-map §2.1](./architecture-map.md) |
+| in | `ViewEvent` stream ← view driver (fixture, or e7's live driver in `src/driver/` — headless-proven; the browser binding is the wiring step) | §5.2 — **ratified 08-03 (PR #108)**, types at `src/shared/view-driver.ts` |
+| in | run/meta view (`meta` events **on the same stream**, amendment d): run counter · carried blocks · report archive ← run-loop manager (e8, `src/runloop/`) via the driver | §5.2 · [contract-run-artifacts](./contract-run-artifacts.md); stored in `sessionStorage` (§9) |
 | out | `MembraneOp` stream → driver (deploy carries the slotted set = the next Call 1 `BLOCKS`) | §5.2 · [contract-calls §6](./contract-calls.md) supplier map |
 | out | nothing else — no network beyond the pack fetch (and, live mode, calls made by the composer, not by the client) · no disk writes | [physical §2](./spec-physical-architecture.md) |
 
 ### 2.1 Code layout (`src/client/` — boundaries fixed, sub-split free)
 
-Import direction ([physical §3.2](./spec-physical-architecture.md)):
-`client → composer → engine → shared`; **nothing imports client**. Inside
-`src/client/`:
+Import direction ([physical §3.1, revised 08-03](./spec-physical-architecture.md)):
+`client → driver → composer → engine → shared`; **nothing imports client**.
+The live driver is **not** a `src/client/` module — it landed as its own tier,
+`src/driver/` (e7), DOM-free and headless-proven. Inside `src/client/`:
 
 | Module | Holds | May import |
 |---|---|---|
-| `driver/` | fixture driver + fixture run files · (later) live driver binding engine+composer. Seam types are **not** here — they live in `src/shared/view-driver.ts` (ratified, §5.2) | `shared`; live driver only: `engine`, `composer` |
+| `driver/` | fixture driver + fixture run files · the run-loop binding · (wiring step) `live-run.ts`, the boot-time binding that instantiates `src/driver/`'s live driver in the player build. Seam types are **not** here — they live in `src/shared/view-driver.ts` (ratified, §5.2) | `shared`; and — as the only `src/client/` module allowed past the seam (invariant 12) — the below-seam tiers the live binding composes: `src/driver/` · `src/runloop/` · `src/transport/` |
 | `shell/` | topbar (clock · D-DAY · case) · taskbar · window manager · layout | `driver` types |
 | `windows/` | the five windows, one module each | `components`, `driver` types |
 | `components/` | the §6 inventory | — |
@@ -77,8 +84,11 @@ Import direction ([physical §3.2](./spec-physical-architecture.md)):
 | `debug/` | debug pane — build-flag only, **excluded from the player build** | `driver` |
 | root | `index.html` · `main.ts` (boot, §5.1) | everything above |
 
-Build gate: `npm run build` (tsc + vite) green; the automated test gate is
-bound in the PRD, not here.
+Build gate: CI (`.github/workflows/ci.yml`) runs the full stack on every
+PR — `npm run check` · the entire vitest suite (no exclusions) · `npm run
+build` · the probe self-test · the preview smoke on a real production
+build. The full Playwright suite (dev-host acceptance, captures) stays a
+manual pre-merge gate.
 
 ---
 
@@ -118,8 +128,13 @@ bound in the PRD, not here.
     contains none of its code (I12 binds the player surface; the pane is
     developer tooling).
 12. **Driver seam integrity** — windows and components consume `ViewEvent`s
-    only; no module outside `driver/` may import engine or composer. This is
-    what keeps fixture and live modes pixel-identical.
+    only; above the seam, no module outside `src/client/driver/` may import
+    engine, composer, or any below-seam tier — and in the player build
+    graph, only driver modules ever reach engine or composer. (Below the
+    seam, edges among `engine · composer · transport · driver · runloop`
+    are the architecture itself, not a breach — the 08-05 re-aim in
+    `tests/invariants/seam-integrity.test.ts`.) This is what keeps fixture
+    and live modes pixel-identical.
 
 ---
 
@@ -179,8 +194,10 @@ type ViewEvent =
   | { type: 'run_end';  run: number }
   | { type: 'meta';     run: number; runs_left: number; carried: string[];
                         archive: { run: number; label: string }[] };
-                        // exact `meta` shape settles when 윤석 builds the
-                        // run-loop manager; the channel itself is ratified
+                        // SETTLED 08-05: e8's run-loop manager emits exactly
+                        // this shape (src/runloop/run-loop.ts, metaEvent());
+                        // its MetaState is internal persistence, translated
+                        // at the boundary — the seam shape never moved
 
 type MembraneOp =
   | { op: 'slot';    block_id: string; slot: number }
@@ -206,12 +223,17 @@ Amendment notes (all 윤석, PR #108):
   `FeedKind` remains as its on-feed rendering.
 - **Sentence identity is engine-minted**: `b-r<run>-<channel><nn>` with
   channels `f` (facts) · `b` (report body) · `n` (Call 2 narration) · `q`
-  (NPC line); authored script lines keep `timeline.json`'s `t*` ids and are
-  run-independent (same sentence = same block across runs, which is what
-  makes archive highlighting behave). The report-body segmenter lives in
-  `src/shared/`, is called by engine, fixture generator, and probe alike
+  (NPC line) · `u` (Call 1 utterance — the controller's own line, added at
+  the engine build); authored script lines keep `timeline.json`'s `t*` ids
+  and are run-independent (same sentence = same block across runs, which is
+  what makes archive highlighting behave). The report-body segmenter lives
+  in `src/shared/`, is called by engine, fixture generator, and probe alike
   (invariant 12 made structural), and carries a golden test. **Species
-  derives from the channel, never from classification.**
+  derives from the channel, never from classification** — the channel→species
+  map the ratification named but never wrote down is now written down:
+  `src/shared/species.ts` (`f`→fact and `b`→selfnarr certified; `n`→emotion,
+  `q`→quote, `u`→quote uncertified — the certified/uncertified split is
+  load-bearing, contract-datapack E2).
 
 What never appears in `ViewEvent`: `inner_note` · `because_*` /
 `rejected_*` · temperament · truths beyond exposure
@@ -236,8 +258,12 @@ run; mine → acknowledged into the store). Fixture files live under
 design target's RUN 03 material regenerated against `우는다리` — authored
 sentences with real ids, never lorem.
 
-The same seam, live: the driver binds engine + composer and forwards ops;
-windows cannot tell the difference (invariant 12).
+The same seam, live: e7's live driver (`src/driver/`) binds engine +
+composer + transport and forwards ops — proven headless (a complete
+우는다리 run replays byte-identical through `tools/driver/drive-run.mjs`);
+windows cannot tell the difference (invariant 12). What remains is the
+browser binding: nothing in the player bundle instantiates it yet (engine
+run known-open #4 — the wiring step).
 
 ---
 
@@ -352,8 +378,9 @@ slices so LLM-generated text never hits a missing glyph).
   `src/` dirs and the `tsconfig`/`tsconfig.core` split exist). **Condition
   on the build: never touch `tsconfig.core.json`'s `include` or add path
   aliases** — that file is the mechanical isomorphism guard.
-- **Pack-to-browser copy plugin** — 윤석 lands it (it copies `scenario/` +
-  `policy/` by name, never `data/` wholesale). Fixture mode doesn't wait.
+- **Pack-to-browser copy plugin** — landed (physical §3.7; it copies
+  `scenario/` + `policy/` by name, never `data/` wholesale). The preview
+  smoke gates it in CI: the pack loads from `dist/data/` on a real build.
 
 **Owned elsewhere — pointed at, not restated:**
 
