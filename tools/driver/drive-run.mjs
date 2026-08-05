@@ -96,6 +96,7 @@ export async function runHeadless({
     reduced,
     journals: rig.journals,
     calls: rig.calls,
+    score: rig.score(),
     carried: begun.carried,
     // The provenance source for `injected_blocks[].mined_from_run`: every run
     // that ended is in the archive, and only an ended run can have carried.

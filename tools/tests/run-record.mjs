@@ -537,9 +537,35 @@ describe('record assembly', () => {
     assert.equal(record.policy, 'greedy')
   })
 
-  test('score is null — the minimal engine has no ending model; do not synthesize one', async () => {
+  // RE-AIMED, not dropped. This asserted `score === null` because "the minimal
+  // engine has no ending model; do not synthesize one" — and the pack now
+  // AUTHORS one (contract-datapack §3.6), so the premise moved while the claim
+  // did not. The ending is still never synthesized HERE; it is read. What the
+  // test measures is exactly that: every recorded value is the tail of a rule
+  // the pack wrote, and `total` is the sum of the numeric ones rather than a
+  // number this file invented.
+  test('score comes from the pack — every value is an authored rule, never synthesized', async () => {
     const { record } = await pass()
-    assert.equal(record.score, null)
+    const authored = JSON.parse(
+      fs.readFileSync(path.join(REPO, 'data/scenario', PACK, 'score.json'), 'utf8'),
+    )
+    assert.ok(record.score, 'the run recorded no score at all')
+    assert.equal(record.score.units.length, authored.units.length)
+
+    const sum = record.score.units.reduce(
+      (n, u) => n + (typeof u.value === 'number' ? u.value : 0),
+      0,
+    )
+    assert.equal(record.score.total, sum, 'total is not the sum of the numeric values')
+
+    for (const unit of record.score.units) {
+      const rules = authored.units.find((u) => u.id === unit.id)?.predicates ?? []
+      const values = rules.map((rule) => rule.slice(rule.indexOf('=>') + 2).trim())
+      assert.ok(
+        values.includes(String(unit.value)),
+        `${unit.id} recorded ${JSON.stringify(unit.value)}, which no rule of its own authors`,
+      )
+    }
   })
 
   test('reached_clock is non-null and equals the last non-null beat clock (decision 6 / D-4)', async () => {
