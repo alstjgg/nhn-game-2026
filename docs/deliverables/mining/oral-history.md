@@ -173,5 +173,104 @@ the pre-repo period and for causal ordering between decisions.
 
 ---
 
+## OH-3 — 윤석, project account by memory (independent / blind)
+
+- **Given:** 2026-08-05, in-session. Written from memory **independently** —
+  윤석 did *not* read OH-1/OH-2 and was deliberately *not* handed the interview
+  prompts, so his recall is uncontaminated. Divergence from 민서's account is
+  therefore signal, not error.
+- **Covers:** the whole build method, organized by activity —
+  대화 / 검증 / 구현 / 재미 (planning · verification · implementation · fun) —
+  rather than chronologically. A *process* account; complements 민서's
+  chronological OH-1/OH-2.
+- **Nature:** reconstructed from memory; ranks below written sources on conflict.
+
+> 1. 대화
+> 에이전트는 기획을 정리하고, 스펙을 제안하고, 팀원의 PR을 요약·분석해줬다.
+> 게임 기획서도 스펙 명세도 처음 써보는 문서였기 때문에 작성 자체는 에이전트에게 맡겼다. 대신 무엇이 잘 쓴 기획서이고 잘 쓴 스펙인지를 먼저 조사하게 했다 현업에서 통용되는 양식을 근거로 가져오게 한 뒤, 그 위에서 쓰게 했다.
+> 나는 의문이 드는 점을 계속 질문하고, 내 의견에 반박을 요구하면서 기획과 스펙을 채워갔다. 그렇게 게임의 기반을 다졌다.
+> 앞선 데모 3개의 실패 경험이 있었기 때문에, 빠르게 구현하는 쪽보다 기획 단계에 시간을 더 쓰는 쪽을 택했다. 놓친 게 없는지 꼼꼼히 확인하는 데 시간을 더 할당했다.
+>
+> 2. 검증
+> 실시간성과 반응성은 게임의 큰 재미 요소다.
+> 이 게임의 핵심 로직에는 LLM이 실시간으로 상황을 판단해 결정을 내리고, 캐릭터의 대사와 그 근거를 생성하는 부분이 있다.
+> LLM이 똑똑하다는 건 모두가 안다. 가장 좋은 모델에 가장 높은 추론을 시키면 정확하고 퀄리티 높은 답을 내놓는다. 하지만 거기서 오는 지연성이 게임의 재미를 반감시킨다. 그래서 계속 고민했다.
+> 인프라를 어떻게 구성해야 지연이 줄어드는가? 어떤 모델을 써야 하는가? 가장 가벼운 모델은 빠르겠지만, 프롬프트의 의도대로 동작한 뒤 자연스러운 응답까지 내놓는가?
+> 고성능 모델은 항상 좋은 응답을 주는가? 그 지연을 감당할 만큼의 값어치가 있는가? 지연성을 게임의 일부분으로 자연스럽게 풀어낼 수 있을까?
+> LLM API의 지연 시간은 질문의 수준과 입출력 토큰에 따라 천차만별이다. 문서를 참조하거나 예측할 수 있는 값이 아니어서, 직접 테스트해보는 수밖에 없었다.
+> 데모 버전으로 만든 게임 시나리오와 프롬프트는 그대로 두고, 모델과 추론 강도만 바꿔가며 측정했다. 에이전트가 만든 테스트 환경을 내가 승인했고, 에이전트는 수십에서 수백 번의 런을 자동으로 돌려 결과를 정리해줬다.
+> 나는 응답 문장의 퀄리티와 측정된 시간을 함께 보고, 지연과 퀄리티 사이에서 최선이라고 판단되는 모델을 직접 골랐다.
+> 에이전트 없이 기획부터 측정, 검증까지 갔다면 일주일은 걸렸을 일을 반나절 만에 결정했다.
+>
+> 3. 구현
+> 잘 작성된 기획서를 바탕으로로 PRD(Product Requirements Document)를 한 번 더 썼다. 에이전트가 잘 이해하도록 요구사항과 산출물, goals, test를 '명확히' 서술하는 문서다.
+> 명세는 기능 단위로 10~20개의 세부 작업으로 쪼갰다.
+> 코드는 그 명세를 바탕으로 작업 플로우를 정의하고, 서로 영향받지 않는 작업을 병렬로 굴리는 하네스에게 맡겼다. 명세대로 정확히 구현됐는지 판단한 뒤 에이전트 4개가 리뷰를 남기고, 수정과 재검토를 반복한다.
+> 이 모든 과정이 git 저장소에 커밋과 PR, 코멘트로 남는다. 에이전트들의 의사결정 과정을 투명하게 확인할 수 있다.
+> 에이전트가 백그라운드에서 도는 동안 나는 잠을 자거나 문서 작업을 했다. 유능한 '개발팀'을 고용한 것에 가까운 경험이었다.
+>
+> 4. 재미
+> 이 게임의 첫인상은 그냥 '텍스트 추리게임'이다. 거기에 LLM의 재미를 더했다.
+> 플레이어는 게임에서 발견한 사실과 LLM이 써낸 캐릭터의 생각을 근거로, 자기 캐릭터의 다음 행동에 프롬프트를 주입한다. 캐릭터는 그 프롬프트를 바탕으로 다음 행동을 결정한다.
+> LLM에게 모든 행동과 판단을 위임하면 자유도가 엄청나게 높아진다. 대신 예상한 스토리라인을 벗어날 수 있고, 할루시네이션이 게임의 개연성을 해칠 수 있다. 그렇다고 LLM을 단순 대사 생성 정도로만 제한하면, 일반 텍스트 추리게임과 다를 게 없어진다.
+> 그 합의점을 찾는 데 계속 공을 들였다. 꼼꼼히 설계한 시나리오 게이트를 깔아 에이전트가 그 밖으로 탈출하지는 못하게 하되, 플레이어는 자기가 프롬포팅한 에이전트가 자유롭게 선택하며 스토리를 끌고 간다고 느끼도록 설계했다. 열린 환경과 닫힌 환경이 자연스럽게 이어지도록 만들려고 노력했다.
+
+### What this uniquely adds (not in OH-1/OH-2, or so far any repo doc)
+
+1. **Latency as a first-class design problem (§2) — entirely 윤석's.** Best
+   model + highest reasoning = quality, but its latency "재미를 반감시킨다."
+   Method: hold the demo scenario+prompts fixed, vary only model + reasoning
+   strength, measure; agent builds the test env → human approves it → agent runs
+   수십~수백 runs and tabulates → human picks the model on quality×latency
+   together. "일주일 걸렸을 일을 반나절 만에 결정했다." This is lane-1 +
+   measurement from the operator's chair, and "지연성을 게임의 일부분으로
+   자연스럽게 풀어낼 수 있을까" ties directly to CLAUDE.md's latency-hides-in-
+   natural-pauses rule.
+2. **"Research the standard first, then write on top" (§1).** Made the agent
+   pull 현업 통용 양식 for design-doc/spec *before* drafting. Concrete lane-3
+   technique for delegating a document type you've never written.
+3. **Adversarial working style — "내 의견에 반박을 요구하면서."** The human
+   demands rebuttals to his *own* opinions. The distrust spine, from the human
+   side, as a deliberate practice.
+4. **Demo failures → deliberately front-load planning (§1).** "빠르게 구현하는
+   쪽보다 기획 단계에 시간을 더" — the three demo failures bought a process
+   lesson that shaped DDAY's slower, spec-first cadence.
+5. **Operator's-eye view of the harness (§3):** PRD → 10~20 sub-tasks → parallel
+   harness → 4-agent review → transparent git trail; "유능한 '개발팀'을 고용한
+   것에 가까운 경험." Corroborates the super-pipeline atoms (S5/S9) from outside
+   the machine.
+
+### Cross-account: agreements & divergences vs 민서 (OH-1/OH-2)
+
+- **Strong independent corroboration — the "illusion of freedom" sweet spot.**
+  §4 ("플레이어는 … 자유롭게 선택하며 스토리를 끌고 간다고 느끼도록", "열린 환경과
+  닫힌 환경이 자연스럽게 이어지도록") independently matches 민서's clarification
+  (closed graph + scenario gates; freedom as *designed* illusion). Two narrators,
+  no contact, same mechanism → the deliverable's central design claim is
+  well-founded, not one person's gloss.
+- **Divergence — the in-game-AI decision's valence.** OH-2 frames the membrane
+  as a *compromise* between 민서 (against in-game AI) and 윤석 (for it). OH-3
+  doesn't mention a disagreement at all — 윤석 presents the LLM-in-game sweet
+  spot as the shared goal. Same decision, different emotional memory (concession
+  vs consensus). Neither is "wrong"; the gap itself is the finding. → Round-1.
+- **Persistent oral-vs-written divergence — "3 demos."** Both 민서 (OH-2) and
+  윤석 (OH-3, "데모 3개의 실패") remember *three* demos; the written record
+  (S1/S4/S8) shows only *two* BUILT (apothecary, darkest-context; Doodle Life
+  cut pre-build). Two independent memories agree with each other but not the
+  repo → resolve (did a third demo exist in some form, or is "3" the
+  concept-track count remembered as demos?).
+
+### Round-1 corroboration hooks (now that three accounts exist)
+
+- in-game-AI valence (compromise vs consensus) — 민서 & 윤석 differ → joint pass.
+- "3 demos" vs 2 built — both oral accounts vs the written record.
+- latency-measurement story (§2) — check S8 probe/mechanism atoms + the S9b
+  latency-budget atoms corroborate the half-day claim and the vary-model-only
+  method.
+- "research standard format first" (§1) — check S1/S6 for an industry-format-
+  grounded design doc / spec.
+
+---
+
 *To add an account: append an OH-n section in the same shape — verbatim block,
 provenance, unique-adds, corroboration hooks.*
