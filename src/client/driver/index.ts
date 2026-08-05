@@ -28,6 +28,11 @@ export { demoRun } from './demo-run.ts'
 
 export { createRunLoopDriver, demoRunLoop } from './run-loop.ts'
 
+// The live desk. Same seam, same `FixtureDriver` shape — the windows cannot
+// tell which one they are bound to, which is what §5.2 was ratified for.
+export { createLiveRunDriver } from './live/index.ts'
+export type { LiveRunDeps } from './live/index.ts'
+
 export {
   freezeAnimations,
   thawAnimations,

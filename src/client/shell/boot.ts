@@ -6,7 +6,7 @@
 // window bodies stay empty here, [u3 · c10]), never computes the time (the
 // driver's clock is the only clock, [u3#c3]) and never counts runs (the `meta`
 // event does, spec-client §5.2 amendment d).
-import { createRunLoopDriver, demoRunLoop, installClockHook } from '../driver/index.ts'
+import { createLiveRunDriver, createRunLoopDriver, demoRunLoop, installClockHook } from '../driver/index.ts'
 import { placeholderBootRun } from './boot-run.ts'
 import type { ClockHook, ClockRate, FixtureDriver, Frame } from '../driver/index.ts'
 import { createGameClock } from '../components/game-clock.ts'
@@ -62,6 +62,37 @@ function lapseDrill(): boolean {
   return new URLSearchParams(window.location.search).get('drill') === LAPSE_DRILL
 }
 
+/**
+ * The live desk, or `null` if it cannot be opened.
+ *
+ * Every DOM-shaped input the wiring needs is read HERE and handed down: modules
+ * under `src/client/driver/` are held free of `document`, `window.` and the
+ * frame callback by `tests/driver/import-direction.test.ts (j)`, so the base
+ * URL, `fetch` and `sessionStorage` cross that line as arguments.
+ *
+ * A failure is caught rather than thrown. The pack fetch is the only thing here
+ * that can fail, and a judge who opens the page during a bad deploy should get a
+ * booted desk with no run in it — not a blank page and a console trace. An unset
+ * `VITE_PROXY_BASE_URL` is NOT a failure (contract-calls §11): the transport
+ * degrades to its fixture provider and the desk still plays.
+ */
+async function openLiveDesk(identity: ScenarioIdentity): Promise<FixtureDriver | null> {
+  try {
+    return await createLiveRunDriver({
+      baseUrl: document.baseURI,
+      fetch: (url, init) => window.fetch(url, init),
+      storage: window.sessionStorage,
+      slug: identity.slug,
+      start: identity.start,
+      end: identity.end,
+      proxyBaseUrl: import.meta.env.VITE_PROXY_BASE_URL ?? null,
+    })
+  } catch (cause) {
+    console.error('live desk unavailable — falling back to the placeholder', cause)
+    return null
+  }
+}
+
 function renderIdentity(identity: ScenarioIdentity): void {
   must('#portalName').textContent = PORTAL.portal
   must('#portalCode').textContent = PORTAL.portalCode
@@ -94,10 +125,18 @@ export async function bootShell(): Promise<void> {
   // The loop opens on the run the tab left off at (§7 #8): the persisted `meta`
   // is read here, before the driver exists, because the opening `meta` of
   // `runs[0]` would otherwise land in the same tick and overwrite the restore.
-  const driver = createRunLoopDriver(
-    (await demoRunLoop({ withoutReports: lapseDrill() })) ?? [placeholderBootRun(identity)],
-    { openAt: restoredRun() },
-  )
+  //
+  // Three drivers, one shape. The fixture loop wins in DEV because that is what
+  // the e2e suite drives and what `?drill=` exercises; the LIVE desk is what a
+  // player build gets, since `demoRunLoop` answers `null` there (§5.4) and the
+  // fixtures tree-shake out. The placeholder is the floor: a pack that will not
+  // load must still leave a booted desk rather than a blank page.
+  const fixtures = await demoRunLoop({ withoutReports: lapseDrill() })
+  const driver =
+    fixtures !== null
+      ? createRunLoopDriver(fixtures, { openAt: restoredRun() })
+      : ((await openLiveDesk(identity)) ??
+        createRunLoopDriver([placeholderBootRun(identity)], { openAt: restoredRun() }))
 
   // 3 — the chrome the driver feeds.
   const clock = createGameClock({
