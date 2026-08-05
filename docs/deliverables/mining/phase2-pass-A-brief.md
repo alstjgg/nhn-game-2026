@@ -1,5 +1,14 @@
 # Phase 2 · Pass A — theme induction sharded BY SLICE
 
+> **Executed 2026-08-05.** Output: `theme-map-passA.md` — 141 candidate themes folded
+> to 66, all 905 atoms read in full. This brief is kept as the record of what Pass A
+> was told, so its wording is deliberately *not* updated after the fact. Two things in
+> it are known to be stale: the track no longer runs in the `../nhn-game-2026-deliverables`
+> worktree (it is a branch in the main checkout), and its claim that PRs #110/#116 are
+> absent from the atoms is wrong for S9b — Pass A caught this itself and says so in its
+> own header. Also standing for any re-run: CLAUDE.md hard rule 1 — a session may run on
+> a corporate AI subscription, but no corporate identifier may appear in anything written.
+
 You are running **Pass A** of Phase 2 of the deliverable-mining track. Read this
 whole file before doing anything. It is written to be your only context — assume
 you know nothing about this project.

@@ -4,10 +4,13 @@ You are running **Pass B** of Phase 2 of the deliverable-mining track. Read this
 whole file before doing anything. It is written to be your only context — assume
 you know nothing about this project.
 
-**A separate session is running Pass A at the same time.** It shards the same
-atoms by corpus *slice*; you shard by *lane*. Do not read
-`theme-map-passA.md` even if it exists — your independence is the entire point
-of running two passes. A third reconciliation step compares you afterwards.
+**Pass A has already run.** It sharded the same atoms by corpus *slice*; you
+shard by *lane*. Its output sits in this directory as `theme-map-passA.md`.
+**Do not open it. Do not grep it. Do not let a sub-agent read it.** Your
+independence is the entire point of running two passes — a third reconciliation
+step compares the two maps afterwards, and it has nothing to compare if you have
+already seen one. If you find yourself reaching for it, that is the failure mode
+this line exists to stop.
 
 ## Where you are
 
@@ -15,11 +18,19 @@ Repo: `nhn-game-2026`, a competition entry for the NHN AI Game Competition
 (deadline 2026-08-10). Two people build a web game (**DDAY**, a text deduction
 game); *how the team orchestrated AI* is judged alongside the game itself.
 
-You are in a git worktree at `../nhn-game-2026-deliverables`, on branch
-`deliverables/mining`. **Work only inside `docs/deliverables/mining/`.** Do not
-touch game code, do not switch branches, do not go near
-`super/20260803-213143` or the main checkout — other sessions are building the
-game in parallel right now.
+You are in the repo checkout at `~/Documents/GitHub/nhn-game-2026`, on branch
+`deliverables/mining` (the separate worktree this track used earlier is gone —
+if a doc still mentions `../nhn-game-2026-deliverables`, it is stale). **Work
+only inside `docs/deliverables/mining/`.** Do not touch game code, do not switch
+branches, do not go near `super/20260803-213143`.
+
+**Account rule — hard, read it before your first tool call.** This session may be
+running on a corporate AI subscription. Nothing you write may reveal that. No
+corporate account name, username, email, domain, hostname, machine name, ticket
+id, or internal-tool reference in your output file, in any commit message, or
+anywhere else — see CLAUDE.md hard rule 1. Some atoms *discuss* the personal-vs-
+corporate identity rule as evidence; quoting that is fine and expected. Naming an
+actual corporate identifier is not.
 
 ## What this track is for
 
