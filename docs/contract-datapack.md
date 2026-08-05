@@ -177,20 +177,24 @@ node authoring/lint-datapack.mjs data/scenario/<slug>
   keys are positional, so the compiler's double guard (`time` + `text_head`
   `startsWith`) dies on a mismatch. See the boxed note in §2.
 
-### 3.6 Hardening the predicates — the direction, not the law
+### 3.6 Hardening the predicates
 
 F1/F3/F4 all name the same missing thing: a machine-readable form for a
-condition over run state. Nothing evaluates one today, and
-`authoring/compile-datapack.mjs:489` hardcodes `predicates: []`, so this is a
-**recommendation recorded where the flags are** — a reader who reaches F3
-should not have to re-derive it. It binds nothing until it is implemented.
+condition over run state.
+
+**The reader exists** — `src/shared/predicates.ts`, with the grammar below.
+Nothing AUTHORS one yet: `authoring/compile-datapack.mjs:489` hardcodes
+`predicates: []`, so every pack still lints as hardening-incomplete. This
+section is what a predicate must look like when that stops being true, and what
+the reader will do with it.
 
 **One language, five slots.** `score.predicates` · `edge_predicates` ·
 `availability` · `extra_condition` · a place yield's `depth_note` are the same
-question asked five times. The slot is already ratified as `string[]`
+question asked five times, and one module answers all five so the grammar has a
+single definition. The slot is already ratified as `string[]`
 (`score.schema.json`), so a grammar that fits inside a string needs no schema
 revision — which matters, because `data/scenario/_schema/` is under the live
-frozen-input guard. A shape recommended for that string:
+frozen-input guard. The form:
 
 ```
 condition            — the F1/F4 form: evaluates to a boolean
@@ -199,10 +203,30 @@ condition => value   — the F3 form: evaluates to a tally value
 ```
 
 with `condition` a conjunction of flag / `not flag` / `scalar <cmp> integer`
-over ids the pack itself declares, so lint can resolve every identifier against
-the compiled pack. Alternation is a second line rather than an `or`: it forces
-the author to order the branches, and it keeps a predicate readable in the
-draft table cell it is authored in.
+over ids the pack itself declares. Identifiers are lower snake_case and `not` is
+the one keyword, so it is not a name. Alternation is a second line rather than
+an `or`: it forces the author to order the branches, and it keeps a predicate
+readable in the draft table cell it is authored in.
+
+Lint reads the grammar THROUGH the reader — `identifiers()` for name resolution
+against the compiled pack, `problems()` for syntax — rather than carrying a
+second copy of it. A grammar with two implementations is two grammars.
+
+**The reader never throws.** A malformed predicate is `false`, and a malformed
+rule inside a `predicates` array is skipped so the rules after it still get
+their turn. Rejecting bad authoring is lint's job, at authoring time; a
+predicate is evaluated at the close of the day on the player's build, and a
+parse error there must cost one row rather than the run. (`clock.ts`'s `mm()`
+threw on the authored `21:04+`, the throw unwound through a subscriber into the
+driver's `step()`, and the day ended with no `run_end` and no tally at all —
+PR #141.)
+
+**An absent name is false, and the two absences differ.** An unset flag is not
+in the state at all — the engine writes one only when something sets it — so
+absent MEANS false and `not caller_named` reads correctly on a run that never
+reached G4. An absent scalar is a meter that was never bound (F2), and a term
+naming one is false rather than zero: reading it as 0 would let `fear < 10`
+match a variable that does not exist.
 
 **Flags are available now; scalars are not.** F2 is a prerequisite of F3, which
 is why `status.md` puts meter binding first: on 우는다리 only 서지형's two

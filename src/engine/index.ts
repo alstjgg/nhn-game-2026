@@ -49,6 +49,7 @@ import type {
   Stance,
 } from '../shared/contracts.ts'
 import type { Symptoms, Temperament } from '../shared/datapack.ts'
+import type { PredicateState } from '../shared/predicates.ts'
 
 import { buildSchedule, createBeatDriver } from './beat/index.ts'
 import type {
@@ -156,6 +157,17 @@ export interface EngineHandle extends Engine {
   advance(): boolean
   /** This beat's delta journal so far, in application order. Resets on `advance()`. */
   journal(): DeltaEntry[]
+  /**
+   * Every scalar and flag the run holds right now, flattened.
+   *
+   * The state core has answered this since e3 (`StateCorePort.snapshot()`); it
+   * was simply never on the handle, so nothing outside the beat driver could
+   * ask. `src/shared/predicates.ts` is what wants it — a predicate reads the
+   * run's state and the run's state is here — and reading is all it can do:
+   * the returned object is a fresh copy, so a caller cannot write state through
+   * the accessor that was added to observe it.
+   */
+  snapshot(): PredicateState
 }
 
 /** spec-engine §5's substitute report body — used when Call 3 never lands. */
@@ -264,6 +276,8 @@ export function createEngine(deps: EngineDeps): EngineHandle {
     feed: (): FeedLine[] => [...lines],
 
     journal: (): DeltaEntry[] => core.port.journal(),
+
+    snapshot: (): PredicateState => core.port.snapshot(),
 
     submitStance(response: JudgmentResponse | null): void {
       const beat = beatNow()
