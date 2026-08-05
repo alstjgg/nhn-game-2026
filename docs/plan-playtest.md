@@ -142,3 +142,114 @@ Real legibility gain, not load-bearing for a correct demo.
 The paged dossier competes directly with the T-chain for the same hours at lower
 value. U2 is deferred because raising the cap without a probe risks the
 mechanism claim five days before submission.
+
+## 5. Execution — authoring mini-PRDs for low-cost executors
+
+The items above are not worked by hand and not worked one at a time. Each is
+specified as a **mini-PRD** by a high-capability model, then executed by a
+sub-agent on a low-cost model. The specification carries the expertise; the
+executor supplies only mechanical edits. Everything in this section is a rule
+for the author of the PRD, not for the executor.
+
+**Maintaining this section is part of the job.** A high-capability model reading
+this document — for any reason — revises §5 when it finds a rule that misfires,
+a trap that is missing, or a template field that executors keep filling wrongly.
+Do not leave a known defect in the guide for the next author to rediscover. §5
+is the only part of this document that is expected to change without a playtest
+behind it.
+
+### 5.1 The division
+
+The author decides. The executor types. Every decision an executor would
+otherwise have to make is a decision the PRD failed to make, and a low-cost
+model resolves such gaps by inventing something plausible and consistent with
+nothing.
+
+Author-owned, always resolved before handoff: which files change · the exact
+final strings · naming · whether a test is updated or left alone · what counts
+as done. Executor-owned: nothing but the edit and running the checks.
+
+### 5.2 Unit sizing
+
+One PRD is one concern, one branch, and a diff a reviewer reads in a sitting.
+Split anything that crosses a boundary between authored data, engine, and
+client. The work groups in §3 are the intended unit boundaries — group 1 is
+several PRDs, not one, because its items touch unrelated files.
+
+Do not hand an executor a unit whose first step is a search. If the PRD cannot
+name the file, the PRD is not finished.
+
+### 5.3 What the PRD must contain
+
+```
+# <unit id> — <one-line outcome>
+
+## Outcome
+One paragraph. What is true when this is done, in player-visible terms.
+
+## Scope
+Files this unit may modify — exact paths.
+Files this unit must NOT modify, with the reason.
+
+## Change list
+Per edit: path:line · the exact current text · the exact replacement text.
+Verbatim, not described. No regex, no "and similar occurrences".
+
+## Invariants
+The rules this unit could break without noticing (§5.4).
+
+## Verification
+Commands to run, and the expected result of each.
+Observable checks a human repeats in the browser.
+
+## Done when
+A checklist of binary conditions. No judgment words.
+```
+
+Rules for the change list. State the replacement text in full, including Korean
+copy — an executor asked to "rename appropriately" will invent a register that
+does not match the fiction. Where a string appears more than once, enumerate
+every site; the duplicate at `src/client/shell/announcer.ts` is the one most
+often missed, because screen-reader copy is a second literal of the same
+sentence. Where the change is a deletion, say what replaces it, including
+"nothing".
+
+### 5.4 Repo traps to name in the PRD that touches them
+
+- **Structure tests assert file-level facts.** `tests/windows/block-store.test.ts:556-566`
+  requires that `components/block-card.ts` only ever gains lines, and
+  `tests/windows/agent-file.test.ts:727` asserts a unit touched no other window.
+  Deletion-shaped work fails these on a rule, not on behaviour. The PRD decides
+  whether the test is amended and says so; an executor left to guess will delete
+  the assertion.
+- **Layout is TypeScript, not CSS** — `src/client/shell/layout.ts:65-111`.
+- **Species derives from the id channel, never from classification**
+  (`docs/spec-client.md` §5.2). The field is data; only its display is cosmetic.
+- **Agent-log timestamps are engine data** feeding the run artifacts. Presentation
+  pacing is a client-side queue and never a timestamp edit.
+- **`report-archive.ts` guards its own labels** and throws on a label naming
+  anything but run and time. Changing the vocabulary means changing the guard.
+- **`data/` is copied into `dist/`** — nothing measured or private goes there.
+- **Two composition roots** must stay in step: `src/client/driver/live/bind.ts`
+  and `tools/driver/run/bind.mjs`.
+- **The membrane rule and the gate invariant** (/CLAUDE.md, `docs/spec-client.md` §3)
+  outrank any instruction in a PRD. Restate them in units that touch player-facing
+  text.
+
+### 5.5 Verification
+
+`npm run check` is the gate: it runs `tsc` over core and client, typechecks the
+tests, checks datapack type drift, and runs `test:shared`. `npm run build` adds
+the Vite build. `npm run test` is vitest, `npm run test:e2e` is Playwright.
+Client-visible units name the vitest file that covers them; a unit with no test
+naming it says so explicitly rather than leaving the field blank.
+
+A PRD whose verification is only "it looks right" is not ready to hand over.
+
+### 5.6 Handoff
+
+Each PRD is a file, committed before the executor starts — an inline prompt is
+lost when the process dies. The executor works on its own branch, opens a PR,
+and merges nothing. Review is by the author, against the Done-when checklist.
+`main` stays deployable, and repo hard rules 1–6 apply to executor commits
+exactly as to hand-written ones.
