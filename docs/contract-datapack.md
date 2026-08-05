@@ -177,6 +177,101 @@ node authoring/lint-datapack.mjs data/scenario/<slug>
   keys are positional, so the compiler's double guard (`time` + `text_head`
   `startsWith`) dies on a mismatch. See the boxed note in §2.
 
+### 3.6 Hardening the predicates
+
+F1/F3/F4 all name the same missing thing: a machine-readable form for a
+condition over run state.
+
+**The reader exists** — `src/shared/predicates.ts`, with the grammar below.
+Nothing AUTHORS one yet: `authoring/compile-datapack.mjs:489` hardcodes
+`predicates: []`, so every pack still lints as hardening-incomplete. This
+section is what a predicate must look like when that stops being true, and what
+the reader will do with it.
+
+**One language, five slots.** `score.predicates` · `edge_predicates` ·
+`availability` · `extra_condition` · a place yield's `depth_note` are the same
+question asked five times, and one module answers all five so the grammar has a
+single definition. The slot is already ratified as `string[]`
+(`score.schema.json`), so a grammar that fits inside a string needs no schema
+revision — which matters, because `data/scenario/_schema/` is under the live
+frozen-input guard. The form:
+
+```
+condition            — the F1/F4 form: evaluates to a boolean
+condition => value   — the F3 form: evaluates to a tally value
+=> value             — F3's fallback; last line only, first match wins
+```
+
+with `condition` a conjunction of flag / `not flag` / `scalar <cmp> integer`
+over ids the pack itself declares. Identifiers are lower snake_case and `not` is
+the one keyword, so it is not a name. Alternation is a second line rather than
+an `or`: it forces the author to order the branches, and it keeps a predicate
+readable in the draft table cell it is authored in.
+
+Lint reads the grammar THROUGH the reader — `identifiers()` for name resolution
+against the compiled pack, `problems()` for syntax, `hasValue()` for slot form
+(`=> 24` is a well-formed F3 rule that `problems()` rightly accepts, yet in a
+boolean slot it is a defect `holds()` papers over by ignoring the value) —
+rather than carrying a second copy of it. A grammar with two implementations is
+two grammars.
+
+**The reader never throws.** A malformed predicate is `false`, and a malformed
+rule inside a `predicates` array is skipped so the rules after it still get
+their turn. Rejecting bad authoring is lint's job, at authoring time; a
+predicate is evaluated at the close of the day on the player's build, and a
+parse error there must cost one row rather than the run. (`clock.ts`'s `mm()`
+threw on the authored `21:04+`, the throw unwound through a subscriber into the
+driver's `step()`, and the day ended with no `run_end` and no tally at all —
+PR #141.)
+
+**An absent name is false, and the two absences differ.** An unset flag is not
+in the state at all — the engine writes one only when something sets it — so
+absent MEANS false and `not caller_named` reads correctly on a run that never
+reached G4. An absent scalar is a meter that was never bound (F2), and a term
+naming one is false rather than zero: reading it as 0 would let `fear < 10`
+match a variable that does not exist.
+
+**Flags are available now; scalars are not.** F2 is a prerequisite of F3, which
+is why `status.md` puts meter binding first: on 우는다리 only 서지형's two
+meters are bound (`trust`, `fear`), and the other six characters' twelve meters
+carry `variable: null`. A scalar term can name nothing else until that lands,
+so a predicate set written today is a set written over flags. That is not a
+hardship — the structural gates already emit their outcome as flags, and the
+causal gates emit deltas whose *consequences* surface as flags downstream.
+
+**Disaster flags are not conditions.** `bridge_collapsed` · `crowd_on_bridge` ·
+`logs_destroyed` · `kang_detained` · `caller_arrested` are set by timeline
+events that fire unconditionally, so they do not mean "the bridge fell" — they
+mean **the day reached its end**, and a predicate that branches on one branches
+on nothing. Branch on the INTERVENTION flags instead (`cancel_requested` is
+what "the bridge did not fall" looks like in state). Making the timeline's own
+effects conditional is a different change — `effects` is
+`additionalProperties: false` over `deltas` and `flags` — and it belongs with
+F1, which governs narration rather than scoring.
+
+**The tally's headline is a sum, so the value type carries the axis.** §5.2's
+`score` event pairs one `total: number` with rows whose value is
+`string | number` (amendment g), and `windows/tally.ts` labels that total 사망 ·
+명. That gives the arithmetic for free if authoring holds one rule: **a numeric
+unit value counts toward the headline; a string one is a row that reads and
+does not sum.** So death tallies are numbers and everything else — an outcome,
+an injury count, a detention length — is a string. On 우는다리 the
+no-intervention run then totals 24 + 1 + 1 = 26, which is what
+`score.json`'s own `baseline_summary` says.
+
+**Two gaps predicates alone will not close**, found while drafting against
+우는다리 and worth knowing before the hardening pass starts:
+
+- **G5 is one flag short.** Score unit u6 wants four outcomes (소실 / 사본만 /
+  원본 확보 / 원본+증언) and G5's buckets set only `logs_saved` and
+  `insider_testimony` — three distinguishable states. The `paperwork` bucket
+  needs a flag of its own before "사본만" is expressible. Hardening adds flags,
+  not just predicates.
+- **부상 has no unit.** `baseline_summary` counts 부상 71 and no score unit
+  tallies it, so it can only reach the tally as prose inside another unit's
+  label. It wants a unit of its own, with a string value so it stays out of the
+  사망 sum.
+
 ## 4. Related documents
 
 - Transformation chain and stage ownership: [`plan-pipeline.md`](./plan-pipeline.md) §2

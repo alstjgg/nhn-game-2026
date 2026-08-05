@@ -54,7 +54,7 @@ export interface MetaState {
 
 export interface ScoreState {
   total: number
-  rows: { label: string; value: number }[]
+  rows: { label: string; value: string | number; baseline: string | number | null }[]
 }
 
 export interface RunState {
@@ -146,8 +146,15 @@ export function reportEvent(round = 3): ViewEvent {
   return { type: 'report', round, facts: [], report_body: [] }
 }
 
-export function scoreEvent(total = 7, rows: { label: string; value: number }[] = []): ViewEvent {
-  return { type: 'score', total, rows }
+export function scoreEvent(
+  total = 7,
+  rows: { label: string; value: string | number; baseline: string | number | null }[] = [],
+  baselineTotal = total,
+): ViewEvent {
+  // `baselineTotal` defaults to `total` so every existing caller keeps asserting
+  // what it asserted: a ledger that changed nothing. A test about the DELTA
+  // passes its own (§5.2 amendment h).
+  return { type: 'score', total, baseline_total: baselineTotal, rows }
 }
 
 export function runEndEvent(run = 3): ViewEvent {

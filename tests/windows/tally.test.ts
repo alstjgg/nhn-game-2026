@@ -295,11 +295,15 @@ describe('[u7#c4] digits are score only', () => {
   it('(a) the score reducer copies total and rows verbatim — no client arithmetic', async () => {
     const m = await runState()
     const rows = [
-      { label: 'a', value: 200 },
-      { label: 'b', value: 7 },
+      { label: 'a', value: 200, baseline: 200 },
+      { label: 'b', value: 7, baseline: 7 },
     ]
-    const state = m.reduce(m.initialRunState(), scoreEvent(7, rows))
-    expect(state.score).toEqual({ total: 7, rows })
+    const state = m.reduce(m.initialRunState(), scoreEvent(7, rows, 26))
+    // `baselineTotal` rides across with the rest (§5.2 amendment h) — copied,
+    // never derived. The claim is still "no client arithmetic": the reducer may
+    // not compute 26 from the rows, and here it could not, because the rows sum
+    // to 207.
+    expect(state.score).toEqual({ total: 7, baselineTotal: 26, rows })
   })
 
   it('(b) the headline lands exactly on the event total — the count-up invents no number', async () => {
@@ -437,7 +441,7 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
     expect(state.phase).toBe('tally')
     expect(state.score, 'TALLY opened with a score already in hand — nothing was absorbed').toBeNull()
 
-    state = m.reduce(state, scoreEvent(7, [{ label: 'a', value: 1 }]))
+    state = m.reduce(state, scoreEvent(7, [{ label: 'a', value: 1, baseline: 1 }]))
     expect(state.score).not.toBeNull()
   })
 
@@ -511,7 +515,7 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
 
     state = m.reduce(state, reportEvent(2))
     state = m.reduce(state, runEndEvent(3))
-    state = m.reduce(state, scoreEvent(7, [{ label: 'a', value: 1 }]))
+    state = m.reduce(state, scoreEvent(7, [{ label: 'a', value: 1, baseline: 1 }]))
     expect(state.phase).toBe('tally')
     expect(state.report, 'the round the seam filed was rewritten to the run number').toBe(2)
     expect(m.hasFiledReport(state), 'RUN 03 filed round 2 and the desk did not count it — the hold hangs').toBe(true)

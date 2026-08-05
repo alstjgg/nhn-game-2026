@@ -33,7 +33,13 @@ const FROZEN_SUITES: Readonly<Record<string, string>> = {
   // RE-PINNED (C17): the client run (PR #110) rewrote this suite after u2 landed
   // it. A14's claim is "e7 does not rewrite them", so the pin moves to what main
   // carries; only a change made HERE can fail it.
-  'replay-order.test.ts': 'b5ab5cbbb8dfaf69bc11c009e92aadc09af1ab28c7940d4ff9d6d621dc4d4934',
+  //
+  // RE-PINNED AGAIN (2026-08-05, §5.2 amendment h). Not a rewrite: the suite's
+  // one `score` event literal gained the `baseline` the seam now requires, and
+  // a required field is not something a fixture may decline. The alternative
+  // was an optional field on a ratified seam so that a test would not have to
+  // move, which is the tail wagging the contract.
+  'replay-order.test.ts': '3f75d95ca65b515bff0b7611a78aac177549f779cf192de67ea9458bdb8f62ba',
   'seam-leak-guard.test.ts': 'a9d72c720ceadf16ee01c87609628dcde808247265b1e1097093c0b47c0f4bf0',
   'seam-shapes.test.ts': '72f3f3866c8c552b16fa47fd1d843d2031eeabb3596f8e71c74de96f4c18e993',
 }
@@ -83,6 +89,10 @@ describe('[e7#A14] the existing tests/driver seam suites are untouched', () => {
     // pack, offline) rather than asserting anything about it, which is why it
     // is registered here rather than named `engine-*`.
     'live-desk.test.ts',
+    // The scorer: `score.json`'s units read against the state a run ended in.
+    // It reads the engine's snapshot rather than asserting anything about the
+    // engine, and it is `src/driver/`'s composition-facing half, not e7's.
+    'scorer.test.ts',
   ])
 
   it('(b) everything e7 added under tests/driver is named `engine-*`', () => {
