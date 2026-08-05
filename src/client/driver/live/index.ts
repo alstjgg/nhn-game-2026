@@ -99,8 +99,20 @@ export async function createLiveRunDriver(deps: LiveRunDeps): Promise<FixtureDri
   const first = openRun(begun.carried, begun.run)
   let current = begun.run
 
+  /**
+   * `runs_left` is `max(0, total - run_count)` and `startRun` is what moves
+   * `run_count`, so during the last run this already reads 0 — the same
+   * expression `next()` checks after `endRun`, which does not move it either.
+   * Asking here is what lets the refusal ride the op's own answer.
+   */
+  const canOpenNext = (): boolean => {
+    const meta = runLoop.metaEvent()
+    return meta.type === 'meta' && meta.runs_left > 0
+  }
+
   return createLiveAdapter({
     first,
+    canOpenNext,
     async next(close: RunClose): Promise<BoundRun | null> {
       runLoop.endRun({
         runId: runIdOf(deps.slug, current),

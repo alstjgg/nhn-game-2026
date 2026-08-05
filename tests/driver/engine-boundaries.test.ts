@@ -67,7 +67,18 @@ describe('[e7#A14] the existing tests/driver seam suites are untouched', () => {
   // negation now sweeps up files this unit never wrote. Named explicitly rather
   // than widened to a pattern: the claim is about e7's OWN additions, and a
   // pattern would stop noticing a stray non-`engine-*` file from this unit.
-  const CLIENT_RUN_SUITES = new Set(['clock-hook-determinism.test.ts', 'run-loop-continuity.test.ts'])
+  //
+  // Every entry is a deliberate registration, which is the point — a new suite
+  // under this directory has to be claimed by somebody before the gate goes
+  // green again.
+  const CLIENT_RUN_SUITES = new Set([
+    // PR #110, the client run's own seam suites.
+    'clock-hook-determinism.test.ts',
+    'run-loop-continuity.test.ts',
+    // The live-desk wiring: `src/client/driver/live/`'s run transition. Client
+    // side, not e7's, and deliberately not named `engine-*` for that reason.
+    'live-adapter-run-transition.test.ts',
+  ])
 
   it('(b) everything e7 added under tests/driver is named `engine-*`', () => {
     const added = fs

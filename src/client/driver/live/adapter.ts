@@ -73,6 +73,17 @@ export type LiveAdapterDeps = {
   /** The first run, already bound. */
   first: BoundRun
   /**
+   * Whether a further day exists — answered SYNCHRONOUSLY, because `send()` is.
+   *
+   * `next()` is the authority on opening one, but it cannot be the authority on
+   * REFUSING: an op's answer is the only signal the client gets
+   * (`windows/tally.ts` renders the refusal and announces it), and by the time a
+   * promise settles the desk has already been told `ok`. So the last run has to
+   * be knowable before the op is acked, exactly as the fixture loop knows it
+   * (`run-loop.ts`: `if (index + 1 >= runs.length) return REFUSED`).
+   */
+  canOpenNext(): boolean
+  /**
    * Opens the next day, or `null` when the allotment is spent. Called from
    * `send({op:'new_run'})` — the same place the fixture loop rebuilds.
    */
@@ -220,7 +231,21 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
     detach()
     pending = []
     finished = false
-    mined = []
+    // The store the desk shows has to be the store the new run HAS.
+    //
+    // `bindLiveRun` seeds exactly the carried blocks into the new run — it
+    // absorbs and mines each one — so those ids, and only those, are its deck.
+    // Wiping `mined` while leaving `slots` behind produced a board that drew a
+    // card the deck no longer listed, on a slot the new engine has nothing in:
+    // the same disagreement the fixture loop already carries a comment about
+    // (`run-loop.ts`, R3 on `run-loop.ts:115`), reproduced with the halves the
+    // other way round.
+    //
+    // `slots` clears rather than carries because a new day has not been built
+    // yet — which is what `SlotBoard.unlock()` assumes on the run change, and
+    // why the fixture loop does not carry `deployed` either.
+    mined = carried.map((block) => block.id)
+    slots = new Map()
     deployed = []
     clock = createClock({ start: opened.start, end: opened.end, rate })
     frontier = mm(opened.start)
@@ -298,7 +323,12 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
       if (op.op === 'unslot') slots.delete(op.slot)
       if (op.op === 'deploy') deployed = [...new Set(op.blocks)].sort()
       if (op.op === 'new_run') {
-        if (rebuilding) return REFUSED
+        // Refused BEFORE the ack, never after. `rebuild()` settling on `null`
+        // would leave the desk already told `ok`, and `tally.ts` reads that
+        // answer as "the day turned": it disables NEW RUN before sending and
+        // only prints `SPENT` on a refusal, so an `ok` on the last run leaves a
+        // dead button under a sheet that never closes.
+        if (rebuilding || !deps.canOpenNext()) return REFUSED
         void rebuild()
       }
       return { ok: true }
