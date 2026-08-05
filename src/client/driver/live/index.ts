@@ -136,6 +136,22 @@ export async function createLiveRunDriver(deps: LiveRunDeps): Promise<FixtureDri
    * deployed set as the next day's carry-over, its clock into the exposure
    * depth. The one place `endRun` is called from, so a day that closes on the
    * refusal and a day that closes into the next one are recorded identically.
+   *
+   * KNOWN, AND LEFT: on the refusal path this narrows what a reload restores.
+   * `carried_blocks` means "what the next run gets", and the restore above reads
+   * it as "what this run has". Runs 1–3 keep the two readings the same because
+   * `startRun()` follows immediately; the last run has no successor, so closing
+   * it writes the DEPLOYED set over the carry-over the run actually opened with.
+   * A player who inherited two blocks, deployed one, was refused a new day and
+   * then refreshed re-opens that day one block short. The archive entry and the
+   * exposure clock are unaffected, and `endRun`'s `includes` check keeps a
+   * repeated close idempotent.
+   *
+   * Left rather than fixed, deliberately: by the time it can happen the sitting
+   * is over and the deck decides nothing. The fix is small if that stops being
+   * true — pass `runLoop.current().carried_blocks` here instead of `close
+   * .carried`, which writes the field back unchanged while still recording the
+   * other two — but it buys a correctness nobody can spend.
    */
   const closeRun = (close: RunClose): void => {
     runLoop.endRun({
