@@ -30,7 +30,10 @@ import { createLiveRunDriver } from '../../src/client/driver/live/index.ts'
 import { registerAnimation, thawAnimations } from '../../src/client/driver/test-hooks.ts'
 import { mm } from '../../src/client/driver/clock.ts'
 import type { StorageLike } from '../../src/runloop/index.ts'
-import type { ViewEvent } from '../../src/shared/view-driver.ts'
+import type { FeedLine, ViewEvent } from '../../src/shared/view-driver.ts'
+import { displayStamp } from '../../src/client/driver/clock.ts'
+import { feedLineModel } from '../../src/client/components/run-feed.ts'
+import { waitingModel } from '../../src/client/components/waiting-marker.ts'
 import type { FixtureDriver } from '../../src/client/driver/fixture-driver.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
@@ -271,4 +274,51 @@ describe('(D) the deck is a set — a repeated MINE deals one card', () => {
     expect(adapter.send({ op: 'mine', sentence_id: id })).toEqual({ ok: true })
     expect(adapter.store().mined).toEqual([id])
   }, 120_000)
+})
+
+describe('(E) the clock gutter prints a time, and `21:04+` is not one', () => {
+  // The pack's terminal beat is authored `21:04+` — an ORDERING weight, which
+  // `mm()` resolves to the same minute as `21:04` because a whole-minute clock
+  // has nowhere to put it. The seam carries the authored string, and it reaches
+  // the FEED: `beat.clock` becomes each line's `clock` (`engine/feed/feed.ts`),
+  // and `run-feed.ts` prints that in the gutter.
+  //
+  // It only became visible when the run started finishing. Until the `+` parsed,
+  // the final beat threw and its lines — the closing tally among them — never
+  // arrived, so nothing could have shown it. (A) is why this guard exists.
+  it('the stamps the run emits still include the authored `+` on the seam', async () => {
+    const adapter = createLiveAdapter({
+      first: realRun(1),
+      canOpenNext: () => true,
+      next: async () => null,
+      closeRun: () => {},
+    })
+    const events: ViewEvent[] = []
+    adapter.subscribe((event) => events.push(event))
+    adapter.start()
+    await pump(adapter, () => events.some((e) => e.type === 'run_end'))
+
+    const plus = events.filter((e) => e.type === 'feed' && e.line.clock.endsWith('+'))
+    expect(
+      plus.length,
+      'the seam no longer carries a `+` stamp — either the pack changed or something normalised it upstream',
+    ).toBeGreaterThan(0)
+  }, 120_000)
+
+  it('every gutter stamp the feed renders is a bare HH:MM', () => {
+    // Both builders, because they are two: `run-feed.ts`'s envelope and
+    // `waiting-marker.ts`'s own node, which does not go through it.
+    const cases: [authored: string, printed: string][] = [
+      ['21:04+', '21:04'],
+      ['21:04', '21:04'],
+      ['08:50', '08:50'],
+    ]
+    for (const [authored, printed] of cases) {
+      const npc = { kind: 'npc', clock: authored, text: 'x' } as FeedLine
+      expect(feedLineModel(npc).stamp, `run-feed printed ${authored} verbatim`).toBe(printed)
+      const wait = { kind: 'wait', clock: authored, text: 'x' } as FeedLine
+      expect(waitingModel(wait).stamp, `waiting-marker printed ${authored} verbatim`).toBe(printed)
+      expect(displayStamp(authored)).toBe(printed)
+    }
+  })
 })

@@ -19,6 +19,7 @@
 // Renders only ([u5#c9]): `line.text` and `line.speaker` reach the document
 // untouched — nothing here slices, pads, counts or reformats them.
 import type { FeedKind, FeedLine, FixtureDriver, ViewEvent } from '../driver/index.ts'
+import { displayStamp } from '../driver/index.ts'
 import { el } from '../shell/dom.ts'
 import { FALLBACK_CLASS, fallbackNoticeLine } from './fallback-notice.ts'
 import type { FallbackClass } from './fallback-notice.ts'
@@ -64,7 +65,8 @@ const envelope = (kind: FeedKind, clock: string, parts: FeedPart[]): FeedNode =>
   kind,
   classes: ['fl', `fl-${kind}`],
   mark: FEED_MARKS[kind],
-  stamp: kind === 'mark' ? null : clock,
+  // The gutter prints a TIME, and `21:04+` is not one — see `displayStamp`.
+  stamp: kind === 'mark' ? null : displayStamp(clock),
   parts,
   data: {},
 })

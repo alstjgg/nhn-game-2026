@@ -40,6 +40,26 @@ export function mm(stamp: string): number {
   return Number(match[1]) * 60 + Number(match[2])
 }
 
+/**
+ * A seam stamp as a CLOCK COLUMN should print it.
+ *
+ * The trailing `+` is an ORDERING weight, not a time — `mm()` above resolves
+ * `21:04+` to the same minute as `21:04`, because "immediately after 21:04" has
+ * nowhere to live on a whole-minute clock and never needed one. A gutter that
+ * prints it is showing the reader a timestamp that does not exist.
+ *
+ * It reached the screen the moment the run started finishing: until the `+` was
+ * parseable the final beat threw, so its four feed lines — the closing tally
+ * among them — never arrived. Fixing the run is what put the stamp on the desk,
+ * so the display rule lands with it.
+ *
+ * Total by construction: anything without the suffix is returned unchanged, so
+ * this can sit on a render path without a parse that could throw.
+ */
+export function displayStamp(stamp: string): string {
+  return stamp.endsWith('+') ? stamp.slice(0, -1) : stamp
+}
+
 /** The `"HH:MM"` seam stamp for minutes since midnight. */
 export function hhmm(minute: number): string {
   const wrapped = ((Math.trunc(minute) % 1440) + 1440) % 1440

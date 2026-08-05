@@ -16,7 +16,7 @@ export type {
 
 export { assertSeamClean } from './seam-guard.ts'
 
-export { MS_PER_SIM_MIN, mm, hhmm, createClock } from './clock.ts'
+export { MS_PER_SIM_MIN, mm, hhmm, displayStamp, createClock } from './clock.ts'
 export type { Clock, ClockOptions, ClockRate } from './clock.ts'
 
 export { createFixtureDriver } from './fixture-driver.ts'
