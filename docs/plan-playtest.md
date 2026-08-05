@@ -32,10 +32,15 @@ already wrote. They do not compete with feature work for schedule; they precede 
 | G3 | REPORTS tabs labeled `RUN01`… over round-scoped content | `src/client/components/report-archive.ts:30-62` (it *throws* if the label names anything but run+time — that guard must be re-authored, not bypassed) | M |
 | G4 | AGENT FILE 행동원칙 says "매 갈림길에서", "하나의 태도를 고르고" | authored text in the datapack temperament/principles, rendered by `src/client/components/dossier.ts` | S |
 
-G2 note: the fallback notice exists to tell the player the world got *less*
-responsive, which is honest. Replace it with a diegetic degradation signal —
-radio static, "회신 불량", a signal-strength mark — rather than deleting it. Silent
-degradation makes an LLM failure read as a design choice, which is worse.
+G2 note (**resolved 08-05, 민서**): the notice stays — it tells the player the
+world got *less* responsive, which is honest, and silent degradation would make
+an LLM failure read as a design choice. Only the wording changes: it must name a
+**transmission** problem, never a reasoning or gate one. Approved register —
+`회신 불량` · `네트워크 지연 중` · `서버 이상 — 요원과 재접선 시도 중`.
+So G2 is a copy edit at `fallback-notice.ts:28-30`, not a removal. The three
+severities there (fatal / local / supply-cut) each need their own line, and
+`announcer.ts:29` must be changed in step or the screen reader still says the old
+text.
 
 G3 note: three separate things are fused in this item and should be split at
 implementation time — (i) the label vocabulary, (ii) whether a tab is a round or
@@ -94,11 +99,27 @@ tuned parameter. A larger deck is a stronger *feeling* of agency and a weaker
 | id | item | where |
 |---|---|---|
 | M1 | Agent callsign increments per re-run (ECHO-1, ECHO-2…) | `src/client/components/dossier.ts:19` is a hard constant `CALLSIGN = 'ECHO-1'`; also `run-feed.ts:60`, `report-view.ts:124,143` |
-| M2 | Drop species tags ('자기서술') from mined sentences | tag is **derived from the block id channel**, not authored text (`src/shared/species.ts:8-20,45-52,78`, applied `block-card.ts:89-112`); hiding the label is a view change, but `species-filter.ts:22-52` filters on it — decide whether the filter goes too |
+| M2 | Drop species tags ('자기서술') from mined sentences | see the corrected finding below — **not** BLOCK-STORE-only |
 
 M1 is not cosmetic: it is the cheapest possible piece of U5. Distinct callsigns
 per sitting are what make "these are different attempts" legible before any
 archive UI exists.
+
+**M2 — verified 08-05, and the assumption was half right.** The species
+*filter* really is BLOCK-STORE-only: `components/species-filter.ts` is imported
+by `windows/block-store.ts` and nothing else, so removing the window removes the
+filter for free. But the species **label** is not. It comes from
+`blockCardModel()` (`components/block-card.ts:106-121`, field `ko`), and
+`block-card.ts` is also imported by `components/slot-board.ts`,
+`windows/agent-file.ts`, and `components/deploy-button.ts` — so '자기서술' still
+prints on slot cards inside AGENT FILE after BLOCK STORE is gone. M2 is a small
+edit to the card renderer, not a side effect of T1.
+
+Also note: `species` is a load-bearing **data** property, not just a chip. It is
+minted from the id channel in `src/shared/id.ts:68,91`, typed on the wire at
+`src/shared/view-driver.ts:18`, set by the engine at `src/engine/feed/report.ts:65,71`,
+and authored in `data/scenario/우는다리/gates.json` (`key_conditions[].species`).
+Remove the *display*; do not remove the field.
 
 ## 2. Dependency order
 
@@ -146,9 +167,11 @@ Rationale: group 1 is invariant repair and near-free; the T-chain is the fatigue
 fix and the layout you drew. Without these the build is both leaking gate
 structure and hard to read.
 
-**Ships if time (should):** U5.1 · U3.
+**Ships if time (should):** U5.1 · U3 (**gated on the scorer — see §5.1**).
 Both are real improvements to legibility and flow, neither is load-bearing for a
-correct demo. U5.1 before U3 if only one fits.
+correct demo. U5.1 before U3 if only one fits. U3 must not ship ahead of
+`ScorerPort`: removing TALLY with no scorer deletes the ending instead of
+relocating it.
 
 **Post-deadline (won't):** C1 + U5.3 (paged dossier) · U2 (slot cap).
 The dossier is a presentation rebuild competing directly with the T-chain for the
@@ -156,18 +179,46 @@ same hours, and it is the lower-value of the two. U2 is out not because it is
 expensive but because raising the cap without a probe risks the mechanism claim
 five days before submission — and the mechanism claim is the entry.
 
-**Not in this document but competing for the same days:** predicate authoring +
-`ScorerPort` (status.md 08-05). The tally ledger being empty is a correctness
-hole in the scoring story; note that U3 *removes the TALLY window*, which means
-those two efforts must agree on where scores surface before either starts.
-That conflict is the one thing here that needs a decision from both members.
+**Predicate authoring + `ScorerPort` (status.md 08-05) is not cancelled by U3 —
+it is relocated.** See §5.1: U3 changes the score's *surface*, not its
+existence, so that work still has to happen and still competes for the same days.
 
-## 5. Open questions for 민서
+## 5. Resolved (08-05, 민서)
 
-1. U3 vs the empty-tally work: if TALLY dies, do run scores surface in 현장 기록,
-   or does scoring drop from the demo entirely? Both are defensible; they are
-   not both free.
-2. G2: is a diegetic degradation signal acceptable, or should LLM failure be
-   fully invisible to the player?
-3. M2: does the species *filter* survive the tag removal, or does the whole
-   species affordance go?
+### 5.1 Scoring — U3 moves the surface, it does not delete the score
+
+Confirmed: there is exactly **one** scoring system, and casualties/results are
+it. But it has two layers, and only naming the first one hides the cost:
+
+- **headline** — `HEADLINE_LABEL = '사망'` (`src/client/windows/tally.ts:42`),
+  fed by the `score` event's `total`;
+- **rows** — `score.rows` (`tally.ts:258`), which are the **8 units** of
+  `data/scenario/우는다리/score.json` (u1 다리 위의 인파 … u8 다리의 진실),
+  graded against that file's `baseline_summary` (the 무개입 baseline).
+
+"결과 보고" is the rows. So moving casualties *and* results into 현장 기록 carries
+all eight rows across, and the 08-05 worklist stands unchanged: bind the
+character meters to state variables → author the 8 units' predicates →
+implement `ScorerPort` → wire it in both composition roots. Deleting
+`windows/tally.ts` does not delete any of that; it changes only where the output
+is drawn, and it removes the `settleRelease`/PACE reveal choreography
+(`components/score-tally.ts`) that currently paces the count-up.
+
+Consequence for the cut line: U3 cannot ship *before* the scorer, or the demo
+loses its ending entirely rather than relocating it. If the scorer does not land
+by 08-10, **keep TALLY** — an empty tally sheet is a weaker ending than a full
+one, but it is an ending, and 현장 기록 with no results is not.
+
+Recommendation: treat the score rows as unmineable, visually distinct records in
+현장 기록, per 민서's note, and make the death count the last line of the day
+rather than a separate screen. That is the flow win U3 was actually asking for,
+and it survives either scorer outcome.
+
+### 5.2 G2 — notice stays, wording changes
+
+Answered in §1.G above. Transmission-register copy only.
+
+### 5.3 M2 — half right, corrected
+
+Answered in §1.M above. The filter is BLOCK-STORE-only and dies with T1; the
+label is not, and needs its own edit.
