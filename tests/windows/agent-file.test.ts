@@ -46,6 +46,21 @@ const BLOCK_STORE_TS = path.join(CLIENT, 'windows/block-store.ts')
  */
 const SEAM_GUARD_TS = path.join(CLIENT, 'driver/seam-guard.ts')
 
+/**
+ * The live composition root. It names `temperament.json` and `gates.json`
+ * because it FETCHES them and hands them to the engine — that is what wiring a
+ * datapack means, and `tools/driver/run/pack.mjs` names the same six files for
+ * the same reason.
+ *
+ * This does not loosen the seal. §3 기질 is sealed in the DOSSIER — what the
+ * player is shown — and (c) below still pins that section's every string. The
+ * pack itself has never been secret: physical §2 constraint 3 ships it to the
+ * browser deliberately, so it is readable in devtools with or without this
+ * folder. What must never happen is a WINDOW naming it, and every window is
+ * still scanned.
+ */
+const LIVE_BINDER = path.join(CLIENT, 'driver/live')
+
 const U4_SOURCES = [BLOCK_CARD_TS, SLOT_BOARD_TS, DOSSIER_TS, DEPLOY_BUTTON_TS, AGENT_FILE_TS]
 
 /** `{ file, text }` for every u4 source that is on disk, comments stripped. */
@@ -196,7 +211,8 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
   it('(b) no client source names temperament, truths or gates data', () => {
     const forbidden = [/temperament/i, /truths\.json/i, /gates\.json/i]
     const hits: string[] = []
-    for (const file of clientSources().filter((f) => f !== SEAM_GUARD_TS)) {
+    const exempt = (f: string) => f === SEAM_GUARD_TS || f.startsWith(LIVE_BINDER)
+    for (const file of clientSources().filter((f) => !exempt(f))) {
       const text = read(file)
       for (const re of forbidden) if (re.test(text)) hits.push(`${rel(file)} ~ ${String(re)}`)
     }

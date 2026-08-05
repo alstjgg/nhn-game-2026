@@ -13,11 +13,51 @@ export const MS_PER_SIM_MIN = 105
 /** The three speed controls the reference exposes; 0 is pause. */
 export type ClockRate = 0 | 1 | 4
 
-/** Minutes since midnight for an `"HH:MM"` seam stamp. */
+/**
+ * Minutes since midnight for an `"HH:MM"` seam stamp.
+ *
+ * THE TRAILING `+` IS PART OF THE VOCABULARY, not a typo. `우는다리`'s timeline
+ * closes on `21:04+` — "immediately after that minute" — and `engine/beat/
+ * clock.ts` gives it a sub-minute sort weight rather than a minute of its own.
+ * `buildSchedule` keeps the authored string verbatim on `Beat.clock`, so the
+ * live driver emits it on that beat's `beat_start`/`beat_end`, and this parser
+ * is what the live adapter measures those stamps with.
+ *
+ * Rejecting it therefore killed the RUN, not the parse: the throw unwound
+ * through the adapter's `absorb` subscriber into `step()`, whose rejection the
+ * adapter grades as a defect and stops on — so the final beat, `run_end` and
+ * the whole TALLY never happened on a player build. `shell/pack.ts` already
+ * strips the same `+` off the clock band for exactly this reason; the seam's
+ * stamps needed it too.
+ *
+ * A whole-minute clock has nowhere to put the weight, and it never needed one:
+ * `21:04+` releases with `21:04` and stream order keeps them apart, which is
+ * the ordering the `+` was carrying in the first place.
+ */
 export function mm(stamp: string): number {
-  const match = /^(\d{1,2}):(\d{2})$/.exec(stamp)
+  const match = /^(\d{1,2}):(\d{2})\+?$/.exec(stamp)
   if (!match) throw new Error(`clock: '${stamp}' is not an "HH:MM" stamp`)
   return Number(match[1]) * 60 + Number(match[2])
+}
+
+/**
+ * A seam stamp as a CLOCK COLUMN should print it.
+ *
+ * The trailing `+` is an ORDERING weight, not a time — `mm()` above resolves
+ * `21:04+` to the same minute as `21:04`, because "immediately after 21:04" has
+ * nowhere to live on a whole-minute clock and never needed one. A gutter that
+ * prints it is showing the reader a timestamp that does not exist.
+ *
+ * It reached the screen the moment the run started finishing: until the `+` was
+ * parseable the final beat threw, so its four feed lines — the closing tally
+ * among them — never arrived. Fixing the run is what put the stamp on the desk,
+ * so the display rule lands with it.
+ *
+ * Total by construction: anything without the suffix is returned unchanged, so
+ * this can sit on a render path without a parse that could throw.
+ */
+export function displayStamp(stamp: string): string {
+  return stamp.endsWith('+') ? stamp.slice(0, -1) : stamp
 }
 
 /** The `"HH:MM"` seam stamp for minutes since midnight. */

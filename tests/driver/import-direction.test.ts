@@ -97,8 +97,16 @@ describe('[u2#c6] nothing outside driver/ imports engine or composer', () => {
     expect(offenders.map((o) => `${o.from} -> ${o.to}`)).toEqual([])
   })
 
-  it('(e) this unit ships no live driver — even driver/ imports neither engine nor composer yet', () => {
-    const offenders = edges(walk(DRIVER)).filter((e) => /^src\/(engine|composer)\b/.test(e.to))
+  // Narrowed 2026-08-05, when the live desk landed. This used to read "even
+  // driver/ imports neither engine nor composer YET" — the `yet` was the whole
+  // point, and it expired. `src/client/driver/live/` is the composition root the
+  // wiring needs and the ONE folder allowed to reach across; every other module
+  // under driver/, the fixture driver above all, still may not. Widening the
+  // check to the whole folder would have retired a guard instead of moving it.
+  it('(e) only driver/live/ may import engine or composer — the fixture driver may not', () => {
+    const offenders = edges(walk(DRIVER))
+      .filter((e) => /^src\/(engine|composer)\b/.test(e.to))
+      .filter((e) => !e.from.startsWith('src/client/driver/live/'))
     expect(offenders.map((o) => `${o.from} -> ${o.to}`)).toEqual([])
   })
 
@@ -114,9 +122,16 @@ describe('[u2#c6] nothing outside driver/ imports engine or composer', () => {
 })
 
 describe('[u2#c6] the driver depends only on shared', () => {
+  // `live/` is the composition root, so it names exactly the five modules it
+  // assembles — engine, composer, driver, transport, runloop — and nothing else.
+  // Listing them rather than exempting the folder keeps the edge set closed: a
+  // sixth dependency appearing here is a decision someone has to make on purpose.
+  const LIVE_TARGETS = /^src\/(engine|composer|driver|transport|runloop)\b/
+
   it('(h) every relative import out of driver/ lands in src/shared or inside driver/', () => {
     const offenders = edges(walk(DRIVER))
       .filter((e) => !e.to.startsWith('src/client/driver/') && !e.to.startsWith('src/shared/'))
+      .filter((e) => !(e.from.startsWith('src/client/driver/live/') && LIVE_TARGETS.test(e.to)))
       .map((o) => `${o.from} -> ${o.to}`)
     expect(offenders).toEqual([])
   })

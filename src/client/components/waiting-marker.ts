@@ -12,6 +12,7 @@
 // Depends on `run-feed.ts` for TYPES ONLY: the node shape is shared, the module
 // graph stays one-directional (run-feed imports this file, never the reverse).
 import type { FeedLine } from '../driver/index.ts'
+import { displayStamp } from '../driver/index.ts'
 import type { FeedNode } from './run-feed.ts'
 
 /** The three `waiting.for` values the seam ships, and what the feed says. */
@@ -41,7 +42,7 @@ export function waitingModel(input: WaitFor | FeedLine): FeedNode {
     clock = ''
   } else {
     text = input.text
-    clock = input.clock
+    clock = displayStamp(input.clock)
   }
   return {
     kind: 'wait',

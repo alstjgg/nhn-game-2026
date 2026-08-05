@@ -1,0 +1,80 @@
+// The browser binder — the one place the merged `src/**` modules are wired into
+// a runnable desk, and the only place `createLiveDriver` is called from the
+// client. The twin of `tools/driver/run/bind.mjs`, which does the same job for
+// the headless run; keeping the two symmetrical is what makes a headless replay
+// evidence about the thing the judge plays.
+//
+// WHAT THIS IS NOT. There is no engine logic here, and no view logic either.
+// Every delta, symptom, id, feed line and routing decision comes out of
+// `createEngine`; every pixel is the shell's. This file only threads pack data
+// in and hands back the three things the adapter needs to open a day.
+//
+// Import direction (physical §3.1, revised 08-03): `client → driver → composer
+// → engine → shared`. `src/client/driver/` is the ONE place under `src/client/`
+// allowed to name engine or composer — `tests/scaffold/layout.test.ts (e)`
+// enforces the rest, and this wiring is the reason that exemption exists.
+
+import type { Block } from '../../../shared/contracts.ts'
+import type { ReportGuidance } from '../../../shared/report-guidance.ts'
+import { createEngine } from '../../../engine/index.ts'
+import { createComposer } from '../../../composer/index.ts'
+import { createBlockStore, createLiveDriver } from '../../../driver/index.ts'
+import type { MutableBlockStore } from '../../../driver/index.ts'
+import { createTransport } from '../../../transport/index.ts'
+import type { FetchLike } from '../../../transport/index.ts'
+import type { LivePack } from './pack.ts'
+import type { BoundRun } from './adapter.ts'
+
+export type BindDeps = {
+  pack: LivePack
+  guidance: ReportGuidance
+  /**
+   * `VITE_PROXY_BASE_URL`. Empty or absent degrades to e6's fixture provider
+   * rather than crashing (contract-calls §11: "unset is not an error"), which
+   * is also what lets the whole live chain be exercised offline.
+   */
+  proxyBaseUrl: string | null
+  fetch: FetchLike
+}
+
+export type OpenRunDeps = {
+  run: number
+  carried: readonly Block[]
+  /** `"HH:MM"` bounds for this run's clock, read off the pack's meta. */
+  start: string
+  end: string
+  /** The run/meta view e8 folds onto the stream. */
+  meta: BoundRun['meta']
+}
+
+/**
+ * Carry-over, wired into the run — the same absorb-then-mine path
+ * `tools/driver/run/bind.mjs` takes, for the same reason: the store's only
+ * public route into the mined tier is through a line it has seen, and reaching
+ * past that would let the composer resolve a block the driver cannot.
+ *
+ * The seeded line is never emitted, never enters the feed, never reaches the
+ * timeline; `kind`/`clock` exist only to satisfy the `FeedLine` shape.
+ */
+function seedCarried(blocks: MutableBlockStore, carried: readonly Block[]): void {
+  for (const block of carried) {
+    blocks.absorbLine({ kind: 'mark', clock: '00:00', text: block.text, sentence_id: block.id })
+    if (!blocks.mine(block.id)) {
+      throw new Error(`carried block ${JSON.stringify(block.id)} could not be seeded into the run`)
+    }
+  }
+}
+
+/** Wires one run and hands back what the adapter needs to open it. */
+export function bindLiveRun(deps: BindDeps, open: OpenRunDeps): BoundRun {
+  const blocks = createBlockStore()
+  seedCarried(blocks, open.carried)
+
+  const engine = createEngine({ pack: deps.pack, run: open.run })
+  const composer = createComposer({ blocks, reportGuidance: deps.guidance })
+  const transport = createTransport({ baseUrl: deps.proxyBaseUrl, fetch: deps.fetch })
+
+  const driver = createLiveDriver({ engine, composer, transport, blocks, run: open.run })
+
+  return { driver, start: open.start, end: open.end, meta: open.meta }
+}

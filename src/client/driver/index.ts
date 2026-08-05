@@ -16,7 +16,7 @@ export type {
 
 export { assertSeamClean } from './seam-guard.ts'
 
-export { MS_PER_SIM_MIN, mm, hhmm, createClock } from './clock.ts'
+export { MS_PER_SIM_MIN, mm, hhmm, displayStamp, createClock } from './clock.ts'
 export type { Clock, ClockOptions, ClockRate } from './clock.ts'
 
 export { createFixtureDriver } from './fixture-driver.ts'
@@ -27,6 +27,11 @@ export type { FixtureRun, OpResponse } from './fixtures/types.ts'
 export { demoRun } from './demo-run.ts'
 
 export { createRunLoopDriver, demoRunLoop } from './run-loop.ts'
+
+// The live desk. Same seam, same `FixtureDriver` shape — the windows cannot
+// tell which one they are bound to, which is what §5.2 was ratified for.
+export { createLiveRunDriver } from './live/index.ts'
+export type { LiveRunDeps } from './live/index.ts'
 
 export {
   freezeAnimations,

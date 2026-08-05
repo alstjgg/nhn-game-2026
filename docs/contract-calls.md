@@ -601,17 +601,34 @@ crashing, which is what keeps a Pages deploy green while the stack is down. It i
 **not** a secret; the origin check and throttling are the access control, and the
 only secret in the system stays inside the Lambda (physical §2 constraint 2).
 
-⚠️ **Open — nothing sets `VITE_PROXY_BASE_URL` yet.** `deploy.yml` must not change
-(physical §2 constraint 4), so it arrives as a repository variable read by the
-existing build step. `demos/apothecary/` hit exactly this and its build never set
-`VITE_AI_BASE_URL`, which is why that demo runs stub-only today — the precedent
-to not repeat.
+✅ **Closed 2026-08-05 — `.env.production`, not a repository variable.**
 
-> **Mechanical note for whoever sets it (08-05).** A GitHub repository variable
-> is not visible to a workflow step unless that step declares it under `env:`, so
-> the settings entry alone does not reach `vite build`. Confirm the route before
-> the first live-provider run — this is a finding, not a proposal; the call is
-> 민서's (PR #116 · "a settings change, no code").
+The 08-05 mechanical note below was right, and it decided the route. A GitHub
+repository variable is not visible to a workflow step unless that step declares
+it under `env:`, and `deploy.yml`'s build step is a bare `npm run build` with
+neither an `env:` block nor a `${{ vars.* }}` reference. Making a variable reach
+`vite build` therefore means editing that workflow, which physical §2 constraint
+4 forbids outright. The settings entry would have been set, believed, and silent.
 
-**Still unconsumed.** Nothing in `src/client/` builds a transport yet, so Vite
-inlines no reference and the URL would not appear in today's bundle either way.
+Vite reads `.env.production` itself on a production build, so the file is the
+whole mechanism — no workflow change, nothing for a later deploy to forget. It
+is committed, against a `.gitignore` that otherwise excludes `.env.*`, with the
+negation carrying its own reason: the value ships **inside** the bundle, because
+the browser cannot call the proxy without it. It is public the moment the game
+deploys, exactly as the paragraph above says.
+
+The value is the **origin only** — `joinCallUrl()` appends `/dday/call`, so a
+value carrying the route produces `/dday/call/dday/call`.
+
+`demos/apothecary/` is still the precedent not to repeat: its build never set
+`VITE_AI_BASE_URL`, which is why that demo runs stub-only today. What saved this
+one is that the failure mode was named before it happened.
+
+> **Mechanical note (08-05, 민서).** A GitHub repository variable is not visible
+> to a workflow step unless that step declares it under `env:`, so the settings
+> entry alone does not reach `vite build`. Confirmed against `deploy.yml` on
+> 08-05 and acted on — kept here because the note is what made the route a
+> decision instead of a discovery in production.
+
+**Consumed as of 08-05.** `src/client/driver/live/` builds a transport from it,
+so Vite inlines the value and the endpoint is in the shipped bundle.
