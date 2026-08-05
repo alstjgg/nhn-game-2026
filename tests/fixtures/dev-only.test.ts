@@ -2,6 +2,7 @@
 // out of the player build. [u2f#c10] — the frozen scenario pack, the design
 // target and the shared modules are read-only inputs (C1/C13).
 import { describe, it, expect } from 'vitest'
+import { runMerge } from '../acceptance/unit-range.ts'
 import fs from 'node:fs'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
@@ -39,19 +40,6 @@ const DYNAMIC_IMPORT = /import\s*\(\s*['"]([^'"]+)['"]\s*\)/g
 
 function git(args: string[]): string {
   return execFileSync('git', args, { cwd: REPO, encoding: 'utf8' })
-}
-
-/** The commit this run branched from — the same idiom as the isomorphism guard. */
-function runMergeBase(): string {
-  const errors: string[] = []
-  for (const ref of ['origin/main', 'main']) {
-    try {
-      return git(['merge-base', 'HEAD', ref]).trim()
-    } catch (err) {
-      errors.push(`${ref}: ${(err as Error).message}`)
-    }
-  }
-  throw new Error(`cannot resolve a merge-base against main\n${errors.join('\n')}`)
 }
 
 describe('[u2f#c9] the demo fixture is reachable from dev only', () => {
@@ -131,26 +119,6 @@ describe('[u2f#c10] frozen inputs are read, never written', () => {
     'tools/tests/segment.golden.mjs',
   ]
 
-  /** The run's merge into main — resolved from history, not from a branch ref. */
-  function runMerge(): string {
-    const found = git([
-      'log',
-      '--merges',
-      '--fixed-strings',
-      '--grep',
-      'pull request #110 from alstjgg/super/20260803-213143',
-      '--format=%H',
-    ])
-      .split('\n')
-      .map((l) => l.trim())
-      .filter(Boolean)
-    expect(
-      found.length,
-      'the run merge (#110) is not reachable from HEAD — this guard needs full history (fetch-depth: 0)',
-    ).toBeGreaterThan(0)
-    return found[found.length - 1]!
-  }
-
   it('(e) this run introduced no diff under any frozen path', () => {
     const merge = runMerge()
     const changed = git(['diff', '--name-only', `${merge}^1`, merge, '--'])
@@ -161,9 +129,14 @@ describe('[u2f#c10] frozen inputs are read, never written', () => {
     expect(touched).toEqual([])
   })
 
-  it('(e2) later work introduces no diff under a still-frozen path', () => {
-    const base = runMergeBase()
-    const changed = git(['diff', '--name-only', base, '--'])
+  it('(e2) work landed since the run introduces no diff under a still-frozen path', () => {
+    // `runMerge()..HEAD`, not the merge-base against main: the merge-base IS
+    // HEAD once this sits on main, which turns the diff empty by construction
+    // and the guard vacuous — the same shape isomorphism-guard took the SHA-pin
+    // form to avoid. Measuring from the run's landing is always non-empty and
+    // says the actual claim: nothing since #110 touched a still-frozen path.
+    // (The working tree is (f)'s job.)
+    const changed = git(['diff', '--name-only', `${runMerge()}..HEAD`, '--'])
       .split('\n')
       .map((l) => l.trim())
       .filter(Boolean)

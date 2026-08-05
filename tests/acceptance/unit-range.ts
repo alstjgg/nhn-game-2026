@@ -25,6 +25,27 @@ export const RUN_ID = '20260803-213143'
 
 const merges = new Map<string, string>()
 
+let runMergeCache: string | null = null
+
+/**
+ * The merge that landed the WHOLE run on main (PR #110), located the same way
+ * `unitMerge` locates a unit's: by branch name in the merge subject, tolerant
+ * of both spellings, never hard-coded. The `(\\s|$)` anchor after the run id is
+ * what keeps every unit merge (`…-u6`) from matching.
+ */
+export function runMerge(): string {
+  if (runMergeCache) return runMergeCache
+  const found = git(['log', '--merges', '--format=%H %s'])
+    .split('\n')
+    .filter((line) => new RegExp(`super[-/]${RUN_ID}(\\s|$)`).test(line))
+    .map((line) => line.split(' ')[0]!)
+  if (found.length === 0) {
+    throw new Error('the run merge is not reachable from HEAD — this needs full history (fetch-depth: 0)')
+  }
+  runMergeCache = found[found.length - 1]!
+  return runMergeCache
+}
+
 /**
  * The merge commit that landed `unit`, located by BRANCH NAME and never
  * hard-coded — the run has used both `super-<run>-<unit>` and

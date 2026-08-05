@@ -18,6 +18,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { runMerge } from './unit-range.ts'
 
 const SELF = fileURLToPath(import.meta.url)
 const REPO = path.resolve(path.dirname(SELF), '../..')
@@ -98,18 +99,6 @@ function discoveryBase(): string {
 
 function git(args: string[]): string {
   return execFileSync('git', args, { cwd: REPO, encoding: 'utf8' })
-}
-
-function runMergeBase(): string {
-  const errors: string[] = []
-  for (const ref of ['origin/main', 'main']) {
-    try {
-      return git(['merge-base', 'HEAD', ref]).trim()
-    } catch (err) {
-      errors.push(`${ref}: ${(err as Error).message}`)
-    }
-  }
-  throw new Error(`cannot resolve a merge-base against main\n${errors.join('\n')}`)
 }
 
 describe('[u11#c6] DISCOVERY.md is populated with the run\'s findings', () => {
@@ -223,26 +212,6 @@ describe('[u11#c6] frozen inputs stayed frozen (C1 / C13 / C20)', () => {
     'tools/tests/segment.golden.mjs',
   ]
 
-  /** The run's merge into main — resolved from history, not from a branch ref. */
-  function runMerge(): string {
-    const found = git([
-      'log',
-      '--merges',
-      '--fixed-strings',
-      '--grep',
-      'pull request #110 from alstjgg/super/20260803-213143',
-      '--format=%H',
-    ])
-      .split('\n')
-      .map((l) => l.trim())
-      .filter(Boolean)
-    expect(
-      found.length,
-      'the run merge (#110) is not reachable from HEAD — this guard needs full history (fetch-depth: 0)',
-    ).toBeGreaterThan(0)
-    return found[found.length - 1]!
-  }
-
   it('(m) this run\'s commits introduced no diff under a frozen path', () => {
     const merge = runMerge()
     const changed = git(['diff', '--name-only', `${merge}^1`, merge, '--'])
@@ -252,8 +221,10 @@ describe('[u11#c6] frozen inputs stayed frozen (C1 / C13 / C20)', () => {
     expect(changed.filter((f) => [...FROZEN, ...RELEASED].some((p) => f.startsWith(p)))).toEqual([])
   })
 
-  it('(m2) later work introduces no diff under a still-frozen path', () => {
-    const changed = git(['diff', '--name-only', runMergeBase(), '--'])
+  it('(m2) work landed since the run introduces no diff under a still-frozen path', () => {
+    // `runMerge()..HEAD`, not the merge-base against main — on main the
+    // merge-base is HEAD and the guard goes vacuous. See dev-only (e2).
+    const changed = git(['diff', '--name-only', `${runMerge()}..HEAD`, '--'])
       .split('\n')
       .map((l) => l.trim())
       .filter(Boolean)
