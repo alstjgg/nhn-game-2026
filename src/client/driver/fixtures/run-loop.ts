@@ -19,7 +19,15 @@ import type { Sentence, ViewEvent } from '../../../shared/view-driver.ts'
 import type { FixtureRun } from './types.ts'
 import { woodariRun03 } from './woodari-run03.ts'
 import { reportOf } from './woodari-reports.ts'
-import { ARCHIVE, CARRIED, RUN, RUNS_LEFT, WOODARI_SCORE_ROWS, WOODARI_SCORE_TOTAL } from './woodari-meta.ts'
+import {
+  ARCHIVE,
+  CARRIED,
+  RUN,
+  RUNS_LEFT,
+  WOODARI_SCORE_BASELINE_TOTAL,
+  WOODARI_SCORE_ROWS,
+  WOODARI_SCORE_TOTAL,
+} from './woodari-meta.ts'
 
 /**
  * How many days the demo loop covers, RUN 03 included — the whole allotment the
@@ -111,7 +119,12 @@ function dayOf(run: number): FixtureRun {
         facts: FILED.facts.map((sentence) => remapSentence(sentence, run)),
         report_body: FILED.report_body.map((sentence) => remapSentence(sentence, run)),
       },
-      { type: 'score', total: WOODARI_SCORE_TOTAL, rows: WOODARI_SCORE_ROWS },
+      {
+        type: 'score',
+        total: WOODARI_SCORE_TOTAL,
+        baseline_total: WOODARI_SCORE_BASELINE_TOTAL,
+        rows: WOODARI_SCORE_ROWS,
+      },
       { type: 'run_end', run },
     ],
     responses: woodariRun03.responses,

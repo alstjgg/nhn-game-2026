@@ -97,11 +97,20 @@ export const WOODARI_TALLY: TallyRow[] = [
  */
 const DEAD = 7
 
-export const WOODARI_SCORE_ROWS: { label: string; value: number }[] = [
-  { label: '진입', value: 200 },
-  { label: '사망', value: DEAD },
-  { label: '부상', value: 19 },
+export const WOODARI_SCORE_ROWS: { label: string; value: number; baseline: number }[] = [
+  { label: '진입', value: 200, baseline: 812 },
+  { label: '사망', value: DEAD, baseline: 24 },
+  { label: '부상', value: 19, baseline: 71 },
 ]
 
 /** The headline the day is graded on (design target TALLY.headline). */
 export const WOODARI_SCORE_TOTAL = DEAD
+
+/**
+ * The same headline on the untouched day — §5.2 amendment h.
+ *
+ * The baselines above are `WOODARI_TALLY`'s, which this file has carried since
+ * u1: the design target always printed a 기준 column, and the seam simply had
+ * no field to bring it across. It does now.
+ */
+export const WOODARI_SCORE_BASELINE_TOTAL = 24

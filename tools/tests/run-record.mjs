@@ -1070,27 +1070,41 @@ describe('the record and the §5.2 seam agree on what a scored value is', () => 
   //
   // It reads the SCHEMA rather than restating it, so authoring that widens or
   // narrows the record has to come back through here.
-  const seam = fs
-    .readFileSync(path.join(REPO, 'src/shared/view-driver.ts'), 'utf8')
-    .replace(/\/\/.*$/gm, '')
-    .replace(/\s+/g, ' ')
+  const flatten = (file) =>
+    fs
+      .readFileSync(path.join(REPO, file), 'utf8')
+      .replace(/\/\/.*$/gm, '')
+      .replace(/\s+/g, ' ')
+
+  const seam = flatten('src/shared/view-driver.ts')
 
   test('(a) `score.rows[].value` carries exactly the types the record stores', () => {
     const schema = JSON.parse(fs.readFileSync(RUN_SCHEMA_PATH, 'utf8'))
     const stored = [...schema.properties.score.properties.units.items.properties.value.type].sort()
 
-    // The `value:` FIELD, not the union member. `rows: { label: string; … }`
-    // puts the word `string` in every version of this line, so a member-wide
-    // search reports agreement against a seam that cannot carry a string value
-    // at all — this guard's first draft did exactly that and stayed green
-    // through the change it was written to catch.
-    const carried = /rows: \{ label: string; value: ([^}]*)\}/.exec(seam)?.[1]
-    assert.ok(carried, 'the seam no longer carries `score.rows[].value`')
-    assert.deepEqual(
-      carried.split('|').map((t) => t.trim()).filter(Boolean).sort(),
-      stored,
-      'the record stores a score value the seam cannot carry',
-    )
+    // BOTH declaration sites, because the compiler only guards one direction:
+    // a `ScorerPort` narrowed back to `value: number` is still assignable to
+    // the event and compiles clean — the exact state this guard exists to
+    // prevent. (The other two copies need no pin: `run-state.ts` is checked by
+    // assignment from the event, and `spec-client.md` is prose.)
+    for (const file of ['src/shared/view-driver.ts', 'src/driver/ports.ts']) {
+      // The `value:` FIELD, not the union member. `rows: { label: string; … }`
+      // puts the word `string` in every version of this line, so a member-wide
+      // search reports agreement against a seam that cannot carry a string
+      // value at all — this guard's first draft did exactly that and stayed
+      // green through the change it was written to catch.
+      // …and it stops at the FIELD, not the closing brace. Amendment h put
+      // `baseline` after `value`, so a match that ran to `}` would compare
+      // `string | number; baseline: string | number | null` against the
+      // record's two types and fail on a seam that is perfectly correct.
+      const carried = /rows: \{ label: string; value: ([^;}]*)[;}]/.exec(flatten(file))?.[1]
+      assert.ok(carried, `${file} no longer carries \`score.rows[].value\``)
+      assert.deepEqual(
+        carried.split('|').map((t) => t.trim()).filter(Boolean).sort(),
+        stored,
+        `the record stores a score value ${file} cannot carry`,
+      )
+    }
   })
 
   test('(b) `total` is NOT held to that rule, and must not be', () => {
@@ -1100,6 +1114,10 @@ describe('the record and the §5.2 seam agree on what a scored value is', () => 
     // feeds is 사망 · 명 — a count whose whole movement in `score-tally.ts` is
     // counting one up. Widening it would be a design change wearing a type
     // change's clothes.
-    assert.match(seam, /type: 'score'; total: number;/)
+    // The delimiter is `;` in the seam's one-line union member and a space in
+    // the port's multi-line object, so both are allowed — the claim is about
+    // `total`'s TYPE, not about how either file is formatted.
+    assert.match(seam, /type: 'score'; total: number[;\s]/)
+    assert.match(flatten('src/driver/ports.ts'), /score\(\): \{ total: number[;\s]/)
   })
 })

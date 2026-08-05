@@ -209,8 +209,11 @@ an `or`: it forces the author to order the branches, and it keeps a predicate
 readable in the draft table cell it is authored in.
 
 Lint reads the grammar THROUGH the reader — `identifiers()` for name resolution
-against the compiled pack, `problems()` for syntax — rather than carrying a
-second copy of it. A grammar with two implementations is two grammars.
+against the compiled pack, `problems()` for syntax, `hasValue()` for slot form
+(`=> 24` is a well-formed F3 rule that `problems()` rightly accepts, yet in a
+boolean slot it is a defect `holds()` papers over by ignoring the value) —
+rather than carrying a second copy of it. A grammar with two implementations is
+two grammars.
 
 **The reader never throws.** A malformed predicate is `false`, and a malformed
 rule inside a `predicates` array is skipped so the rules after it still get
