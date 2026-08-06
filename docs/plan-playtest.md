@@ -29,7 +29,7 @@ site, not only what is drawn on screen.
 |---|---|---|---|
 | G1a | **landed** (`e270604`) — the pack shipped whole, so `dist/data/scenario/우는다리/draft.md` (44 kB, every gate, key condition and truth) was readable by URL | `vite.config.ts` enumerates by file; 22 published files → 8 | — |
 | G1b | **landed** (`e270604`) — LIVE FEED printed `(갈림길 Gn의 자리)` on six timeline lines | removed from `data/scenario/우는다리/timeline.json` **and** from `draft.md`, or the next `datapack:compile` restores it | — |
-| G1c | No guard on gate *vocabulary* inside the files that do ship | `tests/scaffold/published-data.test.ts` guards which files ship, not what is inside them. New scan over build output and player-facing pack fields, on the `no-digit-npc.test.ts` pattern | M |
+| G1c | **landed** — nothing guarded gate *vocabulary* inside the files that do ship, and two more leaks were inside files entitled to ship: `gates.json`'s `key_examples[].mined_from` ("다음 런의 G1 이전에 채굴 가능") and `characters.json`'s `strands.gate_ids` | `tests/scaffold/no-gate-vocab.test.ts` scans every string value of every published pack through the build's own `publishedContentOf()`; `gates[].gate` is exempt by path and by exact shape | — |
 | G2 | LIVE FEED names the fault in mechanism terms | `src/client/components/fallback-notice.ts:27-31` carries three severities; `src/client/shell/announcer.ts:29` is a **second literal** and holds the fatal string only | M |
 | G3 | REPORTS rail labels every segment `RUN nn` | `src/client/components/report-archive.ts` — see below | M |
 | G4 | AGENT FILE 행동 원칙 reads as a manual: "매 갈림길에서 하나의 태도를 고르고" | hardcoded at `src/client/components/dossier.ts:102`, **not** authored in the datapack | S |
