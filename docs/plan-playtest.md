@@ -348,7 +348,7 @@ without a probe risks the mechanism claim four days before submission.
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
-> As of 2026-08-06 (v7). A PRD names the version it was written against.
+> As of 2026-08-07 (v8). A PRD names the version it was written against.
 
 The items above are not worked by hand and not worked one at a time. Each is
 specified as a **mini-PRD** by a high-capability model, then executed by a
@@ -439,6 +439,13 @@ Rules for the change list:
 - Enumerate every site. Accessibility duplicates, DEV fixtures and test literals
   all carry copies of UI strings.
 - Where the change is a deletion, say what replaces it, including "nothing".
+- **Cite a multi-line block by its first line.** Two PRDs cited a block by its
+  last line; under §5.7 the executor then stops at the first edit, having done
+  nothing. First line, always. (v8 — #152/#153 review.)
+- **Scope a Done-when grep to the unit's files.** A repo-wide grep meets
+  grandfathered sites and test comments — `published-data.test.ts:144` carries
+  `객관 로그` in a comment forever — and then a binary condition can never go
+  true. (v8.)
 
 ### 5.4 Repo traps to name in the PRD that touches them
 
@@ -497,6 +504,14 @@ Rules for the change list:
   every published string value at any depth. A PRD that adds a field to a pack
   decides whether it ships, and adds it to the strip and its premise check if
   not.
+- **`button()` names a control through `title`, never `aria-label`**
+  (`src/client/shell/dom.ts:28-33`) — and while visible text exists, the text is
+  the accessible name and `title` is ignored; remove the text and `title` takes
+  over. The a11y census reads `aria-label ?? title ?? textContent`. (v8.)
+- **The dark shell types in `--txt-*`; `--pap-*` is ink for paper** — the two
+  meet at ~1.3:1 on `--ink-0`, which is invisible. Shell overlays slot into an
+  existing z ladder: `#grain` 900 · `#vignette` 901 · `#sweep` 902 · `#toast`
+  950 · `.skip-link` 960. (v8.)
 - **Two composition roots** must stay in step: `src/client/driver/live/bind.ts`
   and `tools/driver/run/bind.mjs`.
 - **The membrane rule and invariant 6** (/CLAUDE.md, `docs/spec-client.md:113-115`)
