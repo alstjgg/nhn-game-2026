@@ -35,11 +35,22 @@ import { defineConfig, type Plugin } from 'vite'
  * in `src/client/driver/live/pack.ts` and `tools/driver/run/pack.mjs` —
  * `tests/invariants/published-data.test.ts` fails when the three drift.
  *
- * `places` / `truths` / `score` / `hardening` / `draft.md` are authoring
- * surfaces no seam consumes, and `_schema/` is authoring-time validation.
- * None of them ship.
+ * `places` / `truths` / `hardening` / `draft.md` are authoring surfaces no seam
+ * consumes, and `_schema/` is authoring-time validation. None of them ship.
+ *
+ * `score` joined the loaders with the scorer (#146) — `createScorer` resolves
+ * `units[].predicates` at 21:04 — so it ships too, stripped by
+ * `stripScoreNotes` below.
  */
-const PACK_PARTS = ['meta', 'timeline', 'gates', 'characters', 'temperament', 'symptoms'] as const
+const PACK_PARTS = [
+  'meta',
+  'timeline',
+  'gates',
+  'characters',
+  'temperament',
+  'symptoms',
+  'score',
+] as const
 
 /** Scenario-independent policy the run fetches, relative to `data/`. */
 const POLICY_FILES = ['policy/report-guidance.json'] as const
@@ -87,6 +98,36 @@ export function stripDesignNotes(raw: string): string {
   return `${JSON.stringify(pack, null, 2)}\n`
 }
 
+/**
+ * The same problem in `score.json`, which the scorer made a published file.
+ *
+ * Only `id`, `label` and `predicates` are read — `src/driver/scorer.ts:94-105`
+ * resolves the predicates for the value and resolves them AGAIN against the
+ * untouched day for the baseline, deliberately not trusting the authored
+ * `baseline` prose ("812명 진입, 사망 24 · 부상 71" is four numbers in one
+ * sentence and no run produces it as a value).
+ *
+ * What the rest says is the ending. `baseline_summary` states the
+ * no-intervention outcome outright — "사망 26 · 부상 71 · 오인 구금 1건 …
+ * 은폐 유지" — and `attributed_gates` names the gates a unit hangs off (`["G6",
+ * "G7", "G4"]`), which is gate structure on a fetchable URL and the same
+ * invariant-6 leak this build closed elsewhere.
+ */
+const SCORE_UNIT_DESIGN_FIELDS = ['tallies', 'baseline', 'attributed_gates'] as const
+const SCORE_TOP_DESIGN_FIELDS = ['baseline_summary', 'variance_notes'] as const
+
+/** Strips the authored-for-a-human fields from `score.json`. Shape-preserving. */
+export function stripScoreNotes(raw: string): string {
+  const pack = JSON.parse(raw) as { units?: unknown } & Record<string, unknown>
+  for (const field of SCORE_TOP_DESIGN_FIELDS) delete pack[field]
+  const units = Array.isArray(pack.units) ? pack.units : []
+  for (const unit of units) {
+    if (unit === null || typeof unit !== 'object') continue
+    for (const field of SCORE_UNIT_DESIGN_FIELDS) delete (unit as Record<string, unknown>)[field]
+  }
+  return `${JSON.stringify(pack, null, 2)}\n`
+}
+
 function copyPackData(): Plugin {
   return {
     name: 'dday-data',
@@ -102,6 +143,8 @@ function copyPackData(): Plugin {
         mkdirSync(dirname(to), { recursive: true })
         if (rel.endsWith('/gates.json')) {
           writeFileSync(to, stripDesignNotes(readFileSync(from, 'utf8')), 'utf8')
+        } else if (rel.endsWith('/score.json')) {
+          writeFileSync(to, stripScoreNotes(readFileSync(from, 'utf8')), 'utf8')
         } else {
           copyFileSync(from, to)
         }
