@@ -342,13 +342,14 @@ without a probe risks the mechanism claim four days before submission.
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
-> As of 2026-08-06 (v3). A PRD names the version it was written against.
+> As of 2026-08-06 (v4). A PRD names the version it was written against.
 
 The items above are not worked by hand and not worked one at a time. Each is
 specified as a **mini-PRD** by a high-capability model, then executed by a
 sub-agent on a low-cost model. The specification carries the expertise; the
 executor supplies only mechanical edits. Everything here is a rule for the author
-of the PRD, not for the executor.
+of the PRD, not for the executor — with one exception, §5.7, which the author
+copies into every PRD.
 
 **Maintaining this section is part of the job.** A high-capability model reading
 this document — for any reason — revises §5 when it finds a rule that misfires, a
@@ -365,6 +366,15 @@ resolves such gaps by inventing something plausible and consistent with nothing.
 Author-owned, always resolved before handoff: which files change · the exact final
 strings · naming · whether a test is updated or left alone · what counts as done.
 Executor-owned: nothing but the edit and running the checks.
+
+The division holds only while the PRD is right. Half the coordinates in this
+document carried a defect before the audit, every one of them written
+deliberately, so a wrong PRD is the expected case and not the exceptional one.
+What follows from that is not that the executor gets discretion back:
+**where the PRD does not match the tree, the executor stops.** Stopping is not a
+decision, so the division stands — the author decides everything, and where the
+author decided wrongly the executor notices and reports rather than repairs.
+§5.7 is the block that says so.
 
 ### 5.2 Unit sizing
 
@@ -402,6 +412,10 @@ Observable checks a human repeats in the browser.
 
 ## Done when
 A checklist of binary conditions. No judgment words.
+At least one is behavioural — something the running game does, not an edit made.
+
+## If this PRD is wrong
+§5.7, verbatim.
 ```
 
 Rules for the change list:
@@ -483,3 +497,49 @@ when the process dies. The executor works on its own branch, opens a PR, and mer
 nothing. Review is by the author, against the Done-when checklist. `main` stays
 deployable, and repo hard rules 1–6 apply to executor commits exactly as to
 hand-written ones.
+
+### 5.7 When the PRD is wrong
+
+A PRD fails in three shapes, and only two of them are visible to the executor.
+
+- **The citation does not match.** The change list says a path and line hold a
+  string; they do not. §5.3's verbatim rule is what makes this fail loudly. The
+  danger is the recovery: a low-cost model's default is to search for the string
+  elsewhere and edit what it finds — the first step §5.2 forbids, arriving through
+  the author's error instead of the author's omission.
+- **The instruction is executable and wrong.** A PRD that said "render
+  `stances[].desc`" would send an executor looking for a field that dies at
+  `schedule.ts:109`; finding none, it reaches for `label`, which is the one thing
+  U5.2c forbids. The executor is not malfunctioning. In the absence of the named
+  value, being helpful *is* inventing.
+- **The instruction is executable and breaks something.** U1 built into the
+  adapter applies cleanly, typechecks, and passes every suite, because
+  `kick()`'s early return at `adapter.ts:194-196` halts the run at runtime. No
+  stop rule reaches this one — the executor was never confused. It is caught only
+  by a Done-when condition stated as behaviour ("the run reaches 21:04"), which is
+  why §5.3 requires one.
+
+The block below goes in every PRD, verbatim, under `## If this PRD is wrong`.
+
+```
+An edit whose stated current text is not at the cited path and line is a defect
+in this document, not a puzzle to solve. Do not search for the text elsewhere.
+Do not adapt the edit to what you find. Do not skip ahead to the next edit.
+
+Stop at the first mismatch and report:
+  - the edits that applied, by path:line
+  - the edit that did not, with the text actually present at that path and line
+  - the commit you are working from: `git log -1 --format=%h`
+
+Change nothing further, and open no PR. A report of this kind is a completed
+run, not a failed one.
+```
+
+The last line is load-bearing. An executor that reads stopping as failure pushes
+through, and the failure that reaches the author is a diff instead of a sentence.
+
+On receiving such a report the author separates two causes, because the fixes
+differ: the PRD was wrong when written (correct it and reissue), or the branch
+moved under it (rebase and reissue against the reported commit). The executor
+cannot tell these apart; the reported commit is what lets the author. Either way
+the reissue is the committed file (§5.6), never a correction in chat.
