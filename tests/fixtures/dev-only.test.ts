@@ -111,9 +111,16 @@ describe('[u2f#c10] frozen inputs are read, never written', () => {
   // lands" — view-driver.ts landed with this run). The original claim stays
   // asserted where it stayed true: over the run's own merge range, in (e). The
   // live checks keep the paths that remain frozen.
-  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts']
+  //
+  // RELEASED again (08-06) for the scenario packs. Same expiry, same reasoning
+  // as the third entry in `discovery-and-frozen-guard.test.ts`: no run is open,
+  // and the gate vocabulary leaking onto a player surface (invariant 6) is a
+  // defect in the authored timeline itself. `data/scenario/_schema/` stays
+  // frozen and moves into FROZEN by name, so releasing the packs does not
+  // quietly release the schemas with them.
+  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts', 'data/scenario/']
   const FROZEN = [
-    'data/scenario/',
+    'data/scenario/_schema/',
     'docs/design/',
     'src/shared/segment.ts',
     'tools/tests/segment.golden.mjs',

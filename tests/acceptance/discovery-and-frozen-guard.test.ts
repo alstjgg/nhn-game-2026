@@ -203,9 +203,16 @@ describe('[u11#c6] frozen inputs stayed frozen (C1 / C13 / C20)', () => {
   // `src/shared/species.ts` carried its own deletion order for the duplicate
   // `Species` union. The claim stays asserted where it stayed true — over the
   // run's own merge range, in (m); the live checks keep the still-frozen set.
-  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts']
+  //
+  // RELEASED again (08-06) for `data/scenario/우는다리/`. Same expiry, third
+  // path: the pack was frozen so a run could not rewrite its own inputs, and
+  // no run is open. It is released for a gate-exposure defect — the timeline
+  // printed `(갈림길 Gn의 자리)` on six lines of a player surface, against the
+  // 08-03 decision log and `docs/spec-client.md` §3 invariant 6 — which cannot
+  // be repaired anywhere but the authored file. `_schema/` stays frozen: the
+  // schemas are not what the defect is in.
+  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts', 'data/scenario/우는다리/']
   const FROZEN = [
-    'data/scenario/우는다리/',
     'data/scenario/_schema/',
     'docs/design/',
     'src/shared/segment.ts',
