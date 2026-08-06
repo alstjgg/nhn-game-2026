@@ -3,6 +3,70 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-06) — the deployed build was publishing its own answer key
+
+**`dist/` is a player surface, and nothing was treating it as one.**
+`copyPackData()` copied `data/scenario` and `data/policy` into `dist/`
+recursively, so every authoring file sitting beside the parts the run fetches
+shipped with them — `draft.md` above all, 44 kB carrying all eight gates with
+their stances and outcomes, the key conditions, truths 1–5 and the
+no-intervention line, readable at a URL on the live site. `vite.config.ts`'s own
+rule said "By name, never `data/` wholesale"; it was honoured at directory
+granularity and not at file granularity, and a recursive copy cannot express
+"the pack, but not the source it was compiled from". It enumerates now: 22
+published files → 8. `gates.json` has to ship, so its `standard_form` and
+`branch_note` — which write a gate's answer out in prose — are stripped from the
+published copy while the authored file keeps them.
+
+**The same class of defect twice more, both caught by the guard the first one
+motivated.** `tests/scaffold/published-data.test.ts` holds the allowlist to both
+loaders' `PACK_FILES` and checks that no seam reads a stripped field. When
+`main`'s score work merged into the playtest branch it added `score` to those
+loaders — the scorer resolves `units[].predicates` at 21:04 — and the branch's
+allowlist did not carry it, so the deployed client would have fetched a file the
+build never copied. Publishing it raw would have re-opened the leak: its
+`baseline_summary` states the no-intervention ending outright and
+`attributed_gates` names the gates a unit hangs off. It ships stripped, on the
+`gates.json` precedent; the scorer reads `id`, `label` and `predicates` and
+derives the baseline by resolving the same predicates against the untouched day
+rather than trusting the authored prose.
+
+**`npm run check` runs no vitest**, which is why none of this was visible to the
+gate most work runs. It is `tsc` (core + client) · `typecheck:test` ·
+`datapack:check` · `test:shared`; every vitest suite, including every structural
+guard, runs only under `npm run test`, and only `npm run build` shows what
+actually ships. Any work that changes what reaches the browser has to run all
+three.
+
+**Also fixed:** `.min.slotted` — a highlight authored in u1 — had never rendered.
+`sentenceState()` read `mined` before `slotted` and nothing can be slotted
+without being mined, so the state was unreachable; and slotting repainted
+nothing, because REPORTS subscribed to `meta`/`report` only while `slot` is a
+membrane op. The suite covering it seated a slotted-but-unmined id, which the
+engine forbids — it was covering a branch that could not execute.
+
+**Playtest triage lives at [plan-playtest.md](./plan-playtest.md)** — 17 items
+from the 08-05 session with dependency order and a cut line against ~08-10, plus
+§5, the rule set for specifying them as mini-PRDs for low-cost executors.
+
+**The 08-05 entry below is superseded on its central claim.** It says
+`ScorerPort` is declared but unbuilt, neither composition root supplies one, and
+all 8 units of `score.json` have `predicates: []`. None of that is true in the
+working tree: `score.json` carries **9 units, all 9 with predicates**,
+`src/driver/scorer.ts:136` builds the port, and both roots wire it
+(`src/client/driver/live/bind.ts:84`, `tools/driver/run/bind.mjs:125`). It also
+names the unbound meters "c3–c7"; `characters.json` actually leaves **c2–c7**
+unbound, 12 of 14 `meters[].variable` null. Meter binding is the only part of
+that worklist still open.
+
+**Consequence for the playtest plan:** two of its must items — U3 (the ending)
+and showing which sentence moved the agent — were sized as blocked on that work
+and are not. What is still missing is a *field*, not a port: `Sentence` is
+`{id, text, species, axis?}` (`src/shared/view-driver.ts:18`) with **no
+`referent`**, while a gate's key condition is a five-field record carrying one
+(`src/shared/datapack.ts:153-158`). Matching a sentence to what it is for needs a
+referent the wire does not carry.
+
 ## Status (2026-08-05) — the tally ledger is empty, and the reason is authoring, not wiring
 
 **Symptom:** `run_end` opens the TALLY sheet with no score rows — on the live

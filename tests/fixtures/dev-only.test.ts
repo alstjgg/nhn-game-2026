@@ -117,6 +117,9 @@ describe('[u2f#c10] frozen inputs are read, never written', () => {
   // the freeze was "the run must not rewrite its own inputs", and that claim
   // expired at the run's merge. `data/scenario/_schema/` stays frozen; the
   // schemas are the law the content is checked against.
+  //
+  // The gate-vocabulary repair (08-06) lands under that same release — the leak
+  // is in the authored timeline itself, so there is nowhere else to fix it.
   const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts', 'data/scenario/우는다리/']
   const FROZEN = [
     // Narrowed from `data/scenario/` — the pack under it is released (above);

@@ -127,8 +127,31 @@ describe('[u0#c3] no path alias anywhere (C6)', () => {
 })
 
 describe('[u0#c9] vite.config.ts carries the §3.7 pack-copy plugin, by name and build-only', () => {
-  it('git reports vite.config.ts unmodified', () => {
-    expect(git(['status', '--porcelain', '--', 'vite.config.ts']).trim()).toBe('')
+  // The u0-era `git status --porcelain -- vite.config.ts` freeze stood here and
+  // is retired (08-06). It asserted a rule, not a behaviour: it failed any edit
+  // to the file, deliberate or not, and passed the moment one was committed —
+  // so it caught careless *uncommitted* work and nothing else. The four asserts
+  // below already state the properties it was standing in for, and this one
+  // states the property whose absence let the answer key ship.
+  it('publishes by FILE, not by directory — no authoring surface rides along', () => {
+    const source = read('vite.config.ts')
+    // The directory form was `cpSync(data/scenario → dist/data/scenario,
+    // { recursive: true })`, which published every authoring surface beside the
+    // six files the run fetches — `draft.md` above all, the compile SOURCE,
+    // 44 kB carrying every gate, key condition and truth in the case. It was
+    // readable on the deployed site. A recursive directory copy cannot express
+    // "the pack, but not the source it was compiled from"; an enumerated file
+    // list can. `tests/scaffold/published-data.test.ts` holds the list itself
+    // to the loaders' `PACK_FILES`.
+    // Aimed at the COPY, not at `recursive` generally — `mkdirSync(dirname(to),
+    // { recursive: true })` is how a file copy makes its parent and is fine.
+    expect(source, 'a recursive copy publishes whatever sits beside the pack').not.toMatch(
+      /\bcpSync\b/,
+    )
+    expect(source, 'the copy is not file-at-a-time').toMatch(/\bcopyFileSync\b/)
+    expect(source, 'the published set is no longer enumerated by file').toMatch(
+      /publishedDataFiles/,
+    )
   })
 
   it('the plugin #114 landed is present — a plugins array with a closeBundle hook', () => {
