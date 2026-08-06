@@ -342,7 +342,7 @@ without a probe risks the mechanism claim four days before submission.
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
-> As of 2026-08-06 (v5). A PRD names the version it was written against.
+> As of 2026-08-06 (v6). A PRD names the version it was written against.
 
 The items above are not worked by hand and not worked one at a time. Each is
 specified as a **mini-PRD** by a high-capability model, then executed by a
@@ -446,6 +446,13 @@ Rules for the change list:
   caught. A PRD for deletion- or rename-shaped work must decide whether the
   assertion is amended, and fix whether verification runs before or after the
   commit.
+- **A merge can commit a file nobody edited.** Anything untracked in the working
+  tree when a conflict is resolved is swept into the merge commit — two scenario
+  drafts reached this branch that way and left again in `e68d09d`. An executor
+  resolving a merge stages by path and never `git add -A`; `git rm --cached` is
+  the repair, taking the file off the branch while leaving it on disk. It pairs
+  badly with the trap above: committing is what empties those assertions, so a
+  merge commit can both hide an edit and add a file in one step.
 - **`report-archive.ts`'s label guard is a deny list, and is not the thing to
   change.** `REFUSED = /gate|게이트/i` (`:34`) refuses gate vocabulary only —
   `ECHO-n` passes — and it is what keeps invariant 6. The on-screen label comes
