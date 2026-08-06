@@ -27,10 +27,14 @@ or pushed on the strength of this file alone.
 | provenance `A-only` | 26 |
 | provenance `B-only` | **9** |
 | `#4-role: spine` | 9 |
-| `#4-role: section` | 27 |
+| `#4-role: section` | 28 |
 | `#4-role: supporting-anecdote` | 41 |
-| `#4-role: archive` | 5 |
+| `#4-role: archive` | 4 |
 | atom ids carried | **863 of 863** cited by either pass (zero dropped) |
+
+*Amended 2026-08-07 after OH-5: T-68 promoted `archive` → `section` on new evidence, so
+section is 28 and archive 4. No theme was added, merged or killed by the interview —
+an interview supplies oral evidence and locations, not themes.*
 
 Numbering: a theme anchored in Pass A keeps **Pass A's number**, so `T-01…T-69` are
 traceable straight back. `T-70…T-84` are themes with no Pass A anchor. Every record's
@@ -102,13 +106,29 @@ where the unmined #110/#116 material lives, so it is very likely **one gap, not 
    carrying its fields, no `counter-evidence: none found`. The interruption cost that pass
    its bookkeeping, not its content.
 2. **Doodle Life was a fully built demo, not screenshots.** It survives as **closed
-   (unmerged) PR #16** (`demos/doodle-life/` + `artifacts/doodle-life-evals/`, closed
-   2026-07-25), never deployed to `main`. Corrected demo set used throughout:
-   **apothecary + darkest-context (merged) + doodle-life (closed PR #16) → none won →
-   DDAY**. This supersedes OH-4's "only screenshots survive" and the gap notes in B T-12 /
-   B T-46, and it *sharpens* T-63: repo-mining that reads only `main` plus merged history
-   under-counts **closed PRs** — a narrower and more actionable failure mode than
-   "uncommitted work".
+   (unmerged) PR #16** (`demos/doodle-life/` + `artifacts/doodle-life-evals/`), never
+   deployed to `main`. This supersedes OH-4's "only screenshots survive" and the gap notes
+   in B T-12 / B T-46, and it *sharpens* T-63: repo-mining that reads only `main` plus
+   merged history under-counts **closed PRs** — a narrower and more actionable failure
+   mode than "uncommitted work".
+   **Amended by OH-5 (2026-08-07), two points:** (a) the **cut date is 07-24**, at the
+   meeting — PR #16's 07-25 close is *cleanup*, not the decision, so the brief's own
+   correction is superseded on the date though not on the substance; (b) **closing it
+   unmerged was deliberate policy** ("main은 배포 대상이고 더 안 갈 트랙이라, 브랜치로만
+   남겨 기록은 보존하고 배포에는 안 얹었습니다"), which makes the closed PR an *instance
+   of the T-60 preservation discipline* and the under-counting of closed PRs **systematic
+   wherever that policy applied**, not incidental.
+6. **The demo phase did not end in a bake-off, and "none won" is too clean** (OH-5,
+   oral). Nothing was beaten in a comparison. **Doodle Life** was cut 07-24 by a human
+   playing the demo to the end, *before* the other two were built. **약국 (apothecary) did
+   not lose** — its 07-27 evaluation was positive (it, not darkest, conveyed 효용감 that
+   the LLM was really doing work); it was displaced because DDAY planning was going better
+   and was more fun, and "너무 잔잔했다" is a later retrospective rather than that day's
+   verdict. **darkest-context was not eliminated by a verdict** — the 07-27 disposition
+   was 전면 수정 후 재드래프트, and it died on 07-28 when the revision went unprepared:
+   "판정으로 탈락한 게 아니라 변호인이 안 나타난 겁니다." Corrected framing: the funnel did
+   not select. **One track was killed by a human play verdict, one died of a process
+   accident, one was displaced by enthusiasm.** T-57 and T-58 carry this.
 3. **#110 / #116 and 117 post-snapshot commits remain unmined** (director deferral).
    Every theme resting on evidence those PRs could strengthen or overturn keeps its
    `gaps` flag: **T-09, T-10, T-24, T-26, T-27, T-30, T-48, T-55, T-59, T-76** and the
@@ -119,13 +139,50 @@ where the unmined #110/#116 material lives, so it is very likely **one gap, not 
 5. **The production-model in-play measurement gap is not a blocker** (director call); it
    survives only as a per-theme `gaps` note where Pass B already carried it.
 
-## Round-2 interview — did not land before this run
+## Round-2 interview — landed 2026-08-07, ingested as OH-5
 
-`oral-history.md` carries **OH-1…OH-4 only** at the time of this reconciliation; no new
-OH-n from the Round-2 question set exists. Phase 3 therefore proceeded as the brief
-permits, and **the DDAY-selection record gap stays open and unfilled** (T-57, T-58, T-63).
-No oral claim was promoted toward written. Every `oral-only` line from both passes is
-carried verbatim below.
+The Round-2 answers arrived after the reconciliation above was assembled and are
+ingested here. See `oral-history.md` **OH-5** (윤석) for the verbatim account. No oral
+claim was promoted toward written; every `oral-only` line from both passes is carried
+verbatim below, and OH-5's own claims are marked oral throughout.
+
+**The headline is not an oral answer — it is a location.** The DDAY-selection
+artifacts *exist and are in-repo*. S4-021's `record-gap`, which Pass B called the single
+most important undocumented decision, **is a mining miss, not an absence.** The slug is
+`dday-simulation`, not `dday`, and the file sits in `planning/concepts/` next to the
+other eight concept docs:
+
+| artifact | path | landing |
+|---|---|---|
+| discussion draft | `planning/concepts/game-concept-dday-simulation.md` | main 07-29 12:54, PR #85 |
+| track SoT | `planning/dday-sot.md` | written 07-28 |
+| formal design doc | `planning/dday-design-doc.md` | 07-29, PR #91 |
+
+This is a **live instance of T-63's failure mode (b)** — "work that moved or was renamed
+out of where the miner looked" — caught by the oral channel exactly as T-63 predicts,
+and it is the second such catch after OH-4's. T-63 is strengthened, not weakened, by it.
+
+**Phase 3 did not mine these** (§What NOT to do stands). They go to the pre-Phase-5 sweep
+as its highest-value target, and the affected themes' `gaps` lines below now read
+*"artifact located, unmined"* rather than *"no artifact exists"* — a materially different
+status.
+
+**Director decision, 2026-08-07: the sweep stays pre-Phase-5. It is not pulled forward.**
+Locating the artifacts does not reorder the phases. **Consequence Phase 4 must carry:**
+the demo-phase and DDAY-selection arc (T-57, T-58, T-63, and T-68's causal chain) will be
+banked as stories on **oral evidence** — OH-5 — while written artifacts that would settle
+the same claims sit located and unread. Every story-bank entry drawn from that arc must
+therefore be marked **oral-pending-sweep**, so Phase 5 can upgrade it against PR #85 /
+PR #91 / `planning/dday-sot.md` rather than shipping an oral account as a written one. A
+bank entry that loses this marker launders oral into written, which is the one thing this
+track has forbidden from Phase 1 onward.
+
+**A new theme is owed but not written here.** The 07-28 communication miss — assignment
+was ① 민서 / ② 윤석, ② was never prepared and ① was duplicated at a different scale,
+collapsing a three-way comparison to two — is the *human-layer twin of the parallel-agent
+seam failure T-25 is built around*. It is currently oral-only with zero atom support, so
+writing it as a theme would violate the "every claim cites atom ids" rule. **Candidate
+for Phase 4/5 once the sweep mines PR #85/#91 and the 07-27/07-28 meeting records.**
 
 ## Seeds — verdicts after reconciliation
 
@@ -135,7 +192,7 @@ All three seeds survive. **One moved.**
 |---|---|---|---|
 | **1 — 닫힌 환경에서의 최대의 자유도** | **seed-confirmed** | T-01, T-02, T-14, T-82 | No movement. Strengthened: both passes independently confirm it in-game, and Pass B adds it as a *build* method. `seed-unevidenced` within lane 3 only. The maximal-freedom pole failed when tried at both altitudes (Doodle Life; frontend-mod v1) — preserved, not resolved. |
 | **2 — '게임'으로 느껴지기 위한 속도감** | **seed-confirmed as a design goal; its causal claim is `seed-unevidenced` at corpus level** | T-51 | **MOVED.** Pass B called the causal claim "under-evidenced". Pass A is sharper and governs: *the seed's actual claim — that pacing **serves the illusion of freedom** — attaches to nothing in 905 atoms.* Seven of Pass A's eight agents looked for the causal link independently and none found it; every latency atom links speed to build cost, judge attention, contract compliance or measurement budget instead. The seed survives as a goal and as a practice (diegetic waiting); the mechanism it asserts is unevidenced. |
-| **3 — 끝까지 AI가 하지 못하는 것: 재미있나를 판단하는 것** | **seed-confirmed as a rule; contradicted as a description of practice** | T-46 (spine), T-10, T-30, T-82, T-45 | Sharpened, not moved. Pass B's five agents all reached it — the most broadly corroborated theme in either map — and Pass A supplies the standing contradiction: agent review seats routinely made accepted fun-adjacent judgments, one rewriting NPC dialogue on taste grounds. The boundary also **migrated** under deadline (blind coding dropped; the V3/E5′ verdict never delivered). Held more cleanly as a rule than as practice; **must be timestamped, not stated as a constant.** |
+| **3 — 끝까지 AI가 하지 못하는 것: 재미있나를 판단하는 것** | **seed-confirmed as a rule; contradicted as a description of practice** | T-46 (spine), T-10, T-30, T-82, T-45 | Sharpened, not moved. Pass B's five agents all reached it — the most broadly corroborated theme in either map — and Pass A supplies the standing contradiction: agent review seats routinely made accepted fun-adjacent judgments, one rewriting NPC dialogue on taste grounds. The boundary also **migrated** under deadline (blind coding dropped; the V3/E5′ verdict never delivered). Held more cleanly as a rule than as practice; **must be timestamped, not stated as a constant.** **OH-5 adds the practice-side instance the map lacked:** a human played the Doodle Life demo to the end and killed the track on a fun verdict, over a live technical rebuttal. The rule side is now evidenced in play — for the demo phase, orally. Still unevidenced for DDAY itself. |
 
 No seed is `seed-unevidenced` at the corpus level, and none was killed.
 
@@ -150,9 +207,12 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
   T-71 carries the argument.
 - **Nothing was killed.** Every theme in both passes already clears ≥3 atoms from ≥2
   slices (0 exceptions in either pass), and no theme survived scrutiny only to turn out
-  unsupported or spurious. The 5 `archive` themes (T-65, T-66, T-67, T-68, T-69) are
+  unsupported or spurious. The 4 `archive` themes (T-65, T-66, T-67, T-69) are
   true and evidenced and belong to **#3, not #4** — concept-phase design reasoning.
-  `archive` is not a soft kill and must not be read as one.
+  `archive` is not a soft kill and must not be read as one. **T-68 left this list on
+  2026-08-07**: OH-5 turned "two opposite opinions" into a diagnosed failure with a causal
+  chain into the winning concept, which is what `section` is for. That is the shape an
+  `archive` theme takes when it earns its way back — evidence, not reconsideration.
 
 ---
 
@@ -1120,6 +1180,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-46 + B T-05
   - basis: Seed 3, and the most broadly corroborated theme in either pass — all five of B's agents surfaced it independently, and A reaches the same finding with the same complication. Containment 0.67.
 - #4-role: **spine**
+- **OH-5 update (2026-08-07, oral — does not become written):** supplies the practice-side data point this theme's `gaps` said was missing. A human ran the Doodle Life demo to the end and killed the track on a fun verdict — "너무 재미없고 게임성이 없다" — *against* a live counter-argument that a better model or prompt would fix it. So the fun verdict did land on a human, in play, and overrode a technical rebuttal. The `gaps` line "no human playtest verdict exists in any slice" is now oral-answered for the demo phase and **still open for DDAY itself**. Seed 3's rule side is strengthened; the porousness recorded in counter-evidence stands unchanged.
 - thesis: Seed 3 is **supported as a governance rule and contradicted as a description of practice.** Across every slice the final verdict — is the mechanism real, is the scenario good, is this worth keeping — is explicitly reserved for a named person; and across the same slices agent review seats routinely made accepted fun-adjacent judgments, one of them rewriting NPC dialogue on taste grounds. **B's addition:** the boundary also *migrated* under deadline (blind coding dropped, the V3/E5′ verdict skipped), so it must be timestamped, not stated as a constant.
 - lanes: cross (1, 4) / cross
 - origin: seed-confirmed:3
@@ -1212,6 +1273,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-50
   - basis: B T-38 independently asserts the minutes' disagreements-table structure and its living-amended-ledger character, so the artifact claim is corroborated; A's finding that the founding disagreement is *absent from* that table is A's.
 - #4-role: **supporting-anecdote**
+- **OH-5 update (2026-08-07, oral):** a second, independent instance of the pattern. The **VLM 판정 편차** debate never closed — 윤석 held it is "LLM의 성질이고 해석의 재미로 쓸 수 있다", 민서 held "플레이어에겐 랜덤 판정으로 보인다" — and other reasons folded the track before the argument finished. An open question closed by nobody, and the second two-directors disagreement on record after the membrane settlement (T-70).
 - thesis: The meeting machinery preserves disagreement structurally — a disagreements table, an open-questions list, per-attendee positions — and several of the project's central questions are recorded as *unresolved* rather than settled, including questions later decisions quietly answered without ever closing them. **The disagreements table exists and the project's founding disagreement is not in it.**
 - lanes: 3 (the artifact) over unclear (the content)
 - origin: emergent
@@ -1361,6 +1423,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-57 + B T-46
   - basis: Containment 0.62. Both passes reach the same three-part shape: comparison machinery built, then deliberately retired, then the winner arriving from outside it.
 - #4-role: **section**
+- **OH-5 update (2026-08-07):** the funnel's ending is now documented, and it is not a selection. **약국 was positively evaluated on 07-27** (it, not darkest, conveyed 효용감 that the LLM was really performing work) and was displaced because DDAY planning was going better and was more fun. **darkest was not eliminated by a verdict**: the 07-27 disposition was 전면 수정 후 재드래프트, and it died on 07-28 when nobody prepared the revision. The 07-27 meeting produced **three** candidates (① 신작 텍스트 추리 ② darkest 변경안 ③ 약국); ② was never prepared and ① was duplicated at a different scale, collapsing the comparison to two. **The apparatus this theme describes did not make the final call — attrition did.** `gaps` status: the 07-27 review content is **located, unmined** (PR #85 / #91, `planning/dday-sot.md`), not absent.
 - thesis: Selection machinery came first — a template whose stated purpose was side-by-side comparability, mandatory verification-gap confessions, honesty rules to stop well-written unverified docs winning, a cap on differentiators used as a maturity test — and it merged eight concepts into three tracks, then declared documents insufficient and handed the verdict to playable demos ('fun is judged by playable demos, not writable docs'). The concept that won followed none of it.
 - lanes: 3 / 4 (with 3)
 - origin: emergent
@@ -1385,6 +1448,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-58
   - basis: B T-46 independently asserts that the winner was a post-demo new concept the funnel never contained, so the outcome is corroborated; A's framing of the *reasons* as almost entirely oral is A's.
 - #4-role: **section**
+- **OH-5 update (2026-08-07):** the reasons are no longer "almost entirely oral", and the outcome framing is corrected. Per-track dispositions, oral: **Doodle Life** cut 07-24 by a human play verdict *before* the other two were built — contributing reasons latency (1–2 min or failure; ~20 s for the VLM alone, against "10초도 길다"), verdict variance on identical input, and abstract translated-register NPC dialogue — with the human verdict decisive over a rebuttal that a better model would fix it, on cost-of-repair grounds. **약국** displaced, not beaten (see T-57). **darkest** lost its defence, not a verdict. The four-branch darkest critique — 인지 부조화 · 관전형 구조의 지루함 · UI/UX 정체성 결여 · 기술의 단순 소모, with 어거지 매핑 and DD-아류 named as two horns of one dilemma — replaces this theme's single-resemblance reading. **"Three demos built → none won → a fourth won" should be retired in #4** in favour of: one killed by play, one killed by a process accident, one displaced by enthusiasm. The pivot has **no single author** — seed by 윤석 (단일 task 에이전트), grown to its current form by 민서 (재난 상황 루프) — and the pivot moment is the 07-27 frame shift to 재난 시뮬레이션 + 인간 퍼즐 + 갭 분석 루프, *not* the "단일 task" phrase. OH-2's "retained core" and "problems dissolved" claims are **confirmed as present in a written artifact** (concept doc §1 and the §3 table), pending the sweep.
 - thesis: The team deferred the concept decision to *played* demos, ran the comparison, killed everything in it, and confirmed a concept that had never been in the bake-off — drafted as a replacement for the thing a demo proved didn't work. The written record carries the outcome and almost none of the reasoning. **Corrected demo set (carried from the Phase 3 brief, superseding OH-4 and both maps): apothecary + darkest-context (merged) + doodle-life (closed PR #16, `demos/doodle-life/` + `artifacts/doodle-life-evals/`, closed 2026-07-25, never deployed to `main`) → none won → DDAY.**
 - lanes: cross (1 for the designs, 2 for the builds; the selection itself has **no lane**)
 - origin: emergent
@@ -1504,6 +1568,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-63 + B T-12
   - basis: Both passes independently call this a method-finding against their own method. Containment 0.80.
 - #4-role: **section**
+- **OH-5 update (2026-08-07) — this theme just predicted itself again.** The DDAY-selection `record-gap` (S4-021) is **a mining miss, not an absence**: `planning/concepts/game-concept-dday-simulation.md` (PR #85), `planning/dday-sot.md` and `planning/dday-design-doc.md` (PR #91) exist in-repo, and the reason mining missed the first is that **the slug is `dday-simulation`, not `dday`**. That is failure mode (b) — "work that moved or was renamed out of where the miner looked" — caught by the oral channel, exactly as this theme says only interviews can. Second confirmed instance after OH-4's. Also sharpened: closing PR #16 unmerged was **deliberate preservation policy**, so the under-counting of closed PRs is *systematic wherever that policy applied*, not incidental. **The theme is strengthened; the corpus is what was wrong.**
 - thesis: The mining that produced these atoms demonstrates, against itself, that a self-audit conducted through a git repository cannot see (a) work whose artifact was never committed, (b) work that moved or was renamed out of where the miner looked, and (c) anything past the snapshot. All three are visible inside the corpus, and one produced a **false finding that reached an atom file**. **Sharpened by the Phase 3 brief:** the Doodle Life case is not 'uncommitted work' but a *closed PR* — a fully built demo living in closed PR #16 that never reached `main`. Repo-mining that reads only `main` plus merged history under-counts closed PRs, which is a narrower and more actionable failure mode than the one either pass recorded.
 - lanes: 3 (method), bearing on all four / cross (a caveat on the mining method)
 - origin: emergent (surfaced by the carried input defect + OH-4)
@@ -1605,7 +1670,8 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - verdict: **kept** — clears the evidence bar; not a duplicate of any other kept theme; not subsumed.
 - provenance: **A-only** — sources: A T-68
   - basis: A chronology-shaped find (two opposite positions within one week) that B's lane sweep had no vantage point for.
-- #4-role: **archive**
+- #4-role: **section**  *(promoted from `archive` by OH-5 — see the OH-5 note below)*
+- **OH-5 update (2026-08-07, oral) — this is why the role moved.** The question stops being two opinions and acquires an empirical answer. darkest-context's 07-27 critique found **인지 부조화**: bolting 프롬프트·MCP·스킬 onto a fantasy worldview left the machinery with no 당위성, and the dilemma is two-horned — keep the mapping and it reads 이질감, remove it and the game reads as a Darkest Dungeon 아류. DDAY's naked-agent-vocabulary answer is the resolution of a *diagnosed* failure, not a taste reversal. That gives this theme a causal chain into the winning concept and lifts it out of concept-doc-only THIN territory — hence `archive` → `section`. The THIN mark is retained: the evidence base is still one slice plus oral, pending the sweep.
 - thesis: Within one week the team held contradictory positions on whether the agent-engineering underneath should be visible to the player — hide it behind card grammar, or show it nakedly as the game's own vocabulary — and the winning concept is the reversal of the earlier rule.
 - lanes: 1
 - origin: emergent
@@ -2049,11 +2115,14 @@ should be decided together.
    T-76**, and above all **T-27** — if the tail carries heavy review, T-27 (the panel's
    activity decayed to zero) *inverts*. The deliverable's central "multi-agent review
    works" claim is under-evidenced until this runs.
-2. **The DDAY-selection record gap.** The single most important undocumented decision —
-   how DDAY was chosen after the bake-off, from outside the funnel — has no minutes
-   (S4-021). Everything the "trial-and-error → winner" arc rests on is oral (OH-1/OH-2).
-   **T-57, T-58, T-63.** Round 2 of the interview did not land before this run; it is
-   still the cheapest thing that could close it.
+2. **The DDAY-selection artifacts — located 2026-08-07, still unmined.** *Status changed
+   by OH-5: this is no longer a record gap.* `planning/concepts/game-concept-dday-simulation.md`
+   (PR #85), `planning/dday-sot.md` and `planning/dday-design-doc.md` (PR #91) exist in-repo;
+   mining missed the first because the slug is `dday-simulation`, not `dday`. **T-57, T-58,
+   T-63** all now say *located, unmined*. This is the highest-value target in the sweep and
+   the cheapest — three known paths, no discovery required. Mining them may also promote the
+   07-28 communication-miss candidate into a real theme, and would let OH-2's "retained core"
+   and "problems dissolved" claims move from oral to written.
 3. **The 41-atom residue** (above). Concentrated in S9b/S9a, so likely the same gap as
    (1) rather than a second one.
 4. **No production-model, in-play measurement exists.** Every mechanism result is on

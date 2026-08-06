@@ -330,5 +330,180 @@ the pre-repo period and for causal ordering between decisions.
 
 ---
 
+## OH-5 — 윤석, Round-2 answers on the DDAY selection and the demo dispositions
+
+- **Given:** 2026-08-07, in response to the Round-2 question set
+  (`interview-prompts.md`), targeting the DDAY-selection record gap that Pass B
+  named the single most important undocumented decision. Two questions, one
+  sitting.
+- **Nature:** the narrator of OH-3 (the seat that ran the darkest-context track and
+  cut Doodle Life) answering targeted questions about events he participated in.
+  **This is the first oral account that names written artifacts by path** — see
+  "New corpus targets" below, which is the most consequential thing in this block.
+- **Standing:** oral. Ranks below written sources on conflict. Where it points at a
+  written artifact, the artifact — not this account — is the evidence; this account
+  is what tells the sweep where to look.
+
+### §A — verbatim (the selection timeline and the pivot)
+
+> 07-24 — Doodle Life 컷. 제가 데모를 끝까지 돌려 보고 너무 재미없고 게임성이 없다고
+> 판단해서 제외했습니다. 남은 건 약국(민서)과 Darkest Context(제 것) 둘.
+> 07-25~27 — 둘 다 실제로 빌드. darkest-context는 07-27에 ship됐습니다.
+> 07-27 회의 — darkest 데모에서 아쉬운점이 많아 새로운 컨셉이 필요하다고 논의, 그 자리에서
+> 제가 단일 task를 푸는 에이전트를 간단히 제안했고, 민서가 그걸 거대한 재난 상황을 루프 돌며
+> 해결하는 컨셉으로 발전시켰습니다. 둘 다 "이건 단일 에이전트 형식이 맞다"에 합의했고요.
+> 회의 결과 후보 3개가 나왔습니다 — ① 신작(텍스트 추리 게임) ② darkest 컨셉 변경안 ③ 약국.
+> 숙제는 민서가 ①, 제가 ②를 준비해 오기로.
+> 07-28 — 여기서 사고가 납니다. 제가 darkest 변경안 대신 제가 07-27에 처음 제안했던 단일
+> task 에이전트를 준비해 갔습니다(field-report). 소통 미스였습니다. 결과적으로 민서의
+> dday-simulation과 컨셉이 완전히 겹쳐서 규모만 다른 같은 게임 2개가 됐고, darkest 변경안은
+> 아무도 준비를 안 해서 그대로 사라졌습니다.
+> 그래서 최종 비교가 dday-simulation vs 약국이 됐습니다.
+>
+> OH-2가 말한 "유지한 코어"는 맞습니다. 컨셉 문서 §1에 그대로 있습니다 — 프롬프트·스킬을
+> 조정하고 관전한다, 멤브레인 유지.
+> "문제가 저절로 해소됐다"는 것도 문서에 표로 남아 있습니다(§3 「이 픽션이 공짜로 해결해
+> 주는 것」) — 왜 프롬프트를 만지나 / 왜 반복 런인가 / 왜 타이핑을 못 하나 / 왜 토큰 제한이
+> 게임 규칙인가.
+> 다만 피벗의 순간은 "단일 task" 문구가 아닙니다. 그 말은 07-27에 이미 나왔고, 진짜로 바뀐
+> 건 07-27에 재난 시뮬레이션 + 인간 퍼즐 + 갭 분석 루프로 프레임을 통째로 옮긴 것입니다.
+> 누가 언어화했나 — 한 사람이 아닙니다. 씨앗은 제가 뿌렸고(단일 task 에이전트), 그걸 지금의
+> 형태로 키운 건 민서입니다(재난 상황 루프).
+> 있습니다. 못 찾으신 건 슬러그 때문입니다 — 파일명이 dday가 아니라
+> planning/concepts/game-concept-dday-simulation.md이고, 다른 컨셉 8편과 같은 폴더에
+> 있습니다.
+> 3단계로 존재합니다.
+> 논의 초안 — game-concept-dday-simulation.md. 자체 날짜 07-27~28, main 착지 07-29 12:54
+> (PR #85)
+> 트랙 SoT — planning/dday-sot.md, 07-28 작성
+> 정식 기획서 — planning/dday-design-doc.md, 07-29 PR #91. 제가 썼습니다 (07-28 미팅 TODO #1)
+> 실제 순서는 논의 → 컨셉 문서 → 시나리오 5편 집필 → 페이퍼 테스트 v1/v2 → 07-28 확정 →
+> 07-29 정식 기획서입니다. 논의에서 바로 빌드로 간 게 아닙니다.
+
+### §B — verbatim (why each track ended)
+
+> 약국은 진 게 아닙니다. 07-27 비교에서 약국 평가는 오히려 긍정이었습니다 — LLM이 실제로
+> 업무를 수행한다는 효용감을 주는 쪽은 약국이었고, darkest가 외형만 답습한 쪽이었습니다.
+> 밀린 이유는 부정 평가가 아니라 이겁니다: DDAY를 기획하다 보니 LLM 요소가 게임 속에
+> 자연스럽게 녹아들었고, 기획하는 것 자체가 더 재미있었습니다. 그래서 자연스럽게 약국이
+> 밀렸습니다.
+> "너무 잔잔했다"는 그날의 판정이 아니라 나중의 회고에 가깝습니다. 특정 플레이테스트 순간이
+> 있어서 접은 게 아닙니다.
+>
+> 닮음 하나가 아니었고, 심지어 "졌다"도 정확하지 않습니다.
+> 07-27에 나온 판단은 네 갈래입니다.
+> 인지 부조화 — 판타지 세계관에 '프롬프트·MCP·스킬'을 얹으니 당위성이 없음
+> 관전형 구조의 지루함 — 타인의 플레이 트레일러를 감상하는 수준
+> UI/UX 정체성 결여 — 기존 게임 레이아웃 차용
+> 기술의 단순 소모 — LLM을 텍스트 생성기로만 씀
+> 그리고 어거지 매핑과 DD 아류는 같은 딜레마의 두 뿔입니다. 매핑을 두면 이질감, 빼고 정통
+> 판타지로 가면 아류작으로 보입니다.
+> 중요한 건 처분입니다. 07-27에 민서가 먼저 제안한 건 폐기가 아니라 전면 수정 후, 개선되면
+> 재드래프트였습니다. 그런데 07-28에 제 소통 미스로 그 변경안을 아무도 준비해 오지 않았고,
+> 그래서 사라졌습니다. 판정으로 탈락한 게 아니라 변호인이 안 나타난 겁니다.
+>
+> PR #16(07-25 close)은 결정이 아니라 뒷정리입니다. 실제 컷은 07-24 회의에서 났고, PR은
+> 하루 뒤에 닫혔습니다.
+> 네 가지 중 컨셉 적합성만 빼고 셋이 다 사유입니다.
+> 레이턴시 — 1차 전체위임 구조가 1–2분 또는 실패, 2차도 VLM만 약 20초. "10초도 길다"는
+> 얘기가 나왔습니다
+> 판정 편차 — 같은 그림을 넣어도 결과가 매번 달라짐
+> 인터랙션 — 그림 자체보다 NPC 요청·대사가 추상적 번역체라 뭘 그려야 할지 알기 어려웠습니다
+> 다만 결정타는 그 위입니다 — 제가 직접 데모를 돌려 보고 너무 재미없고 게임성이 없다고
+> 판단했습니다. 더 좋은 모델·프롬프트면 대사가 나아진다는 반론은 있었지만, 고치는 비용이
+> 남은 두 기획에 집중하는 것보다 컸습니다.
+> VLM 판정 편차 논쟁은 결론이 안 났습니다. 저는 "LLM의 성질이고 해석의 재미로 쓸 수 있다"
+> 쪽, 민서는 "플레이어에겐 랜덤 판정으로 보인다" 쪽이었는데, 그 논쟁이 끝나기 전에 다른
+> 이유들이 먼저 트랙을 접었습니다.
+> 머지하지 않고 닫은 건 의도입니다. main은 배포 대상이고 더 안 갈 트랙이라, 브랜치로만 남겨
+> 기록은 보존하고 배포에는 안 얹었습니다.
+
+### New corpus targets — the record gap is not a gap, it is a mining miss
+
+**The DDAY-selection artifacts exist and are in-repo.** Pass B called this the
+single most important undocumented decision and S4-021 flagged it `record-gap`.
+The account names three artifacts by path, and the reason mining missed the first
+is that **the slug is `dday-simulation`, not `dday`** — it sits in
+`planning/concepts/` alongside the other eight concept docs:
+
+| artifact | path | date | landing |
+|---|---|---|---|
+| 논의 초안 (discussion draft) | `planning/concepts/game-concept-dday-simulation.md` | self-dated 07-27~28 | main 07-29 12:54, PR #85 |
+| 트랙 SoT | `planning/dday-sot.md` | written 07-28 | — |
+| 정식 기획서 | `planning/dday-design-doc.md` | 07-29 | PR #91 |
+
+Named contents to verify when mined: §1 carries the retained core
+(프롬프트·스킬을 조정하고 관전한다, membrane retained); §3 「이 픽션이 공짜로 해결해
+주는 것」 is a **table** of the problems the fiction dissolves (왜 프롬프트를 만지나 /
+왜 반복 런인가 / 왜 타이핑을 못 하나 / 왜 토큰 제한이 게임 규칙인가).
+
+Stated actual order — **discussion → concept doc → 5 scenarios written → paper
+test v1/v2 → 07-28 confirmation → 07-29 formal design doc.** Explicitly *not*
+discussion-straight-to-build.
+
+**Phase 3 did not mine these** (the brief forbids it). They are handed to the
+pre-Phase-5 sweep as its highest-value target.
+
+### Corrections to the written record and to prior OH
+
+1. **Doodle Life's cut date is 07-24, not 07-25.** PR #16's 07-25 close is
+   *cleanup*, not the decision. The Phase 3 brief's own correction — which dated
+   the disposition to the PR close — is superseded on the date, not on the
+   substance.
+2. **Closing PR #16 unmerged was deliberate policy, not neglect.** "main은 배포
+   대상이고 더 안 갈 트랙이라, 브랜치로만 남겨 기록은 보존하고 배포에는 안 얹었습니다."
+   The closed PR is therefore an *instance of the preservation discipline*, which
+   makes the under-counting of closed PRs systematic wherever that policy applied.
+3. **"Three demos built → none won" is too clean and is partly wrong.** Nothing was
+   beaten in a comparison. Corrected dispositions:
+   - **Doodle Life** — cut 07-24 by a human playing the demo to the end
+     ("너무 재미없고 게임성이 없다"), *before* the other two were built. Three
+     contributing reasons (latency 1–2 min or failure / ~20 s VLM; verdict variance
+     on identical input; abstract translated-register NPC dialogue), but the
+     decisive act was the human play verdict, taken against a live counter-argument
+     that a better model or prompt would fix the dialogue. Cost of repair lost to
+     concentrating on the other two.
+   - **약국 (apothecary)** — **did not lose.** Its 07-27 evaluation was *positive*:
+     it was the track that conveyed 효용감 that the LLM was really performing work,
+     while darkest merely copied 외형. It was displaced because DDAY planning was
+     going better and was more fun. "너무 잔잔했다" is a later retrospective, not
+     that day's verdict; no playtest moment killed it.
+   - **darkest-context** — **not eliminated by a verdict.** 민서's 07-27 proposal
+     was 전면 수정 후 개선되면 재드래프트. It died on 07-28 because the narrator, by
+     his own account, prepared the wrong homework and nobody brought the revision.
+     "판정으로 탈락한 게 아니라 변호인이 안 나타난 겁니다."
+4. **The 07-28 communication miss is a first-class event.** Assignment was ①
+   민서 / ② 윤석; ② was never prepared and ① was duplicated at a different scale
+   (`field-report` vs `dday-simulation`), collapsing the intended three-way
+   comparison to two. Two humans independently produced overlapping work because
+   an assignment was not pinned — the human-layer twin of the parallel-agent seam
+   failure the build harness is architected against.
+5. **The pivot has no single author and no single phrase.** "단일 task" was already
+   said on 07-27 and is not the pivot. The frame shift is 재난 시뮬레이션 + 인간 퍼즐
+   + 갭 분석 루프. Seed planted by 윤석, grown to its current form by 민서. OH-2's
+   "retained core" and "problems dissolved" claims are **confirmed as written** —
+   both are in the concept doc, §1 and §3 respectively.
+6. **The darkest critique is four-branch, not one resemblance:** 인지 부조화
+   (프롬프트·MCP·스킬 on a fantasy worldview has no 당위성) · 관전형 구조의 지루함 ·
+   UI/UX 정체성 결여 · 기술의 단순 소모 (LLM as a mere text generator). 어거지 매핑
+   and DD-아류 are named as two horns of one dilemma, not two findings.
+
+### Preserved disagreement — unresolved, and it stayed that way
+
+The **VLM 판정 편차** debate never closed: 윤석 held it is "LLM의 성질이고 해석의
+재미로 쓸 수 있다", 민서 held "플레이어에겐 랜덤 판정으로 보인다". Other reasons folded
+the track before the argument finished. This is a second instance of the
+two-directors pattern and a documented open question closed by nobody.
+
+### Round-2 questions this sitting did NOT answer
+
+Still open, unchanged: what the operator's raw call log actually is (T-13); whether
+the two measurement programs' authors saw each other's intermediate results before
+converging (T-34); whether the single-GitHub-account constraint was deliberate or
+incidental (T-21); whether the human chose not to write code or had no time to
+(T-48).
+
+---
+
 *To add an account: append an OH-n section in the same shape — verbatim block,
 provenance, unique-adds, corroboration hooks.*
