@@ -114,8 +114,8 @@ Re-run one probe after changing it.
 | id | item | where |
 |---|---|---|
 | C1 | AGENT FILE becomes a paged dossier, not a scroll | `src/client/components/dossier.ts:85-120` (`dossierModel`, six sections §0–§5 in one array); `src/client/windows/agent-file.ts:76,88-96` |
-| C2 | "알고 있는 문장" → 행동 지침 / 임무 인수인계 사항 | `dossier.ts:107` is the only rendered site |
-| C3 | "보고 지침" renamed to match the report concept | `dossier.ts:113` |
+| C2 | "알고 있는 문장" → **인수인계 사항** (picked 08-06) | `dossier.ts:107` is the only rendered site |
+| C3 | "보고 지침" → **교신 지침** (picked 08-06) | `dossier.ts:113` |
 | C4 | 객관 로그 → 현장 기록, 요원 보고서 → 무전 기록 | `src/client/components/report-view.ts:123` and `:124` |
 
 - **C1's page inventory uses spaced forms on disk** — `행동 원칙`, `알고 있는 문장`,
@@ -298,14 +298,16 @@ M1 ──► U5.1                    M1 ──► U5.2c
 G3 ──► U5.1                    U5.2b (seam: carry `desc`) ──► U5.2c
 C1 ──► U5.3
         │
-U5.2a (landed) ──► T1 ──► T3
+U5.2a (landed) ──► T1 ──► T3          U3 ──► T3
 U2 ──► probe at the new cap
 ```
 
 `U5.2a` landing and the scorer landing between them removed both of the previous
 graph's long chains. **U3 is now free-standing**, and the critical path is
 `U5.2b → U5.2c`, which crosses the engine/client boundary and is therefore two
-units by §5.2.
+units by §5.2. T3 trails U3 as well as T1 — its target layout is the
+three-window desk, which exists only once TALLY and BLOCK STORE are both gone —
+so groups 3 and 5 do not swap.
 
 ## 3. Work groups
 
@@ -329,12 +331,16 @@ place cause becomes visible, which is the tiebreaker this document ranks by — 
 it grew an engine-seam half, so it starts earlier than its old position implied.
 U3 moves up because the scorer landed and it now blocks on nothing.
 
-**Should:** T3 · U5.1 · O2 · O3.
+**Should:** G3 · T3 · U5.1 · O2 · O3.
 
 **U5.1 moved down from must.** It was sized as a client change; it needs a new
 persistence store, because `report_archive` is an index of run ids and its schema
 forbids widening. M1 alone — distinct callsigns per sitting — carries most of the
 value it was wanted for, and M1 is in the copy pass.
+
+**G3 was in no bucket** — it is Should: it gates U5.1, and it stays in group 6
+because U3 first deletes or reworks two of its sites (`tally.ts:54`,
+`deploy-button.ts:51`).
 
 **Won't:** C1 · U5.3 · U2.
 U5.3 is the next step rather than a cut. U2 is deferred because raising the cap
@@ -342,7 +348,7 @@ without a probe risks the mechanism claim four days before submission.
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
-> As of 2026-08-06 (v6). A PRD names the version it was written against.
+> As of 2026-08-06 (v7). A PRD names the version it was written against.
 
 The items above are not worked by hand and not worked one at a time. Each is
 specified as a **mini-PRD** by a high-capability model, then executed by a
@@ -471,6 +477,16 @@ Rules for the change list:
   window means removing its registry row, or it still mounts.
 - **Species derives from the id channel, never from classification**
   (`docs/spec-client.md` §5.2). The field is data; only its display is cosmetic.
+- **The scenario is replaceable; the client must not learn 우는다리.** The game
+  has to keep running when `write-scenario` produces a different pack. Scenario
+  content reaches code only as data: clocks from `meta.json` through `pack.ts`,
+  stance prose and false leads from the pack through the seam, score labels from
+  the `score` event's rows. Frame copy (요원 · 무전 · 상황실 · ECHO-n) is
+  game-owned and fine. Scenario literals already in the tree are grandfathered
+  where they sit — a unit that rebuilds a surface does not mint new ones, and
+  where the seam already carries the value as data, it reads the data. DEV
+  fixtures are exempt: scenario-bound by nature, and they never ship
+  (`run-loop.ts:176-177`).
 - **`dist/` is a player surface.** Anything published is fetchable by URL, so the
   gate invariant applies to the pack as shipped. `publishedContentOf()`
   (`vite.config.ts:159-164`) strips design-only fields from `gates.json`,
@@ -528,6 +544,17 @@ when the process dies. The executor works on its own branch, opens a PR, and mer
 nothing. Review is by the author, against the Done-when checklist. `main` stays
 deployable, and repo hard rules 1–6 apply to executor commits exactly as to
 hand-written ones.
+
+Authoring is two-tier. Every unit is authored at decision level as early as its
+group's shape allows — outcome, scope, final strings, test dispositions,
+done-when — but its change list is **stamped** (every `path:line · current
+text` row re-verified against HEAD) immediately before its executor starts,
+because earlier merges move the lines and sometimes delete the files. A stamp
+is mechanical; G3, T3 and U5.2c instead get a re-authoring pass at stamp time,
+because their shape depends on what U3, T1 and U5.2b landed. PRDs live under
+`planning/prds/`, committed after 민서's sign-off. Executors run on a
+Sonnet-class model, one executor per PRD, serial within a group; merges are
+민서's, after the author's review report.
 
 ### 5.7 When the PRD is wrong
 
