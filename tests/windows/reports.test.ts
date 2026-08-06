@@ -263,16 +263,29 @@ describe('[u6#c3] mine op carries authored id', () => {
 describe('[u6#c5] minable states', () => {
   it('(a) unmined · mined · slotted are three distinct states', async () => {
     const m = await minable()
-    const marks = m.deriveMarks(store({ mined: ['id-mined'], slots: { 0: 'id-slotted' } }), [])
+    // `id-slotted` is mined TOO, because that is the only way a sentence gets
+    // into a slot: the board seats cards off the deck, and the deck is
+    // `carried ∪ mined` (`engine-ops.test.ts (b)`, "an unmined block cannot be
+    // slotted"). This used to seat an unmined id — a state the app cannot
+    // produce — so the assert passed over a combination that never occurs.
+    const marks = m.deriveMarks(
+      store({ mined: ['id-mined', 'id-slotted'], slots: { 0: 'id-slotted' } }),
+      [],
+    )
     expect(m.sentenceState('id-plain', marks)).toBe('unmined')
     expect(m.sentenceState('id-mined', marks)).toBe('mined')
     expect(m.sentenceState('id-slotted', marks)).toBe('slotted')
   })
 
-  it('(b) mined wins over slotted when a sentence is both', async () => {
+  it('(b) slotted wins over mined when a sentence is both', async () => {
+    // REVERSED (08-06). [u6#c5] b had mined win, which made `'slotted'`
+    // unreachable — every slotted id is also mined (see (a)) — so `.min.slotted`
+    // in `win-reports.css` never rendered and the operator got no sign that a
+    // sentence had been placed. Slotted is the more specific state and reads
+    // first; `unmined → mined → slotted` now tracks what the operator did.
     const m = await minable()
     const marks = m.deriveMarks(store({ mined: ['id-x'], slots: { 2: 'id-x' } }), ['id-x'])
-    expect(m.sentenceState('id-x', marks)).toBe('mined')
+    expect(m.sentenceState('id-x', marks)).toBe('slotted')
   })
 
   it('(c) the three classes are distinct and carry the skin selectors u1 shipped', async () => {

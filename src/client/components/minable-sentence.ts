@@ -51,10 +51,26 @@ export function deriveMarks(store: FixtureStore, carried: readonly string[]): Ma
   }
 }
 
-/** Mined wins over slotted when a sentence is both ([u6#c5] b). */
+/**
+ * Slotted wins over mined when a sentence is both — REVERSED from [u6#c5] b
+ * (08-06), which had mined win.
+ *
+ * That ordering made `'slotted'` unreachable and `.min.slotted` dead CSS. A
+ * sentence cannot be slotted without being mined first — the board only seats
+ * cards off the deck, and the deck is `carried ∪ mined`
+ * (`windows/block-store.ts` `buildStoreModel`, and `engine-ops.test.ts (b)`,
+ * "an unmined block cannot be slotted"). So every slotted id was also in
+ * `mined` and left at the first branch, and `carried` closed the last way
+ * round: `driver/run-loop.ts` `carry()` replays every carried id as a `mine`
+ * op into the new run's store.
+ *
+ * Slotted is the more specific state — it implies mined — so it reads first.
+ * `unmined → mined → slotted` is then monotone in what the operator did with
+ * the sentence, which is what §6 asks the three states to be distinct ABOUT.
+ */
 export function sentenceState(id: string, marks: MarkSets): MinableState {
-  if (marks.mined.has(id)) return 'mined'
   if (marks.slottedEver.has(id)) return 'slotted'
+  if (marks.mined.has(id)) return 'mined'
   return 'unmined'
 }
 

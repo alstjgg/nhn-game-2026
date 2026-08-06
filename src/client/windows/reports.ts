@@ -104,4 +104,30 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     active = event.round
     sync()
   })
+
+  // Slotting has to repaint the marks, and no event says it happened: `slot` is
+  // a membrane op the AGENT FILE's board sends, and this window subscribes to
+  // `meta` and `report` only. `onMine` above calls `view.refresh()` for its own
+  // op; there was no counterpart, so a sentence placed in a slot kept whatever
+  // it had rendered as until the next report arrived.
+  //
+  // Watched rather than told, exactly as BLOCK STORE watches for `mine` — a
+  // window may not reach into a sibling (C8), so the observer is the seam that
+  // is left. `stamp` guards it: nothing repaints on a frame that changed no
+  // mark, and `refresh()` walks the anchors, so an unguarded call every frame
+  // would be a per-frame DOM walk over the whole document.
+  const slotStamp = (): string => {
+    const store = driver.store()
+    return `${Object.values(store.slots).join(',')}|${store.mined.join(',')}|${carried.join(',')}`
+  }
+  let marked = slotStamp()
+  const watch = (): void => {
+    const next = slotStamp()
+    if (next !== marked) {
+      marked = next
+      view.refresh(marks())
+    }
+    requestAnimationFrame(watch)
+  }
+  requestAnimationFrame(watch)
 }
