@@ -85,7 +85,7 @@ export function publishedDataFiles(root: string = process.cwd()): string[] {
  * this to the no-consumer premise: if a seam ever starts reading one, the
  * stripping has to be reconsidered rather than silently breaking it.
  */
-const DESIGN_ONLY_FIELDS = ['standard_form', 'branch_note'] as const
+const DESIGN_ONLY_FIELDS = ['standard_form', 'branch_note', 'key_examples'] as const
 
 /** Strips `DESIGN_ONLY_FIELDS` from every gate. Shape-preserving otherwise. */
 export function stripDesignNotes(raw: string): string {
@@ -94,6 +94,26 @@ export function stripDesignNotes(raw: string): string {
   for (const gate of gates) {
     if (gate === null || typeof gate !== 'object') continue
     for (const field of DESIGN_ONLY_FIELDS) delete (gate as Record<string, unknown>)[field]
+  }
+  return `${JSON.stringify(pack, null, 2)}\n`
+}
+
+/**
+ * `characters.json` ships — the run reads the cast — but each character carries
+ * a `strands` block of `gate_ids` and `truth_ids`, which is the author's index
+ * of where that person appears in the gate structure. Nothing reads it.
+ */
+const CHARACTER_DESIGN_FIELDS = ['strands'] as const
+
+/** Strips `CHARACTER_DESIGN_FIELDS` from every character. Shape-preserving. */
+export function stripCharacterNotes(raw: string): string {
+  const pack = JSON.parse(raw) as { characters?: unknown }
+  const characters = Array.isArray(pack.characters) ? pack.characters : []
+  for (const character of characters) {
+    if (character === null || typeof character !== 'object') continue
+    for (const field of CHARACTER_DESIGN_FIELDS) {
+      delete (character as Record<string, unknown>)[field]
+    }
   }
   return `${JSON.stringify(pack, null, 2)}\n`
 }
@@ -128,6 +148,21 @@ export function stripScoreNotes(raw: string): string {
   return `${JSON.stringify(pack, null, 2)}\n`
 }
 
+/**
+ * What a published file CONTAINS, given its authored bytes.
+ *
+ * The build and `tests/scaffold/no-gate-vocab.test.ts` both go through here, so
+ * the scan cannot pass on content the deploy does not actually ship. A strip
+ * added below is a strip the guard sees on its next run, with no second list to
+ * keep in step.
+ */
+export function publishedContentOf(rel: string, raw: string): string {
+  if (rel.endsWith('/gates.json')) return stripDesignNotes(raw)
+  if (rel.endsWith('/score.json')) return stripScoreNotes(raw)
+  if (rel.endsWith('/characters.json')) return stripCharacterNotes(raw)
+  return raw
+}
+
 function copyPackData(): Plugin {
   return {
     name: 'dday-data',
@@ -141,13 +176,10 @@ function copyPackData(): Plugin {
         }
         const to = join(root, 'dist', 'data', rel)
         mkdirSync(dirname(to), { recursive: true })
-        if (rel.endsWith('/gates.json')) {
-          writeFileSync(to, stripDesignNotes(readFileSync(from, 'utf8')), 'utf8')
-        } else if (rel.endsWith('/score.json')) {
-          writeFileSync(to, stripScoreNotes(readFileSync(from, 'utf8')), 'utf8')
-        } else {
-          copyFileSync(from, to)
-        }
+        const raw = readFileSync(from, 'utf8')
+        const published = publishedContentOf(rel, raw)
+        if (published === raw) copyFileSync(from, to)
+        else writeFileSync(to, published, 'utf8')
       }
     },
   }

@@ -21,7 +21,12 @@
 import { describe, expect, it } from 'vitest'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
-import { publishedDataFiles, stripDesignNotes, stripScoreNotes } from '../../vite.config.ts'
+import {
+  publishedDataFiles,
+  stripCharacterNotes,
+  stripDesignNotes,
+  stripScoreNotes,
+} from '../../vite.config.ts'
 
 const REPO = path.resolve(import.meta.dirname, '../..')
 const DATA = path.join(REPO, 'data')
@@ -136,6 +141,9 @@ describe('published data — the allowlist tracks what the client fetches', () =
     )
     expect(shipped, 'standard_form reached the published copy').not.toMatch(/"standard_form"/)
     expect(shipped, 'branch_note reached the published copy').not.toMatch(/"branch_note"/)
+    // `key_examples[].mined_from` is the third: "런 1 객관 로그 · 시계 09:40 —
+    // 다음 런의 G1 이전에 채굴 가능" names the gate AND the mining schedule.
+    expect(shipped, 'key_examples reached the published copy').not.toMatch(/"key_examples"/)
 
     // Shape-preserving: gates survive the strip, and so does everything a seam
     // does read.
@@ -150,10 +158,37 @@ describe('published data — the allowlist tracks what the client fetches', () =
 
     // The premise the strip rests on: no runtime consumer. `datapack.ts` may
     // TYPE them — that is the schema, not a read.
-    const consumers = consumersOf(['standard_form', 'branch_note'])
+    const consumers = consumersOf(['standard_form', 'branch_note', 'key_examples', 'mined_from'])
     expect(
       consumers,
       `a seam now reads a stripped field: ${consumers.join(' | ')} — reconsider the strip`,
+    ).toEqual([])
+  })
+
+  it('(i) the published characters.json drops the gate index, and nothing reads it', () => {
+    // `characters.json` ships — the run reads the cast — but each character
+    // carries a `strands` block of `gate_ids`/`truth_ids`, the author's index of
+    // where that person sits in the gate structure. 서지형's is ["G1","G4","G7"].
+    const authored = readFileSync(path.join(DATA, 'scenario/우는다리/characters.json'), 'utf8')
+    const shipped = stripCharacterNotes(authored)
+
+    expect(authored, 'the authored file should still carry its strands').toMatch(/"strands"/)
+    expect(shipped, 'strands reached the published copy').not.toMatch(/"strands"/)
+
+    // Shape-preserving: every character survives with the fields the run reads.
+    const before = JSON.parse(authored) as { characters: Record<string, unknown>[] }
+    const after = JSON.parse(shipped) as { characters: Record<string, unknown>[] }
+    expect(after.characters.length).toBe(before.characters.length)
+    for (const [i, character] of after.characters.entries()) {
+      expect(character.id).toBe(before.characters[i]!.id)
+      expect(character.name).toBe(before.characters[i]!.name)
+      expect(character.meters).toEqual(before.characters[i]!.meters)
+    }
+
+    const consumers = consumersOf(['strands', 'gate_ids', 'truth_ids'])
+    expect(
+      consumers,
+      `a seam now reads a stripped character field: ${consumers.join(' | ')}`,
     ).toEqual([])
   })
 
