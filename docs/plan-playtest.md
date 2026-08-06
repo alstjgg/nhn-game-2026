@@ -342,7 +342,7 @@ without a probe risks the mechanism claim four days before submission.
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
-> As of 2026-08-06 (v4). A PRD names the version it was written against.
+> As of 2026-08-06 (v5). A PRD names the version it was written against.
 
 The items above are not worked by hand and not worked one at a time. Each is
 specified as a **mini-PRD** by a high-capability model, then executed by a
@@ -493,6 +493,26 @@ the only way to see what actually ships.
 Client-facing units name all three. A unit that changes what reaches the browser
 names `npm run build` and an inspection of `dist/`. A PRD whose verification is
 only "it looks right" is not ready to hand over.
+
+**One known intermittent red.** `tests/fixtures/dev-only.test.ts`'s
+`(d) if a build exists, no fixture string reached it` failed twice in six full
+runs on 08-06, then survived nine more — three of them after a fresh
+`npm run build` — and has never failed in isolation.
+`tests/assets/no-third-party-url.test.ts:81-82` removes `dist/` and rebuilds it
+in `beforeAll` while `(d)` is scanning `dist/`, and that file's own comment
+already records the two going red order-dependently inside a full run. The
+`NODE_ENV` pin there addressed a stale dev-flavoured `dist/`; the delete-and-
+rebuild race is untouched by it.
+
+Not diagnosed, and stated as observed rather than explained: the failure is a
+non-empty `hits`, which a partial read of a half-written `dist/` does not
+obviously produce. Whoever fixes it captures the hit string first.
+
+The rule for a PRD, which is narrow on purpose: a red in `(d)` **alone**, on a
+unit that touched neither `dist/` nor `tests/fixtures/`, is re-run once before
+it is reported, and is never repaired by the executor. Every other red goes back
+under §5.7 unchanged. "Re-run it" is not a general licence — it applies to this
+one test id and no other.
 
 ### 5.6 Handoff
 
