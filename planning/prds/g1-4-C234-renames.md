@@ -245,7 +245,11 @@ guard at `block-store.test.ts:557` is red on an uncommitted tree by design):
 - [ ] All twelve edits applied exactly; `git diff HEAD~1 --stat` shows exactly the seven listed files.
 - [ ] Steps 2–5 green, in order, post-commit.
 - [ ] The running DEV desk shows all four new names (behavioural check 6).
-- [ ] `grep -rn '알고 있는 문장\|객관 로그\|요원 보고서' src tests e2e` returns no hits.
+- [ ] `grep -n '알고 있는 문장\|객관 로그\|요원 보고서' <the seven listed files>` returns no hits.
+      (Do **not** sweep `src tests e2e` wholesale: `tests/scaffold/published-data.test.ts:144`
+      carries `객관 로그` inside a comment about authored `mined_from` vocabulary, and
+      `authoring/lint-datapack.mjs:249` and `data/scenario/` carry it as pack data — all
+      three are grandfathered by this unit's Must-NOT and must stay.)
 - [ ] `grep -n '보고 지침' src/shared/report-guidance.ts` still returns the two prompt-header lines (`:3`, `:7`) — unchanged.
 - [ ] PR opened from `playtest/g1-4-c234`; nothing merged.
 

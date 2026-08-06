@@ -27,8 +27,13 @@ Must NOT modify:
 - `SPECIES_DISPLAY` (`block-card.ts:33-38`) and `blockCardModel` — the table still
   feeds the marks, the classes, and the filter's accessible names, and four tests
   assert it as-is (`agent-file.test.ts:610-617`, `block-store.test.ts:285-295,575`).
-- `species-filter.ts:76` (`option.ko`-based `label`) — that string is the button's
-  **accessible name**, not display; removing it would leave unnamed buttons.
+- `species-filter.ts:76` (`option.ko`-based `label`) — `button()`
+  (`src/client/shell/dom.ts:28-33`) sets it as **`title`**, not `aria-label`.
+  Today the visible text is what names the button and `title` is ignored; once
+  this unit removes the text, `title` becomes the button's accessible name (the
+  accname last-resort fallback, and what `a11y.spec.ts:78`'s census reads).
+  Removing it would leave unnamed buttons. Do not rename the attribute either —
+  swapping `title` for `aria-label` is a `button()` change, out of scope here.
 - `src/shared/species.ts`, `src/shared/segment.ts` — consume-only by contract;
   `agent-file.test.ts:722-725` asserts their diff is empty.
 - `src/client/components/slot-board.ts`, `src/client/windows/block-store.ts` —
@@ -78,7 +83,7 @@ replace with:
 ```ts
 function filterButton(page: Page, ko: string): Locator {
   const label = ko === '전체' ? '전체 보기' : `${ko}만 보기`
-  return page.locator(`${FILTER} button[aria-label="${label}"]`)
+  return page.locator(`${FILTER} button[title="${label}"]`)
 }
 ```
 
@@ -94,7 +99,7 @@ replace with:
 ```ts
     for (const [index, option] of FILTERS.entries()) {
       const label = option.key === 'all' ? '전체 보기' : `${option.ko}만 보기`
-      await expect(buttons.nth(index)).toHaveAttribute('aria-label', label)
+      await expect(buttons.nth(index)).toHaveAttribute('title', label)
       await expect(buttons.nth(index)).toContainText(option.mark)
     }
 ```
@@ -109,7 +114,10 @@ change. Every other `filterButton(...)` call site goes through the E3 helper.
   `docs/spec-client.md` §5.2). This unit is display-only; the field, the wire type,
   and the model keep `ko` — only the two `document.createTextNode` prints go.
 - **Accessibility**: every filter button keeps a non-empty accessible name
-  (`전체 보기` / `<종>만 보기`). Do not strip aria attributes.
+  (`전체 보기` / `<종>만 보기`), carried by `title`. Do not strip it, and do not
+  add an `aria-label` "to be safe" — `a11y.spec.ts:78` reads
+  `aria-label ?? title ?? textContent`, so `title` alone satisfies the census
+  at `:282`/`:300`, and minting a second name source is a scope creep.
 
 ## Verification
 
@@ -130,7 +138,7 @@ on `block-card.ts` is red on an uncommitted tree by design):
 - [ ] Both prints removed; helper + assertion amended; no other line changed.
 - [ ] `npm run test`, `npm run build`, and `npm run test:e2e -- e2e/block-store.spec.ts` green, in that order, post-commit.
 - [ ] In the running DEV desk no card and no filter button displays `사실`, `자기서술`, `감정`, or `인용` (behavioural check 5).
-- [ ] Filter buttons still expose `aria-label` names ending `보기`.
+- [ ] Filter buttons still expose `title` names ending `보기`.
 - [ ] PR opened from `playtest/g1-2-m2`; nothing merged.
 
 ## If this PRD is wrong
