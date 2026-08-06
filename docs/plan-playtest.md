@@ -19,7 +19,7 @@ The day's bounds are authored at `data/scenario/우는다리/meta.json` (`clock.
 `08:50`, `clock.end` `21:04+`) and read by `src/client/shell/pack.ts:26-32`, which
 strips the `+`. The DEV fixture repeats them at
 `src/client/driver/fixtures/woodari-run03.ts:223-224`, but the deployed build
-never loads it — `src/client/driver/fixtures/run-loop.ts:176-177` returns `null`
+never loads it — `src/client/driver/run-loop.ts:176-177` returns `null`
 outside `import.meta.env.DEV`. **Editing the fixture changes nothing on the
 played site.**
 
