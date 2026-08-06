@@ -78,7 +78,7 @@ radius is every spec that reads the feed.
 All edits in `src/client/components/run-feed.ts` first (bottom-up), then
 `live-feed.ts`, then the test.
 
-**E1 — `run-feed.ts:281`**
+**E1 — `src/client/components/run-feed.ts:281`**
 current:
 ```ts
   driver.subscribe(receive)
@@ -90,7 +90,7 @@ replace with:
 (no text change — listed so the executor confirms the subscribe stays on
 `receive`, which E4 redefines as the queuing wrapper.)
 
-**E2 — `run-feed.ts:279`**
+**E2 — `src/client/components/run-feed.ts:279`**
 current:
 ```ts
   for (const event of driver.frame().events) receive(event)
@@ -100,7 +100,7 @@ replace with:
   for (const event of driver.frame().events) apply(event)
 ```
 
-**E3 — `run-feed.ts:242`**
+**E3 — `src/client/components/run-feed.ts:242`**
 current:
 ```ts
   const receive = (event: ViewEvent): void => {
@@ -110,7 +110,8 @@ replace with:
   const apply = (event: ViewEvent): void => {
 ```
 
-**E4 — insert after the `apply` function's closing brace (currently `:275`,
+**E4 — `src/client/components/run-feed.ts`, insert after the `apply` function's
+closing brace (currently `:275`,
 directly above the prefill comment at `:277`)** — new code, verbatim:
 ```ts
   // U1 — the reveal queue (plan-playtest §1). Downstream of fanout on purpose:
@@ -148,7 +149,8 @@ directly above the prefill comment at `:277`)** — new code, verbatim:
   }
 ```
 
-**E5 — insert above `/* ── the window's fanfold ─…` (currently `:117`)** — the
+**E5 — `src/client/components/run-feed.ts`, insert above
+`/* ── the window's fanfold ─…` (currently `:117`)** — the
 pacing constants, with the other module constants:
 ```ts
 /**
@@ -164,7 +166,7 @@ const revealDelay = (depth: number): number =>
   depth >= REVEAL_CROWD_AT ? REVEAL_CROWD_MS : REVEAL_MS
 ```
 
-**E6a — `run-feed.ts:22`**
+**E6a — `src/client/components/run-feed.ts:22`**
 current:
 ```ts
 import { displayStamp } from '../driver/index.ts'
@@ -174,7 +176,7 @@ replace with:
 import { animationsFrozen, displayStamp, registerAnimation } from '../driver/index.ts'
 ```
 
-**E6b — `run-feed.ts:127-131`** (the `RunFeed` interface)
+**E6b — `src/client/components/run-feed.ts:127-131`** (the `RunFeed` interface)
 current:
 ```ts
 export interface RunFeed {
@@ -194,7 +196,7 @@ export interface RunFeed {
 }
 ```
 
-**E6c — `run-feed.ts:292-296`** (the return block)
+**E6c — `src/client/components/run-feed.ts:292-296`** (the return block)
 current:
 ```ts
   return {

@@ -135,7 +135,8 @@ replace with:
 ```
 
 E2b — inside `render()`, directly after the facts loop's closing brace
-(currently `:253`, before the `body.replaceChildren()` line):
+(the loop closes at `:253`; insert before the `body.replaceChildren()` line,
+currently `:255`):
 current:
 ```ts
       body.replaceChildren()

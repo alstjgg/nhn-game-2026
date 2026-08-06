@@ -34,33 +34,39 @@ ten seconds of deliverable #2.
 - Timing is plain `setTimeout` inside the component — this is shell territory,
   outside the u5 timer bans. Constants in-file: `LINE_MS = 1600` per line,
   `LINGER_MS = 1800` after the last, cut on first `keydown`/`pointerdown`.
-- Colors and fonts come from tokens (`--boot-black` is added to `tokens.css` —
-  the style lint hard-binds colors); element rules live in `shell.css`
-  (`tokens.css` declares, never paints). All animation is finite (the a11y
-  no-infinite-loop guard).
+- Colors and fonts come from **existing** tokens; no token is added. The screen
+  is `--ink-0` (#08090c) and the type is the `--txt-*` family — the light-ink
+  set the dark shell already uses. Not `--pap-*`: that is the dark ink for the
+  windows' paper stock (`.rbody` uses `--pap-2`), and on this screen it reads at
+  about 1.3:1. Red is out for the same reason — `--seal` is ~1.9:1 on black.
+  Element rules live in `shell.css` (`tokens.css` declares, never paints). All
+  animation is finite (the a11y no-infinite-loop guard).
 
 ## Scope
 
-May modify (only these four files):
+May modify (only these three files):
 
 - `src/client/components/opening-call.ts` — **new file**.
 - `src/client/shell/boot.ts` — one import, one await.
 - `src/client/styles/shell.css` — the `#opening` rules.
-- `src/client/styles/tokens.css` — one color token.
 
 Must NOT modify:
 
+- `src/client/styles/tokens.css` — every token this unit needs already exists
+  (`--ink-0`, `--txt`, `--txt-hi`, `--mono`, `--fs-12`, `--space-22`). Minting a
+  near-duplicate of `--ink-0` is not this unit's business.
 - `src/client/components/desktop-dressing.ts` — the hold/reveal seam stays as is.
 - `index.html` — the overlay is built and removed by the component.
 - Any e2e file — the webdriver gate exists so none needs to change.
 - Any window or driver file.
 
-Tests turning red, and their disposition: none expected. Two suites scan style
-structure and could surprise: `tests/styles/token-lint.test.ts` (colors — passes
-if every color in the new rules is a `var()`) and
-`tests/styles/stacking-context.test.ts` (if it enumerates z-indexed layers, the
-new `#opening` may need a row — **if it goes red, stop and report per §5.7**; do
-not amend it on your own).
+Tests turning red, and their disposition: none expected. `tests/styles/token-lint.test.ts`
+scans colors and passes as long as every color in the new rules is a `var()` — it is.
+`tests/styles/stacking-context.test.ts` was audited (2026-08-07) and does **not**
+cover this rule: its `(c)` guard is scoped to window-root bodies and `(d)` to the
+per-window skin sheets, so a literal `z-index` in `shell.css` is exactly what
+`#grain:900`, `#toast:950` and `#topbar:500` already do. If it goes red anyway,
+**stop and report per §5.7**; do not amend it on your own.
 
 ## Change list
 
@@ -127,7 +133,8 @@ export function playOpening(body: HTMLElement, events: readonly ViewEvent[]): Pr
 }
 ```
 
-**E2 — `src/client/shell/boot.ts:189`** (the run-opening block)
+**E2 — `src/client/shell/boot.ts:187`** (the run-opening block; the three lines
+below start at `:187` and `setRate(0)` is `:189`)
 current:
 ```ts
   driver.start()
@@ -151,25 +158,23 @@ other component imports (the executor places it with the existing
 import { playOpening } from '../components/opening-call.ts'
 ```
 
-**E4 — `src/client/styles/tokens.css`** — one declaration added inside the color
-block (beside the other surface colors):
-```css
-  --boot-black:#050505;
-```
-
-**E5 — `src/client/styles/shell.css`** — appended at the end of the file:
+**E4 — `src/client/styles/shell.css`** — appended at the end of the file:
 ```css
 /* ══ O1 — the opening call, before the desk ═════════════════════════════ */
-#opening{position:fixed;inset:0;z-index:950;background:var(--boot-black);
+#opening{position:fixed;inset:0;z-index:955;background:var(--ink-0);
   display:flex;align-items:center;justify-content:center}
 #opening .op-lines{max-width:620px;padding:var(--space-22);font-family:var(--mono);
-  font-size:var(--fs-12);line-height:1.9;color:var(--pap-2)}
+  font-size:var(--fs-12);line-height:1.9;color:var(--txt)}
 #opening .op-line{animation:opLine .9s ease-out both}
-#opening .op-line b{color:var(--seal-2);font-weight:700;letter-spacing:.06em}
+#opening .op-line b{color:var(--txt-hi);font-weight:700;letter-spacing:.06em}
 @keyframes opLine{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:none}}
 ```
-(If `--pap-2` or `--seal-2` does not exist in `tokens.css`, stop and report per
-§5.7 — do not substitute a color.)
+(If any of `--ink-0`, `--txt`, `--txt-hi` does not exist in `tokens.css`, stop
+and report per §5.7 — do not substitute a color.)
+
+`955` is chosen, not free: `#toast` sits at `950` (`shell.css:213`) and the
+overlay must cover it, while `.skip-link` at `960` must stay reachable above the
+overlay. Do not round it to 999.
 
 ## Invariants
 
@@ -193,7 +198,7 @@ Run in this order, from the repo root, after committing:
 
 ## Done when
 
-- [ ] One new file, three edited; `git diff HEAD~1 --stat` shows exactly the four listed files.
+- [ ] One new file, two edited; `git diff HEAD~1 --stat` shows exactly the three listed files — `tokens.css` is **not** among them.
 - [ ] Steps 1–3 green, in order.
 - [ ] The behavioral sequence in check 4 plays as described, and the desk after it behaves exactly as before (▶ still starts the day).
 - [ ] `grep -n '08:50\|서지형' src/client/components/opening-call.ts` is empty — no scenario literal.

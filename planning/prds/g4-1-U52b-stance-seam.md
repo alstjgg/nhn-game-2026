@@ -83,8 +83,15 @@ current:
 ```
 replace with:
 ```ts
-    stances: authored.stances.map((stance) => ({ id: stance.id, label: stance.label, desc: stance.desc })),
+    stances: authored.stances.map((stance) => ({
+      id: stance.id,
+      label: stance.label,
+      ...(stance.desc === undefined ? {} : { desc: stance.desc }),
+    })),
 ```
+(Spread, not `desc: stance.desc`: a pack whose stance carries no `desc` would
+otherwise get an explicit `desc: undefined` key, which survives `toEqual` but
+not `toStrictEqual` and changes the object's JSON shape.)
 
 **E3 — `src/driver/live-driver.ts`**, three edits, bottom-up:
 
