@@ -1,5 +1,5 @@
-import { cpSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
 
 // Project-site pathing for GitHub Pages: https://alstjgg.github.io/nhn-game-2026/
@@ -20,18 +20,90 @@ import { defineConfig, type Plugin } from 'vite'
  * prefix check ran on the still-encoded path — `%2e%2e%2f` passed the check and
  * then decoded into a traversal out of `data/`. Removed rather than patched:
  * the safest hand-rolled file server is the one that is not written.
+ *
+ * **By name means by FILE, not by directory.** This copied `data/scenario` and
+ * `data/policy` recursively, which published every authoring surface sitting
+ * beside the six files the run reads — `draft.md` above all, 44 kB carrying
+ * every gate, key condition and truth in the case. The answer key was one URL
+ * away from anyone who opened the deployed site. A directory allowlist cannot
+ * express "the pack, but not the authoring source it was compiled from"; a file
+ * allowlist can, so this enumerates.
  */
-const PUBLISHED = ['scenario', 'policy']
+
+/**
+ * The scenario parts the run fetches, per pack. Kept identical to `PACK_FILES`
+ * in `src/client/driver/live/pack.ts` and `tools/driver/run/pack.mjs` —
+ * `tests/invariants/published-data.test.ts` fails when the three drift.
+ *
+ * `places` / `truths` / `score` / `hardening` / `draft.md` are authoring
+ * surfaces no seam consumes, and `_schema/` is authoring-time validation.
+ * None of them ship.
+ */
+const PACK_PARTS = ['meta', 'timeline', 'gates', 'characters', 'temperament', 'symptoms'] as const
+
+/** Scenario-independent policy the run fetches, relative to `data/`. */
+const POLICY_FILES = ['policy/report-guidance.json'] as const
+
+/** `data/scenario/<slug>/` — every directory that is a pack, `_schema/` aside. */
+function packSlugs(scenarioDir: string): string[] {
+  if (!existsSync(scenarioDir)) return []
+  return readdirSync(scenarioDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !entry.name.startsWith('_'))
+    .map((entry) => entry.name)
+}
+
+/** Every `data/`-relative path the deployed client is allowed to request. */
+export function publishedDataFiles(root: string = process.cwd()): string[] {
+  const scenarioDir = join(root, 'data', 'scenario')
+  const scenario = packSlugs(scenarioDir).flatMap((slug) =>
+    PACK_PARTS.map((part) => `scenario/${slug}/${part}.json`),
+  )
+  return [...scenario, ...POLICY_FILES]
+}
+
+/**
+ * Authored fields that ship inside a needed file but say how the mechanism
+ * works. `gates.json` has to reach the browser — the engine reads it every run
+ * — and `standard_form` reads "갈림길 G1에서, 기질은 기본 stance 매뉴얼 응대를
+ * 낸다; 열쇠 조건 k1을 만족하는 문장 주입 시 경청으로 이동한다", which is the
+ * answer to that gate written out. `branch_note` is the same for outcomes.
+ *
+ * Neither is read at runtime — `src/shared/datapack.ts:143-144` declares their
+ * types and nothing consumes them — so the deployed copy drops them and the
+ * authored file keeps them. `tests/scaffold/published-data.test.ts (g)` holds
+ * this to the no-consumer premise: if a seam ever starts reading one, the
+ * stripping has to be reconsidered rather than silently breaking it.
+ */
+const DESIGN_ONLY_FIELDS = ['standard_form', 'branch_note'] as const
+
+/** Strips `DESIGN_ONLY_FIELDS` from every gate. Shape-preserving otherwise. */
+export function stripDesignNotes(raw: string): string {
+  const pack = JSON.parse(raw) as { gates?: unknown }
+  const gates = Array.isArray(pack.gates) ? pack.gates : []
+  for (const gate of gates) {
+    if (gate === null || typeof gate !== 'object') continue
+    for (const field of DESIGN_ONLY_FIELDS) delete (gate as Record<string, unknown>)[field]
+  }
+  return `${JSON.stringify(pack, null, 2)}\n`
+}
 
 function copyPackData(): Plugin {
   return {
     name: 'dday-data',
     // build only: copy into dist/, which is what deploy.yml publishes
     closeBundle() {
-      for (const dir of PUBLISHED) {
-        const from = join(process.cwd(), 'data', dir)
-        if (existsSync(from)) {
-          cpSync(from, join(process.cwd(), 'dist', 'data', dir), { recursive: true })
+      const root = process.cwd()
+      for (const rel of publishedDataFiles(root)) {
+        const from = join(root, 'data', rel)
+        if (!existsSync(from)) {
+          throw new Error(`dday-data: ${rel} is fetched by the client but absent from data/`)
+        }
+        const to = join(root, 'dist', 'data', rel)
+        mkdirSync(dirname(to), { recursive: true })
+        if (rel.endsWith('/gates.json')) {
+          writeFileSync(to, stripDesignNotes(readFileSync(from, 'utf8')), 'utf8')
+        } else {
+          copyFileSync(from, to)
         }
       }
     },
