@@ -465,11 +465,15 @@ Rules for the change list:
 - **Species derives from the id channel, never from classification**
   (`docs/spec-client.md` §5.2). The field is data; only its display is cosmetic.
 - **`dist/` is a player surface.** Anything published is fetchable by URL, so the
-  gate invariant applies to the pack as shipped. `vite.config.ts:159-164` strips
-  design-only fields from `gates.json`, `score.json` **and `characters.json`**;
-  `tests/scaffold/published-data.test.ts` holds the first two to a no-consumer
-  premise, and `no-gate-vocab.test.ts` scans every published string. *Known gap:
-  the `key_examples` and `strands` strips have no no-consumer assertion.*
+  gate invariant applies to the pack as shipped. `publishedContentOf()`
+  (`vite.config.ts:159-164`) strips design-only fields from `gates.json`,
+  `score.json` **and `characters.json`**, and the build plugin and both guards
+  call that one function, so no test can pass on bytes the deploy does not ship.
+  `tests/scaffold/published-data.test.ts` holds all three strips to a
+  no-consumer premise — `(g)`, `(h)`, `(i)` — and `no-gate-vocab.test.ts` scans
+  every published string value at any depth. A PRD that adds a field to a pack
+  decides whether it ships, and adds it to the strip and its premise check if
+  not.
 - **Two composition roots** must stay in step: `src/client/driver/live/bind.ts`
   and `tools/driver/run/bind.mjs`.
 - **The membrane rule and invariant 6** (/CLAUDE.md, `docs/spec-client.md:113-115`)
