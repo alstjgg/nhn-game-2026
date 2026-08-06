@@ -204,14 +204,29 @@ describe('[u11#c6] frozen inputs stayed frozen (C1 / C13 / C20)', () => {
   // `Species` union. The claim stays asserted where it stayed true — over the
   // run's own merge range, in (m); the live checks keep the still-frozen set.
   //
-  // RELEASED again (08-06) for `data/scenario/우는다리/`. Same expiry, third
-  // path: the pack was frozen so a run could not rewrite its own inputs, and
-  // no run is open. It is released for a gate-exposure defect — the timeline
-  // printed `(갈림길 Gn의 자리)` on six lines of a player surface, against the
-  // 08-03 decision log and `docs/spec-client.md` §3 invariant 6 — which cannot
-  // be repaired anywhere but the authored file. `_schema/` stays frozen: the
-  // schemas are not what the defect is in.
-  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts', 'data/scenario/우는다리/']
+  // RELEASED again (08-05, the score-predicate hardening):
+  // `data/scenario/우는다리/` is the pack, and the pack is the game's content.
+  // The freeze said "the run must not rewrite its OWN inputs", which stopped
+  // being a live claim the moment that run merged — the same argument that
+  // released `spec-client.md` above. Left as it was, the pack could never be
+  // hardened: `predicates`, `edge_predicates` and the meter bindings are all
+  // authored INTO it, and lint has been reporting them as the hardening
+  // worklist (F1–F4) with nowhere to do the work.
+  //
+  // `data/scenario/_schema/` stays frozen, and the distinction is the point:
+  // the pack is content and revises with the scenario; the schemas are the
+  // ratified law that content is checked against, and nothing about the run's
+  // merge expired that. §3.6's grammar was deliberately sized to fit the
+  // already-ratified `string[]` so hardening never needs to touch them.
+  //
+  // The same release carries a second repair (08-06), on the same expiry: the
+  // timeline printed `(갈림길 Gn의 자리)` on six lines of a player surface,
+  // against the 08-03 decision log and `docs/spec-client.md` §3 invariant 6.
+  // That leak cannot be repaired anywhere but the authored file — fixing only
+  // the compiled `timeline.json` would let the next `datapack:compile` restore
+  // it. `_schema/` stays frozen for this one too: the schemas are not what
+  // either defect is in.
+  const RELEASED =['docs/spec-client.md', 'src/shared/species.ts', 'data/scenario/우는다리/']
   const FROZEN = [
     'data/scenario/_schema/',
     'docs/design/',

@@ -21,7 +21,7 @@
 import { describe, expect, it } from 'vitest'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
-import { publishedDataFiles, stripDesignNotes } from '../../vite.config.ts'
+import { publishedDataFiles, stripDesignNotes, stripScoreNotes } from '../../vite.config.ts'
 
 const REPO = path.resolve(import.meta.dirname, '../..')
 const DATA = path.join(REPO, 'data')
@@ -36,8 +36,34 @@ function packFilesOf(rel: string): string[] {
   return [...(match as RegExpExecArray)[1].matchAll(/['"`]([^'"`]+)['"`]/g)].map((m) => m[1])
 }
 
-/** Authoring surfaces that must never reach `dist/` — named, not inferred. */
-const NEVER_PUBLISHED = ['draft.md', 'places.json', 'truths.json', 'score.json', 'hardening.json']
+/**
+ * Authoring surfaces that must never reach `dist/` — named, not inferred.
+ *
+ * `score.json` left this list with the scorer (#146): the run resolves its
+ * `units[].predicates` at 21:04, so it is a runtime file now. It ships stripped
+ * — see (h).
+ */
+const NEVER_PUBLISHED = ['draft.md', 'places.json', 'truths.json', 'hardening.json']
+
+/**
+ * Source with comments removed. The premise checks below ask whether a seam
+ * READS a stripped field; a field named in prose is not a read, and
+ * `src/driver/scorer.ts` explains at length why it does not trust
+ * `baseline_summary`.
+ */
+function withoutComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+}
+
+/** Files that read `field` outside `datapack.ts` (which types it, never reads). */
+function consumersOf(fields: readonly string[]): string[] {
+  const pattern = new RegExp(`\\b(${fields.join('|')})\\b`)
+  return ['src', 'tools', 'proxy/src']
+    .flatMap((dir) => sourceFilesUnder(path.join(REPO, dir)))
+    .filter((file) => path.relative(REPO, file) !== 'src/shared/datapack.ts')
+    .filter((file) => pattern.test(withoutComments(readFileSync(file, 'utf8'))))
+    .map((file) => path.relative(REPO, file))
+}
 
 /** Every `.ts`/`.mjs` under `dir`, so a consumer cannot hide in a subfolder. */
 function sourceFilesUnder(dir: string): string[] {
@@ -124,14 +150,50 @@ describe('published data — the allowlist tracks what the client fetches', () =
 
     // The premise the strip rests on: no runtime consumer. `datapack.ts` may
     // TYPE them — that is the schema, not a read.
-    const consumers = ['src', 'tools', 'proxy/src']
-      .flatMap((dir) => sourceFilesUnder(path.join(REPO, dir)))
-      .filter((file) => path.relative(REPO, file) !== 'src/shared/datapack.ts')
-      .filter((file) => /\b(standard_form|branch_note)\b/.test(readFileSync(file, 'utf8')))
-      .map((file) => path.relative(REPO, file))
+    const consumers = consumersOf(['standard_form', 'branch_note'])
     expect(
       consumers,
       `a seam now reads a stripped field: ${consumers.join(' | ')} — reconsider the strip`,
+    ).toEqual([])
+  })
+
+  it('(h) the published score.json drops the ending, and nothing reads it', () => {
+    // `score.json` ships for `units[].predicates`, which the scorer resolves at
+    // 21:04. The rest of the file is written for a human: `baseline_summary`
+    // states the no-intervention ending, and `attributed_gates` names the gates
+    // a unit hangs off — gate structure on a fetchable URL (invariant 6).
+    const authored = readFileSync(path.join(DATA, 'scenario/우는다리/score.json'), 'utf8')
+    const shipped = stripScoreNotes(authored)
+
+    expect(authored, 'the authored file should still carry its baseline').toMatch(
+      /"baseline_summary"/,
+    )
+    for (const field of ['baseline_summary', 'variance_notes', 'attributed_gates', 'tallies']) {
+      expect(shipped, `${field} reached the published copy`).not.toMatch(
+        new RegExp(`"${field}"`),
+      )
+    }
+
+    // Shape-preserving: every unit survives, and so does everything the scorer
+    // reads — `src/driver/scorer.ts` uses `id`, `label` and `predicates`.
+    const before = JSON.parse(authored) as { units: Record<string, unknown>[] }
+    const after = JSON.parse(shipped) as { units: Record<string, unknown>[] }
+    expect(after.units.length).toBe(before.units.length)
+    for (const [i, unit] of after.units.entries()) {
+      expect(unit.id).toBe(before.units[i]!.id)
+      expect(unit.label).toBe(before.units[i]!.label)
+      expect(unit.predicates).toEqual(before.units[i]!.predicates)
+    }
+
+    const consumers = consumersOf([
+      'baseline_summary',
+      'variance_notes',
+      'attributed_gates',
+      'tallies',
+    ])
+    expect(
+      consumers,
+      `a seam now reads a stripped score field: ${consumers.join(' | ')} — reconsider the strip`,
     ).toEqual([])
   })
 

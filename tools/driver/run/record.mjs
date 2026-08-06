@@ -175,6 +175,7 @@ export function assembleRecord({
   calls,
   carried,
   archive = [],
+  score = null,
 }) {
   const deltasByBeat = new Map(journals.map((journal) => [journal.beat, journal.deltas]))
 
@@ -214,7 +215,11 @@ export function assembleRecord({
     })),
     timeline: [...reduced.timeline],
     reports,
-    score: null,
+    // `null` when no unit resolved — a run with nothing to score records that
+    // it had nothing, rather than an empty ledger that reads like a scored run
+    // with no casualties. It was unconditionally `null` while no composition
+    // root built a `ScorerPort`.
+    score,
     fallbacks: reduced.fallbacks.map((entry) => ({
       beat: entry.beat,
       call: entry.call,

@@ -111,15 +111,19 @@ describe('[u2f#c10] frozen inputs are read, never written', () => {
   // lands" — view-driver.ts landed with this run). The original claim stays
   // asserted where it stayed true: over the run's own merge range, in (e). The
   // live checks keep the paths that remain frozen.
+  // `data/scenario/우는다리/` joins the released set with the score-predicate
+  // hardening (08-05) — same argument as the two above, recorded in full at
+  // `tests/acceptance/discovery-and-frozen-guard.test.ts`: the pack is content,
+  // the freeze was "the run must not rewrite its own inputs", and that claim
+  // expired at the run's merge. `data/scenario/_schema/` stays frozen; the
+  // schemas are the law the content is checked against.
   //
-  // RELEASED again (08-06) for the scenario packs. Same expiry, same reasoning
-  // as the third entry in `discovery-and-frozen-guard.test.ts`: no run is open,
-  // and the gate vocabulary leaking onto a player surface (invariant 6) is a
-  // defect in the authored timeline itself. `data/scenario/_schema/` stays
-  // frozen and moves into FROZEN by name, so releasing the packs does not
-  // quietly release the schemas with them.
-  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts', 'data/scenario/']
+  // The gate-vocabulary repair (08-06) lands under that same release — the leak
+  // is in the authored timeline itself, so there is nowhere else to fix it.
+  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts', 'data/scenario/우는다리/']
   const FROZEN = [
+    // Narrowed from `data/scenario/` — the pack under it is released (above);
+    // the schemas it is checked against are not.
     'data/scenario/_schema/',
     'docs/design/',
     'src/shared/segment.ts',
