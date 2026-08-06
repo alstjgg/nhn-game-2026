@@ -49,13 +49,23 @@ engine forbids — it was covering a branch that could not execute.
 from the 08-05 session with dependency order and a cut line against ~08-10, plus
 §5, the rule set for specifying them as mini-PRDs for low-cost executors.
 
-**Open, and owned by nobody yet:** the predicate work this file has named since
-08-05 is the shared prerequisite of two of that document's must items (U3, the
-ending; U5.2b, showing which sentence moved the agent). `Sentence` carries
-`{id, text, species, axis}` and **no `referent`**, while a gate's key condition
-is a triple of axis · referent · species — so "what is this sentence for" and
-"what does the ledger say" are the same piece of work. It needs an owner and a
-date.
+**The 08-05 entry below is superseded on its central claim.** It says
+`ScorerPort` is declared but unbuilt, neither composition root supplies one, and
+all 8 units of `score.json` have `predicates: []`. None of that is true in the
+working tree: `score.json` carries **9 units, all 9 with predicates**,
+`src/driver/scorer.ts:136` builds the port, and both roots wire it
+(`src/client/driver/live/bind.ts:84`, `tools/driver/run/bind.mjs:125`). It also
+names the unbound meters "c3–c7"; `characters.json` actually leaves **c2–c7**
+unbound, 12 of 14 `meters[].variable` null. Meter binding is the only part of
+that worklist still open.
+
+**Consequence for the playtest plan:** two of its must items — U3 (the ending)
+and showing which sentence moved the agent — were sized as blocked on that work
+and are not. What is still missing is a *field*, not a port: `Sentence` is
+`{id, text, species, axis?}` (`src/shared/view-driver.ts:18`) with **no
+`referent`**, while a gate's key condition is a five-field record carrying one
+(`src/shared/datapack.ts:153-158`). Matching a sentence to what it is for needs a
+referent the wire does not carry.
 
 ## Status (2026-08-05) — the tally ledger is empty, and the reason is authoring, not wiring
 
