@@ -41,7 +41,7 @@ load-bearing `oral-only` claims and its `gaps` — chiefly the **DDAY-selection
 record-gap** (S4-021: DDAY appears as the confirmed outcome between 07-24 and
 07-28 with no minutes documenting the discussion that produced it). Per the
 protocol: **answer separately first, then a short joint pass** on the two-person
-moment (E-10). Append each answer as an OH-n verbatim block in `oral-history.md`.
+moment (F-12). Append each answer as an OH-n verbatim block in `oral-history.md`.
 Answer freely — these are prompts, not a form; skip, reorder, or expand as memory
 allows.
 
@@ -79,8 +79,25 @@ allows.
    adds vs. removes fun" analysis — is any of this written anywhere, or interview-
    only? Confirm DDAY descends from "choice-and-spectating."
 
-### E. Joint pass only — a two-person moment neither can reconstruct alone
-10. The in-game-AI negotiation (민서 against putting AI in the game / 윤석 for it →
+### E. Lane 2 — the two things mining structurally cannot reach
+*(Added 2026-08-06. Rationale: passB §I names "multi-agent review works" as the
+deliverable's central under-evidenced claim. The pre-Phase-5 sweep of #110/#116 will
+recover the review **artifacts** — it cannot recover the **judgment**, and no PR body
+contains it. Likewise super-pipeline is deliberately out-of-repo (S6-010), so T-10 /
+T-34 / T-35 rest on evidence the corpus is structurally unable to hold.)*
+
+10. **Did the review panel actually earn its cost?** Name a concrete defect a reviewer
+    caught that would otherwise have shipped — and, honestly, roughly what share of
+    panel comments you overrode as noise. #4's lane-2 spine is "multi-agent review
+    works"; right now that claim rests on the protocol existing, not on it paying off.
+    A remembered near-miss is worth more than any number of green checks.
+11. **What lives in the harness that this repo can never show?** super-pipeline is a
+    separate repo by design, so the mining sees only its exhaust. What did you build or
+    change in it that a reader of `nhn-game-2026` alone would never learn — and which of
+    those was a response to a specific failure rather than a plan?
+
+### F. Joint pass only — a two-person moment neither can reconstruct alone
+12. The in-game-AI negotiation (민서 against putting AI in the game / 윤석 for it →
     the membrane; OH-4 resolved that compromise and consensus name the same event).
     For #4's "two directors" narrative, in each of your own words: what did each of
     you give up to reach the membrane?

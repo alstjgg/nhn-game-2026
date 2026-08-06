@@ -40,7 +40,7 @@ below where they matter.
 >    duplicates, monotonic. One (T-35) is a deliberate merge tombstone pointing at T-12,
 >    so the substantive count is **68**, not 66.
 > 2. **"Zero atoms left uncovered" is false at the merged level.** Of the 905 atoms,
->    **848 are cited somewhere in this file and 57 are not** (6.3%). Individual agents may
+>    **847 are cited somewhere in this file and 58 are not** (6.4%). Individual agents may
 >    well have covered them; the 141→69 fold is where they were lost, and the fold has no
 >    accounting table, so it cannot be checked. The uncited ids, for Pass B and
 >    reconciliation to pick up deliberately:
@@ -54,12 +54,17 @@ below where they matter.
 >    - **S9a** (9): S9a-011, S9a-020, S9a-030, S9a-036, S9a-042, S9a-047, S9a-050,
 >      S9a-057, S9a-W013 *(W013 is the tombstoned atom this pass's own table names — that
 >      one is correctly absent)*
->    - **S9b** (19): S9b-007, S9b-029, S9b-031, S9b-032, S9b-047, S9b-061, S9b-112,
+>    - **S9b** (20): S9b-007, S9b-029, S9b-031, S9b-032, S9b-047, S9b-061, S9b-112,
 >      S9b-118, S9b-120, S9b-121, S9b-124, S9b-131, S9b-134, S9b-135, S9b-154, S9b-156,
->      S9b-188, S9b-192, S9b-W010
+>      S9b-188, S9b-189, S9b-192, S9b-W010
+>
+>    *(Corrected 2026-08-06: this block first said 848/57 and omitted S9b-189 from the
+>    list — an off-by-one in the audit's own prose while its enumeration was otherwise
+>    complete. The same failure mode it was written to document, one level up. Pass B
+>    independently cites S9b-189, so it is no longer an orphan.)*
 >
 > **What the audit did NOT find, and these are the load-bearing negatives.** Zero
-> fabricated citations — every one of the 848 ids resolves to a real atom. All ten slices
+> fabricated citations — every one of the 847 ids resolves to a real atom. All ten slices
 > are represented. Every record carries its required fields. No record says
 > `counter-evidence: none found`, which `theme-format.md` calls the suspicious answer.
 > The closing three-gaps section — the last thing the brief asked for — is present and
