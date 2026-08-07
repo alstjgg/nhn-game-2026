@@ -81,7 +81,8 @@
     "feed:fallback": null,
     "feed:wait": null,
 
-    "wait:open": "wait",
+    "$wait-open": "Silent. The loop held for the whole of every wait and a day makes three calls per beat, so it never stopped - it left being a clock and became a backing track. `shell/announcer.ts` still says 무전 회신 대기 중, which is the channel that owes the player that fact. Bind this to `wait` to bring the ticking back on every call, or hold the loop from `wait:judgment` alone, which sounds it once per judgment instead of once per call.",
+    "wait:open": null,
     "wait:judgment": "judgment",
     "wait:narration": null,
     "wait:report": null,
