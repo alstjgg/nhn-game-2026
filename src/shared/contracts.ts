@@ -20,8 +20,12 @@
 
 // ─── slot value shapes ───────────────────────────────────────────────────────
 
-/** A stance the agent may pick at a gate. Per-gate content, never global. */
-export type Stance = { id: string; label: string }
+/**
+ * A stance the agent may pick at a gate. Per-gate content, never global.
+ * `desc` is the authored player-facing prose (§5.2 `judged`); the composer's
+ * slot projection never carries it, so the prompt cannot see it.
+ */
+export type Stance = { id: string; label: string; desc?: string }
 
 /** A sentence block the player mined and injected. The proxy renders `id: text`. */
 export type Block = { id: string; text: string }

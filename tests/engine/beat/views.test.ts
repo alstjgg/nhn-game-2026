@@ -157,8 +157,8 @@ describe('[e3#D2/D3] Call-2 slots on a gate beat', () => {
     const view = r.driver.gateView()
     expect(view.GATE_QUESTION).toBe('G1-question')
     expect(view.STANCE_SET).toEqual([
-      { id: 'a', label: 'A' },
-      { id: 'b', label: 'B' },
+      { id: 'a', label: 'A', desc: 'a-desc' },
+      { id: 'b', label: 'B', desc: 'b-desc' },
     ])
   })
 })

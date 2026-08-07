@@ -106,7 +106,7 @@ function compileGate(authored: AuthoredGate): ScheduledGate {
     id: authored.gate,
     question: authored.question,
     scene: authored.scene ?? '',
-    stances: authored.stances.map((stance) => ({ id: stance.id, label: stance.label })),
+    stances: authored.stances.map((stance) => ({ id: stance.id, label: stance.label, desc: stance.desc })),
     defaultStance: authored.default_stance,
     buckets: authored.buckets,
     edges: compileEdges(authored.edge_predicates),

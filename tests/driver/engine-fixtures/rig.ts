@@ -152,9 +152,9 @@ export function recordEngine(inner: EnginePort, recorder: Recorder): EnginePort 
     beatView: (): BeatView => note('engine.beatView', inner.beatView()),
     roundView: (): RoundView => note('engine.roundView', inner.roundView()),
     feed: (): FeedLine[] => inner.feed(),
-    submitStance(response: JudgmentResponse | null): void {
+    submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null {
       recorder.log.push({ name: 'engine.submitStance', value: response })
-      inner.submitStance(response)
+      return inner.submitStance(response)
     },
     applyBeatEffects(): void {
       recorder.log.push({ name: 'engine.applyBeatEffects', value: null })

@@ -146,8 +146,12 @@ export interface Engine {
  */
 export interface EngineHandle extends Engine {
   current(): BeatCursor
-  /** `null` ⇒ the engine substitutes this gate's authored `default_stance`. */
-  submitStance(response: JudgmentResponse | null): void
+  /**
+   * `null` ⇒ the engine substitutes this gate's authored `default_stance`.
+   * Returns the stance it resolved — chosen or substituted — in the author's
+   * words (U5.2b, §5.2 `judged`); `null` when it carries no `desc`.
+   */
+  submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null
   applyBeatEffects(): void
   /** `null` ⇒ no `n`/`q` line is minted for this beat. */
   applyNarration(response: NarrationResponse | null): void
@@ -279,7 +283,7 @@ export function createEngine(deps: EngineDeps): EngineHandle {
 
     snapshot: (): PredicateState => core.port.snapshot(),
 
-    submitStance(response: JudgmentResponse | null): void {
+    submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null {
       const beat = beatNow()
       if (beat.gate === null) throw new Error(`beat ${beat.index} carries no gate`)
       // §5 recovery: the authored default stance, which `gateView()` does not
@@ -296,6 +300,9 @@ export function createEngine(deps: EngineDeps): EngineHandle {
       // The journal is the only place a substituted stance is distinguishable
       // from a chosen one after the fact (§2.1's `fallback:call1`).
       beats.submitStance({ stance, utterance, fallback })
+      // U5.2b — report what was judged, in the author's words (§5.2 `judged`).
+      const judged = beat.gate.stances.find((entry) => entry.id === stance)
+      return judged?.desc !== undefined ? { stance_id: judged.id, desc: judged.desc } : null
     },
 
     applyBeatEffects(): void {

@@ -51,8 +51,11 @@ export type ReportSentences = { facts: Sentence[]; report_body: Sentence[] }
  */
 export interface EnginePort extends Engine {
   current(): BeatCursor
-  /** `null` ⇒ the engine substitutes this gate's authored `default_stance`. */
-  submitStance(response: JudgmentResponse | null): void
+  /**
+   * `null` ⇒ the engine substitutes this gate's authored `default_stance`.
+   * Returns the stance it resolved, in the author's words (U5.2b `judged`).
+   */
+  submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null
   applyBeatEffects(): void
   /** `null` ⇒ no `n`/`q` line is minted for this beat. */
   applyNarration(response: NarrationResponse | null): void
