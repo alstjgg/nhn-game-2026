@@ -1,6 +1,7 @@
 # G2 — LIVE FEED names a fault as transmission trouble, never as mechanism
 
-> plan-playtest.md **v7** · change list stamped against tree `14dd971` (2026-08-07).
+> plan-playtest.md **v8** · change list stamped against tree `de9e03a`
+> (2026-08-07) — every row re-verified byte-identical at handoff.
 > Executor: Sonnet-class session. Branch `playtest/g1-1-g2` off current `main`.
 > One commit, message: `playtest(G2): fallback lines speak the transmission register`.
 > Open a PR; merge nothing (§5.6). Before the first edit, confirm
