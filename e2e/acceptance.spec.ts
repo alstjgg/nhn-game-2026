@@ -47,7 +47,6 @@ import {
   rate,
   seedClock,
   seek,
-  slotBlock,
   tallyPhase,
   tallyState,
   watchWire,
@@ -234,8 +233,7 @@ test.describe('acceptance 1-7', () => {
     // store — the card is keyed by the sentence's own authored id.
     expect((await frame(page)).store.mined, 'the mined id never reached the seam').toContain(id)
 
-    // slot — the same id seats on the board.
-    await slotBlock(page, id, 0)
+    // slot — the same id seats on the board, off the same gesture (08-08).
     await expect(page.locator(`${FILE.board} [data-block-id="${id}"]`).first()).toBeVisible()
     expect(Object.values((await frame(page)).store.slots)).toContain(id)
 
@@ -429,8 +427,7 @@ test.describe('acceptance 9-12', () => {
     await boot(page, { reduced: true })
     await newRun(page)
 
-    const id = await mineFirst(page)
-    await slotBlock(page, id, 0)
+    await mineFirst(page)
 
     const filled = await page.locator(FILE.filled).count()
     expect(filled, 'no slot was filled, so no thread can be measured').toBeGreaterThan(0)

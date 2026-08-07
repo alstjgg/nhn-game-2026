@@ -161,7 +161,7 @@ export function createReportView(options: ReportViewOptions): ReportView {
   count.id = 'minedCount'
   const foot = el('footer', 'rep-foot')
   foot.append(
-    document.createTextNode('문장을 누르면 뜯어내고, 한 번 더 누르면 요원 파일의 빈 칸에 앉습니다 · '),
+    document.createTextNode('문장을 누르면 뜯어내 요원 파일의 빈 칸에 앉힙니다 · '),
     count,
     document.createTextNode('건 채굴됨'),
   )

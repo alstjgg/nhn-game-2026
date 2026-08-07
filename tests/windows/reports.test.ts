@@ -64,11 +64,12 @@ function offenders(re: RegExp): string[] {
 
 /* ── the exported surface (u6 design §4) ─────────────────────────────────── */
 
-type MinableState = 'unmined' | 'mined' | 'slotted'
+type MinableState = 'unmined' | 'mined' | 'slotted' | 'carried'
 
 interface MarkSets {
   mined: ReadonlySet<string>
-  slottedEver: ReadonlySet<string>
+  slotted: ReadonlySet<string>
+  carried: ReadonlySet<string>
 }
 
 interface MineEffect {
@@ -261,42 +262,51 @@ describe('[u6#c3] mine op carries authored id', () => {
 /* ══ [u6#c5] minable states ═════════════════════════════════════════════ */
 
 describe('[u6#c5] minable states', () => {
-  it('(a) unmined · mined · slotted are three distinct states', async () => {
+  it('(a) unmined · mined · slotted · carried are four distinct states', async () => {
     const m = await minable()
     // `id-slotted` is mined TOO, because that is the only way a sentence gets
-    // into a slot: the board seats cards off the deck, and the deck is
-    // `carried ∪ mined` (`engine-ops.test.ts (b)`, "an unmined block cannot be
-    // slotted"). This used to seat an unmined id — a state the app cannot
-    // produce — so the assert passed over a combination that never occurs.
+    // into a slot: an unmined block cannot be slotted (`engine-ops.test.ts (b)`).
+    // This used to seat an unmined id — a state the app cannot produce — so the
+    // assert passed over a combination that never occurs.
     const marks = m.deriveMarks(
       store({ mined: ['id-mined', 'id-slotted'], slots: { 0: 'id-slotted' } }),
-      [],
+      ['id-carried'],
     )
     expect(m.sentenceState('id-plain', marks)).toBe('unmined')
     expect(m.sentenceState('id-mined', marks)).toBe('mined')
     expect(m.sentenceState('id-slotted', marks)).toBe('slotted')
+    expect(m.sentenceState('id-carried', marks)).toBe('carried')
   })
 
-  it('(b) slotted wins over mined when a sentence is both', async () => {
+  it('(b) slotted wins over carried wins over mined when a sentence is several', async () => {
     // REVERSED (08-06). [u6#c5] b had mined win, which made `'slotted'`
     // unreachable — every slotted id is also mined (see (a)) — so `.min.slotted`
     // in `win-reports.css` never rendered and the operator got no sign that a
-    // sentence had been placed. Slotted is the more specific state and reads
-    // first; `unmined → mined → slotted` now tracks what the operator did.
+    // sentence had been placed. The more specific state reads first.
+    //
+    // `carried` split out of `slotted` (08-08): TODAY's file and an EARLIER
+    // day's are different facts about the desk, and the rail shows both at
+    // once. A carried id seated again today reads 배치, not 과거 배치.
     const m = await minable()
-    const marks = m.deriveMarks(store({ mined: ['id-x'], slots: { 2: 'id-x' } }), ['id-x'])
-    expect(m.sentenceState('id-x', marks)).toBe('slotted')
+    const both = m.deriveMarks(store({ mined: ['id-x'], slots: { 2: 'id-x' } }), ['id-x'])
+    expect(m.sentenceState('id-x', both)).toBe('slotted')
+
+    const past = m.deriveMarks(store({ mined: ['id-x'] }), ['id-x'])
+    expect(m.sentenceState('id-x', past)).toBe('carried')
   })
 
-  it('(c) the three classes are distinct and carry the skin selectors u1 shipped', async () => {
+  it('(c) the four classes are distinct and carry the skin selectors u1 shipped', async () => {
     const m = await minable()
-    const classes = (['unmined', 'mined', 'slotted'] as MinableState[]).map((s) => m.sentenceClass(s))
-    expect(new Set(classes).size).toBe(3)
+    const states: MinableState[] = ['unmined', 'mined', 'slotted', 'carried']
+    const classes = states.map((s) => m.sentenceClass(s))
+    expect(new Set(classes).size).toBe(4)
     for (const c of classes) expect(c.split(/\s+/)).toContain('min')
     expect(classes[0]!.split(/\s+/)).not.toContain('mined')
     expect(classes[0]!.split(/\s+/)).not.toContain('slotted')
+    expect(classes[0]!.split(/\s+/)).not.toContain('carried')
     expect(classes[1]!.split(/\s+/)).toContain('mined')
     expect(classes[2]!.split(/\s+/)).toContain('slotted')
+    expect(classes[3]!.split(/\s+/)).toContain('carried')
   })
 
   it('(d) deriveMarks folds store.mined, the slot values and meta.carried — and mutates nothing', async () => {
@@ -306,7 +316,8 @@ describe('[u6#c5] minable states', () => {
     const marks = m.deriveMarks(snapshot, carried)
 
     expect([...marks.mined].sort()).toEqual(['a'])
-    expect([...marks.slottedEver].sort()).toEqual(['b', 'c', 'd'])
+    expect([...marks.slotted].sort()).toEqual(['b', 'c'])
+    expect([...marks.carried].sort()).toEqual(['d'])
     expect(snapshot).toEqual(store({ mined: ['a'], slots: { 0: 'b', 3: 'c' } }))
     expect(carried).toEqual(['d'])
   })
