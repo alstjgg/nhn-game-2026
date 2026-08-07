@@ -11,7 +11,6 @@ import { mount as mountLiveFeed } from '../windows/live-feed.ts'
 import { mount as mountAgentFile } from '../windows/agent-file.ts'
 import { mount as mountBlockStore } from '../windows/block-store.ts'
 import { mount as mountReports } from '../windows/reports.ts'
-import { mount as mountTally } from '../windows/tally.ts'
 
 export interface WindowDef {
   /** Desk key — `data-win`, taskbar order, applyLayout key. */
@@ -39,5 +38,4 @@ export const WINDOW_REGISTRY: readonly WindowDef[] = [
   { key: 'file', id: 'w-file', en: 'AGENT FILE', ko: '요원 파일', sub: '요원 파일 — 프롬프트 편성', tab: 'AF', stock: 'paper kraft', mount: mountAgentFile },
   { key: 'store', id: 'w-store', en: 'BLOCK STORE', ko: '보관함', sub: '보관함 — 채굴한 문장', tab: 'BS', stock: 'paper card-stock', mount: mountBlockStore },
   { key: 'rep', id: 'w-rep', en: 'REPORTS', ko: '부검', sub: '부검 — 시행 기록', tab: 'RP', stock: 'paper bond', mount: mountReports },
-  { key: 'tally', id: 'w-tally', en: 'TALLY', ko: '집계', sub: '집계 — 시행 결과', tab: 'TL', stock: 'paper ledger', mount: mountTally },
 ]

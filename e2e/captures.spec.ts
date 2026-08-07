@@ -114,8 +114,8 @@ const SHOTS: readonly Shot[] = [
   { name: 'win-reports', selector: '#w-rep' },
   { name: 'win-block-store', selector: '#w-store' },
   { name: 'red-thread-overlay', selector: null, threaded: true },
-  { name: 'win-tally', selector: '#w-tally', seedAt: '21:04' },
-  { name: 'tally-countup-final', selector: '#w-tally', seedAt: '21:04', holdMs: 11_000 },
+  { name: 'terminal-record', selector: '#w-rep .terminal-record', seedAt: '21:04' },
+  { name: 'terminal-record-final', selector: '#w-rep .terminal-record', seedAt: '21:04', holdMs: 11_000 },
 ]
 
 /** The note describes THIS run — it is rewritten once per worker, not grown. */
@@ -268,8 +268,8 @@ test.describe('captures', () => {
         ).toBe(false)
         expect(
           desk.windows.length,
-          `only ${desk.windows.length}/5 windows mounted — the shot would capture a stalled boot`,
-        ).toBe(5)
+          `only ${desk.windows.length}/4 windows mounted — the shot would capture a stalled boot`,
+        ).toBe(4)
         expect(
           desk.windows.filter((w) => w.visibility === 'hidden').map((w) => w.id),
           'a mounted window computes visibility:hidden — it occupies its box but paints nothing',
@@ -279,7 +279,7 @@ test.describe('captures', () => {
       if (shot.seedAt) {
         await seedClock(page, shot.seedAt)
         await advance(page, mode, shot.holdMs ?? 1000)
-        await expect(page.locator('#w-tally'), 'the tally never left its hidden phase').not.toHaveClass(/hidden/)
+        await expect(page.locator('#w-rep .terminal-record'), 'the terminal record never landed').toHaveCount(1)
       }
 
       // PANE — a shot with the pane visible is invalid, not a finding.
@@ -356,7 +356,7 @@ test.describe('captures', () => {
     // silently compared one reference frame against two build states. Names
     // that frame the same surface at different moments must differ in content
     // — on both sides.
-    const pairs: readonly [string, string][] = [['win-tally.png', 'tally-countup-final.png']]
+    const pairs: readonly [string, string][] = [['terminal-record.png', 'terminal-record-final.png']]
     for (const dir of [REFERENCE_DIR, OUT_DIR].filter((d) => fs.existsSync(d))) {
       for (const [a, b] of pairs) {
         const fa = path.join(dir, a)

@@ -7,6 +7,16 @@
 // Split model → builder (u4 D1): `deployView` is pure and is the only place the
 // five readable states are decided — the counter, the note, the board's
 // `data-state`, the button's, and whether the stamp is down (D11).
+//
+// U3 (playtest g3-1) — TALLY dissolves: this control now also carries the
+// day's turn. Once the run closes (`shell/run-state.ts`'s `'tally'` phase),
+// the SAME button becomes NEW RUN — what used to be `windows/tally.ts`'s own
+// deleted new-run button. `deployView` resolves which of four faces the
+// control wears (`deploy` · `settling` · `next` · `spent`); `buildDeployZone` paints
+// whichever one it is handed and decides nothing itself. The settling/next/
+// spent note text (WAITING/FILED_TAIL/LAPSED_TAIL/SPENT) is not decided here
+// — it is written directly by `windows/agent-file.ts`'s ported hold/settle
+// wiring, the same way `windows/tally.ts` once owned its wait line outright.
 import { pad2 } from './block-card.ts'
 import { boardState, SLOT_CAP, usedIds } from './slot-board.ts'
 import type { BoardState } from './slot-board.ts'
@@ -16,18 +26,34 @@ const NOTE_EMPTY = '편성 없음 — 빈 파일로도 배치됩니다'
 const NOTE_PARTIAL = '편성 중 — 배치를 기다립니다'
 const NOTE_LOCKED = '배치됨 — 이번 시행에서 잠김'
 
+const DEPLOY_MAIN = 'DEPLOY'
+const DEPLOY_SUB = '배치 · 파일 잠금'
+
+/** NEW RUN, as the reference prints it — moved in verbatim from `tally.ts`. */
+const NEW_RUN_MAIN = 'NEW RUN'
+const NEW_RUN_SUB = '다음 시행 · '
+const NEW_RUN_SUB_TAIL = '으로'
+
+/** The four faces the merged control wears. */
+export type DeployMode = 'deploy' | 'settling' | 'next' | 'spent'
+
 export interface DeployView {
   used: number
   cap: number
   /** `"2 / 4"` — what `#slotCount` prints. */
   count: string
-  /** What `#deployState` prints. */
+  /** What `#deployState` prints — blank once the day has closed (see header). */
   note: string
   stampOn: boolean
   /** `"RUN 03 · 08:50"` — the run the file was committed for. */
   stampLine: string
   boardState: BoardState
   buttonState: 'ready' | 'deployed'
+  mode: DeployMode
+  /** `bd-main` — `DEPLOY` or `NEW RUN`. */
+  mainLabel: string
+  /** `bd-sub` — `배치 · 파일 잠금` or `다음 시행 · HH:MM으로`. */
+  subLine: string
 }
 
 export interface DeployState {
@@ -37,20 +63,37 @@ export interface DeployState {
   run: number
   /** `"HH:MM"` the run opens on — the pack's own stamp. */
   at: string
+  /** The day has closed (run-state's `'tally'` phase) — absent means false. */
+  closed?: boolean
+  /** The hold has released, filed or lapsed — absent means false. */
+  releasable?: boolean
+  /** The allotment is spent — `new_run` was refused; absent means false. */
+  spent?: boolean
+  /** `"HH:MM"` the NEXT day opens on — absent means `''`. */
+  nextAt?: string
 }
 
 /** Pure: board + run state → every string and flag the foot of the file shows. */
 export function deployView(state: DeployState): DeployView {
   const used = usedIds(state.slots).length
+  const closed = state.closed ?? false
+  const releasable = state.releasable ?? false
+  const spent = state.spent ?? false
+  const nextAt = state.nextAt ?? ''
+  const mode: DeployMode = spent ? 'spent' : closed ? (releasable ? 'next' : 'settling') : 'deploy'
+
   return {
     used,
     cap: SLOT_CAP,
     count: `${used} / ${SLOT_CAP}`,
-    note: state.deployed ? NOTE_LOCKED : used > 0 ? NOTE_PARTIAL : NOTE_EMPTY,
+    note: mode === 'deploy' ? (state.deployed ? NOTE_LOCKED : used > 0 ? NOTE_PARTIAL : NOTE_EMPTY) : '',
     stampOn: state.deployed,
     stampLine: `RUN ${pad2(state.run)} · ${state.at}`,
     boardState: boardState(state.slots, state.deployed),
     buttonState: state.deployed ? 'deployed' : 'ready',
+    mode,
+    mainLabel: mode === 'deploy' ? DEPLOY_MAIN : NEW_RUN_MAIN,
+    subLine: mode === 'deploy' ? DEPLOY_SUB : `${NEW_RUN_SUB}${nextAt}${NEW_RUN_SUB_TAIL}`,
   }
 }
 
@@ -70,11 +113,11 @@ export function buildDeployZone(onDeploy: () => void): DeployPart {
   const meta = el('div', 'dz-meta')
   meta.append(count, document.createTextNode(' 슬롯 사용 · '), state)
 
+  const mainEl = el('span', 'bd-main')
+  const subEl = el('span', 'bd-sub')
   const deploy = button('btn-deploy', '배치 — 요원 파일을 이번 시행 동안 잠급니다', '')
   deploy.id = 'btnDeploy'
-  // The `deploy` op's control, marked for the PRD §4 membrane census.
-  deploy.dataset.op = 'deploy'
-  deploy.append(el('span', 'bd-main', 'DEPLOY'), el('span', 'bd-sub', '배치 · 파일 잠금'))
+  deploy.append(mainEl, subEl)
   deploy.addEventListener('click', onDeploy)
 
   const root = el('div', 'deploy-zone')
@@ -85,8 +128,13 @@ export function buildDeployZone(onDeploy: () => void): DeployPart {
     render(view) {
       count.textContent = view.count
       state.textContent = view.note
+      mainEl.textContent = view.mainLabel
+      subEl.textContent = view.subLine
+      // The op the control performs rides its mode, for the PRD §4 membrane
+      // census — one physical control, never both ops at once.
+      deploy.dataset.op = view.mode === 'next' || view.mode === 'spent' ? 'new_run' : 'deploy'
       deploy.dataset.state = view.buttonState
-      deploy.disabled = view.stampOn
+      deploy.disabled = view.mode === 'next' ? false : view.mode === 'deploy' ? view.stampOn : true
     },
   }
 }

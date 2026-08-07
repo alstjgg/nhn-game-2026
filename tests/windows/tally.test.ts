@@ -30,7 +30,7 @@ import {
   RUN_LOOP_TS,
   RUN_STATE_TS,
   SCORE_TALLY_TS,
-  TALLY_TS,
+  AGENT_FILE_TS,
   UNIT_FILES,
   fakeStorage,
   feedEvent,
@@ -71,9 +71,22 @@ function sourceOf(file: string): string {
   return source!.text
 }
 
-/** Every string/template literal in `text` (regex-level, good enough for a lint). */
+/**
+ * Every string/template literal in `text` (regex-level, good enough for a lint).
+ *
+ * U3 (playtest g3-1) — the template-literal alternative now treats a `${…}`
+ * segment as one opaque unit instead of stopping dead at its `$`. The naive
+ * form left every `` `${A}${B}` `` template unmatched at its own backticks —
+ * harmless while it failed silently, until a file with TWO SUCH LITERALS
+ * (agent-file.ts, once u7's scan reached it) let the scanner treat the first
+ * literal's closing backtick as the SECOND literal's opening one, capturing
+ * every line of source code in between as one giant "prose literal" and
+ * failing (f) on whatever digit an unrelated identifier happened to contain.
+ */
 function literals(text: string): string[] {
-  return [...text.matchAll(/'([^'\\\n]*)'|"([^"\\\n]*)"|`([^`\\$]*)`/g)].map((m) => m[1] ?? m[2] ?? m[3] ?? '')
+  return [...text.matchAll(/'([^'\\\n]*)'|"([^"\\\n]*)"|`((?:\\.|\$\{[^{}]*\}|[^`\\])*)`/g)].map(
+    (m) => m[1] ?? m[2] ?? m[3] ?? '',
+  )
 }
 
 /* ══ [u7#c1] run states ═════════════════════════════════════════════════ */
@@ -257,7 +270,7 @@ describe('[u7#c3] new_run is driver-fed', () => {
   })
 
   it('(g) source: NEW RUN disables its button BEFORE it sends, so one activation is one op', () => {
-    const text = sourceOf(TALLY_TS)
+    const text = sourceOf(AGENT_FILE_TS)
     expect(text, 'tally.ts never sends the new_run op').toMatch(/['"]new_run['"]/)
 
     const sends = [...text.matchAll(/send\s*\(\s*\{\s*op\s*:\s*['"]new_run['"]/g)]
@@ -455,7 +468,7 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
 
   it('(i) source: no spinner — the wait is diegetic (design D2)', () => {
     expect(offenders(/spinner|loading|is-busy|throbber/i)).toEqual([])
-    expect(sourceOf(TALLY_TS)).toContain('……보고서 정리 중')
+    expect(sourceOf(AGENT_FILE_TS)).toContain('……보고서 정리 중')
   })
 
   // R4 on score-tally.ts:258 (round 1): the count-up may not ANNOUNCE a
@@ -492,7 +505,7 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
 
     // …and 'lapsed' says something else: the arrival copy is the arrival's, so
     // a release that saw no report may not borrow it.
-    const text = sourceOf(TALLY_TS)
+    const text = sourceOf(AGENT_FILE_TS)
     const filedLine = /const FILED_TAIL = '([^']*)'/.exec(text)?.[1] ?? ''
     const lapsedLine = /const LAPSED_TAIL = '([^']*)'/.exec(text)?.[1] ?? ''
     expect(filedLine, 'the arrival line is gone').toContain('도착')
@@ -665,9 +678,9 @@ describe('[u7#c9] run-wide hard constraints hold in this unit', () => {
     expect(offenders(/\.style\.[A-Za-z]/)).toEqual([])
     expect(offenders(/['"]\.\.?\/[^'"]*\.css['"]/)).toEqual([])
 
-    const sheet = read(path.join(REPO, 'src/client/styles/win-tally.css'))
+    const sheet = read(path.join(REPO, 'src/client/styles/win-reports.css'))
     expect(sheet.length, 'u1 already shipped the tally skin — u7 must not need one').toBeGreaterThan(0)
-    for (const cls of ['.tly-head', '.tly-table', '.tr-b', '.th-b', '.btn-newrun', '.tly-wait']) {
+    for (const cls of ['.terminal-record', '.tly-head', '.tly-table', '.tr-b', '.th-b']) {
       expect(sheet, `${cls} is missing from the shipped skin`).toContain(cls)
     }
   })
@@ -721,7 +734,7 @@ describe('[u7#c9] run-wide hard constraints hold in this unit', () => {
 
   it('(i) the unit owns no shared barrel edit — only the five files it declared', () => {
     const registry = read(path.join(REPO, 'src/client/shell/window-registry.ts'))
-    expect(registry).toContain('windows/tally.ts')
+    expect(registry).not.toContain('windows/tally.ts')
     expect(registry, 'u7 wired its component through the registry').not.toContain('score-tally')
   })
 })
@@ -732,7 +745,7 @@ describe('[u7] ownership', () => {
     expect(UNIT_FILES.map(rel)).toEqual([
       'src/client/shell/run-state.ts',
       'src/client/components/score-tally.ts',
-      'src/client/windows/tally.ts',
+      'src/client/windows/agent-file.ts',
     ])
   })
 })

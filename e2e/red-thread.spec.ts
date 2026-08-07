@@ -23,14 +23,14 @@
 // re-points `playwright.config.ts` per C5) — nothing below assumes a dev server.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
-import { awaitTallyReveal, expectTallyOpen } from './fixtures/harness.ts'
+import { awaitRecordFinal } from './fixtures/harness.ts'
 
 const THREADS = '#threads'
 const PATH = `${THREADS} path`
 const PIN = `${THREADS} circle`
 const FILE = '#w-file'
 const REP = '#w-rep'
-const TALLY = '#w-tally'
+const NEW_RUN = '#w-file #btnDeploy'
 
 /** An id in the authored grammar that no report can have minted (c1 negative). */
 const ABSENT_ID = 'b-r9-f99'
@@ -66,8 +66,8 @@ async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
-  // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
-  await awaitTallyReveal(page)
+  // U3 — no more sheet to reveal; wait the record out to final instead.
+  await awaitRecordFinal(page)
 }
 
 /** Force one synchronous redraw, then let the layer's own rAF settle. */
@@ -125,7 +125,7 @@ async function boot(page: Page): Promise<void> {
 }
 
 /**
- * Leaves the TALLY the way the run's own loop leaves it — NEW RUN.
+ * Leaves the day the way the run's own loop leaves it — NEW RUN.
  *
  * C17 / [u11#c12] — RE-AIMED (08-04, u11 attempt 2). This is the setup the
  * file's flakiness lived in. The code here used to close the sheet with its
@@ -149,14 +149,12 @@ async function boot(page: Page): Promise<void> {
  * reaches the next 21:04. Nothing is skipped and no thread rule is relaxed.
  */
 async function takeNextRun(page: Page): Promise<void> {
-  await expect(page.locator(TALLY), 'the run ended but the TALLY sheet never came up').not.toHaveClass(
-    /\bhidden\b/,
-    { timeout: 30_000 },
-  )
-  const newRun = page.locator(`${TALLY} #btnNewRun`)
-  await expect(newRun, 'the tally never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
+  await awaitRecordFinal(page)
+  const newRun = page.locator(NEW_RUN)
+  await expect(newRun, 'the day never unlocked NEW RUN').toHaveAttribute('data-op', 'new_run', { timeout: 30_000 })
+  await expect(newRun, 'the day never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
   await newRun.click()
-  await expect(page.locator(TALLY), 'NEW RUN did not put the tally away').toHaveClass(/\bhidden\b/, {
+  await expect(newRun, 'NEW RUN did not return the control to deploy').toHaveAttribute('data-op', 'deploy', {
     timeout: 20_000,
   })
 }
@@ -273,9 +271,6 @@ async function threadPath(page: Page): Promise<string> {
         // the layer's narrowing set is the DRIVER's store, not the DOM
         // (`shell/boot.ts:106`) — the two can disagree
         driverSlots: frame?.store?.slots ?? null,
-        // `planThreads` returns [] outright while the tally is up ([u8#c1]) —
-        // the FIRST thing to check when every thread is gone at once
-        tally: document.querySelector('#w-tally')?.className ?? null,
         body: document.body.className,
         file: win(fileSelector as string),
         slot: rect(`${fileSelector} .slot.filled`),
@@ -437,21 +432,6 @@ test.describe('every filled slot is threaded by id', () => {
     await redraw(page)
     await expect(page.locator(PATH)).toHaveCount(0)
     await expect(page.locator(PIN)).toHaveCount(0)
-  })
-
-  test('every filled slot is threaded by id — while the TALLY is open no thread crosses it', async ({
-    page,
-  }) => {
-    await thread(page, 2)
-    await expect(page.locator(PATH)).toHaveCount(2)
-
-    await page.locator('#taskbar [data-win="tally"]').click()
-    // Opened by hand, mid-run — no close crossed, so there is no reveal to
-    // wait out. Visibility is the whole assertion (`expectTallyOpen`), and it
-    // is the harness that knows how the sheet spells "hidden".
-    await expectTallyOpen(page)
-    await redraw(page)
-    await expect(page.locator(PATH)).toHaveCount(0)
   })
 })
 

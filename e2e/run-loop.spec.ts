@@ -16,7 +16,6 @@
 // suite binds to whatever run the shell boots.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
-import { awaitTallyReveal } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -33,12 +32,14 @@ interface Frame {
   ended: boolean
 }
 
-const TALLY = '#w-tally'
-const LEDGER = `${TALLY} [data-tally-state]`
-const NEW_RUN = `${TALLY} #btnNewRun`
-const WAIT = `${TALLY} .tly-wait`
-const ROWS = `${TALLY} .tly-table tr`
-const BIG = `${TALLY} #tlyBig`
+/** U3 (playtest g3-1) — TALLY dissolves: the terminal record lives in REPORTS
+ * and the day's turn rides the merged AGENT FILE control. */
+const RECORD = '#w-rep .terminal-record'
+const LEDGER = `${RECORD}[data-tally-state]`
+const NEW_RUN = '#w-file #btnDeploy'
+const WAIT = '#w-file #deployState'
+const ROWS = `${RECORD} .tly-table tr`
+const BIG = `${RECORD} #tlyBig`
 const REP = '#w-rep'
 const OPTION = `${REP} .arch-rail [role="option"]`
 const FILE = '#w-file'
@@ -46,7 +47,7 @@ const FILE = '#w-file'
 /** c2's band: `run_end → final` is 9 s ±1.5 s at ×1. */
 const BAND: readonly [number, number] = [7500, 10500]
 
-/* ── shell + tally dev handles ───────────────────────────────────────────── */
+/* ── shell + agent-file dev handles ──────────────────────────────────────── */
 
 async function frame(page: Page): Promise<Frame> {
   return page.evaluate(() => {
@@ -56,28 +57,32 @@ async function frame(page: Page): Promise<Frame> {
   })
 }
 
+/**
+ * Releases the whole remaining stream — `run_end` included. There is no more
+ * sheet to reveal (U3), so unlike the pre-U3 helper this waits on nothing
+ * beyond the release itself; callers that need the record settled wait for
+ * `LEDGER`'s `final` state explicitly (`drainToFinal`).
+ */
 async function drain(page: Page): Promise<void> {
   await page.evaluate(() => {
     const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
-  // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
-  await awaitTallyReveal(page)
 }
 
 async function phase(page: Page): Promise<string> {
   return page.evaluate(() => {
-    const handle = (window as unknown as { __tally?: { phase(): string } }).__tally
-    if (!handle) throw new Error('window.__tally is not exposed by the TALLY window')
+    const handle = (window as unknown as { __agentFile?: { phase(): string } }).__agentFile
+    if (!handle) throw new Error('window.__agentFile is not exposed by the AGENT FILE window')
     return handle.phase()
   })
 }
 
 async function meta(page: Page): Promise<MetaEvent> {
   return page.evaluate(() => {
-    const handle = (window as unknown as { __tally?: { meta(): unknown } }).__tally
-    if (!handle) throw new Error('window.__tally is not exposed by the TALLY window')
+    const handle = (window as unknown as { __agentFile?: { meta(): unknown } }).__agentFile
+    if (!handle) throw new Error('window.__agentFile is not exposed by the AGENT FILE window')
     return handle.meta() as never
   })
 }
@@ -110,7 +115,6 @@ async function pipIndex(page: Page): Promise<number> {
 
 async function boot(page: Page): Promise<void> {
   await page.goto('./')
-  await expect(page.locator(TALLY)).toHaveCount(1)
   await expect(page.locator('#runNum')).not.toBeEmpty()
 }
 
@@ -123,7 +127,7 @@ async function drainAndTime(page: Page): Promise<number> {
     handle.drain()
     await new Promise<void>((resolve) => {
       const step = (): void => {
-        if (document.querySelector('#w-tally [data-tally-state="final"]')) resolve()
+        if (document.querySelector('#w-rep .terminal-record[data-tally-state="final"]')) resolve()
         else requestAnimationFrame(step)
       }
       step()
@@ -134,6 +138,8 @@ async function drainAndTime(page: Page): Promise<number> {
 
 async function drainToFinal(page: Page): Promise<void> {
   await drain(page)
+  // One record: the terminal record exists once the day has closed (design #1).
+  await expect(page.locator(RECORD)).toHaveCount(1)
   await expect(page.locator(LEDGER)).toHaveAttribute('data-tally-state', 'final', { timeout: 20_000 })
 }
 
@@ -142,19 +148,19 @@ async function drainToFinal(page: Page): Promise<void> {
 test.describe('full loop back to BUILD', () => {
   test.setTimeout(90_000)
 
-  test('full loop back to BUILD — the desk opens in BUILD with TALLY shut', async ({ page }) => {
+  test('full loop back to BUILD — the desk opens in BUILD with no record yet', async ({ page }) => {
     await boot(page)
     expect(await phase(page)).toBe('build')
-    await expect(page.locator(TALLY)).toHaveClass(/\bhidden\b/)
-    await expect(page.locator(NEW_RUN)).toBeDisabled()
+    await expect(page.locator(RECORD)).toHaveCount(0)
+    await expect(page.locator(NEW_RUN)).toHaveAttribute('data-op', 'deploy')
     expect((await frame(page)).events.filter((e) => e.type === 'run_end')).toEqual([])
   })
 
-  test('full loop back to BUILD — 21:04 closes the feed and opens TALLY on the count-up', async ({ page }) => {
+  test('full loop back to BUILD — 21:04 closes the feed and the terminal record counts up', async ({ page }) => {
     await boot(page)
     await drain(page)
 
-    await expect(page.locator(TALLY)).not.toHaveClass(/\bhidden\b/, { timeout: 5_000 })
+    await expect(page.locator(RECORD)).toHaveCount(1, { timeout: 5_000 })
     expect(await phase(page)).toBe('tally')
     await expect(page.locator(LEDGER)).toHaveAttribute('data-tally-state', 'final', { timeout: 20_000 })
 
@@ -167,7 +173,9 @@ test.describe('full loop back to BUILD', () => {
     expect(await digitsOf(page, BIG)).toBe(score!.total)
   })
 
-  test('full loop back to BUILD — NEW RUN returns the desk to BUILD and shuts TALLY', async ({ page }) => {
+  test('full loop back to BUILD — NEW RUN returns the desk to BUILD and the control returns to deploy', async ({
+    page,
+  }) => {
     await boot(page)
     await drainToFinal(page)
 
@@ -175,7 +183,10 @@ test.describe('full loop back to BUILD', () => {
     await page.locator(NEW_RUN).click()
 
     await expect.poll(async () => phase(page), { timeout: 20_000 }).toBe('build')
-    await expect(page.locator(TALLY)).toHaveClass(/\bhidden\b/)
+    await expect(page.locator(NEW_RUN)).toHaveAttribute('data-op', 'deploy')
+    // The record persists on the desk between days (design #1) — the control
+    // closing is not the record closing.
+    await expect(page.locator(RECORD)).toHaveCount(1)
   })
 
   test('full loop back to BUILD — D-DAY decrements one place, and only off the `meta` event', async ({ page }) => {
@@ -209,7 +220,7 @@ test.describe('full loop back to BUILD', () => {
     await drainToFinal(page)
     await page.locator(NEW_RUN).click()
     await expect.poll(async () => phase(page), { timeout: 20_000 }).toBe('build')
-    await expect(page.locator(NEW_RUN)).toBeDisabled()
+    await expect(page.locator(NEW_RUN)).toHaveAttribute('data-op', 'deploy')
 
     await drainToFinal(page)
     expect(await phase(page)).toBe('tally')
@@ -237,17 +248,17 @@ test.describe('count-up pacing absorbs the report call', () => {
     // Immediately after 21:04 the desk is still settling: pending or counting,
     // never final, and the way out stays shut.
     const early = await page.evaluate(() => {
-      const node = document.querySelector('#w-tally [data-tally-state]')
+      const node = document.querySelector('#w-rep .terminal-record')
       return node?.getAttribute('data-tally-state') ?? null
     })
-    expect(['pending', 'counting'], `the tally reached ${early} before the cadence ran`).toContain(early)
+    expect(['pending', 'counting'], `the record reached ${early} before the cadence ran`).toContain(early)
     await expect(page.locator(NEW_RUN)).toBeDisabled()
 
     await expect(page.locator(WAIT)).toHaveText('……보고서 정리 중')
-    await expect(page.locator(`${TALLY} .spinner, ${TALLY} .loading, ${TALLY} progress`)).toHaveCount(0)
+    await expect(page.locator(`${FILE} .spinner, ${FILE} .loading, ${FILE} progress`)).toHaveCount(0)
 
     await expect(page.locator(LEDGER)).toHaveAttribute('data-tally-state', 'final', { timeout: 20_000 })
-    await expect(page.locator(`${TALLY} .tly-wait.done`)).toHaveCount(1)
+    await expect(page.locator(WAIT)).toContainText('도착했습니다')
     await expect(page.locator(NEW_RUN)).toBeEnabled()
   })
 
@@ -262,7 +273,7 @@ test.describe('count-up pacing absorbs the report call', () => {
     // The report window is painted while the ledger is still counting.
     await expect(page.locator(`${REP} #bodyList .sent`)).not.toHaveCount(0, { timeout: 20_000 })
     const stateWhilePainted = await page.evaluate(
-      () => document.querySelector('#w-tally [data-tally-state]')?.getAttribute('data-tally-state') ?? null,
+      () => document.querySelector('#w-rep .terminal-record')?.getAttribute('data-tally-state') ?? null,
     )
     expect(stateWhilePainted).not.toBeNull()
 
@@ -274,7 +285,7 @@ test.describe('count-up pacing absorbs the report call', () => {
   }) => {
     await boot(page)
     await drain(page)
-    await expect(page.locator(TALLY)).not.toHaveClass(/\bhidden\b/, { timeout: 5_000 })
+    await expect(page.locator(RECORD)).toHaveCount(1, { timeout: 5_000 })
 
     const settled = await page.locator(ROWS).evaluateAll((nodes) => nodes.filter((n) => n.classList.contains('in')).length)
     const total = await page.locator(ROWS).count()
@@ -352,18 +363,20 @@ test.describe('new run unlocks and files the report', () => {
     for (const id of onDesk) expect(emitted.carried, `${id} is on the desk but not in meta.carried`).toContain(id)
   })
 
-  test('new run unlocks and files the report — TALLY reopens clean on the next 21:04', async ({ page }) => {
+  test('new run unlocks and files the report — the terminal record refreshes clean on the next 21:04', async ({
+    page,
+  }) => {
     await boot(page)
     await drainToFinal(page)
     const firstRows = await page.locator(ROWS).count()
 
     await page.locator(NEW_RUN).click()
     await expect.poll(async () => phase(page), { timeout: 20_000 }).toBe('build')
-    await expect(page.locator(TALLY)).toHaveClass(/\bhidden\b/)
+    await expect(page.locator(NEW_RUN)).toHaveAttribute('data-op', 'deploy')
 
     await drain(page)
-    await expect(page.locator(TALLY)).not.toHaveClass(/\bhidden\b/, { timeout: 5_000 })
-    await expect(page.locator(`${TALLY} .tly-wait.done`)).toHaveCount(0)
+    // One record: the next `score` replaces the previous day's whole.
+    await expect(page.locator(RECORD)).toHaveCount(1, { timeout: 5_000 })
     await expect(page.locator(ROWS)).toHaveCount(firstRows)
     await expect(page.locator(LEDGER)).toHaveAttribute('data-tally-state', 'final', { timeout: 20_000 })
   })
@@ -521,11 +534,13 @@ test.describe('latency', () => {
     await expect(rep).not.toHaveClass(/collapsed/)
   })
 
-  test('latency — the TALLY count-up holds past 9 s and completes inside the 30 s worst case', async ({ page }) => {
+  test('latency — the terminal record count-up holds past 9 s and completes inside the 30 s worst case', async ({
+    page,
+  }) => {
     await boot(page)
     await drain(page)
 
-    await expect(page.locator(TALLY)).not.toHaveClass(/\bhidden\b/, { timeout: 5_000 })
+    await expect(page.locator(RECORD)).toHaveCount(1, { timeout: 5_000 })
     const started = Date.now()
 
     // At 9 s the ledger is still counting or has just landed — either way it is
