@@ -23,7 +23,7 @@ import { deriveMarks, mine, sentenceState } from '../components/minable-sentence
 import type { MarkSets } from '../components/minable-sentence.ts'
 import { createArchiveRail } from '../components/report-archive.ts'
 import type { ArchiveEntry } from '../components/report-archive.ts'
-import { createReportView } from '../components/report-view.ts'
+import { accumulated, createReportView } from '../components/report-view.ts'
 import type { ReportModel } from '../components/report-view.ts'
 import { el } from '../shell/dom.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
@@ -77,19 +77,23 @@ function sameRail(a: readonly ArchiveEntry[], b: readonly ArchiveEntry[]): boole
 
 /** Mounts this window's contents into the frame body the shell built. */
 export function mount(host: HTMLElement, driver: FixtureDriver): void {
+  // W2 — keyed by SITTING (the run), not by round. A live day files seven
+  // reports into ONE of these entries.
   const filed = new Map<number, ReportModel>()
+  /** Which rounds each sitting has already filed — a replayed stream files none twice. */
+  const rounds = new Map<number, Set<number>>()
   let archive: ArchiveEntry[] = []
   let carried: string[] = []
   let rendered: ArchiveEntry[] = []
   let active: number | null = null
 
   // U3 — the terminal record's own identity, tracked the same way `meta`
-  // already feeds the callsign below. There is ONE record: the next `score`
-  // replaces it whole (design #1).
+  // already feeds the callsign below. W2 — one record per SITTING, stored with
+  // it; `mountRecord()` keeps exactly one of them on the page.
   let run = 0
   let slug = ''
   let title = ''
-  let record: HTMLElement | null = null
+  const records = new Map<number, HTMLElement>()
 
   const marks = (): MarkSets => deriveMarks(driver.store(), carried)
 
@@ -150,17 +154,41 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    * for ~4 s over the opening of a day the operator had already moved on to
    * (R4 on windows/reports.ts:90). A round replays once, then repaints whole.
    */
-  const replayed = new Set<number>()
+  const replayed = new Set<string>()
 
   function drawDocument(): void {
     if (active === null) return
     const model = filed.get(active) ?? { round: active, facts: [], report_body: [] }
-    const first = model.report_body.length > 0 && !replayed.has(model.round)
-    if (first) replayed.add(model.round)
+    // W2 — the replay key is `sitting:round`, not the round alone: two
+    // sittings both have a round 1, and the second one's arrival must not read
+    // as "already replayed".
+    const key = `${active}:${model.round}`
+    const first = model.report_body.length > 0 && !replayed.has(key)
+    if (first) replayed.add(key)
     view.render(model, marks(), { replay: first })
+    mountRecord()
   }
 
-  function sync(): void {
+  /** Exactly one record is on the page: the active sitting's, or none. */
+  function mountRecord(): void {
+    const docFacts = host.querySelector('article.doc-facts')
+    if (docFacts === null) return
+    for (const [sitting, node] of records) {
+      if (sitting === active) {
+        if (node.parentElement !== docFacts) docFacts.append(node)
+      } else {
+        node.remove()
+      }
+    }
+  }
+
+  /**
+   * `draw: false` — the rail is reconciled but the document is left alone,
+   * because `view.append()` has just grown it in place. Redrawing there would
+   * blank the sitting and re-type it, which is the very thing the `replayed`
+   * set exists to prevent (R4 on windows/reports.ts:90).
+   */
+  function sync(draw = true): void {
     const entries = railEntries(archive, [...filed.keys()])
     if (entries.length === 0) return
     if (active === null || !entries.some((entry) => entry.run === active)) {
@@ -172,7 +200,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       rail.render(entries, active)
       rendered = entries
     }
-    drawDocument()
+    if (draw) drawDocument()
   }
 
   /** The terminal record's model, built from the `score` event alone. */
@@ -211,20 +239,52 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (event.type === 'score') {
       // Unmineable by construction: no `.min` node, no `sentence_id` — this
       // is a terminal, autopsy-window record, not a source document.
-      const docFacts = host.querySelector('article.doc-facts')
-      if (docFacts === null) return
-      record?.remove()
-      record = el('article', 'terminal-record')
-      record.setAttribute('aria-label', '시행 결과')
-      docFacts.append(record)
-      const tally = createScoreTally({ host: record })
+      //
+      // W2 — the record belongs to its SITTING and is stored with it. It used
+      // to be one element the next `score` replaced whole, so a past day's
+      // document was read under the latest day's 집계표. Exactly one is ever
+      // mounted: `mountRecord()` attaches the active sitting's and detaches
+      // every other.
+      if (host.querySelector('article.doc-facts') === null) return
+      records.get(run)?.remove()
+      const node = el('article', 'terminal-record')
+      node.setAttribute('aria-label', '시행 결과')
+      records.set(run, node)
+      mountRecord()
+      const tally = createScoreTally({ host: node })
       tally.open()
       tally.run(scoreModel(event))
       return
     }
     if (event.type !== 'report') return
-    filed.set(event.round, { round: event.round, facts: event.facts, report_body: event.report_body })
-    active = event.round
+    // W2 — the seam types `report` with a ROUND, and a live day has seven of
+    // them (`tests/driver/live-desk.test.ts:126`). The SITTING it belongs to is
+    // the run `meta` last named; pairing the two here is what collapses seven
+    // rail tabs into one accumulating document. A round is filed once — a
+    // replayed stream must not double the day.
+    const sitting = run
+    const seen = rounds.get(sitting) ?? new Set<number>()
+    if (seen.has(event.round)) return
+    seen.add(event.round)
+    rounds.set(sitting, seen)
+
+    const held = filed.get(sitting) ?? null
+    const slice: ReportModel = {
+      round: event.round,
+      facts: event.facts,
+      report_body: event.report_body,
+    }
+    const whole = accumulated(held, slice)
+    filed.set(sitting, whole)
+
+    // The sitting already on the desk GROWS; any other case draws whole.
+    if (held !== null && active === sitting) {
+      replayed.add(`${sitting}:${event.round}`)
+      view.append(slice, whole, marks())
+      sync(false)
+      return
+    }
+    active = sitting
     sync()
   })
 

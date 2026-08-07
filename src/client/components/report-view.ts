@@ -81,6 +81,24 @@ export function minedCount(model: ReportModel, marks: MarkSets): number {
   return [...model.facts, ...model.report_body].filter((s) => marks.mined.has(s.id)).length
 }
 
+/**
+ * W2 — a sitting plus one more round. Pure, and the ONE place the growth rule
+ * lives: both panes append in arrival order and the model's `round` becomes
+ * the latest one filed. `held === null` is the sitting's first round.
+ *
+ * Kept here rather than in `windows/reports.ts` because it is the only part of
+ * "one sitting, one record" that can be proved under vitest's node
+ * environment — the window itself needs a DOM.
+ */
+export function accumulated(held: ReportModel | null, slice: ReportModel): ReportModel {
+  if (held === null) return { round: slice.round, facts: [...slice.facts], report_body: [...slice.report_body] }
+  return {
+    round: slice.round,
+    facts: [...held.facts, ...slice.facts],
+    report_body: [...held.report_body, ...slice.report_body],
+  }
+}
+
 /* ── the DOM side ────────────────────────────────────────────────────────── */
 
 export interface RenderOptions {
@@ -95,7 +113,13 @@ export interface RenderOptions {
 }
 
 export interface ReportView {
-  /** Draws a round's two documents from scratch, replaying on first arrival. */
+  /**
+   * W2 — appends one round to the sitting already on the page. `slice` is the
+   * new round alone (it is what replays); `whole` is the sitting including it,
+   * which becomes the model the mined tally counts.
+   */
+  append(slice: ReportModel, whole: ReportModel, marks: MarkSets): void
+  /** Draws a sitting's two documents from scratch, replaying on first arrival. */
   render(model: ReportModel, marks: MarkSets, options?: RenderOptions): void
   /** Repaints every anchor's state and the mined tally, in place. */
   refresh(marks: MarkSets): void
@@ -243,6 +267,35 @@ export function createReportView(options: ReportViewOptions): ReportView {
   }
 
   return {
+    append(slice: ReportModel, whole: ReportModel, marks: MarkSets): void {
+      // W2 — the sitting grows. The document already on the page is NOT
+      // redrawn: the new round's rows are appended, `anchors` accumulates (so
+      // `refresh` still repaints every sentence the day has filed), `current`
+      // becomes the WHOLE sitting (so the mined tally counts all of it), and
+      // the replay runs over the new slice alone.
+      if (stopReplay !== null) stopReplay()
+      stopReplay = null
+      caret.remove()
+      current = whole
+
+      for (const sentence of slice.facts) {
+        const node = bind(sentence, marks)
+        node.textContent = sentence.text
+        const row = el('li', 'min-row')
+        row.append(el('span', 'f-t'), node)
+        facts.append(row)
+      }
+
+      const grown = slice.report_body.map((sentence) => {
+        const node = bind(sentence, marks)
+        body.append(node, document.createTextNode(' '))
+        return node
+      })
+
+      tally(marks)
+      replay(slice.report_body, grown, true)
+    },
+
     render(model: ReportModel, marks: MarkSets, options?: RenderOptions): void {
       if (stopReplay !== null) stopReplay()
       stopReplay = null
