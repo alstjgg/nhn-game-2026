@@ -1,17 +1,23 @@
 # C2+C3+C4 — the player's document vocabulary: 인수인계 사항 · 교신 지침 · 현장 기록 · 무전 기록
 
-> plan-playtest.md **v9** · change list re-verified against tree `a6e2a07`
-> (2026-08-07, g1-1 merged). **Wave 2**: execute after `g1-3` **merges** (shared
-> `dossier.ts`); `g1-5` then waits for this unit's merge. Line numbers hold —
-> nothing in wave 1 touches this unit's files.
+> plan-playtest.md **v10** · change list **re-stamped against tree `25f84d3`**
+> (2026-08-07, wave 1 fully merged). **Wave 2**: `g1-5` waits for this unit's
+> merge.
+> **E7 re-cited (08-07, second execution run):** the earlier header claimed
+> "line numbers hold — nothing in wave 1 touches this unit's files"; that was
+> wrong — `g4-1` (#160) also edits `src/engine/index.ts`, and its E8a added
+> four lines above the substitute body. E7 now cites `:179`. Every other row
+> re-verified byte-identical at `25f84d3` (g1-3's dossier edit is
+> line-for-line, so `:107/:113/:115` stand). The executor that stopped on the
+> stale citation was correct.
 > **08-07 amendment (resolves the earlier stamp-time flag):** E8's `'현장 기록'`
 > traces to nothing the provenance haystack loads, and the FEED-bound
 > `PORTED_DEVIATIONS` cannot sanction a `src:` field ((h) would demand it in
 > the feed). E13 adds a `COPY_DEVIATIONS` table — haystack-only — and the
-> **whole change list was dry-run-verified** on a scratch tree: all thirteen
-> edits applied, `check` green, probe selftest 44/44, and the only red suite
-> pre-commit was the documented slot-board working-tree guard (green
-> post-commit by design); 1618/1619 otherwise.
+> **whole change list was dry-run-verified twice**, the second time on
+> `25f84d3` itself: all thirteen edits applied, `check` green, and the only
+> red suite pre-commit was the documented slot-board working-tree guard
+> (green post-commit by design); 1620/1621 otherwise.
 > Executor: Sonnet-class session. Branch `playtest/g1-4-c234` off current `main`.
 > One commit (the plan binds C2–C4 to one commit), message:
 > `playtest(C2-C4): 인수인계 사항 · 교신 지침 · 현장 기록 · 무전 기록`.
@@ -135,8 +141,8 @@ replace with:
 const BODY_HEAD = { no: '나', title: '무전 기록', sub: 'ECHO-1 송신 · 1인칭' }
 ```
 
-**E7 — `src/engine/index.ts:175`** (the comment on `:173` and the declaration on
-`:174` stay)
+**E7 — `src/engine/index.ts:179`** (the comment on `:177` and the declaration on
+`:178` stay)
 current:
 ```ts
   '보고를 생성하지 못했다. 이 라운드의 기록은 객관 로그로 남는다.'
