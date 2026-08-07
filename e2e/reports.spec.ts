@@ -19,7 +19,7 @@ import type { Locator, Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { awaitTallyReveal, raiseWindow } from './fixtures/harness.ts'
+import { awaitRecordFinal, raiseWindow } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -89,8 +89,8 @@ async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
-  // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
-  await awaitTallyReveal(page)
+  // U3 — no more sheet to reveal; wait the record out to final instead.
+  await awaitRecordFinal(page)
 }
 
 /** Boot the desk with REPORTS raised. `reduced` freezes the typewriter's replay. */
@@ -121,12 +121,9 @@ function reportsOf(f: Frame): ReportEvent[] {
  */
 async function fileAnotherRun(page: Page): Promise<void> {
   await drain(page)
-  const tally = page.locator('#w-tally')
-  await expect(tally, 'the run ended but the TALLY sheet never came up').not.toHaveClass(/\bhidden\b/, {
-    timeout: 30_000,
-  })
-  const newRun = page.locator('#w-tally #btnNewRun')
-  await expect(newRun, 'the tally never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
+  const newRun = page.locator('#w-file #btnDeploy')
+  await expect(newRun, 'the day never unlocked NEW RUN').toHaveAttribute('data-op', 'new_run', { timeout: 30_000 })
+  await expect(newRun, 'the day never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
   await newRun.click()
   await drain(page)
   await page.locator(`${REP} .win-bar`).click()
@@ -394,8 +391,9 @@ test.describe('typewriter is replay', () => {
       .poll(async () => page.locator(BODY).evaluate((n) => (n.textContent ?? '').length), { timeout: 30_000 })
       .toBeGreaterThanOrEqual(whole)
 
-    const newRun = page.locator('#w-tally #btnNewRun')
-    await expect(newRun, 'the tally never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
+    const newRun = page.locator('#w-file #btnDeploy')
+    await expect(newRun, 'the day never unlocked NEW RUN').toHaveAttribute('data-op', 'new_run', { timeout: 30_000 })
+    await expect(newRun, 'the day never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
     await newRun.click()
 
     const samples: number[] = []
@@ -430,8 +428,8 @@ test.describe('archive segmentation and highlight marks', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page, { reduced: true })
     await drain(page)
-    // `drain()` opens TALLY over the desk — raise REPORTS before any test in
-    // this block clicks into it. See `raiseWindow`.
+    // The record lands in REPORTS (U3) — raising it is the point now, not a
+    // workaround. See `raiseWindow`.
     await raiseWindow(page, 'rep')
   })
 
@@ -578,8 +576,8 @@ test.describe('a11y', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page, { reduced: true })
     await drain(page)
-    // `drain()` opens TALLY over the desk — raise REPORTS before any test in
-    // this block clicks into it. See `raiseWindow`.
+    // The record lands in REPORTS (U3) — raising it is the point now, not a
+    // workaround. See `raiseWindow`.
     await raiseWindow(page, 'rep')
   })
 

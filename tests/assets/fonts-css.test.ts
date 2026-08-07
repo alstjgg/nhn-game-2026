@@ -178,7 +178,7 @@ describe('[u10#c8] HARD CONSTRAINT — u1 stylesheets are untouched (re-aimed to
     expect(sha(read(TOKENS_CSS))).toBe(sha256['tokens.css'])
   })
 
-  it('(c) index.css keeps u1’s nine imports, in order, unremoved', () => {
+  it('(c) index.css keeps u1’s eight imports, in order, unremoved', () => {
     const imports = [...read(INDEX_CSS).matchAll(/@import\s+['"]([^'"]+)['"]/g)].map((m) => m[1])
     const { indexImports } = baseline()
     expect(imports.filter((i) => i !== './fonts.css')).toEqual(indexImports)

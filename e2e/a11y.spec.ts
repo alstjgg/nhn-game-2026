@@ -23,12 +23,12 @@
 // Titles are load-bearing — [u9#c5]'s verification runs this whole file, and
 // `-g` filters in later units may target these describe names.
 import { expect, test } from 'playwright/test'
-import { awaitTallyReveal, drain, raiseWindow } from './fixtures/harness.ts'
+import { awaitRecordFinal, drain, raiseWindow } from './fixtures/harness.ts'
 import type { Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
 
-/** The five windows, in the taskbar order `window-registry.ts` emits. */
-const WINDOW_IDS = ['w-feed', 'w-file', 'w-store', 'w-rep', 'w-tally'] as const
+/** The four windows, in the taskbar order `window-registry.ts` emits. */
+const WINDOW_IDS = ['w-feed', 'w-file', 'w-store', 'w-rep'] as const
 
 /** spec §5.2 `MembraneOp` — the entire player input vocabulary (inv 1 / C11). */
 const MEMBRANE_OPS = ['slot', 'unslot', 'mine', 'deploy', 'new_run'] as const
@@ -219,13 +219,14 @@ test.describe('a11y — landmarks and roles', () => {
       .toBe(true)
   })
 
-  // ADDED 08-05 (R2 on windows/tally.ts:135): the assert above rides the STREAM,
-  // and every line it can observe comes off a `ViewEvent`. The tally's hold is
-  // the desk's own — it opens on the run's close and releases up to 30 s later
-  // on a decision no event carries — so it announced nothing at either end. An
-  // operator got the close, then ~30 s of silence indistinguishable from a hung
-  // desk, then a tab stop appearing and the wait line flipping to the opposite
-  // meaning, both mute. This pins BOTH ends of that hold.
+  // ADDED 08-05 (R2 on pre-U3 windows/tally.ts:135): the assert above rides the
+  // STREAM, and every line it can observe comes off a `ViewEvent`. The day's
+  // hold is the desk's own — it opens on the run's close and releases up to
+  // 30 s later on a decision no event carries — so it announced nothing at
+  // either end. An operator got the close, then ~30 s of silence
+  // indistinguishable from a hung desk, then a tab stop appearing and the
+  // control's note flipping to the opposite meaning, both mute. This pins
+  // BOTH ends of that hold.
   //
   // `?drill=tally-lapse` (shell/boot.ts, DEV only) boots the demo loop with its
   // `report` events withheld — the day whose generation never files, which the
@@ -233,31 +234,31 @@ test.describe('a11y — landmarks and roles', () => {
   // exists. The 30 s wait is the real ceiling, deliberately: the failure this
   // guards against is a TIMING change that re-silences the release, so the test
   // waits on the clock the product ships with.
-  test('a11y — the tally’s hold, and the lapse that ends it, are announced', async ({ page }) => {
+  test('a11y — the day’s hold, and the lapse that ends it, are announced', async ({ page }) => {
     test.setTimeout(150_000)
     const toast = page.locator('#toast')
-    const wait = page.locator('#w-tally .tly-wait')
-    const newRun = page.locator('#w-tally #btnNewRun')
+    const wait = page.locator('#w-file #deployState')
+    const newRun = page.locator('#w-file #btnDeploy')
 
     await page.goto('./?drill=tally-lapse')
     await page.waitForFunction(() => Boolean((window as { __shell?: unknown }).__shell))
     await hideDebugPane(page)
 
-    // Drive the day to its close; the ledger comes up ~900 ms later. The
-    // harness `drain` is the close AND the reveal wait, which is exactly the
-    // pair this was spelling out by hand.
+    // Drive the day to its close; the terminal record counts up on its own
+    // ~9 s cadence, unrelated to whether the report has filed. The harness
+    // `drain` waits it out to `final`.
     await drain(page)
 
-    // (1) the hold is a fact an operator can HEAR, not only a line on the sheet.
+    // (1) the hold is a fact an operator can HEAR, not only a line on the control.
     await expect(toast, 'the desk closed the run and held it in silence').toContainText('보고서 정리 중', {
       timeout: 20_000,
     })
     await expect(wait).toHaveText('……보고서 정리 중')
     await expect(newRun, 'NEW RUN is offered while the hold is still up').toBeDisabled()
 
-    // (2) …and so is the release. The wait line changing to the opposite meaning
-    // is not an announcement: `.tly-wait` is a plain node with no live-region
-    // ancestor, which is exactly why the toast has to carry this.
+    // (2) …and so is the release. The control's note changing to the opposite
+    // meaning is not an announcement: `#deployState` is a plain node with no
+    // live-region ancestor, which is exactly why the toast has to carry this.
     await expect(toast, 'the hold lapsed and the desk said nothing').toContainText(
       '보고서가 도착하지 않았습니다',
       { timeout: 60_000 },
@@ -319,6 +320,11 @@ test.describe('a11y — keyboard reach', () => {
   // the EMPTY set and reported green. The five controls now carry `data-op`,
   // and this census makes a missing one fail the suite instead of emptying it.
   // The desk is driven first: `mine` only exists once a report has been filed.
+  //
+  // U3 — `deploy` and `new_run` share ONE physical control across its modes
+  // (design #3), so no single instant shows both ops. The census is a union
+  // of two scans: build phase, where the control reads `deploy`, and after
+  // `drain()` lands the terminal record, where it reads `new_run`.
   test('a11y — all five membrane ops have a marked, keyboard-operable control', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.reload()
@@ -329,24 +335,28 @@ test.describe('a11y — keyboard reach', () => {
     await page.waitForFunction(
       () => (window as unknown as { __shell?: unknown }).__shell !== undefined,
     )
+
+    const opsOf = (): Promise<string[]> =>
+      page
+        .locator(MEMBRANE_SELECTOR)
+        .evaluateAll((nodes) => [...new Set(nodes.map((n) => n.getAttribute('data-op') ?? ''))])
+    const beforeDrain = await opsOf()
+
     await page.evaluate(() => {
       const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
       if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
       handle.drain()
     })
-    // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
-    await awaitTallyReveal(page)
+    // U3 — no more sheet to reveal; wait the record out to final instead.
+    await awaitRecordFinal(page)
     await expect(page.locator('[data-op="mine"]').first()).toBeAttached({ timeout: 15_000 })
 
     // `unslot` only exists once a seat is filled, so the desk is driven through
     // mine → pick → slot first. Driving it is the point: a census taken before
     // the operator has done anything is exactly the empty one this replaces.
     //
-    // Each window is RAISED before it is used. `drain()` above released
-    // `run_end`, so TALLY is open as a floating sheet over the desk, and a click
-    // that lands on the sheet does nothing — this test failed intermittently
-    // with `unslot` never attaching, because the `slot` click had been swallowed.
-    // See `raiseWindow`.
+    // Each window is RAISED before it is used — a click that lands under
+    // another focused window does nothing. See `raiseWindow`.
     await raiseWindow(page, 'rep')
     await page.locator('[data-op="mine"]').first().click()
     await raiseWindow(page, 'store')
@@ -355,9 +365,8 @@ test.describe('a11y — keyboard reach', () => {
     await page.locator('[data-op="slot"]').first().click()
     await expect(page.locator('[data-op="unslot"]').first()).toBeAttached({ timeout: 15_000 })
 
-    const found = await page
-      .locator(MEMBRANE_SELECTOR)
-      .evaluateAll((nodes) => [...new Set(nodes.map((n) => n.getAttribute('data-op') ?? ''))].sort())
+    const afterDrain = await opsOf()
+    const found = [...new Set([...beforeDrain, ...afterDrain])].sort()
     expect(found, 'a membrane op has no marked control on the desk').toEqual([...MEMBRANE_OPS].sort())
 
     for (const c of await census(page, MEMBRANE_SELECTOR)) {
@@ -473,9 +482,9 @@ test.describe('a11y — keyboard reach', () => {
     })
     expect(measured.reachable, 'no reachable control was measured — the sweep is vacuous').toBeGreaterThan(0)
     expect(measured.unringed, 'these controls give no visible focus feedback').toEqual([])
-    for (const held of measured.heldByPhase) {
-      expect(held, 'a control with no layout box outside a phase-held window').toMatch(/^w-tally /)
-    }
+    // U3 — no window is phase-held any more (TALLY is gone); every control on
+    // the desk has a layout box from boot.
+    expect(measured.heldByPhase).toEqual([])
   })
 })
 

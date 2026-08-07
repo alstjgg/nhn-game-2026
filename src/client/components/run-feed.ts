@@ -124,11 +124,11 @@ export function emptySymptomModel(clock: string): FeedNode {
  * crowds still read as a crowd — and the feed cannot fall unboundedly behind
  * a sim that emits faster than anyone reads. Feel values, tuned in play.
  */
-const REVEAL_CHAR_MS = 85
-const REVEAL_MIN_MS = 250
+const REVEAL_CHAR_MS = 100
+const REVEAL_MIN_MS = 600
 const REVEAL_MAX_MS = 2400
 const REVEAL_CROWD_AT = 5
-const REVEAL_CROWD_DIV = 3
+const REVEAL_CROWD_DIV = 2
 
 /** What the queued event will actually print — only `feed` lines carry prose. */
 const revealChars = (event: ViewEvent): number =>
@@ -138,6 +138,14 @@ const revealDelay = (next: ViewEvent, depth: number): number => {
   const paced = Math.min(REVEAL_MAX_MS, Math.max(REVEAL_MIN_MS, revealChars(next) * REVEAL_CHAR_MS))
   return depth >= REVEAL_CROWD_AT ? paced / REVEAL_CROWD_DIV : paced
 }
+
+/**
+ * The reveal holds while an arrived report is being read: REPORTS types its
+ * document the moment the `report` event lands on the seam, and the feed
+ * printing over it defeats the reading. Lines keep queueing under the hold;
+ * every flush bypass overrides it. Feel value, tuned in play.
+ */
+const REPORT_HOLD_MS = 9000
 
 /* ── the window's fanfold ────────────────────────────────────────────────── */
 
@@ -309,6 +317,7 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   // reduced motion, a seek and the day's end all land whole.
   const queue: ViewEvent[] = []
   let sinceReveal = 0
+  let holdMs = 0
 
   const motionless = (): boolean => {
     if (animationsFrozen()) return true
@@ -318,6 +327,7 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   const flush = (): void => {
     while (queue.length > 0) apply(queue.shift()!)
     sinceReveal = 0
+    holdMs = 0
   }
 
   registerAnimation('feed/reveal', (realMs: number) => {
@@ -326,6 +336,10 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
     // (below); this in-pump check catches a mid-run reduced-motion flip.
     if (motionless() || !driver.clock.running) {
       flush()
+      return
+    }
+    if (holdMs > 0) {
+      holdMs -= realMs
       return
     }
     sinceReveal += realMs
@@ -351,6 +365,7 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   }
 
   const receive = (event: ViewEvent): void => {
+    if (event.type === 'report') holdMs = REPORT_HOLD_MS
     queue.push(event)
     if (event.type === 'run_end' || motionless() || !driver.clock.running) {
       flush()

@@ -10,7 +10,14 @@
 // a timer of its own (the driver's pump is the only one), reach into a sibling
 // window (mining emits an op at the seam; where the card lands is the store's
 // business), or touch engine/composer (C8 / inv 12).
-import type { FixtureDriver } from '../driver/index.ts'
+//
+// U3 (playtest g3-1) — TALLY dissolves: the day's results now land here, as a
+// fourth collaborator. `components/score-tally.ts` survives whole; this window
+// only hands it a host and a model. The record renders from the `score` event
+// alone (inv 6 / inv 12) — no pack read, and `report-view.ts` is not edited:
+// its own render cycle only ever replaces `#factsList`'s and the body's
+// children, so the record survives every repaint as a sibling article.
+import type { FixtureDriver, ViewEvent } from '../driver/index.ts'
 import { callsignOf } from '../components/dossier.ts'
 import { deriveMarks, mine } from '../components/minable-sentence.ts'
 import type { MarkSets } from '../components/minable-sentence.ts'
@@ -18,6 +25,42 @@ import { createArchiveRail } from '../components/report-archive.ts'
 import type { ArchiveEntry } from '../components/report-archive.ts'
 import { createReportView } from '../components/report-view.ts'
 import type { ReportModel } from '../components/report-view.ts'
+import { el } from '../shell/dom.ts'
+import { fetchScenarioIdentity } from '../shell/pack.ts'
+import { PORTAL } from '../shell/portal-identity.ts'
+import { pad2 } from '../components/block-card.ts'
+import { createScoreTally } from '../components/score-tally.ts'
+import type { TallyModel, TallyRowModel } from '../components/score-tally.ts'
+
+/** What the record is called, and what it grades against — relocated verbatim
+ * from `windows/tally.ts` (u7, pre-U3). */
+const DOC_CAPTION = '집계표 '
+const TITLE_AT = '시 '
+const TITLE_TAIL = '분 시점 집계'
+const SUB = '기준선 대비 — 무개입 하루가 기준이다'
+
+/**
+ * The headline axis. The `score` event carries `total` and nothing about what
+ * the total counts, so the caption is ported from the design target
+ * (data.js `TALLY.headline`) rather than invented per run — see discovery/u7.md.
+ */
+const HEADLINE_LABEL = '사망'
+const HEADLINE_UNIT = '명'
+
+/**
+ * ▲ / = / ▼ — and ONLY for an axis that counts, ported verbatim from
+ * `windows/tally.ts`. A word has no vocabulary for "changed"; a changed
+ * outcome shows as itself, beside the 기준 cell holding what it changed FROM.
+ */
+const deltaOf = (
+  value: string | number,
+  baseline: string | number | null,
+): TallyRowModel['delta'] => {
+  if (baseline === null) return 'flat'
+  if (typeof value !== 'number' || typeof baseline !== 'number') return 'flat'
+  if (value === baseline) return 'flat'
+  return value < baseline ? 'good' : 'bad'
+}
 
 /** A rail identity — the archive entries, plus any run that has filed a report. */
 function railEntries(archive: readonly ArchiveEntry[], filed: readonly number[]): ArchiveEntry[] {
@@ -38,6 +81,14 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   let carried: string[] = []
   let rendered: ArchiveEntry[] = []
   let active: number | null = null
+
+  // U3 — the terminal record's own identity, tracked the same way `meta`
+  // already feeds the callsign below. There is ONE record: the next `score`
+  // replaces it whole (design #1).
+  let run = 0
+  let slug = ''
+  let title = ''
+  let record: HTMLElement | null = null
 
   const marks = (): MarkSets => deriveMarks(driver.store(), carried)
 
@@ -93,12 +144,51 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     drawDocument()
   }
 
+  /** The terminal record's model, built from the `score` event alone. */
+  function scoreModel(event: Extract<ViewEvent, { type: 'score' }>): TallyModel {
+    return {
+      doc: `${DOC_CAPTION}${PORTAL.portalCode}/TL/${slug}/${pad2(run)}`,
+      title,
+      sub: SUB,
+      run,
+      headline: {
+        label: HEADLINE_LABEL,
+        value: event.total,
+        unit: HEADLINE_UNIT,
+        baseline: String(event.baseline_total),
+      },
+      rows: event.rows.map((row) => ({
+        label: row.label,
+        value: String(row.value),
+        baseline: row.baseline === null ? null : String(row.baseline),
+        delta: deltaOf(row.value, row.baseline),
+      })),
+      note: null,
+      verdict: null,
+    }
+  }
+
   driver.subscribe((event) => {
     if (event.type === 'meta') {
       archive = [...event.archive]
       carried = [...event.carried]
+      run = event.run
       view.brand(callsignOf(event.run))
       sync()
+      return
+    }
+    if (event.type === 'score') {
+      // Unmineable by construction: no `.min` node, no `sentence_id` — this
+      // is a terminal, autopsy-window record, not a source document.
+      const docFacts = host.querySelector('article.doc-facts')
+      if (docFacts === null) return
+      record?.remove()
+      record = el('article', 'terminal-record')
+      record.setAttribute('aria-label', '시행 결과')
+      docFacts.append(record)
+      const tally = createScoreTally({ host: record })
+      tally.open()
+      tally.run(scoreModel(event))
       return
     }
     if (event.type !== 'report') return
@@ -106,6 +196,17 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     active = event.round
     sync()
   })
+
+  // The record's headline needs the pack's own end-of-day stamp — the ONE
+  // pack file the consumer map gives the view shell (`architecture-map.md:85`),
+  // read through the shell's own helper, exactly as `windows/tally.ts` once did.
+  void fetchScenarioIdentity()
+    .then((identity) => {
+      slug = identity.slug
+      const [hour, minute] = identity.end.split(':')
+      title = `${hour ?? ''}${TITLE_AT}${minute ?? ''}${TITLE_TAIL}`
+    })
+    .catch(() => undefined)
 
   // Slotting has to repaint the marks, and no event says it happened: `slot` is
   // a membrane op the AGENT FILE's board sends, and this window subscribes to

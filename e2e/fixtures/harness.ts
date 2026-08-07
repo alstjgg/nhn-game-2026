@@ -8,8 +8,7 @@
 // The dev-only handles this harness drives, all pre-existing:
 //   • `window.__shell`     u3 — `{ frame(), drain() }`, the driver undecorated.
 //   • `window.__feed`      u5 — `{ count(), kinds(), stamps(), seek(at), rate(r) }`.
-//   • `window.__tally`     u7 — `{ state(), rows(), phase(), meta() }`.
-//   • `window.__agentFile` u4 — `{ slots(), place(), clear(), deployed(), … }`.
+//   • `window.__agentFile` u4 — `{ slots(), place(), clear(), deployed(), phase(), meta(), … }`.
 //   • `window.__threads`   u8 — `{ redraw(), count(), destroy() }`.
 //   • `window.__debug`     u9d — `{ noteOp(op), refresh() }` (flag-on only).
 import { expect } from 'playwright/test'
@@ -57,7 +56,7 @@ export async function boot(page: Page, opts: { reduced?: boolean } = {}): Promis
   if (opts.reduced) await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('./')
   await page.waitForFunction(() => Boolean((window as { __shell?: unknown }).__shell))
-  await expect(page.locator('.win')).toHaveCount(5)
+  await expect(page.locator('.win')).toHaveCount(4)
   await settled(page)
 }
 
@@ -93,76 +92,25 @@ export async function frame(page: Page): Promise<Frame> {
 }
 
 /**
- * u7 ruling (민서 08-05, ruled on #116): between run close and TALLY's reveal
- * the front belongs to TALLY — the sheet takes it exactly ONCE, at its 900 ms
- * reveal, and never again until the next run closes. TALLY is the loop's
- * pivot (round over · result · go again), so its reveal outranks whatever the
- * operator raised in the gap; a raise issued in that gap succeeds and is then
- * legitimately overridden, which is precisely the residue `retries: 2` used
- * to report as flaky. Playing by the rule means waiting the reveal out before
- * raising anything — raises AFTER it survive, because nothing re-steals.
- *
- * ── What this waits ON, and why it is not the class ─────────────────────────
- *
- * A REVEAL, not a state. `not.toHaveClass(/\bhidden\b/)` answers "the sheet is
- * up", which is the same fact only when the sheet was down to begin with:
- * `windows/tally.ts`'s `show(true)` clicks the taskbar *only* on a hidden
- * window, so a TALLY the operator already opened by hand (`red-thread.spec.ts`
- * does exactly that) reveals with no class change and never takes the front —
- * and a wait on the class returns instantly, before the 900 ms gap it exists to
- * wait out. `__tally.revealed()` is the reveal itself: false from the close,
- * true once `PACE.OPEN_DELAY` has run, in both shapes.
- *
- * ⚠️ REAL TIME ONLY. The reveal is a real `setTimeout(…, 900)`, so this cannot
- * resolve under a virtual clock. A spec that calls `settle()` — which installs
- * `page.clock` — and then `drain()` will sit here for the full timeout unless it
- * drives the clock with `advance()`. No spec does that today (`settle(` has no
- * call sites); this note is here so the first one to try does not lose an
- * afternoon to it.
+ * U3 (playtest g3-1) — TALLY dissolves: there is no sheet to reveal any more,
+ * so the old close→reveal race this once guarded against is gone with it
+ * (design #7 — the record does not own the screen, and nothing re-steals
+ * focus). What every caller of the old `awaitTallyReveal` actually needed was
+ * a point past which the day's results are settled and readable; that point
+ * is now the terminal record reaching `final`, since REPORTS mounts it
+ * straight off the `score` event with no reveal gate in between.
  */
-export async function awaitTallyReveal(page: Page): Promise<void> {
-  // Named up front, like every other handle reader here: a missing `__tally`
-  // is a boot problem, and letting it fall through to the poll below would
-  // report it as a 20 s timeout on a reveal that was never coming.
-  await page.waitForFunction(
-    () => Boolean((window as unknown as { __tally?: unknown }).__tally),
-    undefined,
-    { timeout: 20_000 },
-  )
-  await page.waitForFunction(
-    () => (window as unknown as { __tally?: { revealed(): boolean } }).__tally?.revealed() === true,
-    undefined,
-    { timeout: 20_000 },
-  )
-}
-
-/**
- * The sheet is UP — visibility alone, with no claim about a reveal.
- *
- * The one place that knows how TALLY spells "hidden". Distinct from
- * `awaitTallyReveal` on purpose: a spec that opens the window from the taskbar
- * wants this, and a spec that crossed a run close wants that one. Collapsing
- * them would give the manual-open case a 900 ms wait it has no reason to serve,
- * and the close case an assertion that its own reveal already satisfied.
- */
-export async function expectTallyOpen(page: Page): Promise<void> {
-  await expect(page.locator('#w-tally')).not.toHaveClass(/\bhidden\b/, { timeout: 20_000 })
+export async function awaitRecordFinal(page: Page): Promise<void> {
+  await expect(page.locator('#w-rep .terminal-record')).toHaveAttribute('data-tally-state', 'final', {
+    timeout: 40_000,
+  })
 }
 
 /**
  * Flushing releases the whole remaining stream — `run_end` included — so every
- * drain crosses run close. The reveal wait is folded in HERE, so a caller that
- * reaches the desk through THIS helper cannot interact inside the close→reveal
- * gap the u7 ruling gives to TALLY.
- *
- * THAT IS A PROPERTY OF THIS FUNCTION, NOT OF THE SUITE. Specs that call
- * `__shell.drain()` directly are outside the rule, and three still do:
- * `shell.spec.ts:108` (its own local `drain`), `captures.spec.ts` (`:163`,
- * `:210`) and `debug-pane.spec.ts:120`. None of them raises a window after
- * draining, so there is no live race today — but `shell.spec.ts` is the file
- * that owns the taskbar stacking contract, so the nearest spec to this race is
- * the one furthest outside the guard. Read the sentence above as scoped, not as
- * a suite-wide guarantee, and route new drains through here.
+ * drain crosses run close. The final-record wait is folded in HERE, so a
+ * caller that reaches the desk through THIS helper always lands on a settled
+ * result rather than a mid count-up.
  */
 export async function drain(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -170,7 +118,7 @@ export async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
-  await awaitTallyReveal(page)
+  await awaitRecordFinal(page)
 }
 
 /** Jumps the sim clock to `at` and releases everything due by then (u5's seek). */
@@ -192,8 +140,8 @@ export async function rate(page: Page, to: number): Promise<void> {
 
 export async function tallyPhase(page: Page): Promise<string> {
   return page.evaluate(() => {
-    const handle = (window as unknown as { __tally?: { phase(): string } }).__tally
-    if (!handle) throw new Error('window.__tally is not exposed by the TALLY window')
+    const handle = (window as unknown as { __agentFile?: { phase(): string } }).__agentFile
+    if (!handle) throw new Error('window.__agentFile is not exposed by the AGENT FILE window')
     return handle.phase()
   })
 }
@@ -204,20 +152,21 @@ export async function tallyPhase(page: Page): Promise<string> {
  * Distinct from `phase()`, which answers the RUN's phase
  * (`build | run | report | tally`, `shell/run-state.ts`). The count-up finishing
  * is a ledger fact, so §7 #6 reads it here and on `[data-tally-state]`, not off
- * the run phase.
+ * the run phase. Read straight off the record's own DOM attribute (design #8)
+ * — never via a handle, since the record is not a window with a dev surface.
  */
 export async function tallyState(page: Page): Promise<string> {
   return page.evaluate(() => {
-    const handle = (window as unknown as { __tally?: { state(): string } }).__tally
-    if (!handle) throw new Error('window.__tally is not exposed by the TALLY window')
-    return handle.state()
+    const node = document.querySelector('#w-rep .terminal-record')
+    if (!node) throw new Error('#w-rep .terminal-record is not on the desk')
+    return node.getAttribute('data-tally-state') ?? ''
   })
 }
 
 export async function meta(page: Page): Promise<MetaEvent> {
   return page.evaluate(() => {
-    const handle = (window as unknown as { __tally?: { meta(): unknown } }).__tally
-    if (!handle) throw new Error('window.__tally is not exposed by the TALLY window')
+    const handle = (window as unknown as { __agentFile?: { meta(): unknown } }).__agentFile
+    if (!handle) throw new Error('window.__agentFile is not exposed by the AGENT FILE window')
     return handle.meta() as never
   })
 }
@@ -266,17 +215,17 @@ export async function mineFirst(page: Page): Promise<string> {
 
 /**
  * Closes the day and starts the next one — the design script's "Full loop":
- * 21:04 → TALLY counts up → NEW RUN unlocks the file, carries the blocks and
- * files the closing report into the archive. This is what puts a mineable
- * report on the desk with an UNLOCKED file to slot into (§7 #5).
+ * 21:04 → the terminal record counts up → NEW RUN unlocks the file, carries
+ * the blocks and files the closing report into the archive. This is what puts
+ * a mineable report on the desk with an UNLOCKED file to slot into (§7 #5).
  */
 export async function newRun(page: Page): Promise<void> {
   await drain(page)
-  await expect(page.locator('#w-tally [data-tally-state]')).toHaveAttribute('data-tally-state', 'final', {
-    timeout: 30_000,
-  })
-  await page.locator('#w-tally #btnNewRun').click()
-  await expect(page.locator('#w-tally')).toHaveClass(/\bhidden\b/, { timeout: 20_000 })
+  const control = page.locator('#w-file #btnDeploy')
+  await expect(control).toHaveAttribute('data-op', 'new_run', { timeout: 30_000 })
+  await expect(control).toBeEnabled({ timeout: 30_000 })
+  await control.click()
+  await expect(control).toHaveAttribute('data-op', 'deploy', { timeout: 20_000 })
 }
 
 /** Seeds the SIM clock through the C16 hook — the only way to REACH 21:04. */

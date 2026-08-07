@@ -30,9 +30,9 @@ import {
   FEED,
   FILE,
   FREE_TEXT,
+  RECORD,
   REPORTS,
   STORE,
-  TALLY,
   WIN,
   WINDOWS,
 } from './fixtures/selectors.ts'
@@ -263,7 +263,7 @@ test.describe('acceptance 1-7', () => {
     await drain(page)
 
     await expect(page.locator(CHROME.clockDigits)).toContainText('21:04')
-    await expect(page.locator(TALLY.root)).not.toHaveClass(/hidden/)
+    await expect(page.locator(RECORD.root)).toHaveCount(1)
 
     // The run has entered its closing phase…
     await expect
@@ -274,9 +274,9 @@ test.describe('acceptance 1-7', () => {
     // state, which is what "the score renders" means (u7's `state()`, the same
     // value `[data-tally-state]` carries). C18: the count-up holds past 9 s, so
     // this waits it out rather than shortening it.
-    await expect(page.locator(TALLY.ledger)).toHaveAttribute('data-tally-state', 'final', { timeout: 40_000 })
+    await expect(page.locator(RECORD.ledger)).toHaveAttribute('data-tally-state', 'final', { timeout: 40_000 })
     expect(await tallyState(page), 'the ledger handle disagrees with the DOM').toBe('final')
-    await expect(page.locator(TALLY.big)).toHaveText(/\d/)
+    await expect(page.locator(RECORD.big)).toHaveText(/\d/)
   })
 
   test('#7 a forced fallback line renders and the run continues', async ({ page }) => {
@@ -328,7 +328,7 @@ test.describe('acceptance 8', () => {
 
     // (b) F5 — the counter, archive and carried blocks come back.
     await page.reload()
-    await page.waitForFunction(() => Boolean((window as { __tally?: unknown }).__tally))
+    await page.waitForFunction(() => Boolean((window as { __agentFile?: unknown }).__agentFile))
     const after = await meta(page)
     expect(after.run).toBe(before.run)
     expect(after.runs_left).toBe(before.runs_left)
@@ -342,7 +342,7 @@ test.describe('acceptance 8', () => {
     const tab = await fresh.newPage()
     try {
       await tab.goto(page.url())
-      await tab.waitForFunction(() => Boolean((window as { __tally?: unknown }).__tally))
+      await tab.waitForFunction(() => Boolean((window as { __agentFile?: unknown }).__agentFile))
       const clean = await meta(tab)
       expect(clean.run, 'a new tab resumed the old tab\'s run counter').toBe(opening.run)
       expect(clean.carried, 'a new tab inherited the old tab\'s carried blocks').toEqual(opening.carried)
