@@ -145,6 +145,9 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
     return usable
   }
 
+  /** U5.2b — the judged stance per round, in the author's words (§5.2 `judged`). */
+  const judgedStances = new Map<number, { stance_id: string; desc: string }>()
+
   /** Fires exactly once, whichever path reaches the end of the run. */
   function finish(): void {
     if (finished) return
@@ -176,7 +179,12 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
 
       if (beat.kind === 'gate') {
         const request = composer.judgment(engine.gateView(), membrane.deployed())
-        engine.submitStance(await call(1, request, readJudgment))
+        // U5.2b — the engine resolves chosen-vs-default (§5 recovery is its
+        // move); keep its words for the round's report event.
+        const judged = engine.submitStance(await call(1, request, readJudgment))
+        if (beat.roundIndex !== null && judged !== null) {
+          judgedStances.set(beat.roundIndex, judged)
+        }
       }
 
       engine.applyBeatEffects()
@@ -191,11 +199,13 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
         const reporter = await call(3, composer.reporter(engine.roundView()), readReporter)
         const report = engine.applyReport(reporter)
         blocks.absorbSentences(report)
+        const judged = judgedStances.get(beat.roundIndex)
         emit({
           type: 'report',
           round: beat.roundIndex,
           facts: report.facts,
           report_body: report.report_body,
+          ...(judged === undefined ? {} : { judged }),
         })
       }
 
