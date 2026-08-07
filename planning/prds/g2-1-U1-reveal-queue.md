@@ -1,35 +1,17 @@
 # U1 — the feed reveals the day line by line; a burst becomes a rhythm
 
-> plan-playtest.md **v10** · change list **re-stamped against tree `1922c36`**
-> (2026-08-07, group 1 fully merged). g1-5's two run-feed insertions moved
-> E1/E2/E3/E4/E6c by +1/+2 — re-cited below; E5/E6a/E6b/E6d/E7 verified
-> unchanged. Every current block byte-verified at the new lines. The **whole
-> change list was dry-run-verified** on that tree: `check` green, vitest
-> 1621/1621 (amended (c) included), build green, and the **full e2e suite
-> 239/239 green unchanged** — the instant-bypass rules held across every
-> synchronous spec. The dry run caught one defect, fixed in this list:
-> `FeedHandle extends RunFeed` (`live-feed.ts:29`), so E6b's `flush()` made
-> the `__feed` handle literal type-incomplete — E6d is now the whole-literal
-> replacement carrying both the seek wrap and the `flush` key.
-> **Wave 4, alone**: `g2-2`/`g2-3` (O1/O2) are **deferred** by 민서 (08-07)
-> pending the opening + tutorial design discussion; after this unit, group 2
-> is done for now.
-> Ledger item resolved (윤석, #165-era): the pump's `motionless()` branch is
-> kept and **annotated**, not simplified — a frozen pump never ticks
-> (`test-hooks.ts:35-38`), so the frozen case flushes at enqueue; the in-pump
-> check exists for a mid-run `prefers-reduced-motion` flip, which is real.
-> Executor: Sonnet-class session. Branch `playtest/g2-1-u1` off current `main`.
-> One commit, message: `playtest(U1): reveal queue paces the feed downstream of fanout`.
-> Open a PR; merge nothing (§5.6). Confirm `git config user.email` resolves to the
-> `alstjgg` account first (hard rule 1).
+> plan-playtest.md **v10** · stamped against `c8cbf38` · branch
+> `playtest/g2-1-u1` · one commit:
+> `playtest(U1): reveal queue paces the feed downstream of fanout`.
 
 ## Outcome
 
 When several feed events are due in the same minute, the LIVE FEED reveals them
 one at a time — about 0.4 s apart, quickening when many are queued — instead of
-landing them in one paint. Pausing the desk pauses the reveal; the day's end, a
-seek, a drain, reduced motion, and frozen animations all land instantly and
-whole. Time passes instead of stuttering.
+landing them in one paint. Pacing is a running-clock phenomenon: pausing the
+desk lands the queued remainder whole (a paused desk always shows its full
+state), and the day's end, a seek, a drain, reduced motion, and frozen
+animations all land instantly and whole. Time passes instead of stuttering.
 
 ## Design (author-resolved; the executor implements exactly this)
 
@@ -46,14 +28,23 @@ The queue lives in `createRunFeed` (`src/client/components/run-feed.ts`),
   ([u5#c6]'s philosophy, kept).
 - Instant-bypass rules, all load-bearing:
   - `motionless()` (frozen animations or `prefers-reduced-motion`) → flush,
-  - `!driver.clock.running` at enqueue time → flush (covers the paused desk at
-    boot, every rate-0 e2e state, and the ended clock),
+  - `!driver.clock.running` at enqueue time → flush (covers every rate-0 e2e
+    state and the ended clock),
   - a `run_end` event → flush (a fixture `drain()` emits it last, so a drained
     run lands whole; the 21:04 terminal lands ON time),
   - `__feed.seek()` → explicit `flush()` after the driver settles (a seek lifts
     the rate to 1 mid-call, so events can enqueue paced and then strand when the
     rate drops back — the explicit flush is what makes every seek-then-assert
-    e2e pattern land synchronously, as they all assume).
+    e2e pattern land synchronously, as they all assume),
+  - **the settle watchdog** — a self-canceling `requestAnimationFrame` armed
+    only while the queue is non-empty; it flushes the moment the clock is
+    neither running nor ended. This is the general form of the strand class
+    the first execution run caught: the live boot awaits its opening fanout at
+    rate 1 (events enqueue *paced*), then pauses — and a paused pump never
+    ticks, so nothing else could drain the queue
+    (`preview-smoke.spec.ts:155` guards exactly this). The same rule defines
+    pause semantics: **pausing lands the queued remainder whole** — pacing is
+    a running-clock phenomenon; a paused desk always shows its full state.
 
 One structure test is amended: `[u5#c6] (c)` bans `registerAnimation` outright in
 the u5 files. The reveal queue is a deliberate contract change to that unit, so
@@ -80,8 +71,10 @@ Must NOT modify:
 - Engine data: event timestamps are never edited for pacing.
 
 Tests turning red, and their disposition: `tests/windows/live-feed.test.ts`
-`[u5#c6] (c)` — **amended** (E7). Every other u5 guard stays satisfied: no
-`setTimeout`, rAF count in `run-feed.ts` stays 1, no new Hangul literal, no
+`[u5#c6] (c)` — **amended** (E7) — and `[u5#c6] (b)` — **amended** (E8): the
+settle watchdog adds two `requestAnimationFrame` occurrences beside the prefill
+catch-up, so (b) becomes a counted allowance of 3 for `run-feed.ts`. Every
+other u5 guard stays satisfied: no `setTimeout`, no new Hangul literal, no
 listener, no transform, `.subscribe(`/`.frame(` still present. The e2e suite is
 expected green **unchanged** — the bypass rules exist for exactly that — and the
 full `npm run test:e2e` run is part of verification because this unit's blast
@@ -159,9 +152,32 @@ directly above the prefill comment at `:279`)** — new code, verbatim:
     apply(queue.shift()!)
   })
 
+  // The settle watchdog: alive only while the queue is non-empty. The pump
+  // rides the driver's animation channel, which stops with the clock — so a
+  // clock that stops with lines still queued (the live boot pauses right
+  // after its opening fanout) would strand them forever without this.
+  let settling = false
+  const settle = (): void => {
+    settling = false
+    if (queue.length === 0) return
+    if (!driver.clock.running && !driver.clock.ended) {
+      flush()
+      return
+    }
+    settling = true
+    requestAnimationFrame(settle)
+  }
+
   const receive = (event: ViewEvent): void => {
     queue.push(event)
-    if (event.type === 'run_end' || motionless() || !driver.clock.running) flush()
+    if (event.type === 'run_end' || motionless() || !driver.clock.running) {
+      flush()
+      return
+    }
+    if (!settling) {
+      settling = true
+      requestAnimationFrame(settle)
+    }
   }
 ```
 
@@ -288,13 +304,45 @@ replace with:
 ```
 (2 = the import token plus the one call site; a second call would trip it.)
 
+**E8 — `tests/windows/live-feed.test.ts` `[u5#c6] (b)`** (directly above E7's
+guard)
+current:
+```ts
+  it('(b) at most one requestAnimationFrame — the prefill tail catch-up (app.js:452)', () => {
+    for (const file of SOURCES) {
+      const hits = (code(file).match(/requestAnimationFrame/g) ?? []).length
+      const allowed = file.endsWith('run-feed.ts') ? 1 : 0
+      expect(`${file}: ${hits} rAF (max ${allowed})`).toBe(
+        `${file}: ${Math.min(hits, allowed)} rAF (max ${allowed})`,
+      )
+    }
+  })
+```
+replace with:
+```ts
+  it('(b) three rAF in run-feed — prefill catch-up + the U1 settle watchdog pair', () => {
+    for (const file of SOURCES) {
+      const hits = (code(file).match(/requestAnimationFrame/g) ?? []).length
+      const allowed = file.endsWith('run-feed.ts') ? 3 : 0
+      expect(`${file}: ${hits} rAF (max ${allowed})`).toBe(
+        `${file}: ${Math.min(hits, allowed)} rAF (max ${allowed})`,
+      )
+    }
+  })
+```
+(3 = the prefill catch-up plus the watchdog's arm and re-arm sites; a fourth
+would trip it. The watchdog is not a timer of the window's own — it reads no
+wall clock and paces nothing; it only ends a strand the clock-gated pump
+cannot see.)
+
 ## Invariants
 
 - **Timestamps are engine data** — the queue delays DOM appends only; no
   `line.clock` is read for pacing decisions or rewritten.
-- **No timer of this window's own**: no `setTimeout`/`setInterval`, no second
-  `requestAnimationFrame`, no wall-clock read — the pump's `realMs` is the only
-  time source, exactly like the typewriter.
+- **No timer of this window's own**: no `setTimeout`/`setInterval`, no
+  wall-clock read — the pump's `realMs` is the only pacing source, exactly like
+  the typewriter. The settle watchdog paces nothing: it is a strand-breaker
+  that fires `flush()` once when the clock has stopped under a non-empty queue.
 - **Order is sacred**: everything flows through one queue in arrival order —
   wait markers, fallback notices, beat bookkeeping included.
 - The membrane and invariant 6 are untouched surfaces here; add no text.
@@ -308,14 +356,15 @@ Run in this order, from the repo root, after committing:
 3. `npm run test:e2e` — the **full** suite, expected green unchanged. If any spec
    goes red, stop and report per §5.7 — do not patch specs to pass.
 4. Behavioral (DEV): `npm run dev`, press ▶ at ×1 — at a crowded minute the lines
-   appear one at a time; press ⏸ mid-burst — the reveal freezes; resume — it
-   continues; run the day out (×4 helps) — 21:04 lands and the run completes.
+   appear one at a time; press ⏸ mid-burst — the queued remainder lands whole
+   (pause never hides lines); resume and the pacing picks up with new events;
+   run the day out (×4 helps) — 21:04 lands and the run completes.
 
 ## Done when
 
 - [ ] All edits applied; `git diff HEAD~1 --stat` shows exactly the three listed files.
 - [ ] Steps 1–3 green, in order.
-- [ ] A same-minute burst visibly reveals line-by-line at ×1, and pause freezes it (check 4).
+- [ ] A same-minute burst visibly reveals line-by-line at ×1, and pause lands the remainder whole (check 4).
 - [ ] A full DEV day reaches 21:04 and the terminal lines land whole (this is the run-halts guard — §5.7 shape 3).
 - [ ] `__feed.seek('21:04')` in the DEV console lands the whole day instantly.
 - [ ] PR opened from `playtest/g2-1-u1`; nothing merged.
