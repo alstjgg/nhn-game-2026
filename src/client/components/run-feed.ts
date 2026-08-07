@@ -154,8 +154,8 @@ const REPORT_HOLD_MS = 9000
 const HEAD_STOCK = '연속용지 · 상황실 무전 기록'
 /** The head's second line — what this window is, and is not ([u5#c7]). */
 const HEAD_NOTE = '열람 전용 — 이 창은 조작되지 않습니다'
-/** The run the header names arrives on the `meta` event, never from here (C3). */
-const RUN_PREFIX = ' · RUN '
+/** The sitting the header names arrives on the `meta` event, never from here (C3). */
+const HEAD_SEP = ' · '
 
 /** The handle the e2e suite reads the landed lines back through. */
 export interface RunFeed {
@@ -280,7 +280,7 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
     switch (event.type) {
       case 'meta':
         callsign = `ECHO-${Math.max(1, event.run)}`
-        stock.textContent = HEAD_STOCK + RUN_PREFIX + String(event.run)
+        stock.textContent = HEAD_STOCK + HEAD_SEP + callsign
         break
       case 'beat_start':
         symptoms = 0

@@ -369,7 +369,7 @@ test.describe('new run unlocks and files the report', () => {
     expect(filed.archive.map((a) => a.run), `RUN ${closed} is missing from the archive`).toContain(closed)
 
     const labels = await page.locator(OPTION).evaluateAll((nodes) => nodes.map((n) => (n.textContent ?? '').trim()))
-    expect(labels.some((l) => new RegExp(`RUN\\s*0*${closed}\\b`).test(l))).toBe(true)
+    expect(labels.some((l) => new RegExp(`ECHO-${closed}\\b`).test(l))).toBe(true)
     for (const label of labels) expect(label).not.toMatch(/gate|게이트/i)
   })
 
@@ -383,10 +383,13 @@ test.describe('new run unlocks and files the report', () => {
     expect(emitted.carried.length, 'the new run carries nothing — the scan is vacuous').toBeGreaterThan(0)
     expect((await meta(page)).carried).toEqual(emitted.carried)
 
-    const onDesk = await page
-      .locator('#w-store [data-block]')
-      .evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.block ?? ''))
-    for (const id of onDesk) expect(emitted.carried, `${id} is on the desk but not in meta.carried`).toContain(id)
+    // T1 retired the store deck, which was the one desk surface that listed
+    // `meta.carried` as an inventory. Carried ids DO surface as `.min.slotted`
+    // marks — but only on documents that exist, and report bodies from runs
+    // before the boot are persisted nowhere (that gap is U5.1's reason to
+    // exist). Until U5.1 gives past sittings readable documents, the seam
+    // round-trip above is the whole observable contract; the marks derivation
+    // itself is covered by reports.spec's mined-marks oracles.
   })
 
   test('new run unlocks and files the report — the terminal record refreshes clean on the next 21:04', async ({

@@ -17,7 +17,7 @@
 // spent note text (WAITING/FILED_TAIL/LAPSED_TAIL/SPENT) is not decided here
 // — it is written directly by `windows/agent-file.ts`'s ported hold/settle
 // wiring, the same way `windows/tally.ts` once owned its wait line outright.
-import { pad2 } from './block-card.ts'
+import { callsignOf } from './dossier.ts'
 import { boardState, SLOT_CAP, usedIds } from './slot-board.ts'
 import type { BoardState } from './slot-board.ts'
 import { button, el } from '../shell/dom.ts'
@@ -45,7 +45,7 @@ export interface DeployView {
   /** What `#deployState` prints — blank once the day has closed (see header). */
   note: string
   stampOn: boolean
-  /** `"RUN 03 · 08:50"` — the run the file was committed for. */
+  /** `"ECHO-3 · 08:50"` — the sitting the file was committed for. */
   stampLine: string
   boardState: BoardState
   buttonState: 'ready' | 'deployed'
@@ -88,7 +88,7 @@ export function deployView(state: DeployState): DeployView {
     count: `${used} / ${SLOT_CAP}`,
     note: mode === 'deploy' ? (state.deployed ? NOTE_LOCKED : used > 0 ? NOTE_PARTIAL : NOTE_EMPTY) : '',
     stampOn: state.deployed,
-    stampLine: `RUN ${pad2(state.run)} · ${state.at}`,
+    stampLine: `${callsignOf(state.run)} · ${state.at}`,
     boardState: boardState(state.slots, state.deployed),
     buttonState: state.deployed ? 'deployed' : 'ready',
     mode,

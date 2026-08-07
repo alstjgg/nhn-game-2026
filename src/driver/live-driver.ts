@@ -145,8 +145,14 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
     return usable
   }
 
-  /** U5.2b — the judged stance per round, in the author's words (§5.2 `judged`). */
-  const judgedStances = new Map<number, { stance_id: string; desc: string }>()
+  /**
+   * U5.2b — the judged stance per round, in the author's words; U5.2b+ adds
+   * `cited_ids`, the citation filtered to deployed ids (§5.2 `judged`).
+   */
+  const judgedStances = new Map<
+    number,
+    { stance_id: string; desc: string; cited_ids: string[] }
+  >()
 
   /** Fires exactly once, whichever path reaches the end of the run. */
   function finish(): void {
@@ -180,10 +186,21 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
       if (beat.kind === 'gate') {
         const request = composer.judgment(engine.gateView(), membrane.deployed())
         // U5.2b — the engine resolves chosen-vs-default (§5 recovery is its
-        // move); keep its words for the round's report event.
-        const judged = engine.submitStance(await call(1, request, readJudgment))
+        // move); keep its words for the round's report event. U5.2b+ — keep
+        // the citation too, filtered to ids the player deployed: the model
+        // selects among the player's own blocks and cannot mint an id onto
+        // the seam (`because_*` itself stays a banned key family there).
+        const response = await call(1, request, readJudgment)
+        const judged = engine.submitStance(response)
         if (beat.roundIndex !== null && judged !== null) {
-          judgedStances.set(beat.roundIndex, judged)
+          const deployed = new Set(membrane.deployed())
+          judgedStances.set(beat.roundIndex, {
+            ...judged,
+            cited_ids:
+              response === null
+                ? []
+                : response.because_block_ids.filter((id) => deployed.has(id)),
+          })
         }
       }
 

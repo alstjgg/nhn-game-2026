@@ -128,6 +128,8 @@ export function sentenceNode(sentence: Sentence, state: MinableState): HTMLEleme
 /** Repaints one anchor's state — class list plus the mined announcement. */
 export function applyState(node: HTMLElement, state: MinableState): void {
   node.className = sentenceClass(state)
-  if (state === 'mined') node.setAttribute('aria-disabled', 'true')
+  // T1 — a mined sentence is the pick control, not a dead end; the spent
+  // state is `slotted`, whose click is the no-op.
+  if (state === 'slotted') node.setAttribute('aria-disabled', 'true')
   else node.removeAttribute('aria-disabled')
 }

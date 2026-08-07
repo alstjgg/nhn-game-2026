@@ -32,7 +32,6 @@ import {
   FREE_TEXT,
   RECORD,
   REPORTS,
-  STORE,
   WIN,
   WINDOWS,
 } from './fixtures/selectors.ts'
@@ -233,7 +232,6 @@ test.describe('acceptance 1-7', () => {
     const id = await mineFirst(page)
 
     // store — the card is keyed by the sentence's own authored id.
-    await expect(page.locator(`${STORE.list} .bcard[data-block="${id}"]`)).toHaveCount(1)
     expect((await frame(page)).store.mined, 'the mined id never reached the seam').toContain(id)
 
     // slot — the same id seats on the board.
@@ -383,7 +381,11 @@ test.describe('acceptance 9-12', () => {
     const start = (await win.boundingBox())!
     await page.locator(`${WINDOWS.rep} ${WIN.bar}`).hover()
     await page.mouse.down()
-    await page.mouse.move(start.x + 60, start.y + 40, { steps: 8 })
+    // Up, not down: REPORTS is full column height since T1, and +40 would push
+    // its corner grip below the 800px viewport — the resize drag would land on
+    // nothing and this test would report a mechanism failure that is really a
+    // geometry one.
+    await page.mouse.move(start.x + 60, start.y - 40, { steps: 8 })
     await page.mouse.up()
     const dragged = (await win.boundingBox())!
     expect(Math.abs(dragged.x - start.x) + Math.abs(dragged.y - start.y), 'the window did not drag').toBeGreaterThan(4)

@@ -13,7 +13,10 @@ import { createGameClock } from '../components/game-clock.ts'
 import { createRunCounter } from '../components/run-counter.ts'
 import { holdDesk, revealDesk } from '../components/desktop-dressing.ts'
 import { createAnnouncer } from './announcer.ts'
+import { bindRadioSfx, sfxHandOver } from './radio-sfx.ts'
 import { must } from './dom.ts'
+import { openManual } from './manual.ts'
+import { openSignIn, signInSkipped } from './sign-in.ts'
 import { fetchScenarioIdentity } from './pack.ts'
 import type { ScenarioIdentity } from './pack.ts'
 import { PORTAL, TASKBAR_HINT } from './portal-identity.ts'
@@ -117,6 +120,15 @@ export async function bootShell(): Promise<void> {
   const body = document.body
   holdDesk(body)
 
+  // 0 — the door (plan-playtest O1). Mounted BEFORE the pack fetch so the first
+  // painted frame is the portal, not a bare wallpaper waiting on the network,
+  // and so `body.signin` is on the element before the top bar's `barDrop` can
+  // run. Everything below it proceeds at full speed behind the curtain: the
+  // opening builds no second hold, it only defers the reveal at the bottom of
+  // this function. `signInSkipped` is what keeps the e2e lane pointed at the
+  // desk (see its doc comment).
+  const door = signInSkipped(window) ? null : openSignIn(must('#app'), body)
+
   // 1 — the scenario pack.
   const identity = await fetchScenarioIdentity()
   renderIdentity(identity)
@@ -154,6 +166,7 @@ export async function bootShell(): Promise<void> {
   // state changes (R2 on index.html:125). It is bound before the windows mount
   // so the opening `meta` is announced like every later one.
   createAnnouncer(must('#toast'), driver)
+  bindRadioSfx(driver)
 
   // 4 — the five windows and the taskbar, then the computed desk arrangement.
   const desk = createWindowManager({
@@ -213,6 +226,16 @@ export async function bootShell(): Promise<void> {
 
   runPump(driver, clock.paint)
   desk.focus('feed')
+
+  // 6 — the hand-over. Signed in, the operator gets one thing on the desk: the
+  // sheet the portal issues with the terminal. Closing it uncovers the desk
+  // that has been standing ready behind it the whole time — the SAME hold and
+  // the SAME reveal the desk has always used, just released later.
+  if (door !== null) {
+    await door
+    await openManual(must('#app'), { width: window.innerWidth, height: window.innerHeight })
+    sfxHandOver()
+  }
   revealDesk(
     body,
     desk.frames.map((f) => f.root),

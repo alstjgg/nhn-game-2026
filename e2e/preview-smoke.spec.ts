@@ -56,7 +56,7 @@ test.describe('preview smoke', () => {
 
     await page.goto('./')
     await expect(page.locator(CHROME.app)).toHaveCount(1)
-    await expect(page.locator(WIN.any)).toHaveCount(4)
+    await expect(page.locator(WIN.any)).toHaveCount(3)
     await expect(page.locator(CHROME.caseName)).not.toBeEmpty()
     expect(errors, 'the built desk threw on boot').toEqual([])
   })
@@ -81,7 +81,7 @@ test.describe('preview smoke', () => {
   test('preview smoke — the built page reaches no third-party origin (inv 10)', async ({ page, baseURL }) => {
     const wire = watchWire(page, baseURL!)
     await page.goto('./')
-    await expect(page.locator(WIN.any)).toHaveCount(4)
+    await expect(page.locator(WIN.any)).toHaveCount(3)
     await page.waitForLoadState('networkidle')
     // The LLM tier is the one origin inv 10 admits, and it is admitted by NAME:
     // the host comes from the same `.env.production` the build read, so a second
@@ -134,7 +134,7 @@ test.describe('preview smoke', () => {
 
   test('preview smoke — the built page carries no free-text surface (inv 1)', async ({ page }) => {
     await page.goto('./')
-    await expect(page.locator(WIN.any)).toHaveCount(4)
+    await expect(page.locator(WIN.any)).toHaveCount(3)
     expect(await page.locator(FREE_TEXT).count(), 'a free-text surface reached the player build').toBe(0)
   })
 
@@ -154,7 +154,7 @@ test.describe('preview smoke', () => {
 
   test('preview smoke — the player build boots the LIVE desk, not a fixture', async ({ page }) => {
     await page.goto('./')
-    await expect(page.locator(WIN.any)).toHaveCount(4)
+    await expect(page.locator(WIN.any)).toHaveCount(3)
 
     // This asserted ZERO feed lines until 2026-08-05, and it was right to: a
     // player build had no driver behind it, so a line on the desk could only
