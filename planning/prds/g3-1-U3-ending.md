@@ -53,13 +53,20 @@ The taskbar shows four windows.
    `tally.ts`'s click handler (`:196-210`) into agent-file's wiring.
 4. **`counted` is redefined without a cross-window channel** (C8). It was "the
    ledger's count-up finished", delivered by `onFinal` in the same window. Now:
-   `counted` = a `score` event was seen **and** `PACE.TOTAL_MS` has elapsed
-   since (one `setTimeout` in agent-file — the same wall-clock idiom the ported
-   hold already uses). `PACE` (incl. `PACE.HOLD_CEIL`, `score-tally.ts:78`) and
-   `settleRelease` are imported from `score-tally.ts` — imports of its exports
-   are consumption, not modification.
+   `counted` = a `score` event was seen **and** `PACE.TOTAL_MS − PACE.OPEN_DELAY`
+   has elapsed since (one `setTimeout` in agent-file — the same wall-clock idiom
+   the ported hold already uses). The `OPEN_DELAY` subtraction is not optional:
+   REPORTS calls `tally.run()` immediately (it may own no timer), so the ledger
+   finishes `OPEN_DELAY` earlier than the old sheet did, and a literal
+   `TOTAL_MS` would lag the control ~900 ms behind the count-up. `PACE` (incl.
+   `PACE.HOLD_CEIL`, `score-tally.ts:78`) and `settleRelease` are imported from
+   `score-tally.ts` — imports of its exports are consumption, not modification.
 5. **The wait line and the spoken lines move with the control.** The deploy
-   zone's note (`#deployState`) shows `……보고서 정리 중` while settling; the
+   zone's note (`#deployState`) shows `……보고서 정리 중` while settling. The
+   settle text lives in a `settleNote` variable that `sync()` itself re-applies
+   after every render — written directly to the node it would be erased by any
+   later caller of `sync()` (the async identity fetch resolves at its own
+   time), which is a real, load-sensitive race the e2e suite caught; the
    announces keep `SAY_HOLD_TAIL`/`SAY_FILED_TAIL`/`SAY_LAPSED_TAIL`
    (`tally.ts:79-81`) and `SPENT` (`:57`) verbatim, so the a11y toast needles
    (`보고서 정리 중`, `보고서가 도착하지 않았습니다`) hold. `부검 창` wording
@@ -242,7 +249,9 @@ export const RECORD = {
 } as const
 ```
 (the old export name `TALLY` dies; importers retarget) · `:19` `WINDOW_IDS`
-drops `'w-tally'` · `:13` `  tally: '#w-tally',` leaves `WIN`.
+drops `'w-tally'` · `:13` the `tally:` row is **removed** from `WIN` —
+`acceptance.spec.ts` iterates `Object.values`, so a kept entry would assert a
+window that no longer exists.
 (Ids verified at stamp: the control is `#btnDeploy` — `deploy-button.ts:74`;
 the note is `#deployState` — `:68`.)
 
@@ -309,6 +318,17 @@ regenerate via the file's own refresh mode
 (`CAPTURE_BASELINE=1 SHOT_OUT=e2e/reference-shots npx playwright test captures`),
 then `git checkout` the eight untouched basenames so the diff is exactly the
 two new files (the manifest asserts names, not bytes).
+
+**E25a — companion count rows** (mechanical consequences of four windows /
+the harness rename, not separately designed): `e2e/fixtures/harness.ts`
+`boot()`'s `.win` count · `e2e/captures.spec.ts`'s mounted-window assert ·
+`e2e/preview-smoke.spec.ts`'s four `WIN.any` counts · `e2e/block-store.spec.ts`'s
+`awaitTallyReveal` import + one call site · `tests/styles/index-order.test.ts`
+pins u1's frozen HISTORICAL sheet lists as local `U1_*` constants so the git-
+history assert stays 9/5 while the live `WINDOW_SHEETS` shrinks ·
+`tests/windows/tally.test.ts`'s `literals()` tokenizer bounds `${…}` segments
+correctly (its naive form mis-paired backticks the moment a scanned file held
+two template literals — a latent helper bug agent-file.ts exposed).
 
 **E26 — `e2e/acceptance.spec.ts`** — the `TALLY` import (`:35`) → `RECORD`;
 asserts `:266-279` retarget (`RECORD.root` presence replaces the not-hidden
