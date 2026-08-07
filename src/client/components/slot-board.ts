@@ -19,7 +19,7 @@ import { blockCardModel, buildBlockCard, pad2, pickedBlockId, setPickedBlockId }
 export const SLOT_CAP = 4
 
 /** The slot's own copy, ported verbatim from the design target (`app.js` 262). */
-const EMPTY_HINT = '문장 카드를 끌어 놓거나, 카드를 고른 뒤 이 칸을 누르세요'
+const EMPTY_HINT = '부검 창에서 문장을 채굴해 한 번 더 누르면 이 칸에 앉습니다'
 const LOCKED_HINT = '— 비어 있음 (잠김)'
 
 export interface SlotCell {

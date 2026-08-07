@@ -101,6 +101,8 @@ export interface ReportView {
   refresh(marks: MarkSets): void
   /** Plays the tear flash on one anchor, keyed by its authored id. */
   tear(id: string): void
+  /** W3 — nudge one sentence: the action was refused, and the desk says so. */
+  flash(id: string): void
   /** The round currently on the page, or `null` before the first report. */
   round(): number | null
   /** Re-brands the callsign surfaces — `나`'s sub and the signature (M1). */
@@ -159,7 +161,7 @@ export function createReportView(options: ReportViewOptions): ReportView {
   count.id = 'minedCount'
   const foot = el('footer', 'rep-foot')
   foot.append(
-    document.createTextNode('문장을 누르면 뜯어내 블록 보관함으로 보냅니다 · '),
+    document.createTextNode('문장을 누르면 뜯어내고, 한 번 더 누르면 요원 파일의 빈 칸에 앉습니다 · '),
     count,
     document.createTextNode('건 채굴됨'),
   )
@@ -287,6 +289,14 @@ export function createReportView(options: ReportViewOptions): ReportView {
         },
         { once: true },
       )
+    },
+
+    flash(id: string): void {
+      const node = anchors.find((a) => a.getAttribute('data-sentence-id') === id)
+      if (node === undefined) return
+      node.classList.remove('refused')
+      void node.offsetWidth
+      node.classList.add('refused')
     },
 
     round(): number | null {
