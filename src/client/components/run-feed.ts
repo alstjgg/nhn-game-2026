@@ -124,11 +124,11 @@ export function emptySymptomModel(clock: string): FeedNode {
  * crowds still read as a crowd — and the feed cannot fall unboundedly behind
  * a sim that emits faster than anyone reads. Feel values, tuned in play.
  */
-const REVEAL_CHAR_MS = 85
-const REVEAL_MIN_MS = 250
+const REVEAL_CHAR_MS = 100
+const REVEAL_MIN_MS = 600
 const REVEAL_MAX_MS = 2400
 const REVEAL_CROWD_AT = 5
-const REVEAL_CROWD_DIV = 3
+const REVEAL_CROWD_DIV = 2
 
 /** What the queued event will actually print — only `feed` lines carry prose. */
 const revealChars = (event: ViewEvent): number =>
