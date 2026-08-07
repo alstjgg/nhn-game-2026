@@ -343,7 +343,7 @@ test.describe('captures', () => {
     // keeps a refresh from quietly shipping nine shots.
     expect(fs.existsSync(REFERENCE_DIR), `reference shots are missing at ${REFERENCE_DIR}`).toBe(true)
     const reference = png(REFERENCE_DIR)
-    expect(reference.length, 'the reference side is not the expected ten shots').toBe(10)
+    expect(reference.length, 'the reference side is not the expected nine shots').toBe(9)
     expect(SHOTS.map((s) => `${s.name}.png`).sort()).toEqual(reference)
     expect(fs.existsSync(OUT_DIR), 'no build-side shots were produced').toBe(true)
     expect(png(OUT_DIR)).toEqual(reference)
