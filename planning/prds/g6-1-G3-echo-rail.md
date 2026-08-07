@@ -383,6 +383,17 @@ rows are regex loosenings that cannot pass against the old strings.)
       LIVE FEED head reads `연속용지 · 상황실 무전 기록 · ECHO-n`.
 - [ ] Exactly one code commit on `playtest/g6-1-g3-echo`, nothing pushed.
 
+## As executed — author amendment after the merge-preview e2e (08-08)
+
+The Scope's no-edit claims held for `e2e/reports.spec.ts:141` (digit-parse)
+but missed six other rail oracles keyed on `RUN nn`: label regexes at
+`reports.spec.ts:456` and `run-loop.spec.ts:346`, and four `hasText` option
+filters at `reports.spec.ts:506,:530,:544,:548` that matched nothing after the
+rename and timed out. Author commit `1eeb14b` moves all six to
+`` `ECHO-${n}\b` ``. The Done-when grep row's survivor count was also wrong
+(the `OWN_PREFIX` comment sits at `:32` after edits, and two prose comments in
+`announcer.ts:19` / `deploy-button.ts:13` match `"RUN "` harmlessly).
+
 ## If this PRD is wrong
 
 ```

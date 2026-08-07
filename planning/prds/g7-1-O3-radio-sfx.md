@@ -233,6 +233,16 @@ Observable (human, in a browser):
       three moments, and a `?signin=skip` boot is silent until first gesture.
 - [ ] Exactly one code commit on `playtest/g7-1-o3-audio`, nothing pushed.
 
+## As executed — Done-when corrections (08-08)
+
+Two Done-when rows were wrong as written, both authoring slips against content
+this PRD itself dictated verbatim (the code landed byte-for-byte, `59ed631`):
+the `webdriver` grep counts **3** (the doc comment at `:9` mentions it beside
+the two real guards), and the `dist/` grep is line-based against a three-line
+minified bundle, so it false-positives whenever `http` and `audio` share a
+giant line — the executor verified by extracting URL literals instead: only
+the SVG namespace and the proxy base URL exist, no audio network call.
+
 ## If this PRD is wrong
 
 ```

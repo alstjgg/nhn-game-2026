@@ -36,7 +36,8 @@ Files modified:
 - `src/client/styles/index.css` · `src/client/shell/manual.ts`
 - `tests/shell/shell-utils.ts` · `tests/styles/css-utils.ts`
 - `tests/styles/stacking-context.test.ts` · `tests/assets/baseline/u1-styles-baseline.json`
-- `tests/assets/fonts-css.test.ts` · `tests/windows/agent-file.test.ts`
+- `tests/assets/fonts-css.test.ts` · `tests/styles/index-order.test.ts`
+- `tests/windows/agent-file.test.ts`
 - `tests/shell/apply-layout.test.ts` · `tests/windows/slot-cap.test.ts` (**new**)
 - `e2e/fixtures/selectors.ts` · `e2e/fixtures/harness.ts` · `e2e/shell.spec.ts`
 - `e2e/a11y.spec.ts` · `e2e/captures.spec.ts` · `e2e/acceptance.spec.ts`
@@ -319,11 +320,43 @@ replace with nothing.
 replace with nothing.
 
 **11. `tests/assets/fonts-css.test.ts`** — the baseline shrinks, so the
-u10-range checks need the same treatment U3's trim got. Two edits, bottom-up.
+u10-range checks need the same treatment U3's `win-tally.css` trim got.
+(Corrected after a §5.7 stop: the first issue of this PRD claimed `(f)` needed
+no edit — wrong; `(f)` reads `dirAtUnit('u10', …)`, a **frozen git snapshot of
+u10's own merge**, where `win-block-store.css` always exists, so trimming the
+baseline row makes it read as a spurious addition. The carve-out below mirrors
+the file's own `win-tally.css` precedent.) Two edits, bottom-up.
 
-11a. `:196-202` — the `(f)` test walks the live styles dir against the trimmed
-baseline; after this unit `win-block-store.css` is gone from **both**, so no
-edit is needed there — but `(c)`'s title says eight. `:181` — current:
+11a. `:207-214` — current (line numbers as the tree stands after edit 10):
+```
+  it('(f) fonts.css is the only file this unit adds under src/client/styles', () => {
+    const added = dirAtUnit('u10', 'src/client/styles')
+      .filter((f) => f.endsWith('.css'))
+      // The baseline lost its win-tally.css row when U3 retired the live
+      // sheet; at u10's own merge it was still a u1 file, not a u10 addition.
+      .filter((f) => !Object.keys(baseline().sha256).includes(f) && f !== 'win-tally.css')
+    expect(added).toEqual(['fonts.css'])
+  })
+```
+replace with:
+```
+  it('(f) fonts.css is the only file this unit adds under src/client/styles', () => {
+    const added = dirAtUnit('u10', 'src/client/styles')
+      .filter((f) => f.endsWith('.css'))
+      // The baseline lost its win-tally.css row when U3 retired the live
+      // sheet, and its win-block-store.css row when T1 retired that one; at
+      // u10's own merge both were still u1 files, not u10 additions.
+      .filter(
+        (f) =>
+          !Object.keys(baseline().sha256).includes(f) &&
+          f !== 'win-tally.css' &&
+          f !== 'win-block-store.css',
+      )
+    expect(added).toEqual(['fonts.css'])
+  })
+```
+
+11b. `:181` — current:
 ```
   it('(c) index.css keeps u1’s eight imports, in order, unremoved', () => {
 ```
@@ -332,9 +365,43 @@ replace with:
   it('(c) index.css keeps u1’s surviving imports, in order, unremoved', () => {
 ```
 
-11b. `:2` (comment context only, no code): no edit. (Row kept here to say so
-explicitly — the hash-set assertions `(a)`/`(b)` compare only files present in
-the baseline, which this unit trims in step.)
+**24. `tests/styles/index-order.test.ts:40-49`** — (added after the same §5.7
+stop: this file was missing from the first issue's Scope entirely.) The C17
+pin derives u1's **frozen** import set from the **live** `WINDOW_SHEETS`
+constant, which edit 8 shrinks — the derivation is the bug, so the frozen set
+is hard-coded. The hard-coded order equals what the current derivation
+produces today, so no order-sensitive assert moves. `WINDOW_SHEETS` stays
+imported (still used at `:82`). Current:
+```
+/**
+ * U3 (playtest g3-1) — `WINDOW_SHEETS` (css-utils.ts) now reflects the
+ * CURRENT four window sheets: `win-tally.css` was retired when TALLY
+ * dissolved into REPORTS and AGENT FILE. The block below pins u1's OWN
+ * historical merge — nine sheets on disk, five of them window skins — which
+ * is frozen by definition (it reads `fileAtUnit('u1', …)`) and must not move
+ * just because a later unit retired one of the five.
+ */
+const U1_WINDOW_SHEETS = [...WINDOW_SHEETS, 'win-tally.css']
+```
+replace with:
+```
+/**
+ * U3 (playtest g3-1) retired `win-tally.css`; T1 (playtest g5-1) retired
+ * `win-block-store.css` — `WINDOW_SHEETS` (css-utils.ts) now reflects the
+ * CURRENT three window sheets. The block below pins u1's OWN historical
+ * merge — nine sheets on disk, five of them window skins — which is frozen
+ * by definition (it reads `fileAtUnit('u1', …)`) and must not move just
+ * because later units retired two of the five. Hard-coded rather than
+ * derived: a frozen set must not track a live constant.
+ */
+const U1_WINDOW_SHEETS = [
+  'win-agent-file.css',
+  'win-block-store.css',
+  'win-live-feed.css',
+  'win-reports.css',
+  'win-tally.css',
+]
+```
 
 **12. `tests/windows/agent-file.test.ts`**
 
@@ -582,7 +649,11 @@ replace with nothing.
 replace with nothing. (If any other `STORE.` reference remains in this file
 after 20a, that is a stop — report it.)
 
-**21. `e2e/run-loop.spec.ts:360-364`** — current:
+**21. `e2e/run-loop.spec.ts`** — two edits, bottom-up. (Corrected after a
+§5.7 stop: this file imports nothing from `./fixtures/harness.ts` — its
+helpers are local — so `raiseWindow` needs a new import line, given below.)
+
+21a. `:360-363` — current:
 ```
     const onDesk = await page
       .locator('#w-store [data-block]')
@@ -600,8 +671,18 @@ replace with:
       ).toHaveClass(/\bslotted\b/)
     }
 ```
-(If `raiseWindow` is not already imported in this file, add it to the existing
-`./fixtures/harness.ts` import list.)
+
+21b. `:17-18` — current:
+```
+import { expect, test } from 'playwright/test'
+import type { Page } from 'playwright/test'
+```
+replace with:
+```
+import { expect, test } from 'playwright/test'
+import type { Page } from 'playwright/test'
+import { raiseWindow } from './fixtures/harness.ts'
+```
 
 **22. `e2e/reports.spec.ts`** — two edits.
 
@@ -611,10 +692,14 @@ import { awaitRecordFinal, raiseWindow } from './fixtures/harness.ts'
 ```
 replace with:
 ```
-import { awaitRecordFinal, frame, mineFirst, raiseWindow, slotBlock } from './fixtures/harness.ts'
+import { awaitRecordFinal, mineFirst, raiseWindow, slotBlock } from './fixtures/harness.ts'
 ```
-(If `frame` is not exported from `e2e/fixtures/harness.ts`, that is a stop —
-report it rather than importing from elsewhere.)
+(Corrected after a §5.7 stop: `frame` is deliberately NOT imported —
+`e2e/reports.spec.ts:78` already declares its own local
+`async function frame(page: Page): Promise<Frame>` reading
+`window.__shell.frame()`, and the appended tests in 22b bind to that local
+declaration. `mineFirst` and `slotBlock` have no local declarations —
+verified — so only they are imported.)
 
 22b. Append at the very end of the file:
 ```
@@ -689,6 +774,37 @@ replace with:
 (The rest of that test asserts the mine op is not doubled — still true: the
 second activation arms the pick and sends nothing.)
 
+**25. `e2e/fixtures/selectors.ts`** — (added after a §5.7 stop: this file
+carries a SECOND window vocabulary independent of the `STORE` block item 15
+retired — the `WINDOWS` object and its `WINDOW_IDS`, consumed by
+`e2e/acceptance.spec.ts:417`'s loop over `Object.values(WINDOWS)`.) Two
+edits, bottom-up.
+
+25a. `:18` — current:
+```
+export const WINDOW_IDS = ['w-feed', 'w-file', 'w-rep', 'w-store'] as const
+```
+replace with:
+```
+export const WINDOW_IDS = ['w-feed', 'w-file', 'w-rep'] as const
+```
+
+25b. `:11` — current:
+```
+  store: '#w-store',
+```
+replace with nothing.
+
+**26. `e2e/debug-pane.spec.ts:37`** — (same stop: this file's own local
+window inventory, driving its loop at `:173`.) Current:
+```
+const WINDOW_IDS = ['w-feed', 'w-file', 'w-store', 'w-rep'] as const
+```
+replace with:
+```
+const WINDOW_IDS = ['w-feed', 'w-file', 'w-rep'] as const
+```
+
 ## Invariants
 
 - **`planOps` stays the only membrane rule set** (`slot-board.ts:11-12` — a
@@ -721,14 +837,41 @@ playwright test` in this worktree.
 
 - [ ] `npm run check`, `npx vitest run`, `npm run build` all exit 0.
 - [ ] `git ls-files | grep -i "block-store\|species-filter"` prints nothing.
-- [ ] `grep -rn "w-store\|'store'\|block-store" src/ tests/ e2e/ --include="*.ts" --include="*.css" --include="*.json"`
-      prints only the three negative-guard regex lines named in Scope
-      (`reports.test.ts:605`, `live-feed.test.ts:450`, `tally.test.ts:697`).
+- [ ] (Corrected wording after a §5.7 stop.)
+      `grep -rn "w-store\|block-store" src/ tests/ e2e/ --include="*.ts"`
+      prints **no executable-code line** — every survivor is either one of the
+      three negative-guard regexes named in Scope (`reports.test.ts:605`,
+      `live-feed.test.ts:450`, `tally.test.ts:697`), a frozen-history pin this
+      PRD itself added (items 11a, 14, 24), or a prose comment. In particular
+      `e2e/debug-pane.spec.ts` and `e2e/fixtures/selectors.ts` contain **zero**
+      hits.
 - [ ] Behavioural: in a served build (`?signin=skip`), the desk shows three
       windows; after a report files, clicking a sentence mines it, clicking it
       again then clicking an empty seat in AGENT FILE seats it, and the seat's
       `.slot-unset` returns it to mined.
 - [ ] Exactly one code commit on `playtest/g5-1-t1-store`, nothing pushed.
+
+## As executed — author amendments after the merge-preview e2e (08-08)
+
+The executor's run stopped four times, each a PRD defect (items 21, 22a, 11/24,
+25/26 record the corrections). After the wave-A merge preview, three author
+commits landed on the branch beyond the change list:
+
+- `8762ec4` — shell/preview-smoke three-window arithmetic (5 count sites + one
+  title); the appended slotting tests gained the `boot + drain + raiseWindow`
+  beforeEach they were missing; the carried test's DOM half was **retired to
+  U5.1** (report bodies from pre-boot runs are persisted nowhere, so no
+  document can carry the marks yet) — the seam round-trip asserts stay.
+- `2ec0f02` — `harness.boot()`'s shared four-window census (it gated every
+  [dev]-lane spec) and captures' mount gate count three.
+- `01b38ff` — acceptance #9 drags REPORTS **up** (full-height REPORTS puts the
+  corner grip below an 800px viewport when dragged down); the shot manifest
+  counts nine references.
+
+Follow-up, non-blocking: the nine reference shots are name-paired, not
+pixel-compared, and are now visually stale (three windows, ECHO labels) —
+regenerate with `CAPTURE_BASELINE=1 SHOT_OUT=e2e/reference-shots npx
+playwright test captures` after the wave merges.
 
 ## If this PRD is wrong
 
