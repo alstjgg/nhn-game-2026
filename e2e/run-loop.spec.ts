@@ -173,6 +173,32 @@ test.describe('full loop back to BUILD', () => {
     expect(await digitsOf(page, BIG)).toBe(score!.total)
   })
 
+  test('full loop back to BUILD — the feed closes on the ledger’s own count, not a fixed one', async ({
+    page,
+  }) => {
+    // The two surfaces used to disagree at the same 21:04. The count was
+    // `timeline.json`'s `t19`, a FIXED event printed verbatim on every run
+    // (`scriptLinesOf` reads no state), so a day that saved people still read
+    // 사망 26 in the feed beside a ledger counting what it actually scored.
+    // The line comes off the `score` event now (`components/tally-line.ts`), so
+    // the fanfold and the record cannot part company.
+    await boot(page)
+    await drainToFinal(page)
+
+    const headline = await digitsOf(page, BIG)
+    const closing = await page.locator('#feedList li').last().innerText()
+    expect(closing, 'the feed did not close on a 집계 line').toContain('집계.')
+    expect(closing, `the feed closed on a count the ledger does not hold (${headline})`).toContain(
+      `사망 ${headline}`,
+    )
+
+    // And it is not minable: a count is a conclusion, not a source document.
+    // `t19` DID carry a `sentence_id`, so a player could mine 사망 26 and inject
+    // it into a run that never had it.
+    const minable = await page.locator('#feedList li').last().locator('.min').count()
+    expect(minable, 'the closing count became a minable sentence').toBe(0)
+  })
+
   test('full loop back to BUILD — NEW RUN returns the desk to BUILD and the control returns to deploy', async ({
     page,
   }) => {

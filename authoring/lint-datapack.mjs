@@ -378,7 +378,12 @@ for (const e of pack.timeline.events ?? []) {
 for (const g of pack.gates.gates ?? []) {
   if (!g.buckets.length) flags.push(`${g.gate}: buckets empty`);
   if (!g.edge_predicates.length) flags.push(`${g.gate}: edge_predicates empty`);
-  if (g.availability) flags.push(`${g.gate}: availability is free text — promote to a predicate`);
+  // Still a FLAG, not an error: the engine leaves a gate with un-promoted prose
+  // OPEN (`driver.ts` `gateOpen`), so this is work owed, not a break. Once it
+  // parses it is live, and its names are checked below.
+  if (g.availability && problems(g.availability).length) {
+    flags.push(`${g.gate}: availability is free text — promote to a predicate`);
+  }
 }
 // F2 covers both halves of a binding: a meter with variable === null is as
 // unbound as one with initial === null — a typo'd overlay key used to demote
@@ -448,6 +453,24 @@ for (const u of pack.score.units ?? []) {
     else if (fallbacks.length > 1) errors.push(`${where}: ${fallbacks.length} fallbacks — all but the first are dead`);
     else if (!u.predicates[u.predicates.length - 1].trim().startsWith('=>')) {
       errors.push(`${where}: the fallback is not last — every rule after it is dead`);
+    }
+  }
+}
+// E-A1/E-A2 — a gate's `availability`, once it IS a predicate. The engine
+// enforces one now (`src/engine/beat/driver.ts` `gateOpen`), but only when it
+// parses: free text still means "not hardened yet" and leaves the gate open,
+// which is what keeps the F4 FLAG above a worklist item rather than a break.
+// A predicate that parses is live, so its names are checked like any other.
+for (const g of pack.gates.gates ?? []) {
+  if (!g.availability || problems(g.availability).length) continue;
+  const where = `${g.gate} availability`;
+  for (const name of identifiers(g.availability)) {
+    if (!settableFlags.has(name) && !boundScalars.has(name)) {
+      errors.push(`${where}: nothing in the pack sets or binds "${name}" — the gate can never open`); // E-A1
+    } else if (timelineOnlyFlags.has(name)) {
+      errors.push(
+        `${where}: "${name}" is set by the fixed timeline alone, so the condition is the same on every run — a gate gated on it is not conditional`,
+      ); // E-A2
     }
   }
 }

@@ -91,16 +91,23 @@ export const WOODARI_TALLY: TallyRow[] = [
 ]
 
 /**
- * The bridge casualty breakdown as NUMBERS — the `score` event carries counts,
- * not the printed strings, so a view can render them any way it likes
+ * The bridge casualty breakdown — the `score` event carries values, not the
+ * printed strings, so a view can render them any way it likes
  * (`data/scenario/우는다리/score.json`, variance note for the entry-capped run).
+ *
+ * Only 사망 is a NUMBER, and that is the seam's rule rather than a choice here:
+ * `total` is the sum of the numeric values (`src/driver/scorer.ts` `totalOf`),
+ * so a row that is not a body count has to be a word or it joins the headline.
+ * This fixture had all three as numbers against a `total` of 7 — 200 + 7 + 19
+ * summing to 226 — which nothing read until the feed's closing 집계 line
+ * started reporting the breakdown beside the headline.
  */
 const DEAD = 7
 
-export const WOODARI_SCORE_ROWS: { label: string; value: number; baseline: number }[] = [
-  { label: '진입', value: 200, baseline: 812 },
+export const WOODARI_SCORE_ROWS: { label: string; value: string | number; baseline: string | number }[] = [
+  { label: '진입', value: '200명', baseline: '812명' },
   { label: '사망', value: DEAD, baseline: 24 },
-  { label: '부상', value: 19, baseline: 71 },
+  { label: '부상', value: '19명', baseline: '71명' },
 ]
 
 /** The headline the day is graded on (design target TALLY.headline). */

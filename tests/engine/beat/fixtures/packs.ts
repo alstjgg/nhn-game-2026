@@ -47,7 +47,7 @@ export function gate(id: string, clock: string, opts: Partial<G> = {}): G {
     title: null,
     clock,
     place_id: null,
-    availability: null,
+    availability: opts.availability ?? null,
     scene: opts.scene ?? `${id}-scene`,
     branch_note: null,
     standard_form: 'std',
@@ -144,6 +144,30 @@ export function multiEventPack(): BeatPack {
     ev('t4', '10:40', { effects: { deltas: { alpha: 1 }, flags: { fa: true } } }),
     ev('t5', '10:40', { effects: { deltas: { beta: 2 }, flags: { fb: true } } }),
   ])
+}
+
+// ── F4 · `availability` — a gate that is only asked on some branches ────────
+//
+// Two gates. The first sets `opened` through its `b` bucket; the second is
+// available only where that flag is set, so one pack drives both answers
+// depending on the stance the caller submits at 09:00.
+//
+// `unhardened` is the third case and the one that keeps this inert for packs
+// that have not opted in: prose in the slot (우는다리's G7 carries 특정
+// 가지에서만) is not a predicate, and the gate must still be asked.
+export function availabilityPack(unhardened = false): BeatPack {
+  return pack(
+    [ev('a1', '09:00'), ev('a2', '10:00')],
+    [
+      gate('G1', '09:00', {
+        buckets: [
+          { id: 'shut', stances: ['a'], deltas: {}, flags: {} },
+          { id: 'open', stances: ['b'], deltas: {}, flags: { opened: true } },
+        ],
+      }),
+      gate('G2', '10:00', { availability: unhardened ? '특정 가지에서만' : 'opened' }),
+    ],
+  )
 }
 
 // ── A5 · null effects ───────────────────────────────────────────────────────
