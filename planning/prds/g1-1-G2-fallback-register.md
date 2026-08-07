@@ -2,6 +2,10 @@
 
 > plan-playtest.md **v8** · change list stamped against tree `de9e03a`
 > (2026-08-07) — every row re-verified byte-identical at handoff.
+> **Amended same day** after the first execution run stopped correctly at
+> verification: the old fatal string also lives in the frozen design target,
+> which `tests/fixtures/provenance.test.ts` pins the fixture to. E6 added;
+> all rows re-verified at `fa1cfa9`.
 > Executor: Sonnet-class session. Branch `playtest/g1-1-g2` off current `main`.
 > One commit, message: `playtest(G2): fallback lines speak the transmission register`.
 > Open a PR; merge nothing (§5.6). Before the first edit, confirm
@@ -16,12 +20,13 @@ line per severity, instead of naming the game's internal fallback mechanism
 
 ## Scope
 
-May modify (only these four files):
+May modify (only these five files):
 
 - `src/client/components/fallback-notice.ts`
 - `src/client/shell/announcer.ts`
 - `src/client/driver/fixtures/woodari-run03.ts`
 - `tests/windows/live-feed.test.ts`
+- `tests/fixtures/provenance.test.ts`
 
 Must NOT modify:
 
@@ -32,10 +37,26 @@ Must NOT modify:
 - The `WAIT_*` strings (`무전 회신 대기 중` etc.) and `e2e/fixtures/selectors.ts` —
   waiting is not a fault.
 - `RUN_OPENED` / `REPORT_FILED` / `RUN_CLOSED` in `announcer.ts` — other units own them.
+- `docs/design/phase2-ui/data.js` — the old fatal string survives there at `:145`,
+  and that is correct: `docs/design/` is a **frozen path**. Two guards red on any
+  edit, uncommitted or committed (`tests/fixtures/dev-only.test.ts` (e2)/(f),
+  `tests/acceptance/discovery-and-frozen-guard.test.ts` (n)). The design target is
+  history; copy revisions are recorded as deviations (E6), never written back.
 
-Tests turning red, and their disposition: `tests/windows/live-feed.test.ts` (g) at
-`:261-266` uses the old fatal string as its line data — **amended** (edit E5).
-No other suite carries these strings (swept 2026-08-07).
+Tests turning red, and their disposition:
+
+- `tests/windows/live-feed.test.ts` (g) at `:261-266` uses the old fatal string as
+  its line data — **amended** (edit E5).
+- `tests/fixtures/provenance.test.ts` (b)/(c)/(g) pin the fixture to the frozen
+  design target's FEED, which still carries the old fatal line — **amended** (edit
+  E6): the copy change is recorded in `PORTED_DEVIATIONS`, the table this suite
+  provides for exactly this case. After E6, (h) also asserts the old string is gone
+  from the fixture — E4 already makes that true.
+
+No other suite carries these strings or compares the fixture FEED to the design
+target (`segmenter-golden` reads only REPORT material; re-swept 2026-08-07,
+this time including the reference data files the suites load, not only the
+suites themselves).
 
 ## Change list
 
@@ -108,6 +129,48 @@ replace with:
     const line: FeedLine = { kind: 'fallback', clock: '17:33', text: '회신 불량.' }
 ```
 
+**E6 — `tests/fixtures/provenance.test.ts:19-30`**
+current:
+```ts
+/**
+ * The ONLY sanctioned divergence from the design target (spec D3 row 3):
+ * inv 2 forbids a digit in an `npc` line, so 20:22's `20분` is spelled out.
+ * Every other reference line is ported verbatim.
+ */
+const PORTED_DEVIATIONS = [
+  {
+    from: '영장 없이는 못 엽니다. ……20분만 줘요.',
+    to: '영장 없이는 못 엽니다. ……스무 분만 줘요.',
+    reason: 'inv 2 / [u2f#c4]: no digit may appear in an `npc` line text',
+  },
+] as const
+```
+replace with:
+```ts
+/**
+ * The sanctioned divergences from the design target. The target itself is
+ * frozen (`docs/design/` — [u2f#c10] in dev-only.test.ts), so a copy revision
+ * that supersedes a reference line is recorded here, never written back.
+ *  1. spec D3 row 3: inv 2 forbids a digit in an `npc` line, so 20:22's
+ *     `20분` is spelled out.
+ *  2. plan-playtest G2 (g1-1, 08-07): the fatal-fallback line stays in
+ *     fiction instead of narrating the mechanism.
+ * Every other reference line is ported verbatim.
+ */
+const PORTED_DEVIATIONS = [
+  {
+    from: '영장 없이는 못 엽니다. ……20분만 줘요.',
+    to: '영장 없이는 못 엽니다. ……스무 분만 줘요.',
+    reason: 'inv 2 / [u2f#c4]: no digit may appear in an `npc` line text',
+  },
+  {
+    from: '회신 실패 — 기본 응답으로 대체. 요원은 상황실에 잔류.',
+    to: '회신 불량. 요원은 상황실에 잔류.',
+    reason: 'plan-playtest G2 / g1-1: fallback copy stays in fiction; the frozen target keeps the old line',
+  },
+] as const
+```
+
 ## Invariants
 
 - **Digit-free NPC-channel surfaces** (`fallback-notice.ts:22-26`'s own rule; guarded
@@ -130,7 +193,7 @@ Run in this order, from the repo root, after committing:
 
 ## Done when
 
-- [ ] All five edits applied exactly; no other line changed (`git diff --stat` shows 4 files).
+- [ ] All six edits applied exactly; no other line changed (`git diff --stat` shows 5 files; `docs/design/phase2-ui/data.js` is NOT among them).
 - [ ] `npm run test` green; `npm run build` green.
 - [ ] The DEV feed at 17:33 reads `회신 불량. 요원은 상황실에 잔류.` (behavioural check 3).
 - [ ] The strings `기본 응답` and `회신 실패` appear nowhere under `src/` (`grep -rn '기본 응답\|회신 실패' src` is empty).

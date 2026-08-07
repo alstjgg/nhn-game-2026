@@ -2,6 +2,13 @@
 
 > plan-playtest.md **v7** · change list stamped against tree `14dd971` (2026-08-07),
 > assuming `g1-1`…`g1-3` are merged. Stamp again if the branch moved.
+> **Stamp-time flag (08-07, from the g1-1 provenance stop):** E8's replacement
+> `'현장 기록'` traces to nothing `tests/fixtures/provenance.test.ts` loads —
+> `PACK_FILES` excludes `gates.json`/`truths.json`/`draft.md`, and the frozen
+> design target says `'객관 로그'`. As written, E8 reds provenance (b)/(d), and
+> `PORTED_DEVIATIONS` cannot sanction it: (h) requires each deviation's text in
+> the FEED, and these are `src:` fields. The stamp must add an amendment (e.g.
+> split the table into FEED vs copy deviations) before this PRD executes.
 > Executor: Sonnet-class session. Branch `playtest/g1-4-c234` off current `main`.
 > One commit (the plan binds C2–C4 to one commit), message:
 > `playtest(C2-C4): 인수인계 사항 · 교신 지침 · 현장 기록 · 무전 기록`.
