@@ -330,12 +330,17 @@ the tiebreaker this document ranks by — and it grew an engine-seam half, so it
 starts earlier than its old position implied. U3 moves up because the scorer
 landed and it now blocks on nothing.
 
-**O1 + O2 deferred out of the buckets (민서, 08-07):** the opening and the
-first-mining pulse are onboarding surfaces, and 민서 wants the opening/tutorial
-designed as one conversation before either ships. Their decision-level PRDs
-(`g2-2`, `g2-3`) stay authored and stamp when the design lands; O1's
-"no first ten seconds" argument still stands and returns to Must the moment the
-design discussion closes.
+**O1 landed as the door (08-08):** a hand-built opening — full-viewport
+sign-in over the desk's own world, the terminal-issue manual as hand-over,
+the desk booting at full speed behind the curtain (no second hold; the
+membrane holds at the door: the fields are spans). The e2e lanes skip it via
+`navigator.webdriver`; `?signin=show` forces it, `?signin=skip` bypasses.
+**The manual's §1–§4 content is a placeholder** (`MANUAL` in
+`src/client/shell/manual.ts`, one swappable object) — writing it is the
+opening/tutorial conversation 민서 wanted, now held against a live screen,
+and the swap is a Must row of its own before 08-10. O2 (the first-mining
+pulse) stays deferred to that same conversation; `g2-3` stamps when it
+closes.
 
 **Should:** G3 · T3 · U5.1 · O3.
 
