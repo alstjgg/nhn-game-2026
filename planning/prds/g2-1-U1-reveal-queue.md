@@ -1,9 +1,23 @@
 # U1 — the feed reveals the day line by line; a burst becomes a rhythm
 
-> plan-playtest.md **v7** · change list stamped against tree `14dd971` (2026-08-07),
-> **before group 1 merged** — `g1-5` touches `run-feed.ts` (RADIO_TAIL region) and
-> `live-feed.test.ts`, so this list is re-stamped after group 1 lands. Shapes hold;
-> line numbers move.
+> plan-playtest.md **v10** · change list **re-stamped against tree `1922c36`**
+> (2026-08-07, group 1 fully merged). g1-5's two run-feed insertions moved
+> E1/E2/E3/E4/E6c by +1/+2 — re-cited below; E5/E6a/E6b/E6d/E7 verified
+> unchanged. Every current block byte-verified at the new lines. The **whole
+> change list was dry-run-verified** on that tree: `check` green, vitest
+> 1621/1621 (amended (c) included), build green, and the **full e2e suite
+> 239/239 green unchanged** — the instant-bypass rules held across every
+> synchronous spec. The dry run caught one defect, fixed in this list:
+> `FeedHandle extends RunFeed` (`live-feed.ts:29`), so E6b's `flush()` made
+> the `__feed` handle literal type-incomplete — E6d is now the whole-literal
+> replacement carrying both the seek wrap and the `flush` key.
+> **Wave 4, alone**: `g2-2`/`g2-3` (O1/O2) are **deferred** by 민서 (08-07)
+> pending the opening + tutorial design discussion; after this unit, group 2
+> is done for now.
+> Ledger item resolved (윤석, #165-era): the pump's `motionless()` branch is
+> kept and **annotated**, not simplified — a frozen pump never ticks
+> (`test-hooks.ts:35-38`), so the frozen case flushes at enqueue; the in-pump
+> check exists for a mid-run `prefers-reduced-motion` flip, which is real.
 > Executor: Sonnet-class session. Branch `playtest/g2-1-u1` off current `main`.
 > One commit, message: `playtest(U1): reveal queue paces the feed downstream of fanout`.
 > Open a PR; merge nothing (§5.6). Confirm `git config user.email` resolves to the
@@ -78,7 +92,7 @@ radius is every spec that reads the feed.
 All edits in `src/client/components/run-feed.ts` first (bottom-up), then
 `live-feed.ts`, then the test.
 
-**E1 — `src/client/components/run-feed.ts:281`**
+**E1 — `src/client/components/run-feed.ts:283`**
 current:
 ```ts
   driver.subscribe(receive)
@@ -90,7 +104,7 @@ replace with:
 (no text change — listed so the executor confirms the subscribe stays on
 `receive`, which E4 redefines as the queuing wrapper.)
 
-**E2 — `src/client/components/run-feed.ts:279`**
+**E2 — `src/client/components/run-feed.ts:281`**
 current:
 ```ts
   for (const event of driver.frame().events) receive(event)
@@ -100,7 +114,7 @@ replace with:
   for (const event of driver.frame().events) apply(event)
 ```
 
-**E3 — `src/client/components/run-feed.ts:242`**
+**E3 — `src/client/components/run-feed.ts:243`**
 current:
 ```ts
   const receive = (event: ViewEvent): void => {
@@ -111,8 +125,8 @@ replace with:
 ```
 
 **E4 — `src/client/components/run-feed.ts`, insert after the `apply` function's
-closing brace (currently `:275`,
-directly above the prefill comment at `:277`)** — new code, verbatim:
+closing brace (currently `:277`,
+directly above the prefill comment at `:279`)** — new code, verbatim:
 ```ts
   // U1 — the reveal queue (plan-playtest §1). Downstream of fanout on purpose:
   // pacing here can starve nothing, while the adapter's own queue gates step().
@@ -133,6 +147,8 @@ directly above the prefill comment at `:277`)** — new code, verbatim:
 
   registerAnimation('feed/reveal', (realMs: number) => {
     if (queue.length === 0) return
+    // A frozen pump never ticks, so the frozen case can only flush at enqueue
+    // (below); this in-pump check catches a mid-run reduced-motion flip.
     if (motionless() || !driver.clock.running) {
       flush()
       return
@@ -196,7 +212,7 @@ export interface RunFeed {
 }
 ```
 
-**E6c — `src/client/components/run-feed.ts:292-296`** (the return block)
+**E6c — `src/client/components/run-feed.ts:294-298`** (the return block)
 current:
 ```ts
   return {
@@ -215,17 +231,32 @@ replace with:
   }
 ```
 
-**E6d — `src/client/windows/live-feed.ts:84`** (inside the `__feed` handle)
+**E6d — `src/client/windows/live-feed.ts:80-86`** (the whole `__feed` handle
+literal: `FeedHandle` **extends `RunFeed`** at `:29`, so E6b's new member
+obligates this literal too — the seek wrap and the `flush` key land together)
 current:
 ```ts
+    window.__feed = {
+      count: () => feed.count(),
+      kinds: () => feed.kinds(),
+      stamps: () => feed.stamps(),
       seek: (at: string) => seek(driver, at),
+      rate: (to: number) => driver.clock.setRate(asRate(to)),
+    }
 ```
 replace with:
 ```ts
+    window.__feed = {
+      count: () => feed.count(),
+      kinds: () => feed.kinds(),
+      stamps: () => feed.stamps(),
       seek: (at: string) => {
         seek(driver, at)
         feed.flush()
       },
+      flush: () => feed.flush(),
+      rate: (to: number) => driver.clock.setRate(asRate(to)),
+    }
 ```
 
 **E7 — `tests/windows/live-feed.test.ts:344-351`**

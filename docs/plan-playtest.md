@@ -322,16 +322,22 @@ so groups 3 and 5 do not swap.
 
 ## 4. Cut line (~08-10; the deployed build stays green)
 
-**Must:** U1 · group 1 (G2, G4, C2, C3, C4, M1, M2, T2) · O1 · U3 · U5.2b + U5.2c · T1.
+**Must:** U1 · group 1 (G2, G4, C2, C3, C4, M1, M2, T2) · U3 · U5.2b + U5.2c · T1.
 
 U1 leads: a day that arrives in bursts is skipped rather than lived, and 21:04
-then lands on nothing. O1 is must because the competition is judged on minutes of
-play and a 30–60 s video and there is no first ten seconds. U5.2b+c is the only
-place cause becomes visible, which is the tiebreaker this document ranks by — and
-it grew an engine-seam half, so it starts earlier than its old position implied.
-U3 moves up because the scorer landed and it now blocks on nothing.
+then lands on nothing. U5.2b+c is the only place cause becomes visible, which is
+the tiebreaker this document ranks by — and it grew an engine-seam half, so it
+starts earlier than its old position implied. U3 moves up because the scorer
+landed and it now blocks on nothing.
 
-**Should:** G3 · T3 · U5.1 · O2 · O3.
+**O1 + O2 deferred out of the buckets (민서, 08-07):** the opening and the
+first-mining pulse are onboarding surfaces, and 민서 wants the opening/tutorial
+designed as one conversation before either ships. Their decision-level PRDs
+(`g2-2`, `g2-3`) stay authored and stamp when the design lands; O1's
+"no first ten seconds" argument still stands and returns to Must the moment the
+design discussion closes.
+
+**Should:** G3 · T3 · U5.1 · O3.
 
 **U5.1 moved down from must.** It was sized as a client change; it needs a new
 persistence store, because `report_archive` is an index of run ids and its schema
@@ -585,6 +591,7 @@ concurrently, one executor per git worktree; each PRD's stamp header names its
 wave and the units it may run beside. A unit whose stamped rows cite another
 unit's *output* (g1-5 cites g1-4's; g2-1/g2-3 share files with g1-5) waits for
 that unit's **merge** — stacking branches is not used (see the #153 stranding).
+Wave 4 is `g2-1` alone: `g2-2`/`g2-3` are deferred with O1/O2 (§4).
 Merges stay one at a time, in the wave's stated order, and before each merge
 the author re-runs the PR's suite on a local merge preview against
 then-current `main`. Playtest cadence follows waves. Two stamp-time
