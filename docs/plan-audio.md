@@ -120,7 +120,7 @@ nothing prints as *silent* rather than going missing.
 | a mark line is revealed | `feed:mark` | `mark` | `pen-mark` | 0.12 s | 0.5 | 120 ms |
 | the fallback notice line is revealed | `feed:fallback` | — | *silent* | | | |
 | a waiting marker is revealed | `feed:wait` | — | *silent* | | | |
-| held for as long as the agent is waiting on a call | `wait:open` | `wait` | `clock-loop` | 2.00 s | 0.32 | loop |
+| held for as long as the agent is waiting on a call | `wait:open` | — | *silent* | | | |
 | the agent is about to judge | `wait:judgment` | `judgment` | `judgment-heartbeat` | 0.60 s | 0.8 | 1500 ms |
 | waiting on the narration call | `wait:narration` | — | *silent* | | | |
 | waiting on the reporter call | `wait:report` | — | *silent* | | | |
@@ -178,7 +178,6 @@ The rest of §4 says *why* each of these is the sound it is.
 | `symptom` | `feed:symptom` | two tones a hair apart, beating. **The quietest cue in the game** | 0.75 s | 0.18 | 2.2 s |
 | `mark` | `feed:mark` | red pen | 0.12 s | 0.5 | 120 ms |
 | `judgment` | `wait:judgment` | one low thump and its weaker second | 0.60 s | 0.8 | 1.5 s |
-| `wait` | `wait:open` | seconds passing, held for the whole wait | 2 s loop | 0.32 | — |
 | `run-end` | `event:run_end` | stamp and folder closing | 0.59 s | 0.9 | 500 ms |
 | `score-up` / `-down` | per ledger row, 90 ms apart | see below | 0.04 s | 0.55 | — |
 | `tally-final` | `tally:final` | a struck bell — the ledger's count-up landing | 1.40 s | 0.45 | 2 s |
@@ -191,8 +190,14 @@ The rest of §4 says *why* each of these is the sound it is.
 the row. A cue on every revealed line lands about 1.5 sounds a second and turns
 the fanfold into a machine.
 
-**The report's arrival is silent.** `event:report` is bound to null; binding a
-cue id there is all it takes to give the moment a sound.
+**The report's arrival is silent**, and so is **waiting**. `event:report` and
+`wait:open` are both bound to null. The wait loop held for the whole of every
+wait, and a day makes three calls per beat, so it never stopped — it left being
+a clock and became a backing track. `shell/announcer.ts` still says 무전 회신
+대기 중, which is the channel that owes the player that fact, and audio carries
+nothing alone. Binding a cue id at either trigger gives the moment a sound
+again; holding the loop from `wait:judgment` alone would sound it once per
+judgment rather than once per call.
 
 **The ledger sounds MOVED, not better or worse.** The client cannot know a
 unit's polarity — fewer dead is better, more cleared is better, and `score.json`
