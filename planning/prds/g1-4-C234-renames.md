@@ -1,14 +1,17 @@
 # C2+C3+C4 — the player's document vocabulary: 인수인계 사항 · 교신 지침 · 현장 기록 · 무전 기록
 
-> plan-playtest.md **v7** · change list stamped against tree `14dd971` (2026-08-07),
-> assuming `g1-1`…`g1-3` are merged. Stamp again if the branch moved.
-> **Stamp-time flag (08-07, from the g1-1 provenance stop):** E8's replacement
-> `'현장 기록'` traces to nothing `tests/fixtures/provenance.test.ts` loads —
-> `PACK_FILES` excludes `gates.json`/`truths.json`/`draft.md`, and the frozen
-> design target says `'객관 로그'`. As written, E8 reds provenance (b)/(d), and
-> `PORTED_DEVIATIONS` cannot sanction it: (h) requires each deviation's text in
-> the FEED, and these are `src:` fields. The stamp must add an amendment (e.g.
-> split the table into FEED vs copy deviations) before this PRD executes.
+> plan-playtest.md **v9** · change list re-verified against tree `a6e2a07`
+> (2026-08-07, g1-1 merged). **Wave 2**: execute after `g1-3` **merges** (shared
+> `dossier.ts`); `g1-5` then waits for this unit's merge. Line numbers hold —
+> nothing in wave 1 touches this unit's files.
+> **08-07 amendment (resolves the earlier stamp-time flag):** E8's `'현장 기록'`
+> traces to nothing the provenance haystack loads, and the FEED-bound
+> `PORTED_DEVIATIONS` cannot sanction a `src:` field ((h) would demand it in
+> the feed). E13 adds a `COPY_DEVIATIONS` table — haystack-only — and the
+> **whole change list was dry-run-verified** on a scratch tree: all thirteen
+> edits applied, `check` green, probe selftest 44/44, and the only red suite
+> pre-commit was the documented slot-board working-tree guard (green
+> post-commit by design); 1618/1619 otherwise.
 > Executor: Sonnet-class session. Branch `playtest/g1-4-c234` off current `main`.
 > One commit (the plan binds C2–C4 to one commit), message:
 > `playtest(C2-C4): 인수인계 사항 · 교신 지침 · 현장 기록 · 무전 기록`.
@@ -27,7 +30,7 @@ is a different string with the same spelling and does not change.
 
 ## Scope
 
-May modify (only these seven files):
+May modify (only these eight files):
 
 - `src/client/components/dossier.ts` — two titles, one body.
 - `src/client/components/slot-board.ts` — the header comment only, kept in step.
@@ -36,13 +39,17 @@ May modify (only these seven files):
 - `src/client/driver/fixtures/woodari-meta.ts` — five `src:` fields, kept in step.
 - `tests/windows/agent-file.test.ts` — two title literals.
 - `e2e/agent-file.spec.ts` — two title literals.
+- `tests/fixtures/provenance.test.ts` — the copy-deviation record for E8 (E13).
 
 Must NOT modify:
 
-- `src/shared/report-guidance.ts:3,7` — the `[보고 지침]` **prompt header** of Call 3.
-  It is prompt contract, pinned by `tests/shared/temperament.test.ts:333-343`.
-  Touching it changes what the model is asked, decoupling the shipped system from
-  every C-BLOCK measurement.
+- `src/shared/report-guidance.ts` — the renderer of Call 3's `[보고 지침]` slot.
+  The prompt header itself lives in `proxy/prompts/reporter/user-v0.2.md`, and
+  `tests/shared/temperament.test.ts:333-343` pins both halves of the contract:
+  (g) the template supplies the header, (h) the renderer must not mint a second.
+  (`report-guidance.ts:3,7` are comments naming that header — they stay too.)
+  Touching any of it changes what the model is asked, decoupling the shipped
+  system from every C-BLOCK measurement.
 - `authoring/lint-datapack.mjs:249` — `객관 로그` there is authored-datapack
   vocabulary the linter parses (`mined_from` classification), not display.
 - `src/client/shell/window-registry.ts` — window ko/sub names (`부검`, `보관함`) are
@@ -62,6 +69,9 @@ Tests turning red, and their disposition:
 - `tests/windows/block-store.test.ts:557-559` requires `git diff --name-only HEAD --
   slot-board.ts` to be **empty**, so it is red between your edit and your commit and
   green after — verification therefore runs **after** the commit. Not amended.
+- `tests/fixtures/provenance.test.ts` (b)/(d) scan every Hangul literal in the
+  fixture sources and the block-store fields for a trace to the loaded haystack;
+  E8's `'현장 기록'` traces only via the deviation record — **amended** (E13).
 
 ## Change list
 
@@ -220,6 +230,36 @@ replace with:
       '교신 지침',
 ```
 
+**E13 — `tests/fixtures/provenance.test.ts:40-43`** (the lines right after the
+`PORTED_DEVIATIONS` table closes)
+current:
+```ts
+] as const
+
+const DEVIATED = PORTED_DEVIATIONS.map((d) => nfc(d.to))
+const HAYSTACK = [...authoredTexts(), ...DEVIATED]
+```
+replace with:
+```ts
+] as const
+
+/**
+ * Non-FEED copy revisions that supersede design-target vocabulary (the target
+ * is frozen — see PORTED_DEVIATIONS above). These feed the trace haystack for
+ * (b)/(d) only; they are not feed lines, so (g)/(h) do not read them.
+ */
+const COPY_DEVIATIONS = [
+  {
+    from: '객관 로그',
+    to: '현장 기록',
+    reason: 'plan-playtest C4 / g1-4: the record reads as fieldwork; the frozen target keeps the old name',
+  },
+] as const
+
+const DEVIATED = [...PORTED_DEVIATIONS, ...COPY_DEVIATIONS].map((d) => nfc(d.to))
+const HAYSTACK = [...authoredTexts(), ...DEVIATED]
+```
+
 ## Invariants
 
 - **The prompt is not the display.** `[보고 지침]` in `src/shared/report-guidance.ts`
@@ -237,7 +277,7 @@ replace with:
 Run in this order, from the repo root, **after committing** (the `slot-board.ts`
 guard at `block-store.test.ts:557` is red on an uncommitted tree by design):
 
-1. `git add <the seven files>` · commit.
+1. `git add <the eight files>` · commit.
 2. `npm run test` — expected: all green.
 3. `npm run probe:selftest` — expected: selftest passes (the Call-3 prompt header
    was not touched).
@@ -249,15 +289,17 @@ guard at `block-store.test.ts:557` is red on an uncommitted tree by design):
 
 ## Done when
 
-- [ ] All twelve edits applied exactly; `git diff HEAD~1 --stat` shows exactly the seven listed files.
+- [ ] All thirteen edits applied exactly; `git diff HEAD~1 --stat` shows exactly the eight listed files.
 - [ ] Steps 2–5 green, in order, post-commit.
 - [ ] The running DEV desk shows all four new names (behavioural check 6).
-- [ ] `grep -n '알고 있는 문장\|객관 로그\|요원 보고서' <the seven listed files>` returns no hits.
+- [ ] `grep -n '알고 있는 문장\|요원 보고서' <the eight listed files>` returns no hits, and
+      `grep -n '객관 로그' <the eight listed files>` hits **only** E13's `from:` line in
+      `provenance.test.ts` — the deviation record needs the old name.
       (Do **not** sweep `src tests e2e` wholesale: `tests/scaffold/published-data.test.ts:144`
       carries `객관 로그` inside a comment about authored `mined_from` vocabulary, and
       `authoring/lint-datapack.mjs:249` and `data/scenario/` carry it as pack data — all
       three are grandfathered by this unit's Must-NOT and must stay.)
-- [ ] `grep -n '보고 지침' src/shared/report-guidance.ts` still returns the two prompt-header lines (`:3`, `:7`) — unchanged.
+- [ ] `grep -n '보고 지침' src/shared/report-guidance.ts` still returns its two comment lines (`:3`, `:7`) — the file is unchanged.
 - [ ] PR opened from `playtest/g1-4-c234`; nothing merged.
 
 ## If this PRD is wrong

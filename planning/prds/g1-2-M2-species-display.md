@@ -1,7 +1,13 @@
 # M2 — species words come off the cards and the filter; the data stays
 
-> plan-playtest.md **v7** · change list stamped against tree `14dd971` (2026-08-07),
-> assuming G2 (`g1-1`) is merged. Stamp again if the branch moved.
+> plan-playtest.md **v9** · change list stamped against tree `a6e2a07`
+> (2026-08-07, g1-1 merged) — every row re-verified byte-identical at handoff,
+> and the **whole change list was dry-run-verified** on a scratch tree:
+> `npm run test` green but the documented pre-commit additive guard,
+> `npm run test:e2e -- e2e/block-store.spec.ts` 25/25. The dry run caught a
+> third species-word pin the original list missed — added as E5.
+> **Wave 1**: may develop and merge in parallel with `g1-3`, `g1-6`, `g4-1`
+> (no shared files).
 > Executor: Sonnet-class session. Branch `playtest/g1-2-m2` off current `main`.
 > One commit, message: `playtest(M2): species tags off the display, data untouched`.
 > Open a PR; merge nothing (§5.6). Before the first edit, confirm
@@ -20,7 +26,7 @@ May modify (only these three files):
 
 - `src/client/components/block-card.ts` — one line of the builder half.
 - `src/client/components/species-filter.ts` — one line of the builder half.
-- `e2e/block-store.spec.ts` — the locator helper and one assertion.
+- `e2e/block-store.spec.ts` — the locator helper and two assertions.
 
 Must NOT modify:
 
@@ -47,8 +53,11 @@ Tests turning red, and their disposition:
   additions") compares the **uncommitted working tree** against HEAD, so it is red
   between your edit and your commit and green after. That is why verification runs
   **after** the commit. The assertion itself is not amended.
-- `e2e/block-store.spec.ts` — the `hasText` locator and the `toContainText(option.ko)`
-  assertion match visible text this unit removes — **amended** (E3, E4).
+- `e2e/block-store.spec.ts` — three sites match visible text this unit removes:
+  the `hasText` locator (**E3**), the filter-row `toContainText(option.ko)`
+  (**E4**), and the card-states `.bc-sp` ko assertion at `:401` (**E5**, found
+  by the dry run). E5 inverts rather than deletes — the word being *gone* is
+  this unit's outcome, so the suite asserts it.
 
 ## Change list
 
@@ -104,6 +113,17 @@ replace with:
     }
 ```
 
+**E5 — `e2e/block-store.spec.ts:401`** (inside "card states — every card prints
+its authored id and its species mark"; the id and mark assertions above it stay)
+current:
+```ts
+      await expect(node.locator('.bc-sp')).toContainText(option!.ko)
+```
+replace with:
+```ts
+      await expect(node.locator('.bc-sp')).not.toContainText(option!.ko)
+```
+
 Note: `filterCounts` (`e2e/block-store.spec.ts:196-204`) reads the **trailing number**
 of each button's inner text; the buttons still render `mark + count`, so it needs no
 change. Every other `filterButton(...)` call site goes through the E3 helper.
@@ -135,7 +155,7 @@ on `block-card.ts` is red on an uncommitted tree by design):
 
 ## Done when
 
-- [ ] Both prints removed; helper + assertion amended; no other line changed.
+- [ ] Both prints removed; helper + two assertions amended (E3–E5); no other line changed.
 - [ ] `npm run test`, `npm run build`, and `npm run test:e2e -- e2e/block-store.spec.ts` green, in that order, post-commit.
 - [ ] In the running DEV desk no card and no filter button displays `사실`, `자기서술`, `감정`, or `인용` (behavioural check 5).
 - [ ] Filter buttons still expose `title` names ending `보기`.

@@ -348,7 +348,7 @@ without a probe risks the mechanism claim four days before submission.
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
-> As of 2026-08-07 (v8). A PRD names the version it was written against.
+> As of 2026-08-07 (v9). A PRD names the version it was written against.
 
 The items above are not worked by hand and not worked one at a time. Each is
 specified as a **mini-PRD** by a high-capability model, then executed by a
@@ -568,8 +568,23 @@ because earlier merges move the lines and sometimes delete the files. A stamp
 is mechanical; G3, T3 and U5.2c instead get a re-authoring pass at stamp time,
 because their shape depends on what U3, T1 and U5.2b landed. PRDs live under
 `planning/prds/`, committed after 민서's sign-off. Executors run on a
-Sonnet-class model, one executor per PRD, serial within a group; merges are
-민서's, after the author's review report.
+Sonnet-class model, one executor per PRD; merges are 민서's, after the
+author's review report.
+
+Execution is **wave-parallel, merge-serial** (08-07, replacing strict
+serial-within-group). Units whose files are pairwise disjoint develop
+concurrently, one executor per git worktree; each PRD's stamp header names its
+wave and the units it may run beside. A unit whose stamped rows cite another
+unit's *output* (g1-5 cites g1-4's; g2-1/g2-3 share files with g1-5) waits for
+that unit's **merge** — stacking branches is not used (see the #153 stranding).
+Merges stay one at a time, in the wave's stated order, and before each merge
+the author re-runs the PR's suite on a local merge preview against
+then-current `main`. Playtest cadence follows waves. Two stamp-time
+obligations joined the stamp definition: sweep the reference data files a
+suite *loads*, not only suite sources (the g1-1 provenance stop), and
+**dry-run** the full change list on a scratch tree — apply, run the suites,
+revert — recording the result in the stamp header (the g1-2 e2e catch and the
+g4-1 `BeatCursor` catch both came from dry runs, not from reading).
 
 ### 5.7 When the PRD is wrong
 

@@ -1,7 +1,11 @@
 # G4 — §2 행동 원칙 reads as a person, not a manual
 
-> plan-playtest.md **v7** · change list stamped against tree `14dd971` (2026-08-07),
-> assuming `g1-1` and `g1-2` are merged. Stamp again if the branch moved.
+> plan-playtest.md **v9** · change list stamped against tree `a6e2a07`
+> (2026-08-07, g1-1 merged) — the row re-verified byte-identical at handoff and
+> **dry-run-verified** (applied to a scratch tree: `check` + full suite green);
+> `g1-2` is NOT a prerequisite (no shared file).
+> **Wave 1**: may develop and merge in parallel with `g1-2`, `g1-6`, `g4-1`
+> (no shared files). `g1-4` waits for this unit's **merge** (shared `dossier.ts`).
 > Executor: Sonnet-class session. Branch `playtest/g1-3-g4` off current `main`.
 > One commit, message: `playtest(G4): 행동 원칙 rewritten as a person`.
 > Open a PR; merge nothing (§5.6). Before the first edit, confirm
