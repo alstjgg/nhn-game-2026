@@ -176,7 +176,7 @@ export interface EngineHandle extends Engine {
 
 /** spec-engine §5's substitute report body — used when Call 3 never lands. */
 export const SUBSTITUTE_REPORT_BODY =
-  '보고를 생성하지 못했다. 이 라운드의 기록은 객관 로그로 남는다.'
+  '무전이 끊겨 보고가 도착하지 않았다. 요원은 홀로 판단했다. 이 라운드는 현장 기록으로만 남는다.'
 
 /** The state core, as the beat driver's `StateCorePort` sees it, over `./state`'s pure functions. */
 function createStateCore(

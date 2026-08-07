@@ -269,8 +269,8 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
       '임무',
       '행동 원칙',
       '기질',
-      '알고 있는 문장',
-      '보고 지침',
+      '인수인계 사항',
+      '교신 지침',
     ])
     expect(sections.map((s) => s.state)).toEqual([
       'fixed',

@@ -47,14 +47,14 @@ interface BlockRow {
  * thread runs visibly from the deployed file back to the RUN 02 autopsy.
  */
 const BLOCK_ROWS: BlockRow[] = [
-  { id: 'b-r2-f03', run: 2, at: '09:40', src: '객관 로그', slot: 0 },
+  { id: 'b-r2-f03', run: 2, at: '09:40', src: '현장 기록', slot: 0 },
   { id: 'b-r2-b03', run: 2, at: '보고서', src: '보고서', slot: 1 },
-  { id: 'b-r2-f02', run: 2, at: '09:27', src: '객관 로그', slot: null },
-  { id: 'b-r2-f07', run: 2, at: '13:05', src: '객관 로그', slot: null },
-  { id: 'b-r2-f05', run: 2, at: '12:00', src: '객관 로그', slot: null },
+  { id: 'b-r2-f02', run: 2, at: '09:27', src: '현장 기록', slot: null },
+  { id: 'b-r2-f07', run: 2, at: '13:05', src: '현장 기록', slot: null },
+  { id: 'b-r2-f05', run: 2, at: '12:00', src: '현장 기록', slot: null },
   { id: 'b-r2-b05', run: 2, at: '보고서', src: '보고서', slot: null },
   { id: 'b-r1-b02', run: 1, at: '보고서', src: '보고서', slot: null },
-  { id: 'b-r1-f01', run: 1, at: '08:50', src: '객관 로그', slot: null },
+  { id: 'b-r1-f01', run: 1, at: '08:50', src: '현장 기록', slot: null },
   { id: 'b-r1-b06', run: 1, at: '보고서', src: '보고서', slot: null },
 ]
 

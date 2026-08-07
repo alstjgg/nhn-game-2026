@@ -104,15 +104,15 @@ export function dossierModel(input: DossierInput): DossierSection[] {
     { no: '§3', title: '기질', state: 'sealed', body: SEALED_COPY, bars: [...SEALED_BARS] },
     {
       no: '§4',
-      title: '알고 있는 문장',
+      title: '인수인계 사항',
       state: 'operable',
       note: `주입 슬롯 ${input.slotCap}칸. 배치 후 잠금.`,
     },
     {
       no: '§5',
-      title: '보고 지침',
+      title: '교신 지침',
       state: 'fixed',
-      body: '라운드 종료 시 객관 항목 최대 8건과 1인칭 자필 보고서를 제출한다. 판단과 인상은 한 문장에 하나씩, 문장 단위로 완결되게 쓴다.',
+      body: '라운드 종료 시 현장 기록 최대 8건과 무전 기록 한 편을 송신한다. 판단과 인상은 한 문장에 하나씩, 문장 단위로 완결되게 쓴다.',
     },
   ]
 }
