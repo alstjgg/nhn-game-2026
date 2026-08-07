@@ -52,3 +52,6 @@ blob-report/
 
 # Local-only Korean reference copies of docs
 *.ko.md
+
+# Audio pack build cache (upstream downloads; only the encoded OGGs are committed)
+tools/audio/.cache/

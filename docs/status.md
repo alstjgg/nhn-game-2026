@@ -3,6 +3,47 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-08) — the desk has sound, and it costs the opening paint nothing
+
+**34 cues ship**, wired through one call in `boot.ts` step 4c. The whole layer is
+an observer: it reads the §5.2 stream, the `[data-op]` census markers the five
+membrane controls carry, the classes the window manager and the ledger set, the
+fanfold's revealed lines and the report typewriter's own repaints. It sends no op
+and no component imports it, so audio can be deleted or muted without touching
+what is playable — which is also why `audio:check` is deliberately **not** in
+`npm run check`. Plan, sources and per-criterion verification:
+[plan-audio.md](./plan-audio.md); the mapping itself is law in
+`data/policy/audio-map.json`.
+
+**Nothing is fetched before the player's first gesture.** A browser suspends an
+AudioContext built outside one, so the context, `audio-map.json` and every sample
+wait for it — measured headless at **0 audio bytes at first paint**. The pack
+then loads in three waves: the door's cues, the rest of the SFX, the two beds.
+Unlocking happens at O1's door so its controls answer; the ambience waits for
+`revealDesk` and retires 10 s later, because a room tone that plays out behind a
+curtain is one nobody hears. The format is **AAC in MP4**: `decodeAudioData`
+takes it in every desktop browser shipping today including Safari, and it does
+not depend on an ffmpeg built with `libvorbis`.
+
+**Everything sourced is CC0 or public domain**, so the game carries no mandatory
+attribution. `assets-manifest.json`'s 34 audio rows are **generated** from the
+builder's own source table (`npm run audio:manifest`), so provenance cannot drift
+from what was built. The other half is synthesised by `tools/audio/synth.mjs` —
+seeded and byte-reproducible, because the outputs are committed.
+
+**Sizes:** 141.0 kB of SFX, 494.4 kB of ambience, ~7 kB of map.
+
+**O3 coexists with this layer, moment by moment** (plan-audio §4.5). O3's
+implementation (`shell/radio-sfx.ts`, merged in #179) keeps its three moments
+and its no-assets approach — the carrier static under the LOGIN readout, the
+squelch at the hand-over, and 21:04, where **the static swells and cuts, and
+the silence after the cut is the cue**. This layer yields those three by data
+(`door:login`, `boot` and `ending:collapse` bound `null`; the window observer
+skips `.win-manual`) and does everything else, keeping the 2800 ms ledger lead
+that guards the ending's silence. O3 reads this layer's `dday.audio.muted` key
+before every burst, so the ♪ toggle is the desk's one mute. The yielded cues
+ship in the pack; each rebind is a one-line map edit.
+
 ## Status (2026-08-06) — the deployed build was publishing its own answer key
 
 **`dist/` is a player surface, and nothing was treating it as one.**

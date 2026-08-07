@@ -53,7 +53,10 @@ const PACK_PARTS = [
 ] as const
 
 /** Scenario-independent policy the run fetches, relative to `data/`. */
-const POLICY_FILES = ['policy/report-guidance.json'] as const
+// `audio-map.json` is balance data like the rest of `data/`, and it is fetched
+// by the client rather than the driver — `src/client/audio/` reads it on the
+// first gesture, which is why it appears here and not in either `PACK_FILES`.
+const POLICY_FILES = ['policy/report-guidance.json', 'policy/audio-map.json'] as const
 
 /** `data/scenario/<slug>/` — every directory that is a pack, `_schema/` aside. */
 function packSlugs(scenarioDir: string): string[] {
