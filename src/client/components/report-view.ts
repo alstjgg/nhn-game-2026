@@ -103,6 +103,8 @@ export interface ReportView {
   tear(id: string): void
   /** The round currently on the page, or `null` before the first report. */
   round(): number | null
+  /** Re-brands the callsign surfaces — `나`'s sub and the signature (M1). */
+  brand(callsign: string): void
 }
 
 export interface ReportViewOptions {
@@ -121,7 +123,9 @@ interface Anchor {
 
 /** `가` / `나` — the two documents' file letters, as the reference prints them. */
 const FACTS_HEAD = { no: '가', title: '현장 기록', sub: '일어난 것 · 관측된 것' }
-const BODY_HEAD = { no: '나', title: '무전 기록', sub: 'ECHO-1 송신 · 1인칭' }
+/** The callsign half of `나`'s sub and the signature re-brands per sitting (M1). */
+const BODY_SUB_TAIL = ' 송신 · 1인칭'
+const BODY_HEAD = { no: '나', title: '무전 기록', sub: `ECHO-1${BODY_SUB_TAIL}` }
 
 function documentHead(head: { no: string; title: string; sub: string }): HTMLElement {
   const header = el('header', 'doc-hd')
@@ -140,10 +144,13 @@ export function createReportView(options: ReportViewOptions): ReportView {
 
   const sig = el('div', 'sig')
   sig.setAttribute('aria-hidden', 'true')
-  sig.append(el('span', 'sig-line', 'ECHO-1'), el('span', 'sig-stamp', '검 인'))
+  const sigLine = el('span', 'sig-line', 'ECHO-1')
+  sig.append(sigLine, el('span', 'sig-stamp', '검 인'))
 
   const docBody = el('article', 'doc doc-body')
-  docBody.append(documentHead(BODY_HEAD), body, sig)
+  const bodyHead = documentHead(BODY_HEAD)
+  const bodySub = bodyHead.querySelector('i')
+  docBody.append(bodyHead, body, sig)
 
   const grid = el('div', 'rep-grid')
   grid.append(docFacts, docBody)
@@ -284,6 +291,11 @@ export function createReportView(options: ReportViewOptions): ReportView {
 
     round(): number | null {
       return current === null ? null : current.round
+    },
+
+    brand(callsign: string): void {
+      sigLine.textContent = callsign
+      if (bodySub !== null) bodySub.textContent = `${callsign}${BODY_SUB_TAIL}`
     },
   }
 }

@@ -14,7 +14,7 @@ import { el } from '../shell/dom.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
 import { pad2, setPickedBlockId } from '../components/block-card.ts'
-import { CALLSIGN, buildDossier, dossierModel } from '../components/dossier.ts'
+import { buildDossier, callsignOf, dossierModel } from '../components/dossier.ts'
 import type { DossierInput } from '../components/dossier.ts'
 import { SLOT_CAP, createSlotBoard } from '../components/slot-board.ts'
 import { buildDeployStamp, buildDeployZone, deployView } from '../components/deploy-button.ts'
@@ -50,6 +50,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   let committedAt: string | null = null
 
   const docLine = el('div', 'fh-doc')
+  const callsignLine = el('div', 'fh-v', callsignOf(run))
 
   const board = createSlotBoard({
     emit: (op) => driver.send(op).ok,
@@ -69,11 +70,12 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   })
 
   function dossierInput(): DossierInput {
-    return { slotCap: SLOT_CAP, clockBand: band, slotHost: board.root }
+    return { slotCap: SLOT_CAP, callsign: callsignOf(run), clockBand: band, slotHost: board.root }
   }
 
   function sync(): void {
     docLine.textContent = `문서번호 ${PORTAL.portalCode}/AF/${slug}/${pad2(run)}`
+    callsignLine.textContent = callsignOf(run)
     const view = deployView({
       slots: board.cells(),
       deployed: board.isLocked(),
@@ -92,7 +94,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   const left = el('div', 'fh-left')
   left.append(docLine, el('div', 'fh-title', FILE_TITLE))
   const right = el('div', 'fh-right')
-  right.append(el('div', 'fh-k', '호출부호'), el('div', 'fh-v', CALLSIGN))
+  right.append(el('div', 'fh-k', '호출부호'), callsignLine)
   head.append(left, right)
 
   host.append(stamp.root, head, dossier, zone.root)
@@ -106,9 +108,17 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       return
     }
     if (event.type !== 'meta') return
+    const changedRun = event.run !== run
     run = event.run
     // D10 — the seam carries no `new_run` event; a changed run IS the unlock.
     if (committedRun !== null && event.run !== committedRun) board.unlock()
+    // M1 — §0's callsign is per sitting, so only a changed run re-prints the
+    // dossier; an archive-only `meta` must not re-parent the live slot board.
+    if (changedRun) {
+      const next = buildDossier(dossierModel(dossierInput()), board.root)
+      dossier.replaceWith(next)
+      dossier = next
+    }
     sync()
   })
 

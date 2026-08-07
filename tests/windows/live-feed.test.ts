@@ -397,7 +397,7 @@ describe('[u5#c9] the window renders, never authors', () => {
       '연속용지 · 상황실 무전 기록',
       '열람 전용 — 이 창은 조작되지 않습니다',
       '(변화 없음)',
-      'ECHO-1 · 무전',
+      ' · 무전',
     ])
     const hangul = literals(code('src/client/components/run-feed.ts')).filter((s) => HANGUL.test(s))
     expect(hangul.filter((s) => !ALLOWED.has(s))).toEqual([])

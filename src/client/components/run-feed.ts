@@ -56,8 +56,8 @@ export interface FeedNode {
   data: Readonly<Record<string, string>>
 }
 
-/** The radio call sign the reference prints above every ECHO transmission. */
-const RADIO_LABEL = 'ECHO-1 · 무전'
+/** The radio label's fixed half — the callsign half arrives per sitting (M1). */
+const RADIO_TAIL = ' · 무전'
 /** A beat that produced no symptom still prints one line (spec-client §7 #2). */
 const EMPTY_SYMPTOM = '(변화 없음)'
 
@@ -75,7 +75,7 @@ const envelope = (kind: FeedKind, clock: string, parts: FeedPart[]): FeedNode =>
  * The projection every line goes through. An unknown kind is refused here and
  * is a type error at the call site — there is no fallback render.
  */
-export function feedLineModel(line: FeedLine): FeedNode {
+export function feedLineModel(line: FeedLine, callsign = 'ECHO-1'): FeedNode {
   const kind = line.kind
   if (!Object.prototype.hasOwnProperty.call(FEED_MARKS, kind)) {
     throw new Error(`live feed: '${String(kind)}' is not a FeedKind`)
@@ -83,7 +83,7 @@ export function feedLineModel(line: FeedLine): FeedNode {
   switch (kind) {
     case 'radio':
       return envelope(kind, line.clock, [
-        { p: 'label', text: RADIO_LABEL },
+        { p: 'label', text: `${callsign}${RADIO_TAIL}` },
         { p: 'text', text: line.text },
       ])
     case 'npc':
@@ -198,6 +198,7 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   let symptoms = 0
   let stamp = ''
   let answered = false
+  let callsign = 'ECHO-1'
   let pending: { cls: FallbackClass; code: string } | null = null
 
   const openWait = (): Element | null => list.querySelector('li.fl-wait:not(.resolved)')
@@ -229,7 +230,7 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
       append(feedLineModel(fallbackNoticeLine(pending.cls, line.clock)))
       pending = null
     }
-    const node = feedLineModel(line)
+    const node = feedLineModel(line, callsign)
     if (pending !== null) {
       append({ ...node, data: { 'fallback-class': pending.cls, 'fallback-code': pending.code } })
       pending = null
@@ -242,6 +243,7 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   const receive = (event: ViewEvent): void => {
     switch (event.type) {
       case 'meta':
+        callsign = `ECHO-${Math.max(1, event.run)}`
         stock.textContent = HEAD_STOCK + RUN_PREFIX + String(event.run)
         break
       case 'beat_start':

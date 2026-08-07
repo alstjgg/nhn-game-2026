@@ -173,8 +173,9 @@ const loadDeployButton = async (): Promise<DeployButtonModule> =>
 /** A DOM-free stand-in for the §4 host — `dossierModel` must never touch it. */
 const HOST_STUB = Object.freeze({ __hostStub: true }) as unknown as HTMLElement
 
-const dossierInput = (): { slotCap: number; clockBand: string; slotHost: HTMLElement } => ({
+const dossierInput = (): { slotCap: number; callsign: string; clockBand: string; slotHost: HTMLElement } => ({
   slotCap: 4,
+  callsign: 'ECHO-1',
   clockBand: '08:50 → 21:04',
   slotHost: HOST_STUB,
 })
