@@ -51,7 +51,7 @@ export type BlockStore = { get(id: string): Block | undefined }
 export const TEMPLATE_VERSION: Readonly<Record<CallType, string>> = Object.freeze({
   judgment: 'v0.4',
   narration: 'v0.3',
-  reporter: 'v0.2',
+  reporter: 'v0.3',
 })
 
 /** Everything `createComposer` needs: e0's deps, narrowed, plus the store. */
