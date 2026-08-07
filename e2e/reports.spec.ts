@@ -453,7 +453,7 @@ test.describe('archive segmentation and highlight marks', () => {
     await expect(page.locator(OPTION)).toHaveCount(known.length)
     const labels = await page.locator(OPTION).evaluateAll((nodes) => nodes.map((n) => (n.textContent ?? '').trim()))
     for (const [i, entry] of meta!.archive.entries()) {
-      expect(labels[i]).toMatch(new RegExp(`RUN\\s*0*${entry.run}\\b`))
+      expect(labels[i]).toMatch(new RegExp(`ECHO-${entry.run}\\b`))
       const span = entry.label.replace(/^\s*RUN\s*\d+\s*[/·]\s*/i, '').trim()
       expect(labels[i]!.replace(/\s+/g, ' ')).toContain(span.replace(/\s+/g, ' '))
     }
@@ -503,7 +503,7 @@ test.describe('archive segmentation and highlight marks', () => {
     expect(rounds.length, 'the stream carries fewer than two runs — the switch is untestable').toBeGreaterThan(1)
 
     for (const round of rounds) {
-      await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${round}\\b`) }).first().click()
+      await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${round}\\b`) }).first().click()
       await expect(page.locator(`${OPTION}[aria-selected="true"]`)).toHaveCount(1)
       expect(await activeRun(page)).toBe(round)
 
@@ -527,7 +527,7 @@ test.describe('archive segmentation and highlight marks', () => {
     const away = rounds[0]!
     const target = reports.filter((r) => r.round === home).pop()!.report_body[0]!
 
-    await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${home}\\b`) }).first().click()
+    await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${home}\\b`) }).first().click()
     await page.locator(`${BODY} [data-sentence-id="${target.id}"]`).click()
     await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bmined\b/)
     expect((await frame(page)).store.mined).toContain(target.id)
@@ -541,11 +541,11 @@ test.describe('archive segmentation and highlight marks', () => {
     // across runs)". So the switch is proved where it is unambiguous — the
     // rail's own selection and a re-rendered body — and the id-keyed mark, which
     // is what this test is actually about, is still asserted below.
-    await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${away}\\b`) }).first().click()
+    await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${away}\\b`) }).first().click()
     expect(await activeRun(page), 'the rail did not switch to the other run').toBe(away)
     await expect(page.locator(`${BODY} .sent`), 'the away document rendered nothing').not.toHaveCount(0)
 
-    await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${home}\\b`) }).first().click()
+    await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${home}\\b`) }).first().click()
     await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bmined\b/)
 
     // Every mark on screen is a mark the STORE holds — nothing positional.
