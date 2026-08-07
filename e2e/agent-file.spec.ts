@@ -183,7 +183,7 @@ test.describe('dossier sections', () => {
     expect(slug.length).toBeGreaterThan(0)
     await expect(doc).toHaveText(new RegExp(`/AF/${slug}/\\d{2}$`))
     await expect(page.locator(`${FILE} .fh-title`)).toHaveText('현장 요원 운용 파일')
-    await expect(page.locator(`${FILE} .fh-v`)).toHaveText('ECHO-1')
+    await expect(page.locator(`${FILE} .fh-v`)).toHaveText('ECHO-3')
   })
 
   test('[u4#c1] (e) §1 prints the pack\'s own clock band', async ({ page }) => {

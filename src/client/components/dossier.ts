@@ -15,8 +15,10 @@
 import { animationsFrozen } from '../driver/index.ts'
 import { el } from '../shell/dom.ts'
 
-/** The agent's callsign — document art; the pack carries none (D4). */
-export const CALLSIGN = 'ECHO-1'
+/** The sitting's callsign, `ECHO-n` — document art; the pack carries none (D4). */
+export function callsignOf(run: number): string {
+  return `ECHO-${Math.max(1, run)}`
+}
 
 export const SEALED_COPY = '열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)'
 
@@ -35,6 +37,8 @@ const BAR_STEP = 45
 export interface DossierInput {
   /** §4's cap — read from `SLOT_CAP`, so note and board cannot drift (D3). */
   slotCap: number
+  /** §0's 호출부호 — `ECHO-n` for the sitting on the desk (M1). */
+  callsign: string
   /** §1's pack-fed band, `"HH:MM → HH:MM"`; empty until the pack answers. */
   clockBand: string
   /** §4's host. Opaque to the model — only `buildDossier` ever touches it. */
@@ -89,7 +93,7 @@ export function dossierModel(input: DossierInput): DossierSection[] {
       title: '식별',
       state: 'fixed',
       rows: [
-        ['호출부호', CALLSIGN],
+        ['호출부호', input.callsign],
         ['배치', '위기 대응실(상황실) · 비공개 직통 회선'],
         ['권한', '청취 · 조회 · 요청. 집행권 없음'],
       ],

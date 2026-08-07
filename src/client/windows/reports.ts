@@ -11,6 +11,7 @@
 // window (mining emits an op at the seam; where the card lands is the store's
 // business), or touch engine/composer (C8 / inv 12).
 import type { FixtureDriver } from '../driver/index.ts'
+import { callsignOf } from '../components/dossier.ts'
 import { deriveMarks, mine } from '../components/minable-sentence.ts'
 import type { MarkSets } from '../components/minable-sentence.ts'
 import { createArchiveRail } from '../components/report-archive.ts'
@@ -96,6 +97,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (event.type === 'meta') {
       archive = [...event.archive]
       carried = [...event.carried]
+      view.brand(callsignOf(event.run))
       sync()
       return
     }
