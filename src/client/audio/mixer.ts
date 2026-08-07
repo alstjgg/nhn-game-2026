@@ -33,8 +33,10 @@ export interface AudioMixer {
 
 interface Held {
   cue: string
-  source: AudioBufferSourceNode
-  gain: GainNode
+  /** `null` while the cue's file is still loading — a remembered intent, not a
+   *  playing source. Released by deletion alone; honoured by the bed pass. */
+  source: AudioBufferSourceNode | null
+  gain: GainNode | null
 }
 
 export interface MixerDeps {
@@ -106,7 +108,8 @@ export function createMixer(deps: MixerDeps): AudioMixer {
     .then(() => Promise.all(beds.map(load)))
     .then(() => {
     // A slot asked for before its bed finished decoding is honoured now.
-    for (const [slot, entry] of [...held]) if (!buffers.has(entry.cue)) reHold(slot, entry.cue)
+    // Placeholders only: a slot whose source is already playing is left alone.
+    for (const [slot, entry] of [...held]) if (entry.source === null) reHold(slot, entry.cue)
   })
 
   /** Picks a variation that is not the one played last — never twice running. */
@@ -150,14 +153,18 @@ export function createMixer(deps: MixerDeps): AudioMixer {
     const entry = held.get(slot)
     if (entry === undefined) return
     held.delete(slot)
+    // A placeholder never started; `stop()` on it would throw, and there is
+    // nothing sounding to fade. Forgetting it is the whole release.
+    const { source, gain } = entry
+    if (source === null || gain === null) return
     const at = ctx.currentTime
-    entry.gain.gain.cancelScheduledValues(at)
-    entry.gain.gain.setValueAtTime(entry.gain.gain.value, at)
-    entry.gain.gain.linearRampToValueAtTime(0, at + FADE_S)
-    entry.source.stop(at + FADE_S + 0.05)
-    entry.source.onended = () => {
-      entry.source.disconnect()
-      entry.gain.disconnect()
+    gain.gain.cancelScheduledValues(at)
+    gain.gain.setValueAtTime(gain.gain.value, at)
+    gain.gain.linearRampToValueAtTime(0, at + FADE_S)
+    source.stop(at + FADE_S + 0.05)
+    source.onended = () => {
+      source.disconnect()
+      gain.disconnect()
     }
   }
 
@@ -167,7 +174,7 @@ export function createMixer(deps: MixerDeps): AudioMixer {
     const file = cue.files.find((f) => buffers.has(f))
     if (file === undefined) {
       // Not loaded yet. Remember the intent so the ambience pass can honour it.
-      held.set(slot, { cue: cueId, source: ctx.createBufferSource(), gain: ctx.createGain() })
+      held.set(slot, { cue: cueId, source: null, gain: null })
       return
     }
     const source = ctx.createBufferSource()
