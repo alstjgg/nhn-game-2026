@@ -403,7 +403,13 @@ export function installAudio(deps: AudioDeps): AudioHandle {
 
   /* ── the mute toggle ───────────────────────────────────────────────────── */
 
-  const toggle = button('rate-btn', '소리 켬/끔', '♪')
+  // Its OWN class, not `rate-btn`. The toggle sits inside `.clk-rate` and wore
+  // the rate buttons' class to inherit their skin — but `.rate-btn` is what
+  // `game-clock.ts` collects as the clock's rate control and what the topbar's
+  // census counts, so a fourth one that carries no `data-rate` (and holds
+  // `is-on` whenever sound is up) read as a rate. `.snd-btn` shares the skin
+  // in `shell.css` and nothing else.
+  const toggle = button('snd-btn', '소리 켬/끔', '♪')
   const paintToggle = (): void => {
     toggle.classList.toggle('is-on', !muted)
     toggle.setAttribute('aria-pressed', muted ? 'false' : 'true')
