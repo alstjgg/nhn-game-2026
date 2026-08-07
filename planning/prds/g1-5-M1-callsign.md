@@ -7,6 +7,8 @@
 > dry-run-verified** on that tree: `check` green, 1621/1621 tests,
 > `e2e/agent-file.spec.ts` 19/19, build green, both Done-when greps exact,
 > no other suite pins `ECHO-` or the sub-line; then reverted.
+> `E4` was revised after that dry-run — the dossier re-print is now gated on a
+> changed run; every other edit is unchanged from the verified list.
 > **Wave 3**: runs alone (its files touch `run-feed.ts`/`report-view.ts`,
 > which gate wave 4). `g2-1`/`g2-3` stamp after this unit merges.
 > Executor: Sonnet-class session. Branch `playtest/g1-5-m1` off current `main`.
@@ -115,15 +117,24 @@ current:
 replace with:
 ```ts
     if (event.type !== 'meta') return
+    const changedRun = event.run !== run
     run = event.run
     // D10 — the seam carries no `new_run` event; a changed run IS the unlock.
     if (committedRun !== null && event.run !== committedRun) board.unlock()
-    // M1 — §0's callsign is per sitting: a changed run re-prints the dossier.
-    const next = buildDossier(dossierModel(dossierInput()), board.root)
-    dossier.replaceWith(next)
-    dossier = next
+    // M1 — §0's callsign is per sitting, so only a changed run re-prints the
+    // dossier; an archive-only `meta` must not re-parent the live slot board.
+    if (changedRun) {
+      const next = buildDossier(dossierModel(dossierInput()), board.root)
+      dossier.replaceWith(next)
+      dossier = next
+    }
     sync()
 ```
+
+`changedRun` is read before `run` is reassigned, so it cannot be folded into the
+`board.unlock()` line above — that comparison is against `committedRun`, which is
+`null` outside a deployed file. `sync()` stays outside the guard: the head's
+`callsignLine` (E6) and the document number are per-`meta`, not per-run.
 
 **E5 — `:95`**
 current:
