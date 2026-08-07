@@ -1,11 +1,16 @@
 # M2 — species words come off the cards and the filter; the data stays
 
-> plan-playtest.md **v9** · change list stamped against tree `a6e2a07`
-> (2026-08-07, g1-1 merged) — every row re-verified byte-identical at handoff,
-> and the **whole change list was dry-run-verified** on a scratch tree:
-> `npm run test` green but the documented pre-commit additive guard,
-> `npm run test:e2e -- e2e/block-store.spec.ts` 25/25. The dry run caught a
-> third species-word pin the original list missed — added as E5.
+> plan-playtest.md **v10** · change list stamped against tree `a6e2a07`
+> (2026-08-07, g1-1 merged; code identical at `87b7612`) — every row re-verified
+> byte-identical at handoff, and the **whole change list was dry-run-verified**
+> on a scratch tree: `npm run test` green but the documented pre-commit additive
+> guard, `npm run test:e2e -- e2e/block-store.spec.ts` 25/25. The dry run caught
+> a third species-word pin the original list missed — added as E5.
+> **E5 citation corrected (08-07, after the first execution run):** the first
+> stamp read E5's line off the scratch tree *after* E3/E4 had applied (`:401`);
+> the stamped tree says `:399`. The executor's stop was correct. §5.3 (v10) now
+> carries the rule: cite the stamped tree; same-file edits bottom-up, or the
+> drift stated on the row.
 > **Wave 1**: may develop and merge in parallel with `g1-3`, `g1-6`, `g4-1`
 > (no shared files).
 > Executor: Sonnet-class session. Branch `playtest/g1-2-m2` off current `main`.
@@ -55,7 +60,7 @@ Tests turning red, and their disposition:
   **after** the commit. The assertion itself is not amended.
 - `e2e/block-store.spec.ts` — three sites match visible text this unit removes:
   the `hasText` locator (**E3**), the filter-row `toContainText(option.ko)`
-  (**E4**), and the card-states `.bc-sp` ko assertion at `:401` (**E5**, found
+  (**E4**), and the card-states `.bc-sp` ko assertion at `:399` (**E5**, found
   by the dry run). E5 inverts rather than deletes — the word being *gone* is
   this unit's outcome, so the suite asserts it.
 
@@ -113,8 +118,12 @@ replace with:
     }
 ```
 
-**E5 — `e2e/block-store.spec.ts:401`** (inside "card states — every card prints
-its authored id and its species mark"; the id and mark assertions above it stay)
+**E5 — `e2e/block-store.spec.ts:399`** (inside "card states — every card prints
+its authored id and its species mark"; the id and mark assertions above it stay.
+`:399` is the **stamped tree's** line, like every citation in this document; by
+the time you apply E5, E3 and E4 have each added one line above it, so in your
+working tree the same line sits at `:401` — that is drift, not a mismatch. The
+citation check is against the un-edited file: `git show HEAD:e2e/block-store.spec.ts`.)
 current:
 ```ts
       await expect(node.locator('.bc-sp')).toContainText(option!.ko)

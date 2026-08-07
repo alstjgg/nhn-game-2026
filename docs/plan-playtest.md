@@ -348,7 +348,7 @@ without a probe risks the mechanism claim four days before submission.
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
-> As of 2026-08-07 (v9). A PRD names the version it was written against.
+> As of 2026-08-07 (v10). A PRD names the version it was written against.
 
 The items above are not worked by hand and not worked one at a time. Each is
 specified as a **mini-PRD** by a high-capability model, then executed by a
@@ -446,6 +446,14 @@ Rules for the change list:
   grandfathered sites and test comments — `published-data.test.ts:144` carries
   `객관 로그` in a comment forever — and then a binary condition can never go
   true. (v8.)
+- **Every line number cites the stamped tree, and same-file edits are listed
+  bottom-up.** An earlier edit in the same file moves every line below it; a
+  citation read off a mid-application tree is wrong for the executor, who
+  checks against the un-edited file. Bottom-up ordering keeps every row's
+  line true at its turn; where the order must be top-down, the row says so
+  and states the drift. (v10 — g1-2's E5 cited `:401` from a scratch tree
+  where two earlier edits had already landed; the executor correctly stopped
+  at `:399`.)
 
 ### 5.4 Repo traps to name in the PRD that touches them
 
