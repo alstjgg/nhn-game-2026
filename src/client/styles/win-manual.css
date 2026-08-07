@@ -1,0 +1,103 @@
+/* ===========================================================================
+   win-manual.css — the sheet the portal hands you at sign-in.
+
+   Not a sixth desk window: it is outside `WINDOW_REGISTRY`, outside
+   `applyLayout` and outside the taskbar, because it is a document the portal
+   issues once, not an instrument the operator keeps. It borrows the frame
+   (`.win / .win-tab / .win-bar / .win-body`) and the white bond stock so it
+   reads as the same office, and adds only what a one-shot sheet needs: it is
+   centred rather than placed, it does not drag, and it closes for good.
+
+   `--z` is written by `shell/manual.ts` like every other window's; nothing here
+   pins a literal z-index (design README 'Notes').
+   =========================================================================== */
+
+/* The desk stays held (`body.booting`) while this sheet is up — that IS the
+   hold O1 forbids duplicating — so the sheet has to opt back out of it. */
+body.booting .win-manual{visibility:visible}
+
+.win-manual{animation:manIn .62s cubic-bezier(.16,.9,.2,1) both}
+@keyframes manIn{from{opacity:0;transform:translateY(26px) scale(.98);filter:blur(5px)}
+  to{opacity:1;transform:none;filter:none}}
+.win-manual.is-closing{animation:manOut .42s cubic-bezier(.4,0,.2,1) both}
+@keyframes manOut{to{opacity:0;transform:translateY(-16px) scale(1.02);filter:blur(4px)}}
+
+/* it is issued, not arranged: no drag handle, no resize grip */
+.win-manual .win-bar{cursor:default}
+.win-manual .win-dot{background:var(--seal)}
+
+/* the bond stock worn as a single scrolling document with a fixed footer —
+   `.bond` is a two-pane flex column in win-reports.css, so it is re-aimed here */
+.win-manual .bond{display:flex;flex-direction:column;overflow:hidden}
+
+.man-sheet{flex:1;min-height:0;overflow-y:auto;
+  padding:var(--space-22) var(--space-30) var(--space-26);
+  background:linear-gradient(90deg,transparent 0 26px,var(--seal-a55) 26px 27px,transparent 27px),
+    var(--bond)}
+.man-sheet::-webkit-scrollbar{width:9px}
+.man-sheet::-webkit-scrollbar-track{background:var(--sh-07)}
+.man-sheet::-webkit-scrollbar-thumb{background:var(--sh-24)}
+
+/* ─── the document's own masthead ──────────────────────────────────────── */
+.man-meta{display:flex;align-items:center;gap:var(--space-14);
+  padding-bottom:var(--space-8);
+  font-size:var(--fs-8);letter-spacing:.14em;color:var(--faded-2)}
+.man-meta .man-grade{margin-left:auto;padding:var(--space-1) var(--space-8);
+  border:1px solid var(--seal-a4);background:var(--seal-wash);
+  color:var(--seal-2);letter-spacing:.2em;font-weight:600}
+
+.man-hd{display:flex;align-items:baseline;gap:var(--space-10);
+  padding-bottom:var(--space-8);margin-bottom:var(--space-16);
+  border-bottom:1.5px solid var(--graphite)}
+.man-hd h3{font-family:var(--myeong);font-size:var(--fs-21);font-weight:800;
+  color:var(--pap-hd);letter-spacing:.01em}
+.man-hd i{font-style:normal;font-size:var(--fs-8);letter-spacing:.14em;
+  color:var(--faded);margin-left:auto;white-space:nowrap}
+
+.man-lede{font-family:var(--myeong);font-size:var(--fs-12);line-height:1.9;
+  color:var(--pap-2);word-break:keep-all;text-align:justify;
+  padding-bottom:var(--space-16);margin-bottom:var(--space-16);
+  border-bottom:1px dotted var(--sh-2)}
+
+/* ─── numbered clauses ─────────────────────────────────────────────────── */
+.man-secs{list-style:none;counter-reset:man}
+.man-secs li{counter-increment:man;display:grid;
+  grid-template-columns:26px 1fr;gap:0 var(--space-11);
+  padding-bottom:var(--space-14)}
+.man-secs li::before{content:'§' counter(man);font-size:var(--fs-9);
+  letter-spacing:.06em;color:var(--seal-2);padding-top:var(--space-2)}
+.man-secs b{font-family:var(--myeong);font-size:var(--fs-13);font-weight:800;
+  color:var(--pap-hd);letter-spacing:.02em;display:block;
+  padding-bottom:var(--space-4)}
+.man-secs p{font-family:var(--myeong);font-size:var(--fs-11-5);line-height:1.88;
+  color:var(--pap-2);word-break:keep-all;text-align:justify}
+
+/* ─── issuing office + the draft chop that marks this copy placeholder ─── */
+/* the chop is rotated, so the row keeps air on the two sides it swings into */
+.man-sig{display:flex;align-items:center;justify-content:flex-end;
+  gap:var(--space-16);margin-top:var(--space-10);
+  padding:var(--space-4) var(--space-6) var(--space-8) 0}
+.man-sigline{font-family:var(--myeong);font-size:var(--fs-12);color:var(--pap-3);
+  border-bottom:1px solid var(--graphite);padding:0 var(--space-22) var(--space-2)}
+.man-chop{width:46px;height:46px;flex:0 0 auto;
+  border:2px solid var(--seal);color:var(--seal);border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--myeong);font-size:var(--fs-14);font-weight:800;letter-spacing:.04em;
+  transform:rotate(-8deg);opacity:.72;mix-blend-mode:multiply}
+
+/* ─── the way out ──────────────────────────────────────────────────────── */
+.man-foot{flex:0 0 auto;display:flex;align-items:center;gap:var(--space-14);
+  padding:var(--space-10) var(--space-14) var(--space-10) var(--space-20);
+  background:var(--bond-2);border-top:1px solid var(--sh-28)}
+.man-foot span{font-size:var(--fs-8-5);letter-spacing:.11em;color:var(--faded)}
+.man-ack{margin-left:auto;height:30px;padding:0 var(--space-20);
+  display:flex;align-items:center;gap:var(--space-9);
+  background:linear-gradient(to bottom,var(--graphite-2),var(--graphite));
+  color:var(--bond);border:1px solid var(--graphite);
+  font-size:var(--fs-10);letter-spacing:.2em;
+  box-shadow:inset 0 1px 0 var(--sheen-25), 0 2px 0 var(--sh-2);
+  transition:transform .12s, filter .18s, box-shadow .18s}
+.man-ack:hover{filter:brightness(1.18);box-shadow:inset 0 1px 0 var(--sheen-35), 0 3px 0 var(--sh-25)}
+.man-ack:active{transform:translateY(2px);box-shadow:inset 0 1px 0 var(--sheen-25)}
+.man-ack:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+.man-ack em{font-style:normal;opacity:.6;letter-spacing:.1em}

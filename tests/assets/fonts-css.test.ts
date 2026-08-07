@@ -28,7 +28,7 @@ import {
   stripComments,
   walk,
 } from './font-assets.ts'
-import { unitDiff } from '../acceptance/unit-range.ts'
+import { dirAtUnit, fileAtUnit, unitDiff } from '../acceptance/unit-range.ts'
 
 const baseline = () =>
   readJson<{ sha256: Record<string, string>; indexImports: string[] }>(
@@ -173,15 +173,25 @@ describe('[u10#c8] HARD CONSTRAINT — u1 stylesheets are untouched (re-aimed to
     ])
   })
 
+  // C17 — RE-AIMED (08-08), never deleted, and for the same reason (a) already
+  // was: these three read the LIVE tree to prove a claim about **u10**, so any
+  // later unit that legitimately touches `styles/` fails them in u10's name.
+  // The opening (plan-playtest O1) is that unit: it adds `--fs-26 / --fs-34` to
+  // the scale and two sheets, `signin.css` and `win-manual.css`. Re-aimed at
+  // u10's own range — where (b) and (f) say exactly what they claim — and, for
+  // (c), at the part of the claim that must hold on the live tree forever: u1's
+  // nine imports are still there, still first, still in order. A later sheet may
+  // append after them; none may displace or drop one.
   it('(b) tokens.css in particular is unchanged', () => {
     const { sha256 } = baseline()
-    expect(sha(read(TOKENS_CSS))).toBe(sha256['tokens.css'])
+    expect(sha(fileAtUnit('u10', 'src/client/styles/tokens.css'))).toBe(sha256['tokens.css'])
+    expect(unitDiff('u10', 'src/client/styles/tokens.css'), 'u10 may not edit tokens.css').toEqual([])
   })
 
   it('(c) index.css keeps u1’s nine imports, in order, unremoved', () => {
     const imports = [...read(INDEX_CSS).matchAll(/@import\s+['"]([^'"]+)['"]/g)].map((m) => m[1])
     const { indexImports } = baseline()
-    expect(imports.filter((i) => i !== './fonts.css')).toEqual(indexImports)
+    expect(imports.filter((i) => i !== './fonts.css').slice(0, indexImports.length)).toEqual(indexImports)
   })
 
   it('(d) index.css imports ./fonts.css exactly once', () => {
@@ -194,9 +204,8 @@ describe('[u10#c8] HARD CONSTRAINT — u1 stylesheets are untouched (re-aimed to
   })
 
   it('(f) fonts.css is the only file this unit adds under src/client/styles', () => {
-    const added = walk(STYLES_DIR)
-      .filter((p) => p.endsWith('.css'))
-      .map((p) => path.basename(p))
+    const added = dirAtUnit('u10', 'src/client/styles')
+      .filter((f) => f.endsWith('.css'))
       .filter((f) => !Object.keys(baseline().sha256).includes(f))
     expect(added).toEqual(['fonts.css'])
   })

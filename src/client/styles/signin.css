@@ -1,0 +1,196 @@
+/* ===========================================================================
+   signin.css — the portal's front door (plan-playtest O1, the opening).
+
+   The desk boots behind this layer, not after it: `shell/sign-in.ts` mounts the
+   curtain at the top of `bootShell()` and the existing hold/reveal seam
+   (`desktop-dressing.ts`) keeps the windows off screen until the manual is
+   closed. O1's constraint — "must not build a second hold" — is why nothing
+   here touches `body.booting`.
+
+   No new colour enters the palette: every value below is one of the tokens the
+   desk already paints with, so the door and the room are lit the same way. The
+   wallpaper, grain, vignette and sweep are NOT re-declared — they sit under
+   (z 0) and over (z 900..902) this layer, so signing in happens inside the same
+   CRT as the desk it opens onto.
+   =========================================================================== */
+
+/* ═══ WHILE THE CURTAIN IS UP ═════════════════════════════════════════════
+   The top bar carries the operator's name and clearance — things you do not
+   have until you have signed in — so it is held above the viewport. Killing
+   `animation` is what makes the hold stick (`barDrop` is `both`, and a filled
+   animation outranks a plain declaration); it is also what replays the drop
+   when the class comes off, which is the whole sign-in reveal. */
+body.signin #topbar{animation:none;transform:translateY(-100%);pointer-events:none}
+/* The two chrome surfaces that would otherwise talk over the door. */
+body.signin .skip-link{display:none}
+body.signin #toast{display:none}
+
+/* The 윤슬교 longitudinal section is the door's backdrop, not the desk's
+   leftover: with no windows on the screen there is finally room to read the
+   bridge this whole simulation is about, so it is lit up while the door is
+   open. `filter`, not `opacity` — `bpIn` is an `animation … both` and a filled
+   animation outranks a plain declaration. */
+body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
+
+/* ═══ THE LAYER ═══════════════════════════════════════════════════════════
+   Above the desk (z 500 top bar) and below the grain/vignette/sweep stack.
+   The scrim darkens only the middle — the ground the plate is read against —
+   and lets the drawing come through at the edges. */
+#signin{position:fixed;inset:0;z-index:700;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(46% 56% at 50% 50%,var(--sh-8) 0%,var(--sh-5) 48%,transparent 84%);
+  animation:siWake .7s ease-out both}
+@keyframes siWake{from{opacity:0}to{opacity:1}}
+#signin.si-out{animation:siLeave .5s cubic-bezier(.4,0,.2,1) both;pointer-events:none}
+@keyframes siLeave{to{opacity:0;transform:scale(1.03)}}
+
+/* ─── the instrument frame: registration brackets at the four corners ──── */
+.si-frame{position:absolute;inset:16px;pointer-events:none;
+  background:
+    linear-gradient(var(--line-3),var(--line-3)) 0 0/1px 34px no-repeat,
+    linear-gradient(var(--line-3),var(--line-3)) 0 0/34px 1px no-repeat,
+    linear-gradient(var(--line-3),var(--line-3)) 100% 0/1px 34px no-repeat,
+    linear-gradient(var(--line-3),var(--line-3)) 100% 0/34px 1px no-repeat,
+    linear-gradient(var(--line-3),var(--line-3)) 0 100%/1px 34px no-repeat,
+    linear-gradient(var(--line-3),var(--line-3)) 0 100%/34px 1px no-repeat,
+    linear-gradient(var(--line-3),var(--line-3)) 100% 100%/1px 34px no-repeat,
+    linear-gradient(var(--line-3),var(--line-3)) 100% 100%/34px 1px no-repeat;
+  animation:siFrame 1.1s ease-out .35s both}
+@keyframes siFrame{from{opacity:0}to{opacity:.9}}
+
+/* ─── corner furniture: the terminal's own markings ────────────────────── */
+.si-mark{position:absolute;display:flex;flex-direction:column;gap:var(--space-3);
+  font-size:var(--fs-8);letter-spacing:.2em;color:var(--txt-7);line-height:1.5;
+  animation:siFade 1s ease-out .5s both}
+@keyframes siFade{from{opacity:0}to{opacity:1}}
+.si-mark b{font-weight:500;color:var(--txt-4)}
+.si-mark.si-tl{top:var(--space-22);left:var(--space-26);
+  border-left:1px solid var(--ink-line);padding-left:var(--space-10)}
+.si-mark.si-tr{top:var(--space-22);right:var(--space-26);text-align:right;
+  border-right:1px solid var(--ink-line);padding-right:var(--space-10)}
+.si-mark.si-bl{bottom:var(--space-22);left:var(--space-26);
+  border-left:1px solid var(--ink-line);padding-left:var(--space-10)}
+.si-mark.si-br{bottom:var(--space-22);right:var(--space-26);text-align:right;
+  border-right:1px solid var(--seal-a4);padding-right:var(--space-10);color:var(--seal);opacity:.75}
+
+/* ═══ THE CENTRE STACK ════════════════════════════════════════════════════
+   Geometrically centred sits optically low, because the plate carries all the
+   weight and the crest almost none — the margin lifts the block back onto its
+   optical centre. */
+.si-stack{width:452px;display:flex;flex-direction:column;align-items:center;
+  margin-bottom:var(--space-30)}
+
+/* ─── crest — the 災 seal the top bar wears, at full size ──────────────── */
+.si-crest{position:relative;width:86px;height:86px;
+  animation:siRise .8s cubic-bezier(.2,.8,.2,1) .1s both}
+.si-crest svg{position:absolute;inset:0;width:86px;height:86px;display:block}
+.si-crest .si-ring{fill:none;stroke:var(--seal);stroke-width:.8;opacity:.45;
+  stroke-dasharray:3 7;transform-origin:50% 50%;animation:siSpin 34s linear infinite}
+.si-crest .si-seal circle{fill:none;stroke:var(--seal);stroke-width:1.1;opacity:.9}
+.si-crest .si-seal text{fill:var(--seal);font-weight:700;font-size:var(--fs-26);
+  font-family:var(--myeong);opacity:.95}
+@keyframes siSpin{to{transform:rotate(360deg)}}
+
+/* ─── the portal's name ────────────────────────────────────────────────── */
+.si-title{font-family:var(--myeong);font-size:var(--fs-34);font-weight:800;
+  color:var(--txt-hi);letter-spacing:.14em;line-height:1.2;text-indent:.14em;
+  margin-top:var(--space-18);text-shadow:0 0 26px var(--sh-9);
+  animation:siRise .8s cubic-bezier(.2,.8,.2,1) .18s both}
+.si-latin{font-size:var(--fs-8);letter-spacing:.34em;color:var(--txt-7);
+  margin-top:var(--space-8);text-indent:.34em;
+  animation:siRise .8s cubic-bezier(.2,.8,.2,1) .26s both}
+.si-rule{width:100%;height:1px;margin-top:var(--space-16);
+  background:linear-gradient(90deg,transparent,var(--seal) 18%,var(--seal) 82%,transparent);
+  opacity:.5;transform-origin:50% 50%;
+  animation:siWiden .9s cubic-bezier(.2,.8,.2,1) .3s both}
+@keyframes siWiden{from{transform:scaleX(0)}to{transform:none}}
+.si-code{display:flex;align-items:center;gap:var(--space-10);margin-top:var(--space-14);
+  font-size:var(--fs-9);letter-spacing:.24em;color:var(--seal);font-weight:600;
+  animation:siRise .8s cubic-bezier(.2,.8,.2,1) .36s both}
+.si-code i{font-style:normal;letter-spacing:.16em;color:var(--txt-6);font-weight:400}
+
+@keyframes siRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ═══ THE AUTHENTICATION PLATE ════════════════════════════════════════════ */
+.si-plate{width:100%;margin-top:var(--space-26);position:relative;
+  background:linear-gradient(to bottom,var(--chrome-hi),var(--chrome-lo));
+  border:1px solid var(--edge);box-shadow:var(--shadow-win);
+  animation:siRise .85s cubic-bezier(.16,.9,.2,1) .42s both}
+.si-plate::before{content:'';position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 1px 0 var(--sheen-05)}
+
+.si-plate-hd{display:flex;align-items:center;gap:var(--space-9);height:28px;
+  padding:0 var(--space-11);background:var(--chrome-deep);
+  border-bottom:1px solid var(--edge);position:relative}
+.si-plate-hd::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,var(--seal),transparent 62%);opacity:.7}
+.si-led{width:6px;height:6px;flex:0 0 auto;background:var(--seal);
+  animation:livePulse 1.4s ease-in-out infinite}
+.si-plate-hd b{font-size:var(--fs-9-5);font-weight:600;letter-spacing:.22em;color:var(--txt-2)}
+.si-plate-hd i{margin-left:auto;font-style:normal;font-size:var(--fs-8);
+  letter-spacing:.2em;color:var(--txt-7)}
+
+/* ─── the two filled fields — display only, never a form (inv 1) ───────── */
+.si-form{padding:var(--space-20) var(--space-20) var(--space-16);
+  display:flex;flex-direction:column;gap:var(--space-11)}
+.si-field{display:flex;align-items:center;gap:var(--space-12)}
+.si-label{width:58px;flex:0 0 auto;font-size:var(--fs-8-5);letter-spacing:.2em;
+  color:var(--txt-6);text-align:right}
+.si-well{flex:1;min-width:0;height:34px;display:flex;align-items:center;
+  padding:0 var(--space-12);background:var(--track);
+  box-shadow:inset 0 0 0 1px var(--ink-line), inset 0 2px 5px -2px var(--sh-8)}
+.si-value{font-size:var(--fs-14);letter-spacing:.06em;color:var(--txt-hi);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-value.si-secret{letter-spacing:.3em;color:var(--txt-3)}
+.si-caret{width:7px;height:16px;margin-left:var(--space-2);flex:0 0 auto;
+  background:var(--gauge-2);opacity:.85;animation:siBlink .9s steps(2) infinite}
+@keyframes siBlink{0%,49%{opacity:.85}50%,100%{opacity:0}}
+.si-lock{margin-left:auto;flex:0 0 auto;font-size:var(--fs-8);letter-spacing:.14em;
+  color:var(--txt-7)}
+
+/* ─── the one control on the screen ────────────────────────────────────── */
+.si-login{position:relative;overflow:hidden;display:flex;align-items:center;
+  justify-content:center;gap:var(--space-14);
+  width:calc(100% - var(--space-20) - var(--space-20));height:46px;
+  margin:0 var(--space-20) var(--space-16);
+  background:linear-gradient(to bottom,var(--seal),var(--seal-2));
+  border:1px solid var(--edge);color:var(--txt-max);
+  box-shadow:inset 0 1px 0 var(--sheen-25), 0 6px 18px -10px var(--sh-9);
+  transition:transform .12s, box-shadow .18s, filter .18s}
+.si-login b{font-size:var(--fs-15);font-weight:700;letter-spacing:.46em;text-indent:.46em}
+.si-login i{font-style:normal;font-size:var(--fs-9);letter-spacing:.16em;opacity:.72}
+.si-login::after{content:'';position:absolute;top:0;bottom:0;width:38%;left:-45%;
+  background:linear-gradient(90deg,transparent,var(--sheen-25),transparent);
+  animation:siSheen 3.6s ease-in-out 1.4s infinite}
+@keyframes siSheen{0%{left:-45%}55%,100%{left:115%}}
+.si-login:hover{filter:brightness(1.12);transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 var(--sheen-35), 0 12px 26px -12px var(--seal-a5)}
+.si-login:active{transform:translateY(1px);filter:brightness(.94)}
+.si-login:focus-visible{outline:2px solid var(--txt-4);outline-offset:3px}
+.si-login[disabled]{pointer-events:none}
+
+.si-note{display:flex;align-items:center;gap:var(--space-8);
+  padding:var(--space-8) var(--space-20) var(--space-11);
+  border-top:1px solid var(--ink-line);
+  font-size:var(--fs-8);letter-spacing:.14em;color:var(--txt-8);line-height:1.6}
+.si-note em{font-style:normal;color:var(--seal);opacity:.8}
+
+/* ═══ THE AUTHENTICATION READOUT (swapped in on LOGIN) ════════════════════ */
+.si-auth{display:none;padding:var(--space-18) var(--space-20) var(--space-16)}
+.si-plate.is-auth .si-form,
+.si-plate.is-auth .si-login,
+.si-plate.is-auth .si-note{display:none}
+.si-plate.is-auth .si-auth{display:block}
+
+.si-line{display:flex;align-items:baseline;gap:var(--space-8);
+  font-size:var(--fs-10);letter-spacing:.1em;color:var(--txt-3);line-height:1.9;
+  animation:siType .28s ease-out both;animation-delay:var(--delay)}
+@keyframes siType{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+.si-line s{flex:1;min-width:0;height:1px;text-decoration:none;
+  background:repeating-linear-gradient(90deg,var(--ink-line) 0 2px,transparent 2px 5px)}
+.si-line u{text-decoration:none;font-size:var(--fs-8-5);letter-spacing:.16em;color:var(--gauge-2)}
+.si-bar{height:2px;margin-top:var(--space-14);background:var(--track);overflow:hidden}
+.si-bar i{display:block;height:100%;width:0;
+  background:linear-gradient(90deg,var(--gauge-1),var(--gauge-2));
+  animation:siFill 1.34s cubic-bezier(.4,0,.2,1) both}
+@keyframes siFill{to{width:100%}}

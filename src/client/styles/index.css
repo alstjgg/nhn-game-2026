@@ -17,6 +17,12 @@
 @import './win-reports.css';
 @import './win-tally.css';
 
+/* The opening (plan-playtest O1): the sign-in curtain and the sheet it hands
+   over. `win-manual.css` follows the window skins because it re-aims `.bond`,
+   which `win-reports.css` declares. */
+@import './signin.css';
+@import './win-manual.css';
+
 /* u10 — the self-hosted @font-face set. Appended, so u1's four core sheets keep
    the first four slots; @font-face is order-independent. */
 @import './fonts.css';
