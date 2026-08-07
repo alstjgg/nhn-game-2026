@@ -19,7 +19,7 @@
 // Renders only ([u5#c9]): `line.text` and `line.speaker` reach the document
 // untouched — nothing here slices, pads, counts or reformats them.
 import type { FeedKind, FeedLine, FixtureDriver, ViewEvent } from '../driver/index.ts'
-import { displayStamp } from '../driver/index.ts'
+import { animationsFrozen, displayStamp, registerAnimation } from '../driver/index.ts'
 import { el } from '../shell/dom.ts'
 import { FALLBACK_CLASS, fallbackNoticeLine } from './fallback-notice.ts'
 import type { FallbackClass } from './fallback-notice.ts'
@@ -114,6 +114,18 @@ export function emptySymptomModel(clock: string): FeedNode {
   }
 }
 
+/**
+ * Reveal pacing (U1) — real ms between queued lines. A crowded queue quickens:
+ * quiet stretches breathe, event crowds still read as a crowd. Feel values,
+ * tuned at the group-2 game check.
+ */
+const REVEAL_MS = 420
+const REVEAL_CROWD_MS = 140
+const REVEAL_CROWD_AT = 5
+
+const revealDelay = (depth: number): number =>
+  depth >= REVEAL_CROWD_AT ? REVEAL_CROWD_MS : REVEAL_MS
+
 /* ── the window's fanfold ────────────────────────────────────────────────── */
 
 /** The head's first line — the stock, as the reference prints it. */
@@ -128,6 +140,8 @@ export interface RunFeed {
   count(): number
   kinds(): string[]
   stamps(): string[]
+  /** Applies everything still queued — the reveal never outlives a seek (U1). */
+  flush(): void
 }
 
 function partNode(part: FeedPart): Node {
@@ -240,7 +254,7 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
     if (line.kind === 'symptom') symptoms += 1
   }
 
-  const receive = (event: ViewEvent): void => {
+  const apply = (event: ViewEvent): void => {
     switch (event.type) {
       case 'meta':
         callsign = `ECHO-${Math.max(1, event.run)}`
@@ -276,9 +290,68 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
     }
   }
 
+  // U1 — the reveal queue (plan-playtest §1). Downstream of fanout on purpose:
+  // pacing here can starve nothing, while the adapter's own queue gates step().
+  // Paced only while the sim clock runs; a paused desk, frozen animations,
+  // reduced motion, a seek and the day's end all land whole.
+  const queue: ViewEvent[] = []
+  let sinceReveal = 0
+
+  const motionless = (): boolean => {
+    if (animationsFrozen()) return true
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }
+
+  const flush = (): void => {
+    while (queue.length > 0) apply(queue.shift()!)
+    sinceReveal = 0
+  }
+
+  registerAnimation('feed/reveal', (realMs: number) => {
+    if (queue.length === 0) return
+    // A frozen pump never ticks, so the frozen case can only flush at enqueue
+    // (below); this in-pump check catches a mid-run reduced-motion flip.
+    if (motionless() || !driver.clock.running) {
+      flush()
+      return
+    }
+    sinceReveal += realMs
+    if (sinceReveal < revealDelay(queue.length)) return
+    sinceReveal = 0
+    apply(queue.shift()!)
+  })
+
+  // The settle watchdog: alive only while the queue is non-empty. The pump
+  // rides the driver's animation channel, which stops with the clock — so a
+  // clock that stops with lines still queued (the live boot pauses right
+  // after its opening fanout) would strand them forever without this.
+  let settling = false
+  const settle = (): void => {
+    settling = false
+    if (queue.length === 0) return
+    if (!driver.clock.running && !driver.clock.ended) {
+      flush()
+      return
+    }
+    settling = true
+    requestAnimationFrame(settle)
+  }
+
+  const receive = (event: ViewEvent): void => {
+    queue.push(event)
+    if (event.type === 'run_end' || motionless() || !driver.clock.running) {
+      flush()
+      return
+    }
+    if (!settling) {
+      settling = true
+      requestAnimationFrame(settle)
+    }
+  }
+
   // The reference's `prefillFeed`: everything the driver already released is
   // laid down without animation budget, then the tail is caught up once.
-  for (const event of driver.frame().events) receive(event)
+  for (const event of driver.frame().events) apply(event)
   requestAnimationFrame(follow)
   driver.subscribe(receive)
 
@@ -295,5 +368,6 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
     count: () => lines().length,
     kinds: () => lines().map((li) => (/\bfl-([a-z]+)\b/.exec(li.className) ?? [, ''])[1] ?? ''),
     stamps: () => lines().map((li) => li.querySelector('.fl-t')?.textContent ?? ''),
+    flush,
   }
 }

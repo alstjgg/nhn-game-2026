@@ -81,7 +81,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       count: () => feed.count(),
       kinds: () => feed.kinds(),
       stamps: () => feed.stamps(),
-      seek: (at: string) => seek(driver, at),
+      seek: (at: string) => {
+        seek(driver, at)
+        feed.flush()
+      },
+      flush: () => feed.flush(),
       rate: (to: number) => driver.clock.setRate(asRate(to)),
     }
   }

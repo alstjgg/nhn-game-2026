@@ -331,20 +331,24 @@ describe('[u5#c6] lines land on the driver clock, not on a timer of their own', 
     }
   })
 
-  it('(b) at most one requestAnimationFrame — the prefill tail catch-up (app.js:452)', () => {
+  it('(b) three rAF in run-feed — prefill catch-up + the U1 settle watchdog pair', () => {
     for (const file of SOURCES) {
       const hits = (code(file).match(/requestAnimationFrame/g) ?? []).length
-      const allowed = file.endsWith('run-feed.ts') ? 1 : 0
+      const allowed = file.endsWith('run-feed.ts') ? 3 : 0
       expect(`${file}: ${hits} rAF (max ${allowed})`).toBe(
         `${file}: ${Math.min(hits, allowed)} rAF (max ${allowed})`,
       )
     }
   })
 
-  it('(c) the window registers no animation hook and owns no clock', () => {
+  it('(c) one reveal pump in run-feed (U1) — otherwise no animation hook, no clock', () => {
     for (const file of SOURCES) {
       const source = code(file)
-      expect(source).not.toMatch(/registerAnimation/)
+      const hooks = (source.match(/registerAnimation/g) ?? []).length
+      const allowed = file.endsWith('run-feed.ts') ? 2 : 0
+      expect(`${file}: ${hooks} registerAnimation (max ${allowed})`).toBe(
+        `${file}: ${Math.min(hooks, allowed)} registerAnimation (max ${allowed})`,
+      )
       expect(source).not.toMatch(/new\s+Date\(|performance\.now\(/)
       expect(source).not.toMatch(/createClock\(/)
     }
