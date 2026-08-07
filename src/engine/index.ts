@@ -51,7 +51,7 @@ import type {
 import type { Symptoms, Temperament } from '../shared/datapack.ts'
 import type { PredicateState } from '../shared/predicates.ts'
 
-import { buildSchedule, createBeatDriver } from './beat/index.ts'
+import { buildSchedule, createBeatDriver, parseClock } from './beat/index.ts'
 import type {
   Beat,
   BeatCursor,
@@ -256,6 +256,38 @@ export function createEngine(deps: EngineDeps): EngineHandle {
     return beat.events.map((event) => ({ id: event.id, text: event.text }))
   }
 
+  /**
+   * A beat's lines drip across its span instead of bursting at its opening
+   * minute: the adapter releases each stamp as the sim clock reaches it, so
+   * spread stamps ARE the feed's timing. Successive lines advance by a stride
+   * of sim minutes, capped one minute short of the next beat so no line
+   * outruns the beat that follows. A beat with no successor — or an authored
+   * `+` stamp, whose tie-break a whole-minute reprint would drop — keeps its
+   * authored clock on every line. Feel value, tuned in play.
+   */
+  const STAMP_STRIDE_MIN = 5
+
+  let stampBeat = -1
+  let stampMinute = 0
+  let stampCap = -1
+
+  function nextStamp(beat: Beat): string {
+    if (stampBeat !== beat.index) {
+      stampBeat = beat.index
+      const next = schedule[beat.index + 1]
+      if (next === undefined || beat.clock.endsWith('+')) {
+        stampCap = -1
+      } else {
+        stampMinute = parseClock(beat.clock)
+        stampCap = Math.max(stampMinute, Math.ceil(parseClock(next.clock)) - 1)
+      }
+    }
+    if (stampCap < 0) return beat.clock
+    const minute = stampMinute
+    stampMinute = Math.min(stampMinute + STAMP_STRIDE_MIN, stampCap)
+    return `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`
+  }
+
   function recordOf(beat: Beat): BeatRecord {
     const held = records[beat.index]
     if (held !== undefined) return held
@@ -329,7 +361,7 @@ export function createEngine(deps: EngineDeps): EngineHandle {
         },
         ids,
       )
-      lines = [...lines, ...built.lines]
+      lines = [...lines, ...built.lines.map((line) => ({ ...line, clock: nextStamp(beat) }))]
     },
 
     applyNarration(response: NarrationResponse | null): void {
@@ -341,13 +373,13 @@ export function createEngine(deps: EngineDeps): EngineHandle {
           npc_lines: response.npc_lines,
         }
         for (const entry of response.timeline_entries) {
-          lines.push({ kind: 'event', clock: beat.clock, text: entry, sentence_id: ids.next('n') })
+          lines.push({ kind: 'event', clock: nextStamp(beat), text: entry, sentence_id: ids.next('n') })
         }
         const { kept } = classifyNpcLines(response.npc_lines, { present, utterance })
         for (const npcLine of kept) {
           lines.push({
             kind: 'npc',
-            clock: beat.clock,
+            clock: nextStamp(beat),
             speaker: npcLine.speakerName,
             text: npcLine.text,
             sentence_id: ids.next('q'),
