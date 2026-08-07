@@ -38,14 +38,21 @@ const importedFiles = imported.map((s) => s.replace(/^\.\//, ''))
 const u1ImportedFiles = imports(fileAtUnit('u1', 'src/client/styles/index.css')).map((s) => s.replace(/^\.\//, ''))
 
 /**
- * U3 (playtest g3-1) — `WINDOW_SHEETS` (css-utils.ts) now reflects the
- * CURRENT four window sheets: `win-tally.css` was retired when TALLY
- * dissolved into REPORTS and AGENT FILE. The block below pins u1's OWN
- * historical merge — nine sheets on disk, five of them window skins — which
- * is frozen by definition (it reads `fileAtUnit('u1', …)`) and must not move
- * just because a later unit retired one of the five.
+ * U3 (playtest g3-1) retired `win-tally.css`; T1 (playtest g5-1) retired
+ * `win-block-store.css` — `WINDOW_SHEETS` (css-utils.ts) now reflects the
+ * CURRENT three window sheets. The block below pins u1's OWN historical
+ * merge — nine sheets on disk, five of them window skins — which is frozen
+ * by definition (it reads `fileAtUnit('u1', …)`) and must not move just
+ * because later units retired two of the five. Hard-coded rather than
+ * derived: a frozen set must not track a live constant.
  */
-const U1_WINDOW_SHEETS = [...WINDOW_SHEETS, 'win-tally.css']
+const U1_WINDOW_SHEETS = [
+  'win-agent-file.css',
+  'win-block-store.css',
+  'win-live-feed.css',
+  'win-reports.css',
+  'win-tally.css',
+]
 const U1_ALL_SHEETS = [...CORE_SHEETS, ...U1_WINDOW_SHEETS]
 
 describe('[u1#c4] index.css is an import manifest', () => {

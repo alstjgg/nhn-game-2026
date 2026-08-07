@@ -36,7 +36,6 @@ const SLOT_BOARD_TS = path.join(COMPONENTS, 'slot-board.ts')
 const DOSSIER_TS = path.join(COMPONENTS, 'dossier.ts')
 const DEPLOY_BUTTON_TS = path.join(COMPONENTS, 'deploy-button.ts')
 const AGENT_FILE_TS = path.join(CLIENT, 'windows/agent-file.ts')
-const BLOCK_STORE_TS = path.join(CLIENT, 'windows/block-store.ts')
 /**
  * u2's inv-12 enforcement point. It is the ONE client source that may name a
  * banned key: `BANNED_EXACT` lists `temperament` precisely so the driver can
@@ -725,9 +724,8 @@ describe('[u4#c9] u4 sources hold the run-wide hard constraints', () => {
     expect(touched.trim()).toBe('')
   })
 
-  it('(h) c8 — u4 creates block-card.ts and touches no other window', () => {
+  it('(h) c8 — u4 creates block-card.ts', () => {
     expect(exists(BLOCK_CARD_TS)).toBe(true)
-    expect(git('diff', '--name-only', 'HEAD', '--', rel(BLOCK_STORE_TS)).trim()).toBe('')
   })
 
   it('(i) D3 — SLOT_CAP is the only 4 in u4: no bare slot-count literal elsewhere', () => {

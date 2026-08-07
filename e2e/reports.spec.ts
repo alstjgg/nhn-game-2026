@@ -19,7 +19,7 @@ import type { Locator, Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { awaitRecordFinal, raiseWindow } from './fixtures/harness.ts'
+import { awaitRecordFinal, mineFirst, raiseWindow, slotBlock } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -614,13 +614,13 @@ test.describe('a11y', () => {
     expect((await frame(page)).store.mined).toEqual([first!.id, second!.id])
   })
 
-  test('a11y — a mined sentence announces itself as disabled and re-mining is a no-op', async ({ page }) => {
+  test('a11y — a mined sentence stays enabled (it is the pick) and re-mining is a no-op', async ({ page }) => {
     const report = await reportForActiveRun(page)
     const target = report.report_body[0]!
     const node = page.locator(`${BODY} [data-sentence-id="${target.id}"]`)
 
     await node.click()
-    await expect(node).toHaveAttribute('aria-disabled', 'true')
+    await expect(node).not.toHaveAttribute('aria-disabled', 'true')
 
     const after = await minedCount(page)
     await node.focus()
@@ -666,5 +666,58 @@ test.describe('a11y', () => {
     await expect(page.locator(`${REP} .min`), 'nothing is rendered — the inv-1 scan is vacuous').not.toHaveCount(0)
     await expect(page.locator(`${REP} input, ${REP} textarea, ${REP} select`)).toHaveCount(0)
     await expect(page.locator(`${REP} [contenteditable]`)).toHaveCount(0)
+  })
+})
+
+/* ── T1 — the report is the pick surface; the store window is gone ───────── */
+
+test.describe('slotting from the report (T1)', () => {
+  test.beforeEach(async ({ page }) => {
+    await boot(page, { reduced: true })
+    await drain(page)
+    await raiseWindow(page, 'rep')
+  })
+
+  test('clicking a mined sentence then a seat slots it, by id', async ({ page }) => {
+    const id = await mineFirst(page)
+    await slotBlock(page, id, 0)
+    await expect.poll(async () => (await frame(page)).store.slots[0]).toBe(id)
+    await raiseWindow(page, 'rep')
+    await expect(page.locator(`${REP} [data-sentence-id="${id}"]`).first()).toHaveClass(/\bslotted\b/)
+  })
+
+  test('a11y — slotting and unslotting complete with the keyboard alone, zero pointer events', async ({ page }) => {
+    const id = await mineFirst(page)
+    await page.evaluate(() => {
+      const win = window as unknown as { __pointerEvents?: number }
+      win.__pointerEvents = 0
+      for (const type of ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup']) {
+        document.addEventListener(
+          type,
+          (event) => {
+            // A keyboard-activated button fires a click with no coordinates;
+            // only a real pointer carries them.
+            const pointer = event as MouseEvent
+            if (pointer.detail > 0 || pointer.clientX > 0 || pointer.clientY > 0) {
+              win.__pointerEvents = (win.__pointerEvents ?? 0) + 1
+            }
+          },
+          true,
+        )
+      }
+    })
+    await page.locator(`${REP} [data-sentence-id="${id}"]`).first().focus()
+    await page.keyboard.press('Enter')
+    await page.locator('#w-file .slot[data-slot="0"] .slot-target').focus()
+    await page.keyboard.press('Enter')
+    await expect.poll(async () => (await frame(page)).store.slots[0]).toBe(id)
+    await page.locator('#w-file .slot[data-slot="0"] .slot-unset').focus()
+    await page.keyboard.press('Enter')
+    await expect.poll(async () => (await frame(page)).store.slots[0]).toBeUndefined()
+    await expect(page.locator(`${REP} [data-sentence-id="${id}"]`).first()).toHaveClass(/\bmined\b/)
+    expect(
+      await page.evaluate(() => (window as unknown as { __pointerEvents?: number }).__pointerEvents),
+      'the keyboard path fired a pointer event',
+    ).toBe(0)
   })
 })

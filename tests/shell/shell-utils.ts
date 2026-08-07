@@ -16,14 +16,13 @@ export const WINDOWS_DIR = path.join(CLIENT, 'windows')
 export const INDEX_HTML = path.join(REPO, 'index.html')
 
 /** The four window keys, in the order the taskbar and applyLayout must use. */
-export const WINDOW_KEYS = ['feed', 'file', 'store', 'rep'] as const
+export const WINDOW_KEYS = ['feed', 'file', 'rep'] as const
 export type WindowKey = (typeof WINDOW_KEYS)[number]
 
 /** `windows/<module>.ts` per key — the merge surface m3 depends on ([u3#c6]). */
 export const WINDOW_MODULES: Readonly<Record<WindowKey, string>> = {
   feed: 'live-feed.ts',
   file: 'agent-file.ts',
-  store: 'block-store.ts',
   rep: 'reports.ts',
 }
 

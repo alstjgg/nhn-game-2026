@@ -101,7 +101,7 @@ describe('[u3#c2] nothing is off-screen at the 1280x800 minimum (C9)', () => {
   it('(c) the desk is not one pile — the columns are distinct', async () => {
     const a = await applyLayout(MIN)
     const origins = new Set(rects(a).map((r) => `${r.x}:${r.y}`))
-    expect(origins.size).toBeGreaterThanOrEqual(4)
+    expect(origins.size).toBeGreaterThanOrEqual(3)
   })
 })
 

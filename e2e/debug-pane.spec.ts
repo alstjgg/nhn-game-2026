@@ -34,7 +34,7 @@ const MARKER = 'nhn:debug-pane'
 const EVENTS = '[data-debug-table="events"]'
 const OPS = '[data-debug-table="ops"]'
 
-const WINDOW_IDS = ['w-feed', 'w-file', 'w-store', 'w-rep'] as const
+const WINDOW_IDS = ['w-feed', 'w-file', 'w-rep'] as const
 
 interface ShellHandleLike {
   frame(): { events: { type: string }[]; store: { mined: string[]; slots: Record<number, string>; deployed: string[] } }
