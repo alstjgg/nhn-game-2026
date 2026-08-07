@@ -17,8 +17,13 @@ import {
 import { woodariRun03, reportOf, WOODARI_BLOCKS, WOODARI_TALLY } from '../../src/client/driver/fixtures/index.ts'
 
 /**
- * The ONLY sanctioned divergence from the design target (spec D3 row 3):
- * inv 2 forbids a digit in an `npc` line, so 20:22's `20분` is spelled out.
+ * The sanctioned divergences from the design target. The target itself is
+ * frozen (`docs/design/` — [u2f#c10] in dev-only.test.ts), so a copy revision
+ * that supersedes a reference line is recorded here, never written back.
+ *  1. spec D3 row 3: inv 2 forbids a digit in an `npc` line, so 20:22's
+ *     `20분` is spelled out.
+ *  2. plan-playtest G2 (g1-1, 08-07): the fatal-fallback line stays in
+ *     fiction instead of narrating the mechanism.
  * Every other reference line is ported verbatim.
  */
 const PORTED_DEVIATIONS = [
@@ -26,6 +31,11 @@ const PORTED_DEVIATIONS = [
     from: '영장 없이는 못 엽니다. ……20분만 줘요.',
     to: '영장 없이는 못 엽니다. ……스무 분만 줘요.',
     reason: 'inv 2 / [u2f#c4]: no digit may appear in an `npc` line text',
+  },
+  {
+    from: '회신 실패 — 기본 응답으로 대체. 요원은 상황실에 잔류.',
+    to: '회신 불량. 요원은 상황실에 잔류.',
+    reason: 'plan-playtest G2 / g1-1: fallback copy stays in fiction; the frozen target keeps the old line',
   },
 ] as const
 

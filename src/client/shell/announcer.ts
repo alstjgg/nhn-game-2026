@@ -26,7 +26,11 @@ const SHOW_MS = 4000
 const RUN_OPENED = (run: number) => `RUN ${String(run).padStart(2, '0')} 시작`
 const WAIT_OPEN = '무전 회신 대기 중'
 const WAIT_DONE = '무전 회신 도착'
-const FALLBACK = '회신 실패 — 기본 응답으로 대체'
+const FALLBACK: Record<1 | 2 | 3, string> = {
+  1: '회신 불량',
+  2: '네트워크 지연 중',
+  3: '서버 이상 — 요원과 재접선 시도 중',
+}
 const REPORT_FILED = '보고서가 부검 창에 도착했습니다'
 const RUN_CLOSED = '시뮬레이션 종료 · 집계 개시'
 
@@ -58,7 +62,7 @@ export function announcementOf(event: ViewEvent): string | null {
     case 'waiting':
       return event.active ? WAIT_OPEN : WAIT_DONE
     case 'fallback':
-      return FALLBACK
+      return FALLBACK[event.call]
     case 'report':
       return REPORT_FILED
     case 'run_end':

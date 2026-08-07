@@ -25,9 +25,9 @@ export const FALLBACK_CLASS: Record<1 | 2 | 3, FallbackClass> = {
  * digit-free like every other NPC-channel surface.
  */
 export const FALLBACK_LABEL: Record<FallbackClass, string> = {
-  fatal: '회신 실패 — 기본 응답으로 대체',
-  local: '일부 회신 실패 — 해당 구간만 기본 응답',
-  'supply-cut': '보급 중단 — 남은 회신은 기본 응답',
+  fatal: '회신 불량',
+  local: '네트워크 지연 중',
+  'supply-cut': '서버 이상 — 요원과 재접선 시도 중',
 }
 
 /** The line the feed prints for an unpaired fallback event. */

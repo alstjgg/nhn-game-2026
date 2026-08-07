@@ -259,7 +259,7 @@ describe('[u5#c3] no digit in npc/symptom nodes', () => {
   })
 
   it('(g) the fallback error code never reaches a text part — it is data', () => {
-    const line: FeedLine = { kind: 'fallback', clock: '17:33', text: '회신 실패 — 기본 응답으로 대체.' }
+    const line: FeedLine = { kind: 'fallback', clock: '17:33', text: '회신 불량.' }
     const node = model(line)
     expect(nodeText(node)).toBe(line.text)
     expect(nodeText(node)).not.toContain('504')
