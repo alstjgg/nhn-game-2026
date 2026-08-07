@@ -153,6 +153,13 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
 
   const zone = buildDeployZone(() => {
     if (currentView.mode === 'next') {
+      // W4 — ONE press, TWO ops, and the order is load-bearing. `deploy` must
+      // reach the CLOSING run's membrane, because that is what the live
+      // adapter harvests into `carried` (`live/adapter.ts` `closingState()`);
+      // sent after `new_run` it would name the new day and the file the
+      // operator just built would never carry. `board.deploy()` is also the
+      // only module allowed to mint the op literal.
+      board.deploy()
       sendNewRun()
       return
     }
@@ -232,6 +239,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   store.subscribe((state: RunState) => {
     if (state.phase === 'tally' && !closed) {
       closed = true
+      // W4 — the close is what hands the file back. Until now the file stayed
+      // locked until NEW RUN, so the day's report could not be mined into the
+      // day it was written for; the operator had to open tomorrow before
+      // reading today. The file opens at 21:04 and the next press closes it.
+      board.unlock()
       settled = false
       counted = false
       lapsed = false
@@ -298,8 +310,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (event.type !== 'meta') return
     const changedRun = event.run !== run
     run = event.run
-    // D10 — the seam carries no `new_run` event; a changed run IS the unlock.
-    if (committedRun !== null && event.run !== committedRun) board.unlock()
+    // W4 — the unlock moved to the CLOSE (see the `'tally'` branch above): the
+    // day's own report has to be minable into the file it was written for, and
+    // that window is between 21:04 and the press. A new run therefore arrives
+    // with the file already committed — it must stay locked, and only re-date
+    // its stamp to the sitting it now serves.
+    if (changedRun && board.isLocked()) {
+      committedRun = event.run
+      committedAt = opensAt
+    }
     // M1 — §0's callsign is per sitting, so only a changed run re-prints the
     // dossier; an archive-only `meta` must not re-parent the live slot board.
     if (changedRun) {

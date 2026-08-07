@@ -37,7 +37,17 @@ May modify: `src/client/components/deploy-button.ts` ·
 `src/client/windows/agent-file.ts` · `src/client/driver/run-loop.ts` ·
 `src/client/driver/live/adapter.ts` ·
 `tests/driver/run-loop-continuity.test.ts` ·
-`tests/driver/live-adapter-run-transition.test.ts`.
+`tests/driver/live-adapter-run-transition.test.ts` · `DISCOVERY.md`.
+
+**Amendment (08-08, after a §"If this PRD is wrong" stop).** The executor
+applied all six edits and `npm run check` was green, but
+`tests/acceptance/discovery-and-frozen-guard.test.ts` `(l)` went red: it walks
+every `tests/**/*.test.ts` for the literal `RE-AIMED` and requires each such
+file to be named in `DISCOVERY.md`. Edits 5 and 6 introduce that marker into two
+files that were not logged. The stop was correct — the fix lay outside the
+Scope as written. `DISCOVERY.md` is now in Scope, and the author has written the
+entry (a `### W4 (08-08 playtest)` subsection under "Cross-run reconciliation",
+naming both test paths).
 
 Must NOT modify: `src/client/components/slot-board.ts` (it is the only module
 allowed to mint a `slot`/`unslot`/`deploy` op literal —

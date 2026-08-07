@@ -29,8 +29,11 @@ const NOTE_LOCKED = '배치됨 — 이번 시행에서 잠김'
 const DEPLOY_MAIN = 'DEPLOY'
 const DEPLOY_SUB = '배치 · 파일 잠금'
 
-/** NEW RUN, as the reference prints it — moved in verbatim from `tally.ts`. */
-const NEW_RUN_MAIN = 'NEW RUN'
+/**
+ * W4 — the second label is gone; only the sub line survives. `NEW RUN` was the
+ * NAME of the second press, and there is no second press: the same 배치 both
+ * commits the file and opens the day it was built for.
+ */
 const NEW_RUN_SUB = '다음 시행 · '
 const NEW_RUN_SUB_TAIL = '으로'
 
@@ -92,7 +95,11 @@ export function deployView(state: DeployState): DeployView {
     boardState: boardState(state.slots, state.deployed),
     buttonState: state.deployed ? 'deployed' : 'ready',
     mode,
-    mainLabel: mode === 'deploy' ? DEPLOY_MAIN : NEW_RUN_MAIN,
+    // W4 — ONE button. The main label never changes: every press of it is a
+    // 배치, and the sub line is the only thing that says which day it commits
+    // for. `mode` still drives `data-op`, because the op the press actually
+    // sends does change — and the membrane census reads it (see the builder).
+    mainLabel: DEPLOY_MAIN,
     subLine: mode === 'deploy' ? DEPLOY_SUB : `${NEW_RUN_SUB}${nextAt}${NEW_RUN_SUB_TAIL}`,
   }
 }

@@ -276,12 +276,14 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
     // (`run-loop.ts`, R3 on `run-loop.ts:115`), reproduced with the halves the
     // other way round.
     //
-    // `slots` clears rather than carries because a new day has not been built
-    // yet — which is what `SlotBoard.unlock()` assumes on the run change, and
-    // why the fixture loop does not carry `deployed` either.
+    // W4 — the day runs the file the operator committed. `close.carried` IS
+    // that file (`closingState()` reads `deployed`), so it re-seats in its own
+    // order and re-arms as the new run's deployed set. Clearing both was right
+    // while the operator deployed INSIDE the new day; under one-press it would
+    // hand the composer an empty file every single day.
     mined = close.carried.map((block) => block.id)
-    slots = new Map()
-    deployed = []
+    slots = new Map(close.carried.map((block, seat) => [seat, block.id]))
+    deployed = close.carried.map((block) => block.id).sort()
     clock = createClock({ start: opened.start, end: opened.end, rate })
     frontier = mm(opened.start)
     bind(opened)
