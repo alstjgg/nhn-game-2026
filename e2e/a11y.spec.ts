@@ -351,17 +351,20 @@ test.describe('a11y — keyboard reach', () => {
     await awaitRecordFinal(page)
     await expect(page.locator('[data-op="mine"]').first()).toBeAttached({ timeout: 15_000 })
 
-    // `unslot` only exists once a seat is filled, so the desk is driven through
-    // mine → pick → slot first. Driving it is the point: a census taken before
-    // the operator has done anything is exactly the empty one this replaces.
+    // `unslot` only exists once a seat is filled, so the desk is driven first.
+    // ONE activation does it (08-08): the sentence is torn out and seated in
+    // the same gesture, and it is `aria-disabled` afterwards — a second click
+    // here would hang on a control that correctly refuses. Driving it is the
+    // point: a census taken before the operator has done anything is exactly
+    // the empty one this replaces. `slot`'s own control stays on the census
+    // through the three seats still empty.
     //
     // Each window is RAISED before it is used — a click that lands under
     // another focused window does nothing. See `raiseWindow`.
     await raiseWindow(page, 'rep')
     await page.locator('[data-op="mine"]').first().click()
-    await page.locator('[data-op="mine"]').first().click()
     await raiseWindow(page, 'file')
-    await page.locator('[data-op="slot"]').first().click()
+    await expect(page.locator('[data-op="slot"]').first()).toBeAttached({ timeout: 15_000 })
     await expect(page.locator('[data-op="unslot"]').first()).toBeAttached({ timeout: 15_000 })
 
     const afterDrain = await opsOf()
@@ -463,7 +466,9 @@ test.describe('a11y — keyboard reach', () => {
       // `.win-grip` joined the sweep on 08-05 with its keyboard path (R2 on
       // window-frame.ts:55) — a control the operator can now reach has to ring.
       for (const el of document.querySelectorAll<HTMLElement>(
-        '.wc, .task, .win-bar, .win-grip, .rate-btn, [data-op]',
+        // `.snd-btn` (the mute toggle) keeps the coverage it had while it wore
+        // `.rate-btn` — it left that class, not this sweep.
+        '.wc, .task, .win-bar, .win-grip, .rate-btn, .snd-btn, [data-op]',
       )) {
         const name = `${el.tagName.toLowerCase()}.${el.className}`
         if (el.getClientRects().length === 0) {

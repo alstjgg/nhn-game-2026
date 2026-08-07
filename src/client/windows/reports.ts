@@ -105,29 +105,39 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     rail: rail.root,
     onMine: (id: string) => {
       const m = marks()
-      // W3 — one gesture: a second activation seats the mined sentence in
-      // the first free slot. `slot-board.ts` stays the only membrane owner
-      // (`place()` runs planOps); a refusal is SHOWN, never swallowed.
-      if (sentenceState(id, m) === 'mined') {
-        const board = getSlotBoard()
-        const slots = driver.store().slots
-        const seat = [...Array(SLOT_CAP).keys()].find((i) => slots[i] === undefined)
-        if (board === null || seat === undefined || board.isLocked()) {
-          view.flash(id)
-          return
-        }
-        board.place(id, seat)
-        if (board.cells()[seat] !== id) view.flash(id)
-        return
-      }
-      const outcome = mine(id, m)
-      const landed = outcome.ops.every((op) => driver.send(op).ok)
-      view.refresh(marks())
-      if (!landed) {
+      const state = sentenceState(id, m)
+      // Settled — it is in a file already, today's or an earlier day's.
+      if (state === 'slotted' || state === 'carried') return
+
+      // ONE gesture (08-08 playtest): a single activation tears the sentence
+      // out AND seats it in the first free slot. `채굴` is no longer a resting
+      // state the operator has to click through — 해제 is the only way back
+      // into it. `slot-board.ts` stays the only membrane owner (`place()` runs
+      // planOps); a refusal is SHOWN, never swallowed.
+      const board = getSlotBoard()
+      const slots = driver.store().slots
+      const seat = [...Array(SLOT_CAP).keys()].find((i) => slots[i] === undefined)
+      if (board === null || seat === undefined || board.isLocked()) {
+        // No seat to tear it into: the file is full, or committed. Mining it
+        // anyway would strand the sentence in a state with nowhere to go.
         view.flash(id)
         return
       }
-      for (const effect of outcome.effects) view.tear(effect.tear)
+
+      if (state === 'unmined') {
+        const outcome = mine(id, m)
+        const landed = outcome.ops.every((op) => driver.send(op).ok)
+        if (!landed) {
+          view.refresh(marks())
+          view.flash(id)
+          return
+        }
+        for (const effect of outcome.effects) view.tear(effect.tear)
+      }
+
+      board.place(id, seat)
+      view.refresh(marks())
+      if (board.cells()[seat] !== id) view.flash(id)
     },
   })
 

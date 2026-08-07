@@ -72,9 +72,15 @@
   background:repeating-linear-gradient(180deg,transparent 0 1.35em,var(--seal-a5) 1.35em calc(1.35em + 1px))}
 .min.mined::after{content:'채굴';font-family:var(--mono);font-size:var(--fs-7);letter-spacing:.1em;
   color:var(--seal);vertical-align:super;margin-left:var(--space-4);white-space:nowrap}
-.min.slotted{background:linear-gradient(transparent 55%,var(--highlight-a62) 55%)}
+.min.slotted{background:linear-gradient(transparent 55%,var(--highlight-a62) 55%);cursor:default}
 .min.slotted::after{content:'배치';font-family:var(--mono);font-size:var(--fs-7);letter-spacing:.1em;
   color:var(--slotted-ink);vertical-align:super;margin-left:var(--space-4);white-space:nowrap}
+/* a line the operator deployed on an EARLIER day: the same highlight, gone to
+   pencil. The rail keeps every past sitting readable, so both marks are on the
+   desk at once and they may not look alike. */
+.min.carried{background:linear-gradient(transparent 55%,var(--sh-15) 55%);color:var(--pap-3);cursor:default}
+.min.carried::after{content:'과거 배치';font-family:var(--mono);font-size:var(--fs-7);letter-spacing:.1em;
+  color:var(--faded);vertical-align:super;margin-left:var(--space-4);white-space:nowrap}
 .min.tear{animation:tearFlash .5s ease-out}
 @keyframes tearFlash{0%{background:var(--seal-a55);box-shadow:0 0 0 4px var(--seal-a25)}
   100%{background:transparent;box-shadow:none}}

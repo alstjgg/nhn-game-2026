@@ -110,11 +110,13 @@
   background:linear-gradient(90deg,var(--gauge-1),var(--gauge-2));transition:width .25s linear}
 .clk-bar u{position:absolute;right:0;top:0;bottom:0;width:2px;background:var(--seal)}
 .clk-rate{display:flex;gap:var(--space-3);justify-content:center}
-.rate-btn{font-size:var(--fs-8);letter-spacing:.08em;color:var(--txt-6);
+/* `.snd-btn` is the audio mute toggle: same skin, deliberately NOT the same
+   class — `.rate-btn` is the clock's rate control (`game-clock.ts`). */
+.rate-btn,.snd-btn{font-size:var(--fs-8);letter-spacing:.08em;color:var(--txt-6);
   padding:var(--space-1) var(--space-7);
   border:1px solid var(--ink-line);background:var(--chrome-raise);transition:.15s}
-.rate-btn:hover{color:var(--txt-2);border-color:var(--line-1)}
-.rate-btn.is-on{color:var(--ink-1);background:var(--gauge-2);border-color:var(--gauge-2)}
+.rate-btn:hover,.snd-btn:hover{color:var(--txt-2);border-color:var(--line-1)}
+.rate-btn.is-on,.snd-btn.is-on{color:var(--ink-1);background:var(--gauge-2);border-color:var(--gauge-2)}
 
 /* d-day */
 .tb-dday{display:flex;flex-direction:column;justify-content:center;gap:0;
