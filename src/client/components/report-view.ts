@@ -292,11 +292,11 @@ export function createReportView(options: ReportViewOptions): ReportView {
     },
 
     flash(id: string): void {
-      const node = anchors.find((a) => a.getAttribute('data-sentence-id') === id)
-      if (node === undefined) return
-      node.classList.remove('refused')
-      void node.offsetWidth
-      node.classList.add('refused')
+      const anchor = anchors.find((a) => a.sentence.id === id)
+      if (anchor === undefined) return
+      anchor.node.classList.remove('refused')
+      void anchor.node.offsetWidth
+      anchor.node.classList.add('refused')
     },
 
     round(): number | null {
