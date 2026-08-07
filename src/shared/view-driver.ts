@@ -27,7 +27,7 @@ export type ViewEvent =
   | { type: 'waiting';  active: boolean; for: 'judgment' | 'narration' | 'report' }
   | { type: 'fallback'; call: 1 | 2 | 3; code: string; beat: number }
   | { type: 'report';   round: number; facts: Sentence[]; report_body: Sentence[];
-                        judged?: { stance_id: string; desc: string } }
+                        judged?: { stance_id: string; desc: string; cited_ids: string[] } }
   | { type: 'score';    total: number; baseline_total: number;
                         rows: { label: string; value: string | number;
                                 baseline: string | number | null }[] }
