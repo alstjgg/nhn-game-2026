@@ -211,6 +211,14 @@ green. Do NOT run playwright (author runs it on the merge preview).
       instead of doing nothing.
 - [ ] Exactly one code commit on `playtest/g9-1-w3-mine`, nothing pushed.
 
+## As executed (08-08)
+
+One §5.7-class defect, caught by the executor at verification: the dictated
+`flash` body treated `anchors` as elements — it is `{sentence, node}[]` — and
+produced four TS2339s. The executor applied the change list verbatim and
+reported rather than patching; the author amendment (`437e982`) walks the
+Anchor pair. Everything else landed as written (`c265ddb`).
+
 ## If this PRD is wrong
 
 ```

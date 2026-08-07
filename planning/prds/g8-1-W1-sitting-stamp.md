@@ -159,9 +159,29 @@ replace with:
 
 **6. `tests/runloop/store.test.ts`** — two edits.
 
-6a. Extend the existing import from `'../../src/runloop/store.ts'` (the list
-that already carries `createWebStorageMetaStore`, around `:12`) with
-`metaKey` and `stampKey`. If either name already appears, this row is a stop.
+6a. `:8-14` — (corrected after a §5.7 stop: the file imports from the
+`runloop/index.ts` barrel, which `export *`s `store.ts`, and `metaKey` is
+already in the list — only `stampKey` is added.) Current:
+```
+import {
+  META_KEY_PREFIX,
+  createMemoryMetaStore,
+  createRunLoop,
+  createWebStorageMetaStore,
+  metaKey,
+} from '../../src/runloop/index.ts'
+```
+replace with:
+```
+import {
+  META_KEY_PREFIX,
+  createMemoryMetaStore,
+  createRunLoop,
+  createWebStorageMetaStore,
+  metaKey,
+  stampKey,
+} from '../../src/runloop/index.ts'
+```
 
 6b. Append at the very end of the file:
 ```ts
