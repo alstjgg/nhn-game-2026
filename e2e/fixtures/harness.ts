@@ -239,10 +239,9 @@ export async function seedClock(page: Page, at: string): Promise<void> {
   }, at)
 }
 
-/** Seats `blockId` in `slot`: pick it in REPORTS, seat it in the file (T1). */
-export async function slotBlock(page: Page, blockId: string, slot = 0): Promise<void> {
+/** Seats `blockId`: one more activation of the mined sentence auto-seats it (W3). */
+export async function slotBlock(page: Page, blockId: string, _slot = 0): Promise<void> {
   await page.locator(`#w-rep [data-sentence-id="${blockId}"]`).first().click()
-  await page.locator(`#w-file .slot[data-slot="${slot}"]`).click()
 }
 
 /* ── the wire (items 11 + preview smoke) ─────────────────────────────────── */

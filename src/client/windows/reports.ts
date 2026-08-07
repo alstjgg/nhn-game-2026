@@ -28,7 +28,8 @@ import type { ReportModel } from '../components/report-view.ts'
 import { el } from '../shell/dom.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
-import { pad2, setPickedBlockId } from '../components/block-card.ts'
+import { pad2 } from '../components/block-card.ts'
+import { getSlotBoard, SLOT_CAP } from '../components/slot-board.ts'
 import { createScoreTally } from '../components/score-tally.ts'
 import type { TallyModel, TallyRowModel } from '../components/score-tally.ts'
 
@@ -104,16 +105,28 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     rail: rail.root,
     onMine: (id: string) => {
       const m = marks()
-      // T1 — the report is the pick surface: a mined sentence arms the pick
-      // channel and the AGENT FILE's seat consumes it. `slot-board.ts` stays
-      // the only membrane owner; no op is sent from here.
+      // W3 — one gesture: a second activation seats the mined sentence in
+      // the first free slot. `slot-board.ts` stays the only membrane owner
+      // (`place()` runs planOps); a refusal is SHOWN, never swallowed.
       if (sentenceState(id, m) === 'mined') {
-        setPickedBlockId(id)
+        const board = getSlotBoard()
+        const slots = driver.store().slots
+        const seat = [...Array(SLOT_CAP).keys()].find((i) => slots[i] === undefined)
+        if (board === null || seat === undefined || board.isLocked()) {
+          view.flash(id)
+          return
+        }
+        board.place(id, seat)
+        if (board.cells()[seat] !== id) view.flash(id)
         return
       }
       const outcome = mine(id, m)
-      for (const op of outcome.ops) driver.send(op)
+      const landed = outcome.ops.every((op) => driver.send(op).ok)
       view.refresh(marks())
+      if (!landed) {
+        view.flash(id)
+        return
+      }
       for (const effect of outcome.effects) view.tear(effect.tear)
     },
   })

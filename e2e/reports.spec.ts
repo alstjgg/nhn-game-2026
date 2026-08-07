@@ -708,8 +708,6 @@ test.describe('slotting from the report (T1)', () => {
     })
     await page.locator(`${REP} [data-sentence-id="${id}"]`).first().focus()
     await page.keyboard.press('Enter')
-    await page.locator('#w-file .slot[data-slot="0"] .slot-target').focus()
-    await page.keyboard.press('Enter')
     await expect.poll(async () => (await frame(page)).store.slots[0]).toBe(id)
     await page.locator('#w-file .slot[data-slot="0"] .slot-unset').focus()
     await page.keyboard.press('Enter')
