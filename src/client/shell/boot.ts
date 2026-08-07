@@ -12,6 +12,7 @@ import type { ClockHook, ClockRate, FixtureDriver, Frame } from '../driver/index
 import { createGameClock } from '../components/game-clock.ts'
 import { createRunCounter } from '../components/run-counter.ts'
 import { holdDesk, revealDesk } from '../components/desktop-dressing.ts'
+import { installAudio } from '../audio/index.ts'
 import { createAnnouncer } from './announcer.ts'
 import { must } from './dom.ts'
 import { openManual } from './manual.ts'
@@ -128,6 +129,13 @@ export async function bootShell(): Promise<void> {
   // desk (see its doc comment).
   const door = signInSkipped(window) ? null : openSignIn(must('#app'), body)
 
+  // Resolved at the hand-over (step 6), when the desk is what the player is
+  // looking at. The ear waits on it — see 4c.
+  let openTheEars = (): void => {}
+  const atTheDesk = new Promise<void>((resolve) => {
+    openTheEars = () => resolve()
+  })
+
   // 1 — the scenario pack.
   const identity = await fetchScenarioIdentity()
   renderIdentity(identity)
@@ -192,6 +200,28 @@ export async function bootShell(): Promise<void> {
   })
   if (import.meta.env.DEV) window.__threads = threads
 
+  // 4c — the ear. Mounted here because it observes what the windows wrote:
+  // `[data-op]`, the `.hidden` class the manager toggles, the fanfold's revealed
+  // lines and the report typewriter's repaints. Like the announcer it reads the
+  // §5.2 stream and sends nothing back — audio is redundant reinforcement, never
+  // a channel (plan-audio §2).
+  //
+  // It unlocks on the first gesture wherever that lands — the door has controls
+  // of its own — but the AMBIENCE waits for the hand-over below: an opening that
+  // plays out behind a curtain is an opening nobody hears. The opening `meta`
+  // lands during boot and carries `runs_left`, which the ending cue reads, so
+  // the subscription cannot wait; but the first gesture belongs to the door
+  // (O1), and unlocking there would spend the opening ambience behind it.
+  installAudio({
+    driver,
+    root: must('#app'),
+    controls: document.querySelector<HTMLElement>('.clk-rate'),
+    baseUrl: document.baseURI,
+    fetch: (url, init) => window.fetch(url, init),
+    storage: window.sessionStorage,
+    deskReady: atTheDesk,
+  })
+
   // 5 — open the run. `advance(0)` releases what is due at the opening minute
   // without moving the clock; the desk then waits on hold until the operator
   // presses ▶, so the sim never runs behind an operator who has not looked yet.
@@ -237,4 +267,5 @@ export async function bootShell(): Promise<void> {
     body,
     desk.frames.map((f) => f.root),
   )
+  openTheEars()
 }

@@ -1,0 +1,127 @@
+{
+  "$note": "Balance-as-data for sound. Every cue mapping, level and cooldown lives here; src/client/audio/ holds no literal for any of them. Asset ids under `cues[].files` are built by tools/audio/build-audio-pack.mjs and resolve to `<base><file><ext>`. Levels are linear gain, not dB. Authority for the cue list: docs/plan-audio.md §4.",
+  "version": 1,
+  "base": "assets/audio/",
+  "ext": ".m4a",
+
+  "$buses": "Two, independently mutable. `ambience` sits far under `sfx` on purpose — plan-audio §2 rule 3: the bed must never be the reason a line is missed. The pack is foley under a reading surface, so both sit well below the level that feels right while auditing one cue at a time.",
+  "buses": {
+    "sfx": 0.5,
+    "ambience": 0.15
+  },
+
+  "$preload": "Fetched and decoded before everything else — the only cues reachable before the desk exists, O1's door and its controls. `ready` resolves on this list alone, so the LOGIN press answers without waiting for the whole pack.",
+  "preload": ["door-login", "click", "hover", "boot", "window-open", "window-close"],
+
+  "$cues": "A cue is one playable sound. `files` longer than one is a variation set — a fresh member is drawn each play, never the same one twice running. `cooldownMs` drops a retrigger inside the window, which is what keeps a burst of feed lines from stacking into a wall.",
+  "cues": {
+    "mine": { "files": ["paper-tear"], "bus": "sfx", "gain": 1.0, "cooldownMs": 60 },
+    "slot": { "files": ["stamp"], "bus": "sfx", "gain": 0.95, "cooldownMs": 40 },
+    "unslot": { "files": ["paper-slide"], "bus": "sfx", "gain": 0.8, "cooldownMs": 40 },
+    "deploy": { "files": ["deploy"], "bus": "sfx", "gain": 1.0, "cooldownMs": 400 },
+    "new-run": { "files": ["counter-click"], "bus": "sfx", "gain": 0.85, "cooldownMs": 200 },
+
+    "$line": "One per day, bound to `run:open`: the typewriter starting a fresh page. A cue on every revealed line lands ~1.5 sounds a second and turns the fanfold into a machine, so ordinary event lines are silent and only lines that carry something ring.",
+    "line": { "files": ["carriage-return"], "bus": "sfx", "gain": 0.5, "cooldownMs": 1000 },
+    "type": {
+      "files": ["type-1", "type-2", "type-3", "type-4", "type-5"],
+      "bus": "sfx", "gain": 0.3, "cooldownMs": 55
+    },
+    "radio-open": { "files": ["radio-squelch-open"], "bus": "sfx", "gain": 0.6, "cooldownMs": 80 },
+    "radio-close": { "files": ["radio-squelch-close"], "bus": "sfx", "gain": 0.45, "cooldownMs": 80 },
+    "npc": { "files": ["npc-handset"], "bus": "sfx", "gain": 0.5, "cooldownMs": 120 },
+    "$symptom": "Deliberately the quietest one-shot in the pack. A player who notices every one of these is being told which lines carry temperament, and that is the deduction the game is made of — see plan-audio §4.2 #16.",
+    "symptom": { "files": ["symptom-chime"], "bus": "sfx", "gain": 0.18, "cooldownMs": 2200 },
+    "mark": { "files": ["pen-mark"], "bus": "sfx", "gain": 0.5, "cooldownMs": 120 },
+
+    "judgment": { "files": ["judgment-heartbeat"], "bus": "sfx", "gain": 0.8, "cooldownMs": 1500 },
+    "wait": { "files": ["clock-loop"], "bus": "sfx", "gain": 0.32, "loop": true },
+
+    "run-end": { "files": ["stamp-heavy"], "bus": "sfx", "gain": 0.9, "cooldownMs": 500 },
+    "$tally-final": "The ledger landing. The count-up rolls the headline for ~9 s while the row ticks all fire in its first second, so this is the full stop on the day's verdict — one struck bell, not a fourth stamp.",
+    "tally-final": { "files": ["ledger-bell"], "bus": "sfx", "gain": 0.45, "cooldownMs": 2000 },
+    "score-up": { "files": ["score-tick-up"], "bus": "sfx", "gain": 0.55, "cooldownMs": 0 },
+    "score-down": { "files": ["score-tick-down"], "bus": "sfx", "gain": 0.55, "cooldownMs": 0 },
+
+    "$fallback": "One degraded ROUND, not one sound per failed call — the three calls fail together far more often than separately, and a dead proxy fails all of them every beat.",
+    "fallback": { "files": ["fallback-burst"], "bus": "sfx", "gain": 0.5, "cooldownMs": 4000 },
+    "error": { "files": ["ui-error"], "bus": "sfx", "gain": 0.45, "cooldownMs": 4000 },
+
+    "click": { "files": ["ui-click"], "bus": "sfx", "gain": 0.45, "cooldownMs": 30 },
+    "$door-login": "The portal's LOGIN press: one press per session, and it opens a session, so it gets a switch rather than the desk's tick. Everything else on the door and on the manual sheet uses the ordinary `ui:hover` / `ui:click`, which reach them for free — both layers mount inside #app, where those listeners are delegated from.",
+    "door-login": { "files": ["counter-click"], "bus": "sfx", "gain": 0.6, "cooldownMs": 500 },
+    "hover": { "files": ["ui-hover"], "bus": "sfx", "gain": 0.12, "cooldownMs": 80 },
+    "window-open": { "files": ["drawer-open"], "bus": "sfx", "gain": 0.5, "cooldownMs": 80 },
+    "window-close": { "files": ["drawer-close"], "bus": "sfx", "gain": 0.5, "cooldownMs": 80 },
+    "drag": { "files": ["drag-start"], "bus": "sfx", "gain": 0.4, "cooldownMs": 60 },
+    "drop": { "files": ["drag-drop"], "bus": "sfx", "gain": 0.5, "cooldownMs": 60 },
+
+    "boot": { "files": ["stinger"], "bus": "sfx", "gain": 0.5, "cooldownMs": 5000 },
+    "collapse": { "files": ["collapse"], "bus": "sfx", "gain": 1.0, "cooldownMs": 5000 },
+
+    "bed": { "files": ["amb-room-tone"], "bus": "ambience", "gain": 1.0, "loop": true },
+    "watch": { "files": ["amb-watch-drone"], "bus": "ambience", "gain": 0.75, "loop": true }
+  },
+
+  "$bindings": "trigger → cue id, or null for a cue that is deliberately silent. `feed:*` fire when a line is REVEALED, not when its event arrives.",
+  "bindings": {
+    "op:mine": "mine",
+    "op:slot": "slot",
+    "op:unslot": "unslot",
+    "op:deploy": "deploy",
+    "op:new_run": "new-run",
+
+    "feed:event": null,
+    "feed:radio": "radio-open",
+    "feed:radio-end": "radio-close",
+    "feed:npc": "npc",
+    "feed:symptom": "symptom",
+    "feed:mark": "mark",
+    "$feed-fallback": "Silent: the fallback ViewEvent already sounds the degrade at the moment it happens (event:fallback:*), which is where shell/announcer.ts announces it too, and spec-client §7 #7 makes the notice LINE ride a later feed line.",
+    "feed:fallback": null,
+    "feed:wait": null,
+
+    "wait:open": "wait",
+    "wait:judgment": "judgment",
+    "wait:narration": null,
+    "wait:report": null,
+
+    "run:open": "line",
+    "$report": "Silent. Binding a cue id here is all it takes to give the moment 「무전 기록」 lands a sound.",
+    "event:report": null,
+    "event:run_end": "run-end",
+    "tally:final": "tally-final",
+    "event:fallback:1": "fallback",
+    "event:fallback:2": "fallback",
+    "event:fallback:3": "error",
+    "score:up": "score-up",
+    "score:down": "score-down",
+
+    "ui:click": "click",
+    "door:login": "door-login",
+    "ui:hover": "hover",
+    "ui:window-open": "window-open",
+    "ui:window-close": "window-close",
+    "ui:drag": "drag",
+    "ui:drop": "drop",
+
+    "$boot": "Fires on the gesture that unlocks the audio context — the desk powering on. It is the only cue the player causes without asking for.",
+    "boot": "boot",
+
+    "$collapse": "The ending, just ahead of the last ledger. The cue swells for 2 s and CUTS - the silence after the cut is the cue, so the ledger's row ticks take a 2800 ms lead on that day and leave the silence intact. The seam carries no ending event, but `meta.runs_left` reads 0 on the final day and nowhere else, and `score` is emitted immediately before `run_end`.",
+    "ending:collapse": "collapse"
+  },
+
+  "$ambience": "An opening, not a bed. `playForMs` retires both loops that many ms after the desk opens and they never return, the Watch drone included. Room tone and a drone are broadband noise under a screen the player reads for minutes; held for a whole run they read as fatigue rather than atmosphere. Set `playForMs` to null to hold them for the session. `null` on a slot is silence, and that is a real choice too — the Autopsy screen is meant to be quiet.",
+  "ambience": {
+    "desk": "bed",
+    "watch": "watch",
+    "playForMs": 10000
+  },
+
+  "$typing": "The report is the only surface that types CHARACTERS — the LIVE FEED reveals whole LINES on U1's queue, which is what `feed:*` sounds. Sounding every character is unlistenable, so one keystroke lands every `everyChars` characters; the cue's own cooldown is the second bound.",
+  "typing": {
+    "everyChars": 2,
+    "cue": "type"
+  }
+}
