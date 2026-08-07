@@ -99,7 +99,7 @@ export function dossierModel(input: DossierInput): DossierSection[] {
       no: '§2',
       title: '행동 원칙',
       state: 'fixed',
-      body: '판단은 관측된 것에서만 세운다. 요구되지 않은 확언을 하지 않는다. 매 갈림길에서 하나의 태도를 고르고, 고른 이유를 보고서에 남긴다.',
+      body: '확인되지 않은 것을 단정하지 않는다. 판단이 필요한 순간에는 판단하고, 왜 그랬는지 남긴다.',
     },
     { no: '§3', title: '기질', state: 'sealed', body: SEALED_COPY, bars: [...SEALED_BARS] },
     {
