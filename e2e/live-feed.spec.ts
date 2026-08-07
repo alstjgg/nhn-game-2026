@@ -138,8 +138,14 @@ async function domLines(page: Page): Promise<DomLine[]> {
   )
 }
 
-/** Rendered lines that came off the stream — the client's own states removed. */
-const streamRendered = (lines: DomLine[]): DomLine[] => lines.filter((l) => !l.empty)
+/**
+ * Rendered lines that came off the stream — the client's own states removed.
+ * The 21:04 집계 line is one of them: minted from the `score` event
+ * (`tally-line.ts`, #183), not a stream line; run-loop.spec asserts it on
+ * its own.
+ */
+const streamRendered = (lines: DomLine[]): DomLine[] =>
+  lines.filter((l) => !l.empty && !l.text.startsWith('집계. '))
 
 /* ══ [u5#c2] a full fixture round renders in stream order ═════════════════ */
 
