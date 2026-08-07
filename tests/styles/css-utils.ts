@@ -19,7 +19,6 @@ export const DESIGN_CSS = path.join(REPO, 'docs/design/phase2-ui/desktop.css')
 export const CORE_SHEETS = ['tokens.css', 'base.css', 'shell.css', 'paper.css'] as const
 export const WINDOW_SHEETS = [
   'win-agent-file.css',
-  'win-block-store.css',
   'win-live-feed.css',
   'win-reports.css',
 ] as const

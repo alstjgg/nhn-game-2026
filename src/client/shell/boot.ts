@@ -14,6 +14,7 @@ import { createRunCounter } from '../components/run-counter.ts'
 import { holdDesk, revealDesk } from '../components/desktop-dressing.ts'
 import { installAudio } from '../audio/index.ts'
 import { createAnnouncer } from './announcer.ts'
+import { bindRadioSfx, sfxHandOver } from './radio-sfx.ts'
 import { must } from './dom.ts'
 import { openManual } from './manual.ts'
 import { openSignIn, signInSkipped } from './sign-in.ts'
@@ -173,6 +174,7 @@ export async function bootShell(): Promise<void> {
   // state changes (R2 on index.html:125). It is bound before the windows mount
   // so the opening `meta` is announced like every later one.
   createAnnouncer(must('#toast'), driver)
+  bindRadioSfx(driver)
 
   // 4 — the five windows and the taskbar, then the computed desk arrangement.
   const desk = createWindowManager({
@@ -262,6 +264,7 @@ export async function bootShell(): Promise<void> {
   if (door !== null) {
     await door
     await openManual(must('#app'), { width: window.innerWidth, height: window.innerHeight })
+    sfxHandOver()
   }
   revealDesk(
     body,

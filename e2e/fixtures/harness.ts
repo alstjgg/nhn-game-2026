@@ -56,7 +56,7 @@ export async function boot(page: Page, opts: { reduced?: boolean } = {}): Promis
   if (opts.reduced) await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('./')
   await page.waitForFunction(() => Boolean((window as { __shell?: unknown }).__shell))
-  await expect(page.locator('.win')).toHaveCount(4)
+  await expect(page.locator('.win')).toHaveCount(3)
   await settled(page)
 }
 
@@ -239,9 +239,9 @@ export async function seedClock(page: Page, at: string): Promise<void> {
   }, at)
 }
 
-/** Seats `blockId` in `slot` through the store card, keyboard-free. */
+/** Seats `blockId` in `slot`: pick it in REPORTS, seat it in the file (T1). */
 export async function slotBlock(page: Page, blockId: string, slot = 0): Promise<void> {
-  await page.locator(`#w-store #storeList .bcard[data-block="${blockId}"]`).click()
+  await page.locator(`#w-rep [data-sentence-id="${blockId}"]`).first().click()
   await page.locator(`#w-file .slot[data-slot="${slot}"]`).click()
 }
 

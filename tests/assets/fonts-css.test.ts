@@ -189,7 +189,7 @@ describe('[u10#c8] HARD CONSTRAINT — u1 stylesheets are untouched (re-aimed to
     expect(unitDiff('u10', 'src/client/styles/tokens.css'), 'u10 may not edit tokens.css').toEqual([])
   })
 
-  it('(c) index.css keeps u1’s eight imports, in order, unremoved', () => {
+  it('(c) index.css keeps u1’s surviving imports, in order, unremoved', () => {
     const imports = [...read(INDEX_CSS).matchAll(/@import\s+['"]([^'"]+)['"]/g)].map((m) => m[1])
     const { indexImports } = baseline()
     expect(imports.filter((i) => i !== './fonts.css').slice(0, indexImports.length)).toEqual(indexImports)
@@ -208,8 +208,14 @@ describe('[u10#c8] HARD CONSTRAINT — u1 stylesheets are untouched (re-aimed to
     const added = dirAtUnit('u10', 'src/client/styles')
       .filter((f) => f.endsWith('.css'))
       // The baseline lost its win-tally.css row when U3 retired the live
-      // sheet; at u10's own merge it was still a u1 file, not a u10 addition.
-      .filter((f) => !Object.keys(baseline().sha256).includes(f) && f !== 'win-tally.css')
+      // sheet, and its win-block-store.css row when T1 retired that one; at
+      // u10's own merge both were still u1 files, not u10 additions.
+      .filter(
+        (f) =>
+          !Object.keys(baseline().sha256).includes(f) &&
+          f !== 'win-tally.css' &&
+          f !== 'win-block-store.css',
+      )
     expect(added).toEqual(['fonts.css'])
   })
 })

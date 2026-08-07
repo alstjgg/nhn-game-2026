@@ -30,7 +30,7 @@
 // out of support degrades, it never inverts.
 
 /** The four desk windows, in the order the taskbar and the registry use. */
-export const WINDOW_KEYS = ['feed', 'file', 'store', 'rep'] as const
+export const WINDOW_KEYS = ['feed', 'file', 'rep'] as const
 
 export type WindowKey = (typeof WINDOW_KEYS)[number]
 
@@ -47,7 +47,7 @@ export type WindowKey = (typeof WINDOW_KEYS)[number]
  * defect `e2e/a11y.spec.ts` quarantined under `test.fail` because u9 was not
  * allowed to touch u3's shell. The registry/taskbar order is unchanged.
  */
-export const DESK_ORDER: readonly WindowKey[] = ['feed', 'rep', 'file', 'store']
+export const DESK_ORDER: readonly WindowKey[] = ['feed', 'rep', 'file']
 
 export interface Viewport {
   width: number
@@ -70,8 +70,6 @@ const GUTTER = 14
 const GAP = 16
 const COL_A_RATIO = 0.265
 const COL_B_RATIO = 0.395
-/** REPORTS' share of the middle column's height; BLOCK STORE takes the rest. */
-const REP_RATIO = 0.565
 const MIN_W = 240
 const MIN_H = 120
 
@@ -88,13 +86,10 @@ export function applyLayout(viewport: Viewport): Record<WindowKey, WinRect> {
   const colC = Math.max(MIN_W, W - xC - GUTTER)
 
   const colH = deskH
-  const hRep = px(colH * REP_RATIO)
-  const hStore = Math.max(MIN_H, colH - hRep - GUTTER)
 
   return {
     feed: { x: GUTTER, y: TOP, w: colA, h: colH },
-    rep: { x: xB, y: TOP, w: colB, h: hRep },
-    store: { x: xB, y: TOP + hRep + GUTTER, w: colB, h: hStore },
+    rep: { x: xB, y: TOP, w: colB, h: colH },
     file: { x: xC, y: TOP, w: colC, h: colH },
   }
 }
