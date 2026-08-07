@@ -1,6 +1,10 @@
 # T2 — the radio report fits the pause it arrives in: max_chars 1200 → 700
 
-> plan-playtest.md **v7** · change list stamped against tree `14dd971` (2026-08-07).
+> plan-playtest.md **v9** · change list stamped against tree `a6e2a07`
+> (2026-08-07, g1-1 merged) — the row re-verified byte-identical at handoff and
+> **dry-run-verified** (applied to a scratch tree: `check` + full suite green).
+> **Wave 1**: may develop and merge in parallel with `g1-2`, `g1-3`, `g4-1`
+> (no shared files).
 > Executor: Sonnet-class session. Branch `playtest/g1-6-t2` off current `main`.
 > One commit, message: `playtest(T2): report_body max_chars 1200 -> 700`.
 > Open a PR; merge nothing (§5.6). Before the first edit, confirm

@@ -1,9 +1,14 @@
 # U5.2b — the seam carries the stance's own words; the prompt never sees them
 
-> plan-playtest.md **v7** · change list stamped against tree `14dd971` (2026-08-07).
-> Groups 1–3 do not touch these files except `docs/spec-client.md` (U3 edits other
-> rows) — re-stamp is expected to be line-numbers only, plus the two marked
-> fixture checks. **Executes after group 3 merges.**
+> plan-playtest.md **v9** · change list stamped against tree `a6e2a07`
+> (2026-08-07, g1-1 merged) — every row re-verified byte-identical at handoff,
+> E7 resolved to a verbatim new suite file, and the **entire change list was
+> applied to a scratch tree and verified**: `check` green, 1621/1621 tests,
+> probe selftest 44/44, build green, A20 clean; then reverted.
+> **Wave 1** (re-ordered from "after group 3", 08-07): nothing else in flight
+> touches these files, and `g3-1` stamps *after* groups 1–2 land, so it absorbs
+> this unit's `docs/spec-client.md` line drift, not the other way round. May
+> develop and merge in parallel with `g1-2`, `g1-3`, `g1-6`.
 > Executor: Sonnet-class session. Branch `playtest/g4-1-u52b` off current `main`.
 > One commit, message: `playtest(U5.2b): report event carries the judged stance's desc`.
 > Open a PR; merge nothing (§5.6). Confirm `git config user.email` resolves to the
@@ -28,17 +33,27 @@ unit's hard boundary: it is named in Must-NOT and its file is untouched.
 
 ## Scope
 
-May modify (only these six files):
+May modify (only these nine files, plus the one new file):
 
 - `src/shared/contracts.ts` — `Stance` gains optional `desc`.
 - `src/engine/beat/schedule.ts` — `compileGate` stops dropping it.
-- `src/driver/live-driver.ts` — remembers the judged stance per round; the
+- `src/engine/index.ts` — `submitStance` returns the stance it resolved (E8).
+  The engine is the only party that knows chosen-vs-default (`gateView()`
+  deliberately hides `default_stance`, spec-engine §5) — so it reports what it
+  resolved rather than the driver re-deriving it.
+- `src/driver/ports.ts` — `EnginePort.submitStance` mirrors the new return (E9).
+- `src/driver/live-driver.ts` — stores the engine's answer per round; the
   `report` emit carries it.
+- `tests/driver/engine-fixtures/rig.ts` — the spy wrapper passes the return
+  through (E10).
 - `src/shared/view-driver.ts` — the `report` member gains `judged?`.
 - `docs/spec-client.md` — the §5.2 fence's `report` line, in lockstep
   (`tests/driver/seam-shapes.test.ts (d)` holds the two to the same
   normalization).
 - `tests/engine/beat/views.test.ts` — the one `toEqual` that pins the old shape.
+- `tests/driver/engine-judged-stance.test.ts` — **new file** (E7). The name is
+  bound: `engine-boundaries.test.ts` (b) requires every unregistered new suite
+  under `tests/driver/` to be named `engine-*`.
 
 Must NOT modify:
 
@@ -56,7 +71,10 @@ Must NOT modify:
 Tests turning red, and their disposition:
 `tests/engine/beat/views.test.ts:159-162` pins the projected stances without
 `desc` — **amended** (E6). `tests/driver/seam-shapes.test.ts` stays green only
-if E4 and E5 land with identical text — that pairing is the point of both.
+if E4 and E5 land with identical text — that pairing is the point of both
+(dry-run-verified: the frozen suite accepts the two-line member).
+Without E10, `npm run check` fails at `rig.ts:155` (TS2322: the spy wrapper
+still declares `void`) — that is why the rig edit is a row, not collateral.
 
 ## Change list
 
@@ -138,26 +156,23 @@ replace with:
 ```ts
       if (beat.kind === 'gate') {
         const request = composer.judgment(engine.gateView(), membrane.deployed())
-        const judgment = await call(1, request, readJudgment)
-        engine.submitStance(judgment)
-        // U5.2b — remember the round's judged stance in the author's words.
-        // Fallback picks the default stance, exactly as submitStance does.
-        if (beat.roundIndex !== null && beat.gate !== null) {
-          const id = judgment !== null && 'stance' in judgment ? judgment.stance : beat.gate.defaultStance
-          const stance = beat.gate.stances.find((entry) => entry.id === id)
-          if (stance?.desc !== undefined) {
-            judgedStances.set(beat.roundIndex, { stance_id: stance.id, desc: stance.desc })
-          }
+        // U5.2b — the engine resolves chosen-vs-default (§5 recovery is its
+        // move); keep its words for the round's report event.
+        const judged = engine.submitStance(await call(1, request, readJudgment))
+        if (beat.roundIndex !== null && judged !== null) {
+          judgedStances.set(beat.roundIndex, judged)
         }
       }
 ```
-(Executor note: `submitStance`'s own argument stays the raw `judgment` — the
-narrowing mirror is `live-driver.ts:72-74`. If `beat.gate`'s type in this file
-is not nullable-checked the way shown, stop per §5.7.)
+(Re-designed at stamp, 08-07: the first draft read `beat.gate` here, but the
+driver's `BeatCursor` carries no gate (`src/engine/beat/driver.ts:84-90`) and
+`gateView()` deliberately hides `default_stance` — the resolution is the
+engine's alone, so E8 makes the engine *return* it. Caught by applying the
+full change list to a scratch tree, exactly the failure mode §5.7 exists for.)
 
 E3c — the driver-scope state (insert beside the factory's other `let`/`const`
-state, immediately above the `finish()` function that currently begins near
-`:148`):
+state, immediately above the `finish()` function that currently begins at
+`:149`):
 ```ts
   /** U5.2b — the judged stance per round, in the author's words (§5.2 `judged`). */
   const judgedStances = new Map<number, { stance_id: string; desc: string }>()
@@ -204,11 +219,141 @@ replace with:
 `tests/engine/beat/fixtures/packs.ts:55-58` — verified against the file before
 handoff; if they differ, this PRD is reissued, not adapted.)*
 
-**E7 — behavioral assertion** *(exact suite and insertion point fixed at stamp
-time; the shape is decided)*: one assertion added to the existing driver-rig
-test that already runs a gate round end-to-end, asserting the emitted `report`
-event carries `judged` with the fixture stance's `stance_id` and `desc`, and
-that a fixture-fallback run carries the **default** stance's desc.
+**E7 — `tests/driver/engine-judged-stance.test.ts`** — new file, this exact
+content:
+```ts
+// [u52b] — the `report` event carries the judged stance in the author's words
+// (`judged?: { stance_id, desc }`), sourced from the PACK's stances, never
+// from model output. A fallback round carries the DEFAULT stance's desc.
+import { describe, it, expect } from 'vitest'
+import { drain, failingTransport, makeRig, sentinelJudgment } from './engine-fixtures/rig.ts'
+
+describe('[u52b] the report event carries the judged stance', () => {
+  it("(a) a judged round: the chosen stance, desc from the pack", async () => {
+    const rig = makeRig({ responses: { judgment: { ...sentinelJudgment(), stance: 'escalate' } } })
+    const events = await drain(rig)
+    const reports = events.flatMap((event) => (event.type === 'report' ? [event] : []))
+    expect(reports.length).toBe(1)
+    expect(reports[0]?.judged).toEqual({ stance_id: 'escalate', desc: 'b-desc' })
+  })
+
+  it("(b) a fallback round: the default stance, desc from the pack", async () => {
+    const events = await drain(makeRig({ transport: failingTransport('judgment') }))
+    const reports = events.flatMap((event) => (event.type === 'report' ? [event] : []))
+    expect(reports.length).toBe(1)
+    expect(reports[0]?.judged).toEqual({ stance_id: 'hold', desc: 'a-desc' })
+  })
+})
+```
+Why these values are fixed, not chosen: the rig pack's stances are
+`hold` (desc `'a-desc'`, the default) and `escalate` (desc `'b-desc'`) at
+`tests/driver/engine-fixtures/pack.ts:87-91`; the plain fixture judgment picks
+`stances[0]` (= `hold`, `src/transport/fixture.ts:32-33`), so (a) overrides it
+to `escalate` — the one stance that proves `judged` follows the **response**,
+not the default. (b)'s failing Call 1 makes `call()` return `null`
+(`live-driver.ts:130-138`), so E3b's fallback arm picks
+`beat.gate.defaultStance` (= `hold`). All four exports the file imports exist
+in `engine-fixtures/rig.ts` (`drain:254`, `failingTransport:65`,
+`makeRig:225`, `sentinelJudgment:317`).
+
+**E8 — `src/engine/index.ts`**, two edits:
+
+E8a — the `EngineHandle` interface (`:149-150`)
+current:
+```ts
+  /** `null` ⇒ the engine substitutes this gate's authored `default_stance`. */
+  submitStance(response: JudgmentResponse | null): void
+```
+replace with:
+```ts
+  /**
+   * `null` ⇒ the engine substitutes this gate's authored `default_stance`.
+   * Returns the stance it resolved — chosen or substituted — in the author's
+   * words (U5.2b, §5.2 `judged`); `null` when it carries no `desc`.
+   */
+  submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null
+```
+
+E8b — the implementation (`:282-299`)
+current:
+```ts
+    submitStance(response: JudgmentResponse | null): void {
+      const beat = beatNow()
+      if (beat.gate === null) throw new Error(`beat ${beat.index} carries no gate`)
+      // §5 recovery: the authored default stance, which `gateView()` does not
+      // expose — this is why substituting it has to be the engine's move.
+      const fallback = response === null
+      const stance = fallback ? beat.gate.defaultStance : response.stance
+      utterance = fallback ? '' : response.utterance
+      if (beat.roundIndex !== null) {
+        roundGates.set(beat.roundIndex, {
+          utterance,
+          inner_note: fallback ? '' : response.inner_note,
+        })
+      }
+      // The journal is the only place a substituted stance is distinguishable
+      // from a chosen one after the fact (§2.1's `fallback:call1`).
+      beats.submitStance({ stance, utterance, fallback })
+    },
+```
+replace with:
+```ts
+    submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null {
+      const beat = beatNow()
+      if (beat.gate === null) throw new Error(`beat ${beat.index} carries no gate`)
+      // §5 recovery: the authored default stance, which `gateView()` does not
+      // expose — this is why substituting it has to be the engine's move.
+      const fallback = response === null
+      const stance = fallback ? beat.gate.defaultStance : response.stance
+      utterance = fallback ? '' : response.utterance
+      if (beat.roundIndex !== null) {
+        roundGates.set(beat.roundIndex, {
+          utterance,
+          inner_note: fallback ? '' : response.inner_note,
+        })
+      }
+      // The journal is the only place a substituted stance is distinguishable
+      // from a chosen one after the fact (§2.1's `fallback:call1`).
+      beats.submitStance({ stance, utterance, fallback })
+      // U5.2b — report what was judged, in the author's words (§5.2 `judged`).
+      const judged = beat.gate.stances.find((entry) => entry.id === stance)
+      return judged?.desc !== undefined ? { stance_id: judged.id, desc: judged.desc } : null
+    },
+```
+(An unknown `response.stance` — a model answering off the stance set — makes
+`find` miss and the method return `null`: the report simply carries no
+`judged`, the same tolerance the emit path already has.)
+
+**E9 — `src/driver/ports.ts:54-55`**
+current:
+```ts
+  /** `null` ⇒ the engine substitutes this gate's authored `default_stance`. */
+  submitStance(response: JudgmentResponse | null): void
+```
+replace with:
+```ts
+  /**
+   * `null` ⇒ the engine substitutes this gate's authored `default_stance`.
+   * Returns the stance it resolved, in the author's words (U5.2b `judged`).
+   */
+  submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null
+```
+
+**E10 — `tests/driver/engine-fixtures/rig.ts:155-158`**
+current:
+```ts
+    submitStance(response: JudgmentResponse | null): void {
+      recorder.log.push({ name: 'engine.submitStance', value: response })
+      inner.submitStance(response)
+    },
+```
+replace with:
+```ts
+    submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null {
+      recorder.log.push({ name: 'engine.submitStance', value: response })
+      return inner.submitStance(response)
+    },
+```
 
 ## Invariants
 
@@ -236,7 +381,7 @@ that a fixture-fallback run carries the **default** stance's desc.
 
 ## Done when
 
-- [ ] All edits applied; `git diff HEAD~1 --stat` shows exactly the six listed files (plus the E7 suite).
+- [ ] All edits applied; `git diff HEAD~1 --stat` shows exactly the ten listed paths (nine edited + the new E7 suite).
 - [ ] Steps 1–4 green, in order.
 - [ ] The E7 assertions pass: judged stance on a normal round, default stance's desc on a fallback round.
 - [ ] `grep -n 'desc' src/composer/compose.ts` is empty — the projection still strips.
