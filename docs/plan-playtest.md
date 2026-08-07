@@ -354,7 +354,7 @@ without a probe risks the mechanism claim four days before submission.
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
-> As of 2026-08-07 (v10). A PRD names the version it was written against.
+> As of 2026-08-07 (v11). A PRD names the version it was written against.
 
 The items above are not worked by hand and not worked one at a time. Each is
 specified as a **mini-PRD** by a high-capability model, then executed by a
@@ -566,40 +566,54 @@ it is reported, and is never repaired by the executor. Every other red goes back
 under §5.7 unchanged. "Re-run it" is not a general licence — it applies to this
 one test id and no other.
 
-### 5.6 Handoff
+### 5.6 Handoff — the orchestrated pipeline (08-07, replacing the session relay)
 
-Each PRD is a file, committed before the executor starts — an inline prompt is lost
-when the process dies. The executor works on its own branch, opens a PR, and merges
-nothing. Review is by the author, against the Done-when checklist. `main` stays
-deployable, and repo hard rules 1–6 apply to executor commits exactly as to
-hand-written ones.
+The g2-1 pilot replaced the original handoff (separate executor sessions,
+docs-PRs for stamps, stop-reports relayed by hand) with a single orchestrated
+flow. The author fires the executor directly as a Sonnet-class subagent and
+stays in the loop:
 
-Authoring is two-tier. Every unit is authored at decision level as early as its
-group's shape allows — outcome, scope, final strings, test dispositions,
-done-when — but its change list is **stamped** (every `path:line · current
-text` row re-verified against HEAD) immediately before its executor starts,
-because earlier merges move the lines and sometimes delete the files. A stamp
-is mechanical; G3, T3 and U5.2c instead get a re-authoring pass at stamp time,
-because their shape depends on what U3, T1 and U5.2b landed. PRDs live under
-`planning/prds/`, committed after 민서's sign-off. Executors run on a
-Sonnet-class model, one executor per PRD; merges are 민서's, after the
-author's review report.
+1. **Author** writes the PRD lean — a three-line header (plan version · the
+   tree sha the citations bind to · branch · commit message) and the body
+   sections of §5.3. No decision logs, dates, or attributions in the PRD:
+   that history lives in git and the PR thread.
+2. **Stamp** immediately before firing: every `path:line · current text` row
+   re-verified against the sha in the header, same-file edits listed bottom-up
+   (or the drift stated), the reference data files a suite *loads* swept along
+   with suite sources (the g1-1 provenance stop), and the full change list
+   **dry-run** on a scratch tree — apply, run the suites, revert (the g1-2 e2e
+   catch and the g4-1 `BeatCursor` catch both came from dry runs, not from
+   reading). G3, T3 and U5.2c get a re-authoring pass instead of a mechanical
+   stamp, because their shape depends on what U3, T1 and U5.2b landed. The
+   full apply-run-revert dry-run of the relay era is no longer mandatory: a
+   stop now costs minutes, not a docs-PR cycle, and the g2-1 pilot showed a
+   scratch dry-run can pass by environmental luck while the executor's own
+   full-suite run finds the truth. The stamp keeps the cheap checks (line
+   verification, loaded-data sweep, type-plausibility of new signatures); the
+   full-suite proof belongs to the executor's verification and the author's
+   re-verify.
+3. **Executor** — one Sonnet subagent per PRD, in its own git worktree on the
+   unit's branch. It executes the change list literally, runs the PRD's
+   verification, and commits **one code commit**. It pushes nothing and opens
+   no PR. §5.7's stop rule overrides everything: a stop-report returns to the
+   author in-conversation (minutes, not a docs-PR cycle), and the author fixes
+   the PRD and re-fires — the citations cannot go stale in between, because
+   execution happens on the tree the stamp just verified.
+4. **Author verifies**: diff against the change list row by row, full suites,
+   and a local merge preview against then-current `main`. PRD amendments land
+   as author commits on the same branch. The author pushes and opens **one PR
+   per wave** with the grouped commits — code and the decisions that produced
+   it reviewed together, by 윤석; merges are 민서's, one at a time, in the
+   wave's stated order. `main` stays deployable, and repo hard rules 1–6 apply
+   to subagent commits exactly as to hand-written ones.
 
-Execution is **wave-parallel, merge-serial** (08-07, replacing strict
-serial-within-group). Units whose files are pairwise disjoint develop
-concurrently, one executor per git worktree; each PRD's stamp header names its
-wave and the units it may run beside. A unit whose stamped rows cite another
-unit's *output* (g1-5 cites g1-4's; g2-1/g2-3 share files with g1-5) waits for
-that unit's **merge** — stacking branches is not used (see the #153 stranding).
-Wave 4 is `g2-1` alone: `g2-2`/`g2-3` are deferred with O1/O2 (§4).
-Merges stay one at a time, in the wave's stated order, and before each merge
-the author re-runs the PR's suite on a local merge preview against
-then-current `main`. Playtest cadence follows waves. Two stamp-time
-obligations joined the stamp definition: sweep the reference data files a
-suite *loads*, not only suite sources (the g1-1 provenance stop), and
-**dry-run** the full change list on a scratch tree — apply, run the suites,
-revert — recording the result in the stamp header (the g1-2 e2e catch and the
-g4-1 `BeatCursor` catch both came from dry runs, not from reading).
+Execution stays **wave-parallel, merge-serial**. Units whose files are
+pairwise disjoint develop concurrently, one worktree each; a unit whose
+stamped rows cite another unit's *output* waits for that unit's **merge** —
+stacking branches is not used (see the #153 stranding). Before each merge the
+author re-runs the PR's suite on a local merge preview. Playtest cadence
+follows waves; feel values flagged in a PR are checked at that wave's game
+check. Wave 4 was `g2-1` alone: `g2-2`/`g2-3` are deferred with O1/O2 (§4).
 
 ### 5.7 When the PRD is wrong
 

@@ -29,8 +29,8 @@
 // Floors keep every box positive below the supported 1280×800 minimum (C9):
 // out of support degrades, it never inverts.
 
-/** The five desk windows, in the order the taskbar and the registry use. */
-export const WINDOW_KEYS = ['feed', 'file', 'store', 'rep', 'tally'] as const
+/** The four desk windows, in the order the taskbar and the registry use. */
+export const WINDOW_KEYS = ['feed', 'file', 'store', 'rep'] as const
 
 export type WindowKey = (typeof WINDOW_KEYS)[number]
 
@@ -47,7 +47,7 @@ export type WindowKey = (typeof WINDOW_KEYS)[number]
  * defect `e2e/a11y.spec.ts` quarantined under `test.fail` because u9 was not
  * allowed to touch u3's shell. The registry/taskbar order is unchanged.
  */
-export const DESK_ORDER: readonly WindowKey[] = ['feed', 'rep', 'file', 'store', 'tally']
+export const DESK_ORDER: readonly WindowKey[] = ['feed', 'rep', 'file', 'store']
 
 export interface Viewport {
   width: number
@@ -72,12 +72,6 @@ const COL_A_RATIO = 0.265
 const COL_B_RATIO = 0.395
 /** REPORTS' share of the middle column's height; BLOCK STORE takes the rest. */
 const REP_RATIO = 0.565
-/** TALLY is a centred sheet, not a column — the reference keeps it wide and flat. */
-const TALLY_W = 730
-/** How far the sheet is inset from the top of the desk (reference: TOP + 16). */
-const TALLY_INSET = 16
-/** The tallest the sheet ever gets — the reference's own ceiling. */
-const TALLY_MAX_H = 626
 const MIN_W = 240
 const MIN_H = 120
 
@@ -97,15 +91,10 @@ export function applyLayout(viewport: Viewport): Record<WindowKey, WinRect> {
   const hRep = px(colH * REP_RATIO)
   const hStore = Math.max(MIN_H, colH - hRep - GUTTER)
 
-  const tallyW = Math.max(MIN_W, Math.min(TALLY_W, W - GUTTER * 2))
-  const tallyX = Math.max(GUTTER, px((W - tallyW) / 2))
-  const tallyH = Math.max(MIN_H, Math.min(TALLY_MAX_H, deskH - TALLY_INSET))
-
   return {
     feed: { x: GUTTER, y: TOP, w: colA, h: colH },
     rep: { x: xB, y: TOP, w: colB, h: hRep },
     store: { x: xB, y: TOP + hRep + GUTTER, w: colB, h: hStore },
     file: { x: xC, y: TOP, w: colC, h: colH },
-    tally: { x: tallyX, y: TOP + TALLY_INSET, w: tallyW, h: tallyH },
   }
 }

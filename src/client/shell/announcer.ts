@@ -32,7 +32,7 @@ const FALLBACK: Record<1 | 2 | 3, string> = {
   3: '서버 이상 — 요원과 재접선 시도 중',
 }
 const REPORT_FILED = '보고서가 부검 창에 도착했습니다'
-const RUN_CLOSED = '시뮬레이션 종료 · 집계 개시'
+const RUN_CLOSED = '시뮬레이션 종료 — 결과는 현장 기록으로'
 
 let region: HTMLElement | null = null
 let hide: ReturnType<typeof setTimeout> | null = null

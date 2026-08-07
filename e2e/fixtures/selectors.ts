@@ -10,13 +10,12 @@ export const WINDOWS = {
   file: '#w-file',
   store: '#w-store',
   rep: '#w-rep',
-  tally: '#w-tally',
 } as const
 
 export type WindowKey = keyof typeof WINDOWS
 
-/** The five window ids without the `#`, in default-layout order (C9/C15). */
-export const WINDOW_IDS = ['w-feed', 'w-file', 'w-rep', 'w-store', 'w-tally'] as const
+/** The four window ids without the `#`, in default-layout order (C9/C15). */
+export const WINDOW_IDS = ['w-feed', 'w-file', 'w-rep', 'w-store'] as const
 
 /* ── chrome (item 1, item 6) ─────────────────────────────────────────────── */
 export const CHROME = {
@@ -90,14 +89,13 @@ export const FILE = {
   state: '#w-file #deployState',
 } as const
 
-/* ── tally (item 6) ──────────────────────────────────────────────────────── */
-export const TALLY = {
-  root: '#w-tally',
-  ledger: '#w-tally [data-tally-state]',
-  rows: '#w-tally .tly-table tr',
-  big: '#w-tally #tlyBig',
-  wait: '#w-tally .tly-wait',
-  newRun: '#w-tally #btnNewRun',
+/* ── terminal record (U3) ────────────────────────────────────────────────── */
+export const RECORD = {
+  root: '#w-rep .terminal-record',
+  ledger: '#w-rep .terminal-record[data-tally-state]',
+  rows: '#w-rep .terminal-record .tly-table tr',
+  big: '#w-rep .terminal-record #tlyBig',
+  control: '#w-file #btnDeploy',
 } as const
 
 /* ── debug pane (items 3, 5, 12) ─────────────────────────────────────────── */

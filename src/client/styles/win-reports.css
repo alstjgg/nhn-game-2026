@@ -89,3 +89,51 @@
 .caret{display:inline-block;width:7px;height:1.05em;vertical-align:-.15em;
   background:var(--graphite);animation:blink .85s steps(2) infinite;margin-left:var(--space-1)}
 @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* ===========================================================================
+   the terminal record (U3) — score-tally's ledger, filed here instead of a
+   TALLY sheet. Rules below are moved verbatim from win-tally.css (u7), scoped
+   under `.terminal-record`; the sheet-frame/foot/`.btn-newrun`/`.tly-wait`
+   rules died with that file.
+   =========================================================================== */
+.terminal-record{margin-top:var(--space-20);padding-top:var(--space-4);
+  border-top:2px solid var(--graphite)}
+
+.terminal-record .tly-head{padding:var(--space-15) var(--space-26) var(--space-11);text-align:center;
+  border-bottom:2px solid var(--graphite);
+  background:linear-gradient(180deg,var(--sheen-55),transparent)}
+.terminal-record .tly-doc{font-size:var(--fs-8);letter-spacing:.2em;color:var(--faded)}
+.terminal-record .tly-head h3{font-family:var(--myeong);font-size:var(--fs-20);font-weight:800;color:var(--pap-hd);
+  margin:var(--space-4) 0 var(--space-2);letter-spacing:.04em}
+.terminal-record .tly-sub{font-family:var(--myeong);font-size:var(--fs-9-5);color:var(--faded)}
+
+.terminal-record .tly-headline{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:var(--space-16);
+  padding:var(--space-12) var(--space-30);border-bottom:1px solid var(--sh-28);
+  background:repeating-linear-gradient(0deg,transparent 0 25px,var(--sh-025) 25px 26px)}
+.terminal-record .th-k{font-family:var(--myeong);font-size:var(--fs-13);color:var(--pap-3);text-align:right;letter-spacing:.2em}
+.terminal-record .th-v{display:flex;align-items:baseline;gap:var(--space-4)}
+.terminal-record .th-v span{font-size:var(--fs-44);font-weight:300;line-height:.9;color:var(--pap-max);
+  font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.terminal-record .th-v i{font-family:var(--myeong);font-style:normal;font-size:var(--fs-14);color:var(--pap-3)}
+.terminal-record .th-b{font-size:var(--fs-9-5);letter-spacing:.12em;color:var(--faded);
+  text-decoration:line-through;text-decoration-color:var(--seal)}
+
+.terminal-record .tly-table{width:100%;border-collapse:collapse;margin-top:var(--space-2)}
+.terminal-record .tly-table tr{border-bottom:1px solid var(--sh-13)}
+.terminal-record .tly-table tr:nth-child(odd){background:var(--sh-025)}
+.terminal-record .tly-table td{padding:var(--space-6) var(--space-7);vertical-align:baseline}
+.terminal-record .tly-table tr{opacity:0;transform:translateY(6px)}
+.terminal-record .tly-table tr.in{animation:rowIn .5s cubic-bezier(.2,.9,.3,1) both}
+@keyframes rowIn{to{opacity:1;transform:none}}
+.terminal-record .tr-i{width:32px;font-size:var(--fs-8);color:var(--faded-2)}
+.terminal-record .tly-table td.tr-i{padding-left:var(--space-24)}
+.terminal-record .tr-l{font-family:var(--myeong);font-size:var(--fs-12);font-weight:700;color:var(--pap-2);width:106px;
+  word-break:keep-all}
+.terminal-record .tr-v{font-family:var(--myeong);font-size:var(--fs-11-5);color:var(--pap-1);word-break:keep-all}
+.terminal-record .tr-b{font-size:var(--fs-8);color:var(--faded);letter-spacing:.04em;
+  text-align:right;width:206px;white-space:nowrap;line-height:1.5}
+.terminal-record .tly-table td.tr-b{padding-right:var(--space-24)}
+.terminal-record .tr-d{width:20px;text-align:center;font-size:var(--fs-10)}
+.terminal-record .tr-d.good{color:var(--good)}
+.terminal-record .tr-d.flat{color:var(--faded-2)}
+.terminal-record .tr-d.bad{color:var(--seal)}

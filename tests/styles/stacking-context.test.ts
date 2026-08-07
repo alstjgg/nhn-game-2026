@@ -155,7 +155,7 @@ describe('[u1#c3] every .win shares one z-order', () => {
   })
 
   it('(d) per-window skins order only inside their own window (z-index < 10)', () => {
-    const offenders = ['win-block-store.css', ...['win-agent-file.css', 'win-live-feed.css', 'win-reports.css', 'win-tally.css']]
+    const offenders = ['win-block-store.css', ...['win-agent-file.css', 'win-live-feed.css', 'win-reports.css']]
       .flatMap((f) => {
         const css = read(path.join(STYLES_DIR, f))
         return declarations(css)

@@ -35,8 +35,8 @@ engine and proxy landed, and how it is still tested).
    progress bar and rate control · D-DAY counter + run pips) · taskbar ·
    window manager (drag / resize / collapse / close-to-taskbar; default
    layout computed from the viewport).
-2. **Five windows**, one per loop surface (§4): AGENT FILE (build) · BLOCK
-   STORE (build) · LIVE FEED (watch) · REPORTS (autopsy) · TALLY (score).
+2. **Four windows**, one per loop surface (§4): AGENT FILE (build) · BLOCK
+   STORE (build) · LIVE FEED (watch) · REPORTS (autopsy; scoring folds in here).
 3. **The membrane.** All player input reduces to exactly
    `slot · unslot · mine · deploy · new_run` (§5.2). Nothing else ever
    crosses; no free-text surface exists.
@@ -78,7 +78,7 @@ The live driver is **not** a `src/client/` module — it landed as its own tier,
 |---|---|---|
 | `driver/` | fixture driver + fixture run files · the run-loop binding · (wiring step) `live-run.ts`, the boot-time binding that instantiates `src/driver/`'s live driver in the player build. Seam types are **not** here — they live in `src/shared/view-driver.ts` (ratified, §5.2) | `shared`; and — as the only `src/client/` module allowed past the seam (invariant 12) — the below-seam tiers the live binding composes: `src/driver/` · `src/runloop/` · `src/transport/` |
 | `shell/` | topbar (clock · D-DAY · case) · taskbar · window manager · layout | `driver` types |
-| `windows/` | the five windows, one module each | `components`, `driver` types |
+| `windows/` | the four windows, one module each | `components`, `driver` types |
 | `components/` | the §6 inventory | — |
 | `styles/` | `tokens.css` (**all** design tokens: paper stocks, the two accents, type scale — style-as-data) · per-window skins | — |
 | `debug/` | debug pane — build-flag only, **excluded from the player build** | `driver` |
@@ -140,17 +140,16 @@ manual pre-merge gate.
 
 ## 4. Screens — the window set
 
-An **operator's desktop**: persistent chrome plus five windows. One page, no
+An **operator's desktop**: persistent chrome plus four windows. One page, no
 routing. Desktop only; minimum viewport bound in the PRD.
 
 | Region | Loop role | Holds |
 |---|---|---|
 | **Chrome** (persistent top bar) | orientation | portal identity (portal name · operator · case) · game clock → 21:04 with progress bar and rate control (×1/×4/pause) · D-DAY counter + run pips · taskbar |
-| **AGENT FILE** | Build | the dossier: §0–§2 fixed sections · §3 기질 sealed (invariant 4) · §4 known-blocks slots (cap: dev value 4 — §9) · deploy control |
+| **AGENT FILE** | Build | the dossier: §0–§2 fixed sections · §3 기질 sealed (invariant 4) · §4 known-blocks slots (cap: dev value 4 — §9) · deploy control (also carries the day's turn once the run closes — merged NEW RUN) |
 | **BLOCK STORE** | Build | mined sentences as cards (authored id + species/axis tags) · species filter |
 | **LIVE FEED** | Watch | the run feed in seven line kinds (§6 `RunFeed`) · diegetic waiting marker; untouchable during a run |
-| **REPORTS** | Autopsy | two documents side by side: facts (objective log) · report_body (typewriter replay) · sentence mining (click → store) · **archive rail** — every past report readable, previously-slotted sentences highlighted (invariant 6) |
-| **TALLY** | Score | score count-up at run end (absorbs the report call; paced ~9 s) · run summary · new-run control |
+| **REPORTS** | Autopsy | two documents side by side: facts (objective log) · report_body (typewriter replay) · sentence mining (click → store) · **archive rail** — every past report readable, previously-slotted sentences highlighted (invariant 6) · at run end, a terminal record inside the facts document: score count-up (absorbs the report call; paced ~9 s) · run summary |
 
 ---
 
@@ -160,13 +159,16 @@ routing. Desktop only; minimum viewport bound in the PRD.
 
 ```
 fetch data/scenario/<slug>/*.json → parse against src/shared/datapack.ts types
-  → build shell (topbar · taskbar) + five windows → applyLayout(viewport)
+  → build shell (topbar · taskbar) + four windows → applyLayout(viewport)
   → connect driver: fixture (default until proxy lands) | live
   → BUILD state (file unlocked) — the idle loop starts here
 ```
 
 Run states: `BUILD → (deploy) → RUN → (per round) REPORT → … → (21:04)
-TALLY → (new_run) BUILD`, D-DAY decrementing until the last run.
+TALLY → (new_run) BUILD`, D-DAY decrementing until the last run. `TALLY` names
+the phase, not a window: the day is closed, awaiting the turn, and its two
+surfaces are the terminal record (REPORTS) and the merged deploy/NEW RUN
+control (AGENT FILE).
 
 ### 5.2 The view-driver seam (**ratified 08-03 with amendments** — 윤석,
 PR #108 review; types land in `src/shared/view-driver.ts`)
@@ -298,10 +300,10 @@ run known-open #4 — the wiring step).
 | `DeployButton` | ready · deployed (locked) | 배치 stamp; locked = stamped over the file |
 | `RunFeed` | line kinds: `event · radio · npc · symptom · wait · fallback · mark` | green-bar fanfold printout, lines landing on the game clock |
 | `WaitingMarker` | active (diegetic phrasing) | `……무전 회신 대기 중` with breathing dots — never a spinner |
-| `ReportView` | facts (objective log) · report_body · loading-behind-tally | white bond paper, red margin rule on the report side |
+| `ReportView` | facts (objective log) · report_body · loading-behind the terminal record | white bond paper, red margin rule on the report side |
 | `MinableSentence` | unmined · mined · previously-slotted (archive highlight) | tear: red flash, strike-through, `채굴` marginal note; card animates to store |
 | `ReportArchive` | per-run sections (run/time segmented — no gate labels) | archive rail (`RUN 01 / 08:50 — 21:04`); mined and slotted marks persist |
-| `ScoreTally` | pending (absorbing report latency) · final | ruled-ledger count-up paced ~9 s |
+| `ScoreTally` | pending (absorbing report latency) · final | ruled-ledger count-up paced ~9 s; hosted in REPORTS' `.terminal-record` |
 | `FallbackNotice` | per engine §5 fallback classes | `※` feed line |
 | `WindowFrame` | focused · collapsed · closed-to-taskbar · dragging · resizing | title bar, tab, corner grip; taskbar toggles and raises |
 | `RedThread` | idle · re-drawing on window drag | literal thread + pins, slot ↔ source sentence, matched by authored id |
@@ -339,7 +341,7 @@ Against `data/scenario/우는다리/`, in fixture mode, in a browser.
 
 **Shell (the desktop half):**
 
-9. All five windows drag, resize, collapse, and close to the taskbar; the
+9. All four windows drag, resize, collapse, and close to the taskbar; the
    default layout fits the minimum viewport with nothing off-screen.
 10. Red threads connect every filled slot to its source sentence by authored
     id, and re-draw during window drag.

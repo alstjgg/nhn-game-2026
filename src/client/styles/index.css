@@ -15,7 +15,6 @@
 @import './win-block-store.css';
 @import './win-live-feed.css';
 @import './win-reports.css';
-@import './win-tally.css';
 
 /* The opening (plan-playtest O1): the sign-in curtain and the sheet it hands
    over. `win-manual.css` follows the window skins because it re-aims `.bond`,

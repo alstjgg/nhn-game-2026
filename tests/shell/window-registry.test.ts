@@ -1,8 +1,8 @@
 // [u3#c6] The merge surface for m3.
 //
-// `windows/{agent-file,block-store,live-feed,reports,tally}.ts` exist as stubs
+// `windows/{agent-file,block-store,live-feed,reports}.ts` exist as stubs
 // exporting `mount(host, driver)`, and a SHELL-owned registry is the single
-// place that knows about all five. That is what keeps u4/u4s/u5/u6/u7 off a
+// place that knows about all four. That is what keeps u4/u4s/u5/u6/u7 off a
 // shared barrel and off `index.html` — each later unit fills exactly one file.
 //
 // The suite runs under vitest `environment: 'node'`: a stub that reached for
@@ -40,13 +40,13 @@ async function loadRegistry(): Promise<{ WINDOW_REGISTRY: readonly WindowDef[] }
   return (await import(importable(REGISTRY_TS))) as { WINDOW_REGISTRY: readonly WindowDef[] }
 }
 
-describe('[u3#c6] the five window stubs exist', () => {
+describe('[u3#c6] the four window stubs exist', () => {
   it('(a) every windows/<module>.ts is on disk', () => {
     const missing = WINDOW_KEYS.filter((k) => !exists(modulePath(k))).map((k) => WINDOW_MODULES[k])
     expect(missing).toEqual([])
   })
 
-  it('(b) windows/ holds exactly the five modules and no barrel', () => {
+  it('(b) windows/ holds exactly the four modules and no barrel', () => {
     const files = tsFiles(WINDOWS_DIR).map((f) => path.basename(f)).sort()
     expect(files).toEqual([...Object.values(WINDOW_MODULES)].sort())
     expect(exists(path.join(WINDOWS_DIR, 'index.ts'))).toBe(false)

@@ -17,10 +17,10 @@ import { CLIENT, exists, importable, read, rel, stripComments } from '../shell/s
 
 export const RUN_STATE_TS = path.join(CLIENT, 'shell/run-state.ts')
 export const SCORE_TALLY_TS = path.join(CLIENT, 'components/score-tally.ts')
-export const TALLY_TS = path.join(CLIENT, 'windows/tally.ts')
+export const AGENT_FILE_TS = path.join(CLIENT, 'windows/agent-file.ts')
 
 /** The three owned modules, in the order the design lists them. */
-export const UNIT_FILES = [RUN_STATE_TS, SCORE_TALLY_TS, TALLY_TS] as const
+export const UNIT_FILES = [RUN_STATE_TS, SCORE_TALLY_TS, AGENT_FILE_TS] as const
 
 /** The run-loop facade + its fixture (u7 design D2). */
 export const RUN_LOOP_TS = path.join(CLIENT, 'driver/run-loop.ts')

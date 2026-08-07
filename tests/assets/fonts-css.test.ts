@@ -180,15 +180,16 @@ describe('[u10#c8] HARD CONSTRAINT — u1 stylesheets are untouched (re-aimed to
   // the scale and two sheets, `signin.css` and `win-manual.css`. Re-aimed at
   // u10's own range — where (b) and (f) say exactly what they claim — and, for
   // (c), at the part of the claim that must hold on the live tree forever: u1's
-  // nine imports are still there, still first, still in order. A later sheet may
-  // append after them; none may displace or drop one.
+  // surviving imports (eight, since U3 retired win-tally.css) are still there,
+  // still first, still in order. A later sheet may append after them; none may
+  // displace or drop one.
   it('(b) tokens.css in particular is unchanged', () => {
     const { sha256 } = baseline()
     expect(sha(fileAtUnit('u10', 'src/client/styles/tokens.css'))).toBe(sha256['tokens.css'])
     expect(unitDiff('u10', 'src/client/styles/tokens.css'), 'u10 may not edit tokens.css').toEqual([])
   })
 
-  it('(c) index.css keeps u1’s nine imports, in order, unremoved', () => {
+  it('(c) index.css keeps u1’s eight imports, in order, unremoved', () => {
     const imports = [...read(INDEX_CSS).matchAll(/@import\s+['"]([^'"]+)['"]/g)].map((m) => m[1])
     const { indexImports } = baseline()
     expect(imports.filter((i) => i !== './fonts.css').slice(0, indexImports.length)).toEqual(indexImports)
@@ -206,7 +207,9 @@ describe('[u10#c8] HARD CONSTRAINT — u1 stylesheets are untouched (re-aimed to
   it('(f) fonts.css is the only file this unit adds under src/client/styles', () => {
     const added = dirAtUnit('u10', 'src/client/styles')
       .filter((f) => f.endsWith('.css'))
-      .filter((f) => !Object.keys(baseline().sha256).includes(f))
+      // The baseline lost its win-tally.css row when U3 retired the live
+      // sheet; at u10's own merge it was still a u1 file, not a u10 addition.
+      .filter((f) => !Object.keys(baseline().sha256).includes(f) && f !== 'win-tally.css')
     expect(added).toEqual(['fonts.css'])
   })
 })

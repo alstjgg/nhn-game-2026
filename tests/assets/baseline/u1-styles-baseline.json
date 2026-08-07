@@ -9,8 +9,7 @@
     "win-agent-file.css": "6a8fc5a6a45d6dbc2e287f32e64c8d11877a76e289b7f2dd957e974e4a6a65a5",
     "win-block-store.css": "cd42869edb3c94f9b7b7dc4318595dbb34fcfe3ebe0a784af466d31947c08b8f",
     "win-live-feed.css": "efe50f2ca393683aa51f4391c8579690b88d6123e3d39b11b07e20e1f6320e51",
-    "win-reports.css": "909722da7c1f17aa3997175314162670ec933d7d3b6949461194750ee5a5696b",
-    "win-tally.css": "fdf36747ac973f02aecb69749d3e3231cde03b46107e2fb79a5fd0f062afe719"
+    "win-reports.css": "909722da7c1f17aa3997175314162670ec933d7d3b6949461194750ee5a5696b"
   },
   "indexImports": [
     "./tokens.css",
@@ -20,7 +19,6 @@
     "./win-agent-file.css",
     "./win-block-store.css",
     "./win-live-feed.css",
-    "./win-reports.css",
-    "./win-tally.css"
+    "./win-reports.css"
   ]
 }

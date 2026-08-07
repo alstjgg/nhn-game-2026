@@ -22,7 +22,6 @@ export const WINDOW_SHEETS = [
   'win-block-store.css',
   'win-live-feed.css',
   'win-reports.css',
-  'win-tally.css',
 ] as const
 export const ALL_SHEETS = [...CORE_SHEETS, ...WINDOW_SHEETS] as const
 
