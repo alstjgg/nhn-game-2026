@@ -116,8 +116,8 @@ test.describe('window ops', () => {
     await boot(page)
   })
 
-  test('window ops — the desk carries exactly the four spec §4 windows', async ({ page }) => {
-    await expect(page.locator('.win')).toHaveCount(4)
+  test('window ops — the desk carries exactly the three spec §4 windows', async ({ page }) => {
+    await expect(page.locator('.win')).toHaveCount(3)
     const keys = await page.locator('.win').evaluateAll((nodes) =>
       nodes.map((n) => (n as HTMLElement).dataset.win ?? ''),
     )
@@ -210,7 +210,7 @@ test.describe('window ops', () => {
       await expect(task).not.toHaveClass(/\bopen\b/)
     }
     // Closed to the taskbar, not destroyed.
-    await expect(page.locator('.win')).toHaveCount(4)
+    await expect(page.locator('.win')).toHaveCount(3)
     await expect(page.locator('.task')).toHaveCount(3)
   })
 
@@ -614,7 +614,7 @@ test.describe('a11y', () => {
 
   test('a11y — each window is a named region', async ({ page }) => {
     const regions = page.getByRole('region', { includeHidden: true })
-    await expect(regions).toHaveCount(4)
+    await expect(regions).toHaveCount(3)
     const names = await page.locator('.win').evaluateAll((nodes) =>
       nodes.map((n) => n.getAttribute('aria-label') ?? n.getAttribute('aria-labelledby') ?? ''),
     )
@@ -624,7 +624,7 @@ test.describe('a11y', () => {
   test('a11y — every window control is a real button and keyboard reachable', async ({ page }) => {
     const controls = page.locator('.wc, .task, .rate-btn')
     const count = await controls.count()
-    expect(count).toBe(4 * 2 + 4 + 3)
+    expect(count).toBe(3 * 2 + 3 + 3)
     const meta = await controls.evaluateAll((nodes) =>
       nodes.map((n) => ({
         tag: n.tagName.toLowerCase(),

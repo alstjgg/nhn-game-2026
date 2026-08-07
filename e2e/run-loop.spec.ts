@@ -16,7 +16,6 @@
 // suite binds to whatever run the shell boots.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
-import { raiseWindow } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -358,14 +357,13 @@ test.describe('new run unlocks and files the report', () => {
     expect(emitted.carried.length, 'the new run carries nothing — the scan is vacuous').toBeGreaterThan(0)
     expect((await meta(page)).carried).toEqual(emitted.carried)
 
-    await raiseWindow(page, 'rep')
-    await page.locator('#w-rep .arch-rail [role="option"]').first().click()
-    for (const id of emitted.carried) {
-      await expect(
-        page.locator(`#w-rep [data-sentence-id="${id}"]`).first(),
-        `${id} is carried but shows no slotted mark in the filed report`,
-      ).toHaveClass(/\bslotted\b/)
-    }
+    // T1 retired the store deck, which was the one desk surface that listed
+    // `meta.carried` as an inventory. Carried ids DO surface as `.min.slotted`
+    // marks — but only on documents that exist, and report bodies from runs
+    // before the boot are persisted nowhere (that gap is U5.1's reason to
+    // exist). Until U5.1 gives past sittings readable documents, the seam
+    // round-trip above is the whole observable contract; the marks derivation
+    // itself is covered by reports.spec's mined-marks oracles.
   })
 
   test('new run unlocks and files the report — the terminal record refreshes clean on the next 21:04', async ({

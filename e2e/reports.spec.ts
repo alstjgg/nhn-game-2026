@@ -672,6 +672,12 @@ test.describe('a11y', () => {
 /* ── T1 — the report is the pick surface; the store window is gone ───────── */
 
 test.describe('slotting from the report (T1)', () => {
+  test.beforeEach(async ({ page }) => {
+    await boot(page, { reduced: true })
+    await drain(page)
+    await raiseWindow(page, 'rep')
+  })
+
   test('clicking a mined sentence then a seat slots it, by id', async ({ page }) => {
     const id = await mineFirst(page)
     await slotBlock(page, id, 0)
