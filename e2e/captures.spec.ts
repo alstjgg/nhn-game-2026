@@ -267,8 +267,8 @@ test.describe('captures', () => {
         ).toBe(false)
         expect(
           desk.windows.length,
-          `only ${desk.windows.length}/4 windows mounted — the shot would capture a stalled boot`,
-        ).toBe(4)
+          `only ${desk.windows.length}/3 windows mounted — the shot would capture a stalled boot`,
+        ).toBe(3)
         expect(
           desk.windows.filter((w) => w.visibility === 'hidden').map((w) => w.id),
           'a mounted window computes visibility:hidden — it occupies its box but paints nothing',

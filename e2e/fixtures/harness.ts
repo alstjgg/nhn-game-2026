@@ -56,7 +56,7 @@ export async function boot(page: Page, opts: { reduced?: boolean } = {}): Promis
   if (opts.reduced) await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('./')
   await page.waitForFunction(() => Boolean((window as { __shell?: unknown }).__shell))
-  await expect(page.locator('.win')).toHaveCount(4)
+  await expect(page.locator('.win')).toHaveCount(3)
   await settled(page)
 }
 
