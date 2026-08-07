@@ -29,6 +29,11 @@ export function metaKey(packSlug: string): string {
   return `${META_KEY_PREFIX}${packSlug}`
 }
 
+/** The stamp slot beside the state — see `createWebStorageMetaStore`. */
+export function stampKey(packSlug: string): string {
+  return `${META_KEY_PREFIX}stamp.${packSlug}`
+}
+
 /** The substitution path: in-memory, optionally pre-seeded (e9's headless driver). */
 export function createMemoryMetaStore(seed?: MetaState): MetaStore {
   let held: MetaState | null = seed === undefined ? null : cloneMetaState(seed)
@@ -40,11 +45,29 @@ export function createMemoryMetaStore(seed?: MetaState): MetaStore {
   }
 }
 
-/** The browser path: JSON under `metaKey(packSlug)` in an injected storage. */
-export function createWebStorageMetaStore(storage: StorageLike, packSlug: string): MetaStore {
+/**
+ * The browser path: JSON under `metaKey(packSlug)` in an injected storage.
+ *
+ * W1 — `stamp` is the sitting's identity (the client passes its build stamp).
+ * A stored state is honoured only while the stamp saved beside it matches:
+ * state left by another build reads as absent and both slots are dropped, so
+ * a fresh visit is ECHO-1 and only a genuine same-build reload resumes. No
+ * stamp (the headless path) keeps the old behaviour.
+ */
+export function createWebStorageMetaStore(
+  storage: StorageLike,
+  packSlug: string,
+  stamp?: string,
+): MetaStore {
   const key = metaKey(packSlug)
+  const stampAt = stampKey(packSlug)
   return {
     load: () => {
+      if (stamp !== undefined && storage.getItem(stampAt) !== stamp) {
+        storage.removeItem(key)
+        storage.removeItem(stampAt)
+        return null
+      }
       const raw = storage.getItem(key)
       if (raw === null) return null
       let parsed: unknown
@@ -57,6 +80,7 @@ export function createWebStorageMetaStore(storage: StorageLike, packSlug: string
       return parsed
     },
     save: (state) => {
+      if (stamp !== undefined) storage.setItem(stampAt, stamp)
       storage.setItem(key, JSON.stringify(state))
     },
   }
