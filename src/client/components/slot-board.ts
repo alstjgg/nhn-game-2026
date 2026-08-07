@@ -1,4 +1,4 @@
-// SlotBoard — §4 알고 있는 문장: the membrane the operator actually operates
+// SlotBoard — §4 인수인계 사항: the membrane the operator actually operates
 // (spec-client §6 · §5.2). Ported from docs/design/phase2-ui/app.js
 // `buildSlots`/`placeInSlot`/`unslot` (235..291) onto u1's vendored `.slots`
 // skin, rewritten against the seam.

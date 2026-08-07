@@ -39,7 +39,20 @@ const PORTED_DEVIATIONS = [
   },
 ] as const
 
-const DEVIATED = PORTED_DEVIATIONS.map((d) => nfc(d.to))
+/**
+ * Non-FEED copy revisions that supersede design-target vocabulary (the target
+ * is frozen — see PORTED_DEVIATIONS above). These feed the trace haystack for
+ * (b)/(d) only; they are not feed lines, so (g)/(h) do not read them.
+ */
+const COPY_DEVIATIONS = [
+  {
+    from: '객관 로그',
+    to: '현장 기록',
+    reason: 'plan-playtest C4 / g1-4: the record reads as fieldwork; the frozen target keeps the old name',
+  },
+] as const
+
+const DEVIATED = [...PORTED_DEVIATIONS, ...COPY_DEVIATIONS].map((d) => nfc(d.to))
 const HAYSTACK = [...authoredTexts(), ...DEVIATED]
 
 /** Reference row → the text the fixture is expected to carry. */

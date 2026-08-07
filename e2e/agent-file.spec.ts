@@ -134,8 +134,8 @@ test.describe('dossier sections', () => {
       '임무',
       '행동 원칙',
       '기질',
-      '알고 있는 문장',
-      '보고 지침',
+      '인수인계 사항',
+      '교신 지침',
     ])
     await expect(sects.locator('.sect-flag')).toHaveText([
       '고정',

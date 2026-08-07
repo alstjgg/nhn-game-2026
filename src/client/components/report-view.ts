@@ -120,8 +120,8 @@ interface Anchor {
 }
 
 /** `가` / `나` — the two documents' file letters, as the reference prints them. */
-const FACTS_HEAD = { no: '가', title: '객관 로그', sub: '일어난 것 · 관측된 것' }
-const BODY_HEAD = { no: '나', title: '요원 보고서', sub: 'ECHO-1 자필 · 1인칭' }
+const FACTS_HEAD = { no: '가', title: '현장 기록', sub: '일어난 것 · 관측된 것' }
+const BODY_HEAD = { no: '나', title: '무전 기록', sub: 'ECHO-1 송신 · 1인칭' }
 
 function documentHead(head: { no: string; title: string; sub: string }): HTMLElement {
   const header = el('header', 'doc-hd')
