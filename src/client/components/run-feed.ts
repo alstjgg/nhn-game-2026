@@ -115,16 +115,29 @@ export function emptySymptomModel(clock: string): FeedNode {
 }
 
 /**
- * Reveal pacing (U1) — real ms between queued lines. A crowded queue quickens:
- * quiet stretches breathe, event crowds still read as a crowd. Feel values,
- * tuned at the group-2 game check.
+ * Reveal pacing (U1) — real ms before the NEXT queued line, priced by how much
+ * it asks the player to read. The anchor is Korean subtitle reading speed
+ * (~12 hangul chars/sec — the cap the Netflix Korean style guide sets; the
+ * Brysbaert 2019 reading-rate meta-analysis lands average adult silent reading
+ * in the same band), clamped so bare marks still tick and a long quote cannot
+ * stall the paper. A crowded queue quickens: quiet stretches breathe, event
+ * crowds still read as a crowd — and the feed cannot fall unboundedly behind
+ * a sim that emits faster than anyone reads. Feel values, tuned in play.
  */
-const REVEAL_MS = 420
-const REVEAL_CROWD_MS = 140
+const REVEAL_CHAR_MS = 85
+const REVEAL_MIN_MS = 250
+const REVEAL_MAX_MS = 2400
 const REVEAL_CROWD_AT = 5
+const REVEAL_CROWD_DIV = 3
 
-const revealDelay = (depth: number): number =>
-  depth >= REVEAL_CROWD_AT ? REVEAL_CROWD_MS : REVEAL_MS
+/** What the queued event will actually print — only `feed` lines carry prose. */
+const revealChars = (event: ViewEvent): number =>
+  event.type === 'feed' ? event.line.text.length + (event.line.speaker?.length ?? 0) : 0
+
+const revealDelay = (next: ViewEvent, depth: number): number => {
+  const paced = Math.min(REVEAL_MAX_MS, Math.max(REVEAL_MIN_MS, revealChars(next) * REVEAL_CHAR_MS))
+  return depth >= REVEAL_CROWD_AT ? paced / REVEAL_CROWD_DIV : paced
+}
 
 /* ── the window's fanfold ────────────────────────────────────────────────── */
 
@@ -316,7 +329,7 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
       return
     }
     sinceReveal += realMs
-    if (sinceReveal < revealDelay(queue.length)) return
+    if (sinceReveal < revealDelay(queue[0]!, queue.length)) return
     sinceReveal = 0
     apply(queue.shift()!)
   })
