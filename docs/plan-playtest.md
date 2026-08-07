@@ -287,6 +287,37 @@ concurrently, one worktree each (§5.6), merges serial within the wave.
    U5.1 collide, so one of them slips to wave D.
 4. **Wave D:** whichever of O2 / U5.1 waited.
 
+**Wave B′ (08-08, second playtest — supersedes waves B–D until it lands).**
+민서's post-wave-A playtest reframed the loop: the day runs hands-off; at
+close the player reads the sitting's ONE accumulated record, mines from it,
+rebuilds the file, and DEPLOY starts the next day. Four root-cause scouts
+mapped it (their reports are in the PR thread); the units:
+
+1. **B′-1 — parallel, fired:** `g8-1/W1` (sessionStorage resume gains a build
+   stamp — the ECHO-2 boot was a stale-tab resume; `store.ts`, `live/index.ts`,
+   boot, vite define) · `g9-1/W3` (mining is one gesture — a second activation
+   auto-seats via `board.place()`, refusals flash instead of vanishing, the
+   two BLOCK-STORE-era hints rewritten).
+2. **B′-2 — `W2`, after B′-1:** one sitting = one record. `reports.ts` keys
+   documents by RUN and APPENDS rounds (the `report` event carries no run id —
+   the window pairs it with the current `meta.run`); `railEntries`'s
+   run/round keyspace collision dies; past sittings render read-only (their
+   sentences are not in the current run's block store — presenting them as
+   mineable was playtest bug #4's silent half); the terminal record files
+   into its sitting's document; the feed gains a per-sitting `mark` divider.
+3. **B′-3 — `W4`, after B′-2:** one DEPLOY, phase-gated. Disabled while the
+   day runs (mining and file edits locked with it); enabled at close;
+   clicking commits the file and opens the next day — the op pair is
+   `deploy` into the OLD membrane (it becomes `carried`) then `new_run`,
+   with the rebuild re-arming the carried set as the new run's deployed
+   blocks in BOTH driver paths (the adapter clears `deployed` today, and the
+   fixture `carry()` replays mine/slot but not deploy). Day 1 auto-starts
+   (the button is born disabled): judges see motion inside the 60s budget,
+   and ECHO-1 going in with an empty file is the fiction.
+
+U5.2c re-authors after B′ lands (it renders into W2's per-sitting document).
+T3 is unchanged by B′ and may ride either gap. O2/U5.1/MAN unchanged.
+
 Two Shoulds (G3, O3) ride wave A in Must time — that is the point of grouping
 by dependency: they are free parallel capacity on files nothing else wants, not
 queue-jumpers. The Must line's serial spine (U5.2b+ → U5.2c; T1 → MAN) is
@@ -320,7 +351,7 @@ cut; U2 risks the mechanism claim without a probe).
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
-> As of 2026-08-08 (v12). A PRD names the version it was written against.
+> As of 2026-08-08 (v13). A PRD names the version it was written against.
 
 The items above are not worked by hand and not worked one at a time. Each is
 specified as a **mini-PRD** by a high-capability model, then executed by a
