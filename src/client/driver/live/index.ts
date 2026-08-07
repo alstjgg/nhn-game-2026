@@ -31,6 +31,8 @@ export type LiveRunDeps = {
   fetch: typeof globalThis.fetch
   /** `sessionStorage`. Meta-state is per-tab by design (physical §1.1). */
   storage: StorageLike
+  /** W1 — the sitting stamp; a stored MetaState from another build is dropped. */
+  stamp?: string
   slug: string
   /** `"HH:MM"` bounds from the pack meta the shell already fetched. */
   start: string
@@ -76,7 +78,7 @@ export async function createLiveRunDriver(deps: LiveRunDeps): Promise<FixtureDri
   }
 
   const runLoop: RunLoop = createRunLoop({
-    store: createWebStorageMetaStore(deps.storage, deps.slug),
+    store: createWebStorageMetaStore(deps.storage, deps.slug, deps.stamp),
     packSlug: deps.slug,
   })
 

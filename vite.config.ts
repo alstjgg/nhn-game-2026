@@ -197,6 +197,11 @@ export default defineConfig(({ mode }) => ({
   // pane's code in the bundle, flag or no flag.
   define: {
     __DEBUG_PANE__: JSON.stringify(mode !== 'production'),
+    // W1 — the sitting stamp: the web meta store honours a stored MetaState
+    // only while the stamp beside it matches this value, so a redeploy under
+    // an open tab (or state from an older build) starts fresh at ECHO-1. In
+    // dev the stamp is the constant 'dev', so HMR reloads keep resuming.
+    __BUILD_STAMP__: JSON.stringify(mode !== 'production' ? 'dev' : new Date().toISOString()),
   },
 
   server: {

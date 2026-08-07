@@ -85,6 +85,7 @@ async function openLiveDesk(identity: ScenarioIdentity): Promise<FixtureDriver |
       baseUrl: document.baseURI,
       fetch: (url, init) => window.fetch(url, init),
       storage: window.sessionStorage,
+      stamp: __BUILD_STAMP__,
       slug: identity.slug,
       start: identity.start,
       end: identity.end,
