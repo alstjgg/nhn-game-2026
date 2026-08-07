@@ -23,11 +23,11 @@ import { createEngine } from '../../../src/engine/index.ts'
 import { buildSchedule } from '../../../src/engine/beat/index.ts'
 import { createComposer } from '../../../src/composer/index.ts'
 import {
+  baselineState,
   createBlockStore,
   createLiveDriver,
   createScorer,
   scoreRecord,
-  untouchedState,
 } from '../../../src/driver/index.ts'
 import { recordingTransport } from './record.mjs'
 
@@ -121,8 +121,8 @@ export function bindRun({ pack, guidance, provider, run, carried = [] }) {
   // The same scorer the browser binder builds, over the same pack file — the
   // two roots stay symmetrical, which is what makes a headless replay evidence
   // about the thing the judge plays.
-  const untouched = untouchedState(pack)
-  const scorer = createScorer(pack.score, () => engine.snapshot(), untouched)
+  const baseline = baselineState(pack)
+  const scorer = createScorer(pack.score, () => engine.snapshot(), baseline)
 
   const driver = createLiveDriver({ engine: recordingEngine, composer, transport, blocks, scorer, run })
   driver.subscribe((event) => {
@@ -133,7 +133,7 @@ export function bindRun({ pack, guidance, provider, run, carried = [] }) {
   // indexes units by `id` and the §5.2 event carries labels, so neither shape
   // can be recovered from the other (see `src/driver/scorer.ts`). Called after
   // the run, against the state it ended in.
-  const score = () => scoreRecord(pack.score, engine.snapshot(), untouched)
+  const score = () => scoreRecord(pack.score, engine.snapshot(), baseline)
 
   return { driver, events, journals, calls: recorder.calls, score }
 }

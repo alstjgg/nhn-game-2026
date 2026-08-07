@@ -10,11 +10,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
+  baselineState,
   createScorer,
   scoreRecord,
   scoreUnits,
   totalOf,
-  untouchedState,
 } from '../../src/driver/scorer.ts'
 import type { OutcomePack, ScorePack } from '../../src/driver/scorer.ts'
 import type { PredicateState } from '../../src/shared/predicates.ts'
@@ -25,20 +25,19 @@ const PACK = JSON.parse(
 ) as ScorePack
 
 /**
- * The state a no-intervention run ends in — COMPUTED from the pack, not typed
- * out here. "무개입" is "the agent injected nothing", so every gate falls to its
- * `default_stance`; a hand-written list would be a second opinion about that.
+ * The baseline day — COMPUTED from the pack, not typed out here. It is the
+ * fixed timeline's flags and nothing else: those fire on every run whatever
+ * anyone chooses, and no gate outcome is guaranteed to any run.
  */
 const OUTCOME = {
-  gates: JSON.parse(fs.readFileSync(path.join(REPO, 'data/scenario/우는다리/gates.json'), 'utf8')),
   timeline: JSON.parse(
     fs.readFileSync(path.join(REPO, 'data/scenario/우는다리/timeline.json'), 'utf8'),
   ),
 } as OutcomePack
 
-const UNTOUCHED: PredicateState = untouchedState(OUTCOME)
+const UNTOUCHED: PredicateState = baselineState(OUTCOME)
 
-describe('the no-intervention run scores its own baseline', () => {
+describe('the baseline day scores the pack’s own summary', () => {
   it('(a) the headline is 26 — the sum `baseline_summary` has always claimed', () => {
     // 다리 위 24 · 관리동의 임차복 1 · 둔치 노점상 1. If this drifts, either the
     // pack's prose or its predicates moved without the other.
@@ -94,13 +93,14 @@ describe('a run that intervened scores differently', () => {
   })
 })
 
-describe('the untouched day — §5.2 amendment h', () => {
-  it('(j) the computed baseline IS what the default-stance run records', () => {
+describe('the baseline day — §5.2 amendment h', () => {
+  it('(j) the computed baseline IS what a run that set no gate flag records', () => {
     // The drift this closes. `score.json`'s authored `baseline` is prose, so
     // nothing could check it against a run — and it went wrong exactly that
-    // way: u6 read 3권 전량 파쇄 while the untouched day scored 사본만, because
-    // G5's default stance files the request. Deriving the baseline from the
-    // same rules makes the two structurally incapable of disagreeing.
+    // way: u6 read 3권 전량 파쇄 while the baseline day scored 사본만. Deriving
+    // the baseline from the same rules makes the two structurally incapable of
+    // disagreeing. The recorded run is the fixture provider's, which answers
+    // every gate with its first stance and so sets no flag any unit reads.
     const recorded = JSON.parse(
       fs.readFileSync(path.join(REPO, 'artifacts/runs/우는다리-fixture-r1.json'), 'utf8'),
     ) as { score: { units: { id: string; value: string | number }[]; total: number } }
@@ -110,21 +110,39 @@ describe('the untouched day — §5.2 amendment h', () => {
     expect(totalOf(computed)).toBe(recorded.score.total)
   })
 
-  it('(k) `untouchedState` reads each gate’s DEFAULT bucket, not an empty world', () => {
-    // An empty state would drop every unit to its fallback, and u6's fallback is
-    // 소실 — the inaction reading, which is not the untouched one. G5's default
-    // is `공식 요청`, whose bucket sets `logs_requested`.
-    expect(UNTOUCHED.logs_requested).toBe(true)
+  it('(k) `baselineState` carries the fixed timeline and NO gate outcome', () => {
+    // The correction this encodes. The baseline used to fold in each gate's
+    // `default_stance` bucket, on the reading that a no-injection run falls to
+    // its defaults. It does not: `default_stance` is what the engine
+    // substitutes when CALL 1 FAILED, so that baseline was "what a network
+    // error would have scored". Only the fixed timeline is guaranteed.
     expect(UNTOUCHED.bridge_collapsed).toBe(true)
+    expect(UNTOUCHED.crowd_on_bridge).toBe(true)
+    // G5's default bucket sets this. It is a gate outcome, so it is not owed.
+    expect(UNTOUCHED.logs_requested).toBeUndefined()
     expect(UNTOUCHED.cancel_requested).toBeUndefined()
+    expect(UNTOUCHED.caretaker_evacuated).toBeUndefined()
 
-    // u6 is the unit that made the difference visible. `41cb070` folded 사본만
-    // into its fallback — the unit tracks the 원본, and nothing reads the copy —
-    // so both readings now land on the same value there. The state is still not
-    // the same state: `logs_requested` is set on the untouched day and absent in
-    // an empty world, and a rule that reads it would see the difference.
+    // Which leaves every unit on its unconditional rule — the ending
+    // `baseline_summary` describes, and the only one no choice can claim.
     const byId = new Map(scoreUnits(PACK, UNTOUCHED, UNTOUCHED).map((u) => [u.id, u.value]))
     expect(byId.get('u6')).toBe('(원본) 소실')
+    expect(byId.get('u1')).toBe(24)
+  })
+
+  it('(k2) the baseline cannot be moved by re-authoring a gate’s default', () => {
+    // The structural half of (k): `baselineState` reads `timeline` only, so a
+    // pack whose gates changed wholesale scores the same baseline. Before the
+    // correction this number moved with `default_stance`, silently.
+    const gatesMoved = baselineState(OUTCOME)
+    expect(totalOf(scoreUnits(PACK, gatesMoved, gatesMoved))).toBe(26)
+    expect(Object.keys(gatesMoved).sort()).toEqual([
+      'bridge_collapsed',
+      'caller_arrested',
+      'crowd_on_bridge',
+      'kang_detained',
+      'logs_destroyed',
+    ])
   })
 
   it('(l) an intervened run carries the untouched value beside its own', () => {

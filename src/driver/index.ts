@@ -50,7 +50,7 @@ export { assertSeamClean } from './seam-guard.ts'
 export { createBlockStore } from './blocks.ts'
 export { createEmitter } from './emitter.ts'
 export { createMembrane } from './membrane.ts'
-export { createScorer, scoreRecord, scoreUnits, totalOf, untouchedState } from './scorer.ts'
+export { baselineState, createScorer, scoreRecord, scoreUnits, totalOf } from './scorer.ts'
 export type { OutcomePack, ScoredUnit, ScorePack, ScoreUnit } from './scorer.ts'
 
 export type {

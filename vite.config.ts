@@ -121,11 +121,11 @@ export function stripCharacterNotes(raw: string): string {
 /**
  * The same problem in `score.json`, which the scorer made a published file.
  *
- * Only `id`, `label` and `predicates` are read — `src/driver/scorer.ts:94-105`
- * resolves the predicates for the value and resolves them AGAIN against the
- * untouched day for the baseline, deliberately not trusting the authored
- * `baseline` prose ("812명 진입, 사망 24 · 부상 71" is four numbers in one
- * sentence and no run produces it as a value).
+ * Only `id`, `label` and `predicates` are read — `scoreUnits` in
+ * `src/driver/scorer.ts` resolves the predicates for the value and resolves
+ * them AGAIN against the baseline day for the baseline, deliberately not
+ * trusting the authored `baseline` prose ("812명 진입, 사망 24 · 부상 71" is
+ * four numbers in one sentence and no run produces it as a value).
  *
  * What the rest says is the ending. `baseline_summary` states the
  * no-intervention outcome outright — "사망 26 · 부상 71 · 오인 구금 1건 …

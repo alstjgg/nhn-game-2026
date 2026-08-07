@@ -23,6 +23,7 @@ import { animationsFrozen, displayStamp, registerAnimation } from '../driver/ind
 import { el } from '../shell/dom.ts'
 import { FALLBACK_CLASS, fallbackNoticeLine } from './fallback-notice.ts'
 import type { FallbackClass } from './fallback-notice.ts'
+import { tallyLineText } from './tally-line.ts'
 import { waitingModel } from './waiting-marker.ts'
 
 /* ── the model ───────────────────────────────────────────────────────────── */
@@ -305,8 +306,19 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
           append({ ...waitingModel(event.for), stamp })
         }
         break
+      case 'score':
+        // The day's count, from the ledger the run actually scored — see
+        // `tally-line.ts` for why it is not a timeline event any more. It reuses
+        // the last stamp the same way an opening wait marker does: the seam's
+        // `score` carries no clock, and the day is over, so the line belongs to
+        // the minute the run closed on rather than to one of its own.
+        append({
+          ...envelope('event', '', [{ p: 'text', text: tallyLineText(event) }]),
+          stamp,
+        })
+        break
       default:
-        // `report` · `score` · `run_end` belong to other windows.
+        // `report` and `run_end` belong to other windows.
         break
     }
   }

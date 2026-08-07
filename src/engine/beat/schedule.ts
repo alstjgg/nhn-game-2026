@@ -44,6 +44,21 @@ export type ScheduledGate = {
   defaultStance: string
   buckets: OutcomeBucket[]
   edges: CompiledEdge[]
+  /**
+   * `availability` (contract-datapack F4) — the condition under which this gate
+   * is asked at all. `''` means always, which is what a gate that authored none
+   * compiles to.
+   *
+   * It CANNOT be resolved here. A gate's availability reads flags earlier gates
+   * set inside the same run (우는다리's G7 is available only where G4 named the
+   * caller), and this schedule is built once, before the first beat. So it is
+   * carried as a compiled string and evaluated when the beat opens — see
+   * `driver.ts`'s `gateLive`. That is also why an unavailable beat stays a
+   * `kind: 'gate'` beat here: round membership is assigned at build time off
+   * exactly this field, and a beat that changed kind mid-run would renumber the
+   * rounds the reports are owed against.
+   */
+  availability: string
 }
 
 export type Beat = {
@@ -110,6 +125,7 @@ function compileGate(authored: AuthoredGate): ScheduledGate {
     defaultStance: authored.default_stance,
     buckets: authored.buckets,
     edges: compileEdges(authored.edge_predicates),
+    availability: authored.availability ?? '',
   }
 }
 

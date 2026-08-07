@@ -104,11 +104,24 @@ describe('[u2f#c6] the score event is scenario-backed (D3 row 4 / A4)', () => {
     expect(scoreEvents()[0]?.total).toBe(7)
   })
 
-  it('(j) its rows are the tally numbers, not display strings', () => {
+  it('(j) its rows carry values, not the display sentence — and only 사망 counts', () => {
+    // `총계` is the sum of the NUMERIC values (`src/driver/scorer.ts` `totalOf`),
+    // so a row that is not a body count has to be a word or it joins the
+    // headline. All three were numbers against a total of 7 — 200 + 7 + 19
+    // summing to 226 — until the feed's closing 집계 line began printing the
+    // breakdown beside the headline and the two had to agree.
     const rows = scoreEvents()[0]?.rows ?? []
     expect(rows.map((r) => nfc(r.label))).toEqual(['진입', '사망', '부상'])
-    expect(rows.map((r) => r.value)).toEqual([200, 7, 19])
-    for (const r of rows) expect(typeof r.value).toBe('number')
+    expect(rows.map((r) => (typeof r.value === 'string' ? nfc(r.value) : r.value))).toEqual([
+      '200명',
+      7,
+      '19명',
+    ])
+    const counted = rows.filter((r) => typeof r.value === 'number')
+    expect(counted.reduce((sum, r) => sum + (r.value as number), 0)).toBe(scoreEvents()[0]?.total)
+    // The display sentence stays out of the seam: `진입 200 · 사망 7 · 부상 19`
+    // is `WOODARI_TALLY`'s, and no row value is a rendered line.
+    for (const r of rows) expect(String(r.value)).not.toContain('·')
   })
 
   it('(k) the full display tally survives beside it', () => {

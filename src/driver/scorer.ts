@@ -29,48 +29,57 @@ export type ScoreUnit = {
 export type ScorePack = { units: readonly ScoreUnit[] }
 
 /**
- * What computing the UNTOUCHED day needs: which flags an unattended run ends
- * holding. `gates.json` and `timeline.json`, narrowed to the two fields that
- * answer it.
+ * What computing the BASELINE day needs: the flags every run ends holding no
+ * matter what anyone does. `timeline.json`, narrowed to the one field that
+ * answers it.
  */
 export type OutcomePack = {
-  gates: { gates: readonly { default_stance: string; buckets: readonly { stances: readonly string[]; flags?: Record<string, boolean> }[] }[] }
   timeline: { events: readonly { effects: { flags?: Record<string, boolean> } | null }[] }
 }
 
 /**
- * The state a run with NO INTERVENTION ends in.
+ * The state the day ends in when NOTHING the agent did set a flag.
  *
- * "무개입" is not "nobody did anything" — it is "the agent injected nothing",
- * and with nothing injected every gate falls to its authored `default_stance`.
- * So the untouched day is the fixed timeline's flags plus the flags of whichever
- * bucket each gate's default lands in. On 우는다리 that is the five disaster
- * flags plus `logs_requested`, because G5's default is 공식 요청 — which is why
- * the pack's own u6 baseline had to be restated rather than the flag removed.
+ * The fixed timeline's flags, and only those: they are the events that fire on
+ * every run regardless of any stance, so they are the one part of an ending
+ * that is not a choice. Everything else a gate can set is left absent, and an
+ * absent flag reads false (`predicates.ts` `met()`), so every unit falls to its
+ * unconditional rule — which is exactly what the pack's `baseline_summary`
+ * describes. On 우는다리 that is 사망 24 + 1 + 1 = 26.
  *
- * Computed rather than authored, so it cannot drift from what the day actually
- * scores. Flags only: no predicate reads a scalar today, and twelve of the
- * fourteen meters are unbound (lint F2), so a scalar baseline would be
- * describing variables that do not exist.
+ * ── Why this no longer reads `gates.json` ───────────────────────────────────
+ *
+ * It used to fold in each gate's `default_stance` bucket, on the reading that
+ * "무개입 ⇒ every gate falls to its default". That reading does not survive
+ * contact with the engine: `default_stance` is what `submitStance` substitutes
+ * when CALL 1 FAILED (`src/engine/index.ts` — `fallback`), and nothing else. A
+ * run where the player injects no block still puts all seven gates to the
+ * agent, which answers them from the prompt and the timeline; `default_stance`
+ * is never consulted on a healthy run. Deriving the game's baseline from it
+ * meant defining the yardstick as "what a network error would have scored".
+ *
+ * The floor is the honest counterfactual instead: no gate flag is guaranteed,
+ * so none is assumed. It is also stabler — adding a gate, or re-authoring a
+ * default, can no longer move the baseline out from under the ledger.
+ *
+ * Flags only: no predicate reads a scalar today, and twelve of the fourteen
+ * meters are unbound (lint F2), so a scalar baseline would be describing
+ * variables that do not exist.
  */
-export function untouchedState(pack: OutcomePack): PredicateState {
+export function baselineState(pack: OutcomePack): PredicateState {
   const state: PredicateState = {}
   for (const event of pack.timeline.events) {
     for (const [flag, on] of Object.entries(event.effects?.flags ?? {})) state[flag] = on
   }
-  for (const gate of pack.gates.gates) {
-    const bucket = gate.buckets.find((b) => b.stances.includes(gate.default_stance))
-    for (const [flag, on] of Object.entries(bucket?.flags ?? {})) state[flag] = on
-  }
   return state
 }
 
-/** A unit that resolved, beside what the untouched day scored on its axis. */
+/** A unit that resolved, beside what the baseline day scored on its axis. */
 export type ScoredUnit = {
   id: string
   label: string
   value: PredicateValue
-  /** §5.2 amendment h. `null` when the same rules matched nothing untouched. */
+  /** §5.2 amendment h. `null` when the same rules matched nothing at baseline. */
   baseline: PredicateValue | null
 }
 
@@ -87,7 +96,7 @@ export type ScoredUnit = {
 export function scoreUnits(
   pack: ScorePack,
   state: PredicateState,
-  untouched: PredicateState = state,
+  baseline: PredicateState = state,
 ): ScoredUnit[] {
   const scored: ScoredUnit[] = []
   for (const unit of pack.units) {
@@ -97,12 +106,12 @@ export function scoreUnits(
       id: unit.id,
       label: unit.label,
       value,
-      // The SAME rules, read against the day nobody touched. Not the unit's
+      // The SAME rules, read against the day nothing moved. Not the unit's
       // authored `baseline`, which is prose for a human — "812명 진입, 사망 24 ·
       // 부상 71" is four numbers in one sentence and no run produces it as a
       // value. Deriving it instead means the two can never disagree, which is
       // exactly how the pack's u6 baseline came to be wrong.
-      baseline: resolve(unit.predicates, untouched),
+      baseline: resolve(unit.predicates, baseline),
     })
   }
   return scored
@@ -115,9 +124,10 @@ export function scoreUnits(
  * is the whole reason §5.2 amendment g widened a row's value and left `total`
  * alone: authoring writes a death count as a number and everything else as a
  * word — 강필주 resolves to `6시간 구금` rather than `6`, because six hours of
- * detention added to six deaths is a headline that lies. On 우는다리's
- * no-intervention run this is 24 + 1 + 1 = 26, which is what `score.json`'s own
- * `baseline_summary` says.
+ * detention added to six deaths is a headline that lies. On 우는다리's baseline
+ * day this is 24 + 1 + 1 = 26, which is what `score.json`'s own
+ * `baseline_summary` says. A PLAYED run is whatever its own stances scored —
+ * the two agree only when the day moved nothing, and the ledger prints both.
  */
 export function totalOf(units: readonly ScoredUnit[]): number {
   let total = 0
@@ -136,7 +146,7 @@ export function totalOf(units: readonly ScoredUnit[]): number {
 export function createScorer(
   pack: ScorePack,
   read: () => PredicateState,
-  untouched: PredicateState,
+  baseline: PredicateState,
 ): ScorerPort {
   // Checked HERE rather than in `score()`. A composition root that forgot to
   // thread `score.json` in is a wiring defect, and the difference between the
@@ -146,7 +156,7 @@ export function createScorer(
   if (!pack?.units) throw new Error('scorer: the pack carries no `score.units`')
   return {
     score() {
-      const units = scoreUnits(pack, read(), untouched)
+      const units = scoreUnits(pack, read(), baseline)
       return {
         total: totalOf(units),
         // The headline the day would have had. Computed here rather than summed
@@ -175,13 +185,13 @@ export function createScorer(
 export function scoreRecord(
   pack: ScorePack,
   state: PredicateState,
-  untouched: PredicateState = state,
+  baseline: PredicateState = state,
 ): { units: { id: string; value: PredicateValue }[]; total: number } | null {
   // The record carries no baseline: `run-record.schema.json` is
   // `additionalProperties: false` over `{units, total}`, and a baseline is
-  // recomputable from the pack at any time. `untouched` is threaded anyway so
+  // recomputable from the pack at any time. `baseline` is threaded anyway so
   // both halves come from one `scoreUnits` call shape.
-  const units = scoreUnits(pack, state, untouched)
+  const units = scoreUnits(pack, state, baseline)
   if (units.length === 0) return null
   return { units: units.map((unit) => ({ id: unit.id, value: unit.value })), total: totalOf(units) }
 }

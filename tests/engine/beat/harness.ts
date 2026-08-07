@@ -36,6 +36,14 @@ export function beatAt(schedule: Beat[], clock: string): Beat {
 /**
  * Walks the whole run: gate beats get their authored `default_stance`, every
  * beat gets its effects applied, `onNarration` may record lines / read views.
+ *
+ * The gate test is `current().kind`, NOT the schedule's `Beat.kind`. Those two
+ * part company when a gate's `availability` does not hold: the schedule keeps
+ * the beat a gate beat (round membership is assigned off it, once, at build
+ * time) while the cursor reports what the caller must actually do this beat.
+ * `live-driver.ts` reads the cursor, so a harness reading the schedule would be
+ * driving a run the product never drives — and would submit a stance for a gate
+ * that is not being asked.
  */
 export function driveAll(
   r: Rig,
@@ -46,7 +54,7 @@ export function driveAll(
     const cur = r.driver.current()
     const beat = r.schedule[cur.index]!
     if (beforeBeat) beforeBeat(r.driver, beat)
-    if (beat.kind === 'gate') {
+    if (cur.kind === 'gate') {
       r.driver.submitStance({ stance: beat.gate!.defaultStance, utterance: 'u' })
     }
     r.driver.applyBeatEffects()
