@@ -438,7 +438,7 @@ describe('[u6#c4] archive segmentation is pure and gate-free', () => {
     expect(segments.map((s) => s.run)).toEqual([1, 2])
   })
 
-  it('(b) the run label is `RUN nn`, zero-padded, derived from the number', async () => {
+  it("(b) the run label is the sitting's callsign, derived from the number", async () => {
     const a = await archive()
     const segments = a.archiveSegments(
       [
@@ -447,8 +447,8 @@ describe('[u6#c4] archive segmentation is pure and gate-free', () => {
       ],
       1,
     )
-    expect(segments[0]!.runLabel).toBe('RUN 01')
-    expect(segments[1]!.runLabel).toBe('RUN 12')
+    expect(segments[0]!.runLabel).toBe('ECHO-1')
+    expect(segments[1]!.runLabel).toBe('ECHO-12')
   })
 
   it('(c) a label that already carries its own `RUN nn /` prefix is normalised, not doubled', async () => {

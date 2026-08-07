@@ -1,9 +1,10 @@
 // [u6] ReportArchive — spec-client §3 inv 6 + §6 row `ReportArchive`.
 //
-// The rail is segmented by RUN and TIME, and by nothing else: "no gate label
-// appears on any player surface". The seam hands over `meta.archive` as
-// `{run, label}` pairs, so the run number is the authority for the `RUN nn`
-// half and the label contributes only its time span — a label that already
+// The rail is segmented by SITTING and TIME, and by nothing else: "no gate
+// label appears on any player surface". The seam hands over `meta.archive` as
+// `{run, label}` pairs, so the run number is the authority for the `ECHO-n`
+// half (G3 — `callsignOf`) and the label contributes only its time span — a
+// label that already
 // carries its own prefix is normalised rather than doubled, and a label that
 // smuggles a design-time marker is refused outright instead of being printed.
 //
@@ -12,6 +13,7 @@
 // here the rail is a real listbox with a roving tabindex (PRD §4 a11y) and the
 // selection is pushed back to the window through `onSelect`.
 import { el } from '../shell/dom.ts'
+import { callsignOf } from './dossier.ts'
 
 /** One archived run as the seam carries it (`meta.archive[]`). */
 export interface ArchiveEntry {
@@ -39,11 +41,6 @@ export const RAIL_LABEL = '보관 기록 · 시행/시각'
 /** The rail's own footnote, decorative and hidden from the listbox. */
 export const RAIL_NOTE = '보관 기록 · 시행/시각 순'
 
-/** `RUN nn`, zero-padded, derived from the run NUMBER and not from the label. */
-function runLabelOf(run: number): string {
-  return `RUN ${String(run).padStart(2, '0')}`
-}
-
 /**
  * One segment per archive entry, in stream order, with exactly one selected.
  * Throws when an entry's label carries anything but run and time.
@@ -58,7 +55,7 @@ export function archiveSegments(
     }
     return {
       run: entry.run,
-      runLabel: runLabelOf(entry.run),
+      runLabel: callsignOf(entry.run),
       span: entry.label.replace(OWN_PREFIX, '').trim(),
       selected: entry.run === activeRun,
     }
@@ -147,7 +144,7 @@ export function createArchiveRail(options: ArchiveRailOptions): ArchiveRail {
         const node = el('button', 'arch')
         node.type = 'button'
         node.setAttribute('role', 'option')
-        // The space is load-bearing: `RUN 01` and the span must read as two
+        // The space is load-bearing: `ECHO-1` and the span must read as two
         // words in the accessible name, not as one run of digits.
         node.append(el('span', undefined, segment.runLabel), document.createTextNode(' '), el('em', undefined, segment.span))
         node.addEventListener('click', () => {

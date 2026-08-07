@@ -273,7 +273,7 @@ test.describe('deploy stamp locks the file', () => {
     await expect(stamp).toHaveClass(/\bon\b/)
     await expect(stamp).toBeVisible()
     await expect(stamp.locator('span')).toHaveText('배 치 완 료')
-    await expect(stamp.locator('em')).toHaveText(/^RUN \d{2} · \d{2}:\d{2}$/)
+    await expect(stamp.locator('em')).toHaveText(/^ECHO-\d+ · \d{2}:\d{2}$/)
 
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'locked')
     await expect(page.locator('#btnDeploy')).toHaveAttribute('data-state', 'deployed')
@@ -297,7 +297,7 @@ test.describe('deploy stamp locks the file', () => {
     })
     expect(await pinnedIds(page)).toEqual(before)
     await expect(page.locator('#slotCount')).toHaveText('2 / 4')
-    await expect(page.locator('#deployStamp em')).toHaveText(/^RUN \d{2} · \d{2}:\d{2}$/)
+    await expect(page.locator('#deployStamp em')).toHaveText(/^ECHO-\d+ · \d{2}:\d{2}$/)
   })
 
   test('[u4#c4] (e) the deployed SET reaches the seam, order carrying no meaning', async ({ page }) => {

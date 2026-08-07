@@ -343,7 +343,7 @@ test.describe('new run unlocks and files the report', () => {
     expect(filed.archive.map((a) => a.run), `RUN ${closed} is missing from the archive`).toContain(closed)
 
     const labels = await page.locator(OPTION).evaluateAll((nodes) => nodes.map((n) => (n.textContent ?? '').trim()))
-    expect(labels.some((l) => new RegExp(`RUN\\s*0*${closed}\\b`).test(l))).toBe(true)
+    expect(labels.some((l) => new RegExp(`ECHO-${closed}\\b`).test(l))).toBe(true)
     for (const label of labels) expect(label).not.toMatch(/gate|게이트/i)
   })
 
