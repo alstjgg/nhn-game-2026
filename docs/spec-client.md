@@ -35,11 +35,13 @@ engine and proxy landed, and how it is still tested).
    progress bar and rate control · D-DAY counter + run pips) · taskbar ·
    window manager (drag / resize / collapse / close-to-taskbar; default
    layout computed from the viewport).
-2. **Five windows**, one per loop surface (§4): AGENT FILE (build) · BLOCK
-   STORE (build) · LIVE FEED (watch) · REPORTS (autopsy) · TALLY (score).
+2. **Four windows**, one per loop surface (§4): AGENT FILE (build) · LIVE
+   FEED (watch) · REPORTS (autopsy + store) · TALLY (score). BLOCK STORE was
+   removed as a duplicate of the report it mined from (§4).
 3. **The membrane.** All player input reduces to exactly
    `slot · unslot · mine · deploy · new_run` (§5.2). Nothing else ever
-   crosses; no free-text surface exists.
+   crosses; no free-text surface exists. **Removing the store did not remove
+   `mine`** — the op is unchanged; only its destination is.
 4. **Display of engine output, never computation of it.** Feed lines,
    symptom sentences, reports, and score arrive as data through the
    view-driver seam (§5.2); the client renders and animates but never
@@ -140,16 +142,24 @@ manual pre-merge gate.
 
 ## 4. Screens — the window set
 
-An **operator's desktop**: persistent chrome plus five windows. One page, no
+An **operator's desktop**: persistent chrome plus four windows. One page, no
 routing. Desktop only; minimum viewport bound in the PRD.
+
+**BLOCK STORE was a window, not a function.** Its one distinct job — a
+cross-run view of mined sentences — is what the REPORTS archive rail already
+does, so the window was duplicating the surface it mined from. Removing it
+(playtest T1) drops the species filter with it: the filter existed to sort a
+tray that no longer exists, and M2 had already removed the species words it
+sorted by. Mining is unaffected — `mine` is still a membrane op (§3 principle
+3); what changes is that a mined sentence stays on the report instead of
+becoming a card in a tray.
 
 | Region | Loop role | Holds |
 |---|---|---|
 | **Chrome** (persistent top bar) | orientation | portal identity (portal name · operator · case) · game clock → 21:04 with progress bar and rate control (×1/×4/pause) · D-DAY counter + run pips · taskbar |
 | **AGENT FILE** | Build | the dossier: §0–§2 fixed sections · §3 기질 sealed (invariant 4) · §4 known-blocks slots (cap: dev value 4 — §9) · deploy control |
-| **BLOCK STORE** | Build | mined sentences as cards (authored id + species/axis tags) · species filter |
 | **LIVE FEED** | Watch | the run feed in seven line kinds (§6 `RunFeed`) · diegetic waiting marker; untouchable during a run |
-| **REPORTS** | Autopsy | two documents side by side: facts (objective log) · report_body (typewriter replay) · sentence mining (click → store) · **archive rail** — every past report readable, previously-slotted sentences highlighted (invariant 6) |
+| **REPORTS** | Autopsy + store | two documents side by side: facts (objective log) · report_body (typewriter replay) · sentence mining (click → marked `mined` in place) · **archive rail** — every past report readable, previously-slotted sentences highlighted (invariant 6) |
 | **TALLY** | Score | score count-up at run end (absorbs the report call; paced ~9 s) · run summary · new-run control |
 
 ---
@@ -272,7 +282,7 @@ driver, not the windows, is where that guarantee is enforced (invariant 12).
 
 A fixture run file is an ordered `ViewEvent[]` with clock stamps plus canned
 responses for each `MembraneOp` the script expects (deploy → the scripted
-run; mine → acknowledged into the store). Fixture files live under
+run; mine → acknowledged as `mined` on the sentence). Fixture files live under
 `driver/fixtures/` and ship only in dev builds. The demo fixture is the
 design target's RUN 03 material regenerated against `우는다리` — authored
 sentences with real ids, never lorem.
@@ -292,8 +302,7 @@ run known-open #4 — the wiring step).
 |---|---|---|
 | `RunCounter` | n runs left · last run | topbar D-DAY value + run pips |
 | `GameClock` | ticking · paused · terminal (21:04) | topbar digits + progress fill bar + rate control (×1/×4/pause) |
-| `BlockCard` | in-store · slotted · at-cap (disabled) · archived-highlight | index-card stock, punch hole, species mark |
-| `BlockStore` | empty ("nothing mined yet") · populated · filtered | card-tray window + species filter |
+| `BlockCard` | slotted · at-cap (disabled) · archived-highlight | index-card stock, punch hole, species mark. A mined-but-unslotted sentence is **not** a card — it is marked in place on the report (§4 REPORTS) |
 | `SlotBoard` | empty · partial · full · locked (deployed) | dossier §4 slots; each filled slot pinned by red thread to its source sentence |
 | `DeployButton` | ready · deployed (locked) | 배치 stamp; locked = stamped over the file |
 | `RunFeed` | line kinds: `event · radio · npc · symptom · wait · fallback · mark` | green-bar fanfold printout, lines landing on the game clock |

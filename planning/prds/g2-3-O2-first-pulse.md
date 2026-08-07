@@ -1,29 +1,71 @@
-# O2 — the first report's first mineable sentence pulses once, first sitting only
+# O2 — the first mining round trip plays once, first sitting only
 
 > plan-playtest.md **v7** · change list stamped against tree `14dd971` (2026-08-07),
 > **before group 1 merged** — `g1-5` edits `reports.ts`'s meta branch and
 > `report-view.ts`, so this list is re-stamped after group 1 lands (the `reports.ts`
 > current-text below is written against `g1-5`'s output where marked).
 > Executor: Sonnet-class session. Branch `playtest/g2-3-o2` off current `main`.
-> One commit, message: `playtest(O2): debut pulse on the first mineable sentence`.
+> One commit, message: `playtest(O2): debut pulse on the first mining round trip`.
 > Open a PR; merge nothing (§5.6). Confirm `git config user.email` resolves to the
 > `alstjgg` account first (hard rule 1).
+>
+> **AMENDED 2026-08-07 for T1 — NOT EXECUTABLE AS WRITTEN.** This PRD was
+> author-resolved while BLOCK STORE still existed, and its second half is not yet
+> written. See "Amendment — the slot half" below before starting.
+
+## Amendment — the slot half (2026-08-07)
+
+T1 deletes BLOCK STORE. With the store present, tearing a sentence sent a card
+flying to a visible window and **the destination taught itself**; after T1
+nothing moves — the sentence changes state in place and its destination is a slot
+in AGENT FILE, diagonally across the desk. A pulse on the sentence alone now
+teaches step one and leaves the player stopped at step two, which is the failure
+this unit exists to prevent.
+
+**O2 is therefore a round trip:** the sentence pulses, and **on tear the empty
+slot that receives it pulses too** — both once, first sitting only, off the same
+latch.
+
+What this amendment changes above: the title, the Outcome's last sentence, and
+the first Design bullet's scope. What it does **not** change: the `run === 1`
+latch, the `.tear` class precedent, the existing-tokens rule, and the
+reduced-motion collapse — all four carry to the slot half unchanged.
+
+**Still to author before this unit runs** (do not improvise it):
+
+- The slot half's change list. The three-file Scope below is the sentence half
+  only; the slot pulse lands on `src/client/components/slot-board.ts`, which the
+  Scope currently forbids touching by omission.
+- Ordering against T1. This unit's current text assumes the store exists (the
+  Scope's note about the fixture, the Change list's `reports.ts` anchors). **T1
+  merges first** (plan-playtest §2, §4).
+- Whether the slot pulse fires on every empty slot or only the one that receives
+  the tear.
+
+Executor: if you reach the Change list without that authored, **stop and report
+per §5.7**.
 
 ## Outcome
 
 On the player's first sitting (run 1) only, when the first report arrives, the
 first sentence of the 현장 기록 swells once — a single quiet pulse that says
-"this is touchable" — and never again: not on later rounds, not on later runs,
-not on re-renders. Nothing else about mining changes.
+"this is touchable" — and when it is torn, the slot that takes it answers with
+the same pulse. Neither fires again: not on later rounds, not on later runs, not
+on re-renders. Nothing else about mining changes.
 
 ## Design (author-resolved)
 
-- The pulse targets **the first facts anchor** (`model.facts[0]`'s node): the
-  facts pane paints whole on arrival, while the report body typewrites for ~4 s —
-  a pulse there would fire on an empty node.
+- The sentence pulse targets **the first facts anchor** (`model.facts[0]`'s
+  node): the facts pane paints whole on arrival, while the report body
+  typewrites for ~4 s — a pulse there would fire on an empty node. The slot
+  pulse targets the receiving slot in AGENT FILE §4 (see the amendment above —
+  its change list is unwritten).
 - "First run only" is a latch in `windows/reports.ts` (`run === 1`, first report
-  arrival, once). The DEV fixture opens on run 3, so the pulse never fires under
-  e2e — zero spec amendments — and is verified on the live desk.
+  arrival, once) and **the slot half rides the same latch**. The DEV fixture
+  opens on run 3, so neither pulse fires under e2e — zero spec amendments — and
+  both are verified on the live desk. (The fixture's run 3 is unrelated to the
+  player build opening on run 1; `run-loop.ts:176-177` keeps the fixture out of
+  the deployed build.)
 - The class rides the `.tear` precedent exactly: add class → finite
   `@keyframes` → self-remove on `animationend`. It is applied outside
   `sentenceClass()`, so a later `applyState` repaint simply clears it — accepted,
@@ -33,7 +75,10 @@ not on re-renders. Nothing else about mining changes.
 
 ## Scope
 
-May modify (only these three files):
+**This Scope covers the sentence half only** — the slot half adds at least
+`src/client/components/slot-board.ts` and is unwritten (see the amendment).
+
+May modify (the sentence half — only these three files):
 
 - `src/client/windows/reports.ts`
 - `src/client/components/report-view.ts`
@@ -204,7 +249,9 @@ Run in this order, from the repo root, after committing:
 
 ## Done when
 
-- [ ] All edits applied; `git diff HEAD~1 --stat` shows exactly the three listed files.
+- [ ] The slot half is authored and its files are listed in Scope (amendment).
+- [ ] T1 is merged (the store is gone) before this unit's branch is cut.
+- [ ] All edits applied; `git diff HEAD~1 --stat` shows exactly the listed files.
 - [ ] Steps 1–3 green, in order.
 - [ ] Behavioral check 4 confirmed on a live run (author-side is acceptable — mark it in the PR if deferred to the group game check).
 - [ ] `grep -n 'debut' src/client/components/minable-sentence.ts` is empty — the state machine was not touched.

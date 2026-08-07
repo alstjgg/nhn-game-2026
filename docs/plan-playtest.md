@@ -6,6 +6,15 @@
 > Cut line against the ~08-10 deadline is §4. Rules live in /CLAUDE.md; state in status.md.
 > Items marked **landed** are already on this branch; the citation is what to read, not what to do.
 > Every coordinate below was audited against the working tree on 2026-08-06.
+> **08-07 amendment:** T1 gained a documentation half and four missing code
+> sites; the species filter is dropped with the window (option a); O split into
+> O1/O2/O3a/O3b and moved behind T1 (no re-bucketing — 민서's 08-07 deferral
+> stands); U2 narrowed to the cap. The build opens
+> on **run 1** — the "start at run 3" idea in `planning/dday-design-doc.md` §6 is
+> retired, which is why the opening now has to carry the first 60 seconds.
+> `docs/spec-client.md` citations were re-audited after that file's own edit
+> (`113-115`→`115-117`, `149`→`160`, `152`→`162`, `302`→`312`, `380`→`390`,
+> `405`→`415`).
 
 ## 0. Frame
 
@@ -25,7 +34,7 @@ played site.**
 
 The client's `RUN nn` labels contradict the frame and are corrected in G3.
 
-Gate structure must not reach the player. `docs/spec-client.md:113-115` carries
+Gate structure must not reach the player. `docs/spec-client.md:115-117` carries
 this as review-blocking **invariant 6** in §3, and the 08-03 decision log binds it
 for the archive. §1.G items are defects against that rule, not feature requests —
 and the surface includes anything fetchable from the deployed site, not only what
@@ -90,16 +99,66 @@ reads who their agent is. Same information as a person — *"확인되지 않은
 
 | id | item | resolution | depends on |
 |---|---|---|---|
-| T1 | BLOCK STORE duplicates report sentences | remove the window; its one distinct function — a cross-run view of mined sentences — moves into the report | U5.2a (landed) |
+| T1 | BLOCK STORE duplicates report sentences | remove the window; its one distinct function — a cross-run view of mined sentences — is already the report's archive rail. **The store was a window, not a function** | U5.2a (landed) |
 | T2 | Radio reports too long to read before the next event | lower `max_chars` in `data/policy/report-guidance.json:11` (300–1200자, character-bounded; rendered by `src/shared/report-guidance.ts:49-56`) | — |
 | T3 | Layout: REPORTS left (large), LIVE FEED top-right, AGENT FILE bottom-right | `src/client/shell/layout.ts:33,50,65-111` | M |
 
-**T1's sites:** `src/client/windows/block-store.ts` (deleted),
+**T1's sites — code:** `src/client/windows/block-store.ts` (deleted),
 `src/client/shell/window-registry.ts:12,40` (the import and the mount — its
 header says it is the only module that imports `windows/`),
 `src/client/shell/layout.ts:33` (`WINDOW_KEYS` `'store'`), `:50` (`DESK_ORDER`),
-`:107` (its rect), `src/client/styles/win-block-store.css`, and
+`:107` (its rect), `src/client/styles/win-block-store.css`,
+`src/client/styles/index.css:15` (its `@import`), and
 `src/client/components/species-filter.ts`, whose only importer it is.
+
+**The site the old list missed: `src/client/components/report-view.ts:155`** —
+`'문장을 누르면 뜯어내 블록 보관함으로 보냅니다 · '`. It is the **only string that
+names the deleted window to the player**, and leaving it sends a judge looking
+for a window that is not there. It is not a mechanical rename either: it has to
+state the new destination, which is what O2 teaches by animation. Write it with
+O2, not before.
+
+**The species filter goes with the window** (decision 08-07, option a). It
+existed to sort a tray that no longer exists, and M2 already removed the species
+words it sorted by. `species-filter.ts` is deleted rather than rehomed; the
+`species` field on the wire is untouched (see M2's third note).
+
+**Layout is deliberately left alone.** Deleting the `store` rect leaves a gap in
+the right column. The desk is being re-fitted to fill its space anyway, so T1
+takes the window out and does **not** re-fit — that lands with T3. `DESK_ORDER`
+(`layout.ts:50`) must still drop `'store'` in T1, or focus order points at a
+window that no longer mounts (`layout.ts:43-48` records this as the quarantined
+WCAG 2.4.3 defect).
+
+**T1's sites — tests:** `tests/windows/block-store.test.ts` and
+`e2e/block-store.spec.ts` are deleted with the unit. Store references also sit in
+`e2e/shell.spec.ts` (13), `tests/styles/stacking-context.test.ts` (4),
+`tests/shell/shell-utils.ts` (2), `tests/assets/baseline/u1-styles-baseline.json`
+(2), and one each in `e2e/captures.spec.ts`, `tests/shell/window-registry.test.ts`,
+`tests/styles/css-utils.ts`, `tests/windows/reports.test.ts`,
+`agent-file.test.ts`, `live-feed.test.ts`, `tally.test.ts`. Side effect worth
+knowing: the `[u4s#c7]` guards at `block-store.test.ts:554-567` — the ones that
+require `git diff HEAD -- slot-board.ts` to be empty and have tripped several
+units since — die with the file. They were scoped to the store unit's own PR, so
+nothing loses coverage.
+
+**T1's sites — docs.** T1 was written as a code deletion and had no
+documentation half; the doc surface is wider than the code surface.
+`docs/spec-client.md` in six places: §3 principle 2 (window count and list),
+§4 intro (count + why the window went), the §4 table (BLOCK STORE row deleted,
+REPORTS row's `click → store`), §5.4 (`mine → acknowledged into the store`), and
+§6 (`BlockStore` row deleted, `BlockCard`'s `in-store` state).
+`docs/architecture-map.md` in two: the Run-loop Manager's input and the Input
+Surface's window list. `planning/dday-design-doc.md` §6 is where the concept
+originates — leave it and it grows back. `planning/prds/*` are stamped records
+and are **not** edited. `docs/design/phase2-ui/*` is the reference original and
+is not edited either, though `README.md:85` (BLOCK STORE sits outside
+`display:contents`) is a note T3 should read.
+
+**Do not batch the doc edits into a cleanup PR.** Each code PR carries its own:
+the window count drops 5 → 4 at T1 and 4 → 3 at U3, so a single edit makes the
+spec lie at whichever point lands first, and "why did the window go" belongs in
+the same commit as the deletion — the history is a competition deliverable.
 
 **T3 must move `DESK_ORDER` (`layout.ts:50`) with the rects.** `layout.ts:43-48`
 records that a `DESK_ORDER`/`applyLayout` mismatch is the WCAG 2.4.3 focus-order
@@ -143,7 +202,7 @@ C2–C4 are copy and land in one commit.
 | id | item | resolution |
 |---|---|---|
 | U1 | LIVE FEED emits many lines at once, so time stutters instead of passing | reveal queue in `src/client/windows/live-feed.ts`, downstream of the adapter's fanout (`adapter.ts:155-158`) |
-| U2 | 4 slots too few; drag sentences rather than cards | `SLOT_CAP` at `src/client/components/slot-board.ts:19`; a U-owned §9 parameter (`docs/spec-client.md:149,380,405`), not a datapack field |
+| U2 | 4 slots too few | `SLOT_CAP` at `src/client/components/slot-board.ts:19`; a U-owned §9 parameter (`docs/spec-client.md:160,390,415`), not a datapack field. **"Drag sentences rather than cards" was dropped from this item — T1 delivers it** |
 | U3 | Remove TALLY; merge NEW RUN into DEPLOY; casualties and results in 현장 기록 as unmineable, visually distinct records | see below — the sites span four files |
 | U4 | Nothing tells a judge what to press first | resolved into O1 and O2 |
 | U5.1 | REPORTS tabs → ECHO-1, ECHO-2…, each opening that sitting's 현장 기록 + 무전 기록 | needs a **new store** — see below |
@@ -178,6 +237,11 @@ what mounts TALLY** — leave it and the window still appears. Also
 `layout.ts:33,50,75-80,100-102,109`, and a decision on whether `RunPhase 'tally'`
 (`run-state.ts:23`, set at `:112-128`) stays.
 
+**If T1 lands first, U3's registry coordinate moves.** The store row is
+`window-registry.ts:40` and TALLY is `:42`; deleting the store makes TALLY `:41`.
+The same shift applies to U3's `layout.ts` line list. Re-audit before writing the
+U3 PRD rather than pasting these numbers.
+
 **U2 is pinned by four assertions the executor will hit:**
 `tests/windows/block-store.test.ts:366` (`expect(SLOT_CAP).toBe(4)`),
 `tests/windows/agent-file.test.ts:734` (source regex),
@@ -186,6 +250,12 @@ what mounts TALLY** — leave it and the window still appears. Also
 `tests/windows/block-store.test.ts:557-559`, which requires
 `git diff --name-only HEAD -- slot-board.ts` to be **empty** — any uncommitted
 edit to `slot-board.ts` fails it. That last one also catches C2.
+
+**Two of those four die with T1**, which deletes `block-store.test.ts` — the
+`SLOT_CAP` assertion at `:366` and the `slot-board.ts` diff guard at `:557-559`.
+Whoever runs U2 or O2 after T1 should re-read this list rather than trust it; and
+the `SLOT_CAP` assertion needs a new home before it is deleted, or the cap loses
+its only test.
 
 The mechanism risk stands: C-BLOCK was measured with **one** sentence injected
 into `[알려진 것]` (9/10 stance shift, one-sided Fisher p=0.0000595). At ten the
@@ -198,7 +268,7 @@ legibility the loop depends on. Raise to 6 behind one probe arm, or hold at 4.
 bodies are persisted nowhere, and `data/runs/_schema/meta-state.schema.json` is
 `{"type":"array","items":{"type":"string"}}` under `additionalProperties: false`,
 so widening it fails `tests/runloop/meta-schema.test.ts:88-89`. This unit adds a
-separate store. `docs/spec-client.md:152` already specifies the rail (and `:302`
+separate store. `docs/spec-client.md:162` already specifies the rail (and `:312`
 the component), so it is conformance, not a new feature.
 
 **U5.2b is an engine-seam unit, not a client one.** The prose exists on disk and
@@ -223,17 +293,60 @@ carry a number.
 
 ### O — Opening
 
-| id | item | where |
-|---|---|---|
-| O1 | Play the 08:50 call before the desk appears: empty screen, radio only, then it cuts off and the windows come up | `src/client/main.ts:9` (`void bootShell()`), or between `boot.ts:118` (`holdDesk`) and `:216-219` (`revealDesk`) — the hold/reveal seam exists at `src/client/components/desktop-dressing.ts:15,20` |
-| O2 | First report's first mineable sentence pulses once, first run only | `src/client/components/minable-sentence.ts:20,78-82,121-126` for the state; first-arrival is decided at `src/client/windows/reports.ts:95-108` / `report-view.ts:94` (`RenderOptions.replay`); new class beside `win-reports.css:75-77`, values in `tokens.css` (invariant 8) |
-| O3 | Three or four sound effects — static, the phone, the silence at 21:04 | files under `public/assets/`; entry per file in `assets-manifest.json`'s `assets[]` — generated `{file, tool, prompt, license}`, sourced `{file, source, license, note}` (see the font entries) |
+| id | item | where | depends on |
+|---|---|---|---|
+| O1 | **First run only.** Play the 08:50 call before the desk appears: empty screen, radio only, skippable on any key or pointer; then it cuts, the windows come up, and the desk opens focused on **AGENT FILE** — the player's own press starts the day. Run 2+ boots straight to the desk as it does today | the overlay threads into `bootShell()` between `boot.ts:189` (`clock.setRate(0)`) and the pump/reveal block at `:214-219`, resolving before `revealDesk` — the `holdDesk`/`revealDesk` seam (`components/desktop-dressing.ts:15,20`) is untouched. Focus is `boot.ts:215` (`desk.focus('feed')`). Full design in `planning/prds/g2-2-O1-opening-call.md` | T1 · O3a |
+| O2 | The first mining round trip, played once: the first mineable sentence pulses, and on tear the empty slot that receives it pulses | `minable-sentence.ts:20,78-82,121-126` for the state; first-arrival is decided at `windows/reports.ts:95-108` / `report-view.ts:94` (`RenderOptions.replay`); new classes beside `win-reports.css:75-77`, values in `tokens.css` (invariant 8). The slot half lands on `components/slot-board.ts` | T1 |
+| O3a | Two sounds — the static and the phone | files under `public/assets/` (**today it holds fonts only** — this is greenfield); entry per file in `assets-manifest.json`'s `assets[]` — generated `{file, tool, prompt, license}`, sourced `{file, source, license, note}` (see the font entries) | — |
+| O3b | One ambient bed that runs all day and stops at 21:04 | as O3a | U1 |
 
-An opening is not a tutorial. Ten seconds establishes who the player is, what
-they are for, and why it is urgent, and it is the first ten seconds of
-deliverable #2. CLAUDE.md makes the first 60 seconds the optimization target and
-nothing in the build addresses it. O1 must not build a second hold — the desk
-already holds and reveals.
+Ten seconds establishes who the player is, what they are for, and why it is
+urgent, and it is the first ten seconds of deliverable #2. CLAUDE.md makes the
+first 60 seconds the optimization target and nothing in the build addresses it.
+**The opening may also teach the first action** — the earlier rule that it must
+not be a tutorial is withdrawn (08-07); staging and animation add no free-text
+surface, so the membrane never barred it. O1 must not build a second hold — the
+desk already holds and reveals.
+
+**The script is already authored.** `timeline.json` `t1` is the 08:50 call and
+specifies its own length: *"첫 전화(28초). '오늘 밤 강에서 많은 사람이 죽는다.
+막을 수 있는 건 그 방에 앉은 사람들뿐이다.' 끊김."* O1 is a staging job, not a
+writing one.
+
+**O1's shape (08-07):** radio · skip on any key or pointer · the desk revealing
+focused on **AGENT FILE** · the player's own press starting the day.
+
+The focus half is not decoration. Radio alone teaches the wrong thing — the
+player infers they are the person who took the call, when the room is 차은규's
+(`characters.json` c2) and the player builds the agent that goes into it. AGENT
+FILE §0 carries the callsign and §1 the `08:50 → 21:04` band; `boot.ts:215`
+focuses LIVE FEED today. Later runs keep the feed, and since the opening is
+first-run-only, **both halves hang off one "is this run 1" test** — the same test
+O2 needs. Write it once.
+
+**The last step is a change, not a description.** `boot.ts:183-188` opens the run
+with `advance(0)`, which releases the opening minute *without moving the clock*,
+then waits for the operator to press **▶** — the topbar rate control, not DEPLOY;
+`adapter.ts:379`'s `deploy` branch only records the deployed set. So the first
+run currently needs two presses in two places, which is the "what do I press now"
+the opening exists to answer. Folding the clock start into DEPLOY runs with the
+grain of U3 (which already merges NEW RUN into DEPLOY), but it touches the
+chrome's clock control and is outside `g2-2`'s three-file scope.
+
+**O2 is a round trip because of T1.** With BLOCK STORE present, tearing a
+sentence sent a card flying to a visible window — the destination taught itself.
+After T1 nothing moves: the sentence changes state in place (`MinableState`
+`unmined → mined`), and the next step is a slot in a different window, diagonally
+across the desk. A pulse on the sentence teaches step one and leaves the player
+stopped at step two. Both halves ride the same first-arrival test, so the cost is
+one class, not one feature. **`g2-3` is amended for this** (08-07); its
+`run === 1` latch, `.tear` precedent, existing-tokens rule and reduced-motion
+collapse are unaffected.
+
+**O3a is O1's material, not polish.** Cut it and O1 is a silent black screen.
+O3b is the one that carries 21:04, and it is not "silence" — the logline
+specifies *"폭발음 하나 없이"*, so what has to land is a sound that stops. That
+needs a bed running all day, which needs U1.
 
 ### M — Misc
 
@@ -292,13 +405,14 @@ are where it would show.
 ## 2. Dependency order
 
 ```
-G2, G4, C2, C3, C4, M1, M2, T2, U1, U3, O1, O2, O3      ← no dependencies
+G2, G4, C2, C3, C4, M1, M2, T2, U1, U3, O3a             ← no dependencies
         │
 M1 ──► U5.1                    M1 ──► U5.2c
 G3 ──► U5.1                    U5.2b (seam: carry `desc`) ──► U5.2c
 C1 ──► U5.3
         │
 U5.2a (landed) ──► T1 ──► T3          U3 ──► T3
+T1 ──► O1          T1 ──► O2          O3a ──► O1          U1 ──► O3b
 U2 ──► probe at the new cap
 ```
 
@@ -306,19 +420,33 @@ U2 ──► probe at the new cap
 graph's long chains. **U3 is now free-standing**, and the critical path is
 `U5.2b → U5.2c`, which crosses the engine/client boundary and is therefore two
 units by §5.2. T3 trails U3 as well as T1 — its target layout is the
-three-window desk, which exists only once TALLY and BLOCK STORE are both gone —
-so groups 3 and 5 do not swap.
+three-window desk, which exists only once TALLY and BLOCK STORE are both gone.
+
+**O1 and O2 were wrongly listed as free-standing.** Both depend on T1, and the
+dependency is real work, not taste. O1's reveal is the moment the desk becomes
+legible, and a four-window desk reads where a five-window one does not — build it
+before T1 and the reveal is staged against a layout that is about to lose a
+window. O2 is worse: it teaches where a mined sentence goes, and T1 changes the
+answer (see §1.O). Both would be authored twice.
 
 ## 3. Work groups
 
 1. **Copy pass** — G2, G4, C2, C3, C4, M1, M2, T2. Strings and data only.
-2. **Time** — U1, then O1/O2. The day has to pass before anything about it reads.
-3. **Ending** — U3. No longer waits on anything.
-4. **Cause** — U5.2b (seam), then U5.2c (render).
-5. **Report becomes the archive** — T1 → T3.
-6. **History** — G3, U5.1, then C1 → U5.3.
-7. **Polish** — O3.
-8. **Slot cap** — U2, probe first.
+2. **Time** — U1. The day has to pass before anything about it reads.
+3. **Report becomes the archive** — T1, then T3. T1 fixes the desk the opening
+   is staged on, so it comes before group 4.
+4. **Opening** — O1 + O3a together (one is the other's material), then O2.
+   **Deferred as a group (§4)**; the order holds for whenever it returns.
+5. **Ending** — U3. No longer waits on anything.
+6. **Cause** — U5.2b (seam), then U5.2c (render).
+7. **History** — G3, U5.1, then C1 → U5.3.
+8. **Polish** — O3b.
+9. **Slot cap** — U2, probe first.
+
+Groups 2–4 are one run in practice: **U1 → T1 → O1/O3a → O2**. T3 may trail
+without blocking O, but the further it slips the more O1's reveal is staged
+against a layout that is about to move. With group 4 deferred, groups 2 and 3
+run as **U1 → T1** and the rest of the order waits with it.
 
 ## 4. Cut line (~08-10; the deployed build stays green)
 
@@ -337,7 +465,18 @@ designed as one conversation before either ships. Their decision-level PRDs
 "no first ten seconds" argument still stands and returns to Must the moment the
 design discussion closes.
 
-**Should:** G3 · T3 · U5.1 · O3.
+The deferral stands. §1.O was restructured under it and re-buckets nothing;
+`g2-3` was amended in place for T1, and O1's shape is settled there.
+
+**T1 runs before the O items whenever they return** — sequencing, not priority.
+Both are authored against the desk T1 leaves behind (§1.O, §2).
+
+**Should:** G3 · T3 · U5.1 · O3b.
+
+**O3 splits.** O3a — the static and the phone — is O1's material, not polish:
+without it the opening is a silent black screen, so it defers and returns with
+O1. O3b — the ambient bed that runs all day and stops at 21:04 — stands alone
+and depends only on U1.
 
 **U5.1 moved down from must.** It was sized as a client change; it needs a new
 persistence store, because `report_archive` is an index of run ids and its schema
@@ -350,7 +489,9 @@ because U3 first deletes or reworks two of its sites (`tally.ts:54`,
 
 **Won't:** C1 · U5.3 · U2.
 U5.3 is the next step rather than a cut. U2 is deferred because raising the cap
-without a probe risks the mechanism claim four days before submission.
+without a probe risks the mechanism claim four days before submission — and U2
+is now **only** the cap: T1 delivers "drag sentences rather than cards" for
+free, because after it there is no card to drag until a sentence is slotted.
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
@@ -528,7 +669,7 @@ Rules for the change list:
   950 · `.skip-link` 960. (v8.)
 - **Two composition roots** must stay in step: `src/client/driver/live/bind.ts`
   and `tools/driver/run/bind.mjs`.
-- **The membrane rule and invariant 6** (/CLAUDE.md, `docs/spec-client.md:113-115`)
+- **The membrane rule and invariant 6** (/CLAUDE.md, `docs/spec-client.md:115-117`)
   outrank any instruction in a PRD.
 
 ### 5.5 Verification
