@@ -10,8 +10,8 @@
     "ambience": 0.15
   },
 
-  "$preload": "Fetched and decoded before everything else — the only cues reachable before the desk exists, O1's door and its controls. `ready` resolves on this list alone, so the LOGIN press answers without waiting for the whole pack.",
-  "preload": ["door-login", "click", "hover", "boot", "window-open", "window-close"],
+  "$preload": "Fetched and decoded before everything else — the only cues reachable before the desk exists, O1's door and its controls. `ready` resolves on this list alone, so the door's controls answer without waiting for the whole pack.",
+  "preload": ["click", "hover", "window-open", "window-close"],
 
   "$cues": "A cue is one playable sound. `files` longer than one is a variation set — a fresh member is drawn each play, never the same one twice running. `cooldownMs` drops a retrigger inside the window, which is what keeps a burst of feed lines from stacking into a wall.",
   "cues": {
@@ -98,18 +98,19 @@
     "score:down": "score-down",
 
     "ui:click": "click",
-    "door:login": "door-login",
+    "$door-login-null": "Silent by the coexistence decision: shell/radio-sfx.ts (O3, merged in #179) plays its carrier static under the LOGIN readout, and a counter-click on top of that bed is one press sounding twice. The `door-login` cue ships; rebinding it here is one line.",
+    "door:login": null,
     "ui:hover": "hover",
     "ui:window-open": "window-open",
     "ui:window-close": "window-close",
     "ui:drag": "drag",
     "ui:drop": "drop",
 
-    "$boot": "Fires on the gesture that unlocks the audio context — the desk powering on. It is the only cue the player causes without asking for.",
-    "boot": "boot",
+    "$boot": "Silent by the coexistence decision: the unlocking gesture is almost always the LOGIN press, which lands under radio-sfx's static bed — a stinger there is a third sound on one press. The `stinger` cue ships; rebinding it here is one line.",
+    "boot": null,
 
-    "$collapse": "The ending, just ahead of the last ledger. The cue swells for 2 s and CUTS - the silence after the cut is the cue, so the ledger's row ticks take a 2800 ms lead on that day and leave the silence intact. The seam carries no ending event, but `meta.runs_left` reads 0 on the final day and nowhere else, and `score` is emitted immediately before `run_end`.",
-    "ending:collapse": "collapse"
+    "$collapse": "Silent by the coexistence decision: 21:04 belongs to shell/radio-sfx.ts, whose day-end static swells for 1.9 s and CUTS — the silence after the cut is the cue. The ledger's row ticks still take a 2800 ms lead on the last day (the lead is keyed to the day in src/client/audio/index.ts, not to this binding), so that silence survives. The `collapse` cue ships; rebinding it here is one line, and doing so should retire the radio-sfx swell so the two never stack.",
+    "ending:collapse": null
   },
 
   "$ambience": "An opening, not a bed. `playForMs` retires both loops that many ms after the desk opens and they never return, the Watch drone included. Room tone and a drone are broadband noise under a screen the player reads for minutes; held for a whole run they read as fatigue rather than atmosphere. Set `playForMs` to null to hold them for the session. `null` on a slot is silence, and that is a real choice too — the Autopsy screen is meant to be quiet.",

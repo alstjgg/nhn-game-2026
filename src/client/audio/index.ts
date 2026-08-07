@@ -27,8 +27,12 @@ import { button } from '../shell/dom.ts'
 /** Where the map lives. Published by `vite.config.ts`'s `POLICY_FILES`. */
 const MAP_PATH = 'data/policy/audio-map.json'
 
-/** Survives a refresh with the rest of the desk's session state (physical §1.1). */
-const MUTE_KEY = 'dday.audio.muted'
+/**
+ * Survives a refresh with the rest of the desk's session state (physical §1.1).
+ * Exported because it is the desk's ONE mute: `shell/radio-sfx.ts` (O3's
+ * procedural cues) reads the same key, so the ♪ toggle silences both layers.
+ */
+export const MUTE_KEY = 'dday.audio.muted'
 
 /** A radio line is bracketed: the channel opens, the line is read, it closes. */
 const SQUELCH_CLOSE_MS = 260
@@ -39,9 +43,12 @@ const SCORE_ROW_MS = 90
 /**
  * On the last day only, the ledger waits before it starts printing.
  *
- * The ending swells for 2 s and then cuts, and **the silence after the cut is
- * the cue** — a tally tick landing in it destroys the only thing that cue does.
- * The lead is the cue's own length plus room to hear the room stop.
+ * The ending swells and then cuts, and **the silence after the cut is the
+ * cue** — a tally tick landing in it destroys the only thing that cue does.
+ * The swell itself lives in `shell/radio-sfx.ts` (O3's day-end static, 1.9 s,
+ * fired on `run_end`); this lead is keyed to the DAY, not to the
+ * `ending:collapse` binding, so the silence survives whichever layer draws
+ * the sound.
  */
 const ENDING_LEAD_MS = 2800
 
@@ -302,8 +309,12 @@ export function installAudio(deps: AudioDeps): AudioHandle {
       }
 
       if (!node.classList.contains('win')) continue
-      // `hidden` is how the manager puts a desk window away; `is-closing` is how
-      // O1's manual sheet leaves (it is removed 460 ms later, and the class is
+      // The manual sheet is O3's moment, not a drawer: `shell/radio-sfx.ts`
+      // plays its squelch at the hand-over, and a drawer sliding under a radio
+      // squelch is one departure sounding twice (coexistence decision).
+      if (node.classList.contains('win-manual')) continue
+      // `hidden` is how the manager puts a desk window away; `is-closing` is
+      // how a late-arriving frame leaves (removed 460 ms later, the class is
       // the moment the player caused). Both are the same event to the ear.
       const open = !node.classList.contains('hidden') && !node.classList.contains('is-closing')
       if (openState.get(node) === open) continue
@@ -322,6 +333,9 @@ export function installAudio(deps: AudioDeps): AudioHandle {
       for (const node of record.addedNodes) {
         if (!(node instanceof HTMLElement) || !node.classList.contains('win')) continue
         openState.set(node, true)
+        // The manual sheet arrives under radio-sfx's login static and leaves
+        // on its squelch — both of its edges are O3's (coexistence decision).
+        if (node.classList.contains('win-manual')) continue
         fire('ui:window-open')
       }
     }

@@ -33,16 +33,16 @@ seeded and byte-reproducible, because the outputs are committed.
 
 **Sizes:** 141.0 kB of SFX, 494.4 kB of ambience, ~7 kB of map.
 
-**O3 is superseded by this layer, with its one new idea absorbed.**
-`planning/prds/g7-1-O3-radio-sfx.md` specifies three runtime-synthesised radio
-cues, and its premise — "Greenfield: zero audio code in `src/` (grep-verified)",
-audited at `fa49be6` — no longer holds. All three of its moments (LOGIN, the
-hand-over, 21:04) already sound here, its scope forbids exactly what this layer
-does (`public/assets/**`, `assets-manifest.json`), and its edits cite `boot.ts`
-line numbers this layer has moved, so its own stop-rule would halt it at the
-first edit. What O3 is right about is 21:04: **the ending swells and cuts, and
-the silence after the cut is the cue.** That replaces the old rumble, and the
-ledger's lead widened to 2800 ms so nothing fills the silence.
+**O3 coexists with this layer, moment by moment** (plan-audio §4.5). O3's
+implementation (`shell/radio-sfx.ts`, merged in #179) keeps its three moments
+and its no-assets approach — the carrier static under the LOGIN readout, the
+squelch at the hand-over, and 21:04, where **the static swells and cuts, and
+the silence after the cut is the cue**. This layer yields those three by data
+(`door:login`, `boot` and `ending:collapse` bound `null`; the window observer
+skips `.win-manual`) and does everything else, keeping the 2800 ms ledger lead
+that guards the ending's silence. O3 reads this layer's `dday.audio.muted` key
+before every burst, so the ♪ toggle is the desk's one mute. The yielded cues
+ship in the pack; each rebind is a one-line map edit.
 
 ## Status (2026-08-06) — the deployed build was publishing its own answer key
 

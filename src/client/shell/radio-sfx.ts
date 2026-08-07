@@ -6,13 +6,27 @@
  * music: filtered noise shaped by short envelopes.
  *
  * Every entry point is defensive — no AudioContext, a suspended context that
- * will not resume, or a driven browser (`navigator.webdriver`, the same key
- * the door keys off) all mean silence, never a throw. Audio is garnish:
- * nothing in the game reads back from this module.
+ * will not resume, a driven browser (`navigator.webdriver`, the same key
+ * the door keys off), or the desk's mute toggle all mean silence, never a
+ * throw. Audio is garnish: nothing in the game reads back from this module.
+ *
+ * This module coexists with `src/client/audio/` (the sampled desk layer): it
+ * keeps its three radio moments and its no-assets approach, and it honours
+ * that layer's ♪ toggle by reading the same storage key before every cue.
  */
 import type { FixtureDriver } from '../driver/index.ts'
+import { MUTE_KEY } from '../audio/index.ts'
 
 let ctx: AudioContext | null = null
+
+/** The desk's one mute switch — the ♪ toggle writes it, both layers read it. */
+function muted(): boolean {
+  try {
+    return window.sessionStorage.getItem(MUTE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
 
 /** Lazily create (and try to resume) the shared context. `null` ⇒ silence. */
 function context(): AudioContext | null {
@@ -32,6 +46,10 @@ function context(): AudioContext | null {
 
 /** A noise burst through a bandpass — the radio's own texture. */
 function staticBurst(at: AudioContext, ms: number, peak: number, hz: number): void {
+  // Checked here, at the one choke point, rather than in `context()`: the
+  // gesture unlock must still warm the context while muted, or unmuting later
+  // would build one outside a gesture and get a context that never runs.
+  if (muted()) return
   const seconds = ms / 1000
   const frames = Math.max(1, Math.floor(at.sampleRate * seconds))
   const buffer = at.createBuffer(1, frames, at.sampleRate)

@@ -135,13 +135,13 @@ nothing prints as *silent* rather than going missing.
 | a ledger row is where the untouched day left it | `score:down` | `score-down` | `score-tick-down` | 0.06 s | 0.55 | 0 ms |
 | any button, tab or taskbar entry | `ui:click` | `click` | `ui-click` | 0.02 s | 0.45 | 30 ms |
 | the pointer reaches a control | `ui:hover` | `hover` | `ui-hover` | 0.02 s | 0.12 | 80 ms |
-| the portal LOGIN press | `door:login` | `door-login` | `counter-click` | 0.25 s | 0.6 | 500 ms |
+| the portal LOGIN press | `door:login` | — | *silent* | | | |
 | a window is shown — or the manual sheet arrives | `ui:window-open` | `window-open` | `drawer-open` | 0.35 s | 0.5 | 80 ms |
 | a window is hidden — or the manual sheet leaves | `ui:window-close` | `window-close` | `drawer-close` | 0.35 s | 0.5 | 80 ms |
 | a block card is picked up | `ui:drag` | `drag` | `drag-start` | 0.15 s | 0.4 | 60 ms |
 | a block card is dropped | `ui:drop` | `drop` | `drag-drop` | 0.19 s | 0.5 | 60 ms |
-| the first gesture — the portal powers on | `boot` | `boot` | `stinger` | 1.60 s | 0.5 | 5000 ms |
-| the last day, just ahead of its ledger | `ending:collapse` | `collapse` | `collapse` | 2.00 s | 1 | 5000 ms |
+| the first gesture — the portal powers on | `boot` | — | *silent* | | | |
+| the last day, just ahead of its ledger | `ending:collapse` | — | *silent* | | | |
 
 **Not driven by a trigger:**
 
@@ -151,7 +151,7 @@ nothing prints as *silent* rather than going missing.
 | ambience `watch` | `watch` | `amb-watch-drone` | 40.00 s | 0.75 |
 | report typewriter, every 2 chars | `type` | `type-1` · `type-2` · `type-3` · `type-4` · `type-5` | 0.04 s | 0.3 |
 
-Buses: `sfx` 0.5 · `ambience` 0.15. Ambience retires 10000 ms after the desk opens. Preloaded: `door-login` · `click` · `hover` · `boot` · `window-open` · `window-close`.
+Buses: `sfx` 0.5 · `ambience` 0.15. Ambience retires 10000 ms after the desk opens. Preloaded: `click` · `hover` · `window-open` · `window-close`.
 
 <!-- audio:bindings:end -->
 
@@ -204,34 +204,39 @@ three calls fail together far more often than separately.
 **The ending swells and then CUTS — the silence after the cut is the cue.**
 Drawing the collapse as a sound puts the loudest thing in the game on the moment
 the player has already lost; taking the sound away instead leaves them in a room
-where the radio has stopped. Nothing else in the pack ends without a tail, so
-the cut reads as an event rather than as a file running out. The ledger's row
-ticks take a **2800 ms** lead on that day — the cue's 2 s plus 0.8 s of room —
-because a tally tick landing in that silence destroys the only thing the cue
-does.
+where the radio has stopped. **The swell itself is O3's** (coexistence decision,
+§4.5): `shell/radio-sfx.ts` plays its 1.9 s day-end static on `run_end`, and
+`ending:collapse` is bound `null` so the two never stack. What this layer keeps
+is the silence: the ledger's row ticks take a **2800 ms** lead on that day —
+keyed to the day in `index.ts`, not to the binding — because a tally tick
+landing in that silence destroys the only thing the cut does. The `collapse`
+cue (2 s, carrier and ground with a falling sub) ships unbound; rebinding it is
+one line, and doing so should retire the radio-sfx swell.
 
-It sits just ahead of the last ledger. The seam carries no ending event, but
-`meta.runs_left` is `totalRuns - run_count`, so it reads 0 on the final day and
-nowhere else; and the live driver emits `score` immediately before `run_end`. A
-latch and a `run_end` fallback make it fire exactly once, including on a day
-that produces no ledger. It sounds the last day the player is *given*, which is
-not the same as the fiction's ending — if plan-game-design §4.6 lands a real
-ending event, the binding moves to it.
+The lead hangs just ahead of the last ledger. The seam carries no ending event,
+but `meta.runs_left` is `totalRuns - run_count`, so it reads 0 on the final day
+and nowhere else; and the live driver emits `score` immediately before
+`run_end`. A latch and a `run_end` fallback make it arm exactly once, including
+on a day that produces no ledger. It marks the last day the player is *given*,
+which is not the same as the fiction's ending — if plan-game-design §4.6 lands
+a real ending event, the latch moves to it.
 
 ### 4.3 The desk and the door
 
 `click` · `hover` · `window-open` / `window-close` (a desk window showing and
-hiding, and the manual sheet arriving and leaving) · `drag` / `drop` (the block
-cards are real HTML5 drag sources) · `boot` (once, on the gesture that powers
-the portal on).
+hiding) · `drag` / `drop` (the block cards are real HTML5 drag sources).
 
 The sign-in plate and the manual sheet mount inside `#app`, which is where the
 hover and click listeners are delegated from, so their controls answer without
-any cue of their own. The one exception is **`door-login`**: the portal's LOGIN
-press is one press per session and it opens a session, so it gets a switch
-rather than the desk's tick. The auth readout and the curtain are silent.
+any cue of their own. **The door's set pieces are O3's** (coexistence decision,
+§4.5): `shell/radio-sfx.ts` plays its carrier static under the LOGIN readout
+and its squelch at the hand-over, so this layer's `door:login` and `boot`
+bindings are `null` — a counter-click and a stinger under that static are one
+press sounding three times — and the window observer skips `.win-manual`, whose
+arrival and departure both belong to the radio. The `door-login` and `stinger`
+cues ship unbound; rebinding either is one line.
 
-Two mechanisms exist for that door:
+Two mechanisms exist for that door, kept live for a rebind:
 
 - **`preload`** names the cues reachable before the desk. The mixer loads those
   first and resolves `ready` on them alone, so the press does not wait for the
@@ -256,6 +261,24 @@ registering as atmosphere and start registering as fatigue.
 bringing the drone back, and `hold(slot, null)` fades over 0.6 s so the room
 recedes rather than vanishing. Setting `playForMs` to `null` restores
 session-long beds. The Autopsy screen has no bed at all.
+
+### 4.5 Coexistence with O3 (`shell/radio-sfx.ts`)
+
+O3's three procedural radio cues (PR #179) and this layer share the desk, by
+the team's decision: **O3 keeps its sounds and its no-assets approach; this
+layer does everything else.** The division is by moment, not by module:
+
+| Moment | Whose sound | How the other yields |
+|---|---|---|
+| LOGIN press + auth readout | O3's carrier static | `door:login` and `boot` bound `null` |
+| the hand-over | O3's squelch tick | the window observer skips `.win-manual` |
+| 21:04 — the last `run_end` | O3's swell-and-cut | `ending:collapse` bound `null`; the 2800 ms ledger lead stays here |
+| everything else (34 cues) | this layer | O3 binds nothing else |
+
+O3 honours this layer's ♪ toggle by reading the same `dday.audio.muted`
+session key before every burst, so the desk has one mute. The yielded cues
+(`door-login`, `stinger`, `collapse`) ship in the pack; each rebind is a
+one-line map edit, and rebinding `collapse` should retire the radio-sfx swell.
 
 ## 5. Where the sounds came from
 
