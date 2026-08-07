@@ -567,14 +567,15 @@ stays in the loop:
    the PRD and re-fires — the citations cannot go stale in between, because
    execution happens on the tree the stamp just verified.
 4. **Author verifies**: diff against the change list row by row, full suites,
-   and a local merge preview against then-current `main`. PRD amendments land
-   as author commits on the same branch. The author pushes and opens **one PR
-   per unit**, the PRD as the branch's first commit — code and the decisions
-   that produced it reviewed together, by 윤석; a wave's PRs open together and
-   merge serially, merges 민서's, in the wave's stated order. (A wave of rider
-   commits on one branch may still ship as one PR, as wave 5 did.) `main`
-   stays deployable, and repo hard rules 1–6 apply to subagent commits exactly
-   as to hand-written ones.
+   and a local merge preview against then-current `main`. The author pushes
+   and opens **one PR per unit carrying code only** — PRDs are documents and
+   travel with the plan in the docs PR that authored them (as-executed
+   amendments follow the same docs lane), so 윤석 reviews the decisions there
+   and the code against them; a wave's PRs open together and merge serially,
+   merges 민서's, in the wave's stated order. (A wave of rider commits on one
+   branch may still ship as one PR, as wave 5 did.) `main` stays deployable,
+   and repo hard rules 1–6 apply to subagent commits exactly as to
+   hand-written ones.
 
 Execution stays **wave-parallel, merge-serial**. Units whose files are
 pairwise disjoint develop concurrently, one worktree each; a unit whose
