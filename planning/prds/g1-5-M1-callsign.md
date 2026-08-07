@@ -1,9 +1,14 @@
 # M1 — the callsign is per sitting: ECHO-1, ECHO-2, … a person per simulation
 
-> plan-playtest.md **v7** · change list stamped against tree `14dd971` (2026-08-07),
-> **assuming `g1-1`…`g1-4` are merged** (every earlier group-1 edit is
-> line-count-preserving, so the line numbers below still hold; `report-view.ts:124`'s
-> current text below is `g1-4`'s output). Stamp again if the branch moved.
+> plan-playtest.md **v10** · change list **stamped against tree `b22e7e8`**
+> (2026-08-07, waves 1–2 fully merged): all 21 cited sites re-verified
+> byte-identical — the line-count-preserving prediction held, including
+> `report-view.ts:124` carrying `g1-4`'s output. The **whole change list was
+> dry-run-verified** on that tree: `check` green, 1621/1621 tests,
+> `e2e/agent-file.spec.ts` 19/19, build green, both Done-when greps exact,
+> no other suite pins `ECHO-` or the sub-line; then reverted.
+> **Wave 3**: runs alone (its files touch `run-feed.ts`/`report-view.ts`,
+> which gate wave 4). `g2-1`/`g2-3` stamp after this unit merges.
 > Executor: Sonnet-class session. Branch `playtest/g1-5-m1` off current `main`.
 > One commit, message: `playtest(M1): callsign threads per run — ECHO-n`.
 > Open a PR; merge nothing (§5.6). Before the first edit, confirm

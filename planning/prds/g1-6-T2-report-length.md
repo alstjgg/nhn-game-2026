@@ -74,8 +74,8 @@ re-check the stance-shift mechanism and re-record the Call-3 latency figure that
 
 - [ ] Exactly one value changed in exactly one file.
 - [ ] `npm run check`, `npm run test`, `npm run build` all green.
-- [ ] `[author]` post-merge: a live report measures ≤700자 and remains mineable (sentence-per-judgment structure intact).
-- [ ] `[author]` post-merge: one probe run at the new cap is recorded under `planning/dday-mechanism/runs`, with the latency note updated.
+- [ ] ~~`[author]` post-merge: a live report measures ≤700자 and remains mineable~~ **Deferred (민서, 08-07):** the cap is a hand-tuned value now — 민서 iterates it directly in play; the probe/read rows are off the roadmap until the value settles. A live read on 08-07 measured ~587자 (within cap).
+- [ ] ~~`[author]` post-merge: one probe run at the new cap recorded under `planning/dday-mechanism/runs`~~ **Deferred** (same decision).
 - [ ] PR opened from `playtest/g1-6-t2`; nothing merged.
 
 ## If this PRD is wrong
