@@ -4,8 +4,10 @@
 > Priority tiebreaker: **mechanism legibility** — the C-BLOCK loop (block choice →
 > interpretation shift → stance change → visible result) must read clearly.
 > Cut line against the ~08-10 deadline is §4. Rules live in /CLAUDE.md; state in status.md.
-> Items marked **landed** are already on this branch; the citation is what to read, not what to do.
-> Every coordinate below was audited against the working tree on 2026-08-06.
+> Items marked **landed** are already on `main`; the citation is what to read, not what to do.
+> Every remaining coordinate was re-audited 2026-08-08 against `fa49be6`, after
+> waves 1–5 and the door merged. §§1–3 are grouped by **dependency and file
+> collision**, not priority — priority lives only in §4.
 
 ## 0. Frame
 
@@ -33,233 +35,184 @@ is drawn.
 
 ## 1. Items
 
-### G — Gate exposure
+### Landed — waves 1–5 and the door, all on `main` (`fa49be6`)
 
-| id | item | where | cost |
-|---|---|---|---|
-| G1a | **landed** (`e270604`) — the pack shipped whole, so `dist/data/scenario/우는다리/draft.md` (44 kB) was readable by URL | `vite.config.ts:45-73` enumerates by file; 22 published files → 8 | — |
-| G1b | **landed** (`e270604`) — LIVE FEED printed `(갈림길 G1의 자리)` … `(갈림길 G6의 자리)`, six distinct strings | removed from `data/scenario/우는다리/timeline.json` **and** `draft.md`, or the next `datapack:compile` restores it | — |
-| G1c | **landed** — two more leaks sat inside files entitled to ship: `gates.json:44` `key_examples[].mined_from` ("런 1 객관 로그 · 시계 09:40 — 다음 런의 G1 이전에 채굴 가능", 18 such values, 12 naming a gate) and `characters.json` `strands.gate_ids` | `tests/scaffold/no-gate-vocab.test.ts` scans every string value through `publishedContentOf()` (`vite.config.ts:159-164`); `gates[].gate` exempt by path and exact shape | — |
-| G2 | LIVE FEED names the fault in mechanism terms | `src/client/components/fallback-notice.ts:27-31` — see below | S |
-| G4 | AGENT FILE 행동 원칙 reads as a manual | hardcoded at `src/client/components/dossier.ts:102`, **not** authored in the datapack | S |
-| G3 | REPORTS rail labels every segment `RUN nn` | `src/client/components/report-archive.ts` — see below | M |
-
-**G2 is smaller than it looked, and wider.** `announcementOf(event)`
-(`announcer.ts:54-69`) already receives the whole event, the fallback event
-carries `call: 1 | 2 | 3` (`src/shared/view-driver.ts:28`), and `FALLBACK_CLASS`
-(`fallback-notice.ts:16-20`) already maps call → severity. **No signature change
-and no `announce()` call-site edits** — `announcer.ts:29` becomes a three-way map
-keyed off `event.call` at `:60-61`. Four literals carry the fatal string:
-`fallback-notice.ts:28`, `announcer.ts:29`,
-`src/client/driver/fixtures/woodari-run03.ts:95` (a fifth variant with a tail,
-which the e2e suite drives), and `tests/windows/live-feed.test.ts:262`.
-
-New register — a **transmission** fault, never a reasoning or gate one:
-`회신 불량` · `네트워크 지연 중` · `서버 이상 — 요원과 재접선 시도 중`. One line per
-severity. A stretch where the radio was down is also a stretch where the agent
-judged alone, and the report for it can say so.
-
-**G3 is not a guard change.** `report-archive.ts:34` is `REFUSED = /gate|게이트/i`
-— a deny list `ECHO-n` passes, and it is what keeps invariant 6. The on-screen
-label is built by `runLabelOf(entry.run)` (`:43-45`) from the run **number**; the
-entry's own label is never consulted for it. In-file: `runLabelOf` (`:43-45`),
-`OWN_PREFIX` (`:31`), `RAIL_LABEL`/`RAIL_NOTE` (`:37`, `:40`),
-`ArchiveSegment.runLabel` (`:25`) and its render site (`:152`).
-
-The labels `OWN_PREFIX` exists to strip are minted at
-`src/client/driver/fixtures/woodari-meta.ts:24-25` and
-`src/client/driver/fixtures/run-loop.ts:82`. **Five further live `RUN nn` sites
-sit outside `report-archive.ts`** — `src/client/shell/announcer.ts:26`
-(`RUN_OPENED`, the spoken label on every `meta`),
-`src/client/windows/tally.ts:54` (`RUN_CAPTION`, written at `:172,176`,
-announced at `:173,179,324`), `src/client/components/run-counter.ts:27`, and
-`src/client/components/deploy-button.ts:51`. Rename in the archive only and the
-toast and the ledger still say `RUN nn`. Asserted across seven suites, including
-`tests/windows/reports.test.ts:441-466` and
-`tests/fixtures/meta-and-archive.test.ts:17,79` — the PRD's Scope must enumerate
-them and say which are amended.
-
-Archive persistence is U5.1, not this.
-
-**G4 is a rewrite, not a deletion.** §2 행동 원칙 is the only place the player
-reads who their agent is. Same information as a person — *"확인되지 않은 것을
-단정하지 않는다. 판단이 필요한 순간에는 판단하고, 왜 그랬는지 남긴다."* Same cost.
-`tests/windows/agent-file.test.ts:270` asserts the current title.
-
-### T — Text volume
-
-| id | item | resolution | depends on |
-|---|---|---|---|
-| T1 | BLOCK STORE duplicates report sentences | remove the window; its one distinct function — a cross-run view of mined sentences — moves into the report | U5.2a (landed) |
-| T2 | Radio reports too long to read before the next event | lower `max_chars` in `data/policy/report-guidance.json:11` (300–1200자, character-bounded; rendered by `src/shared/report-guidance.ts:49-56`) | — |
-| T3 | Layout: REPORTS left (large), LIVE FEED top-right, AGENT FILE bottom-right | `src/client/shell/layout.ts:33,50,65-111` | M |
-
-**T1's sites:** `src/client/windows/block-store.ts` (deleted),
-`src/client/shell/window-registry.ts:12,40` (the import and the mount — its
-header says it is the only module that imports `windows/`),
-`src/client/shell/layout.ts:33` (`WINDOW_KEYS` `'store'`), `:50` (`DESK_ORDER`),
-`:107` (its rect), `src/client/styles/win-block-store.css`, and
-`src/client/components/species-filter.ts`, whose only importer it is.
-
-**T3 must move `DESK_ORDER` (`layout.ts:50`) with the rects.** `layout.ts:43-48`
-records that a `DESK_ORDER`/`applyLayout` mismatch is the WCAG 2.4.3 focus-order
-defect `e2e/a11y.spec.ts` quarantined. Moving REPORTS to the left column without
-it regresses focus order.
-
-T2 changes what is mineable and the Call-3 latency figure recorded on 08-04.
-Re-run one probe after changing it.
-
-### C — Concept and naming
-
-| id | item | where |
+| id | item | landed |
 |---|---|---|
-| C1 | AGENT FILE becomes a paged dossier, not a scroll | `src/client/components/dossier.ts:85-120` (`dossierModel`, six sections §0–§5 in one array); `src/client/windows/agent-file.ts:76,88-96` |
-| C2 | "알고 있는 문장" → **인수인계 사항** (picked 08-06) | `dossier.ts:107` is the only rendered site |
-| C3 | "보고 지침" → **교신 지침** (picked 08-06) | `dossier.ts:113` |
-| C4 | 객관 로그 → 현장 기록, 요원 보고서 → 무전 기록 | `src/client/components/report-view.ts:123` and `:124` |
+| G1a·b·c | pack and gate-vocab leaks closed; guarded | `e270604` · `tests/scaffold/no-gate-vocab.test.ts` |
+| G2 | fallback lines speak the transmission register | #156 |
+| G4 | 행동 원칙 reads as a person | #159 |
+| C2·C3·C4 | 인수인계 사항 · 교신 지침 · 현장 기록 / 무전 기록 | #164 |
+| M1 | callsign per sitting — `callsignOf(run)`, `dossier.ts:19-21` | #166 |
+| M2 | species tags off the display. **Display only:** `SPECIES_DISPLAY` itself survives at `block-card.ts:33` and is asserted by `agent-file.test.ts:611-617` | #162 |
+| T2 | report `max_chars` → 100–350자 | #158 · #172 |
+| U1 | reveal queue, delay priced by line length (`run-feed.ts` dials) | #169 · #171 |
+| U3 | TALLY dissolved — 시행 결과 into 현장 기록, NEW RUN into DEPLOY | #174 |
+| U5.2a | slotted highlight renders | `afe02d6` |
+| U5.2b | `report` event carries the judged stance's `desc` (`view-driver.ts:29-30`) | #160 |
+| O1 | the door — sign-in · terminal manual · desk reveal | #175 |
+| — | riders: reporter v0.3 radio voice, facts ≤ 3 (#173) · beat-line stamp spread + 9 s report hold (#174) | |
 
-- **C1's page inventory uses spaced forms on disk** — `행동 원칙`, `알고 있는 문장`,
-  `보고 지침`. `문서번호` **does not exist anywhere in the tree**; it is new copy to
-  be authored. `문서번호` and `호출부호` are built in the window, not the component
-  (`agent-file.ts:76`, `:95`). Section order is asserted at
-  `tests/windows/agent-file.test.ts:262-274` and `e2e/agent-file.spec.ts:129-139`.
-- **C2's second anchor is a comment.** `slot-board.ts:1` is a source header
-  (`// SlotBoard — §4 알고 있는 문장: …`) — editing it changes nothing on screen.
-  Say whether it is kept in step. Test literals: `agent-file.test.ts:272`,
-  `e2e/agent-file.spec.ts:137`.
-- **C3 must not touch the prompt.** `[보고 지침]` is also the Call-3 prompt header
-  at `src/shared/report-guidance.ts:3,7` — a different string, left alone. Tests:
-  `agent-file.test.ts:273`, `e2e/agent-file.spec.ts:138`.
-- **C4 has a third, player-facing site.** `src/engine/index.ts:175`
-  `SUBSTITUTE_REPORT_BODY = '보고를 생성하지 못했다. 이 라운드의 기록은 객관 로그로
-  남는다.'` — used at `:363` as the body the player reads when Call 3 fails. Also
-  decide the non-rendered fixture fields `src: '객관 로그'`
-  (`src/client/driver/fixtures/woodari-meta.ts:50,52,53,54,57`).
+### Remaining — re-audited 2026-08-08
 
-C2–C4 are copy and land in one commit.
+Ordered by lane (§2), not priority. Each block is a PRD's raw material.
 
-### U — Usability
+**U5.2b+ — the seam carries the citation (new unit, small).** U5.2c's "beside
+the sentence that moved it" has **no data source today**: `judged` is
+`{stance_id, desc}` only (`view-driver.ts:30`), and `because_block_ids` — a
+required field of the live judgment response (`contracts.ts:118`; the proxy
+schema enforces it, `proxy/src/calls.ts:94,111,131`; the fixture transport fills
+it with all slotted ids, `transport/fixture.ts:39`) — dies at
+`engine/index.ts:336-337`, where `submitStance` returns only `{stance_id, desc}`.
+The unit widens the `submitStance` return and `judged` with
+`because_ids: string[]`: `engine/index.ts:152,318,336-337` ·
+`src/driver/ports.ts:56-58` · `src/driver/live-driver.ts:149,185,208` (parks
+per-round, replays at round end) · `view-driver.ts:29-30` ·
+`tests/driver/engine-judged-stance.test.ts:13`. No client fixture emits `judged`
+at all (grep-verified) — whether `woodari-reports.ts` gains it here or in U5.2c
+is the PRD's to decide.
 
-| id | item | resolution |
-|---|---|---|
-| U1 | LIVE FEED emits many lines at once, so time stutters instead of passing | reveal queue in `src/client/windows/live-feed.ts`, downstream of the adapter's fanout (`adapter.ts:155-158`) |
-| U2 | 4 slots too few; drag sentences rather than cards | `SLOT_CAP` at `src/client/components/slot-board.ts:19`; a U-owned §9 parameter (`docs/spec-client.md:149,380,405`), not a datapack field |
-| U3 | Remove TALLY; merge NEW RUN into DEPLOY; casualties and results in 현장 기록 as unmineable, visually distinct records | see below — the sites span four files |
-| U4 | Nothing tells a judge what to press first | resolved into O1 and O2 |
-| U5.1 | REPORTS tabs → ECHO-1, ECHO-2…, each opening that sitting's 현장 기록 + 무전 기록 | needs a **new store** — see below |
-| U5.2a | **landed** (`afe02d6`) — the slotted highlight was written and never rendered | `src/client/components/minable-sentence.ts:55-74`, `src/client/windows/reports.ts:108-132`, `src/client/styles/win-reports.css:75-77` |
-| U5.2b | Carry the agent's chosen stance to the client at all | engine seam — see below |
-| U5.2c | Show that stance beside the sentence that moved it, and show unused sentences as unused | depends on U5.2b and M1 |
-| U5.3 | AGENT FILE gains one page per ECHO-*; a new simulation appends a page | depends on C1 (`dossier.ts:85-120`) |
+**U5.2c — render the cause.** No client code reads `judged` (grep-verified);
+`windows/reports.ts:195` rebuilds the report model field-by-field and drops it —
+that line is where the work starts. Corrected paths: the view is
+`components/report-view.ts` (**not** `windows/`) — `ReportModel :24`,
+`RenderOptions :86-95` (`replay? :94`), `render() :244-271` (facts `:254`, body
+`:263`). First-arrival is decided at `reports.ts:113-130` (`replayed :122`,
+`drawDocument :124-130`); `createReportView` sits at `:102-111`. Marks:
+`minable-sentence.ts:20` (`MinableState`), `:23-26` (`MarkSets`, two
+`ReadonlySet<string>`), `sentenceState :71`, `sentenceClass :78`,
+`sentenceNode :121`, `applyState :129` — "unused" is a new state beside these.
+CSS lands beside `.min.slotted` at `win-reports.css:75-77` (`.min.mined`
+`:71-74`, `tearFlash` `:78-80`). Use `desc`, never `label` — `매뉴얼 → 경청`
+transmits nothing. Unused = slotted-but-not-cited, from `judged.because_ids`
+against the round's slotted set — this is how a false lead surfaces without the
+game saying "wrong". The false leads that ship are `gates.json`
+`gates[].false_leads` — one string per gate, **7 total in aggregate**.
+Guards this unit and O2 must both satisfy: `reports.test.ts:583` (seam types
+come through the driver barrel, never `shared/view-driver`) and `:594-595`
+(no `.style.` writes, no px/rem literals in TS — all motion is class+keyframe).
 
-**U1 must not go in the adapter.** A pacing queue already exists there —
-`adapter.ts:117` (`Pending`), `:160-166` (`absorb`), `:169-186` (`release`) — and
-events release when `clock.minute` reaches their stamp, which is why same-minute
-lines burst. But `kick()` (`:194-196`) returns early while `pending` is non-empty,
-so a reveal delay added there **stalls the engine's next `step()` and the
-prefetch — the run halts.** The queue belongs in the feed window, downstream of
-`fanout`. Agent-log timestamps are engine data (`adapter.ts:111-115` `stampOf()`
-reads `event.line.clock`; the same events feed `tools/driver/run/bind.mjs:128-130`)
-and are never edited for pacing.
+**O2 — first-mining pulse.** Still gated on the opening/manual conversation
+closing (`g2-3` stamps then). The hook already exists: `reports.ts:122-130`
+decides first arrival, `run` is tracked at `:88`/`:174`, and `run === 1` is a
+refresh-stable predicate (run-state persists `meta` per tab) — no new
+persistence. The pulse is a CSS class + keyframe (the `:594-595` guard; the only
+existing `pulse` keyframes are unrelated shell/signin ones). **Shares five files
+with U5.2c and U5.1** — `reports.ts` · `report-view.ts` · `minable-sentence.ts`
+· `win-reports.css` · both reports test files — and the same regions
+(`RenderOptions`, `drawDocument`), so it is never in their wave.
 
-For 26 deaths to land at 21:04 the player has to have been there for the twelve
-hours those people were alive. Pace can carry tension too — slow in quiet
-stretches, quick when events crowd.
+**T1 — BLOCK STORE dissolves into the report.** Deletes:
+`windows/block-store.ts` (242 lines; the one function that moves is the
+`carried` axis — `:47,:58-59,:72-77,:101,:217`), `components/species-filter.ts`
+(block-store is its **only** importer, `block-store.ts:29-30` — fully dead
+after), `styles/win-block-store.css`, `tests/windows/block-store.test.ts`,
+`e2e/block-store.spec.ts`. Edits: `window-registry.ts:12,:39` (header `:3`'s
+only-importer claim re-verified; `:4` still lists five units — fix in step),
+`layout.ts:33,:50,:97`, `index.css:15`, `manual.ts:45` (names 보관함 — minimal
+cut here; the full rewrite is MAN), and `windows/reports.ts` absorbs the carried
+view (the archive rail already persists marks — `spec-client.md:152`). Test
+blast radius, enumerated: `agent-file.test.ts:39,:730` — **the direct blocker**,
+an untouched-file guard on `block-store.ts` that fails on deletion until the
+commit empties it (§5.4) — `tests/shell/shell-utils.ts:26`,
+`window-registry.test.ts:97` (both lists shrink together),
+`tests/styles/css-utils.ts:22`, `stacking-context.test.ts:4-5,:146,:158`,
+`tests/assets/baseline/u1-styles-baseline.json:10,:20`,
+`e2e/shell.spec.ts:31,:219,:232,:542-571,:735`, `e2e/captures.spec.ts:115`
+(+ its reference shot), and **the two ≥4-distinct-origins floors —
+`tests/shell/apply-layout.test.ts:104` and `e2e/shell.spec.ts:360` — drop to 3
+here, or T3's three-window desk fails them later.** Negative guards that merely
+name block-store stay green: `live-feed.test.ts:450`, `reports.test.ts:605`,
+`tally.test.ts:697`. `block-card.ts` survives untouched (see M2 in the landed
+table).
 
-**U3's sites**, none of which the previous ranges covered:
-`src/client/windows/tally.ts:45-48` (the NEW RUN strings, written at `:370`),
-`:126-132` (construction), `:181` (re-enable), `:196-210` (the click handler that
-actually sends at `:204`); `src/client/driver/live/adapter.ts:367-404` — the whole
-`send`, with `:379` the `deploy` op being merged into and `:386-402` the `new_run`
-guard; `src/client/components/deploy-button.ts:15-108` (the notes and
-`DeployView`/`DeployState` a merged control must extend, through the stamp's
-render at `:102-107`); and **`src/client/shell/window-registry.ts:42`, which is
-what mounts TALLY** — leave it and the window still appears. Also
-`layout.ts:33,50,75-80,100-102,109`, and a decision on whether `RunPhase 'tally'`
-(`run-state.ts:23`, set at `:112-128`) stays.
+**T3 — the three-window desk.** `layout.ts` only: rects `:80-99`, ratios
+`:66-76`, and `DESK_ORDER :50` **moves with the rects** — the focus-order
+quarantine is **lifted** (`e2e/a11y.spec.ts:534-561`; the live assert `:560`
+compares tab order to rects row-major, 24 px row tolerance), so a mismatch is a
+real red now, and `layout.ts:47`'s "quarantined" wording is stale. The file
+header `:1-31` still tells the TALLY story and `:41` still seats BLOCK STORE —
+rewrite them with the rects, and sweep the two other stale 21:04-TALLY comments
+(`run-state.ts:4`, `layout.ts:26`). `window-manager.ts` reads both exports
+generically (`:16,:231`) — no change.
 
-**U2 is pinned by four assertions the executor will hit:**
-`tests/windows/block-store.test.ts:366` (`expect(SLOT_CAP).toBe(4)`),
-`tests/windows/agent-file.test.ts:734` (source regex),
-`agent-file.test.ts:735-740` (forbids any other u4 source matching
-`/(?:slotCap|cap|slots?)\s*[:=]\s*4\b/`), and
-`tests/windows/block-store.test.ts:557-559`, which requires
-`git diff --name-only HEAD -- slot-board.ts` to be **empty** — any uncommitted
-edit to `slot-board.ts` fails it. That last one also catches C2.
+**G3 — the rail stops saying RUN nn.** `report-archive.ts` coordinates all
+hold: `ArchiveSegment.runLabel :25`, `OWN_PREFIX :31`, `REFUSED :34` (a deny
+list — `ECHO-n` passes, and it is what keeps invariant 6), `RAIL_LABEL :37`,
+`RAIL_NOTE :40`, `runLabelOf :43-45`, build site `:61-62`, render site `:152`,
+header prose `:3-5`. The core swap is `runLabelOf` → `callsignOf(entry.run)`
+(`dossier.ts:19-21`; the file currently imports only `el`, so it is one import).
+Sites beyond the archive, corrected after U3/M1: `announcer.ts:26`
+(`RUN_OPENED`), `run-counter.ts:27`, `deploy-button.ts:91` (**moved from
+`:51`**; doc comment now `:48`), `agent-file.ts:40` (`RUN_CAPTION`, **new after
+U3**, consumed `:204-:250`), `run-feed.ts:157` (`RUN_PREFIX`, **new**, painted
+`:282`), and the fixture minters `woodari-meta.ts:24-25` ·
+`fixtures/run-loop.ts:82-84` (`boot-run.ts:23-24` is comment-only). The PRD
+decides which sites rename and which keep — the run-counter's `RUN 03/10`
+allotment is D-DAY frame and arguably stays. Rail assertions live in **four
+files, not seven**: `reports.test.ts:441-465,:484` (+ its local mirror
+`:93-99`), `meta-and-archive.test.ts:17,:79`, `e2e/reports.spec.ts:141`
+(digit-parse — survives `ECHO-n` as-is), with selector constants untouched
+(`e2e/run-loop.spec.ts:44`, `e2e/fixtures/selectors.ts:65-66`). Spec:
+`spec-client.md:113-115` — **invariant 6's own text cites `RUN 01 /…`, so it is
+amended with the rename or the spec contradicts the rail** — plus `:152` and
+`:305` (**not `:302`**). Non-rail `RUN nn` asserts (deploy stamp
+`agent-file.test.ts:597-604`, run-counter `e2e/shell.spec.ts:449,:474`,
+`preview-smoke.spec.ts:175`, synthetic fixtures in `tally.test.ts`) are
+enumerated in Scope as touched-or-not.
 
-The mechanism risk stands: C-BLOCK was measured with **one** sentence injected
-into `[알려진 것]` (9/10 stance shift, one-sided Fisher p=0.0000595). At ten the
-effect may dilute or saturate and attribution may be lost, which is the
-legibility the loop depends on. Raise to 6 behind one probe arm, or hold at 4.
+**U5.1 — the archive becomes sittings; needs a new store.** Corrected path: the
+append site is `src/runloop/run-loop.ts:118-121` (**not the client driver**),
+surfaced as `archive` at `:131`; that module's own comment `:70-88` already
+records why the schema cannot widen ("the ratified shape has nowhere to put a
+number … not this module's to make"). `meta-state.ts:22,:59,:70,:96-97`;
+`data/runs/_schema/meta-state.schema.json:32-36` under `:8`
+`additionalProperties: false`; widening `MetaState` breaks **three** assertions
+(`meta-schema.test.ts:70,:80,:88-89,:111`), and four more runloop suites read
+`report_archive` (carry-over · store · meta-event · state-isolation). Shares
+`report-archive.ts` — the same five symbols — with G3, and
+`reports.ts`/`report-view.ts` with U5.2c/O2: strictly after both merge.
 
-**U5.1 cannot extend `report_archive`.** `src/runloop/meta-state.ts:22` is
-`report_archive: string[]` — run **ids**, an index for browsing, appended at
-`run-loop.ts:118-119` and surfaced as `archive: {run,label}[]` at `:131`. Report
-bodies are persisted nowhere, and `data/runs/_schema/meta-state.schema.json` is
-`{"type":"array","items":{"type":"string"}}` under `additionalProperties: false`,
-so widening it fails `tests/runloop/meta-schema.test.ts:88-89`. This unit adds a
-separate store. `docs/spec-client.md:152` already specifies the rail (and `:302`
-the component), so it is conformance, not a new feature.
+**O3 — three or four sounds.** Greenfield: zero audio code in `src/`
+(grep-verified), so the play sites are decisions, audited here: **LOGIN** —
+`sign-in.ts:223` (`is-auth`) with the readout ladder `:110-124`
+(`STEP_MS = 190` at `:25`, runway `:224`); **hand-over** — `boot.ts:232-239`
+(`await door; await openManual(…)` then `revealDesk`); **day-end** —
+`agent-file.ts:232-234`, the ported `'tally'`-phase subscriber, fires once per
+day close. Deploy's `'settling'` is *derived* (`deploy-button.ts:83`, a pure
+view) — the wrong place; and a second `announce()` in the day-end tick clobbers
+the live region (`agent-file.ts:238-241`) — a sound is safe there, an announce
+is not. Every file gets its `assets-manifest.json` entry — generated
+`{file, tool, prompt, license}`, sourced `{file, source, license, note}`; `file`
+may be a directory (see the font entries `:178-183`). **Guard gap to close in
+the same unit:** `no-third-party-url.test.ts:41`'s `TEXT_EXT` never opens audio
+— today nothing forces audio self-hosted and nothing proves it ships (compare
+the font positive assert `:98-102`).
 
-**U5.2b is an engine-seam unit, not a client one.** The prose exists on disk and
-dies before the client: `gates.json`'s `stances[].desc` (G1 stance `c` 경청 =
-*"질문지를 덮는다 — 발신자의 말이 끝날 때까지 끊지 않고 자리를 내준다"*) is
-**dropped at `src/engine/beat/schedule.ts:109`**, where `compileGate` maps
-stances to `{ id, label }` only; `Stance` is `{ id: string; label: string }`
-(`src/shared/contracts.ts:24`); and **no `ViewEvent` carries a stance at all**.
-An executor told "use `desc`" finds no `desc` and reaches for `label` — exactly
-what U5.2c forbids. This unit widens `Stance`, stops dropping `desc` in
-`compileGate`, and adds the field to the §5.2 view-driver seam.
+**MAN — the manual's §1–§4 content (the opening/tutorial conversation).**
+`manual.ts:25-64` is the whole surface — the header `:16-24` says "replace this
+object wholesale"; `clauses()` iterates `sections`, so the section *count* is
+free but the `{head, body}` keys are not; deleting `chop: '초안'` removes the
+draft stamp. No test asserts the copy (grep-verified; only
+`fonts-css.test.ts:180` names the two sheets) — the swap is unguarded both ways.
+**Two placeholder bodies are already false**: `:46` "집계(TALLY)는 21:04에
+열립니다" and `:57` "…집계가 열리고" describe the window U3 deleted. The content
+teaches 책상 구성, so it lands after T1 (hard — 보관함 must not be taught) and
+prefers T3 (soft — prose can avoid naming positions); what §3–§4 teach is the
+C-BLOCK loop, the tiebreaker this document ranks by.
 
-**U5.2c** renders it. Use `desc`, never `label`: `매뉴얼 → 경청` transmits nothing,
-because the player has never seen either word. Sentences that fired nothing must
-read as unused, or the player cannot learn which one worked — this is also how a
-false lead surfaces without the game saying "wrong". **The false leads that ship
-are `data/scenario/우는다리/gates.json`'s `gates[].false_leads`** — 7 strings, one
-per gate. `truths.json` never ships (`vite.config.ts:38`) and `truths` is a banned
-seam prefix (`src/shared/seam-keys.ts:36`). The agent-number stamp needs M1:
-`MarkSets` (`minable-sentence.ts:23-26`) is two `Set<string>` with nowhere to
-carry a number.
+### Deferred (Won't — §4)
 
-### O — Opening
-
-| id | item | where |
-|---|---|---|
-| O1 | Play the 08:50 call before the desk appears: empty screen, radio only, then it cuts off and the windows come up | `src/client/main.ts:9` (`void bootShell()`), or between `boot.ts:118` (`holdDesk`) and `:216-219` (`revealDesk`) — the hold/reveal seam exists at `src/client/components/desktop-dressing.ts:15,20` |
-| O2 | First report's first mineable sentence pulses once, first run only | `src/client/components/minable-sentence.ts:20,78-82,121-126` for the state; first-arrival is decided at `src/client/windows/reports.ts:95-108` / `report-view.ts:94` (`RenderOptions.replay`); new class beside `win-reports.css:75-77`, values in `tokens.css` (invariant 8) |
-| O3 | Three or four sound effects — static, the phone, the silence at 21:04 | files under `public/assets/`; entry per file in `assets-manifest.json`'s `assets[]` — generated `{file, tool, prompt, license}`, sourced `{file, source, license, note}` (see the font entries) |
-
-An opening is not a tutorial. Ten seconds establishes who the player is, what
-they are for, and why it is urgent, and it is the first ten seconds of
-deliverable #2. CLAUDE.md makes the first 60 seconds the optimization target and
-nothing in the build addresses it. O1 must not build a second hold — the desk
-already holds and reveals.
-
-### M — Misc
-
-| id | item | where |
-|---|---|---|
-| M1 | Agent callsign increments per simulation (ECHO-1, ECHO-2…) | `dossier.ts:19` (`CALLSIGN = 'ECHO-1'`), consumed at `:92` and `src/client/windows/agent-file.ts:95`; a per-run callsign threads through `DossierInput` (`dossier.ts:35-42`). Other literals: `run-feed.ts:60`, `report-view.ts:124,143` |
-| M2 | Species tags ('자기서술') removed from display, and from the dataset where possible | the literal is `SPECIES_DISPLAY` at `components/block-card.ts:33-38`; the render M2 removes is `:158-161`; the filter prints it twice at `components/species-filter.ts:76,78` |
-
-- **M1's assertions:** `e2e/agent-file.spec.ts:186`, `tests/windows/live-feed.test.ts:400`.
-  M1 is the cheapest piece of U5 — `RUN 01` is a number and reads as "my second
-  attempt"; `ECHO-2` is a person, which makes a failed run a dead agent.
-- **M2's importer list was wrong.** Only `components/slot-board.ts:16` and
-  `windows/block-store.ts:26` import `blockCardModel`, and `block-store.ts:75`
-  reads `.species` (data, for the filter) — never `.ko`.
-  `components/species-filter.ts:18` imports `SPECIES_DISPLAY` directly;
-  `components/deploy-button.ts:10` and `windows/agent-file.ts:16` import `pad2`
-  and touch species not at all. Assertions: `agent-file.test.ts:614,632`.
-- **The `species` field is data, not decoration.** It is minted from the id
-  channel (`src/shared/id.ts:68,91`) off the channel→species map at
-  `src/shared/species.ts:43-70` (with `AUTHORED_SPECIES` `:76`, `CERTIFIED` `:79`),
-  typed on the wire (`view-driver.ts:17-18`), and set by the engine
-  (`src/engine/feed/report.ts:65,71`). The authored `key_conditions[].species` in
-  `data/scenario/우는다리/gates.json` is a **separate Korean vocabulary**
-  (`사실` | `자기서술`, `datapack.ts:157`) sharing no value with the wire union.
-  Display removal is unconditional; field removal is only available if those
-  consumers are retired with it.
+- **U2** (slot cap 4 → more): the mechanism risk stands — C-BLOCK was measured
+  with **one** injected sentence (9/10 stance shift, one-sided Fisher
+  p=0.0000595); raising the cap without a probe risks the claim days before
+  submission. Pinned by `block-store.test.ts:366` (`SLOT_CAP` — note this file
+  is deleted by T1, so the pin moves), `agent-file.test.ts:734-740`, and the
+  `slot-board.ts` empty-diff guard.
+- **C1** (paged dossier) → **U5.3** (a page per ECHO-n): the next step after
+  the cut, not a cut casualty. `dossier.ts:85-120` is the section array; its
+  coordinates get re-audited when picked up.
+- **U4** resolved into O1 (landed) and O2.
 
 ## 1.5 The prerequisite — mostly landed
 
@@ -270,9 +223,9 @@ document's earlier dependency on it was stale:
 - `src/driver/scorer.ts:136` — `createScorer` returns a live `ScorerPort`
 - both roots wired — `src/client/driver/live/bind.ts:84`, `tools/driver/run/bind.mjs:125`
 - **still open:** meter binding — `characters.json` c2–c7, 12 of 14
-  `meters[].variable` are `null`
+  `meters[].variable` are `null` (as of the 08-06 audit; not re-checked 08-08)
 
-So **U3 and U5.2c are no longer gated on it.**
+U3 landed on it (#174); U5.2c is not gated on it.
 
 What remains true is the grammar. A gate's key condition is a five-field record
 (`src/shared/datapack.ts:153-158`: `id`, `axis`, `referent`, `species`,
@@ -291,75 +244,83 @@ are where it would show.
 
 ## 2. Dependency order
 
+Two kinds of edges. A **logic edge** (`──►`) is a real dependency: the later
+unit's shape depends on what the earlier one landed. A **file edge** (`⇢`) is a
+collision: the units are logically independent but touch the same files, so
+§5.6's wave-parallel rule (pairwise-disjoint files) forbids sharing a wave, and
+merge order becomes the dependency.
+
 ```
-G2, G4, C2, C3, C4, M1, M2, T2, U1, U3, O1, O2, O3      ← no dependencies
-        │
-M1 ──► U5.1                    M1 ──► U5.2c
-G3 ──► U5.1                    U5.2b (seam: carry `desc`) ──► U5.2c
-C1 ──► U5.3
-        │
-U5.2a (landed) ──► T1 ──► T3          U3 ──► T3
-U2 ──► probe at the new cap
+U5.2b+ ──► U5.2c ──┬──► O2      (O2 also waits on the MAN conversation closing)
+                   └──► U5.1 ◄── G3
+T1 ──► T3 ──► MAN (hard on T1, soft on T3)
+O3      ← free-standing
 ```
 
-`U5.2a` landing and the scorer landing between them removed both of the previous
-graph's long chains. **U3 is now free-standing**, and the critical path is
-`U5.2b → U5.2c`, which crosses the engine/client boundary and is therefore two
-units by §5.2. T3 trails U3 as well as T1 — its target layout is the
-three-window desk, which exists only once TALLY and BLOCK STORE are both gone —
-so groups 3 and 5 do not swap.
+File edges:
 
-## 3. Work groups
+- **T1 ⇢ U5.2c** — both touch `windows/reports.ts`. T1 first: the carried view
+  must exist before the render unit repaints the document.
+- **G3 ⇢ U5.2c** — shared only in `tests/windows/reports.test.ts`; either order
+  works, G3-first spares U5.2c a rebase.
+- **U5.2c ⇢ O2 ⇢ U5.1** (pairwise) — all three live in the same six files.
 
-1. **Copy pass** — G2, G4, C2, C3, C4, M1, M2, T2. Strings and data only.
-2. **Time** — U1, then O1/O2. The day has to pass before anything about it reads.
-3. **Ending** — U3. No longer waits on anything.
-4. **Cause** — U5.2b (seam), then U5.2c (render).
-5. **Report becomes the archive** — T1 → T3.
-6. **History** — G3, U5.1, then C1 → U5.3.
-7. **Polish** — O3.
-8. **Slot cap** — U2, probe first.
+**The REPORTS window is the convergence point.** `windows/reports.ts` ·
+`components/report-view.ts` · `components/minable-sentence.ts` ·
+`styles/win-reports.css` · `tests/windows/reports.test.ts` ·
+`e2e/reports.spec.ts` are touched by U5.2c, O2 and U5.1 alike (and grazed by T1
+and G3). That set is the serial spine; everything else parallelizes around it.
+
+## 3. Waves
+
+Grouped by file-disjointness, not priority — each wave's units run
+concurrently, one worktree each (§5.6), merges serial within the wave.
+
+1. **Wave A — four worktrees, all fireable now, pairwise disjoint:**
+   **U5.2b+** (engine/driver/seam) · **T1** (client desk teardown) · **G3**
+   (archive labels + spec) · **O3** (audio + manifest + guard). The MAN
+   *conversation* runs alongside as a human thread; its unit waits for T1.
+2. **Wave B — after A merges:** **U5.2c** (REPORTS render; re-authored on A's
+   output, per §5.6) · **T3** (`layout.ts` only). Disjoint from each other.
+3. **Wave C — after B:** **U5.1** · **MAN** (`manual.ts` only). Disjoint. If
+   the opening conversation has closed, **O2** may take U5.1's slot — O2 and
+   U5.1 collide, so one of them slips to wave D.
+4. **Wave D:** whichever of O2 / U5.1 waited.
+
+Two Shoulds (G3, O3) ride wave A in Must time — that is the point of grouping
+by dependency: they are free parallel capacity on files nothing else wants, not
+queue-jumpers. The Must line's serial spine (U5.2b+ → U5.2c; T1 → MAN) is
+unaffected by them.
 
 ## 4. Cut line (~08-10; the deployed build stays green)
 
-**Must:** U1 · group 1 (G2, G4, C2, C3, C4, M1, M2, T2) · U3 · U5.2b + U5.2c · T1.
+Everything in the old Must except two units is landed (§1's table). What
+remains:
 
-U1 leads: a day that arrives in bursts is skipped rather than lived, and 21:04
-then lands on nothing. U5.2b+c is the only place cause becomes visible, which is
-the tiebreaker this document ranks by — and it grew an engine-seam half, so it
-starts earlier than its old position implied. U3 moves up because the scorer
-landed and it now blocks on nothing.
+**Must:** U5.2b+ + U5.2c · T1 · MAN.
 
-**O1 landed as the door (08-08):** a hand-built opening — full-viewport
-sign-in over the desk's own world, the terminal-issue manual as hand-over,
-the desk booting at full speed behind the curtain (no second hold; the
-membrane holds at the door: the fields are spans). The e2e lanes skip it via
-`navigator.webdriver`; `?signin=show` forces it, `?signin=skip` bypasses.
-**The manual's §1–§4 content is a placeholder** (`MANUAL` in
-`src/client/shell/manual.ts`, one swappable object) — writing it is the
-opening/tutorial conversation 민서 wanted, now held against a live screen,
-and the swap is a Must row of its own before 08-10. O2 (the first-mining
-pulse) stays deferred to that same conversation; `g2-3` stamps when it
-closes.
+U5.2b+/c is the only place cause becomes visible — the tiebreaker this document
+ranks by, and the last Must that changes what the game *says*. T1 is the last
+Must that changes what the desk *is*. MAN is the opening/tutorial conversation
+민서 wanted, now held against a live screen — the placeholder manual must not
+ship to judges, and two of its placeholder lines are already false (§1 MAN).
+The door itself landed (#175): e2e lanes skip it via `navigator.webdriver`,
+`?signin=show` forces, `?signin=skip` bypasses; the membrane holds at the door
+(the fields are spans).
 
-**Should:** G3 · T3 · U5.1 · O3.
+**Should:** T3 · G3 · U5.1 · O3 · O2.
 
-**U5.1 moved down from must.** It was sized as a client change; it needs a new
-persistence store, because `report_archive` is an index of run ids and its schema
-forbids widening. M1 alone — distinct callsigns per sitting — carries most of the
-value it was wanted for, and M1 is in the copy pass.
+T3 completes what T1 starts and is one file. G3 and O3 are wave-A free capacity
+(§3). U5.1 stays down from Must: it needs a new persistence store, and M1 —
+distinct callsigns per sitting, landed — carries most of the value it was
+wanted for. O2 waits on the MAN conversation (`g2-3` stamps when it closes).
 
-**G3 was in no bucket** — it is Should: it gates U5.1, and it stays in group 6
-because U3 first deletes or reworks two of its sites (`tally.ts:54`,
-`deploy-button.ts:51`).
-
-**Won't:** C1 · U5.3 · U2.
-U5.3 is the next step rather than a cut. U2 is deferred because raising the cap
-without a probe risks the mechanism claim four days before submission.
+**Won't:** C1 · U5.3 · U2 (§1 Deferred — U5.3 is the next step rather than a
+cut; U2 risks the mechanism claim without a probe).
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
-> As of 2026-08-07 (v11). A PRD names the version it was written against.
+> As of 2026-08-08 (v12). A PRD names the version it was written against.
 
 The items above are not worked by hand and not worked one at a time. Each is
 specified as a **mini-PRD** by a high-capability model, then executed by a
@@ -397,8 +358,8 @@ author decided wrongly the executor notices and reports rather than repairs.
 
 One PRD is one concern, one branch, and a diff a reviewer reads in a sitting.
 Split anything that crosses a boundary between authored data, engine, and client —
-U5.2b/U5.2c above is exactly that split. The work groups in §3 are the intended
-unit boundaries.
+U5.2b/U5.2c above is exactly that split — and U5.2b+ repeats it. The waves in
+§3 are the intended firing order; a unit never spans two lanes of §2.
 
 Do not hand an executor a unit whose first step is a search. If the PRD cannot
 name the file, the PRD is not finished.
@@ -588,8 +549,9 @@ stays in the loop:
    with suite sources (the g1-1 provenance stop), and the full change list
    **dry-run** on a scratch tree — apply, run the suites, revert (the g1-2 e2e
    catch and the g4-1 `BeatCursor` catch both came from dry runs, not from
-   reading). G3, T3 and U5.2c get a re-authoring pass instead of a mechanical
-   stamp, because their shape depends on what U3, T1 and U5.2b landed. The
+   reading). A unit fired in wave B or later (§3) gets a re-authoring pass
+   instead of a mechanical stamp, because its shape depends on what the prior
+   wave landed — the 08-08 re-audit behind §1 is wave A's stamp input. The
    full apply-run-revert dry-run of the relay era is no longer mandatory: a
    stop now costs minutes, not a docs-PR cycle, and the g2-1 pilot showed a
    scratch dry-run can pass by environmental luck while the executor's own
@@ -607,10 +569,12 @@ stays in the loop:
 4. **Author verifies**: diff against the change list row by row, full suites,
    and a local merge preview against then-current `main`. PRD amendments land
    as author commits on the same branch. The author pushes and opens **one PR
-   per wave** with the grouped commits — code and the decisions that produced
-   it reviewed together, by 윤석; merges are 민서's, one at a time, in the
-   wave's stated order. `main` stays deployable, and repo hard rules 1–6 apply
-   to subagent commits exactly as to hand-written ones.
+   per unit**, the PRD as the branch's first commit — code and the decisions
+   that produced it reviewed together, by 윤석; a wave's PRs open together and
+   merge serially, merges 민서's, in the wave's stated order. (A wave of rider
+   commits on one branch may still ship as one PR, as wave 5 did.) `main`
+   stays deployable, and repo hard rules 1–6 apply to subagent commits exactly
+   as to hand-written ones.
 
 Execution stays **wave-parallel, merge-serial**. Units whose files are
 pairwise disjoint develop concurrently, one worktree each; a unit whose
