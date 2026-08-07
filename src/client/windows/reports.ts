@@ -19,7 +19,7 @@
 // children, so the record survives every repaint as a sibling article.
 import type { FixtureDriver, ViewEvent } from '../driver/index.ts'
 import { callsignOf } from '../components/dossier.ts'
-import { deriveMarks, mine } from '../components/minable-sentence.ts'
+import { deriveMarks, mine, sentenceState } from '../components/minable-sentence.ts'
 import type { MarkSets } from '../components/minable-sentence.ts'
 import { createArchiveRail } from '../components/report-archive.ts'
 import type { ArchiveEntry } from '../components/report-archive.ts'
@@ -28,7 +28,7 @@ import type { ReportModel } from '../components/report-view.ts'
 import { el } from '../shell/dom.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
-import { pad2 } from '../components/block-card.ts'
+import { pad2, setPickedBlockId } from '../components/block-card.ts'
 import { createScoreTally } from '../components/score-tally.ts'
 import type { TallyModel, TallyRowModel } from '../components/score-tally.ts'
 
@@ -103,7 +103,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     host,
     rail: rail.root,
     onMine: (id: string) => {
-      const outcome = mine(id, marks())
+      const m = marks()
+      // T1 — the report is the pick surface: a mined sentence arms the pick
+      // channel and the AGENT FILE's seat consumes it. `slot-board.ts` stays
+      // the only membrane owner; no op is sent from here.
+      if (sentenceState(id, m) === 'mined') {
+        setPickedBlockId(id)
+        return
+      }
+      const outcome = mine(id, m)
       for (const op of outcome.ops) driver.send(op)
       view.refresh(marks())
       for (const effect of outcome.effects) view.tear(effect.tear)

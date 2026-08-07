@@ -28,7 +28,6 @@ import { hideDebugPane } from './fixtures/dev-surface.ts'
 const WINDOWS = [
   { key: 'feed', id: 'w-feed' },
   { key: 'file', id: 'w-file' },
-  { key: 'store', id: 'w-store' },
   { key: 'rep', id: 'w-rep' },
 ] as const
 
@@ -212,12 +211,12 @@ test.describe('window ops', () => {
     }
     // Closed to the taskbar, not destroyed.
     await expect(page.locator('.win')).toHaveCount(4)
-    await expect(page.locator('.task')).toHaveCount(4)
+    await expect(page.locator('.task')).toHaveCount(3)
   })
 
   test('window ops — the taskbar reopens a closed window', async ({ page }) => {
-    const node = win(page, 'w-store')
-    const task = page.locator('.task[data-win="store"]')
+    const node = win(page, 'w-feed')
+    const task = page.locator('.task[data-win="feed"]')
     await node.locator('.wc-close').click()
     await expect(node).toBeHidden()
 
@@ -229,10 +228,10 @@ test.describe('window ops', () => {
   })
 
   test('window ops — the taskbar raises an unfocused window before hiding it', async ({ page }) => {
-    const store = win(page, 'w-store')
-    const task = page.locator('.task[data-win="store"]')
+    const store = win(page, 'w-feed')
+    const task = page.locator('.task[data-win="feed"]')
 
-    // Focus something else, so BLOCK STORE is open but not focused.
+    // Focus something else, so LIVE FEED is open but not focused.
     await win(page, 'w-file').locator('.win-bar').click()
     await expect(store).not.toHaveClass(/\bfocused\b/)
 
@@ -357,7 +356,7 @@ test.describe('default layout fits 1280x800', () => {
       origins.add(`${Math.round(b.x)}:${Math.round(b.y)}`)
     }
     // Four distinct desk columns is the floor the reference arrangement produces.
-    expect(origins.size).toBeGreaterThanOrEqual(4)
+    expect(origins.size).toBeGreaterThanOrEqual(3)
   })
 })
 
@@ -539,19 +538,19 @@ test.describe('single stacking context', () => {
     expect(offenders).toEqual([])
   })
 
-  test('single stacking context — raising BLOCK STORE puts it above AGENT FILE', async ({ page }) => {
-    const store = win(page, 'w-store')
+  test('single stacking context — raising REPORTS puts it above AGENT FILE', async ({ page }) => {
+    const rep = win(page, 'w-rep')
     const file = win(page, 'w-file')
 
-    // Park BLOCK STORE on top of AGENT FILE so the two genuinely overlap.
+    // Park REPORTS on top of AGENT FILE so the two genuinely overlap.
     const fileBox = await box(file)
-    const storeBar = await box(store.locator('.win-bar'))
-    const storeBox = await box(store)
+    const repBar = await box(rep.locator('.win-bar'))
+    const repBox = await box(rep)
     await dragFrom(
       page,
-      storeBar,
-      fileBox.x + 40 - storeBox.x,
-      fileBox.y + 40 - storeBox.y,
+      repBar,
+      fileBox.x + 40 - repBox.x,
+      fileBox.y + 40 - repBox.y,
     )
 
     const probe = { x: fileBox.x + 90, y: fileBox.y + 90 }
@@ -561,14 +560,14 @@ test.describe('single stacking context', () => {
         probe,
       )
 
-    await store.locator('.win-bar').click({ position: { x: 20, y: 8 } })
-    expect(await topAt()).toBe('w-store')
+    await rep.locator('.win-bar').click({ position: { x: 20, y: 8 } })
+    expect(await topAt()).toBe('w-rep')
 
     await file.locator('.win-bar').click({ position: { x: 20, y: 8 } })
     expect(await topAt()).toBe('w-file')
 
-    await store.locator('.win-bar').click({ position: { x: 20, y: 8 } })
-    expect(await topAt()).toBe('w-store')
+    await rep.locator('.win-bar').click({ position: { x: 20, y: 8 } })
+    expect(await topAt()).toBe('w-rep')
   })
 
   test('single stacking context — focus raises the --z of exactly one window', async ({ page }) => {
@@ -732,7 +731,7 @@ test.describe('a11y', () => {
   })
 
   test('a11y — a closed window is removed from the tab order', async ({ page }) => {
-    const node = win(page, 'w-store')
+    const node = win(page, 'w-feed')
     await node.locator('.wc-close').click()
     await expect(node).toBeHidden()
     const reachable = await node.evaluate((n) => {

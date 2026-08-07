@@ -16,6 +16,7 @@
 // suite binds to whatever run the shell boots.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
+import { raiseWindow } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -357,10 +358,14 @@ test.describe('new run unlocks and files the report', () => {
     expect(emitted.carried.length, 'the new run carries nothing — the scan is vacuous').toBeGreaterThan(0)
     expect((await meta(page)).carried).toEqual(emitted.carried)
 
-    const onDesk = await page
-      .locator('#w-store [data-block]')
-      .evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.block ?? ''))
-    for (const id of onDesk) expect(emitted.carried, `${id} is on the desk but not in meta.carried`).toContain(id)
+    await raiseWindow(page, 'rep')
+    await page.locator('#w-rep .arch-rail [role="option"]').first().click()
+    for (const id of emitted.carried) {
+      await expect(
+        page.locator(`#w-rep [data-sentence-id="${id}"]`).first(),
+        `${id} is carried but shows no slotted mark in the filed report`,
+      ).toHaveClass(/\bslotted\b/)
+    }
   })
 
   test('new run unlocks and files the report — the terminal record refreshes clean on the next 21:04', async ({

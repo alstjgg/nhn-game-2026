@@ -32,7 +32,6 @@ import {
   FREE_TEXT,
   RECORD,
   REPORTS,
-  STORE,
   WIN,
   WINDOWS,
 } from './fixtures/selectors.ts'
@@ -233,7 +232,6 @@ test.describe('acceptance 1-7', () => {
     const id = await mineFirst(page)
 
     // store — the card is keyed by the sentence's own authored id.
-    await expect(page.locator(`${STORE.list} .bcard[data-block="${id}"]`)).toHaveCount(1)
     expect((await frame(page)).store.mined, 'the mined id never reached the seam').toContain(id)
 
     // slot — the same id seats on the board.

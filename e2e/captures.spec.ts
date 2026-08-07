@@ -112,7 +112,6 @@ const SHOTS: readonly Shot[] = [
   { name: 'win-agent-file', selector: '#w-file' },
   { name: 'win-live-feed', selector: '#w-feed' },
   { name: 'win-reports', selector: '#w-rep' },
-  { name: 'win-block-store', selector: '#w-store' },
   { name: 'red-thread-overlay', selector: null, threaded: true },
   { name: 'terminal-record', selector: '#w-rep .terminal-record', seedAt: '21:04' },
   { name: 'terminal-record-final', selector: '#w-rep .terminal-record', seedAt: '21:04', holdMs: 11_000 },

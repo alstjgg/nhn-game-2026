@@ -9,7 +9,6 @@ import type { FixtureDriver } from '../driver/index.ts'
 import type { WindowKey } from './layout.ts'
 import { mount as mountLiveFeed } from '../windows/live-feed.ts'
 import { mount as mountAgentFile } from '../windows/agent-file.ts'
-import { mount as mountBlockStore } from '../windows/block-store.ts'
 import { mount as mountReports } from '../windows/reports.ts'
 
 export interface WindowDef {
@@ -36,6 +35,5 @@ export interface WindowDef {
 export const WINDOW_REGISTRY: readonly WindowDef[] = [
   { key: 'feed', id: 'w-feed', en: 'LIVE FEED', ko: '무전', sub: '실시간 무전 · 열람 전용', tab: 'LF', stock: 'fanfold', live: true, mount: mountLiveFeed },
   { key: 'file', id: 'w-file', en: 'AGENT FILE', ko: '요원 파일', sub: '요원 파일 — 프롬프트 편성', tab: 'AF', stock: 'paper kraft', mount: mountAgentFile },
-  { key: 'store', id: 'w-store', en: 'BLOCK STORE', ko: '보관함', sub: '보관함 — 채굴한 문장', tab: 'BS', stock: 'paper card-stock', mount: mountBlockStore },
   { key: 'rep', id: 'w-rep', en: 'REPORTS', ko: '부검', sub: '부검 — 시행 기록', tab: 'RP', stock: 'paper bond', mount: mountReports },
 ]
