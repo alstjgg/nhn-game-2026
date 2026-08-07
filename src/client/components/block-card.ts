@@ -157,7 +157,7 @@ export function buildBlockCard(model: BlockCardModel, options: BlockCardOptions)
 
   const top = el('div', 'bc-top')
   const tag = el('span', `bc-sp ${model.cls}`)
-  tag.append(el('i', undefined, model.mark), document.createTextNode(model.ko))
+  tag.append(el('i', undefined, model.mark))
   top.append(tag)
   if (model.axis !== undefined) top.append(el('span', 'bc-axis', `축 ${model.axis}`))
   top.append(el('span', 'bc-id', model.id.toUpperCase()))
