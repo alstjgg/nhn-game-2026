@@ -83,15 +83,14 @@ current:
 ```
 replace with:
 ```ts
-    stances: authored.stances.map((stance) => ({
-      id: stance.id,
-      label: stance.label,
-      ...(stance.desc === undefined ? {} : { desc: stance.desc }),
-    })),
+    stances: authored.stances.map((stance) => ({ id: stance.id, label: stance.label, desc: stance.desc })),
 ```
-(Spread, not `desc: stance.desc`: a pack whose stance carries no `desc` would
-otherwise get an explicit `desc: undefined` key, which survives `toEqual` but
-not `toStrictEqual` and changes the object's JSON shape.)
+(Plain `desc: stance.desc`, no guard: the authored type requires `desc`
+(`src/shared/datapack.ts:146-150`, schema `minLength: 1`), so an undefined-guard
+here is comparing `string` to `undefined` — dead code tsc rejects. The
+optionality lives only on the seam side, in E1's `Stance.desc?`. E3a's
+`...(judged === undefined ? {} : { judged })` is the genuinely optional case —
+a `Map.get` — and stays.)
 
 **E3 — `src/driver/live-driver.ts`**, three edits, bottom-up:
 

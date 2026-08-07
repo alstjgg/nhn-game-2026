@@ -120,7 +120,8 @@ replace with:
 
 **E2 — `src/client/components/report-view.ts`**
 
-E2a — `RenderOptions` (currently `:86-95`), append one field:
+E2a — `src/client/components/report-view.ts:94-95` (the tail of
+`RenderOptions`), append one field:
 current:
 ```ts
   replay?: boolean
