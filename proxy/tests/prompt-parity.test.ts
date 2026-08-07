@@ -204,6 +204,14 @@ const COVERAGE: Array<{
       REPORT_GUIDANCE: "보고서 본문은 20~30문장.",
     },
   },
+  {
+    call: "reporter",
+    version: "v0.3",
+    slots: {
+      EXPERIENCED: ["09:40 회선 A 착신.", "09:41 통제관이 청취를 택했다."],
+      REPORT_GUIDANCE: "보고서 본문은 20~30문장.",
+    },
+  },
   // The EMPTY branches. Mutating `(없음)`, `(변화 없음)`, or the blank-run
   // collapse survived the gate until these existed — a renderer's empty case is
   // a separate code path and needs its own fixture.

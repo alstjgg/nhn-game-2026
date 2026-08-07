@@ -134,7 +134,7 @@ describe('A3–A5 — the envelope is exactly what §11 describes', () => {
     const reqs = allThree()
     expect(reqs.judgment.template_version).toBe('v0.4')
     expect(reqs.narration.template_version).toBe('v0.3')
-    expect(reqs.reporter.template_version).toBe('v0.2')
+    expect(reqs.reporter.template_version).toBe('v0.3')
 
     for (const t of CALL_TYPES) {
       const v = reqs[t].template_version

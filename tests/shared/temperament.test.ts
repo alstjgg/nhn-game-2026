@@ -193,10 +193,10 @@ describe('[e1] invariant 3 — deterministic: same pack, same string, always', (
 // ═══ invariant 4 — it renders its own header ═════════════════════════════════
 //
 // `{TEMPERAMENT}` is a bare slot in judgment/base-v0.4.md and
-// reporter/base-v0.2.md; nothing around it supplies a section header.
+// reporter/base-v0.3.md; nothing around it supplies a section header.
 
 describe('[e1] invariant 4 — the renderer supplies its own section header', () => {
-  const bareSlotTemplates = ['proxy/prompts/judgment/base-v0.4.md', 'proxy/prompts/reporter/base-v0.2.md']
+  const bareSlotTemplates = ['proxy/prompts/judgment/base-v0.4.md', 'proxy/prompts/reporter/base-v0.3.md']
 
   it('(a) premise: {TEMPERAMENT} sits alone on its line with no header above it', () => {
     for (const rel of bareSlotTemplates) {
@@ -331,7 +331,7 @@ describe('[e1] renderReportGuidance — Call 3 policy prose', () => {
   })
 
   it('(g) premise: the template already supplies the [보고 지침] header', () => {
-    const lines = read('proxy/prompts/reporter/user-v0.2.md').split('\n')
+    const lines = read('proxy/prompts/reporter/user-v0.3.md').split('\n')
     const at = lines.findIndex((l) => l.includes('{REPORT_GUIDANCE}'))
     expect(at).toBeGreaterThan(-1)
     expect(lines[at - 1]?.trim()).toBe('[보고 지침]')
