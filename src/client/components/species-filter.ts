@@ -75,7 +75,7 @@ export function buildSpeciesFilter(onPick: (key: FilterKey) => void): SpeciesFil
   const buttons: FilterButton[] = filterOptions([]).map((option) => {
     const label = option.key === 'all' ? '전체 보기' : `${option.ko}만 보기`
     const node = button('fbtn', label, '')
-    node.append(el('i', undefined, option.mark), document.createTextNode(option.ko))
+    node.append(el('i', undefined, option.mark))
     const count = el('span', undefined, ` ${option.count}`)
     node.append(count)
     node.addEventListener('click', () => onPick(option.key))

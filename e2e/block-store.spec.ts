@@ -189,7 +189,8 @@ function card(page: Page, id: string): Locator {
 }
 
 function filterButton(page: Page, ko: string): Locator {
-  return page.locator(`${FILTER} button`, { hasText: ko })
+  const label = ko === '전체' ? '전체 보기' : `${ko}만 보기`
+  return page.locator(`${FILTER} button[title="${label}"]`)
 }
 
 /** `전체 9` → 9. The count is the trailing number the reference prints. */
@@ -311,7 +312,8 @@ test.describe('store states', () => {
     const buttons = page.locator(`${FILTER} button`)
     await expect(buttons).toHaveCount(FILTERS.length)
     for (const [index, option] of FILTERS.entries()) {
-      await expect(buttons.nth(index)).toContainText(option.ko)
+      const label = option.key === 'all' ? '전체 보기' : `${option.ko}만 보기`
+      await expect(buttons.nth(index)).toHaveAttribute('title', label)
       await expect(buttons.nth(index)).toContainText(option.mark)
     }
   })
@@ -396,7 +398,7 @@ test.describe('card states', () => {
       await expect(node.locator('.bc-id')).toHaveText(id.toUpperCase())
       const option = FILTERS.find((o) => o.key === speciesOf(id, index))
       await expect(node.locator('.bc-sp')).toContainText(option!.mark)
-      await expect(node.locator('.bc-sp')).toContainText(option!.ko)
+      await expect(node.locator('.bc-sp')).not.toContainText(option!.ko)
     }
   })
 
