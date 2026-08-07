@@ -594,14 +594,14 @@ describe('[u4#c4] deployView states — empty · partial · full · locked', () 
     expect(v.buttonState).toBe('deployed')
     expect(v.note).toBe('배치됨 — 이번 시행에서 잠김')
     expect(v.stampOn).toBe(true)
-    expect(v.stampLine).toBe('RUN 03 · 08:50')
-    expect(v.stampLine).toMatch(/^RUN \d{2} · \d{2}:\d{2}$/)
+    expect(v.stampLine).toBe('ECHO-3 · 08:50')
+    expect(v.stampLine).toMatch(/^ECHO-\d+ · \d{2}:\d{2}$/)
   })
 
-  it('(e) the run number is zero-padded to two digits, whatever the run', async () => {
+  it('(e) the stamp names the sitting, unpadded, whatever the run', async () => {
     const { deployView } = await loadDeployButton()
-    expect(deployView({ slots: [], deployed: true, run: 1, at: '13:05' }).stampLine).toBe('RUN 01 · 13:05')
-    expect(deployView({ slots: [], deployed: true, run: 10, at: '13:05' }).stampLine).toBe('RUN 10 · 13:05')
+    expect(deployView({ slots: [], deployed: true, run: 1, at: '13:05' }).stampLine).toBe('ECHO-1 · 13:05')
+    expect(deployView({ slots: [], deployed: true, run: 10, at: '13:05' }).stampLine).toBe('ECHO-10 · 13:05')
   })
 })
 

@@ -19,11 +19,12 @@
 // same thing about the BUILD→RUN edge), so the op's acknowledgement is the only
 // signal there is.
 import type { FixtureDriver, ViewEvent } from '../driver/index.ts'
+import { callsignOf } from '../components/dossier.ts'
 
 /** How long a line stays on the visible toast; the live region keeps its text. */
 const SHOW_MS = 4000
 
-const RUN_OPENED = (run: number) => `RUN ${String(run).padStart(2, '0')} 시작`
+const RUN_OPENED = (run: number) => `${callsignOf(run)} 교신 시작`
 const WAIT_OPEN = '무전 회신 대기 중'
 const WAIT_DONE = '무전 회신 도착'
 const FALLBACK: Record<1 | 2 | 3, string> = {

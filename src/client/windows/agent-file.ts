@@ -37,7 +37,6 @@ const WAITING = '……보고서 정리 중'
 const FILED_TAIL = ' 보고서가 부검 창에 도착했습니다'
 /** …and the line it settles on when the hold ran out and none came. */
 const LAPSED_TAIL = ' 보고서는 아직 부검 창에 없습니다 — 다음 시행은 열려 있습니다'
-const RUN_CAPTION = 'RUN '
 /** The allotment is spent: `new_run` was refused, and the loop has no next day. */
 const SPENT = '잔여 시행 없음 — 마지막 집계입니다'
 
@@ -199,17 +198,17 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (release === 'hold') return
     settled = true
     dropHold()
-    const runLabel = pad2(store.get().meta.run)
+    const who = callsignOf(store.get().meta.run)
     if (release === 'filed') {
-      settleNote = `${RUN_CAPTION}${runLabel}${FILED_TAIL}`
+      settleNote = `${who}${FILED_TAIL}`
       sync()
-      announce(`${RUN_CAPTION}${runLabel}${SAY_FILED_TAIL}`)
+      announce(`${who}${SAY_FILED_TAIL}`)
     } else {
       // …and the lapse is SAID, above all: it is the release nothing else on
       // the desk echoes, and the one that hands back a degraded day.
-      settleNote = `${RUN_CAPTION}${runLabel}${LAPSED_TAIL}`
+      settleNote = `${who}${LAPSED_TAIL}`
       sync()
-      announce(`${RUN_CAPTION}${runLabel}${SAY_LAPSED_TAIL}`)
+      announce(`${who}${SAY_LAPSED_TAIL}`)
     }
   }
 
@@ -245,9 +244,9 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       // (`shell/announcer.ts`'s `run_end` handler) — a second write here would
       // replace it before anything reads it. `PACE.OPEN_DELAY` later the two
       // lines queue (R2 on the pre-U3 `windows/tally.ts:135`, ported).
-      const runLabel = pad2(store.get().meta.run)
+      const who = callsignOf(store.get().meta.run)
       setTimeout(() => {
-        if (!settled) announce(`${RUN_CAPTION}${runLabel}${SAY_HOLD_TAIL}`)
+        if (!settled) announce(`${who}${SAY_HOLD_TAIL}`)
       }, PACE.OPEN_DELAY)
       return
     }

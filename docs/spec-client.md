@@ -111,8 +111,8 @@ manual pre-merge gate.
    call · the typewriter is client-driven replay of a completed response ·
    mid-action play never blocks.
 6. **Archive segmentation** — the report archive is segmented by run/time
-   (`RUN 01 / 08:50 — 21:04`); **no gate label** appears on any player
-   surface (08-03 decision, architecture §2.1).
+   (`ECHO-1 08:50 — 21:04` — the sitting's callsign, G3); **no gate label**
+   appears on any player surface (08-03 decision, architecture §2.1).
 7. **Fixture-first** — every feature must be exercisable in fixture mode. A
    feature only demonstrable against the live proxy is review-rejected.
 8. **Style-as-data** — colors, paper stocks, type faces/sizes, spacing live
@@ -302,7 +302,7 @@ run known-open #4 — the wiring step).
 | `WaitingMarker` | active (diegetic phrasing) | `……무전 회신 대기 중` with breathing dots — never a spinner |
 | `ReportView` | facts (objective log) · report_body · loading-behind the terminal record | white bond paper, red margin rule on the report side |
 | `MinableSentence` | unmined · mined · previously-slotted (archive highlight) | tear: red flash, strike-through, `채굴` marginal note; card animates to store |
-| `ReportArchive` | per-run sections (run/time segmented — no gate labels) | archive rail (`RUN 01 / 08:50 — 21:04`); mined and slotted marks persist |
+| `ReportArchive` | per-run sections (run/time segmented — no gate labels) | archive rail (`ECHO-1 08:50 — 21:04`); mined and slotted marks persist |
 | `ScoreTally` | pending (absorbing report latency) · final | ruled-ledger count-up paced ~9 s; hosted in REPORTS' `.terminal-record` |
 | `FallbackNotice` | per engine §5 fallback classes | `※` feed line |
 | `WindowFrame` | focused · collapsed · closed-to-taskbar · dragging · resizing | title bar, tab, corner grip; taskbar toggles and raises |
