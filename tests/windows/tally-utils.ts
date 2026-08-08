@@ -95,7 +95,11 @@ export type SettleRelease = 'hold' | 'filed' | 'lapsed'
 export interface ScoreTallyModule {
   PACE: Pace
   settleMs(rowCount: number): number
+  /** x4 — how long the record's CLOSING line has to count, given its cadence. */
+  countMs(rowCount: number): number
   countUpAt(to: number, k: number): number
+  /** x4 — one axis as a line of the record; the unit rides a number only. */
+  lineOf(row: { label: string; value: string | number }, unit: string): string
   settleRelease(input: { counted: boolean; filed: boolean; lapsed: boolean }): SettleRelease
   createScoreTally: unknown
 }

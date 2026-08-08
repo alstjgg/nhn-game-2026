@@ -39,7 +39,10 @@ const MEMBRANE_SELECTOR = MEMBRANE_OPS.map((op) => `[data-op="${op}"]`).join(', 
 /** NPC channels (spec §3 inv 2). The clock stamp `.fl-t` is chrome, excluded. */
 const NPC_TEXT_SELECTOR = '.fl-npc .fl-c, .fl-symptom .fl-c'
 /** Digit-bearing surfaces that are score or chrome, never NPC state. */
-const EXCLUDED_DIGIT_SELECTOR = '.fl-t, .clk-digits, .tb-clock, .dd-value, .dd-runs, .ledger, .tly-table, .th-v, .tr-v'
+/* x4 — the ledger's table became record lines; the exclusion follows the
+   selectors that actually carry score digits. Kept in step with
+   `EXCLUDED_SELECTORS` in `tests/invariants/no-digit-npc.test.ts`. */
+const EXCLUDED_DIGIT_SELECTOR = '.fl-t, .clk-digits, .tb-clock, .dd-value, .dd-runs, .ledger, .tly-lines, .tly-line'
 
 // C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted. This helper waited
 // for all FIVE windows to be VISIBLE. `#w-tally` boots `class="win hidden"` and

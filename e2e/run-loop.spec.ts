@@ -39,7 +39,9 @@ const RECORD = '#w-rep .terminal-record'
 const LEDGER = `${RECORD}[data-tally-state]`
 const NEW_RUN = '#w-file #btnDeploy'
 const WAIT = '#w-file #deployState'
-const ROWS = `${RECORD} .tly-table tr`
+/* x4 — the record prints lines, not table rows, and its open/close lines are
+   not scored axes. See `RECORD.rows` in `e2e/fixtures/selectors.ts`. */
+const ROWS = `${RECORD} .tly-line:not(.tl-open):not(.tl-close)`
 const BIG = `${RECORD} #tlyBig`
 const REP = '#w-rep'
 const OPTION = `${REP} .arch-rail [role="option"]`

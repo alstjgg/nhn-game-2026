@@ -358,15 +358,21 @@ describe('[u7#c4] digits are score only', () => {
     expect(offenders, 'a client surface opens the engine-owned score.json').toEqual([])
   })
 
+  // x4 — RE-POINTED, not weakened. The claim is unchanged: every selector u7
+  // paints a digit into must be one inv 2 excuses BY NAME, so a digit that
+  // escapes into an NPC line still fails. What changed is the vocabulary — the
+  // ledger's `.tly-table` / `.th-v` / `.tr-v` went with its sheet skin and the
+  // day's numbers are painted into `.tly-line` / `#tlyBig` now. Both halves move
+  // together or the cross-check goes vacuous, which is what the second loop is.
   it('(d) u7 paints digits only into selectors the inv-2 scan excludes by name', () => {
     const invariant = read(path.join(REPO, 'tests/invariants/no-digit-npc.test.ts'))
     expect(invariant.length, 'the inv-2 suite is missing — the cross-check is vacuous').toBeGreaterThan(0)
-    for (const selector of ['.ledger', '.tly-table', '.th-v', '.tr-v']) {
+    for (const selector of ['.ledger', '.tly-lines', '.tly-line']) {
       expect(invariant, `${selector} is not on the inv-2 excluded list`).toContain(selector)
     }
     const painted = scannedSources().map((s) => s.text).join('\n')
-    for (const cls of ['tly-table', 'th-v', 'tr-v']) {
-      expect(painted, `u7 never paints ${cls} — the ledger scope is vacuous`).toContain(cls)
+    for (const cls of ['tly-lines', 'tly-line', 'tlyBig']) {
+      expect(painted, `u7 never paints ${cls} — the record scope is vacuous`).toContain(cls)
     }
   })
 
@@ -538,6 +544,40 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
     expect(m.hasFiledReport(state), 'the new run inherited the last run`s report').toBe(false)
   })
 
+  // x4 — the count-up moved onto the record's CLOSING line, which lands
+  // `VERDICT_AFTER` after the last axis instead of at t=0. Given the flat
+  // `COUNT_MS` it would still have been climbing when `final` fired and the desk
+  // announced 집계 완료 over a moving number. `countMs` makes the ported 3400 a
+  // ceiling and the settle's remainder the budget.
+  it('(o) the closing number always lands ON final, never after it', async () => {
+    const t = await scoreTally()
+    for (let rows = 0; rows <= 12; rows += 1) {
+      const budget = t.countMs(rows)
+      expect(budget, `countMs(${rows}) is not positive`).toBeGreaterThan(0)
+      expect(budget, `countMs(${rows}) exceeds the ported ceiling`).toBeLessThanOrEqual(t.PACE.COUNT_MS)
+      expect(
+        t.PACE.VERDICT_AFTER + budget,
+        `${rows} rows: the number is still counting when the record goes final`,
+      ).toBeLessThanOrEqual(t.settleMs(rows))
+    }
+  })
+
+  // The unit is `contract-datapack` §3.6's own predicate, not a guess about the
+  // scenario: authoring writes a body count as a NUMBER and every other outcome
+  // as a word. `components/tally-line.ts` sums the feed's closing line by the
+  // same rule.
+  it('(p) a record line units a number and never a word', async () => {
+    const t = await scoreTally()
+    expect(t.lineOf({ label: '터널에서 나오지 못한 사람', value: 59 }, '명')).toBe(
+      '터널에서 나오지 못한 사람: 59명',
+    )
+    expect(t.lineOf({ label: '오세라', value: '사망' }, '명')).toBe('오세라: 사망')
+    // Zero is a number and keeps its unit — `0명` is an outcome, not an absence.
+    expect(t.lineOf({ label: '차우진', value: 0 }, '명')).toBe('차우진: 0명')
+    // …and a word that merely looks numeric is still a word.
+    expect(t.lineOf({ label: '강필주', value: '6시간 구금' }, '명')).toBe('강필주: 6시간 구금')
+  })
+
   it('(n) source: no window keys the wait on `round === run`', () => {
     for (const source of scannedSources()) {
       expect(
@@ -680,7 +720,10 @@ describe('[u7#c9] run-wide hard constraints hold in this unit', () => {
 
     const sheet = read(path.join(REPO, 'src/client/styles/win-reports.css'))
     expect(sheet.length, 'u1 already shipped the tally skin — u7 must not need one').toBeGreaterThan(0)
-    for (const cls of ['.terminal-record', '.tly-head', '.tly-table', '.tr-b', '.th-b']) {
+    // x4 — the record's classes, not the retired sheet's. C11's claim is that
+    // u7 writes NO css and finds its skin already on disk; the list is what
+    // makes that claim non-vacuous, so it names what the record actually wears.
+    for (const cls of ['.terminal-record', '.tly-doc', '.tly-lines', '.tly-line', '.tl-s']) {
       expect(sheet, `${cls} is missing from the shipped skin`).toContain(cls)
     }
   })

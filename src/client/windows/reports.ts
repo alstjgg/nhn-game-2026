@@ -31,37 +31,25 @@ import { PORTAL } from '../shell/portal-identity.ts'
 import { pad2 } from '../components/block-card.ts'
 import { getSlotBoard, SLOT_CAP } from '../components/slot-board.ts'
 import { createScoreTally } from '../components/score-tally.ts'
-import type { TallyModel, TallyRowModel } from '../components/score-tally.ts'
+import type { TallyModel } from '../components/score-tally.ts'
 
 /** What the record is called, and what it grades against — relocated verbatim
  * from `windows/tally.ts` (u7, pre-U3). */
 const DOC_CAPTION = '집계표 '
 const TITLE_AT = '시 '
 const TITLE_TAIL = '분 시점 집계'
-const SUB = '기준선 대비 — 무개입 하루가 기준이다'
 
 /**
- * The headline axis. The `score` event carries `total` and nothing about what
- * the total counts, so the caption is ported from the design target
- * (data.js `TALLY.headline`) rather than invented per run — see discovery/u7.md.
+ * The closing line's caption and unit. The `score` event carries `total` and
+ * nothing about what the total counts, so the caption is design-target copy
+ * (data.js `TALLY.headline`) rather than something invented per run — see
+ * discovery/u7.md.
+ *
+ * x4 — `사망` became `총 사망자 수`, because the line is prose now and not the
+ * key half of a key/value row: the record closes on 「총 사망자 수 60명」.
  */
-const HEADLINE_LABEL = '사망'
+const HEADLINE_LABEL = '총 사망자 수'
 const HEADLINE_UNIT = '명'
-
-/**
- * ▲ / = / ▼ — and ONLY for an axis that counts, ported verbatim from
- * `windows/tally.ts`. A word has no vocabulary for "changed"; a changed
- * outcome shows as itself, beside the 기준 cell holding what it changed FROM.
- */
-const deltaOf = (
-  value: string | number,
-  baseline: string | number | null,
-): TallyRowModel['delta'] => {
-  if (baseline === null) return 'flat'
-  if (typeof value !== 'number' || typeof baseline !== 'number') return 'flat'
-  if (value === baseline) return 'flat'
-  return value < baseline ? 'good' : 'bad'
-}
 
 /** A rail identity — the archive entries, plus any run that has filed a report. */
 function railEntries(archive: readonly ArchiveEntry[], filed: readonly number[]): ArchiveEntry[] {
@@ -206,27 +194,22 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (draw) drawDocument()
   }
 
-  /** The terminal record's model, built from the `score` event alone. */
+  /**
+   * The terminal record's model, built from the `score` event alone.
+   *
+   * x4 — `row.value` rides across in the seam's own `string | number` union
+   * instead of being stringified here, because `score-tally.ts` decides the
+   * unit off exactly that distinction. `row.baseline` and `event.baseline_total`
+   * are read by nothing now: the 기준 column left with the table (see that
+   * module's header). They stay on the seam, unread by the view.
+   */
   function scoreModel(event: Extract<ViewEvent, { type: 'score' }>): TallyModel {
     return {
       doc: `${DOC_CAPTION}${PORTAL.portalCode}/TL/${slug}/${pad2(run)}`,
       title,
-      sub: SUB,
       run,
-      headline: {
-        label: HEADLINE_LABEL,
-        value: event.total,
-        unit: HEADLINE_UNIT,
-        baseline: String(event.baseline_total),
-      },
-      rows: event.rows.map((row) => ({
-        label: row.label,
-        value: String(row.value),
-        baseline: row.baseline === null ? null : String(row.baseline),
-        delta: deltaOf(row.value, row.baseline),
-      })),
-      note: null,
-      verdict: null,
+      headline: { label: HEADLINE_LABEL, value: event.total, unit: HEADLINE_UNIT },
+      rows: event.rows.map((row) => ({ label: row.label, value: row.value })),
     }
   }
 
