@@ -419,6 +419,79 @@ when skimmed, because the block above the target looks like the target. When a
 change list cites a declaration, the line to verify is the one carrying the
 declaration's own keyword.
 
+---
+
+# Amendment 2 — two `bindLiveRun` call sites the Scope never enumerated
+
+E1–E4 as applied are correct and stay. `OpenRunDeps.shown` is a **required**
+field, and `bindLiveRun` has two callers besides `openRun` that the Scope did
+not name — both test fixtures, both failing `typecheck:test` and then throwing
+`shown is not iterable` at runtime. The executor was right to leave them alone.
+
+**`shown` stays required.** Making it optional would have made both errors
+vanish, and that is the wrong trade: a caller that omits it silently gets an
+empty history, which is exactly the bug this unit exists to fix, returning with
+no compile error to announce it. A required field that costs two lines in two
+fixtures is the cheaper of the two.
+
+Add `tests/driver/live-desk.test.ts` and `tests/driver/shipped-pack.test.ts`
+to Scope's "May modify". Both are on `engine-boundaries.test.ts`'s
+`CLIENT_RUN_SUITES` allow-list already, so no naming guard is involved.
+
+## A2a — `tests/driver/shipped-pack.test.ts:125`
+
+Current text:
+
+```
+  return bindLiveRun(bindDeps, {
+    run,
+    carried: [],
+    start: displayStamp(META.clock.start),
+    end: displayStamp(META.clock.end),
+    meta,
+  })
+```
+
+Replacement text:
+
+```
+  return bindLiveRun(bindDeps, {
+    run,
+    carried: [],
+    // A fixture opens one run and shows nothing before it.
+    shown: [],
+    start: displayStamp(META.clock.start),
+    end: displayStamp(META.clock.end),
+    meta,
+  })
+```
+
+## A2b — `tests/driver/live-desk.test.ts:81`
+
+Current text:
+
+```
+  return bindLiveRun(bindDeps, { run, carried: [], start: '08:50', end: '21:04', meta })
+```
+
+Replacement text:
+
+```
+  return bindLiveRun(bindDeps, { run, carried: [], shown: [], start: '08:50', end: '21:04', meta })
+```
+
+## A3 — corrected Verification and Done-when
+
+The baseline moved under this PRD while it was being written: `main` was 1608
+when the count was chosen and is **1613** now, having taken #199 and #200.
+
+- `npx vitest run` — expect **1615** (1613 on `main` + E4's two).
+- [ ] Full vitest green at **1615**.
+- [ ] `git diff --name-only HEAD` names exactly the four original Scope files
+      plus the two named above, and nothing else.
+
+Every other Done-when line stands.
+
 ## If this PRD is wrong
 
 An edit whose stated current text is not at the cited path and line is a defect
