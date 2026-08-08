@@ -115,3 +115,13 @@
   border:1px solid var(--sh-28);border-radius:2px;padding:var(--space-1) var(--space-8);cursor:pointer}
 .pg-turn:disabled{opacity:.35;cursor:default}
 .pg-count{font-size:var(--fs-8-5);letter-spacing:.16em;color:var(--faded)}
+
+/* U5.3 — a finished sitting's page. The cards are the ones that went out: no
+   `해제`, nothing to press, and no `data-block-id`, so no red thread reaches
+   back into a page whose run is over. */
+.filed-file{display:flex;flex-direction:column;gap:var(--space-8)}
+.filed-cell{display:flex;align-items:flex-start;gap:var(--space-8);
+  border:1px solid var(--sh-28);border-left:2px solid var(--sh-35);
+  padding:var(--space-8) var(--space-10)}
+.filed-no{font-family:var(--mono);font-size:var(--fs-8);letter-spacing:.1em;color:var(--faded)}
+.filed-empty{font-size:var(--fs-8-5);color:var(--faded)}

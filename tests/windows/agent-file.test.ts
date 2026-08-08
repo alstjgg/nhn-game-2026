@@ -130,7 +130,9 @@ interface BlockCardModule {
 
 interface DossierSection {
   title: string
-  state: 'fixed' | 'sealed' | 'operable'
+  // U5.3 — `'filed'` is the fourth state. This mirror is what `tsc` reads and
+  // `vitest` does not (§5.3), so it goes out of step silently if left.
+  state: 'fixed' | 'sealed' | 'operable' | 'filed'
   rows?: [string, string][]
   body?: string
   note?: string
@@ -140,6 +142,7 @@ interface DossierSection {
 interface DossierModule {
   coverModel(clockBand: string): DossierSection[]
   agentModel(input: { slotCap: number; callsign: string }): DossierSection[]
+  filedModel(input: { callsign: string; deployed: number }): DossierSection[]
   buildDossier: unknown
 }
 
@@ -739,5 +742,34 @@ describe('[u4#c9] u4 sources hold the run-wide hard constraints', () => {
     const win = stripComments(read(AGENT_FILE_TS))
     expect(win).toMatch(/export function mount\s*\(\s*host\s*:\s*HTMLElement\s*,\s*driver\s*:\s*FixtureDriver\s*\)/)
     expect(win, 'a window must not import a fixture module').not.toMatch(/driver\/fixtures\//)
+  })
+})
+
+/* ══ U5.3 — a finished sitting's page ════════════════════════════════════ */
+
+describe('[U5.3] filedModel is the same document, closed', () => {
+  it('(a) it carries 식별 and a FILED 인수인계 사항, and nothing operable', async () => {
+    const { filedModel } = await loadDossier()
+    const sections = filedModel({ callsign: 'ECHO-1', deployed: 3 })
+
+    expect(sections.map((s) => s.title)).toEqual(['식별', '인수인계 사항'])
+    expect(sections.map((s) => s.state)).toEqual(['fixed', 'filed'])
+    // The count is the page's own, so a past page cannot claim a slot cap it
+    // no longer has — `filedModel` takes no cap at all.
+    expect(sections[1]!.note).toContain('3')
+    expect(JSON.stringify(sections[0]!.rows)).toContain('ECHO-1')
+  })
+
+  it('(b) it is pure, takes no host, and names no document', async () => {
+    const { filedModel } = await loadDossier()
+    const input = Object.freeze({ callsign: 'ECHO-2', deployed: 0 })
+    const before = JSON.stringify({ callsign: input.callsign, deployed: input.deployed })
+
+    const first = filedModel(input)
+    const second = filedModel({ callsign: 'ECHO-2', deployed: 0 })
+
+    expect(JSON.stringify({ callsign: input.callsign, deployed: input.deployed })).toBe(before)
+    expect(JSON.stringify(second)).toBe(JSON.stringify(first))
+    expect(String(filedModel)).not.toMatch(/document/)
   })
 })

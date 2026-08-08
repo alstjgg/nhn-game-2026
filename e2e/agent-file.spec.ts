@@ -20,6 +20,7 @@
 // re-points `playwright.config.ts` per C5) — nothing below assumes a dev server.
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
+import { newRun } from './fixtures/harness.ts'
 
 const FILE = '#w-file'
 const CAP = 4
@@ -485,5 +486,47 @@ test.describe('a11y membrane ops', () => {
           .map((n) => (n as HTMLElement).className),
       )
     expect(unringed).toEqual([])
+  })
+})
+
+/* ══ U5.3 — the sitting that ended is still on the desk ══════════════════ */
+
+test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
+  test('[U5.3] (a) deploying, closing the day and opening the next appends a page', async ({ page }) => {
+    await boot(page)
+    // Two pages while ECHO-1 is the only agent: the cover and ECHO-1's own.
+    await expect(page.locator(`${FILE} .pg-count`)).toHaveText('1 / 2')
+
+    // Seeded and placed through `window.__agentFile`, like every other test in
+    // this file — the suite drives the window's own handle and never blocks on
+    // what REPORTS happens to be showing.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await seed(page)
+    await place(page, SEEDS[0].id, 0)
+    await place(page, SEEDS[1].id, 1)
+
+    // The OPENING commit — this is the file ECHO-1 flies, and write site 1.
+    await page.locator('#btnDeploy').click()
+    await expect(page.locator('#btnDeploy')).toHaveAttribute('data-state', 'deployed')
+
+    // …then the day closes and the next press opens ECHO-2.
+    await newRun(page)
+
+    // Three pages now, and the file opened on the new agent's own.
+    await expect(page.locator(`${FILE} .pg-count`)).toHaveText('3 / 3')
+    await expect(page.locator(`${FILE} #btnDeploy`)).toHaveCount(1)
+
+    // Turn back one: ECHO-1's page, read-only, carrying what ECHO-1 flew.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).first().click()
+    await expect(page.locator(`${FILE} .pg-count`)).toHaveText('2 / 3')
+    await expect(page.locator(`${FILE} .sect`).nth(0).locator('dd').first()).toHaveText('ECHO-1')
+    await expect(page.locator(`${FILE} .sect`).nth(1).locator('.sect-flag')).toHaveText('열람')
+    await expect(page.locator(`${FILE} .filed-cell`)).toHaveCount(2)
+    await expect(page.locator(`${FILE} .filed-cell .bc-text`).first()).toHaveText(SEEDS[0].text)
+
+    // A past page is not a board, carries no gesture, and anchors no thread.
+    await expect(page.locator(`${FILE} #slotBoard`)).toHaveCount(0)
+    await expect(page.locator(`${FILE} .slot-unset`)).toHaveCount(0)
+    await expect(page.locator(`${FILE} [data-block-id]`)).toHaveCount(0)
   })
 })
