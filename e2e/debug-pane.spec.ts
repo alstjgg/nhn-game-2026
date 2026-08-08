@@ -53,9 +53,15 @@ declare global {
   }
 }
 
-/** Boot the desk and wait until the flag-on pane is on screen. */
+/**
+ * Boot the desk and wait until the flag-on pane is on screen.
+ *
+ * `?debug` is what puts the pane ON SCREEN: flag-on still mounts it and still
+ * records, but a plain dev load leaves it hidden so it does not cover the desk.
+ * This spec owns the pane's contract, so it asks for it explicitly.
+ */
 async function boot(page: Page): Promise<void> {
-  await page.goto('./')
+  await page.goto('./?debug=1')
   await expect(page.locator('#w-feed')).toBeVisible()
   await expect(page.locator(PANE)).toBeVisible()
   await page.waitForFunction(() => Boolean(window.__debug) && Boolean(window.__shell))
