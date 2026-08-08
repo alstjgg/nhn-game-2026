@@ -37,6 +37,7 @@ import {
 } from './fixtures/selectors.ts'
 import {
   boot,
+  confirmDeploy,
   drain,
   eventsOfType,
   frame,
@@ -241,6 +242,7 @@ test.describe('acceptance 1-7', () => {
 
     // deploy — the op carries the canonical id, unchanged.
     await page.locator(FILE.deploy).click()
+    await confirmDeploy(page)
     await expect(page.locator(FILE.stamp)).toBeVisible()
     expect((await frame(page)).store.deployed, 'the deploy op dropped the canonical id').toContain(id)
 

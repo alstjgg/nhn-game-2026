@@ -18,6 +18,7 @@ import { bindRadioSfx, sfxHandOver } from './radio-sfx.ts'
 import { must } from './dom.ts'
 import { openManual } from './manual.ts'
 import { openSignIn, signInSkipped } from './sign-in.ts'
+import { installTutorial } from './tutorial.ts'
 import { fetchScenarioIdentity } from './pack.ts'
 import type { ScenarioIdentity } from './pack.ts'
 import { PORTAL, TASKBAR_HINT } from './portal-identity.ts'
@@ -323,9 +324,20 @@ export async function bootShell(): Promise<void> {
     await openManual(must('#app'), { width: window.innerWidth, height: window.innerHeight })
     sfxHandOver()
   }
-  revealDesk(
+  const revealed = revealDesk(
     body,
     desk.frames.map((f) => f.root),
   )
   openTheEars()
+
+  // 7 — the onboarding walk (x3). Mounted LAST and never awaited: it is an
+  // observer over a desk that is already fully playable, it sends no op, and
+  // nothing above this line knows it exists.
+  //
+  // It waits on `revealed`, NOT on `atTheDesk`. The ear's promise resolves at
+  // the hand-over, one microtask before the reveal's own frame — early enough
+  // that the walk's first mark would land on a window still held at
+  // `visibility:hidden` by `body.booting`. The eye needs the curtain up; the
+  // ear does not.
+  installTutorial(window, { driver, deskReady: revealed })
 }

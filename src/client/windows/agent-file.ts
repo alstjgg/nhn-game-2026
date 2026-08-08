@@ -18,7 +18,8 @@
 // no sibling window import, nothing from engine or composer (C8 / inv 12), and
 // no fixture module — carried ids resolve through the report index (D13).
 import type { FixtureDriver, Sentence } from '../driver/index.ts'
-import { button, el } from '../shell/dom.ts'
+import { button, el, must } from '../shell/dom.ts'
+import { openConfirm } from '../shell/confirm.ts'
 import { announce } from '../shell/announcer.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
@@ -28,6 +29,7 @@ import { blockCardModel, buildBlockCard, pad2, setPickedBlockId } from '../compo
 import { agentModel, buildDossier, callsignOf, coverModel, filedModel } from '../components/dossier.ts'
 import { SLOT_CAP, createSlotBoard, usedIds } from '../components/slot-board.ts'
 import { buildDeployStamp, buildDeployZone, deployView } from '../components/deploy-button.ts'
+import type { DeployMode } from '../components/deploy-button.ts'
 import { PACE, settleRelease } from '../components/score-tally.ts'
 
 /** The wait line, verbatim from `windows/tally.ts` — diegetic, never a spinner. */
@@ -169,8 +171,16 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     driver.clock.setRate(1)
   }
 
-  const zone = buildDeployZone(() => {
-    if (currentView.mode === 'next') {
+  /**
+   * What the press does once it has been confirmed.
+   *
+   * Split out of the handler below so the confirmation can sit in front of it
+   * without the two commit paths drifting apart. `mode` is the one captured at
+   * press time, never re-read: the plate holds the desk `inert` while it is up,
+   * so nothing can move the control under the question it is asking.
+   */
+  function commitFile(mode: DeployMode): void {
+    if (mode === 'next') {
       // W4 — ONE press, TWO ops, and the order is load-bearing. `deploy` must
       // reach the CLOSING run's membrane, because that is what the live
       // adapter harvests into `carried` (`live/adapter.ts` `closingState()`);
@@ -182,17 +192,30 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       startDay()
       return
     }
-    if (currentView.mode === 'deploy') {
-      board.deploy()
-      // U5.3 — write site 1: the OPENING commit, which belongs to the agent on
-      // the desk right now. In practice this is ECHO-1's alone — after a
-      // `new_run` the file arrives already committed and this mode never comes
-      // round again — and without it the first sitting would never get a page,
-      // which is the first comparison the operator would reach for.
-      filed.set(run, usedIds(board.cells()))
-      startDay()
-    }
+    board.deploy()
+    // U5.3 — write site 1: the OPENING commit, which belongs to the agent on
+    // the desk right now. In practice this is ECHO-1's alone — after a
+    // `new_run` the file arrives already committed and this mode never comes
+    // round again — and without it the first sitting would never get a page,
+    // which is the first comparison the operator would reach for.
+    filed.set(run, usedIds(board.cells()))
+    startDay()
+  }
+
+  const zone = buildDeployZone(() => {
+    const mode = currentView.mode
     // 'settling' / 'spent': the control is disabled — a click cannot land.
+    if (mode !== 'deploy' && mode !== 'next') return
+    // x2 — the press asks first, and it asks on BOTH committing modes. The
+    // control's main label is `DEPLOY` in every one of them (W4 retired the
+    // NEW RUN label, not the op), so "the activated DEPLOY" is this press
+    // whichever day it falls on. Gating `deploy` alone would have put the
+    // question in front of ECHO-1 and nobody after — from day 2 the commit
+    // arrives in `next` mode, and that is the press that carries a file the
+    // operator has actually revised.
+    void openConfirm(must('#app')).then((confirmed) => {
+      if (confirmed) commitFile(mode)
+    })
   })
   const stamp = buildDeployStamp()
   // Direct handles onto the control's own note and button, exactly as
