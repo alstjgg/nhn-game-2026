@@ -457,6 +457,25 @@ to 6 behind one probe arm, or hold at 4. **O2** (the first-mining pulse) shares
 all six REPORTS files with U5.2c, so it costs a serial wave on the spine (§2)
 to buy one debut animation.
 
+## 4. Cut line — removed (08-08)
+
+Deliberately empty, and deliberately still numbered 4.
+
+This held a Must / Should / Won't table that had to be rewritten after every
+wave, which is most of how this document turned into a work log. Order lives in
+§3 now, and the two items not being built keep their reasoning at the foot of
+it.
+
+The section number stays because **§5 is quoted by number in eighteen committed
+PRDs** — 53 references, 21 of them to §5.7 alone, which is the stop rule every
+PRD carries verbatim and every executor was instructed to obey by that name.
+Renumbering §5 to §4 would mean editing PRDs that are records of what an
+executor was actually told, making them say something that was never issued. It
+would also be unsafe to do mechanically: `planning/dday-mechanism/suites/*.json`
+carries its own `§5.1`, belonging to a different document entirely, so a
+repo-wide substitution corrupts the probe record. A numbering gap is the cheaper
+mistake, and §1.5 already set the precedent.
+
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
 > As of 2026-08-08 (v14). A PRD names the version it was written against.

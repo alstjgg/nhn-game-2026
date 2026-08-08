@@ -40,11 +40,24 @@ proved at the driver seam under vitest, never in the browser, and its Done-when
 says so. The live path still has no end-to-end coverage at all — a real gap,
 deliberately not closed before the deadline.
 
-**Still open, in cut-line order** (`plan-playtest.md` §4): U5.2c (render the
-cause — the seam already carries `cited_ids`), **C1 → U5.3** (a page per
-ECHO-n, so the player can compare the file they gave one agent against the
-next — restored to Must by 민서 on 08-08 after it had sat in Won't since the
-first cut line with no recorded reason), and the manual's §1–§4 content.
+**Still open** — `plan-playtest.md` §3 carries the order, and it no longer
+carries a cut line: everything listed there is meant to be built, and the two
+items that are not (U2, O2) say so in place.
+
+- **T3** — the desk is still three side-by-side columns, which is T1's shape,
+  not T3's. T3 is two columns: REPORTS large on the left, the right split into
+  LIVE FEED above and AGENT FILE below. REPORTS is where mining happens and
+  where cause will render, and it currently has the middle of three narrow
+  columns while the LIVE FEED ticker has the widest.
+- **C1 → U5.3** — a page per ECHO-n, so the player can compare the file they
+  gave one agent against the next. Today the previous sitting's file leaves the
+  desk entirely when it is rebuilt, so nothing answers "what did I change, and
+  what changed in the result". 민서 raised this ahead of U5.2c on 08-08: a
+  citation is read once, a comparison is read every sitting after.
+- **U5.2c** — render the cause. The seam already carries `cited_ids`.
+- **The manual's §1–§4 content** — still placeholder, and two of its bodies are
+  now false: they describe a 집계 window U3 deleted and a two-press day W4
+  replaced.
 
 ## Status (2026-08-08) — the desk has sound, and it costs the opening paint nothing
 
@@ -130,8 +143,9 @@ membrane op. The suite covering it seated a slotted-but-unmined id, which the
 engine forbids — it was covering a branch that could not execute.
 
 **Playtest triage lives at [plan-playtest.md](./plan-playtest.md)** — 17 items
-from the 08-05 session with dependency order and a cut line against ~08-10, plus
-§5, the rule set for specifying them as mini-PRDs for low-cost executors.
+from the 08-05 session with dependency order and work groups, plus §5, the rule
+set for specifying them as mini-PRDs for low-cost executors. (It carried a cut
+line until 08-08; priority lives in §3's ordering now.)
 
 **The 08-05 entry below is superseded on its central claim.** It says
 `ScorerPort` is declared but unbuilt, neither composition root supplies one, and
