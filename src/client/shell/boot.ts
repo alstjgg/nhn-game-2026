@@ -106,16 +106,69 @@ function renderIdentity(identity: ScenarioIdentity): void {
   must('#caseName').textContent = identity.slug
 }
 
-/** Pumps real elapsed milliseconds into the driver and repaints the clock. */
+/**
+ * Interval for the hidden-document pump. The browser throttles it hard — ~1/s
+ * for a background tab, ~1/min once it has been hidden five minutes — and that
+ * is fine: see `runPump` for why the day still keeps correct time under it.
+ */
+const HIDDEN_PUMP_MS = 250
+
+/**
+ * Pumps real elapsed milliseconds into the driver and repaints the clock.
+ *
+ * TWO PUMPS, ONE TIMELINE. A frame callback does not fire in a hidden document
+ * — a background tab, a minimised window, a window another app fully covers —
+ * so a rAF-only pump stops the day dead the moment the player looks away, and
+ * the run only resumes when they look back. That is why the same build "runs in
+ * the background" for one of us and freezes for the other: it is not the
+ * machine, it is whether the browser still calls the frame the desk rides on.
+ *
+ * So when the document goes hidden the frame pump hands over to an interval,
+ * and hands back on return. The clock survives the swap because `advance()`
+ * takes ELAPSED REAL MILLISECONDS, not a frame count (`driver/clock.ts`): a
+ * throttled tick that arrives once a minute carries a 60_000 ms delta and moves
+ * sim time by exactly as much as 3600 frames would have. `release()` drains
+ * every event now due in order and `kick()` chains the next beat off its own
+ * promise, so a coarse tick loses no beat — it only repaints in bursts, which
+ * is all a tab nobody is watching can do anyway.
+ *
+ * Both pumps read `performance.now()`, the same clock rAF stamps its argument
+ * with and the one that keeps running while hidden, so `previous` carries
+ * across a swap with no seam: no minute is double-counted and none is dropped.
+ */
 function runPump(driver: FixtureDriver, paint: (at: string, minute: number) => void): void {
   let previous: number | null = null
-  const step = (now: number): void => {
+  let frame: number | null = null
+  let timer: number | null = null
+
+  const pump = (now: number): void => {
     if (previous !== null) driver.advance(now - previous)
     previous = now
     paint(driver.clock.at(), driver.clock.minute)
-    requestAnimationFrame(step)
   }
-  requestAnimationFrame(step)
+
+  const step = (now: number): void => {
+    pump(now)
+    frame = requestAnimationFrame(step)
+  }
+
+  const stop = (): void => {
+    if (frame !== null) cancelAnimationFrame(frame)
+    if (timer !== null) window.clearInterval(timer)
+    frame = null
+    timer = null
+  }
+
+  const start = (): void => {
+    if (document.hidden) timer = window.setInterval(() => pump(performance.now()), HIDDEN_PUMP_MS)
+    else frame = requestAnimationFrame(step)
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    stop()
+    start()
+  })
+  start()
 }
 
 export async function bootShell(): Promise<void> {
