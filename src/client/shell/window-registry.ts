@@ -28,12 +28,19 @@ export interface WindowDef {
   stock: string
   /** Whether the window carries the live dot (LIVE FEED does). */
   live?: boolean
+  /**
+   * A fixed sheet: no corner grip, no Shift+arrow resize. Absent means
+   * resizable, so only the window that opts out says so. The AGENT FILE does —
+   * its two pages are sized to its body, so any shrink clips the page-turn
+   * control off the window and takes page 2 with it (C9).
+   */
+  resizable?: boolean
   /** The window's own contents — a stub until its unit lands. */
   mount: (host: HTMLElement, driver: FixtureDriver) => void
 }
 
 export const WINDOW_REGISTRY: readonly WindowDef[] = [
   { key: 'feed', id: 'w-feed', en: 'LIVE FEED', ko: '무전', sub: '실시간 무전 · 열람 전용', tab: 'LF', stock: 'fanfold', live: true, mount: mountLiveFeed },
-  { key: 'file', id: 'w-file', en: 'AGENT FILE', ko: '요원 파일', sub: '요원 파일 — 프롬프트 편성', tab: 'AF', stock: 'paper kraft', mount: mountAgentFile },
+  { key: 'file', id: 'w-file', en: 'AGENT FILE', ko: '요원 파일', sub: '요원 파일 — 프롬프트 편성', tab: 'AF', stock: 'paper kraft', resizable: false, mount: mountAgentFile },
   { key: 'rep', id: 'w-rep', en: 'REPORTS', ko: '부검', sub: '부검 — 시행 기록', tab: 'RP', stock: 'paper bond', mount: mountReports },
 ]

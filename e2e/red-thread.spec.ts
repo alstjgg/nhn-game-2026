@@ -555,13 +555,25 @@ test.describe('endpoints track windows during drag', () => {
   test('endpoints track windows during drag — a resize by the grip re-draws within a frame', async ({
     page,
   }) => {
-    const grip = await box(page, `${FILE} .win-grip`)
-    const before = await slotEndpoint(page)
+    // RE-AIMED (g13-3). This gripped the AGENT FILE, which is a fixed sheet
+    // now and has no grip at all, so the claim moves to a window that can still
+    // do it. REPORTS carries the SOURCE end of the thread, so the read is
+    // `endpointsOf(d)[0]` — `[1]` is the slot end, which a REPORTS resize does
+    // not touch.
+    //
+    // The drag is HORIZONTAL only. REPORTS is full column height since T1
+    // (`layout.ts` gives it y 94 · h 692 at 1280×800), so its 16px grip sits
+    // ~14px above the viewport floor and a downward drag would carry the
+    // pointer off the desk — the same geometry that made the FILE version of
+    // this test red. Widening the window widens the justified body, which is
+    // what moves the source pin (`right(rect) - 6`).
+    const grip = await box(page, `${REP} .win-grip`)
+    const [before] = endpointsOf(await threadPath(page))
     await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2)
     await page.mouse.down()
-    await page.mouse.move(grip.x + 120, grip.y + 90)
+    await page.mouse.move(grip.x + 120, grip.y + grip.height / 2)
     await page.waitForTimeout(50)
-    const during = await slotEndpoint(page)
+    const [during] = endpointsOf(await threadPath(page))
     expect(before[0] !== during[0] || before[1] !== during[1]).toBe(true)
     await page.mouse.up()
   })

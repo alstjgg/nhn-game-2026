@@ -135,7 +135,12 @@ test.describe('window ops', () => {
       await expect(node.locator('.win-ctl .wc-min')).toHaveCount(1)
       await expect(node.locator('.win-ctl .wc-close')).toHaveCount(1)
       await expect(node.locator('.win-body')).toHaveCount(1)
-      await expect(node.locator('.win-grip')).toHaveCount(1)
+      // g13-3 — two of three. The AGENT FILE is a fixed sheet and builds no
+      // grip: its two pages are sized to its body, so any shrink clips the
+      // page-turn control and takes page 2 off the window with it (C9). The
+      // count is pinned PER WINDOW, not summed, so a grip appearing on the
+      // sheet and a grip vanishing from the other two both read here.
+      await expect(node.locator('.win-grip')).toHaveCount(w.id === 'w-file' ? 0 : 1)
     }
   })
 
@@ -162,8 +167,14 @@ test.describe('window ops', () => {
     expect(Math.round(after.y)).toBe(Math.round(before.y))
   })
 
-  test('window ops — every window resizes by its corner grip', async ({ page }) => {
+  test('window ops — every window resizes by its corner grip, except the sheet', async ({ page }) => {
     for (const w of WINDOWS) {
+      // g13-3 — the AGENT FILE is a fixed sheet: it builds no grip, and the
+      // census above pins that per window. Skipping it here is the shape of
+      // that decision, not a relaxation of this claim — `a11y.spec.ts` holds
+      // the other half, that the sheet does not resize from the keyboard
+      // either.
+      if (w.id === 'w-file') continue
       const node = win(page, w.id)
       const before = await box(node)
       await dragFrom(page, await box(node.locator('.win-grip')), 50, 40)
