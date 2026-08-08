@@ -458,7 +458,16 @@ test.describe('a11y membrane ops', () => {
 
   test('[u4#c6] (f) every membrane control paints a visible focus ring', async ({ page }) => {
     await boot(page)
-    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    // Turned WITHOUT a real input event, deliberately. Chromium decides
+    // `:focus-visible` from the last interaction modality, and this census reads
+    // the UA ring off a programmatic `.focus()`. A real pointer click moves the
+    // page out of the "no interaction yet" state the census has always relied
+    // on, and every slot control then reports no ring — a fact about the
+    // gesture, not about the control. (`#btnDeploy` hides this: it carries a
+    // permanent `box-shadow`, so it satisfies the check either way.) A
+    // synthetic click inside the page turns the leaf and leaves the heuristic
+    // where it was.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().evaluate((n) => (n as HTMLElement).click())
     await seed(page)
     await place(page, SEEDS[0].id, 0)
 

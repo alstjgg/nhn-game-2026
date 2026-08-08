@@ -19,7 +19,7 @@ import type { Locator, Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { awaitRecordFinal, mineFirst, raiseWindow } from './fixtures/harness.ts'
+import { awaitRecordFinal, mineFirst, raiseWindow, turnToAgent } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -98,6 +98,7 @@ async function boot(page: Page, opts: { reduced: boolean }): Promise<void> {
   if (opts.reduced) await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('./')
   await expect(page.locator(REP)).toBeVisible()
+  await turnToAgent(page)
   await page.locator(`${REP} .win-bar`).click()
 }
 

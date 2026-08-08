@@ -23,6 +23,7 @@
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
+import { turnToAgent } from './fixtures/harness.ts'
 
 /** The four windows, in the taskbar order the registry must emit. */
 const WINDOWS = [
@@ -62,6 +63,7 @@ async function boot(page: Page): Promise<void> {
   // (46vw × 42vh, fixed): LIVE FEED's grip and its lower body sit under it, so
   // a pointer press there hits the pane. See `fixtures/dev-surface.ts`.
   await hideDebugPane(page)
+  await turnToAgent(page)
 }
 
 function win(page: Page, id: string): Locator {
@@ -544,18 +546,29 @@ test.describe('single stacking context', () => {
     const rep = win(page, 'w-rep')
     const file = win(page, 'w-file')
 
-    // Park REPORTS on top of AGENT FILE so the two genuinely overlap.
-    const fileBox = await box(file)
-    const repBar = await box(rep.locator('.win-bar'))
+    // Park AGENT FILE on top of REPORTS so the two genuinely overlap.
+    //
+    // RE-AIMED (08-08, T3). This used to drag REPORTS onto AGENT FILE. Under the
+    // two-column desk REPORTS is the full-height left column (640x692 at
+    // 1280x800) and AGENT FILE is the shorter box bottom-right, so dragging the
+    // tall window down to the short one's origin puts its bottom ~326px past the
+    // viewport; the manager clamps, the overlap never forms, and the probe reads
+    // whatever is actually under it. Moving the SMALL window over the LARGE one
+    // is the same claim with a geometry that exists.
     const repBox = await box(rep)
+    const fileBar = await box(file.locator('.win-bar'))
+    const fileBox = await box(file)
+    // Overlap REPORTS' right edge rather than covering it: the file's own title
+    // bar has to stay reachable AFTER REPORTS is raised over it, or the second
+    // click below has nothing to hit.
     await dragFrom(
       page,
-      repBar,
-      fileBox.x + 40 - repBox.x,
-      fileBox.y + 40 - repBox.y,
+      fileBar,
+      repBox.x + repBox.width - 120 - fileBox.x,
+      repBox.y + 40 - fileBox.y,
     )
 
-    const probe = { x: fileBox.x + 90, y: fileBox.y + 90 }
+    const probe = { x: repBox.x + repBox.width - 60, y: repBox.y + 90 }
     const topAt = async (): Promise<string> =>
       page.evaluate(
         (p) => document.elementFromPoint(p.x, p.y)?.closest('.win')?.id ?? 'none',
@@ -565,7 +578,8 @@ test.describe('single stacking context', () => {
     await rep.locator('.win-bar').click({ position: { x: 20, y: 8 } })
     expect(await topAt()).toBe('w-rep')
 
-    await file.locator('.win-bar').click({ position: { x: 20, y: 8 } })
+    // …at a point PAST REPORTS' right edge, which REPORTS cannot be covering.
+    await file.locator('.win-bar').click({ position: { x: 200, y: 8 } })
     expect(await topAt()).toBe('w-file')
 
     await rep.locator('.win-bar').click({ position: { x: 20, y: 8 } })

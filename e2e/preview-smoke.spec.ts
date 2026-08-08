@@ -166,8 +166,14 @@ test.describe('preview smoke', () => {
     // the sibling test greps the bundle for fixture and debug-pane needles, which
     // is the check that can actually tell the two apart. What survives here is
     // the browser-side half: the desk that booted is the LIVE one.
-    const feedLines = await page.locator('#w-feed #feedList .fl').count()
-    expect(feedLines, 'the player build booted a desk with no run behind it').toBeGreaterThan(0)
+    // Waited for, not sampled. The claim is "there is a run behind this desk",
+    // and the live path fetches a pack and opens a run loop before it can show
+    // one — so counting at first paint measures machine load, not the claim. It
+    // sampled zero once under a full-suite run and passed 3/3 alone (08-08).
+    await expect(
+      page.locator('#w-feed #feedList .fl').first(),
+      'the player build booted a desk with no run behind it',
+    ).toBeAttached({ timeout: 15_000 })
 
     // The run counter is the tell. e8's run loop opens on its own allotment;
     // the placeholder stream `shell/boot-run.ts` hardcodes RUN 3 of 10, so these

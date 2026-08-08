@@ -41,7 +41,7 @@ import type { Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { advance, freezeAt, firstPaint, runToMount, settled } from './fixtures/harness.ts'
+import { advance, freezeAt, firstPaint, runToMount, settled, turnToAgent } from './fixtures/harness.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -182,6 +182,8 @@ async function drawThread(page: Page): Promise<{ count: number; ids: string[]; f
   // [u8#c3] — an anchor outside its window's visible rect has no thread, and
   // the AGENT FILE board sits below its dossier. Bring it into view the way the
   // operator would, exactly as `e2e/red-thread.spec.ts` does, THEN redraw.
+  // C1 — the board is on the agent's page; the file opens on its cover.
+  await turnToAgent(page)
   const filledSlots = page.locator('#w-file .slot.filled')
   const filled = await filledSlots.count()
   if (filled > 0) await filledSlots.last().scrollIntoViewIfNeeded()

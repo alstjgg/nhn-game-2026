@@ -23,7 +23,7 @@
 // re-points `playwright.config.ts` per C5) — nothing below assumes a dev server.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
-import { awaitRecordFinal } from './fixtures/harness.ts'
+import { awaitRecordFinal, turnToAgent } from './fixtures/harness.ts'
 
 const THREADS = '#threads'
 const PATH = `${THREADS} path`
@@ -117,6 +117,7 @@ async function boot(page: Page): Promise<void> {
   await expect(page.locator(REP)).toBeVisible()
   await page.waitForFunction(() => (window as unknown as Handles).__threads !== undefined)
   await page.waitForFunction(() => (window as unknown as Handles).__agentFile !== undefined)
+  await turnToAgent(page)
   await drain(page)
   await expect(page.locator(`${REP} [data-sentence-id]`).first()).toBeVisible()
   await holdStill(page)
@@ -611,6 +612,14 @@ test.describe('clipped to visible rect', () => {
   test('clipped to visible rect — a source scrolled out of its body drops exactly that thread', async ({
     page,
   }) => {
+    // RE-AIMED (08-08, T3) — the PRECONDITION, never the criterion. T3 gave
+    // REPORTS the whole left column (640px wide at 1280x800, up from 505), and a
+    // wider column wraps less: the facts document stopped overflowing far enough
+    // for a sentence to be lifted clear of the body's top edge (measured 83px of
+    // travel against the 134px needed). The oracle below is untouched; it is
+    // handed a desk narrow enough to still overflow, which is what it always
+    // assumed and no longer got for free.
+    await page.setViewportSize({ width: 1000, height: 720 })
     const ids = await thread(page, 2)
     await expect(page.locator(PATH)).toHaveCount(2)
 
