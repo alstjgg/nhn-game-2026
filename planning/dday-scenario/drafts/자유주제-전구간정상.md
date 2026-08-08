@@ -299,7 +299,8 @@ buckets:
     - => 사망 · 아홉 번째 문 앞, 쇠사슬을 손으로 흔든 자세
   차우진:
     - pallet_named and doors_opened => 생존 · 입건
-    - pallet_named => 입건 · 개요서 적재물 칸이 채워진다
+    - pallet_named and driven_out => 생존 · 입건 · 개요서 적재물 칸이 채워진다
+    - pallet_named => 사망 · 다만 적재물은 기록에 남는다
     - indemnified => 생존 · 불입건 · 진술서에 서명하고 걸어 나온다
     - => 사망 · 하행 사점이 킬로 갓길
   하만식:
