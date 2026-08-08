@@ -251,13 +251,30 @@ F1, which governs narration rather than scoring.
 
 **The tally's headline is a sum, so the value type carries the axis.** §5.2's
 `score` event pairs one `total: number` with rows whose value is
-`string | number` (amendment g), and `windows/tally.ts` labels that total 사망 ·
-명. That gives the arithmetic for free if authoring holds one rule: **a numeric
-unit value counts toward the headline; a string one is a row that reads and
-does not sum.** So death tallies are numbers and everything else — an outcome,
-an injury count, a detention length — is a string. On 우는다리 the
+`string | number` (amendment g), and the record's closing line labels that total
+총 사망자 수 · 명. That gives the arithmetic for free if authoring holds one
+rule: **a numeric unit value counts toward the headline; a string one is a row
+that reads and does not sum.** So death tallies are numbers and everything else
+— an outcome, an injury count, a detention length — is a string. On 우는다리 the
 no-intervention run then totals 24 + 1 + 1 = 26, which is what
 `score.json`'s own `baseline_summary` says.
+
+**A unit that is ONE PERSON is the exception, and it is authored, not
+inferred.** A crowd unit resolves to a count; a person unit resolves to prose,
+because the record has to print *where* they were found — 전구간정상 scores
+오세라 as `사망 · 아홉 번째 문 안쪽` and 차우진 as `생존 · 입건`. Under the
+numbers-only rule alone, the day the tunnel empties and only 오세라 is left
+behind closed on 총 사망자 수 0명 with 오세라: 사망 printed directly above it.
+So `deathsOf` (`src/shared/predicates.ts`) counts a string value as **one** death
+when its OUTCOME WORD — everything before the first space or `·` — is exactly
+`사망`. Two things follow for authoring:
+
+- **`사망` leads, or it does not count.** `사망 · 하행 4.2km 갓길` counts;
+  `아홉 번째 문 안쪽에서 사망` does not, and neither does `사망자 없음`. Write
+  the outcome first and the circumstance after the `·`, which is what every
+  shipped pack already does.
+- **A prose value counts one and only one.** A unit that has to count more than
+  one person is a count, and is authored as a number.
 
 **Two gaps predicates alone will not close**, found while drafting against
 우는다리 and worth knowing before the hardening pass starts:

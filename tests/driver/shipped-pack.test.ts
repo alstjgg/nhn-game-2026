@@ -30,6 +30,7 @@ import type { LivePack } from '../../src/client/driver/live/pack.ts'
 import type { ReportGuidance } from '../../src/shared/report-guidance.ts'
 import type { ViewEvent } from '../../src/shared/view-driver.ts'
 import type { FixtureDriver } from '../../src/client/driver/fixture-driver.ts'
+import { deathsOf, readValue } from '../../src/shared/predicates.ts'
 import { displayStamp } from '../../src/client/driver/clock.ts'
 import { PACK_SLUG } from '../../src/client/shell/pack.ts'
 
@@ -93,13 +94,16 @@ const authoredStamps = new Set<string>([
  * intervenes in nothing and every score rule falls to its `=>` fallback — that
  * is 가이드 §5's "첫 런이 가장 나쁜 런", and `datapack:lint`'s E-P3/E-P5 are
  * what keep it true (no score predicate may read a flag the timeline or a
- * default bucket sets). The headline is the sum of the numeric fallbacks;
- * string-valued units are rows that only read.
+ * default bucket sets). The headline is what every fallback VALUE costs in
+ * deaths — a body count counts itself, a person-unit that falls to `사망 · …`
+ * counts one, and everything else reads without counting. That rule is
+ * `deathsOf`'s and is imported rather than restated: a second copy here would
+ * be a second definition of the pack's own arithmetic.
  */
 const baselineHeadline = SCORE.units.reduce((sum, unit) => {
   const fallback = unit.predicates.find((predicate) => predicate.trim().startsWith('=>'))
-  const value = fallback?.slice(fallback.indexOf('=>') + 2).trim() ?? ''
-  return /^-?\d+$/.test(value) ? sum + Number(value) : sum
+  if (fallback === undefined) return sum
+  return sum + deathsOf(readValue(fallback.slice(fallback.indexOf('=>') + 2)))
 }, 0)
 
 /** One run of the real chain, offline — the binder's own wiring, unmodified. */
