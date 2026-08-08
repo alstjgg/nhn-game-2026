@@ -282,7 +282,7 @@ is no plan to activate it.
 |---|---|---|
 | 1 | `FLAW` `INCIDENT` `PRIORITY_LIST` | Proxy (the default prompt authored by the D task) |
 | 1 · 3 | `TEMPERAMENT` | Scenario-authored temperament — **the same file** for both calls |
-| 1 | `TIMELINE_EXCERPT` | Engine timeline = script events + Call 2 output + Call 1 `utterance` |
+| 1 | `TIMELINE_EXCERPT` | The gate's declared `excerpt` rows, straight from `timeline.json`, when the card names any — otherwise the engine timeline = script events + Call 2 output + Call 1 `utterance` |
 | 1 | `BLOCKS` | The player — mined from the actual generated text of timeline and reports (W3, I1) |
 | 1 | `GATE_QUESTION` `STANCE_SET` | Scenario, per gate |
 | 2 | `TIMELINE_TAIL` | Tail of the engine timeline |

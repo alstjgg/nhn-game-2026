@@ -35,7 +35,7 @@ Human-verified against the G1 card. Every field the generator consumes exists:
 | Baseline distribution prediction | `gates[].default_stance` + `predicted_shift` |
 | Live injection arm | `gates[].key_examples` (≥2 per condition — guaranteed by lint E5) |
 | Placebo arm (same axis, misdirected referent) | `gates[].false_leads` |
-| `TIMELINE_EXCERPT` fixture | Events in `timeline.events` with `time ≤ gate clock` that are visible in one run under the exposure conditions — for G1 (09:25): t1 · t2 |
+| `TIMELINE_EXCERPT` fixture | `gates[].excerpt` when the card declares one — the rows it names, filtered by their own exposure conditions, which is exactly what the engine hands Call 1, so the measured payload and the deployed one are the same bytes. A gate that declares nothing has no authored answer here: the engine builds that window from narrated prose the probe cannot know, so the fixture falls back to a stand-in — events in `timeline.events` with `time ≤ gate clock` visible in one run under the exposure conditions (for G1 (09:25): t1 · t2). That stand-in is a design signal, not proof of deployed behaviour |
 | Temperament fixture | `temperament.json` (the harness uses md fixtures, so the generator assembles prose: `default_disposition` + conditional clauses) |
 
 ## 3. Composer slots ⟷ pack — decided and discovered while checking against contract §6
