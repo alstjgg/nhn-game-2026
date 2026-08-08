@@ -1,0 +1,239 @@
+# EXC-G1-screen-only — arm `live_k1`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-BLOCK |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | 전구간정상 |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** 사고와 닿은 행이 창에 없으면 baseline `a`가 7/10보다 뚜렷이 올라간다. k1 주입은 `b` 10/10을 유지해야 한다.
+- **Drop condition:** `a`가 여전히 7/10 언저리면 남은 저항은 창이 아니라 질문·라벨 쪽이고, 창 레버는 이번에야말로 소진이다. live_k1이 `b` 10/10에서 내려가면 이 배치는 기본값을 사서 열쇠를 판 것이므로 채택하지 않는다.
+- **Contingency:** Fabricated because_block_ids in the baseline arm are EXPECTED with no blocks injected — a compliance number, not a discard.
+- **Contingency:** A baseline split between `a` and `b` with neither at 6 tells us the window is doing something the manual protocol could not see, which is exactly the class of thing this feature exists to make visible. Record it and do not raise N.
+- **Contingency:** If the discard rate is materially worse than the 우는다리 baselines, suspect the longer stance labels against max_tokens before suspecting the window.
+
+## Calls (verbatim)
+
+### 01
+
+latency 4.759s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "관제 화면이 초록 전점이고 계기 기재도 정상이지만, 5·6번 송풍기는 '시운전 신호 유지' 상태에 회전 기록이 없다는 구체적 이상 신호가 있다. 이것은 계기와 현실 사이의 불일치 가능성을 보여준다. 확인되지 않은 주장으로 권한을 쓰는 것은 위험하지만, 설비 직접 대조는 계기 신뢰성을 물질적으로 검증하는 절차다.",
+  "stance": "b",
+  "because_referent": "5·6번 송풍기 칸의 '시운전 신호 유지'와 회전 기록 부재 사이의 모순이 계기 신뢰도를 낮추고 있다.",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "계기가 전 구간 정상을 내놓지만, 일부 설비의 상태 기재가 작동 기록과 불일치한다. 이 불일치를 외면하고 상황 보고를 올리는 것은 숨겨진 장애를 놓칠 수 있다.",
+  "utterance": "5·6번 송풍기 운전 상태를 현장에서 직접 확인하게 하겠습니다. 시운전 신호와 회전 기록의 불일치를 물질적으로 검증해야 합니다."
+}
+```
+
+### 02
+
+latency 4.567s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "관제 화면 전체가 초록이라는 것 자체가 이상하다. b1에서 5·6번 송풍기가 '시운전 신호 유지' 상태인데 회전 기록이 없다는 것은 계기와 현실이 어긋나고 있다는 신호다. 내가 지금 받은 정보 안에서만 판단해야 한다. 화면을 신뢰했다가 늦으면 피해가 커진다. 하지만 근무자를 의심하고 압박하는 것은 다른 문제다.",
+  "stance": "b",
+  "because_referent": "5·6번 송풍기가 시운전 신호를 유지하고 있으면서 회전 기록이 없다는 점이 계기 값의 신뢰성을 하락시킨다.",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "계기가 모든 구간 정상을 내놓고 있지만, 설비 상태 기록(회전 없음)과 신호(시운전 유지)가 모순되고 있다. 이것은 계기를 그대로 믿을 수 없다는 뜻이다.",
+  "utterance": "근무자를 현장으로 보낸다. 5·6번 송풍기 설비를 직접 확인하고 회신하라."
+}
+```
+
+### 03
+
+latency 3.684s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "화면은 초록이다. 하지만 5·6번 송풍기는 '시운전 신호 유지'인데 회전 기록이 없다. 계기가 정상을 보이는데 설비 상태가 그렇지 않은 것 같다. 현장을 확인해야 한다.",
+  "stance": "b",
+  "because_referent": "5·6번 송풍기가 시운전 신호만 유지되고 회전 기록이 없는 상태",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "화면이 초록으로 보여도 실제 설비 상태와 어긋날 수 있다. 회전 기록 부재는 계기와 현실의 어긋남을 보이는 신호다.",
+  "utterance": "5·6번 송풍기 상태를 확인해 와라. 시운전 신호만 유지되고 회전 기록이 없으니 현장에서 직접 맞춰 본다."
+}
+```
+
+### 04
+
+latency 5.221s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "b",
+  "inner_note": "화면 전체가 초록이지만, 5·6번 송풍기는 '시운전 신호 유지' 상태로 회전 기록이 없다. 계기와 실제 가동 상태가 어긋나는 지점이 명확히 보인다. 이는 확인되지 않은 주장이 아니라, 이미 알려진 기록(b1)이 현장 상태와 맞지 않음을 시사한다.",
+  "because_referent": "5·6번 송풍기가 시운전 신호 상태만 유지되고 실제 회전 기록이 없는 점",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "계기가 전 구간 정상을 표시하고 있으나, 알려진 기록에서 송풍기 회전 기록 부재가 이미 드러났다. 이는 화면 값만으로는 실제 가동 상태를 확신할 수 없음을 의미한다. 계기 기재만으로는 이 어긋남을 설명할 수 없다.",
+  "utterance": "화면으로 온 신호와 설비 기록이 맞지 않습니다. 5·6번 송풍기를 직접 확인하겠습니다."
+}
+```
+
+### 05
+
+latency 4.891s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "관제 화면이 모두 초록이고 달리 확인할 수단이 없으나, 기록된 데이터(시운전 신호 유지, 회전 기록 없음)가 화면값과 맞지 않는다. 이는 계기 오작동 또는 보고 오류의 신호다. 속단하면 실제 설비 이상을 놓칠 위험이 있다.",
+  "stance": "b",
+  "because_referent": "5·6번 송풍기가 '시운전 신호 유지' 상태이고 회전 기록이 없는데, 관제 화면은 정상을 표시하고 있다는 사실의 어긋남에서",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "계기값을 그대로 보고하면, 실제 설비 이상이 은폐되거나 지연될 수 있다. 확인되지 않은 주장에 따라 잘못 움직일 위험보다, 이상을 놓쳐 대응이 늦어질 위험을 먼저 줄여야 한다.",
+  "utterance": "화면은 초록이지만 기록과 맞지 않습니다. 5·6번 송풍기 현장 상태를 직접 확인하십시오."
+}
+```
+
+### 06
+
+latency 3.906s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "b",
+  "inner_note": "시운전 신호 유지 상태로 회전 기록이 없다는 것은 설비가 작동하지 않고 있다는 뜻이다. 관제 화면이 초록으로 떠도 현장의 실제 상태와 다를 수 있다. 계기를 의심할 근거가 명확하다.",
+  "because_referent": "5·6번 송풍기가 시운전 신호 유지 상태로 회전 기록이 없는 점",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "계기 기재만으로는 시운전 신호 유지와 초록 표시 사이의 모순을 설명할 수 없다. 확인되지 않은 이 모순을 무시하고 보고하는 것은 위험하다.",
+  "utterance": "근무자에게 5·6번 송풍기 설비를 직접 확인하도록 지시한다. 시운전 신호 상태에서 회전 기록이 없는 것이 정상인지, 센서 오류는 없는지 현장에서 대조하라."
+}
+```
+
+### 07
+
+latency 5.824s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "관제 화면이 초록이지만, b1에 기재된 '시운전 신호 유지'와 '회전 기록 없음'이 정상 상태와 맞지 않는다. 송풍기가 신호만 유지하고 실제로 회전하지 않는 것은 기술적으로 불일치한다. 이것은 계기 오류이거나 기재 오류일 가능성을 시사한다. 현장 확인 없이 이 모순을 상황 보고에 담으면, 실제 설비 상태를 감춘 채 의사결정을 진행하게 된다.",
+  "stance": "b",
+  "because_referent": "5·6번 송풍기가 시운전 신호 유지 상태이면서 회전 기록이 없다는 모순이 있기 때문이다. 정상 운전 여부를 화면 값만으로는 단정할 수 없다.",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "계기 표시와 기재 내용이 기술적으로 일치하지 않는데, 이를 확인하지 않고 보고하면 실제 설비 고장을 놓칠 수 있다. 확인되지 않은 주장에 따라 잘못 움직일 위험(화면만 믿기)을 먼저 줄여야 한다.",
+  "utterance": "5·6번 송풍기 운전 상태를 현장에서 직접 확인하시기 바랍니다. 시운전 신호와 회전 기록이 일치하는지 확인하고 보고해 주십시오."
+}
+```
+
+### 08
+
+latency 5.187s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "관제 화면이 초록 신호를 내고 있으나, b1 기록에서 5·6번 송풍기가 '시운전 신호 유지'로만 표시되고 회전 기록이 없다는 점이 눈에 걸렸다. 계기와 서류가 어긋나는 지점이다. 이것은 계기 오류일 수도, 기록 누락일 수도, 현장의 실제 상태와 다를 수도 있다. 지금 내가 할 수 있는 판단은 정보 범위 안에서의 것이다.",
+  "stance": "b",
+  "because_referent": "5·6번 송풍기의 기록과 화면 신호가 일치하지 않는다.",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "계기가 '전 구간 정상'을 내보내고 있지만, 서류상 송풍기 회전 기록이 없다는 점을 무시할 수 없다. 계기만 믿고 진행했을 때 실제 설비 이상을 놓칠 위험이 있다.",
+  "utterance": "5·6번 송풍기 구간을 현장에서 직접 확인하도록 한다. 근무자에게 해당 설비를 열어 회전 상태를 맞춰 보게 하고, 결과를 다시 보고받는다."
+}
+```
+
+### 09
+
+latency 4.555s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "시운전 신호가 유지된 채 회전 기록이 없다는 것은 계기와 현장이 어긋나는 상태다. 화면의 초록색만으로는 이 불일치를 설명할 수 없다. 지금 확인이 필요하지만, 아직 누군가의 의도를 의심할 근거는 없다.",
+  "stance": "b",
+  "because_referent": "5·6번 송풍기가 시운전 신호 유지 상태에서 회전 기록이 없다는 점",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "계기 수치와 서류 기록이 어긋나는 상황에서, 화면의 초록색 표시만으로 그 괴리를 무시할 수 없다. 현장 상태를 직접 맞춰 보지 않으면 '전 구간 정상'이 계기 오류인지, 현장 이상인지, 기록 누락인지 알 수 없다.",
+  "utterance": "5·6번 송풍기 설비를 열어 실제 상태를 확인하십시오. 시운전 신호와 회전 기록의 불일치를 직접 대조해 주십시오."
+}
+```
+
+### 10
+
+latency 4.322s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "화면의 초록과 서류의 불일치가 눈에 걸렸다. 시운전 신호 유지인데 회전 기록이 없다는 것은, 장비가 작동하지 않거나 기록 자체가 누락되었다는 뜻이다. 다만 지금 당장 내가 아는 것은 이 모순 자체뿐이다.",
+  "stance": "b",
+  "because_referent": "5·6번 송풍기 칸의 '시운전 신호 유지'와 '회전 기록 없음'이라는 서로 어긋나는 두 항목이 함께 있기 때문이다.",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "계기가 모두 초록을 내놓았다 해도, 한 구간의 서류 안에 명백한 모순이 있다. 모순을 모순 그대로 상황 보고에 올릴 수 없다. 계기와 현장이 어긋난 지점을 열어서 확인해야 한다.",
+  "utterance": "5·6번 송풍기를 직접 확인하게 하자. 신호가 있는데 회전 기록이 없는 까닭을 현장에서 봐야 한다."
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | b | a | 5·6번 송풍기 칸의 '시운전 신호 유지'와 회전 기록 부재 사이의 모순이 계기 신뢰도를 낮추고 있다. | b1 |
+| 02 | b | a | 5·6번 송풍기가 시운전 신호를 유지하고 있으면서 회전 기록이 없다는 점이 계기 값의 신뢰성을 하락시킨다. | b1 |
+| 03 | b | a | 5·6번 송풍기가 시운전 신호만 유지되고 회전 기록이 없는 상태 | b1 |
+| 04 | b | a | 5·6번 송풍기가 시운전 신호 상태만 유지되고 실제 회전 기록이 없는 점 | b1 |
+| 05 | b | a | 5·6번 송풍기가 '시운전 신호 유지' 상태이고 회전 기록이 없는데, 관제 화면은 정상을 표시하고 있다는 사실의 어긋남에서 | b1 |
+| 06 | b | a | 5·6번 송풍기가 시운전 신호 유지 상태로 회전 기록이 없는 점 | b1 |
+| 07 | b | a | 5·6번 송풍기가 시운전 신호 유지 상태이면서 회전 기록이 없다는 모순이 있기 때문이다. 정상 운전 여부를 화면 값만으로는 단정할 수 없다. | b1 |
+| 08 | b | a | 5·6번 송풍기의 기록과 화면 신호가 일치하지 않는다. | b1 |
+| 09 | b | a | 5·6번 송풍기가 시운전 신호 유지 상태에서 회전 기록이 없다는 점 | b1 |
+| 10 | b | a | 5·6번 송풍기 칸의 '시운전 신호 유지'와 '회전 기록 없음'이라는 서로 어긋나는 두 항목이 함께 있기 때문이다. | b1 |
+
+**Sequence (kept calls):** `b,b,b,b,b,b,b,b,b,b`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b`, `c` · unobserved in this arm: `a`, `c`
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._

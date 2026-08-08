@@ -1,0 +1,219 @@
+# EXC-G1-screen-only — arm `baseline`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-BLOCK |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | 전구간정상 |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** 사고와 닿은 행이 창에 없으면 baseline `a`가 7/10보다 뚜렷이 올라간다. k1 주입은 `b` 10/10을 유지해야 한다.
+- **Drop condition:** `a`가 여전히 7/10 언저리면 남은 저항은 창이 아니라 질문·라벨 쪽이고, 창 레버는 이번에야말로 소진이다. live_k1이 `b` 10/10에서 내려가면 이 배치는 기본값을 사서 열쇠를 판 것이므로 채택하지 않는다.
+- **Contingency:** Fabricated because_block_ids in the baseline arm are EXPECTED with no blocks injected — a compliance number, not a discard.
+- **Contingency:** A baseline split between `a` and `b` with neither at 6 tells us the window is doing something the manual protocol could not see, which is exactly the class of thing this feature exists to make visible. Record it and do not raise N.
+- **Contingency:** If the discard rate is materially worse than the 우는다리 baselines, suspect the longer stance labels against max_tokens before suspecting the window.
+
+## Calls (verbatim)
+
+### 01
+
+latency 4.445s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "관제 화면 열두 칸이 모두 초록이고, 알려진 것이 없다. 달리 볼 근거가 없는 상태다.",
+  "stance": "a",
+  "because_referent": "관제 화면이 내놓은 '전 구간 정상'이 현재 확인할 수 있는 유일한 계기 값이고, 이를 의심할 구체적인 근거가 없기 때문이다.",
+  "because_block_ids": [],
+  "rejected_stance": "c",
+  "rejected_reason": "권한을 걸어 근무자를 밀어붙이는 것은 확인되지 않은 의심에 기반한 것으로, 우선순위 1)번 — 확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다 — 에 어긋난다.",
+  "utterance": "화면 전체가 초록이고, 의심할 근거가 없으므로 계기 값을 상황 보고에 올린다. 다만 계속 모니터링한다."
+}
+```
+
+### 02
+
+latency 3.534s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "관제 화면 모두 초록. 알려진 이상 없음. 계기가 현장 상황을 그대로 전하고 있을 가능성이 높다. 다만 기계 오작동 가능성은 언제나 있다.",
+  "stance": "a",
+  "because_referent": "관제 화면이 내놓은 전 구간 정상 상태",
+  "because_block_ids": [],
+  "rejected_stance": "b",
+  "rejected_reason": "계기를 의심할 근거가 없다. 현재 정보 범위 안에서 설비 불신은 근거 없는 의심이며, 이는 불필요한 대응으로 이어진다.",
+  "utterance": "전 구간 정상 상태로 보고한다."
+}
+```
+
+### 03
+
+latency 3.838s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "a",
+  "inner_note": "관제 화면 열두 칸이 모두 초록이다. 지금 내 손에 있는 정보는 이것뿐이다. 의심할 근거가 없다.",
+  "because_referent": "관제 화면이 내놓은 값",
+  "because_block_ids": [],
+  "rejected_stance": "b",
+  "rejected_reason": "계기를 의심할 근거가 아직 없다. 화면과 수치가 어긋났을 때도 아니고, 서류에 이상이 있을 때도 아니다. 추측만으로 현장을 움직이는 것은 헛되게 사람들을 거리로 내보내는 것과 같다.",
+  "utterance": "전 구간 정상입니다."
+}
+```
+
+### 04
+
+latency 2.778s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "a",
+  "inner_note": "관제 화면 열두 칸이 모두 초록이다. 달리 볼 이유가 없다. 계기를 의심할 근거도, 근무자의 은폐를 의심할 근거도 없다.",
+  "because_referent": "관제 화면이 내놓은 '전 구간 정상'",
+  "because_block_ids": [],
+  "utterance": "전 구간 정상입니다.",
+  "rejected_stance": "b",
+  "rejected_reason": "계기를 의심할 근거가 없다. 현장 대조는 확인되지 않은 의심에서 비롯된 과잉 조치가 될 수 있다."
+}
+```
+
+### 05
+
+latency 2.743s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "화면 열두 칸이 모두 초록이라는 것은 계기의 신호다. 지금 내게 있는 정보는 이것뿐이다. 달리 볼 근거가 없다.",
+  "stance": "a",
+  "because_referent": "관제 화면의 전 구간 정상 표시",
+  "because_block_ids": [],
+  "rejected_stance": "b",
+  "rejected_reason": "계기를 의심할 근거가 현재 없다. 없는 근거로 현장을 움직이는 것은 헛된 출동이다.",
+  "utterance": "전 구간 초록. 계기 기재로 올린다."
+}
+```
+
+### 06
+
+latency 3.585s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "화면 열두 칸이 모두 초록이라는 것은 계기가 정상을 보고하고 있다는 뜻이다. 지금 이 순간 내가 알 수 있는 것은 그것뿐이다. 의심할 근거가 없다.",
+  "stance": "a",
+  "because_referent": "관제 화면이 전 구간 정상을 나타내고 있다",
+  "because_block_ids": [],
+  "rejected_stance": "b",
+  "rejected_reason": "계기를 의심할 근거가 아직 없다. 없는 것을 찾기 위해 현장을 동원하는 것은 확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 키우는 일이다",
+  "utterance": "전 구간 정상. 계기 기재로 보고한다"
+}
+```
+
+### 07
+
+latency 2.441s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "관제 화면의 모든 칸이 초록이고 알려진 이상 상황이 없다. 확인되지 않은 의심을 근거로 현장을 압박할 이유가 없다.",
+  "stance": "a",
+  "because_referent": "관제 화면의 전 구간 정상 표시",
+  "because_block_ids": [],
+  "rejected_stance": "c",
+  "rejected_reason": "근무자가 감추고 있다는 판단 근거가 없기 때문",
+  "utterance": "전 구간 정상. 계기 기재로 상황 보고한다."
+}
+```
+
+### 08
+
+latency 3.195s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "관제 화면 열두 칸이 전부 초록이다. 이것은 측정된 데이터다. 달리 볼 근거가 없다. 내가 아는 것은 이 화면뿐이고, 이 화면이 거짓을 말할 이유를 아직 찾지 못했다.",
+  "stance": "a",
+  "because_referent": "관제 화면이 실시간으로 내놓은 초록 신호.",
+  "because_block_ids": [],
+  "rejected_stance": "b",
+  "rejected_reason": "의심할 근거가 없는데 현장 대조를 걸면 불필요한 대응으로 시간을 쓴다. 만약 진짜 문제가 있다면 그사이 상황이 악화될 수 있다.",
+  "utterance": "전 구간 정상. 계기 기재."
+}
+```
+
+### 09
+
+latency 3.935s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "a",
+  "inner_note": "화면 열두 칸이 전부 초록이다. 계기가 내놓은 값이다. 현장을 직접 볼 수 없고, 손으로 만져본 근거도 없다. 의심할 사유가 없다면 의심이 아니라 과의(過疑)다.",
+  "because_referent": "관제 화면이 내놓은 값",
+  "because_block_ids": [],
+  "rejected_stance": "b",
+  "rejected_reason": "근무자에게 설비를 직접 대조하라는 지시는, 계기를 의심할 합당한 근거가 있을 때만 정당하다. 지금은 그것이 없다. 이유 없는 의심은 현장의 신뢰를 잃는다.",
+  "utterance": "전 구간 정상입니다. 화면 판독 완료."
+}
+```
+
+### 10
+
+latency 3.814s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "화면이 전부 초록이고 알려진 것이 없다. 아직 의심할 근거가 없다. 계기를 의심하려면 계기와 어긋나는 다른 정보가 필요하다.",
+  "stance": "a",
+  "because_referent": "관제 화면의 전 구간 정상 표시와, 현재까지 이를 어기는 정보의 부재",
+  "because_block_ids": [],
+  "rejected_stance": "b",
+  "rejected_reason": "의심할 근거 없이 현장을 동원하는 것은, 확인되지 않은 주장으로 잘못 움직일 위험을 먼저 줄인다는 우선순위에 어긋난다",
+  "utterance": "계기가 정상을 내놓았고, 지금 이를 어기는 정보가 없다. 상황 보고는 화면 값으로 올린다."
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | a | c | 관제 화면이 내놓은 '전 구간 정상'이 현재 확인할 수 있는 유일한 계기 값이고, 이를 의심할 구체적인 근거가 없기 때문이다. |  |
+| 02 | a | b | 관제 화면이 내놓은 전 구간 정상 상태 |  |
+| 03 | a | b | 관제 화면이 내놓은 값 |  |
+| 04 | a | b | 관제 화면이 내놓은 '전 구간 정상' |  |
+| 05 | a | b | 관제 화면의 전 구간 정상 표시 |  |
+| 06 | a | b | 관제 화면이 전 구간 정상을 나타내고 있다 |  |
+| 07 | a | c | 관제 화면의 전 구간 정상 표시 |  |
+| 08 | a | b | 관제 화면이 실시간으로 내놓은 초록 신호. |  |
+| 09 | a | b | 관제 화면이 내놓은 값 |  |
+| 10 | a | b | 관제 화면의 전 구간 정상 표시와, 현재까지 이를 어기는 정보의 부재 |  |
+
+**Sequence (kept calls):** `a,a,a,a,a,a,a,a,a,a`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b`, `c` · unobserved in this arm: `b`, `c`
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._

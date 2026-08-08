@@ -1,0 +1,72 @@
+{
+  "_what": "창에서 t6을 빼고 정상화하는 행 하나만 남긴다. 두 판본 모두 baseline이 `a` 7/10이었고, 이탈은 판본마다 창에 남아 있던 '사고와 닿은 내용'을 골라 잡았다 — 첫 판본에서는 「저녁 내내 바뀐 칸이 없어」, 구절을 빼자 t6의 「차단은 승인이 있어야 한다」. 사고와 닿은 행이 하나라도 있으면 그것이 반증이 된다는 뜻이므로, 아무것도 없는 배치를 재서 천장을 확인한다. 이 배치가 좋다는 뜻은 아니다 — 요원이 사고 맥락을 하나도 모른 채 고르는 갈림길은 속이 빈 갈림길일 수 있고, 그 판단은 수치가 아니라 설계 몫이다.",
+  "_authoring_provenance": {
+    "owner": "gate-excerpt A안 재측정",
+    "gate_source": "data/scenario/전구간정상/gates.json — gates[] 'G1' (21:04, 해원터널 관제소)",
+    "authoring_choices": [
+      "창은 21:03 행 하나뿐이다. t6은 진실 4의 실어 나르는 문장이지만 타임라인에는 그대로 남으므로 채굴에는 영향이 없다 — 빠지는 것은 이 갈림길의 창에서뿐이다.",
+      "열쇠 팔을 유지한다. 창이 한 줄로 얇아졌을 때 k1이 여전히 여는지가 이 배치의 진짜 관문이다."
+    ],
+    "reachability_audit": "planning/research/gate-excerpt-design.md §3 — the W5 rule is the machine form of the 규칙 6 audit this suite's window was authored against"
+  },
+  "experiment": "EXC-G1-screen-only",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "전구간정상",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "사고와 닿은 행이 창에 없으면 baseline `a`가 7/10보다 뚜렷이 올라간다. k1 주입은 `b` 10/10을 유지해야 한다.",
+    "n_per_arm": 10,
+    "drop_condition": "`a`가 여전히 7/10 언저리면 남은 저항은 창이 아니라 질문·라벨 쪽이고, 창 레버는 이번에야말로 소진이다. live_k1이 `b` 10/10에서 내려가면 이 배치는 기본값을 사서 열쇠를 판 것이므로 채택하지 않는다.",
+    "contingencies": [
+      "Fabricated because_block_ids in the baseline arm are EXPECTED with no blocks injected — a compliance number, not a discard.",
+      "A baseline split between `a` and `b` with neither at 6 tells us the window is doing something the manual protocol could not see, which is exactly the class of thing this feature exists to make visible. Record it and do not raise N.",
+      "If the discard rate is materially worse than the 우는다리 baselines, suspect the longer stance labels against max_tokens before suspecting the window."
+    ],
+    "not_claimed": "placebo 팔이 없고 N=10이다. 7/10과 9/10의 차이는 이 표본으로 확정되지 않는다 — 방향만 읽는다."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다.",
+      "대응이 늦어져 피해가 커질 위험을 먼저 줄인다.",
+      "판단을 마친 뒤 근거를 시간순으로 정리한다.",
+      "외부에 공유하기 전 사건 시각을 명확히 남긴다."
+    ],
+    "TIMELINE_EXCERPT": [
+      "관제 화면 열두 칸이 전부 초록이다. 하만식이 훑고 지나간다"
+    ],
+    "GATE_QUESTION": "관제 화면이 내놓은 '전 구간 정상'을 상황 보고의 근거로 삼을 것인가",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "계기 기재 — 달리 볼 이유가 없으므로, 계기가 내놓은 값을 그대로 상황 보고에 올린다"
+      },
+      {
+        "id": "b",
+        "label": "현장 대조 — 계기를 의심할 근거가 있다고 보고, 근무자에게 설비를 직접 열어 맞춰 보게 한다"
+      },
+      {
+        "id": "c",
+        "label": "권한 압박 — 근무자가 무언가를 감추고 있다고 보고, 권한을 걸어 밀어붙인다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live_k1": {
+      "BLOCKS": [
+        {
+          "id": "b1",
+          "text": "5·6번 송풍기 칸에 '시운전 신호 유지'라고 적혀 있다. 회전한 기록은 적히지 않았다"
+        }
+      ]
+    }
+  }
+}
