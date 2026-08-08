@@ -22,10 +22,19 @@ import { PORTAL, SIGN_IN } from './portal-identity.ts'
 /** SVG namespace — the crest is drawn, not marked up (cf. thread-layer.ts). */
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
-/** How long one authentication line waits behind the one above it. */
-const STEP_MS = 190
+/**
+ * How long one authentication line waits behind the one above it.
+ *
+ * x1 (08-08) — 190 → 280. Five lines at 190 ms plus a 520 ms tail was 1.47 s,
+ * and a terminal that authenticates in a second and a half does not read as a
+ * terminal that is checking anything. The lines are the only place the portal
+ * says what it is before the desk arrives, so they are given time to be read:
+ * 2.4 s total, still well inside the patience of someone who just pressed a
+ * button.
+ */
+const STEP_MS = 280
 /** Air after the last line, so the readout is read rather than glimpsed. */
-const TAIL_MS = 520
+const TAIL_MS = 1000
 
 /**
  * Who gets the door, and who is let straight through to the desk.
@@ -53,7 +62,7 @@ function svg<K extends keyof SVGElementTagNameMap>(
   return node
 }
 
-/** The 災 seal the top bar wears, at the size a front door wants it. */
+/** The 緊 seal the top bar wears, at the size a front door wants it. */
 function crest(): HTMLElement {
   const host = el('div', 'si-crest')
   host.setAttribute('aria-hidden', 'true')
@@ -67,7 +76,7 @@ function crest(): HTMLElement {
     svg('circle', { cx: '50', cy: '50', r: '31' }),
   )
   const glyph = svg('text', { x: '50', y: '62', 'text-anchor': 'middle' })
-  glyph.textContent = '災'
+  glyph.textContent = '緊'
   seal.append(glyph)
 
   host.append(ring, seal)
@@ -202,12 +211,12 @@ export function openSignIn(app: HTMLElement, body: HTMLElement): Promise<void> {
   const note = el('div', 'si-note')
   note.append(
     el('em', undefined, '※'),
-    el('span', undefined, '본 포털은 재난 대응 모의훈련 전용입니다. 실제 신고·구조 요청은 119.'),
+    el('span', undefined, '본 포털은 상황 대응 모의훈련 전용입니다. 실제 신고·구조 요청은 119.'),
   )
 
   const readout = authReadout()
   plate.append(head, form, login, note, readout)
-  stack.append(crest(), title, el('div', 'si-latin', 'NATIONAL DISASTER SIMULATION PORTAL'), el('div', 'si-rule'), code, plate)
+  stack.append(crest(), title, el('div', 'si-latin', 'EMERGENCY RESPONSE ROOM'), el('div', 'si-rule'), code, plate)
   layer.append(stack)
   app.append(layer)
 

@@ -12,9 +12,24 @@ export interface PortalIdentity {
   clearance: string
 }
 
+/**
+ * x1 (08-08) — the portal is renamed and its vocabulary de-escalated.
+ *
+ * "국가재난모의포털" oversold the day the scenario actually runs: 우는다리 is a
+ * bridge, a night shift and a handful of calls, not a national disaster, and a
+ * portal that announces 재난 in its own title sets the player up for a scale
+ * the game never delivers. The name, the code it abbreviates (NDSP = National
+ * Disaster Simulation Portal → ERR = Emergency Response Room), the issuing
+ * body and the 災 chop all moved together — a half-renamed portal reads as a
+ * bug, not as restraint.
+ *
+ * The code is load-bearing beyond the chrome: `windows/agent-file.ts` prints
+ * it as the document number (`문서번호 ERR-2/AF/…`), which `e2e/agent-file.spec.ts`
+ * pins.
+ */
 export const PORTAL: PortalIdentity = {
-  portal: '국가재난모의포털',
-  portalCode: 'NDSP-2',
+  portal: '긴급상황대응실',
+  portalCode: 'ERR-2',
   operator: '박민서',
   operatorId: 'OP-2291',
   clearance: 'C-2',
@@ -48,5 +63,5 @@ export const SIGN_IN: SignInCard = {
   userId: 'test_user123',
   secret: '*********',
   terminal: 'T-14',
-  agency: '행정안전부 · 재난안전본부',
+  agency: '행정안전부 · 상황대응본부',
 }

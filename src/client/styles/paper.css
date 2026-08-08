@@ -37,11 +37,11 @@
   padding:var(--space-10) var(--space-12) var(--space-16)}
 
 /* fanfold — continuous green-bar paper, sprocket holes both edges */
-.fanfold{background:var(--fanfold);padding:0 var(--space-22)}
-.sprocket{position:absolute;top:0;bottom:0;width:22px;z-index:3;
+.fanfold{background:var(--fanfold);padding:0 var(--space-34)}
+.sprocket{position:absolute;top:0;bottom:0;width:33px;z-index:3;
   background:
-    radial-gradient(circle at 11px 9.5px, var(--sprocket-hole) 0 3.1px, var(--sh-28) 3.1px 4px, transparent 4.2px)
-      0 0/22px 19px repeat-y,
+    radial-gradient(circle at 16.5px 14.25px, var(--sprocket-hole) 0 4.65px, var(--sh-28) 4.65px 6px, transparent 6.3px)
+      0 0/33px 28.5px repeat-y,
     linear-gradient(90deg,var(--sprocket-1),var(--sprocket-2));
   box-shadow:inset -1px 0 0 var(--sh-14), inset 1px 0 0 var(--sh-14)}
 .sprocket.left{left:0;border-right:1px dashed var(--sh-28)}
