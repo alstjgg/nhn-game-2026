@@ -234,9 +234,33 @@ const events = [];
       present: null,
     });
   }
+  // Ordering is by minute, not by string — a lexical compare cannot rank
+  // `21:04+` against `21:04` at all.
+  //
+  // The trailing `+` is a SUB-MINUTE weight: "immediately after that minute"
+  // (decision D7, `src/engine/beat/clock.ts`, and the same reading in
+  // `src/client/driver/clock.ts` `mm()`). It is NOT a next-day marker. This
+  // once treated it as one — `+1440` — to let a timeline cross midnight, which
+  // both invented a second meaning for the token and silenced a guard that was
+  // telling the truth: the RUNTIME clock is same-day only. `createClock`'s
+  // `isEnded()` is `minute >= endMinute`, so a band of 21:47 → 00:12 is ended
+  // at construction and the run never ticks. A pack that crosses midnight
+  // compiles into a game that cannot be played.
+  //
+  // So the refusal below is load-bearing, and it is the compile-time face of a
+  // runtime limit. Lift it only together with a day-aware clock.
+  const SUB_MINUTE = 0.5;
+  const minute = (t) => {
+    const [h, m] = t.replace('+', '').split(':').map(Number);
+    return h * 60 + m + (t.endsWith('+') ? SUB_MINUTE : 0);
+  };
   const keys = events.map((e) => e.time);
   for (let i = 1; i < keys.length; i++) {
-    if (keys[i] < keys[i - 1]) die(`timeline: rows out of clock order at ${keys[i]}`);
+    if (minute(keys[i]) < minute(keys[i - 1])) {
+      die(
+        `timeline: rows out of clock order at ${keys[i]} (after ${keys[i - 1]}) — the clock is same-day only, so a situation that would cross midnight has to be authored earlier in the evening`,
+      );
+    }
   }
 }
 
@@ -637,6 +661,17 @@ writeJSON('truths.json', { truths });
 writeJSON('score.json', score);
 // authored via the hardening overlay; empty skeleton until then (lint flags it)
 writeJSON('symptoms.json', symptoms);
+// The overlay itself, when the pack has never been hardened. `{}` is the
+// schema's own minimum ("최소 오버레이는 빈 객체다"), and lint REQUIRES the file
+// — `hardening` is in its FILES list, so a missing one is an ERROR. Without
+// this line a freshly compiled pack always fails the factory's machine gate on
+// something the draft cannot fix, and §6-5's exit condition (lint ERROR 0) is
+// unreachable until a human hand-writes the file. Never overwritten: a hardened
+// pack keeps everything it has, which is what makes recompiling idempotent.
+if (!existsSync(hardeningPath)) {
+  writeJSON('hardening.json', {});
+  notes.push('hardening.json 없음 — 빈 오버레이를 생성했다 (하드닝 전 기본 상태)');
+}
 copyFileSync(resolve(draftPath), join(outDir, 'draft.md'));
 
 console.log(`✓ compiled ${basename(draftPath)} → ${outDir}`);
