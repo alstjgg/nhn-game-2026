@@ -41,7 +41,7 @@ function windowsSeen(p: BeatPack, seed: Record<string, number | boolean> = {}): 
 }
 
 describe('[e3#A11] a declared excerpt replaces the narrated window', () => {
-  it('hands back the named rows text, in the order the card names them', () => {
+  it("hands back the named rows' text, in the order the card names them", () => {
     // `t4` before `t1` — the card's order, not the timeline's.
     expect(windowsSeen(excerptPack(['t4', 't1']))).toEqual([['t4-authored', 't1-authored']])
   })
@@ -58,7 +58,7 @@ describe('[e3#A11] a declared excerpt replaces the narrated window', () => {
   })
 })
 
-describe('[e3#A11] the rows exposure conditions still decide what this run sees', () => {
+describe("[e3#A11] the rows' exposure conditions still decide what this run sees", () => {
   // `t2` asks for `opened`; `t3` carries un-hardened prose.
   const ids = ['t1', 't2', 't3']
 
