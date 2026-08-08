@@ -43,6 +43,14 @@ export interface AgentInput {
   callsign: string
 }
 
+/** What a finished agent's page needs — no cap, because nothing can be placed. */
+export interface FiledInput {
+  /** 식별's 호출부호 — the agent whose sitting this page records (M1). */
+  callsign: string
+  /** How many sentences went out with them. The cards themselves are the host's. */
+  deployed: number
+}
+
 interface SectionHead {
   title: string
 }
@@ -68,12 +76,24 @@ export interface OperableSection extends SectionHead {
   note: string
 }
 
-export type DossierSection = RowsSection | FixedSection | SealedSection | OperableSection
+/** U5.3 — an operable section whose sitting is over. Same shape, no gestures. */
+export interface FiledSection extends SectionHead {
+  state: 'filed'
+  note: string
+}
+
+export type DossierSection =
+  | RowsSection
+  | FixedSection
+  | SealedSection
+  | OperableSection
+  | FiledSection
 
 const FLAG: Readonly<Record<DossierSection['state'], string>> = {
   fixed: '고정',
   sealed: '봉인',
   operable: '조작 가능',
+  filed: '열람',
 }
 
 /** 임무's mission line: the band is the pack's, the sentence is the design target's. */
@@ -116,6 +136,33 @@ export function agentModel(input: AgentInput): DossierSection[] {
       title: '인수인계 사항',
       state: 'operable',
       note: `주입 슬롯 ${input.slotCap}칸. 배치 후 잠금.`,
+    },
+  ]
+}
+
+/**
+ * Pure: a FINISHED agent's page — the same document, closed.
+ *
+ * U5.3. 식별 is identical in shape to the live agent's, because it is the same
+ * document art with a different callsign; what changes is 인수인계 사항, which
+ * is no longer something the operator can operate. It is a record of what went
+ * out, and its flag says so.
+ */
+export function filedModel(input: FiledInput): DossierSection[] {
+  return [
+    {
+      title: '식별',
+      state: 'fixed',
+      rows: [
+        ['호출부호', input.callsign],
+        ['배치', '위기 대응실(상황실) · 비공개 직통 회선'],
+        ['권한', '청취 · 조회 · 요청. 집행권 없음'],
+      ],
+    },
+    {
+      title: '인수인계 사항',
+      state: 'filed',
+      note: `배치 ${input.deployed}건. 시행 종료 — 열람 전용.`,
     },
   ]
 }
@@ -163,7 +210,11 @@ function buildSection(section: DossierSection, slotHost: HTMLElement): HTMLEleme
     return node
   }
 
-  if (section.state === 'operable') {
+  // A filed section renders exactly like an operable one — a note and a host —
+  // and differs only in what the caller puts in that host and what the flag
+  // says. U5.3's past pages hand it read-only cards; the live page hands the
+  // operable section the one SlotBoard (D7).
+  if (section.state === 'operable' || section.state === 'filed') {
     node.append(...spaced(head, el('div', 'sect-body', section.note), slotHost))
     return node
   }

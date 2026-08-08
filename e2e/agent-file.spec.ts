@@ -20,6 +20,7 @@
 // re-points `playwright.config.ts` per C5) — nothing below assumes a dev server.
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
+import { newRun } from './fixtures/harness.ts'
 
 const FILE = '#w-file'
 const CAP = 4
@@ -485,5 +486,57 @@ test.describe('a11y membrane ops', () => {
           .map((n) => (n as HTMLElement).className),
       )
     expect(unringed).toEqual([])
+  })
+})
+
+/* ══ U5.3 — the sitting that ended is still on the desk ══════════════════ */
+
+test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
+  test('[U5.3] (a) deploying, closing the day and opening the next appends a page', async ({ page }) => {
+    await boot(page)
+    // Two pages while ECHO-1 is the only agent: the cover and ECHO-1's own.
+    await expect(page.locator(`${FILE} .pg-count`)).toHaveText('1 / 2')
+
+    // Seeded and placed through `window.__agentFile`, like every other test in
+    // this file — the suite drives the window's own handle and never blocks on
+    // what REPORTS happens to be showing.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await seed(page)
+    await place(page, SEEDS[0].id, 0)
+    await place(page, SEEDS[1].id, 1)
+
+    // The OPENING commit — this is the file this agent flies, and write site 1.
+    //
+    // The callsign is READ off 식별, never assumed. The fixture desk opens at
+    // run 3, not run 1 — `(d)` above pins ECHO-3 — so a hardcoded ECHO-1 here
+    // asserted a property of an imagined fixture instead of one of the page,
+    // and C3 forbids exactly that. What the claim actually needs is that the
+    // page turned back to names the agent that just flew, whoever it was.
+    const flying = await page.locator(`${FILE} .sect`).nth(0).locator('dd').first().textContent()
+    expect(flying, '식별 carries no callsign to fly').toMatch(/^ECHO-\d+$/)
+    await page.locator('#btnDeploy').click()
+    await expect(page.locator('#btnDeploy')).toHaveAttribute('data-state', 'deployed')
+
+    // …then the day closes and the next press opens the following agent.
+    await newRun(page)
+
+    // Three pages now, and the file opened on the new agent's own — a different
+    // agent from the one that just went out.
+    await expect(page.locator(`${FILE} .pg-count`)).toHaveText('3 / 3')
+    await expect(page.locator(`${FILE} #btnDeploy`)).toHaveCount(1)
+    await expect(page.locator(`${FILE} .sect`).nth(0).locator('dd').first()).not.toHaveText(flying!)
+
+    // Turn back one: the page of the agent that flew, read-only, still theirs.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).first().click()
+    await expect(page.locator(`${FILE} .pg-count`)).toHaveText('2 / 3')
+    await expect(page.locator(`${FILE} .sect`).nth(0).locator('dd').first()).toHaveText(flying!)
+    await expect(page.locator(`${FILE} .sect`).nth(1).locator('.sect-flag')).toHaveText('열람')
+    await expect(page.locator(`${FILE} .filed-cell`)).toHaveCount(2)
+    await expect(page.locator(`${FILE} .filed-cell .bc-text`).first()).toHaveText(SEEDS[0].text)
+
+    // A past page is not a board, carries no gesture, and anchors no thread.
+    await expect(page.locator(`${FILE} #slotBoard`)).toHaveCount(0)
+    await expect(page.locator(`${FILE} .slot-unset`)).toHaveCount(0)
+    await expect(page.locator(`${FILE} [data-block-id]`)).toHaveCount(0)
   })
 })
