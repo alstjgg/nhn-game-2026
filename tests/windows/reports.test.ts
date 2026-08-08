@@ -112,10 +112,12 @@ interface TypeState {
   done: boolean
 }
 
+/** A shadow of `components/report-view.ts`'s own — keep the two in step. */
 interface ReportModel {
   round: number
   facts: Sentence[]
   report_body: Sentence[]
+  opens?: string[]
 }
 
 interface ViewModule {
@@ -686,5 +688,22 @@ describe('[w2] a sitting accumulates its rounds into one document', () => {
     expect(window, 'the REPORTS window is not in the scanned set').toBeTruthy()
     expect(window!.text, 'the report handler no longer names the sitting').toMatch(/const sitting = run/)
     expect(window!.text, 'a report is still filed under its round').not.toMatch(/filed\.set\(\s*event\.round/)
+  })
+
+  it('(g) each round after the first records the id it opens on', async () => {
+    const v = await view()
+    const one = v.accumulated(null, { round: 0, facts: [], report_body: [s('b1'), s('b2')] })
+    // A single-round document carries no boundary at all — `(a)` above pins
+    // that identity, and a break before the very first sentence would open the
+    // record with a blank line.
+    expect(one.opens).toBeUndefined()
+
+    const two = v.accumulated(one, { round: 1, facts: [], report_body: [s('b3')] })
+    const three = v.accumulated(two, { round: 2, facts: [], report_body: [s('b4'), s('b5')] })
+    expect(three.opens).toEqual(['b3', 'b4'])
+    // The boundary is an id in the body, never an index into it: `render()`
+    // rebuilds the flat list and matches by id, so an id that is not there is
+    // simply no break rather than a break in the wrong place.
+    expect(three.report_body.map((x) => x.id)).toEqual(['b1', 'b2', 'b3', 'b4', 'b5'])
   })
 })

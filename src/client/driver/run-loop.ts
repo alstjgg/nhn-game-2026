@@ -9,7 +9,7 @@
 // Two things have to survive the swap, because the shell binds them once at
 // boot and never looks again:
 //
-// - **the listener set** — `game-clock`, the five windows and the run counter
+// - **the listener set** — `game-clock`, the three windows and the run counter
 //   all subscribed to the facade, so the facade keeps the set and re-binds the
 //   inner driver underneath them;
 // - **the clock** — `shell/boot.ts` hands `driver.clock` to the game clock and

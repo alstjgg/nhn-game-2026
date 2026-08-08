@@ -34,6 +34,19 @@ export function stampKey(packSlug: string): string {
   return `${META_KEY_PREFIX}stamp.${packSlug}`
 }
 
+/**
+ * H2 — a page load is a new sitting, so both slots go together.
+ *
+ * The stamp without its state is a claim about nothing, and the state without
+ * its stamp reads as another build's and would be dropped on the next load
+ * anyway. Clearing is the caller's decision, not the store's: the store still
+ * restores faithfully for anyone who wants a resume (the headless path does).
+ */
+export function clearWebStorageMetaStore(storage: StorageLike, packSlug: string): void {
+  storage.removeItem(metaKey(packSlug))
+  storage.removeItem(stampKey(packSlug))
+}
+
 /** The substitution path: in-memory, optionally pre-seeded (e9's headless driver). */
 export function createMemoryMetaStore(seed?: MetaState): MetaStore {
   let held: MetaState | null = seed === undefined ? null : cloneMetaState(seed)

@@ -181,6 +181,10 @@ function restored(storage: Storage | null): ViewEvent | null {
 /**
  * The run a refresh should re-open on, or `null` for a cold desk.
  *
+ * RETIRED (H2, 08-08) — nothing calls this. Kept because `driver/live/index.ts`
+ * still cites it by name as the shape the live path's own resume was modelled
+ * on. See `clearRunState()` below for what replaced it and why.
+ *
  * The restore used to lose a race it could not see: `createRunState` rebuilt
  * the state from the slot inside `tally.mount()`, and the driver — always
  * opened at `runs[0]` — then emitted the pack's opening `meta` in the same boot
@@ -190,6 +194,32 @@ function restored(storage: Storage | null): ViewEvent | null {
 export function restoredRun(options: RunStateOptions = {}): number | null {
   const event = restored(options.storage ?? defaultStorage())
   return event !== null && event.type === 'meta' ? event.run : null
+}
+
+/**
+ * H2 — a page load starts a new sitting: this module's slot is dropped before
+ * anything reads it.
+ *
+ * The resume this replaces restored the sitting's IDENTITY — callsign, run
+ * counter, archive — from the last `meta` event, and could not restore its
+ * CONTENT: the filed report documents live in `windows/reports.ts` and are
+ * persisted nowhere. A refresh therefore came back as ECHO-n with n rail tabs
+ * and nothing readable in any of them. Restoring them properly means persisting
+ * every sitting's whole text; dropping the resume means a judge who refreshes
+ * gets the game from the top. The second is the desk we want, and it is the
+ * amendment to spec-client §7 #8 that ships with this unit.
+ *
+ * The audio mute key is deliberately NOT cleared — a restart is not an unmute.
+ */
+export function clearRunState(options: RunStateOptions = {}): void {
+  const storage = options.storage ?? defaultStorage()
+  if (!storage) return
+  try {
+    storage.removeItem(META_KEY)
+  } catch {
+    // Same contract as `restored()`: a private-mode Storage throws on write,
+    // and a desk that cannot clear its slot still has to open.
+  }
 }
 
 /** Writes the `meta` event verbatim; a refusing Storage degrades to memory. */

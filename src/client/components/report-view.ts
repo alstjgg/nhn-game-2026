@@ -25,6 +25,11 @@ export interface ReportModel {
   round: number
   facts: Sentence[]
   report_body: Sentence[]
+  /**
+   * R1 — ids in `report_body` that open a round after the sitting's first. The
+   * record breaks a line before each. Absent on a single-round document.
+   */
+  opens?: string[]
 }
 
 /** Where the replay has got to. `sentence === lengths.length` ⇒ finished. */
@@ -92,10 +97,17 @@ export function minedCount(model: ReportModel, marks: MarkSets): number {
  */
 export function accumulated(held: ReportModel | null, slice: ReportModel): ReportModel {
   if (held === null) return { round: slice.round, facts: [...slice.facts], report_body: [...slice.report_body] }
+  // R1 — the id that OPENS this round, remembered so a redraw can break before
+  // it. Omitted on the first round rather than set empty: the document a
+  // sitting starts with is the slice itself, and `(a)` in the `[w2]` block
+  // asserts exactly that identity.
+  const opening = slice.report_body[0]
+  const opens = held.opens ?? []
   return {
     round: slice.round,
     facts: [...held.facts, ...slice.facts],
     report_body: [...held.report_body, ...slice.report_body],
+    opens: opening === undefined ? [...opens] : [...opens, opening.id],
   }
 }
 
@@ -304,6 +316,10 @@ export function createReportView(options: ReportViewOptions): ReportView {
         facts.append(factRow(node))
       }
 
+      // R1 — this round opens below the last one, not beside it. `append()` is
+      // only ever reached for a round that is NOT the sitting's first (the
+      // window draws whole for that one), so the break is unconditional here.
+      body.append(el('span', 'r-brk'))
       const grown = slice.report_body.map((sentence) => {
         const node = bind(sentence, marks)
         body.append(node, document.createTextNode(' '))
@@ -331,7 +347,13 @@ export function createReportView(options: ReportViewOptions): ReportView {
       }
 
       body.replaceChildren()
+      const opens = new Set(model.opens ?? [])
       const bodyNodes = model.report_body.map((sentence) => {
+        // R1 — a redraw rebuilds the whole sitting from a flat list, so the
+        // round boundary has to come from the model. Appending the break only
+        // in `append()` below would lose it the first time the operator left
+        // this rail tab and came back.
+        if (opens.has(sentence.id)) body.append(el('span', 'r-brk'))
         const node = bind(sentence, marks)
         body.append(node, document.createTextNode(' '))
         return node

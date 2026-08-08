@@ -53,9 +53,29 @@ is drawn.
 | O1 | the door — sign-in · terminal manual · desk reveal | #175 |
 | — | riders: reporter v0.3 radio voice, facts ≤ 3 (#173) · beat-line stamp spread + 9 s report hold (#174) | |
 
+### Also landed since that audit — wave A and the B′ units
+
+| id | item | landed |
+|---|---|---|
+| U5.2b+ | `judged` carries `cited_ids`, filtered to deployed (`view-driver.ts:30`) | `bf5b6c2` |
+| T1 | BLOCK STORE dissolved; `windows/` is three files | #18x |
+| G3 | the rail says ECHO-n — `report-archive.ts:58` is `callsignOf(entry.run)` | #18x |
+| O3 | radio SFX, and the 34-cue audio layer beside it (`plan-audio.md`) | #179 |
+| W1·W3 | sitting stamp on resume · mining is one gesture | B′-1 |
+| W2 | one sitting is one accumulating record | #190 |
+| W4 | one DEPLOY, phase-gated; the transport row retired | #191 |
+| hotfix | one click mines AND seats · 과거 배치 · the slot card is the sentence | #189 |
+
+**Two live-path regressions came out of W4 and W1, and the browser suite cannot
+see either** — `e2e/` drives the DEV fixture loop, and the fixture keeps one flat
+store across runs where the live path rebuilds per day. Both are wave g12 (§3).
+
 ### Remaining — re-audited 2026-08-08
 
 Ordered by lane (§2), not priority. Each block is a PRD's raw material.
+**U5.2b+, T1, G3 and O3 below are landed** (table above); their text is kept as
+the record of what was specified. T3 is landed except its prose (g12-4). O2 and
+U5.1 are cut — see §4.
 
 **U5.2b+ — the seam carries the citation (new unit, small).** U5.2c's "beside
 the sentence that moved it" has **no data source today**: `judged` is
@@ -318,6 +338,34 @@ mapped it (their reports are in the PR thread); the units:
 U5.2c re-authors after B′ lands (it renders into W2's per-sitting document).
 T3 is unchanged by B′ and may ride either gap. O2/U5.1/MAN unchanged.
 
+**Wave g12 (08-08, third playtest) — four units, one PR, all four parallel.**
+민서's post-B′ session found two live-path regressions and one readability
+defect. The units are pairwise file-disjoint, so all four develop concurrently
+in their own worktrees and merge serially into one wave branch; the PRDs ride
+the same PR as the code (the convention changed at #190 — docs and their code
+travel together).
+
+1. **H1** (`g12-1`, `live/adapter.ts`) — the committed agent file is replayed
+   into the new day's **membrane**, not just its view mirror. `createMembrane`
+   is per bound run, so W4's direct assignment left the opened day with an
+   empty seat map: `unslot` answered `empty_slot` (a carried sentence could
+   never be released, which dead-ends the loop once all four seats are full)
+   and `membrane.deployed()` — what `composer.judgment` carries into Call 1 —
+   was empty, so **every day after the first flew a file the model never
+   received**. The carry also keeps the operator's seat numbers now instead of
+   re-indexing the sorted carry list from 0.
+2. **H2** (`g12-2`, `run-state.ts` · `live/index.ts` · `runloop/store.ts` ·
+   `boot.ts`) — a page load starts a new sitting. The resume restored a
+   sitting's identities and could not restore its report documents, which are
+   persisted nowhere, so a refresh returned ECHO-n with n empty rail tabs.
+   `spec-client` §7 #8 is amended with it; the audio mute key is not cleared.
+3. **R1** (`g12-3`, `report-view.ts`) — one sitting's rounds break a line
+   instead of running together. `ReportModel` records which ids open a round,
+   so the break survives a redraw rather than living only in the append path.
+4. **T3-prose** (`g12-4`, comments only) — what survived T1 (below).
+
+MAN is held at 민서's word until after this wave. U5.2c follows as its own PR.
+
 Two Shoulds (G3, O3) ride wave A in Must time — that is the point of grouping
 by dependency: they are free parallel capacity on files nothing else wants, not
 queue-jumpers. The Must line's serial spine (U5.2b+ → U5.2c; T1 → MAN) is
@@ -339,7 +387,19 @@ The door itself landed (#175): e2e lanes skip it via `navigator.webdriver`,
 `?signin=show` forces, `?signin=skip` bypasses; the membrane holds at the door
 (the fields are spans).
 
-**Should:** T3 · G3 · U5.1 · O3 · O2.
+**Should:** T3 (prose only — `g12-4`). G3 and O3 landed.
+
+**Cut 08-08, at 민서's word:**
+
+- **O2** (first-mining pulse) — dropped outright, not deferred. It shared all six
+  REPORTS files with U5.2c and would have cost a serial wave to buy one debut
+  animation; `g2-3`'s PRD is kept as the record of what was specified.
+- **U5.1** (the archive becomes sittings) — down to Won't. Its player-visible
+  outcome landed in **W2**, which re-keyed the client's rail by sitting and
+  killed the run/round keyspace collision. What remained was widening
+  `MetaState.report_archive` in the headless `src/runloop/` — a ratified JSON
+  schema, three assertions and four suites of churn for something no judge can
+  see, two days from the deadline.
 
 T3 completes what T1 starts and is one file. G3 and O3 are wave-A free capacity
 (§3). U5.1 stays down from Must: it needs a new persistence store, and M1 —
@@ -351,7 +411,7 @@ cut; U2 risks the mechanism claim without a probe).
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
-> As of 2026-08-08 (v13). A PRD names the version it was written against.
+> As of 2026-08-08 (v14). A PRD names the version it was written against.
 
 The items above are not worked by hand and not worked one at a time. Each is
 specified as a **mini-PRD** by a high-capability model, then executed by a
@@ -449,6 +509,22 @@ Rules for the change list:
   grandfathered sites and test comments — `published-data.test.ts:144` carries
   `객관 로그` in a comment forever — and then a binary condition can never go
   true. (v8.)
+- **Sweep the test files' SHADOW types, not just the module under edit.** A
+  suite that imports its subject dynamically often declares a private mirror of
+  that subject's interfaces to type the import. `tsc` sees the mirror and
+  `vitest` does not, so widening a type in `src/` leaves a suite fully green
+  while `npm run check` fails. R1 (g12-3) stopped here: `report-view.ts` gained
+  a field, `tests/windows/reports.test.ts:115` still declared the old shape,
+  and the executor reported 49/49 and 1597/1597 passing against a red `check`.
+  Grep the test files for `interface <TypeName>` before handing over. (v14.)
+- **A Done-when condition may never contradict the change list.** T3 (g12-4)
+  asked for greps to come back empty on strings its own prescribed replacement
+  text deliberately introduces, so two binary conditions could not go true
+  however correctly the unit was executed. The executor applied the prescribed
+  text and reported the contradiction rather than editing prose to satisfy a
+  checklist — the right call, and a document defect either way. Read every
+  Done-when grep against the replacement text, not against the current tree.
+  (v14.)
 - **Every line number cites the stamped tree, and same-file edits are listed
   bottom-up.** An earlier edit in the same file moves every line below it; a
   citation read off a mid-application tree is wrong for the executor, who
@@ -599,14 +675,22 @@ stays in the loop:
    execution happens on the tree the stamp just verified.
 4. **Author verifies**: diff against the change list row by row, full suites,
    and a local merge preview against then-current `main`. The author pushes
-   and opens **one PR per unit carrying code only** — PRDs are documents and
-   travel with the plan in the docs PR that authored them (as-executed
-   amendments follow the same docs lane), so 윤석 reviews the decisions there
-   and the code against them; a wave's PRs open together and merge serially,
-   merges 민서's, in the wave's stated order. (A wave of rider commits on one
-   branch may still ship as one PR, as wave 5 did.) `main` stays deployable,
-   and repo hard rules 1–6 apply to subagent commits exactly as to
-   hand-written ones.
+   and opens the PR; merges are 민서's. `main` stays deployable, and repo hard
+   rules 1–6 apply to subagent commits exactly as to hand-written ones.
+
+   **A wave is one PR, and it carries its own PRDs** (v14, 민서 08-08 —
+   "docs and their codes will be one PR"; the docs-lane split of the relay
+   era is retired). The wave branch opens with a docs commit carrying every
+   PRD it is about to execute, the unit branches fork from *that*, and each
+   executor's single code commit merges back into it serially. 윤석 then
+   reviews each decision beside the diff that implements it instead of across
+   two threads. This is sound only while the wave's units are **pairwise
+   file-disjoint** — which §5.6's wave rule already requires — because that is
+   what lets a unit that goes red be left out of the wave branch and shipped
+   after, rather than holding the other three hostage. As-executed amendments
+   are commits on the wave branch before the merge. A hotfix that must reach
+   `main` before the rest of its wave still opens alone; nothing about one-PR
+   waves outranks a broken deploy (hard rule 3).
 
 Execution stays **wave-parallel, merge-serial**. Units whose files are
 pairwise disjoint develop concurrently, one worktree each; a unit whose

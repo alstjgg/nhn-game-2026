@@ -298,7 +298,7 @@ test.describe('acceptance 1-7', () => {
 /* ══ persistence — §7 #8 (C4: sessionStorage, never localStorage) ══════════ */
 
 test.describe('acceptance 8', () => {
-  test('#8 meta-state survives F5 and dies with the tab', async ({ page, browser }) => {
+  test('#8 a page load starts a new sitting, and nothing crosses a tab', async ({ page, browser }) => {
     await boot(page)
     // The desk's OPENING meta — what a tab that never played would show. The
     // fixture opens mid-campaign, so "clean" means "this baseline", not "empty".
@@ -324,14 +324,21 @@ test.describe('acceptance 8', () => {
     expect(stored.session.length, 'no meta-state reached sessionStorage').toBeGreaterThan(0)
     expect(stored.local, 'localStorage is forbidden everywhere (C4)').toEqual([])
 
-    // (b) F5 — the counter, archive and carried blocks come back.
+    // (b) RE-AIMED (08-08, H2) and inverted on purpose: F5 is a RESTART.
+    // The resume restored the sitting's identities — callsign, counter, archive
+    // — and could not restore the filed report documents, which live in
+    // `windows/reports.ts` and are persisted nowhere: the desk came back as
+    // ECHO-n with n rail tabs and nothing readable in any of them. The state is
+    // still WRITTEN, which is what (a) above proves; it is no longer read back.
     await page.reload()
     await page.waitForFunction(() => Boolean((window as { __agentFile?: unknown }).__agentFile))
     const after = await meta(page)
-    expect(after.run).toBe(before.run)
-    expect(after.runs_left).toBe(before.runs_left)
-    expect(after.carried).toEqual(before.carried)
-    expect(after.archive.map((a) => a.run)).toEqual(before.archive.map((a) => a.run))
+    expect(after.run, 'F5 resumed the played-out run instead of starting a new sitting').toBe(
+      opening.run,
+    )
+    expect(after.runs_left).toBe(opening.runs_left)
+    expect(after.carried).toEqual(opening.carried)
+    expect(after.archive.map((a) => a.run)).toEqual(opening.archive.map((a) => a.run))
 
     // (c) closing the tab starts clean — sessionStorage does not cross
     // contexts, so a new tab opens on the pack's own baseline, never on the

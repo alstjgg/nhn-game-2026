@@ -390,6 +390,19 @@ minimal-first.
 
 - Verify the exact submission deadline and video editing rules on the official
   competition page (deadline currently assumed ~2026-08-10).
+- **Regenerate the nine reference shots — deferred until the UI settles**
+  (민서, 2026-08-08). `e2e/reference-shots/` is a visual-regression baseline,
+  and seven of its nine frames were rendered 2026-08-05 (`e98ac9e`): they still
+  show four windows with the BLOCK STORE, the retired ×1/×4/pause transport
+  row, and the AGENT FILE's old block-store slot cards. The `captures` suite
+  pairs by NAME only — it never diffs pixels — so a stale baseline is green,
+  not red. It costs nothing today and guards nothing either; the moment the UI
+  stops moving it should be refreshed, because until then a real visual
+  regression has no oracle. One command, run on a build of `main`:
+  `CAPTURE_BASELINE=1 SHOT_OUT=e2e/reference-shots npx playwright test captures`
+  (the name/count asserts still bind in that mode, so a refresh cannot quietly
+  ship eight). The shots are renders of our own UI by our own harness, so they
+  are deliberately NOT in `assets-manifest.json`.
 
 ## Decision log
 

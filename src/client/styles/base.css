@@ -2,8 +2,8 @@
    base.css — reset + document ground (desktop.css lines 46..58).
 
    Nothing here may create a stacking context: `.win` roots are z-ordered by a
-   single runtime `--z` and BLOCK STORE lives outside `#desktop` in the markup,
-   so html / body / #app must stay neutral (design README 'Notes').
+   single runtime `--z` shared across the whole desk, so html / body / #app must
+   stay neutral (design README 'Notes').
    =========================================================================== */
 
 *{box-sizing:border-box;margin:0;padding:0}
