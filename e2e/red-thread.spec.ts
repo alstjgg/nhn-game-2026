@@ -30,7 +30,6 @@ const PATH = `${THREADS} path`
 const PIN = `${THREADS} circle`
 const FILE = '#w-file'
 const REP = '#w-rep'
-const NEW_RUN = '#w-file #btnDeploy'
 
 /** An id in the authored grammar that no report can have minted (c1 negative). */
 const ABSENT_ID = 'b-r9-f99'
@@ -119,13 +118,21 @@ async function boot(page: Page): Promise<void> {
   await page.waitForFunction(() => (window as unknown as Handles).__threads !== undefined)
   await page.waitForFunction(() => (window as unknown as Handles).__agentFile !== undefined)
   await drain(page)
-  await takeNextRun(page)
   await expect(page.locator(`${REP} [data-sentence-id]`).first()).toBeVisible()
   await holdStill(page)
 }
 
 /**
- * Leaves the day the way the run's own loop leaves it — NEW RUN.
+ * RETIRED (08-08, W4) — kept for the record it carries, no longer in `boot()`.
+ *
+ * This drove the desk past the close so the threads could be measured in a RUN
+ * phase. One-press DEPLOY makes that setup measure nothing: the press now
+ * COMMITS the file, so the day after it opens locked and `place()` is refused
+ * by `planOps` — every thread oracle in this file went vacuous at once. The
+ * window a thread actually lives in is the one the close opens: after `drain()`
+ * the file is unlocked, the day's report is on the desk, and the operator is
+ * doing exactly what these tests assert. The tally-window flake the note below
+ * describes cannot recur either — U3 dissolved `#w-tally` into REPORTS.
  *
  * C17 / [u11#c12] — RE-AIMED (08-04, u11 attempt 2). This is the setup the
  * file's flakiness lived in. The code here used to close the sheet with its
@@ -148,16 +155,6 @@ async function boot(page: Page): Promise<void> {
  * tally is shut because the run says so — and with the clock held at 0 it never
  * reaches the next 21:04. Nothing is skipped and no thread rule is relaxed.
  */
-async function takeNextRun(page: Page): Promise<void> {
-  await awaitRecordFinal(page)
-  const newRun = page.locator(NEW_RUN)
-  await expect(newRun, 'the day never unlocked NEW RUN').toHaveAttribute('data-op', 'new_run', { timeout: 30_000 })
-  await expect(newRun, 'the day never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
-  await newRun.click()
-  await expect(newRun, 'NEW RUN did not return the control to deploy').toHaveAttribute('data-op', 'deploy', {
-    timeout: 20_000,
-  })
-}
 
 /** The sentence ids the booted run actually rendered, in document order (C3). */
 async function sourceIds(page: Page): Promise<string[]> {

@@ -223,10 +223,12 @@ test.describe('acceptance 1-7', () => {
     // Reduced motion: the mining click must land on a settled sentence, and the
     // desk honouring the preference is itself part of the shipped behaviour.
     // §7 #5 is the loop's own sentence — the mined sentence slots into the NEXT
-    // run's composition — so the day closes and NEW RUN opens the next one
-    // first: that is what files the report and unlocks the board.
+    // run's composition — so the day CLOSES first: that is what files the
+    // report and hands the file back. RE-AIMED (08-08, W4): this used to press
+    // NEW RUN to reach the same state, and under one-press that press is the
+    // one that COMMITS the file, so mining after it is refused by design.
     await boot(page, { reduced: true })
-    await newRun(page)
+    await drain(page)
 
     const id = await mineFirst(page)
 
@@ -425,7 +427,10 @@ test.describe('acceptance 9-12', () => {
 
   test('#10 red threads connect every filled slot by authored id and re-draw during a drag', async ({ page }) => {
     await boot(page, { reduced: true })
-    await newRun(page)
+    // RE-AIMED (08-08, W4): a thread needs a FILLED slot, and the window in
+    // which a slot can be filled is the one the close opens — the press that
+    // used to open it now commits the file instead.
+    await drain(page)
 
     await mineFirst(page)
 
