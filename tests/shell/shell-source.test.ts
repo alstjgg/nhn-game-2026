@@ -64,11 +64,39 @@ describe('[u3#c9] index.html carries the shell containers and nothing more', () 
 })
 
 describe('[u3#c3] the clock is driver-fed', () => {
-  it('(a) the shell owns no view-local timer', () => {
-    const offenders = unitSources()
-      .filter((s) => /\bsetInterval\s*\(/.test(s.text))
-      .map((s) => s.file)
-    expect(offenders).toEqual([])
+  // RE-AIMED (08-08), never deleted — and narrowed, not loosened.
+  //
+  // What this bans is a SELF-PACED timer: a view that decides for itself when
+  // the desk moves. It was never the PUMP. `runPump` in `boot.ts` has always
+  // fed the driver real elapsed milliseconds off a host callback; the only
+  // question is which callback, and a flat ban on `setInterval` answered that
+  // question by accident rather than on purpose.
+  //
+  // It answered it wrong. A hidden document — a background tab, a minimised
+  // window, a window another app fully covers — gets NO frame callbacks at all,
+  // so a rAF-only pump stopped the day dead the moment the desk was switched
+  // away from, and only resumed when it was looked at again. The pump now hands
+  // over to an interval while hidden and back on return. That interval computes
+  // no time and paces nothing: it samples `performance.now()` and hands the
+  // delta to `driver.advance()`, which is precisely what the frame callback
+  // does with the timestamp it is handed. (b) below still holds the line that
+  // actually matters — no `Date.now()`, no wall clock, no sim time derived in
+  // a view — and it is untouched.
+  //
+  // So the shape is PINNED instead of the name banned: exactly one interval in
+  // the whole shell, in `boot.ts`, inside `runPump`, feeding the driver. A
+  // second one anywhere, or this one drifting out of the pump, still fails.
+  it('(a) the shell owns no self-paced timer — its one interval is the driver pump', () => {
+    const withInterval = unitSources().filter((s) => /\bsetInterval\s*\(/.test(s.text))
+    expect(withInterval.map((s) => s.file)).toEqual(['src/client/shell/boot.ts'])
+
+    const boot = withInterval[0]!.text
+    expect([...boot.matchAll(/\bsetInterval\s*\(/g)], 'the shell grew a second interval').toHaveLength(1)
+
+    const pump = /function runPump\b[\s\S]*?\n}/.exec(boot)
+    expect(pump, 'runPump is gone — re-aim this guard at whatever replaced it').not.toBeNull()
+    expect(pump![0], 'the interval left the pump').toMatch(/\bsetInterval\s*\(/)
+    expect(pump![0], 'the pump stopped feeding the driver').toMatch(/driver\.advance\s*\(/)
   })
 
   it('(b) the shell never derives sim time from the wall clock', () => {
