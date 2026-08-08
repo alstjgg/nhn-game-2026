@@ -450,3 +450,28 @@ test.describe('untouchable during a run', () => {
     expect(overflow.y).toBeLessThanOrEqual(0)
   })
 })
+
+/* ══ U5.4 — the citation mark ════════════════════════════════════════════ */
+
+test.describe('[U5.4] the agent line names the slots that moved it', () => {
+  test('[U5.4] (a) a cited radio line carries the slot mark, an uncited one does not', async ({ page }) => {
+    await boot(page)
+    // Release the day up to the fixture's cited line (09:26).
+    await page.evaluate(() => {
+      const handle = (window as unknown as { __feed?: { seek(at: string): void } }).__feed
+      if (!handle) throw new Error('window.__feed is not exposed by the LIVE FEED window')
+      handle.seek('09:30')
+    })
+
+    const cites = page.locator(`${LIST} li.fl-radio .fl-cite`)
+    await expect(cites.first()).toHaveText('인수인계 02')
+
+    // The 08:51 radio line cites nothing and must carry no mark — the mark is
+    // absent, not empty.
+    const firstRadio = page.locator(`${LIST} li.fl-radio`).first()
+    await expect(firstRadio.locator('.fl-cite')).toHaveCount(0)
+
+    // It is a readout, not a control: no membrane op rides it.
+    await expect(page.locator(`${LIST} .fl-cite[data-op]`)).toHaveCount(0)
+  })
+})

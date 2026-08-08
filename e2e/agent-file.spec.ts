@@ -20,6 +20,7 @@
 // re-points `playwright.config.ts` per C5) — nothing below assumes a dev server.
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
+import { confirmDeploy, newRun } from './fixtures/harness.ts'
 
 const FILE = '#w-file'
 const CAP = 4
@@ -49,11 +50,17 @@ interface SeamStore {
 
 type Handles = { __agentFile?: AgentFileHandle; __shell?: { frame(): { store: SeamStore } } }
 
-/** Boot the desk and wait until the AGENT FILE has rendered its dossier. */
+/**
+ * Boot the desk and wait until the AGENT FILE has rendered its cover.
+ *
+ * C1 — one page is mounted at a time, so six sections never share a DOM. The
+ * window opens on the cover and its four; a test that wants 식별 or
+ * 인수인계 사항 turns the page itself.
+ */
 async function boot(page: Page): Promise<void> {
   await page.goto('./')
   await expect(page.locator(FILE)).toBeVisible()
-  await expect(page.locator(`${FILE} .sect`)).toHaveCount(6)
+  await expect(page.locator(`${FILE} .sect`)).toHaveCount(4)
   await page.waitForFunction(() => (window as unknown as Handles).__agentFile !== undefined)
 }
 
@@ -124,31 +131,25 @@ function slot(page: Page, index: number): Locator {
 /* ══ [u4#c1] ════════════════════════════════════════════════════════════ */
 
 test.describe('dossier sections', () => {
-  test('[u4#c1] (a) §0–§5 render in order with their titles and flags', async ({ page }) => {
+  test('[u4#c1] (a) the cover and the agent page carry the ratified titles and flags', async ({ page }) => {
     await boot(page)
+    // C1 — one page is mounted at a time, so the six sections are read across
+    // two: the cover's four, then the agent's two. `.sect-no` is gone.
     const sects = page.locator(`${FILE} .win-body .sect`)
-    await expect(sects).toHaveCount(6)
-    await expect(sects.locator('.sect-no')).toHaveText(['§0', '§1', '§2', '§3', '§4', '§5'])
-    await expect(sects.locator('h4')).toHaveText([
-      '식별',
-      '임무',
-      '행동 원칙',
-      '기질',
-      '인수인계 사항',
-      '교신 지침',
-    ])
-    await expect(sects.locator('.sect-flag')).toHaveText([
-      '고정',
-      '고정',
-      '고정',
-      '봉인',
-      '조작 가능',
-      '고정',
-    ])
+    await expect(sects).toHaveCount(4)
+    await expect(sects.locator('h4')).toHaveText(['임무', '행동 원칙', '기질', '교신 지침'])
+    await expect(page.locator(`${FILE} .sect-no`)).toHaveCount(0)
+    await expect(sects.locator('.sect-flag')).toHaveText(['고정', '고정', '봉인', '고정'])
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await expect(sects).toHaveCount(2)
+    await expect(sects.locator('h4')).toHaveText(['식별', '인수인계 사항'])
+    await expect(sects.locator('.sect-flag')).toHaveText(['고정', '조작 가능'])
   })
 
-  test('[u4#c1] (b) §0 is a three-row identity table', async ({ page }) => {
+  test('[u4#c1] (b) 식별 is a three-row identity table', async ({ page }) => {
     await boot(page)
+    // C1 — 식별 opens the AGENT's page, not the document.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     const rows = page.locator(`${FILE} .sect`).nth(0).locator('dl.sect-rows')
     await expect(rows).toHaveCount(1)
     await expect(rows.locator('dt')).toHaveCount(3)
@@ -156,47 +157,102 @@ test.describe('dossier sections', () => {
     await expect(rows.locator('dt').first()).toHaveText('호출부호')
   })
 
-  test('[u4#c1] (c) §4 holds the slot board — exactly four numbered slots', async ({ page }) => {
+  // x4 — RE-AIMED. This used to read "exactly four numbered slots", and four
+  // permanent boxes are exactly what 민서 took out on 08-08: the file is a
+  // handover the operator WRITES, so it prints as one paragraph of seated
+  // sentences, and the empty seats are read off `#slotCount` below rather than
+  // standing there as boxes. What the case still holds is everything that was
+  // load-bearing about the old assert — the board is on the agent's page, a
+  // seated sentence is numbered, and the number is painted by the skin.
+  test('[u4#c1] (c) 인수인계 사항 holds the slot board — a numbered paragraph, one blank when empty', async ({
+    page,
+  }) => {
     await boot(page)
-    const board = page.locator(`${FILE} .sect`).nth(4).locator('#slotBoard')
+    // C1 — the board is on the agent's page, second of that page's two
+    // sections. It was index 4 of six in one scrolling dossier.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    const board = page.locator(`${FILE} .sect`).nth(1).locator('#slotBoard')
     await expect(board).toHaveCount(1)
-    const slots = board.locator('.slot')
-    await expect(slots).toHaveCount(CAP)
+
+    // Empty: one blank, and it says what the file is for.
+    await expect(board.locator('.slot')).toHaveCount(1)
+    await expect(board.locator('.slot-blank')).toHaveCount(1)
+    await expect(board.locator('.slot.filled')).toHaveCount(0)
+    await expect(board.locator('.slot-blank .slot-empty')).toHaveText(
+      '다음 요원에게 인수인계할 사항을 기록에서 가져오세요',
+    )
+    // …centred both ways in its panel, which is what makes it a blank sheet
+    // rather than a left-aligned label.
     expect(
-      await slots.evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.slot)),
-    ).toEqual(['0', '1', '2', '3'])
-    expect(
-      await slots.evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.no)),
-    ).toEqual(['01', '02', '03', '04'])
+      await board.locator('.slot-blank').evaluate((n) => {
+        const s = getComputedStyle(n as HTMLElement)
+        return { justify: s.justifyContent, align: s.alignItems, text: s.textAlign }
+      }),
+    ).toEqual({ justify: 'center', align: 'center', text: 'center' })
+
+    // Two seated: two runs, numbered, and the blank is gone.
+    await seed(page)
+    await place(page, SEEDS[0].id, 0)
+    await place(page, SEEDS[1].id, 1)
+    const seats = board.locator('.slot.filled')
+    await expect(seats).toHaveCount(2)
+    await expect(board.locator('.slot-blank')).toHaveCount(0)
+    expect(await seats.evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.slot))).toEqual([
+      '0',
+      '1',
+    ])
+    expect(await seats.evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.no))).toEqual([
+      '01',
+      '02',
+    ])
     // The numbering is painted by the vendored skin, not by a text node.
-    const printed = await slots
-      .first()
-      .evaluate((n) => getComputedStyle(n, '::before').content.replace(/["']/g, ''))
-    expect(printed).toBe('01')
+    expect(
+      await seats.evaluateAll((nodes) =>
+        nodes.map((n) => getComputedStyle(n as HTMLElement, '::before').content.replace(/["']/g, '')),
+      ),
+    ).toEqual(['01', '02'])
+    // And it is a PARAGRAPH: the seats are inline runs the flow can break
+    // inside, not blocks stacked in a grid.
+    expect(
+      await seats.evaluateAll((nodes) => nodes.map((n) => getComputedStyle(n as HTMLElement).display)),
+    ).toEqual(['inline', 'inline'])
+    // The cap is still readable — `#slotCount`, a few lines down. This is the
+    // one surface that says how many seats are left now.
+    await expect(page.locator('#slotCount')).toHaveText(`2 / ${CAP}`)
   })
 
   test('[u4#c1] (d) the case slug and doc number come from the pack, never a literal', async ({ page }) => {
     await boot(page)
     const doc = page.locator(`${FILE} .fh-doc`)
-    await expect(doc).toHaveText(/^문서번호 NDSP-2\/AF\/[^/]+\/\d{2}$/)
+    // C1 — the number names the DOCUMENT, which spans every agent, so it has
+    // no run segment. It used to end `/01`, `/02`, …
+    await expect(doc).toHaveText(/^문서번호 ERR-2\/AF\/[^/]+$/)
     const slug = (await page.locator('#caseName').textContent())?.trim() ?? ''
     expect(slug.length).toBeGreaterThan(0)
-    await expect(doc).toHaveText(new RegExp(`/AF/${slug}/\\d{2}$`))
+    await expect(doc).toHaveText(new RegExp(`/AF/${slug}$`))
     await expect(page.locator(`${FILE} .fh-title`)).toHaveText('현장 요원 운용 파일')
-    await expect(page.locator(`${FILE} .fh-v`)).toHaveText('ECHO-3')
+    // …and the callsign left the header outright. `.fh-v` is gone: a header
+    // that always names the CURRENT agent would contradict the page the moment
+    // the player turned back to an earlier one. It is 식별's first row now.
+    await expect(page.locator(`${FILE} .fh-v`)).toHaveCount(0)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    const identity = page.locator(`${FILE} .sect`).nth(0).locator('dl.sect-rows')
+    await expect(identity.locator('dd').first()).toHaveText('ECHO-3')
   })
 
-  test('[u4#c1] (e) §1 prints the pack\'s own clock band', async ({ page }) => {
+  test('[u4#c1] (e) 임무 prints the pack\'s own clock band', async ({ page }) => {
     await boot(page)
     const { start, end } = await packClock(page)
     expect(start).toMatch(/^\d{2}:\d{2}$/)
     expect(end).toMatch(/^\d{2}:\d{2}$/)
-    await expect(page.locator(`${FILE} .sect`).nth(1).locator('.sect-body')).toContainText(
+    // C1 — 임무 opens the cover, so it is index 0. It was index 1 while 식별
+    // sat above it in one scrolling dossier; 식별 is on the agent's page now.
+    await expect(page.locator(`${FILE} .sect`).nth(0).locator('.sect-body')).toContainText(
       `${start} → ${end}`,
     )
   })
 
-  test('[u4#c1] (f) §3 is a redaction — bars and the sealed note, no temperament text', async ({ page }) => {
+  test('[u4#c1] (f) 기질 is a redaction — bars and the sealed note, no temperament text', async ({ page }) => {
     await boot(page)
     const sealed = page.locator(`${FILE} .sect.sealed`)
     await expect(sealed).toHaveCount(1)
@@ -204,13 +260,14 @@ test.describe('dossier sections', () => {
     await expect(sealed.locator('.sealed-note')).toHaveText(
       '열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)',
     )
-    // Nothing but the header and the sealed copy is readable inside §3.
+    // Nothing but the header and the sealed copy is readable inside 기질.
     const text = ((await sealed.textContent()) ?? '').replace(/\s+/g, ' ').trim()
-    expect(text).toBe('§3 기질 봉인 열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)')
+    expect(text).toBe('기질 봉인 열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)')
   })
 
   test('[u4#c1] (g) the file opens unstamped, with an empty board', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await expect(page.locator('#deployStamp')).not.toHaveClass(/\bon\b/)
     await expect(page.locator('#deployStamp')).toBeHidden()
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'empty')
@@ -223,6 +280,7 @@ test.describe('dossier sections', () => {
 test.describe('deploy stamp locks the file', () => {
   test('[u4#c4] (a) empty · partial · full are all reachable before deploy', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
 
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'empty')
@@ -248,26 +306,34 @@ test.describe('deploy stamp locks the file', () => {
 
   test('[u4#c4] (b) unslotting walks the board back down', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     await place(page, SEEDS[0].id, 0)
     await place(page, SEEDS[1].id, 1)
 
     await slot(page, 1).locator('.slot-unset').click()
     await expect(page.locator('#slotCount')).toHaveText('1 / 4')
-    await expect(slot(page, 1)).not.toHaveAttribute('data-block-id', /./)
+    // x4 — a released seat leaves the paragraph outright; it used to stay behind
+    // as an empty box carrying no `data-block-id`. Absence is the assert now.
+    await expect(slot(page, 1)).toHaveCount(0)
     expect(await pinnedIds(page)).toEqual([SEEDS[0].id])
 
     await slot(page, 0).locator('.slot-unset').click()
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'empty')
     expect(await pinnedIds(page)).toEqual([])
+    // …and the blank comes back, because an empty file is the one state that
+    // needs telling.
+    await expect(page.locator(`${FILE} .slot-blank`)).toHaveCount(1)
   })
 
   test('[u4#c4] (c) DEPLOY stamps the file and locks it for the run', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     for (const [i, s] of SEEDS.entries()) await place(page, s.id, i)
 
     await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
 
     const stamp = page.locator('#deployStamp')
     await expect(stamp).toHaveClass(/\bon\b/)
@@ -284,10 +350,12 @@ test.describe('deploy stamp locks the file', () => {
 
   test('[u4#c4] (d) a locked file absorbs every further op', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     await place(page, SEEDS[0].id, 0)
     await place(page, SEEDS[1].id, 1)
     await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
     await expect(page.locator('#btnDeploy')).toBeDisabled()
 
     const before = await pinnedIds(page)
@@ -302,10 +370,12 @@ test.describe('deploy stamp locks the file', () => {
 
   test('[u4#c4] (e) the deployed SET reaches the seam, order carrying no meaning', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     await place(page, SEEDS[1].id, 0)
     await place(page, SEEDS[0].id, 2)
     await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
     await expect(page.locator('#btnDeploy')).toBeDisabled()
 
     const store = await seamStore(page)
@@ -316,7 +386,9 @@ test.describe('deploy stamp locks the file', () => {
 
   test('[u4#c4] (f) an empty file deploys too — the stamp does not need blocks', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
     await expect(page.locator('#deployStamp')).toHaveClass(/\bon\b/)
     await expect(page.locator('#slotCount')).toHaveText('0 / 4')
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'locked')
@@ -351,28 +423,41 @@ test.describe('a11y membrane ops', () => {
     expect(editable).toBe(0)
   })
 
+  // x4 — RE-AIMED for the paragraph. The rule is unchanged (the file's controls
+  // walk in DOM order and end on DEPLOY); what changed is how many there are,
+  // because three empty boxes no longer sit in the tab ring waiting for a pick
+  // the desk has no way to arm any more. Both states are walked: the empty file,
+  // whose one blank is the `slot` op's control, and a written one, where every
+  // stop is a real release.
   test('[u4#c6] (b) Tab walks the slots then the deploy button, in DOM order', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
-    await place(page, SEEDS[0].id, 1)
 
-    await slot(page, 0).locator('.slot-target').focus()
-    const seen: string[] = [await page.evaluate(DESCRIBE_ACTIVE)]
-    for (let i = 0; i < 4; i += 1) {
-      await page.keyboard.press('Tab')
-      seen.push(await page.evaluate(DESCRIBE_ACTIVE))
+    const walk = async (steps: number): Promise<string[]> => {
+      const seen: string[] = [await page.evaluate(DESCRIBE_ACTIVE)]
+      for (let i = 0; i < steps; i += 1) {
+        await page.keyboard.press('Tab')
+        seen.push(await page.evaluate(DESCRIBE_ACTIVE))
+      }
+      return seen
     }
-    expect(seen).toEqual([
-      'slot-target@0',
-      'slot-unset@1',
-      'slot-target@2',
-      'slot-target@3',
-      '#btnDeploy',
-    ])
+
+    // Empty: the blank, then the button.
+    await page.locator(`${FILE} .slot-blank .slot-target`).focus()
+    expect(await walk(1)).toEqual(['slot-target@0', '#btnDeploy'])
+
+    // Written out of order — seats 1 and 3 — and the walk still follows the
+    // paragraph, which is slot order, not the order they were seated in.
+    await place(page, SEEDS[0].id, 3)
+    await place(page, SEEDS[1].id, 1)
+    await slot(page, 1).locator('.slot-unset').focus()
+    expect(await walk(2)).toEqual(['slot-unset@1', 'slot-unset@3', '#btnDeploy'])
   })
 
   test('[u4#c6] (c) every membrane control carries a non-empty accessible name', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     await place(page, SEEDS[0].id, 0)
 
@@ -390,43 +475,63 @@ test.describe('a11y membrane ops', () => {
     expect(unnamed).toEqual([])
   })
 
+  // x4 — both keys still drive both ops, but there is ONE blank to place
+  // through, so the sequence cycles it instead of walking four boxes: Enter
+  // seats, Enter releases, Space seats, Space releases. The claim — every
+  // membrane op on this window is reachable by keyboard alone, on both keys —
+  // is exactly the one it was.
   test('[u4#c6] (d) Enter and Space slot, unslot and deploy — keyboard alone', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
+    const blank = page.locator(`${FILE} .slot-blank .slot-target`)
 
-    // Enter places the armed pick.
+    // Enter places the armed pick into the first free seat.
     await pick(page, SEEDS[0].id)
-    await slot(page, 0).locator('.slot-target').focus()
+    await blank.focus()
     await page.keyboard.press('Enter')
     await expect(slot(page, 0)).toHaveAttribute('data-block-id', SEEDS[0].id)
+    await expect(page.locator('#slotCount')).toHaveText('1 / 4')
+
+    // Enter releases it, and the blank comes back.
+    await slot(page, 0).locator('.slot-unset').focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'empty')
+    await expect(blank).toHaveCount(1)
 
     // Space places the next one.
     await pick(page, SEEDS[1].id)
-    await slot(page, 1).locator('.slot-target').focus()
+    await blank.focus()
     await page.keyboard.press('Space')
-    await expect(slot(page, 1)).toHaveAttribute('data-block-id', SEEDS[1].id)
-    await expect(page.locator('#slotCount')).toHaveText('2 / 4')
+    await expect(slot(page, 0)).toHaveAttribute('data-block-id', SEEDS[1].id)
 
-    // Enter unslots.
+    // Space releases it too.
     await slot(page, 0).locator('.slot-unset').focus()
-    await page.keyboard.press('Enter')
-    await expect(slot(page, 0)).not.toHaveAttribute('data-block-id', /./)
-
-    // Space unslots.
-    await slot(page, 1).locator('.slot-unset').focus()
     await page.keyboard.press('Space')
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'empty')
   })
 
   test('[u4#c6] (e) Space on DEPLOY deploys, keyboard alone', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     await pick(page, SEEDS[0].id)
-    await slot(page, 2).locator('.slot-target').focus()
+    // x4 — the blank seats into the first free seat, so this lands at 0. It used
+    // to name seat 2, which only meant anything while four boxes stood there.
+    await page.locator(`${FILE} .slot-blank .slot-target`).focus()
     await page.keyboard.press('Enter')
+    await expect(page.locator('#slotCount')).toHaveText('1 / 4')
 
     await page.locator('#btnDeploy').focus()
     await page.keyboard.press('Space')
+    // x2 — and the confirmation plate is answered by keyboard too, or this
+    // claim would quietly become "keyboard alone up to the last press".
+    // `openConfirm` focuses 아니오, so 예 is one Tab away.
+    await expect(page.locator('#confirmNo')).toBeFocused()
+    await page.keyboard.press('Tab')
+    await expect(page.locator('#confirmYes')).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#confirm')).toHaveCount(0)
     await expect(page.locator('#deployStamp')).toHaveClass(/\bon\b/)
     await expect(page.locator('#btnDeploy')).toBeDisabled()
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'locked')
@@ -434,6 +539,16 @@ test.describe('a11y membrane ops', () => {
 
   test('[u4#c6] (f) every membrane control paints a visible focus ring', async ({ page }) => {
     await boot(page)
+    // Turned WITHOUT a real input event, deliberately. Chromium decides
+    // `:focus-visible` from the last interaction modality, and this census reads
+    // the UA ring off a programmatic `.focus()`. A real pointer click moves the
+    // page out of the "no interaction yet" state the census has always relied
+    // on, and every slot control then reports no ring — a fact about the
+    // gesture, not about the control. (`#btnDeploy` hides this: it carries a
+    // permanent `box-shadow`, so it satisfies the check either way.) A
+    // synthetic click inside the page turns the leaf and leaves the heuristic
+    // where it was.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().evaluate((n) => (n as HTMLElement).click())
     await seed(page)
     await place(page, SEEDS[0].id, 0)
 
@@ -451,5 +566,191 @@ test.describe('a11y membrane ops', () => {
           .map((n) => (n as HTMLElement).className),
       )
     expect(unringed).toEqual([])
+  })
+})
+
+/* ══ U5.3 — the sitting that ended is still on the desk ══════════════════ */
+
+test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
+  test('[U5.3] (a) deploying, closing the day and opening the next appends a page', async ({ page }) => {
+    await boot(page)
+    // Two pages while ECHO-1 is the only agent: the cover and ECHO-1's own.
+    await expect(page.locator(`${FILE} .pg-count`)).toHaveText('1 / 2')
+
+    // Seeded and placed through `window.__agentFile`, like every other test in
+    // this file — the suite drives the window's own handle and never blocks on
+    // what REPORTS happens to be showing.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await seed(page)
+    await place(page, SEEDS[0].id, 0)
+    await place(page, SEEDS[1].id, 1)
+
+    // The OPENING commit — this is the file this agent flies, and write site 1.
+    //
+    // The callsign is READ off 식별, never assumed. The fixture desk opens at
+    // run 3, not run 1 — `(d)` above pins ECHO-3 — so a hardcoded ECHO-1 here
+    // asserted a property of an imagined fixture instead of one of the page,
+    // and C3 forbids exactly that. What the claim actually needs is that the
+    // page turned back to names the agent that just flew, whoever it was.
+    const flying = await page.locator(`${FILE} .sect`).nth(0).locator('dd').first().textContent()
+    expect(flying, '식별 carries no callsign to fly').toMatch(/^ECHO-\d+$/)
+    await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
+    await expect(page.locator('#btnDeploy')).toHaveAttribute('data-state', 'deployed')
+
+    // …then the day closes and the next press opens the following agent.
+    await newRun(page)
+
+    // Three pages now, and the file opened on the new agent's own — a different
+    // agent from the one that just went out.
+    await expect(page.locator(`${FILE} .pg-count`)).toHaveText('3 / 3')
+    await expect(page.locator(`${FILE} #btnDeploy`)).toHaveCount(1)
+    await expect(page.locator(`${FILE} .sect`).nth(0).locator('dd').first()).not.toHaveText(flying!)
+
+    // Turn back one: the page of the agent that flew, read-only, still theirs.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).first().click()
+    await expect(page.locator(`${FILE} .pg-count`)).toHaveText('2 / 3')
+    await expect(page.locator(`${FILE} .sect`).nth(0).locator('dd').first()).toHaveText(flying!)
+    await expect(page.locator(`${FILE} .sect`).nth(1).locator('.sect-flag')).toHaveText('열람')
+    await expect(page.locator(`${FILE} .filed-cell`)).toHaveCount(2)
+    await expect(page.locator(`${FILE} .filed-cell .bc-text`).first()).toHaveText(SEEDS[0].text)
+
+    // A past page is not a board, carries no gesture, and anchors no thread.
+    await expect(page.locator(`${FILE} #slotBoard`)).toHaveCount(0)
+    await expect(page.locator(`${FILE} .slot-unset`)).toHaveCount(0)
+    await expect(page.locator(`${FILE} [data-block-id]`)).toHaveCount(0)
+  })
+})
+
+/* ══ x2 · the confirmation plate ══════════════════════════════════════════
+   The press asks before it commits. What is asserted here is the SHAPE of the
+   question — that it is a question and not a window, that it has exactly two
+   ways out, and that the one that says no leaves the desk untouched.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const PLATE = '#confirm'
+
+/**
+ * The driver's clock fields, read straight off `window.__shell`.
+ *
+ * `harness.ts`'s own `Frame` models the SEAM (events + store) and does not
+ * carry the clock, so the clock half is read here the way `shell.spec.ts`
+ * reads it. What it is for: W4 made a committed file the one thing that starts
+ * the day, which makes the clock the honest witness to whether a refused
+ * commit committed anything.
+ */
+async function clockFrame(page: Page): Promise<{ minute: number; rate: number }> {
+  return page.evaluate(() => {
+    const handle = (window as unknown as { __shell?: { frame(): unknown } }).__shell
+    if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
+    return handle.frame() as never
+  })
+}
+
+test.describe('[x2] DEPLOY asks before it commits', () => {
+  test('[x2] (a) the press raises a centred plate that is not a window', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await page.locator('#btnDeploy').click()
+
+    const plate = page.locator(PLATE)
+    await expect(plate).toBeVisible()
+    // A question, not furniture: no `.win` skin, no title-bar controls, and it
+    // never enters the taskbar the window manager owns.
+    await expect(page.locator(`${PLATE} .win`)).toHaveCount(0)
+    await expect(page.locator(`${PLATE} .win-ctl`)).toHaveCount(0)
+    await expect(page.locator(`${PLATE} .win-grip`)).toHaveCount(0)
+    await expect(page.locator('#taskbar .task', { hasText: '배치 확인' })).toHaveCount(0)
+    await expect(plate).toHaveAttribute('role', 'alertdialog')
+    await expect(plate).toHaveAttribute('aria-modal', 'true')
+
+    // Centred on the screen — the plate's midpoint is the viewport's. Measured
+    // once it has SETTLED: `cfRise` opens from `translateY(14px)`, and a box
+    // read mid-animation is the entry, not the position.
+    await page.locator(`${PLATE} .cf-plate`).evaluate(async (n) => {
+      await Promise.all(n.getAnimations().map((a) => a.finished))
+    })
+    const box = (await page.locator(`${PLATE} .cf-plate`).boundingBox())!
+    const view = page.viewportSize()!
+    expect(Math.abs(box.x + box.width / 2 - view.width / 2), 'the plate is off-centre horizontally').toBeLessThan(2)
+    expect(Math.abs(box.y + box.height / 2 - view.height / 2), 'the plate is off-centre vertically').toBeLessThan(2)
+  })
+
+  test('[x2] (b) it offers exactly two answers and no way to dismiss it', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await page.locator('#btnDeploy').click()
+
+    const buttons = page.locator(`${PLATE} button`)
+    await expect(buttons).toHaveCount(2)
+    await expect(page.locator('#confirmNo')).toHaveText('아니오')
+    await expect(page.locator('#confirmYes')).toHaveText('예')
+    // 아니오 holds the focus: the reflex keystroke on an irreversible act must
+    // not be the one that confirms it.
+    await expect(page.locator('#confirmNo')).toBeFocused()
+    // The desk behind it cannot be reached while the question is up.
+    await expect(page.locator('#desktop')).toHaveAttribute('inert', '')
+    await expect(page.locator('#topbar')).toHaveAttribute('inert', '')
+  })
+
+  test('[x2] (c) 아니오 closes the plate and commits nothing', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await seed(page)
+    await place(page, SEEDS[0].id, 0)
+
+    const held = (await clockFrame(page)).minute
+    await page.locator('#btnDeploy').click()
+    await confirmDeploy(page, 'no')
+
+    await expect(page.locator(PLATE)).toHaveCount(0)
+    await expect(page.locator('#deployStamp')).not.toHaveClass(/\bon\b/)
+    await expect(page.locator('#btnDeploy')).toHaveAttribute('data-state', 'ready')
+    await expect(page.locator('#btnDeploy')).toBeEnabled()
+    await expect(page.locator(`${FILE} .slots`)).not.toHaveAttribute('data-state', 'locked')
+    // W4 — a committed file is the only thing that starts the day, so a refused
+    // commit leaves the clock exactly where it was.
+    expect((await clockFrame(page)).rate, 'the day started on a refused commit').toBe(0)
+    expect((await clockFrame(page)).minute).toBe(held)
+    expect((await seamStore(page)).deployed, 'a refused commit reached the seam').toEqual([])
+    // …and the desk is handed back.
+    await expect(page.locator('#desktop')).not.toHaveAttribute('inert', '')
+  })
+
+  test('[x2] (d) Escape answers 아니오 — a modal with no exit is a keyboard trap', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await page.locator('#btnDeploy').click()
+    await expect(page.locator(PLATE)).toBeVisible()
+
+    await page.keyboard.press('Escape')
+
+    await expect(page.locator(PLATE)).toHaveCount(0)
+    await expect(page.locator('#deployStamp')).not.toHaveClass(/\bon\b/)
+    await expect(page.locator('#btnDeploy')).toBeEnabled()
+  })
+
+  test('[x2] (e) 예 closes the plate and the commit lands', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
+
+    await expect(page.locator(PLATE)).toHaveCount(0)
+    await expect(page.locator('#deployStamp')).toHaveClass(/\bon\b/)
+    await expect(page.locator('#btnDeploy')).toHaveAttribute('data-state', 'deployed')
+    await expect.poll(async () => (await clockFrame(page)).rate, { timeout: 2000 }).toBe(1)
+  })
+
+  test('[x2] (f) the plate opens no free-text surface (spec-client §3 inv 1)', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await page.locator('#btnDeploy').click()
+    await expect(page.locator(PLATE)).toBeVisible()
+
+    await expect(page.locator(`${PLATE} input, ${PLATE} textarea, ${PLATE} select, ${PLATE} form`)).toHaveCount(0)
+    expect(
+      await page.locator(PLATE).evaluate((n) => n.querySelectorAll('[contenteditable]').length),
+    ).toBe(0)
   })
 })

@@ -17,14 +17,16 @@
 //     `frame()` delegating straight to the driver so "driver-fed" is testable.
 //
 // C3 (placeholder fixtures): nothing here asserts synthetic fixture CONTENT.
-// The two literals that do appear — `전구간정상` and `23:12` — are repo data
+// The two literals that do appear — `전 구간 정상` and `23:12` — are repo data
 // (`data/scenario/전구간정상/meta.json`), not fixture text, and the terminal
 // stamp is named by the acceptance criterion itself. Both track the SHIPPED
-// pack (`src/client/shell/pack.ts`'s `PACK_SLUG`): switching the slug moves
-// them, which is what these two assertions are for.
+// pack (`src/client/shell/pack.ts`): the case name asserts against
+// `PACK_DISPLAY_NAME`, which is `PACK_SLUG` spelled for a reader — the chrome
+// prints the display name, and the slug stays on the paths and doc numbers.
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
+import { confirmDeploy, turnToAgent } from './fixtures/harness.ts'
 
 /** The four windows, in the taskbar order the registry must emit. */
 const WINDOWS = [
@@ -64,6 +66,7 @@ async function boot(page: Page): Promise<void> {
   // (46vw × 42vh, fixed): LIVE FEED's grip and its lower body sit under it, so
   // a pointer press there hits the pane. See `fixtures/dev-surface.ts`.
   await hideDebugPane(page)
+  await turnToAgent(page)
 }
 
 function win(page: Page, id: string): Locator {
@@ -135,7 +138,12 @@ test.describe('window ops', () => {
       await expect(node.locator('.win-ctl .wc-min')).toHaveCount(1)
       await expect(node.locator('.win-ctl .wc-close')).toHaveCount(1)
       await expect(node.locator('.win-body')).toHaveCount(1)
-      await expect(node.locator('.win-grip')).toHaveCount(1)
+      // g13-3 — two of three. The AGENT FILE is a fixed sheet and builds no
+      // grip: its two pages are sized to its body, so any shrink clips the
+      // page-turn control and takes page 2 off the window with it (C9). The
+      // count is pinned PER WINDOW, not summed, so a grip appearing on the
+      // sheet and a grip vanishing from the other two both read here.
+      await expect(node.locator('.win-grip')).toHaveCount(w.id === 'w-file' ? 0 : 1)
     }
   })
 
@@ -162,8 +170,14 @@ test.describe('window ops', () => {
     expect(Math.round(after.y)).toBe(Math.round(before.y))
   })
 
-  test('window ops — every window resizes by its corner grip', async ({ page }) => {
+  test('window ops — every window resizes by its corner grip, except the sheet', async ({ page }) => {
     for (const w of WINDOWS) {
+      // g13-3 — the AGENT FILE is a fixed sheet: it builds no grip, and the
+      // census above pins that per window. Skipping it here is the shape of
+      // that decision, not a relaxation of this claim — `a11y.spec.ts` holds
+      // the other half, that the sheet does not resize from the keyboard
+      // either.
+      if (w.id === 'w-file') continue
       const node = win(page, w.id)
       const before = await box(node)
       await dragFrom(page, await box(node.locator('.win-grip')), 50, 40)
@@ -376,7 +390,7 @@ test.describe('topbar', () => {
       await expect(bar.locator(id)).not.toBeEmpty()
     }
     // The case comes from the shipped scenario pack, not from a fixture.
-    await expect(bar.locator('#caseName')).toContainText('전구간정상')
+    await expect(bar.locator('#caseName')).toContainText('전 구간 정상')
   })
 
   test('topbar — the clock reads HH:MM and runs toward the 23:12 terminal', async ({ page }) => {
@@ -410,6 +424,7 @@ test.describe('topbar', () => {
     expect((await frame(page)).minute, 'the clock advanced with no file committed').toBe(held)
 
     await page.locator('#w-file #btnDeploy').click()
+    await confirmDeploy(page)
 
     await expect.poll(async () => (await frame(page)).rate, { timeout: 2000 }).toBe(1)
     await expect.poll(async () => (await frame(page)).minute, { timeout: 8000 }).toBeGreaterThan(held)
@@ -437,6 +452,7 @@ test.describe('topbar', () => {
     // that starts it now is a committed file. ×4 is gone, so the wait widens to
     // match ×1 rather than the transport's fast-forward.
     await page.locator('#w-file #btnDeploy').click()
+    await confirmDeploy(page)
     const m0 = (await frame(page)).minute
     await expect
       .poll(async () => {
@@ -548,18 +564,29 @@ test.describe('single stacking context', () => {
     const rep = win(page, 'w-rep')
     const file = win(page, 'w-file')
 
-    // Park REPORTS on top of AGENT FILE so the two genuinely overlap.
-    const fileBox = await box(file)
-    const repBar = await box(rep.locator('.win-bar'))
+    // Park AGENT FILE on top of REPORTS so the two genuinely overlap.
+    //
+    // RE-AIMED (08-08, T3). This used to drag REPORTS onto AGENT FILE. Under the
+    // two-column desk REPORTS is the full-height left column (640x692 at
+    // 1280x800) and AGENT FILE is the shorter box bottom-right, so dragging the
+    // tall window down to the short one's origin puts its bottom ~326px past the
+    // viewport; the manager clamps, the overlap never forms, and the probe reads
+    // whatever is actually under it. Moving the SMALL window over the LARGE one
+    // is the same claim with a geometry that exists.
     const repBox = await box(rep)
+    const fileBar = await box(file.locator('.win-bar'))
+    const fileBox = await box(file)
+    // Overlap REPORTS' right edge rather than covering it: the file's own title
+    // bar has to stay reachable AFTER REPORTS is raised over it, or the second
+    // click below has nothing to hit.
     await dragFrom(
       page,
-      repBar,
-      fileBox.x + 40 - repBox.x,
-      fileBox.y + 40 - repBox.y,
+      fileBar,
+      repBox.x + repBox.width - 120 - fileBox.x,
+      repBox.y + 40 - fileBox.y,
     )
 
-    const probe = { x: fileBox.x + 90, y: fileBox.y + 90 }
+    const probe = { x: repBox.x + repBox.width - 60, y: repBox.y + 90 }
     const topAt = async (): Promise<string> =>
       page.evaluate(
         (p) => document.elementFromPoint(p.x, p.y)?.closest('.win')?.id ?? 'none',
@@ -569,7 +596,8 @@ test.describe('single stacking context', () => {
     await rep.locator('.win-bar').click({ position: { x: 20, y: 8 } })
     expect(await topAt()).toBe('w-rep')
 
-    await file.locator('.win-bar').click({ position: { x: 20, y: 8 } })
+    // …at a point PAST REPORTS' right edge, which REPORTS cannot be covering.
+    await file.locator('.win-bar').click({ position: { x: 200, y: 8 } })
     expect(await topAt()).toBe('w-file')
 
     await rep.locator('.win-bar').click({ position: { x: 20, y: 8 } })

@@ -31,37 +31,25 @@ import { PORTAL } from '../shell/portal-identity.ts'
 import { pad2 } from '../components/block-card.ts'
 import { getSlotBoard, SLOT_CAP } from '../components/slot-board.ts'
 import { createScoreTally } from '../components/score-tally.ts'
-import type { TallyModel, TallyRowModel } from '../components/score-tally.ts'
+import type { TallyModel } from '../components/score-tally.ts'
 
 /** What the record is called, and what it grades against — relocated verbatim
  * from `windows/tally.ts` (u7, pre-U3). */
 const DOC_CAPTION = '집계표 '
 const TITLE_AT = '시 '
 const TITLE_TAIL = '분 시점 집계'
-const SUB = '기준선 대비 — 무개입 하루가 기준이다'
 
 /**
- * The headline axis. The `score` event carries `total` and nothing about what
- * the total counts, so the caption is ported from the design target
- * (data.js `TALLY.headline`) rather than invented per run — see discovery/u7.md.
+ * The closing line's caption and unit. The `score` event carries `total` and
+ * nothing about what the total counts, so the caption is design-target copy
+ * (data.js `TALLY.headline`) rather than something invented per run — see
+ * discovery/u7.md.
+ *
+ * x4 — `사망` became `총 사망자 수`, because the line is prose now and not the
+ * key half of a key/value row: the record closes on 「총 사망자 수 60명」.
  */
-const HEADLINE_LABEL = '사망'
+const HEADLINE_LABEL = '총 사망자 수'
 const HEADLINE_UNIT = '명'
-
-/**
- * ▲ / = / ▼ — and ONLY for an axis that counts, ported verbatim from
- * `windows/tally.ts`. A word has no vocabulary for "changed"; a changed
- * outcome shows as itself, beside the 기준 cell holding what it changed FROM.
- */
-const deltaOf = (
-  value: string | number,
-  baseline: string | number | null,
-): TallyRowModel['delta'] => {
-  if (baseline === null) return 'flat'
-  if (typeof value !== 'number' || typeof baseline !== 'number') return 'flat'
-  if (value === baseline) return 'flat'
-  return value < baseline ? 'good' : 'bad'
-}
 
 /** A rail identity — the archive entries, plus any run that has filed a report. */
 function railEntries(archive: readonly ArchiveEntry[], filed: readonly number[]): ArchiveEntry[] {
@@ -158,6 +146,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
 
   function drawDocument(): void {
     if (active === null) return
+    // The document being drawn belongs to `active`, so the signature and
+    // 무전 기록's subtitle are that sitting's agent — not the desk's current
+    // one. This is the only place both facts are known at once, which is why
+    // the `meta` handler no longer brands (E1).
+    view.brand(callsignOf(active))
     const model = filed.get(active) ?? { round: active, facts: [], report_body: [] }
     // W2 — the replay key is `sitting:round`, not the round alone: two
     // sittings both have a round 1, and the second one's arrival must not read
@@ -192,7 +185,13 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     // A sitting the desk has a file for is one that filed a report OR earned a
     // record. The lapse drill files no report at all, and its record still
     // belongs to a day the operator can select.
-    const entries = railEntries(archive, [...new Set([...filed.keys(), ...records.keys()])])
+    // …plus the sitting on the desk right now, which has filed nothing yet and
+    // earned no record. Without it a day has no tab of its own until its first
+    // report lands, so the rail offers every past sitting and not the one being
+    // played. `run` is 0 only before the first `meta`, and a rail entry for run
+    // 0 would be a sitting that does not exist.
+    const live = run > 0 ? [run] : []
+    const entries = railEntries(archive, [...new Set([...filed.keys(), ...records.keys(), ...live])])
     if (entries.length === 0) return
     if (active === null || !entries.some((entry) => entry.run === active)) {
       active = entries[entries.length - 1]?.run ?? null
@@ -206,27 +205,22 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (draw) drawDocument()
   }
 
-  /** The terminal record's model, built from the `score` event alone. */
+  /**
+   * The terminal record's model, built from the `score` event alone.
+   *
+   * x4 — `row.value` rides across in the seam's own `string | number` union
+   * instead of being stringified here, because `score-tally.ts` decides the
+   * unit off exactly that distinction. `row.baseline` and `event.baseline_total`
+   * are read by nothing now: the 기준 column left with the table (see that
+   * module's header). They stay on the seam, unread by the view.
+   */
   function scoreModel(event: Extract<ViewEvent, { type: 'score' }>): TallyModel {
     return {
       doc: `${DOC_CAPTION}${PORTAL.portalCode}/TL/${slug}/${pad2(run)}`,
       title,
-      sub: SUB,
       run,
-      headline: {
-        label: HEADLINE_LABEL,
-        value: event.total,
-        unit: HEADLINE_UNIT,
-        baseline: String(event.baseline_total),
-      },
-      rows: event.rows.map((row) => ({
-        label: row.label,
-        value: String(row.value),
-        baseline: row.baseline === null ? null : String(row.baseline),
-        delta: deltaOf(row.value, row.baseline),
-      })),
-      note: null,
-      verdict: null,
+      headline: { label: HEADLINE_LABEL, value: event.total, unit: HEADLINE_UNIT },
+      rows: event.rows.map((row) => ({ label: row.label, value: row.value })),
     }
   }
 
@@ -235,7 +229,12 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       archive = [...event.archive]
       carried = [...event.carried]
       run = event.run
-      view.brand(callsignOf(event.run))
+      // The callsign is NOT branded here any more. `brand()` re-writes the
+      // signature and 무전 기록's subtitle on the document that is mounted, and
+      // the mounted document is the SELECTED sitting's — which is not
+      // necessarily this event's run. Branding on `meta` signed every archived
+      // report with whoever was on duty when it was opened. `drawDocument()`
+      // owns it now, because that is where the selection is known.
       sync()
       return
     }

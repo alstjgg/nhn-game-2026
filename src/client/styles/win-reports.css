@@ -32,12 +32,12 @@
 .doc-facts{border-right:1px solid var(--sh-2);
   background:linear-gradient(90deg,transparent 96%,var(--sh-04))}
 .doc-body{background:
-  linear-gradient(90deg,transparent 0 22px,var(--seal-a55) 22px 23px,transparent 23px),
+  linear-gradient(90deg,transparent 0 33px,var(--seal-a55) 33px 34px,transparent 34px),
   var(--bond);
   padding-left:var(--space-34)}
 .doc-hd{display:flex;align-items:baseline;gap:var(--space-8);padding-bottom:var(--space-6);
   margin-bottom:var(--space-10);border-bottom:1.5px solid var(--graphite)}
-.doc-no{width:16px;height:16px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+.doc-no{width:24px;height:24px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
   font-family:var(--myeong);font-size:var(--fs-10);font-weight:700;
   border:1px solid var(--graphite);color:var(--graphite)}
 .doc-hd h3{font-family:var(--myeong);font-size:var(--fs-14);font-weight:800;color:var(--pap-hd);
@@ -45,7 +45,7 @@
 .doc-hd i{font-style:normal;font-size:var(--fs-8);letter-spacing:.14em;color:var(--faded);margin-left:auto}
 
 .facts{list-style:none;counter-reset:f}
-.facts li{counter-increment:f;display:grid;grid-template-columns:17px 34px 1fr;gap:0 var(--space-5);
+.facts li{counter-increment:f;display:grid;grid-template-columns:26px 51px 1fr;gap:0 var(--space-5);
   padding:var(--space-5) var(--space-2) var(--space-5) 0;
   border-bottom:1px dotted var(--sh-2);align-items:baseline}
 .facts li::before{content:counter(f,decimal-leading-zero);font-size:var(--fs-8);color:var(--faded-2)}
@@ -68,7 +68,7 @@
 .sig{margin-top:var(--space-20);display:flex;align-items:center;justify-content:flex-end;gap:var(--space-14)}
 .sig-line{font-family:var(--myeong);font-size:var(--fs-12);color:var(--pap-3);
   border-bottom:1px solid var(--graphite);padding:0 var(--space-22) var(--space-2)}
-.sig-stamp{width:38px;height:38px;border:2px solid var(--seal);color:var(--seal);
+.sig-stamp{width:57px;height:57px;border:2px solid var(--seal);color:var(--seal);
   display:flex;align-items:center;justify-content:center;font-family:var(--myeong);
   font-size:var(--fs-11);font-weight:800;letter-spacing:.02em;transform:rotate(-7deg);
   opacity:.8;mix-blend-mode:multiply;border-radius:2px}
@@ -113,54 +113,53 @@
 .rep-foot b{color:var(--seal-2);font-weight:700}
 
 /* typewriter caret */
-.caret{display:inline-block;width:7px;height:1.05em;vertical-align:-.15em;
+.caret{display:inline-block;width:10px;height:1.05em;vertical-align:-.15em;
   background:var(--graphite);animation:blink .85s steps(2) infinite;margin-left:var(--space-1)}
 @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
 
 /* ===========================================================================
-   the terminal record (U3) — score-tally's ledger, filed here instead of a
-   TALLY sheet. Rules below are moved verbatim from win-tally.css (u7), scoped
-   under `.terminal-record`; the sheet-frame/foot/`.btn-newrun`/`.tly-wait`
-   rules died with that file.
+   the terminal record (U3, re-skinned x4) — the day's 집계, in the 현장 기록
+   column's own format.
+
+   U3 filed score-tally's ledger at the foot of this column and kept the TALLY
+   sheet's skin whole: a centred head, a 66px headline in a boxed row, a
+   zebra-striped table with a 기준 column. Two documents on one sheet, and the
+   second one shouted over the first. What replaces it is LINES — the `.facts`
+   grid to the pixel, the same dotted rule, the sentence starting on the same x,
+   so the day's outcome reads as the last few entries of the record rather than
+   as a report card stapled underneath it.
+
+   The one thing that separates them is INK: seal red and bold, because these
+   are the only lines in the column that are not something a person observed.
+   Nothing here is mineable and nothing carries a `sentence_id` — the mark is
+   read, never pressed.
    =========================================================================== */
 .terminal-record{margin-top:var(--space-20);padding-top:var(--space-4);
   border-top:2px solid var(--graphite)}
+.terminal-record .tly-doc{font-size:var(--fs-8);letter-spacing:.2em;color:var(--faded);
+  padding:0 var(--space-2) var(--space-5) 0}
 
-.terminal-record .tly-head{padding:var(--space-15) var(--space-26) var(--space-11);text-align:center;
-  border-bottom:2px solid var(--graphite);
-  background:linear-gradient(180deg,var(--sheen-55),transparent)}
-.terminal-record .tly-doc{font-size:var(--fs-8);letter-spacing:.2em;color:var(--faded)}
-.terminal-record .tly-head h3{font-family:var(--myeong);font-size:var(--fs-20);font-weight:800;color:var(--pap-hd);
-  margin:var(--space-4) 0 var(--space-2);letter-spacing:.04em}
-.terminal-record .tly-sub{font-family:var(--myeong);font-size:var(--fs-9-5);color:var(--faded)}
+.terminal-record .tly-lines{list-style:none}
+/* The `.facts li` geometry verbatim (see the block above): 26px number column,
+   51px clock column, the sentence in the third. Both leading columns are left
+   EMPTY — a 집계 line has no 시각 and is not the nth thing that happened — and
+   what they buy is that every red line starts on the same x as every black one
+   above it. Change `.facts li` and this must move with it. */
+.terminal-record .tly-line{display:grid;grid-template-columns:26px 51px 1fr;gap:0 var(--space-5);
+  padding:var(--space-5) var(--space-2) var(--space-5) 0;
+  border-bottom:1px dotted var(--sh-2);align-items:baseline}
+.terminal-record .tl-s{grid-column:3;font-family:var(--myeong);font-size:var(--fs-11);line-height:1.62;
+  font-weight:700;color:var(--seal-2);word-break:keep-all}
+/* the opening line (`23시 12분 시점 집계`) and the closing one (`총 사망자 수
+   60명`) are the record's own head and foot — a shade heavier, and the close
+   keeps a rule under it so the day ends on a line rather than trailing off. */
+.terminal-record .tl-open .tl-s{letter-spacing:.04em}
+.terminal-record .tl-close{border-bottom:2px solid var(--seal-a4)}
+.terminal-record .tl-close .tl-s{font-weight:800}
+.terminal-record .tl-close .tl-unit{font-family:var(--myeong)}
+/* tabular figures so the closing number does not jitter while it counts */
+.terminal-record #tlyBig{font-variant-numeric:tabular-nums}
 
-.terminal-record .tly-headline{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:var(--space-16);
-  padding:var(--space-12) var(--space-30);border-bottom:1px solid var(--sh-28);
-  background:repeating-linear-gradient(0deg,transparent 0 25px,var(--sh-025) 25px 26px)}
-.terminal-record .th-k{font-family:var(--myeong);font-size:var(--fs-13);color:var(--pap-3);text-align:right;letter-spacing:.2em}
-.terminal-record .th-v{display:flex;align-items:baseline;gap:var(--space-4)}
-.terminal-record .th-v span{font-size:var(--fs-44);font-weight:300;line-height:.9;color:var(--pap-max);
-  font-variant-numeric:tabular-nums;letter-spacing:-.03em}
-.terminal-record .th-v i{font-family:var(--myeong);font-style:normal;font-size:var(--fs-14);color:var(--pap-3)}
-.terminal-record .th-b{font-size:var(--fs-9-5);letter-spacing:.12em;color:var(--faded);
-  text-decoration:line-through;text-decoration-color:var(--seal)}
-
-.terminal-record .tly-table{width:100%;border-collapse:collapse;margin-top:var(--space-2)}
-.terminal-record .tly-table tr{border-bottom:1px solid var(--sh-13)}
-.terminal-record .tly-table tr:nth-child(odd){background:var(--sh-025)}
-.terminal-record .tly-table td{padding:var(--space-6) var(--space-7);vertical-align:baseline}
-.terminal-record .tly-table tr{opacity:0;transform:translateY(6px)}
-.terminal-record .tly-table tr.in{animation:rowIn .5s cubic-bezier(.2,.9,.3,1) both}
+.terminal-record .tly-line{opacity:0;transform:translateY(6px)}
+.terminal-record .tly-line.in{animation:rowIn .5s cubic-bezier(.2,.9,.3,1) both}
 @keyframes rowIn{to{opacity:1;transform:none}}
-.terminal-record .tr-i{width:32px;font-size:var(--fs-8);color:var(--faded-2)}
-.terminal-record .tly-table td.tr-i{padding-left:var(--space-24)}
-.terminal-record .tr-l{font-family:var(--myeong);font-size:var(--fs-12);font-weight:700;color:var(--pap-2);width:106px;
-  word-break:keep-all}
-.terminal-record .tr-v{font-family:var(--myeong);font-size:var(--fs-11-5);color:var(--pap-1);word-break:keep-all}
-.terminal-record .tr-b{font-size:var(--fs-8);color:var(--faded);letter-spacing:.04em;
-  text-align:right;width:206px;white-space:nowrap;line-height:1.5}
-.terminal-record .tly-table td.tr-b{padding-right:var(--space-24)}
-.terminal-record .tr-d{width:20px;text-align:center;font-size:var(--fs-10)}
-.terminal-record .tr-d.good{color:var(--good)}
-.terminal-record .tr-d.flat{color:var(--faded-2)}
-.terminal-record .tr-d.bad{color:var(--seal)}

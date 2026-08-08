@@ -103,8 +103,15 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
   function flush(): void {
     const lines = engine.feed()
     for (let i = cursor; i < lines.length; i += 1) {
-      const line = lines[i]
-      if (line === undefined) continue
+      const raw = lines[i]
+      if (raw === undefined) continue
+      // U5.4 — the agent's own line is the only one that can carry a citation,
+      // and it carries the one parked by the gate beat that produced it.
+      let line = raw
+      if (raw.kind === 'radio' && pendingCitedSlots !== null) {
+        if (pendingCitedSlots.length > 0) line = { ...raw, cited_slots: pendingCitedSlots }
+        pendingCitedSlots = null
+      }
       blocks.absorbLine(line)
       emit({ type: 'feed', line })
     }
@@ -154,6 +161,16 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
     { stance_id: string; desc: string; cited_ids: string[] }
   >()
 
+  /**
+   * U5.4 — a ONE-SHOT handoff from the gate beat to the flush that follows it.
+   *
+   * `flush()` sees feed lines, not beats, so the citation is parked here by the
+   * gate branch and consumed by the next radio line. It is cleared on that
+   * line whether or not it had any slots, so a later beat's utterance can never
+   * inherit an earlier round's citation.
+   */
+  let pendingCitedSlots: number[] | null = null
+
   /** Fires exactly once, whichever path reaches the end of the run. */
   function finish(): void {
     if (finished) return
@@ -194,13 +211,20 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
         const judged = engine.submitStance(response)
         if (beat.roundIndex !== null && judged !== null) {
           const deployed = new Set(membrane.deployed())
-          judgedStances.set(beat.roundIndex, {
-            ...judged,
-            cited_ids:
-              response === null
-                ? []
-                : response.because_block_ids.filter((id) => deployed.has(id)),
-          })
+          const citedIds =
+            response === null
+              ? []
+              : response.because_block_ids.filter((id) => deployed.has(id))
+          judgedStances.set(beat.roundIndex, { ...judged, cited_ids: citedIds })
+          // U5.4 — the same citation, resolved to the slot numbers the AGENT
+          // FILE prints, for the radio line this beat is about to flush. A
+          // fabricated id was already dropped by the filter above; one that
+          // survives it but sits in no slot drops here. Either way the mark is
+          // absent rather than wrong.
+          pendingCitedSlots = citedIds
+            .map((id) => membrane.slotOf(id))
+            .filter((slot): slot is number => slot !== null)
+            .sort((left, right) => left - right)
         }
       }
 

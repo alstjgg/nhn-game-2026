@@ -41,8 +41,15 @@ export const FEED_MARKS: Record<FeedKind, string> = {
 
 /** One rendered fragment of a line's content column. */
 export type FeedPart =
-  | { p: 'text' | 'label' | 'quote' | 'span'; text: string }
+  | { p: 'text' | 'label' | 'quote' | 'span' | 'cite'; text: string }
   | { p: 'dots' }
+
+/**
+ * U5.4 — the citation mark's fixed half. `인수인계` because that is the section
+ * of the AGENT FILE the slots live in; the operator reads the same word in both
+ * windows and the number is the whole cross-reference.
+ */
+const CITE_LABEL = '인수인계'
 
 /** Everything the renderer needs about one line — and nothing about the run. */
 export interface FeedNode {
@@ -82,11 +89,30 @@ export function feedLineModel(line: FeedLine, callsign = 'ECHO-1'): FeedNode {
     throw new Error(`live feed: '${String(kind)}' is not a FeedKind`)
   }
   switch (kind) {
-    case 'radio':
-      return envelope(kind, line.clock, [
+    case 'radio': {
+      const parts: FeedPart[] = [
         { p: 'label', text: `${callsign}${RADIO_TAIL}` },
         { p: 'text', text: line.text },
-      ])
+      ]
+      // U5.4 — the slots the agent cited, named the way the AGENT FILE names
+      // them. It says WHICH sentence reached the agent and nothing about how:
+      // the operator reads the slot and judges the conduct themselves. An
+      // absent or empty citation prints no mark at all — never an empty one.
+      const slots = line.cited_slots ?? []
+      if (slots.length > 0) {
+        // Padded with a conditional, never `padStart`: [u9#c2]
+        // (`no-digit-npc.test.ts` (c)) bans that call outright in any module
+        // that paints an NPC channel, so a character can never be made to
+        // speak a formatted number. This is a slot on the operator's own file
+        // and not that — but the guard is a blanket source scan and it is
+        // right to be, so the cheap way to keep it honest is not to call it.
+        const numbered = [...slots]
+          .sort((a, b) => a - b)
+          .map((s) => (s + 1 < 10 ? `0${s + 1}` : String(s + 1)))
+        parts.push({ p: 'cite', text: `${CITE_LABEL} ${numbered.join(' · ')}` })
+      }
+      return envelope(kind, line.clock, parts)
+    }
     case 'npc':
       return envelope(kind, line.clock, [
         { p: 'label', text: `${line.speaker ?? ''} ` },
@@ -169,8 +195,15 @@ const HEAD_SEP = ' · '
  * The slack is what still counts as the tail: a fractional line-height leaves
  * `scrollTop + clientHeight` a pixel or two short of `scrollHeight` even when
  * the paper is pinned, and a trackpad's momentum overshoots by about as much.
+ *
+ * It is a SHARE of the box and not a flat 32px, because T3 made the window
+ * short: 32px is air in a 233px feed and 36% of an 89px one, where scrolling up
+ * a third of the window still read as being at the tail. The floor keeps the
+ * fractional-pixel case covered when the share gets small.
  */
-const FOLLOW_SLACK_PX = 32
+const FOLLOW_SLACK_MAX_PX = 32
+const FOLLOW_SLACK_MIN_PX = 4
+const FOLLOW_SLACK_RATIO = 0.25
 
 /**
  * What the behind-indicator says. It carries the count because that is the live
@@ -202,6 +235,8 @@ export interface RunFeed {
 
 function partNode(part: FeedPart): Node {
   switch (part.p) {
+    case 'cite':
+      return el('span', 'fl-cite', part.text)
     case 'label':
       return el('b', undefined, part.text)
     case 'quote':
@@ -294,9 +329,30 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
      `missed` is what the run printed while they were reading further up. */
   let attached = true
   let missed = 0
+  /**
+   * Has the box been scrolled at all since `follow` last pinned it?
+   *
+   * `atTail` alone cannot be trusted to DETACH, because the head and the tail
+   * spacer are content too. Once the box is short enough, they overflow it on
+   * their own — before a single line exists — and a tail test reads `false`
+   * with nobody having touched anything. The first line then latches the feed
+   * detached for the rest of the run. Any re-tune of the desk's type scale or
+   * its row ratios can put the window back in that state, so detaching must not
+   * rest on the measurement alone: it needs evidence the paper actually moved.
+   *
+   * Which is a scroll event, and only that. It is allowed to be a frame late
+   * here: it does not decide anything on its own, it only unlocks the question.
+   */
+  let scrolledSincePin = false
+
+  const followSlack = (): number =>
+    Math.max(
+      FOLLOW_SLACK_MIN_PX,
+      Math.min(FOLLOW_SLACK_MAX_PX, scroll.clientHeight * FOLLOW_SLACK_RATIO),
+    )
 
   const atTail = (): boolean =>
-    scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight <= FOLLOW_SLACK_PX
+    scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight <= followSlack()
 
   const paintBehind = (): void => {
     behind.hidden = attached || missed === 0
@@ -309,14 +365,16 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
     // Instant, against the sheet's `scroll-behavior:smooth`. A smooth catch-up
     // is still in flight when the next line lands, and every frame of it sits
     // short of the tail — which is exactly what `atTail` reads as a hand coming
-    // down on the paper. The feed would let go of itself. Only `jump` animates.
+    // down on the paper. The feed would let go of itself.
     scroll.scrollTo({ top: scroll.scrollHeight, behavior: 'instant' })
+    scrolledSincePin = false
   }
 
   /**
-   * Re-read attachment from the paper itself. One question, asked the same way
-   * everywhere: is it at its tail? `follow` lands there instantly, so the feed's
-   * own pinning answers yes and never detaches itself.
+   * Re-read attachment from the paper. `atTail` answers both directions, but
+   * letting GO additionally requires that the box have been scrolled since the
+   * last pin — see `scrolledSincePin`. Coming back needs no such evidence: the
+   * paper is at its tail or it is not.
    *
    * Re-attaching deliberately does NOT scroll — the operator may be mid-gesture,
    * and pulling the last few pixels out from under them is the snap this whole
@@ -325,6 +383,7 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   const reread = (): void => {
     const tail = atTail()
     if (tail === attached) return
+    if (!tail && !scrolledSincePin) return
     attached = tail
     if (tail) missed = 0
     paintBehind()
@@ -336,7 +395,14 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   // for RESPONSE — the indicator answering the gesture instead of the next line
   // — and never the sole reading, because it runs a frame behind the scroll it
   // reports and `append` cannot afford to be that late (see there).
-  scroll.addEventListener('scroll', reread, { passive: true })
+  scroll.addEventListener(
+    'scroll',
+    () => {
+      scrolledSincePin = true
+      reread()
+    },
+    { passive: true },
+  )
 
   const append = (node: FeedNode): void => {
     // BEFORE the line lands, while `scrollHeight` still describes the paper the
@@ -489,6 +555,14 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
     }
   }
 
+  // Pin the empty paper BEFORE the first line, because `append` re-reads
+  // attachment from the box and the box can already overflow with nothing in it:
+  // the head and the tail spacer are content too. On T3's short window that read
+  // `gap 97 > slack` at boot, so the very first line detached the feed and every
+  // `follow` after it returned early — a run of 43 lines with `scrollTop` still
+  // 0, measured. One pin here and the first re-read has a tail to find.
+  follow()
+
   // The reference's `prefillFeed`: everything the driver already released is
   // laid down without animation budget, then the tail is caught up once.
   for (const event of driver.frame().events) apply(event)
@@ -502,7 +576,20 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   // only clock in this window is still the driver's ([u5#c6]). It goes through
   // `follow`, so a reflow can no longer yank a detached reader to the tail —
   // that was the second half of the old pin, and the harder half to escape.
-  new ResizeObserver(follow).observe(list)
+  //
+  // The BOX and the TAIL are watched alongside the paper, because each of the
+  // three moves `scrollHeight` on its own:
+  //
+  //  * `list`   — a line lands, or the lines rewrap
+  //  * `scroll` — the window loses height without any line rewrapping (drag the
+  //               grip straight up, or let the layout recompute on a resize)
+  //  * `tail`   — the spacer is `25cqh`, so it is re-derived from the window a
+  //               beat AFTER the box resizes, changing the scrollable height
+  //               without either of the other two having changed size at all.
+  const resized = new ResizeObserver(follow)
+  resized.observe(list)
+  resized.observe(scroll)
+  resized.observe(tail)
 
   const lines = (): HTMLLIElement[] => [...list.querySelectorAll('li')]
 

@@ -184,7 +184,8 @@ interface Sentence { id: string; text: string; species: Species; axis?: string }
 
 type FeedKind = 'event' | 'radio' | 'npc' | 'symptom' | 'wait' | 'fallback' | 'mark';
 interface FeedLine { kind: FeedKind; clock: string /* "HH:MM" */; text: string;
-                     speaker?: string; sentence_id?: string /* set ⇢ minable */ }
+                     speaker?: string; sentence_id?: string /* set ⇢ minable */;
+                     cited_slots?: number[] /* U5.4 — slot numbers, driver-resolved */ }
 
 type ViewEvent =
   | { type: 'beat_start' | 'beat_end'; beat: number; clock: string }

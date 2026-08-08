@@ -17,7 +17,7 @@ export interface WindowFrame {
   readonly root: HTMLElement
   readonly bar: HTMLElement
   readonly body: HTMLElement
-  readonly grip: HTMLButtonElement
+  readonly grip: HTMLButtonElement | null
   readonly collapse: HTMLButtonElement
   readonly close: HTMLButtonElement
 }
@@ -35,8 +35,15 @@ export function buildWindowFrame(def: WindowDef): WindowFrame {
   // The bar is the window's ONE geometry handle from the keyboard: arrow keys
   // move it, Shift+arrow resizes it (R2 on window-frame.ts:55 — resize was
   // pointer-only, WCAG 2.1.1). Both are named here, because a keyboard path
-  // nobody is told about is not a path.
-  bar.setAttribute('aria-label', `${def.en} 창 이동 — 방향키로 옮기고, Shift+방향키로 크기를 조절합니다`)
+  // nobody is told about is not a path — and by the same rule a fixed sheet
+  // must not name the one gesture it does not have. Moving is not resizing, so
+  // the move clause is what stays.
+  bar.setAttribute(
+    'aria-label',
+    def.resizable === false
+      ? `${def.en} 창 이동 — 방향키로 옮깁니다`
+      : `${def.en} 창 이동 — 방향키로 옮기고, Shift+방향키로 크기를 조절합니다`,
+  )
 
   const dot = el('span', def.live === true ? 'win-dot live' : 'win-dot')
   dot.setAttribute('aria-hidden', 'true')
@@ -61,9 +68,13 @@ export function buildWindowFrame(def: WindowDef): WindowFrame {
   // block per window, and a corner grip cannot sit last in visual order once a
   // window body scrolls past it. The keyboard path is Shift+arrow on the title
   // bar, which the bar's own accessible name announces.
-  const grip = button('win-grip', `${def.en} 창 크기 조절 — 제목 표시줄에서 Shift+방향키`, '')
-  grip.tabIndex = -1
+  // A window may be a fixed sheet. The AGENT FILE is: its pages are sized to
+  // its body, so any shrink clips the page-turn control off the window and
+  // takes page 2 with it (C9). A sheet that cannot be resized cannot be
+  // clipped by a gesture.
+  const grip = def.resizable === false ? null : button('win-grip', `${def.en} 창 크기 조절 — 제목 표시줄에서 Shift+방향키`, '')
+  if (grip) grip.tabIndex = -1
 
-  root.append(tab, bar, body, grip)
+  root.append(tab, bar, body, ...(grip ? [grip] : []))
   return { def, root, bar, body, grip, collapse, close }
 }

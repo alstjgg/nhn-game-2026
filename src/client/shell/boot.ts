@@ -18,7 +18,8 @@ import { bindRadioSfx, sfxHandOver } from './radio-sfx.ts'
 import { must } from './dom.ts'
 import { openManual } from './manual.ts'
 import { openSignIn, signInSkipped } from './sign-in.ts'
-import { fetchScenarioIdentity } from './pack.ts'
+import { installTutorial } from './tutorial.ts'
+import { PACK_DISPLAY_NAME, fetchScenarioIdentity } from './pack.ts'
 import type { ScenarioIdentity } from './pack.ts'
 import { PORTAL, TASKBAR_HINT } from './portal-identity.ts'
 import { clearRunState } from './run-state.ts'
@@ -98,24 +99,88 @@ async function openLiveDesk(identity: ScenarioIdentity): Promise<FixtureDriver |
   }
 }
 
-function renderIdentity(identity: ScenarioIdentity): void {
+/**
+ * The chrome row's left two thirds. Takes no argument: every string it paints
+ * is authored (`PORTAL`, `PACK_DISPLAY_NAME`), and it stopped reading the
+ * fetched identity when the case name became display text rather than the
+ * slug. The identity is still fetched — the clock band below needs it.
+ */
+function renderIdentity(): void {
   must('#portalName').textContent = PORTAL.portal
   must('#portalCode').textContent = PORTAL.portalCode
-  must('#opName').textContent = `${PORTAL.operatorId} · ${PORTAL.operator}`
+  // x2 (08-08) — the id alone. `PORTAL.operator` still exists and the sign-in
+  // readout still prints it, because the door is where the terminal tells you
+  // WHO you signed in as; the chrome row afterwards is a badge, and a badge
+  // that also spells the name out is the same fact twice at the top of every
+  // screen. The name is not orphaned data — it is data the door consumes.
+  must('#opName').textContent = PORTAL.operatorId
   must('#opClearance').textContent = `권한 ${PORTAL.clearance}`
-  must('#caseName').textContent = identity.slug
+  must('#caseName').textContent = PACK_DISPLAY_NAME
 }
 
-/** Pumps real elapsed milliseconds into the driver and repaints the clock. */
+/**
+ * Interval for the hidden-document pump. The browser throttles it hard — ~1/s
+ * for a background tab, ~1/min once it has been hidden five minutes — and that
+ * is fine: see `runPump` for why the day still keeps correct time under it.
+ */
+const HIDDEN_PUMP_MS = 250
+
+/**
+ * Pumps real elapsed milliseconds into the driver and repaints the clock.
+ *
+ * TWO PUMPS, ONE TIMELINE. A frame callback does not fire in a hidden document
+ * — a background tab, a minimised window, a window another app fully covers —
+ * so a rAF-only pump stops the day dead the moment the player looks away, and
+ * the run only resumes when they look back. That is why the same build "runs in
+ * the background" for one of us and freezes for the other: it is not the
+ * machine, it is whether the browser still calls the frame the desk rides on.
+ *
+ * So when the document goes hidden the frame pump hands over to an interval,
+ * and hands back on return. The clock survives the swap because `advance()`
+ * takes ELAPSED REAL MILLISECONDS, not a frame count (`driver/clock.ts`): a
+ * throttled tick that arrives once a minute carries a 60_000 ms delta and moves
+ * sim time by exactly as much as 3600 frames would have. `release()` drains
+ * every event now due in order and `kick()` chains the next beat off its own
+ * promise, so a coarse tick loses no beat — it only repaints in bursts, which
+ * is all a tab nobody is watching can do anyway.
+ *
+ * Both pumps read `performance.now()`, the same clock rAF stamps its argument
+ * with and the one that keeps running while hidden, so `previous` carries
+ * across a swap with no seam: no minute is double-counted and none is dropped.
+ */
 function runPump(driver: FixtureDriver, paint: (at: string, minute: number) => void): void {
   let previous: number | null = null
-  const step = (now: number): void => {
+  let frame: number | null = null
+  let timer: number | null = null
+
+  const pump = (now: number): void => {
     if (previous !== null) driver.advance(now - previous)
     previous = now
     paint(driver.clock.at(), driver.clock.minute)
-    requestAnimationFrame(step)
   }
-  requestAnimationFrame(step)
+
+  const step = (now: number): void => {
+    pump(now)
+    frame = requestAnimationFrame(step)
+  }
+
+  const stop = (): void => {
+    if (frame !== null) cancelAnimationFrame(frame)
+    if (timer !== null) window.clearInterval(timer)
+    frame = null
+    timer = null
+  }
+
+  const start = (): void => {
+    if (document.hidden) timer = window.setInterval(() => pump(performance.now()), HIDDEN_PUMP_MS)
+    else frame = requestAnimationFrame(step)
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    stop()
+    start()
+  })
+  start()
 }
 
 export async function bootShell(): Promise<void> {
@@ -140,7 +205,7 @@ export async function bootShell(): Promise<void> {
 
   // 1 — the scenario pack.
   const identity = await fetchScenarioIdentity()
-  renderIdentity(identity)
+  renderIdentity()
 
   // 2 — the driver behind the §5.2 seam. Nothing above this line knows it.
   // The loop opens on the run the tab left off at (§7 #8): the persisted `meta`
@@ -270,9 +335,20 @@ export async function bootShell(): Promise<void> {
     await openManual(must('#app'), { width: window.innerWidth, height: window.innerHeight })
     sfxHandOver()
   }
-  revealDesk(
+  const revealed = revealDesk(
     body,
     desk.frames.map((f) => f.root),
   )
   openTheEars()
+
+  // 7 — the onboarding walk (x3). Mounted LAST and never awaited: it is an
+  // observer over a desk that is already fully playable, it sends no op, and
+  // nothing above this line knows it exists.
+  //
+  // It waits on `revealed`, NOT on `atTheDesk`. The ear's promise resolves at
+  // the hand-over, one microtask before the reveal's own frame — early enough
+  // that the walk's first mark would land on a window still held at
+  // `visibility:hidden` by `body.booting`. The eye needs the curtain up; the
+  // ear does not.
+  installTutorial(window, { driver, deskReady: revealed })
 }

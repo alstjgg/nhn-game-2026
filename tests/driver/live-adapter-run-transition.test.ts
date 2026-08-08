@@ -13,6 +13,9 @@ import { describe, it, expect } from 'vitest'
 import { createLiveAdapter } from '../../src/client/driver/live/adapter.ts'
 import type { BoundRun, RunClose } from '../../src/client/driver/live/adapter.ts'
 import type { Block } from '../../src/shared/contracts.ts'
+import { shownFrom } from '../../src/client/driver/live/adapter.ts'
+import { seedShown } from '../../src/client/driver/live/bind.ts'
+import { createBlockStore } from '../../src/driver/blocks.ts'
 
 /**
  * A `LiveDriver` that produces no beats and accepts every op, holding `blocks`
@@ -208,5 +211,45 @@ describe('the store the desk shows is the store the new run has', () => {
       { op: 'deploy', blocks: [B1.id, B2.id] },
     ])
     expect(adapter.store().slots).toEqual({ 0: B2.id, 2: B1.id })
+  })
+})
+
+/* ══ hf2 — a sentence the desk has shown stays minable ═══════════════════ */
+
+describe('a sentence the desk has shown stays minable on a later day', () => {
+  it('(h) every sentence the stream showed is carried out of the close', () => {
+    // The defect this pins: each run builds a FRESH block store and only the
+    // carried blocks were seeded into it, so a past report's sentence answered
+    // `not_minable` on every later day. `e2e/` cannot see it — the fixture
+    // loop's store is one flat object that survives `new_run`.
+    const shown = shownFrom([
+      { type: 'beat_start', beat: 0, clock: '08:50' },
+      { type: 'feed', line: { kind: 'radio', clock: '08:51', text: '회선 유지합니다.', sentence_id: 'b-r1-u01' } },
+      // A symptom line carries no id and is authored identically every run, so
+      // mining one would carry no information — it must not become minable.
+      { type: 'feed', line: { kind: 'symptom', clock: '08:52', text: '발신자의 호흡이 얕아졌다' } },
+      {
+        type: 'report',
+        round: 1,
+        facts: [{ id: 'b-r1-f01', text: '계측 일지가 반출됐다.', species: 'fact' }],
+        report_body: [{ id: 'b-r1-b01', text: '나는 회선을 끊지 않았다.', species: 'selfnarr' }],
+      },
+    ] as never)
+
+    expect(shown.map((b) => b.id).sort()).toEqual(['b-r1-b01', 'b-r1-f01', 'b-r1-u01'])
+    expect(shown.find((b) => b.id === 'b-r1-f01')?.text).toBe('계측 일지가 반출됐다.')
+  })
+
+  it('(i) seeding leaves a shown sentence minable and NOT deployed', () => {
+    const blocks = createBlockStore()
+    seedShown(blocks, [{ id: 'b-r1-f01', text: '계측 일지가 반출됐다.' }])
+
+    // `has()` reads the MINED tier: absorbed is not deployed, so nothing the
+    // operator has not mined can reach Call 1.
+    expect(blocks.has('b-r1-f01')).toBe(false)
+    // …and `mine()` reads the SEEN tier, so the operator can still take it.
+    expect(blocks.mine('b-r1-f01')).toBe(true)
+    expect(blocks.has('b-r1-f01')).toBe(true)
+    expect(blocks.mine('b-r9-f99')).toBe(false)
   })
 })

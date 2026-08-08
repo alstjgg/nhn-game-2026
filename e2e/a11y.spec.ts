@@ -23,7 +23,7 @@
 // Titles are load-bearing — [u9#c5]'s verification runs this whole file, and
 // `-g` filters in later units may target these describe names.
 import { expect, test } from 'playwright/test'
-import { awaitRecordFinal, drain, raiseWindow } from './fixtures/harness.ts'
+import { awaitRecordFinal, drain, raiseWindow, turnToAgent } from './fixtures/harness.ts'
 import type { Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
 
@@ -39,7 +39,10 @@ const MEMBRANE_SELECTOR = MEMBRANE_OPS.map((op) => `[data-op="${op}"]`).join(', 
 /** NPC channels (spec §3 inv 2). The clock stamp `.fl-t` is chrome, excluded. */
 const NPC_TEXT_SELECTOR = '.fl-npc .fl-c, .fl-symptom .fl-c'
 /** Digit-bearing surfaces that are score or chrome, never NPC state. */
-const EXCLUDED_DIGIT_SELECTOR = '.fl-t, .clk-digits, .tb-clock, .dd-value, .dd-runs, .ledger, .tly-table, .th-v, .tr-v'
+/* x4 — the ledger's table became record lines; the exclusion follows the
+   selectors that actually carry score digits. Kept in step with
+   `EXCLUDED_SELECTORS` in `tests/invariants/no-digit-npc.test.ts`. */
+const EXCLUDED_DIGIT_SELECTOR = '.fl-t, .clk-digits, .tb-clock, .dd-value, .dd-runs, .ledger, .tly-lines, .tly-line'
 
 // C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted. This helper waited
 // for all FIVE windows to be VISIBLE. `#w-tally` boots `class="win hidden"` and
@@ -57,6 +60,7 @@ async function boot(page: Page): Promise<void> {
   // C14 / [u11#c12] — the DEV-only debug pane covers the desk's bottom-left
   // quadrant and steals the pointer there. See `fixtures/dev-surface.ts`.
   await hideDebugPane(page)
+  await turnToAgent(page)
 }
 
 interface ControlMeta {
@@ -85,9 +89,17 @@ async function census(page: Page, selector: string): Promise<ControlMeta[]> {
 interface TabStop {
   readonly top: number
   readonly left: number
+  /** The same position in the VIEWPORT frame, un-normalised. */
+  readonly vtop: number
+  readonly vleft: number
   readonly where: string
   /** The `.win` id that owns this stop, or `(chrome)` for the persistent chrome. */
   readonly win: string
+  /**
+   * The nearest scrolling ancestor, named. Two stops are only comparable in the
+   * content frame when this matches — see `tabWalk` and the ordering assert.
+   */
+  readonly scroller: string
 }
 
 /**
@@ -113,6 +125,17 @@ async function tabWalk(page: Page, limit = 60): Promise<TabStop[]> {
       // visual order is in fact forwards. Adding the scroller's offset back
       // undoes the scroll and compares like with like; the ordering rule below
       // is untouched.
+      //
+      // x1 (08-08) — AND THE FRAME IS ONLY SHARED WHEN THE SCROLLER IS. That
+      // normalisation assumed one scroll container per window. The AGENT FILE
+      // now has two: `.file-sheet` scrolls the page, and the `.pg-nav` strip
+      // under it is pinned OUTSIDE it (`win-agent-file.css`, x1). Adding the
+      // sheet's offset to `#btnDeploy` and nothing to `.pg-turn` puts them in
+      // different frames, and the deploy button — genuinely above the strip —
+      // read as below it. So the stop records its scroller, and the ordering
+      // rule falls back to the viewport frame across a scroller boundary: both
+      // stops were measured while focused, and focus scrolls its own element
+      // into view, so the viewport rect at that instant IS the visual position.
       const scrolled = (axis: 'scrollTop' | 'scrollLeft'): number => {
         let node: HTMLElement | null = el.parentElement
         let sum = 0
@@ -122,11 +145,30 @@ async function tabWalk(page: Page, limit = 60): Promise<TabStop[]> {
         }
         return sum
       }
+      const name = (node: Element): string =>
+        `${node.tagName.toLowerCase()}${node.id ? `#${node.id}` : ''}.${node.className || ''}`
+      const scrollerOf = (): string => {
+        let node: HTMLElement | null = el.parentElement
+        while (node) {
+          const cs = getComputedStyle(node)
+          if (
+            /auto|scroll/.test(cs.overflowY + cs.overflowX) &&
+            (node.scrollHeight > node.clientHeight || node.scrollWidth > node.clientWidth)
+          ) {
+            return name(node)
+          }
+          node = node.parentElement
+        }
+        return '(document)'
+      }
       return {
         top: Math.round(r.top + scrolled('scrollTop')),
         left: Math.round(r.left + scrolled('scrollLeft')),
+        vtop: Math.round(r.top),
+        vleft: Math.round(r.left),
         where: `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ''}.${el.className || ''}`,
         win: el.closest('.win')?.id ?? '(chrome)',
+        scroller: scrollerOf(),
       }
     })
     if (!stop) break
@@ -243,6 +285,9 @@ test.describe('a11y — landmarks and roles', () => {
     await page.goto('./?drill=tally-lapse')
     await page.waitForFunction(() => Boolean((window as { __shell?: unknown }).__shell))
     await hideDebugPane(page)
+    // C1 — `#deployState` and `#btnDeploy` are on the agent's page; the file
+    // opens on its cover. This test drives the desk by URL, not through boot().
+    await turnToAgent(page)
 
     // Drive the day to its close; the terminal record counts up on its own
     // ~9 s cadence, unrelated to whether the report has filed. The harness
@@ -335,6 +380,10 @@ test.describe('a11y — keyboard reach', () => {
     await page.waitForFunction(
       () => (window as unknown as { __shell?: unknown }).__shell !== undefined,
     )
+    // C1 — the reload re-opens the file on its cover, so `slot`/`unslot` are
+    // not in the document until it is turned. boot()'s own turn was undone by
+    // the reload above.
+    await turnToAgent(page)
 
     const opsOf = (): Promise<string[]> =>
       page
@@ -356,15 +405,21 @@ test.describe('a11y — keyboard reach', () => {
     // the same gesture, and it is `aria-disabled` afterwards — a second click
     // here would hang on a control that correctly refuses. Driving it is the
     // point: a census taken before the operator has done anything is exactly
-    // the empty one this replaces. `slot`'s own control stays on the census
-    // through the three seats still empty.
+    // the empty one this replaces.
+    //
+    // x4 — the two are scanned on OPPOSITE sides of that activation, because
+    // the AGENT FILE's blank is gone the moment the file has a line in it: the
+    // four permanent boxes became one paragraph and one blank, and the blank is
+    // the `slot` op's control. So `slot` is censused while the file is still
+    // empty and `unslot` after the sentence lands. Both still have to exist —
+    // neither assert is dropped, only ordered.
     //
     // Each window is RAISED before it is used — a click that lands under
     // another focused window does nothing. See `raiseWindow`.
+    await expect(page.locator('[data-op="slot"]').first()).toBeAttached({ timeout: 15_000 })
     await raiseWindow(page, 'rep')
     await page.locator('[data-op="mine"]').first().click()
     await raiseWindow(page, 'file')
-    await expect(page.locator('[data-op="slot"]').first()).toBeAttached({ timeout: 15_000 })
     await expect(page.locator('[data-op="unslot"]').first()).toBeAttached({ timeout: 15_000 })
 
     const afterDrain = await opsOf()
@@ -401,6 +456,24 @@ test.describe('a11y — keyboard reach', () => {
       .locator('.win-grip')
       .evaluateAll((nodes) => nodes.filter((n) => n.getAttribute('aria-hidden') === 'true').length)
     expect(hidden, 'the resize grip is hidden from assistive tech').toBe(0)
+
+    // g13-3 — the AGENT FILE is a fixed sheet, and BOTH halves are pinned here
+    // because only both together keep 2.1.1: a window that resized by pointer
+    // and not by key would be the very violation this test was added for. So
+    // the sheet must have no grip to drag, no Shift promise in the name its bar
+    // announces, and no resize when the key is actually pressed.
+    await expect(page.locator('#w-file .win-grip')).toHaveCount(0)
+    expect(
+      (await page.locator('#w-file .win-bar').getAttribute('aria-label')) ?? '',
+      'the fixed sheet advertises a resize path it does not have',
+    ).not.toMatch(/Shift/)
+    const sheetH = async (): Promise<number> =>
+      page.locator('#w-file').evaluate((n) => Math.round(n.getBoundingClientRect().height))
+    const sheetBefore = await sheetH()
+    await page.locator('#w-file .win-bar').focus()
+    await page.keyboard.press('Shift+ArrowDown')
+    await page.keyboard.press('Shift+ArrowDown')
+    expect(await sheetH(), 'Shift+ArrowDown resized the fixed sheet').toBe(sheetBefore)
 
     const bar = page.locator('#w-rep .win-bar')
     expect(
@@ -529,8 +602,16 @@ test.describe('a11y — focus order follows visual order at 1280x800', () => {
       const prev = stops[i - 1]!
       const cur = stops[i]!
       if (cur.win !== prev.win) continue
-      const sameRow = Math.abs(cur.top - prev.top) < 8
-      const forwards = sameRow ? cur.left >= prev.left : cur.top > prev.top
+      // Content frame inside one scroller, viewport frame across two — see the
+      // note in `tabWalk`. Mixing the frames is what makes a stop read backwards
+      // when it is not.
+      const shared = cur.scroller === prev.scroller
+      const curTop = shared ? cur.top : cur.vtop
+      const prevTop = shared ? prev.top : prev.vtop
+      const curLeft = shared ? cur.left : cur.vleft
+      const prevLeft = shared ? prev.left : prev.vleft
+      const sameRow = Math.abs(curTop - prevTop) < 8
+      const forwards = sameRow ? curLeft >= prevLeft : curTop > prevTop
       expect(forwards, `tab stop ${i} (${cur.where}) goes backwards from ${prev.where} inside ${cur.win}`).toBe(true)
     }
   })

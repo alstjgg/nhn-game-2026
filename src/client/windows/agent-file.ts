@@ -18,17 +18,18 @@
 // no sibling window import, nothing from engine or composer (C8 / inv 12), and
 // no fixture module — carried ids resolve through the report index (D13).
 import type { FixtureDriver, Sentence } from '../driver/index.ts'
-import { el } from '../shell/dom.ts'
+import { button, el, must } from '../shell/dom.ts'
+import { openConfirm } from '../shell/confirm.ts'
 import { announce } from '../shell/announcer.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
 import { createRunState, hasFiledReport } from '../shell/run-state.ts'
 import type { RunPhase, RunState } from '../shell/run-state.ts'
-import { pad2, setPickedBlockId } from '../components/block-card.ts'
-import { buildDossier, callsignOf, dossierModel } from '../components/dossier.ts'
-import type { DossierInput } from '../components/dossier.ts'
-import { SLOT_CAP, createSlotBoard } from '../components/slot-board.ts'
+import { blockCardModel, buildBlockCard, pad2, setPickedBlockId } from '../components/block-card.ts'
+import { agentModel, buildDossier, callsignOf, coverModel, filedModel } from '../components/dossier.ts'
+import { SLOT_CAP, createSlotBoard, usedIds } from '../components/slot-board.ts'
 import { buildDeployStamp, buildDeployZone, deployView } from '../components/deploy-button.ts'
+import type { DeployMode } from '../components/deploy-button.ts'
 import { PACE, settleRelease } from '../components/score-tally.ts'
 
 /** The wait line, verbatim from `windows/tally.ts` — diegetic, never a spinner. */
@@ -69,6 +70,8 @@ declare global {
 }
 
 const FILE_TITLE = '현장 요원 운용 파일'
+/** U5.3 — what a past page says when that sitting went out with an empty file. */
+const FILED_EMPTY = '배치된 문장 없음'
 /** What the file's own doc-number line is called (reference `fh-doc`). */
 const DOC_CAPTION = '문서번호 '
 
@@ -77,6 +80,14 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   const store = createRunState(driver)
 
   const sentences = new Map<string, Sentence>()
+  /**
+   * U5.3 — what each sitting flew, by run. Written at exactly two sites (see
+   * the two `filed.set` calls below), each of which knows its run without doing
+   * arithmetic on the authority's numbers ([u7#c3]). Never persisted: H2 makes
+   * a page load a new sitting, so the session is exactly the span these pages
+   * are about.
+   */
+  const filed = new Map<number, string[]>()
   let run = 0
   let slug = ''
   let opensAt = driver.clock.at()
@@ -104,7 +115,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   let settleNote = ''
 
   const docLine = el('div', 'fh-doc')
-  const callsignLine = el('div', 'fh-v', callsignOf(run))
 
   const board = createSlotBoard({
     emit: (op) => driver.send(op).ok,
@@ -123,15 +133,12 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     },
   })
 
-  function dossierInput(): DossierInput {
-    return { slotCap: SLOT_CAP, callsign: callsignOf(run), clockBand: band, slotHost: board.root }
-  }
-
   let currentView = deployView({ slots: board.cells(), deployed: false, run, at: opensAt })
 
   function sync(): void {
-    docLine.textContent = `${DOC_CAPTION}${PORTAL.portalCode}/AF/${slug}/${pad2(run)}`
-    callsignLine.textContent = callsignOf(run)
+    // C1 — one document across every agent, so the number names the document
+    // and not the run. The run used to be its last segment.
+    docLine.textContent = `${DOC_CAPTION}${PORTAL.portalCode}/AF/${slug}`
     const view = deployView({
       slots: board.cells(),
       deployed: board.isLocked(),
@@ -164,8 +171,16 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     driver.clock.setRate(1)
   }
 
-  const zone = buildDeployZone(() => {
-    if (currentView.mode === 'next') {
+  /**
+   * What the press does once it has been confirmed.
+   *
+   * Split out of the handler below so the confirmation can sit in front of it
+   * without the two commit paths drifting apart. `mode` is the one captured at
+   * press time, never re-read: the plate holds the desk `inert` while it is up,
+   * so nothing can move the control under the question it is asking.
+   */
+  function commitFile(mode: DeployMode): void {
+    if (mode === 'next') {
       // W4 — ONE press, TWO ops, and the order is load-bearing. `deploy` must
       // reach the CLOSING run's membrane, because that is what the live
       // adapter harvests into `carried` (`live/adapter.ts` `closingState()`);
@@ -177,11 +192,30 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       startDay()
       return
     }
-    if (currentView.mode === 'deploy') {
-      board.deploy()
-      startDay()
-    }
+    board.deploy()
+    // U5.3 — write site 1: the OPENING commit, which belongs to the agent on
+    // the desk right now. In practice this is ECHO-1's alone — after a
+    // `new_run` the file arrives already committed and this mode never comes
+    // round again — and without it the first sitting would never get a page,
+    // which is the first comparison the operator would reach for.
+    filed.set(run, usedIds(board.cells()))
+    startDay()
+  }
+
+  const zone = buildDeployZone(() => {
+    const mode = currentView.mode
     // 'settling' / 'spent': the control is disabled — a click cannot land.
+    if (mode !== 'deploy' && mode !== 'next') return
+    // x2 — the press asks first, and it asks on BOTH committing modes. The
+    // control's main label is `DEPLOY` in every one of them (W4 retired the
+    // NEW RUN label, not the op), so "the activated DEPLOY" is this press
+    // whichever day it falls on. Gating `deploy` alone would have put the
+    // question in front of ECHO-1 and nobody after — from day 2 the commit
+    // arrives in `next` mode, and that is the press that carries a file the
+    // operator has actually revised.
+    void openConfirm(must('#app')).then((confirmed) => {
+      if (confirmed) commitFile(mode)
+    })
   })
   const stamp = buildDeployStamp()
   // Direct handles onto the control's own note and button, exactly as
@@ -190,16 +224,122 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   // `deployView` (design #5: the note is the one thing it cannot derive purely).
   const noteEl = zone.root.querySelector<HTMLElement>('#deployState')!
   const deployBtn = zone.root.querySelector<HTMLButtonElement>('#btnDeploy')!
-  let dossier = buildDossier(dossierModel(dossierInput()), board.root)
-
+  // C1 — the file is a document with pages, and exactly one page is mounted.
+  // Page 0 is the cover: the document's own number and title, then everything
+  // true of every agent. Page 1 is the agent on the desk, and it is the last
+  // page, which is where the DEPLOY control lives — the last page is the agent
+  // who has not gone out yet. U5.3 appends a page per agent after this one; the
+  // only thing this unit owes it is that `pages` is a list.
   const head = el('div', 'file-head')
   const left = el('div', 'fh-left')
   left.append(docLine, el('div', 'fh-title', FILE_TITLE))
-  const right = el('div', 'fh-right')
-  right.append(el('div', 'fh-k', '호출부호'), callsignLine)
-  head.append(left, right)
+  head.append(left)
 
-  host.append(stamp.root, head, dossier, zone.root)
+  const sheet = el('div', 'file-sheet')
+  const pgPrev = button('pg-turn', '이전 장', '‹')
+  const pgNext = button('pg-turn', '다음 장', '›')
+  const pgCount = el('span', 'pg-count')
+  const nav = el('div', 'pg-nav')
+  nav.append(pgPrev, pgCount, pgNext)
+
+  let viewing = 0
+
+  /**
+   * A finished sitting's file — the cards that went out, read-only.
+   *
+   * U5.3. These are NOT slots: no `.slot`, no `.slot-pin`, and above all no
+   * `data-block-id`, which is what `shell/thread-layer.ts:28` selects slot
+   * anchors by. `buildBlockCard` writes `data-block`, so a past page is
+   * invisible to the thread layer by construction — do not add the attribute
+   * for symmetry. An id the index cannot resolve gets F1's fallback text from
+   * `blockCardModel`, which is already its job.
+   */
+  function filedHost(ids: readonly string[]): HTMLElement {
+    const host = el('div', 'filed-file')
+    if (ids.length === 0) {
+      host.append(el('div', 'filed-empty', FILED_EMPTY))
+      return host
+    }
+    for (const [index, id] of ids.entries()) {
+      const cell = el('div', 'filed-cell')
+      cell.append(
+        el('span', 'filed-no', pad2(index + 1)),
+        buildBlockCard(blockCardModel(id, sentences.get(id) ?? null), { inSlot: true }),
+      )
+      host.append(cell)
+    }
+    return host
+  }
+
+  /**
+   * The document, in order: the cover, then a page per finished agent, then the
+   * agent on the desk.
+   *
+   * U5.3 — a record is shown as a PAST page only while its sitting is behind
+   * the current one. The current agent's own file is recorded the moment it is
+   * committed (it has to be — that is when it is knowable), and it is the live
+   * page until the run moves on, so `flown >= run` is what keeps it from
+   * appearing twice.
+   */
+  function pages(): HTMLElement[] {
+    const cover = el('div', 'file-page')
+    cover.append(head, buildDossier(coverModel(band), board.root))
+
+    const past: HTMLElement[] = []
+    for (const flown of [...filed.keys()].sort((a, b) => a - b)) {
+      if (flown >= run) continue
+      const ids = filed.get(flown) ?? []
+      const page = el('div', 'file-page')
+      page.append(
+        buildDossier(filedModel({ callsign: callsignOf(flown), deployed: ids.length }), filedHost(ids)),
+      )
+      past.push(page)
+    }
+
+    const agent = el('div', 'file-page')
+    agent.append(buildDossier(agentModel({ slotCap: SLOT_CAP, callsign: callsignOf(run) }), board.root))
+    agent.append(zone.root)
+
+    return [cover, ...past, agent]
+  }
+
+  /** Mounts the page being viewed, and nothing else. */
+  function turn(to?: 'last'): void {
+    const built = pages()
+    // Clamped with conditionals, never `Math.max`: `tally.test.ts` (f) bans
+    // that call outright in this file so a driver-fed number (`run`,
+    // `runs_left`, `carried`, `archive`) cannot be quietly clamped. A page
+    // index is none of those, but the guard is a blanket source scan and it is
+    // right to be — the cheap way to keep it honest is not to reach for the
+    // call at all.
+    const last = built.length - 1
+    // U5.3 — a new sitting opens on its own page, which is always the last one.
+    // Left alone, `viewing` would keep the index it had and the operator would
+    // land on a page with no DEPLOY on it. Assigned, never `Math.max`-ed.
+    if (to === 'last') viewing = last
+    const clamped = viewing < 0 ? 0 : viewing > last ? last : viewing
+    viewing = clamped
+    sheet.replaceChildren(built[clamped]!)
+    // x1 — a turned page opens at its head. The sheet scrolls now (1.5× type in
+    // a third-width column: `win-agent-file.css`), and `replaceChildren` leaves
+    // the scroll offset where the last page left it, so turning onto a page
+    // landed the reader halfway down a document they had not read yet.
+    sheet.scrollTop = 0
+    pgCount.textContent = `${clamped + 1} / ${built.length}`
+    pgPrev.disabled = clamped === 0
+    pgNext.disabled = clamped === built.length - 1
+  }
+
+  pgPrev.addEventListener('click', () => {
+    viewing -= 1
+    turn()
+  })
+  pgNext.addEventListener('click', () => {
+    viewing += 1
+    turn()
+  })
+
+  host.append(stamp.root, sheet, nav)
 
   function dropHold(): void {
     if (hold === null) return
@@ -326,6 +466,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     }
     if (event.type !== 'meta') return
     const changedRun = event.run !== run
+    // U5.3 — the run the desk was showing until this event. Read BEFORE the
+    // assignment below, and used only to tell the desk's FIRST meta apart from
+    // a real change of sitting. It is a comparison, not a derivation: no number
+    // here is computed from the authority's ([u7#c3]).
+    const previous = run
     run = event.run
     // W4 — the unlock moved to the CLOSE (see the `'tally'` branch above): the
     // day's own report has to be minable into the file it was written for, and
@@ -335,14 +480,21 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (changedRun && board.isLocked()) {
       committedRun = event.run
       committedAt = opensAt
+      // U5.3 — write site 2. The file committed at the close reached the
+      // CLOSING run's membrane (W4's op order), but what it carries is the
+      // file the operator built after 21:04 — the INCOMING agent's. So it is
+      // filed under `event.run`, which is the same re-pointing the stamp does
+      // on the two lines above: page inventory and stamp date cannot disagree,
+      // because one branch decides both.
+      filed.set(event.run, usedIds(board.cells()))
     }
     // M1 — §0's callsign is per sitting, so only a changed run re-prints the
     // dossier; an archive-only `meta` must not re-parent the live slot board.
-    if (changedRun) {
-      const next = buildDossier(dossierModel(dossierInput()), board.root)
-      dossier.replaceWith(next)
-      dossier = next
-    }
+    // U5.3 — …and a NEW sitting opens on its own page. The jump is conditional
+    // because the desk's first meta is a changed run too (0 → 1), and C1 opens
+    // the file on its COVER; an unconditional jump would open every boot on the
+    // agent's page and take `e2e/agent-file.spec.ts`'s own `boot()` with it.
+    if (changedRun) turn(previous > 0 ? 'last' : undefined)
     sync()
   })
 
@@ -354,9 +506,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       slug = identity.slug
       opensAt = identity.start
       band = `${identity.start} → ${identity.end}`
-      const next = buildDossier(dossierModel(dossierInput()), board.root)
-      dossier.replaceWith(next)
-      dossier = next
+      turn()
       sync()
     })
     .catch(() => undefined)

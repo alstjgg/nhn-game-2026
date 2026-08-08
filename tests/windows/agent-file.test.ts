@@ -129,9 +129,10 @@ interface BlockCardModule {
 }
 
 interface DossierSection {
-  no: string
   title: string
-  state: 'fixed' | 'sealed' | 'operable'
+  // U5.3 — `'filed'` is the fourth state. This mirror is what `tsc` reads and
+  // `vitest` does not (§5.3), so it goes out of step silently if left.
+  state: 'fixed' | 'sealed' | 'operable' | 'filed'
   rows?: [string, string][]
   body?: string
   note?: string
@@ -139,9 +140,14 @@ interface DossierSection {
 }
 
 interface DossierModule {
-  dossierModel(input: { slotCap: number; clockBand: string; slotHost: HTMLElement }): DossierSection[]
+  coverModel(clockBand: string): DossierSection[]
+  agentModel(input: { slotCap: number; callsign: string }): DossierSection[]
+  filedModel(input: { callsign: string; deployed: number }): DossierSection[]
   buildDossier: unknown
 }
+
+/** C1 — the band both models are tested against; coverModel owns 임무's line. */
+const BAND = '08:50 → 21:04'
 
 interface DeployView {
   used: number
@@ -169,16 +175,6 @@ const loadDossier = async (): Promise<DossierModule> =>
 const loadDeployButton = async (): Promise<DeployButtonModule> =>
   (await import(importable(DEPLOY_BUTTON_TS))) as unknown as DeployButtonModule
 
-/** A DOM-free stand-in for the §4 host — `dossierModel` must never touch it. */
-const HOST_STUB = Object.freeze({ __hostStub: true }) as unknown as HTMLElement
-
-const dossierInput = (): { slotCap: number; callsign: string; clockBand: string; slotHost: HTMLElement } => ({
-  slotCap: 4,
-  callsign: 'ECHO-1',
-  clockBand: '08:50 → 21:04',
-  slotHost: HOST_STUB,
-})
-
 /* ══ [u4#c2] spec-client §3 inv 4 (I13) ══════════════════════════════════ */
 
 const SEALED_COPY = '열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)'
@@ -196,16 +192,16 @@ function deepKeys(value: unknown, seen = new Set<unknown>()): string[] {
 
 describe('[u4#c2] §3 기질 is sealed by construction', () => {
   it('(a) neither the dossier input nor any section carries a temperament-shaped key', async () => {
-    const { dossierModel } = await loadDossier()
-    const input = dossierInput()
-    const sections = dossierModel(input)
+    const { coverModel, agentModel } = await loadDossier()
+    const input = { slotCap: 4, callsign: 'ECHO-1' }
+    const sections = [...coverModel(BAND), ...agentModel(input)]
 
     expect(deepKeys(input).filter((k) => TEMPERAMENT_KEY.test(k))).toEqual([])
     expect(deepKeys(sections).filter((k) => TEMPERAMENT_KEY.test(k))).toEqual([])
 
     const sealed = sections.find((s) => s.state === 'sealed')
-    expect(sealed, '§3 must be modelled as a sealed section').toBeTruthy()
-    expect(Object.keys(sealed!).sort()).toEqual(['bars', 'body', 'no', 'state', 'title'])
+    expect(sealed, '기질 must be modelled as a sealed section').toBeTruthy()
+    expect(Object.keys(sealed!).sort()).toEqual(['bars', 'body', 'state', 'title'])
   })
 
   it('(b) no client source names temperament, truths or gates data', () => {
@@ -220,15 +216,14 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
   })
 
   it('(c) the sealed section carries the redaction copy and nothing else', async () => {
-    const { dossierModel } = await loadDossier()
-    const sealed = dossierModel(dossierInput()).find((s) => s.state === 'sealed')!
+    const { coverModel } = await loadDossier()
+    const sealed = coverModel(BAND).find((s) => s.state === 'sealed')!
 
-    expect(sealed.no).toBe('§3')
     expect(sealed.title).toBe('기질')
     expect(sealed.body).toBe(SEALED_COPY)
     // Every string the section holds is one of the four sanctioned ones.
     const strings = Object.values(sealed).filter((v): v is string => typeof v === 'string')
-    expect(strings.sort()).toEqual(['sealed', SEALED_COPY, '기질', '§3'].sort())
+    expect(strings.sort()).toEqual(['sealed', SEALED_COPY, '기질'].sort())
 
     expect(Array.isArray(sealed.bars)).toBe(true)
     expect(sealed.bars).toHaveLength(10)
@@ -239,17 +234,21 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
     }
   })
 
-  it('(d) dossierModel is pure — frozen input in, deep-equal input out, no document', async () => {
-    const { dossierModel } = await loadDossier()
-    const input = Object.freeze(dossierInput())
-    const before = JSON.stringify({ slotCap: input.slotCap, clockBand: input.clockBand })
+  it('(d) both models are pure — frozen input in, deep-equal input out, no document', async () => {
+    const { coverModel, agentModel } = await loadDossier()
+    const input = Object.freeze({ slotCap: 4, callsign: 'ECHO-1' })
+    const before = JSON.stringify({ slotCap: input.slotCap, callsign: input.callsign })
 
-    const first = dossierModel(input)
-    const second = dossierModel(dossierInput())
+    const firstAgent = agentModel(input)
+    const secondAgent = agentModel({ slotCap: 4, callsign: 'ECHO-1' })
+    const firstCover = coverModel(BAND)
+    const secondCover = coverModel(BAND)
 
-    expect(JSON.stringify({ slotCap: input.slotCap, clockBand: input.clockBand })).toBe(before)
-    expect(JSON.stringify(second)).toBe(JSON.stringify(first))
-    expect(String(dossierModel)).not.toMatch(/document/)
+    expect(JSON.stringify({ slotCap: input.slotCap, callsign: input.callsign })).toBe(before)
+    expect(JSON.stringify(secondAgent)).toBe(JSON.stringify(firstAgent))
+    expect(JSON.stringify(secondCover)).toBe(JSON.stringify(firstCover))
+    expect(String(agentModel)).not.toMatch(/document/)
+    expect(String(coverModel)).not.toMatch(/document/)
 
     // The model half of the file precedes the builder half: no `document.` may
     // appear before `buildDossier` is declared.
@@ -260,30 +259,31 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
     expect(modelHalf).not.toMatch(/\bdocument\b/)
   })
 
-  it('(e) the six sections are §0–§5 with the ratified titles and flags', async () => {
-    const { dossierModel } = await loadDossier()
-    const sections = dossierModel(dossierInput())
-    expect(sections.map((s) => s.no)).toEqual(['§0', '§1', '§2', '§3', '§4', '§5'])
-    expect(sections.map((s) => s.title)).toEqual([
-      '식별',
-      '임무',
-      '행동 원칙',
-      '기질',
-      '인수인계 사항',
-      '교신 지침',
-    ])
-    expect(sections.map((s) => s.state)).toEqual([
-      'fixed',
-      'fixed',
-      'fixed',
-      'sealed',
-      'operable',
-      'fixed',
-    ])
-    // §1 renders the pack-fed clock band, never a literal (c1/D2).
-    expect(sections[1]!.body).toContain('08:50 → 21:04')
-    // §4's note reads the cap, so the two cannot drift.
-    expect(sections[4]!.note).toContain('4')
+  it('(e) the two models carry the ratified titles and flags, and no numbers', async () => {
+    const { coverModel, agentModel } = await loadDossier()
+    const cover = coverModel(BAND)
+    const agent = agentModel({ slotCap: 4, callsign: 'ECHO-1' })
+
+    // C1 — the document reads the cover first, then the agent's own page. The
+    // six sections are the same six; what changed is which page each sits on,
+    // and that none of them carries a `§n` any more. There is deliberately no
+    // assertion about a combined six-section order — there is no such order.
+    expect(
+      [...cover, ...agent].every((s) => !('no' in s)),
+      'a section still carries a number',
+    ).toBe(true)
+
+    expect(cover.map((s) => s.title)).toEqual(['임무', '행동 원칙', '기질', '교신 지침'])
+    expect(cover.map((s) => s.state)).toEqual(['fixed', 'fixed', 'sealed', 'fixed'])
+    expect(agent.map((s) => s.title)).toEqual(['식별', '인수인계 사항'])
+    expect(agent.map((s) => s.state)).toEqual(['fixed', 'operable'])
+
+    // 임무 renders the pack-fed clock band, never a literal (c1/D2).
+    expect(cover[0]!.body).toContain('08:50 → 21:04')
+    // 인수인계 사항's note reads the cap, so the two cannot drift.
+    expect(agent[1]!.note).toContain('4')
+    // 식별 carries the callsign it was handed (M1).
+    expect(JSON.stringify(agent[0]!.rows)).toContain('ECHO-1')
   })
 })
 
@@ -742,5 +742,34 @@ describe('[u4#c9] u4 sources hold the run-wide hard constraints', () => {
     const win = stripComments(read(AGENT_FILE_TS))
     expect(win).toMatch(/export function mount\s*\(\s*host\s*:\s*HTMLElement\s*,\s*driver\s*:\s*FixtureDriver\s*\)/)
     expect(win, 'a window must not import a fixture module').not.toMatch(/driver\/fixtures\//)
+  })
+})
+
+/* ══ U5.3 — a finished sitting's page ════════════════════════════════════ */
+
+describe('[U5.3] filedModel is the same document, closed', () => {
+  it('(a) it carries 식별 and a FILED 인수인계 사항, and nothing operable', async () => {
+    const { filedModel } = await loadDossier()
+    const sections = filedModel({ callsign: 'ECHO-1', deployed: 3 })
+
+    expect(sections.map((s) => s.title)).toEqual(['식별', '인수인계 사항'])
+    expect(sections.map((s) => s.state)).toEqual(['fixed', 'filed'])
+    // The count is the page's own, so a past page cannot claim a slot cap it
+    // no longer has — `filedModel` takes no cap at all.
+    expect(sections[1]!.note).toContain('3')
+    expect(JSON.stringify(sections[0]!.rows)).toContain('ECHO-1')
+  })
+
+  it('(b) it is pure, takes no host, and names no document', async () => {
+    const { filedModel } = await loadDossier()
+    const input = Object.freeze({ callsign: 'ECHO-2', deployed: 0 })
+    const before = JSON.stringify({ callsign: input.callsign, deployed: input.deployed })
+
+    const first = filedModel(input)
+    const second = filedModel({ callsign: 'ECHO-2', deployed: 0 })
+
+    expect(JSON.stringify({ callsign: input.callsign, deployed: input.deployed })).toBe(before)
+    expect(JSON.stringify(second)).toBe(JSON.stringify(first))
+    expect(String(filedModel)).not.toMatch(/document/)
   })
 })

@@ -1,9 +1,37 @@
-// [u7] ScoreTally — the 집계표 ledger and its ~9 s count-up (spec-client §6).
+// [u7] ScoreTally — the day's 집계, printed as record lines (spec-client §6).
 //
-// Ported from docs/design/phase2-ui/app.js `countUp` (604) and `runTally` (614)
-// onto u1's shipped `.tly-*` / `.tr-*` / `.th-*` skin: the ruled head, one
-// headline number that counts up on a cubic ease-out, one rule per scored axis
-// arriving in cadence, and the verdict stamp last.
+// Ported from docs/design/phase2-ui/app.js `countUp` (604) and `runTally` (614).
+//
+// ── x4 (08-08): the ledger became a record ──────────────────────────────────
+//
+// U3 dissolved the TALLY window and filed this thing at the foot of 현장 기록,
+// where it went on looking like the sheet it used to be: a centred head with a
+// 집계표 title and a subtitle, a 66px headline number in its own boxed row, and
+// a zebra-striped table with a 기준 column and ▲/=/▼ marks. Two documents on one
+// piece of paper, and the second one shouted.
+//
+// It prints as LINES now, in the 현장 기록 column's own format — the same grid,
+// the same dotted rule between rows, the sentence starting on the same x. What
+// changes is the ink: every line is seal red and bold, because these are the
+// only lines on the page that are not a report of what someone saw. One line
+// each, in the order the day is read out:
+//
+//     23시 12분 시점 집계
+//     터널에서 나오지 못한 사람: 59명
+//     오세라: 사망 · 아홉 번째 문 안쪽
+//     …
+//     총 사망자 수 60명
+//
+// WHAT WENT WITH THE TABLE. The 기준 column and the ▲/=/▼ mark are gone, on
+// 민서's call (08-08): the record format has one column, and a baseline folded
+// into the same line would double every row's length for a comparison the
+// operator did not ask for. The seam still carries `baseline` and
+// `baseline_total` — the engine's contract is untouched — but nothing on the
+// desk renders them any more, so the "무개입 하루 대비" reading now lives only in
+// what the day itself says.
+//
+// The count-up survives, moved onto the closing line's number and given only
+// the time that line actually has (`countMs`) — see the cadence note below.
 //
 // Two things are deliberately NOT the reference's:
 //
@@ -25,27 +53,28 @@ import { el } from '../shell/dom.ts'
 
 export type TallyState = 'pending' | 'counting' | 'final'
 
-/** One ruled line of the ledger — a scored axis and what it cost. */
+/**
+ * One record line — a scored axis and what it came to.
+ *
+ * `value` keeps the seam's own union rather than a pre-stringified label,
+ * because the NUMBER/WORD distinction is what decides whether the unit is
+ * printed (see `lineOf`). Stringifying upstream would throw that away and leave
+ * this module guessing from the characters.
+ */
 export interface TallyRowModel {
   label: string
-  value: string
-  /** The no-intervention baseline from the pack, or `null` when unmatched. */
-  baseline: string | null
-  delta: 'good' | 'flat' | 'bad'
+  value: string | number
 }
 
 export interface TallyModel {
-  /** The document number printed above the head. */
+  /** The document number printed above the lines. */
   doc: string
+  /** The record's opening line — `"23시 12분 시점 집계"`. */
   title: string
-  sub: string
   run: number
-  headline: { label: string; value: number; unit: string; baseline: string | null }
+  /** The closing line: `label`, the total, and the unit the total counts in. */
+  headline: { label: string; value: number; unit: string }
   rows: TallyRowModel[]
-  /** The pack's baseline summary, printed beside the stamp. */
-  note: string | null
-  /** The stamp, when the seam or the pack supplies one. */
-  verdict: string | null
 }
 
 /** Somewhere to hang a delay and a frame — real timers in the browser. */
@@ -61,6 +90,12 @@ export interface Scheduler {
  * `ROW_STEP` and `VERDICT_AFTER` are `runTally`'s 500 / 640 / +300; `COUNT_MS`
  * is `countUp`'s 3400. `TOTAL_MS` is the README's ~9 s target, which the
  * settle is solved against — the FLOOR of the wait.
+ *
+ * x4 keeps every one of them at its ported value and re-aims two: `VERDICT_AFTER`
+ * is now the beat between the last axis line and the CLOSING line (the verdict
+ * stamp it was named for went with the table), and `COUNT_MS` became a CEILING
+ * rather than a duration, because the closing line no longer starts counting at
+ * t=0 — see `countMs`.
  *
  * `HOLD_CEIL` is its CEILING: the longest the window may hold the day closed
  * waiting on the run's `report`. The engine's one retry puts the generation's
@@ -116,6 +151,27 @@ export function settleMs(rowCount: number): number {
   return clamp(PACE.TOTAL_MS - PACE.OPEN_DELAY - PACE.LEAD - rowCount * PACE.ROW_STEP, SETTLE_FLOOR, SETTLE_CEIL)
 }
 
+/**
+ * How long the CLOSING line's number has to climb.
+ *
+ * x4 — the count-up used to start with the ledger and run `COUNT_MS` flat,
+ * because the headline was the first thing on the sheet. It is the last line
+ * now, landing `VERDICT_AFTER` after the final axis line, and everything after
+ * that point belongs to the settle. Given the whole of `COUNT_MS` it would have
+ * been mid-climb when `final` fired and the desk announced 집계 완료 over a
+ * number still moving — by up to 2.3 s on a nine-row day.
+ *
+ * So the ported 3400 becomes the CEILING and the settle's own remainder the
+ * budget. The number always lands on `final`, never after it, whatever the
+ * ledger's length. `Math.max` is not reachable here: `settleMs` floors at 1400
+ * and `VERDICT_AFTER` is 300, so the remainder is never negative — and the
+ * blanket ban in `tests/windows/tally.test.ts` (f) means it could not be used
+ * even if it were.
+ */
+export function countMs(rowCount: number): number {
+  return clamp(settleMs(rowCount) - PACE.VERDICT_AFTER, 0, PACE.COUNT_MS)
+}
+
 /** The reference's cubic ease-out, clamped at both ends — a frame may lag. */
 export function countUpAt(to: number, k: number): number {
   const at = clamp(k, 0, 1)
@@ -130,13 +186,25 @@ export function countUpAt(to: number, k: number): number {
 // baseline belongs on the seam or nowhere; a resolver kept "for later" here
 // would just be the same in-channel with the fetch moved one file away.
 
-/** The mark each delta prints in the `.tr-d` column (reference `runTally`). */
-const DELTA_MARK: Record<TallyRowModel['delta'], string> = { good: '▲', flat: '=', bad: '▼' }
+/** What separates an axis from its outcome on a record line. */
+const AXIS_JOIN = ': '
+/** …and what separates the closing line's caption from its number. */
+const TOTAL_JOIN = ' '
 
-/** `기준 ` — the ledger's own caption for a baseline cell. */
-const BASELINE_CAPTION = '기준 '
-
-const pad2 = (value: number): string => String(value).padStart(2, '0')
+/**
+ * One axis, as a line.
+ *
+ * The unit rides a NUMBER and nothing else. That is not a guess about the
+ * scenario: `contract-datapack` §3.6 has authoring write a body count as a
+ * number and every other outcome as a word, which is the same predicate
+ * `components/tally-line.ts` sums the feed's closing line by. So a counted axis
+ * reads `터널에서 나오지 못한 사람: 59명` and a qualitative one reads
+ * `차우진: 사망 · 하행 4.2km 갓길` — with no unit invented for it.
+ */
+export function lineOf(row: TallyRowModel, unit: string): string {
+  const tail = typeof row.value === 'number' ? unit : ''
+  return `${row.label}${AXIS_JOIN}${row.value}${tail}`
+}
 
 /** Real timers: `setTimeout` for the cadence, `requestAnimationFrame` for the count. */
 function browserScheduler(): Scheduler {
@@ -156,16 +224,16 @@ function browserScheduler(): Scheduler {
 }
 
 export interface ScoreTally {
-  /** The ledger root — it carries `data-tally-state`. */
+  /** The record root — it carries `data-tally-state`. */
   readonly root: HTMLElement
   state(): TallyState
-  /** The run has closed: the ledger is on the desk with nothing counted yet. */
+  /** The run has closed: the record is on the desk with nothing counted yet. */
   open(): void
   /** Runs the whole cadence for `model`, ending in `final`. */
   run(model: TallyModel): void
-  /** Back to an empty ledger for the next run. */
+  /** Back to an empty record for the next run. */
   reset(): void
-  /** How many ruled lines are printed right now. */
+  /** How many AXIS lines are printed right now — the open and close are not axes. */
   rows(): number
 }
 
@@ -179,34 +247,31 @@ export function createScoreTally(options: ScoreTallyOptions): ScoreTally {
   const scheduler = options.scheduler ?? browserScheduler()
   const root = options.host
 
+  // The document number, and then nothing but lines. What used to sit here —
+  // `.tly-head`'s centred 집계표 title with its subtitle, `.tly-headline`'s boxed
+  // 66px number, `.tly-table`'s zebra rows, `.tly-verdict`'s stamp — is gone
+  // whole: five blocks of sheet furniture that announced a second document
+  // inside the first one.
   const doc = el('div', 'tly-doc')
-  const title = el('h3')
-  const sub = el('div', 'tly-sub')
-  const head = el('div', 'tly-head')
-  head.append(doc, title, sub)
 
-  const headKey = el('div', 'th-k')
-  const big = el('span')
+  const openLine = el('li', 'tly-line tl-open')
+  const openText = el('span', 'tl-s')
+  openLine.append(openText)
+
+  /** The closing line, split so ONLY its number moves while it counts. */
+  const big = el('b')
   big.id = 'tlyBig'
-  const unit = el('i')
-  const headValue = el('div', 'th-v')
-  headValue.append(big, unit)
-  const headBaseline = el('div', 'th-b')
-  const headline = el('div', 'tly-headline')
-  headline.append(headKey, headValue, headBaseline)
+  const totalCaption = el('span', 'tl-cap')
+  const totalUnit = el('span', 'tl-unit')
+  const closeLine = el('li', 'tly-line tl-close')
+  const closeText = el('span', 'tl-s')
+  closeText.append(totalCaption, big, totalUnit)
+  closeLine.append(closeText)
 
-  const body = el('tbody')
-  body.id = 'tlyRows'
-  const table = el('table', 'tly-table')
-  table.append(body)
+  const lines = el('ol', 'tly-lines')
+  lines.id = 'tlyRows'
 
-  const stamp = el('div', 'tv-stamp')
-  const note = el('p')
-  const verdict = el('div', 'tly-verdict')
-  verdict.id = 'tlyVerdict'
-  verdict.append(stamp, note)
-
-  root.append(head, headline, table, verdict)
+  root.append(doc, lines)
 
   let state: TallyState = 'pending'
   let cancels: (() => void)[] = []
@@ -225,65 +290,64 @@ export function createScoreTally(options: ScoreTallyOptions): ScoreTally {
     cancels.push(scheduler.at(ms, fn))
   }
 
-  /** The headline climbs to `to` on the reference's ease-out, then stops dead. */
-  function countUp(to: number): void {
+  /** The closing line's number climbs to `to` on the reference's ease-out. */
+  function countUp(to: number, overMs: number): void {
     let from: number | null = null
     const cancel = scheduler.frame((now: number) => {
       if (from === null) from = now
-      const k = (now - from) / PACE.COUNT_MS
+      const k = overMs <= 0 ? 1 : (now - from) / overMs
       big.textContent = String(countUpAt(to, k))
       if (k >= 1) cancel()
     })
     cancels.push(cancel)
   }
 
-  function rowNode(row: TallyRowModel, index: number): HTMLElement {
-    const tr = el('tr')
-    tr.append(
-      el('td', 'tr-i', pad2(index + 1)),
-      el('td', 'tr-l', row.label),
-      el('td', 'tr-v', row.value),
-      el('td', `tr-d ${row.delta}`, DELTA_MARK[row.delta]),
-    )
-    // The seam carries no baseline; the pack does, matched by label. An axis it
-    // does not name simply prints no baseline cell (design D6).
-    if (row.baseline !== null) tr.append(el('td', 'tr-b', `${BASELINE_CAPTION}${row.baseline}`))
-    return tr
+  /** One axis, as a line of the record. `.tl-s` starts on the facts' own x. */
+  function rowNode(row: TallyRowModel, unit: string): HTMLElement {
+    const line = el('li', 'tly-line')
+    line.append(el('span', 'tl-s', lineOf(row, unit)))
+    return line
   }
 
   function reset(): void {
     stop()
-    body.replaceChildren()
+    lines.replaceChildren()
+    openLine.classList.remove('in')
+    closeLine.classList.remove('in')
     big.textContent = String(0)
-    verdict.classList.remove('in')
     paint('pending')
   }
 
   function run(model: TallyModel): void {
     stop()
     doc.textContent = model.doc
-    title.textContent = model.title
-    sub.textContent = model.sub
-    headKey.textContent = model.headline.label
-    unit.textContent = model.headline.unit
-    headBaseline.textContent =
-      model.headline.baseline === null ? '' : `${BASELINE_CAPTION}${model.headline.baseline}`
-    stamp.textContent = model.verdict ?? ''
-    stamp.hidden = model.verdict === null
-    note.textContent = model.note ?? ''
-
+    openText.textContent = model.title
+    totalCaption.textContent = `${model.headline.label}${TOTAL_JOIN}`
+    totalUnit.textContent = model.headline.unit
     big.textContent = String(0)
-    verdict.classList.remove('in')
-    body.replaceChildren(...model.rows.map(rowNode))
-    paint('counting')
-    countUp(model.headline.value)
 
-    const printed = model.rows.length
-    for (const [i, tr] of [...body.children].entries()) {
-      later(PACE.LEAD + i * PACE.ROW_STEP, () => tr.classList.add('in'))
+    const axes = model.rows.map((row) => rowNode(row, model.headline.unit))
+    openLine.classList.remove('in')
+    closeLine.classList.remove('in')
+    // The record is BUILT whole and revealed in cadence, exactly as the table's
+    // rows were: every line is in the document from the first frame, so the
+    // 현장 기록 column above it never reflows as the day is read out.
+    lines.replaceChildren(openLine, ...axes, closeLine)
+    paint('counting')
+
+    // The opening line IS the record arriving — it does not wait on `LEAD`, the
+    // way the old sheet's head did not wait on it either.
+    openLine.classList.add('in')
+
+    const printed = axes.length
+    for (const [i, line] of axes.entries()) {
+      later(PACE.LEAD + i * PACE.ROW_STEP, () => line.classList.add('in'))
     }
     const ruled = PACE.LEAD + printed * PACE.ROW_STEP
-    later(ruled + PACE.VERDICT_AFTER, () => verdict.classList.add('in'))
+    later(ruled + PACE.VERDICT_AFTER, () => {
+      closeLine.classList.add('in')
+      countUp(model.headline.value, countMs(printed))
+    })
     later(ruled + settleMs(printed), () => {
       paint('final')
       options.onFinal?.()
@@ -298,6 +362,8 @@ export function createScoreTally(options: ScoreTallyOptions): ScoreTally {
     open: () => reset(),
     run,
     reset,
-    rows: () => body.children.length,
+    // The open and the close are not axes: a caller asking "how many rows did
+    // the day score" must not be handed two more than the seam sent.
+    rows: () => lines.querySelectorAll('.tly-line:not(.tl-open):not(.tl-close)').length,
   }
 }

@@ -13,6 +13,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { tallyLineText } from '../../src/client/components/tally-line.ts'
 import { baselineState, createScorer } from '../../src/driver/scorer.ts'
+import { deathsOf } from '../../src/shared/predicates.ts'
 import type { OutcomePack, ScorePack } from '../../src/driver/scorer.ts'
 import type { PredicateState } from '../../src/shared/predicates.ts'
 import type { ViewEvent } from '../../src/shared/view-driver.ts'
@@ -71,14 +72,34 @@ describe('the feed’s 집계 line and the ledger report ONE run', () => {
   })
 
   it('(d) the parts sum to the headline — the line never does its own arithmetic', () => {
+    // Summed by `deathsOf`, the rule the scorer totalled with: on 우는다리 that
+    // is the numeric rows and nothing else, because every unit it counts is a
+    // crowd. A pack whose unit is one named person (전구간정상's 오세라) puts a
+    // PROSE row in this sum, and the guard holds there for the same reason —
+    // one definition of what a value costs, on both sides of the seam.
     for (const state of Object.values(DAYS)) {
       const ledger = ledgerOf(state)
-      const summed = ledger.rows
-        .map((row) => row.value)
-        .filter((value): value is number => typeof value === 'number')
-        .reduce((a, b) => a + b, 0)
+      const summed = ledger.rows.map((row) => deathsOf(row.value)).reduce((a, b) => a + b, 0)
       expect(summed).toBe(ledger.total)
     }
+  })
+
+  it('(d2) a named person the day killed is one of the parts, printed as its count', () => {
+    // 전구간정상's rescue day, as it reaches the feed: the crowd is out and the
+    // headline is 오세라 alone. Before `deathsOf` this line read 집계. 사망 0.
+    const rescued: Extract<ViewEvent, { type: 'score' }> = {
+      type: 'score',
+      total: 1,
+      baseline_total: 139,
+      rows: [
+        { label: '터널에서 나오지 못한 사람', value: 0, baseline: 137 },
+        { label: '오세라', value: '사망 · 아홉 번째 문 안쪽', baseline: '사망 · 아홉 번째 문 앞' },
+        { label: '차우진', value: '생존 · 입건', baseline: '사망 · 하행 사점이 킬로 갓길' },
+      ],
+    }
+    // The words stay the ledger's row; the brackets are the headline's
+    // arithmetic, so the part is a number like every other part.
+    expect(tallyLineText(rescued)).toBe('집계. 사망 1(터널에서 나오지 못한 사람 0 · 오세라 1).')
   })
 
   it('(e) a ledger with nothing to count prints the headline alone', () => {

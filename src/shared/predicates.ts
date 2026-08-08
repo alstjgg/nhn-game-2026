@@ -70,10 +70,50 @@ type Parsed = {
  * is a row that only reads (`contract-datapack` §3.6). Integers only — a
  * decimal body count is not a thing, and leaving floats out keeps "did the
  * author mean a number here?" from ever being a judgement call.
+ *
+ * Exported for the one caller that has a raw `=> …` tail and no parser: a guard
+ * reading a pack's fallbacks off disk. Everything inside the run reaches values
+ * through `resolve`.
  */
-function readValue(raw: string): PredicateValue {
+export function readValue(raw: string): PredicateValue {
   const text = raw.trim()
   return /^-?\d+$/.test(text) ? Number(text) : text
+}
+
+/**
+ * The outcome word a unit's value opens with when the unit names a death.
+ *
+ * `contract-datapack` §3.6 gave the headline its arithmetic with one rule — a
+ * NUMBER counts, a WORD reads — and that rule is right for a unit that counts a
+ * crowd (`터널에서 나오지 못한 사람 => 137`) and wrong for a unit that IS a
+ * person. 전구간정상 scores 오세라 and 차우진 one person each, and the record
+ * has to print WHERE they died (`사망 · 아홉 번째 문 안쪽`), so their values
+ * are authored as prose. Under the numbers-only rule the day where the tunnel
+ * empties and only 오세라 is left behind closed on 총 사망자 수 0명, with the
+ * line above it reading 오세라: 사망.
+ *
+ * So a person-unit's death is counted from the word the author already wrote.
+ * The scorer still invents nothing: `사망` is the pack's own outcome token, in
+ * the leading position the packs put it in, and a value that opens with any
+ * other word (`생존 ·`, `입건 ·`, `6시간 구금`, `71명`) counts nothing.
+ */
+const DEATH = '사망'
+
+/** What separates the outcome word from the rest of an authored value. */
+const OUTCOME_END = /[\s·,]/
+
+/**
+ * How many deaths this value puts on the 총 사망자 수 headline.
+ *
+ * A number is a body count and counts itself — that is the original rule,
+ * unchanged. A string counts ONE when its outcome word is `사망`, because a
+ * unit that resolves to prose is a unit that scores a single named person; a
+ * pack that ever needs a prose value to count more than one wants a number.
+ */
+export function deathsOf(value: PredicateValue): number {
+  if (typeof value === 'number') return value
+  const [outcome] = value.trim().split(OUTCOME_END)
+  return outcome === DEATH ? 1 : 0
 }
 
 /** One term, or the reason it is not one. */

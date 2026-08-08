@@ -88,7 +88,10 @@ export const FILE = {
 export const RECORD = {
   root: '#w-rep .terminal-record',
   ledger: '#w-rep .terminal-record[data-tally-state]',
-  rows: '#w-rep .terminal-record .tly-table tr',
+  /* x4 — the AXIS lines only. The record's opening (`…시점 집계`) and closing
+     (`총 사망자 수 …`) lines are its own head and foot, not scored rows, so a
+     caller comparing this against `score.rows.length` must not see them. */
+  rows: '#w-rep .terminal-record .tly-line:not(.tl-open):not(.tl-close)',
   big: '#w-rep .terminal-record #tlyBig',
   control: '#w-file #btnDeploy',
 } as const
