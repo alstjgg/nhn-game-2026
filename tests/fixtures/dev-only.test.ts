@@ -115,20 +115,26 @@ describe('[u2f#c10] frozen inputs are read, never written', () => {
   // hardening (08-05) — same argument as the two above, recorded in full at
   // `tests/acceptance/discovery-and-frozen-guard.test.ts`: the pack is content,
   // the freeze was "the run must not rewrite its own inputs", and that claim
-  // expired at the run's merge. `data/scenario/_schema/` stays frozen; the
-  // schemas are the law the content is checked against.
+  // expired at the run's merge. `data/scenario/_schema/` stayed frozen through
+  // both of those; the schemas are the law the content is checked against.
   //
   // The gate-vocabulary repair (08-06) lands under that same release — the leak
   // is in the authored timeline itself, so there is nowhere else to fix it.
-  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts', 'data/scenario/우는다리/']
-  const FROZEN = [
-    // Narrowed from `data/scenario/` — the pack under it is released (above);
-    // the schemas it is checked against are not.
+  //
+  // `data/scenario/_schema/` joins the released set with the gate-excerpt
+  // ratification (08-09). The full argument is at the twin guard,
+  // `tests/acceptance/discovery-and-frozen-guard.test.ts`: the law is amended,
+  // not broken into, and the amendment is ADDITIVE — every pack on disk stays
+  // valid byte-for-byte, a new field is optional and never joins `required`.
+  // This file keeps its own copy of the lists on purpose (it is the dev-only
+  // twin), so a release has to be recorded in both or one of them goes red.
+  const RELEASED = [
+    'docs/spec-client.md',
+    'src/shared/species.ts',
+    'data/scenario/우는다리/',
     'data/scenario/_schema/',
-    'docs/design/',
-    'src/shared/segment.ts',
-    'tools/tests/segment.golden.mjs',
   ]
+  const FROZEN = ['docs/design/', 'src/shared/segment.ts', 'tools/tests/segment.golden.mjs']
 
   it('(e) this run introduced no diff under any frozen path', () => {
     const merge = runMerge()
