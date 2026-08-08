@@ -256,6 +256,36 @@ export async function newRun(page: Page): Promise<void> {
 }
 
 /**
+ * The press that OPENS the day — DEPLOY, confirmed, with whatever the file holds.
+ *
+ * `BUILD → (deploy) RUN` (spec-client §5.1) is held by the driver itself: until
+ * this op arrives nothing the run prints reaches a window and no beat is
+ * stepped, so a desk that has only booted shows an empty fanfold and a clock at
+ * 0. Every lane that reads what the run PRINTED therefore has to open one
+ * first. `drain()` is the standing exception and keeps its own override.
+ *
+ * An EMPTY file is a committed file: the control is live with no slot filled
+ * (`components/deploy-button.ts`), which is what lets a lane that is not about
+ * the file open a day without building one.
+ *
+ * Turns to the agent's page on the way in, for `turnToAgent`'s own reason — the
+ * control is not in the document until the file is on that page — and it is
+ * idempotent, so a lane that has already turned pays nothing.
+ */
+export async function deployFile(page: Page): Promise<void> {
+  await turnToAgent(page)
+  const control = page.locator('#w-file #btnDeploy')
+  await expect(control, 'the file is not on a press that would open a day').toHaveAttribute(
+    'data-op',
+    'deploy',
+    { timeout: 20_000 },
+  )
+  await control.click()
+  await confirmDeploy(page)
+  await expect(control).toHaveAttribute('data-state', 'deployed', { timeout: 20_000 })
+}
+
+/**
  * Answers the confirmation plate (x2 — `shell/confirm.ts`).
  *
  * Every committing press of DEPLOY now raises a question before it commits, in

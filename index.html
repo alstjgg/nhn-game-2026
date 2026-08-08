@@ -93,19 +93,35 @@
             <div class="clk-face">
               <span class="clk-lead">SIM</span>
               <span class="clk-digits" id="clockDigits"></span>
-              <span class="clk-term"></span>
             </div>
-            <div class="clk-bar"><i id="clockFill"></i><u id="clockTerm"></u></div>
             <!-- W4 — the transport controls are gone. The day is not something
                  the operator scrubs; it is something they commit a file to and
-                 then watch. DEPLOY starts it, 21:04 ends it. What is left here
-                 is the slot the audio toggle mounts into (`shell/boot.ts`). -->
+                 then watch. DEPLOY starts it, the terminal minute ends it. What
+                 is left here is the slot the audio toggle mounts into
+                 (`shell/boot.ts`).
+
+                 x6 — the progress bar is gone too, and so is the `→ 23:12`
+                 gutter that was its right end. The digits now read the LIVE
+                 FEED's latest PRINTED stamp (`shell/feed-clock.ts`), while the
+                 fill measured `driver.clock`'s own running minute against the
+                 band: one box, two times, and the faster one drawn as the
+                 authority. The chrome follows the paper now, so the face and
+                 the mute toggle are all that is left — one row, not a stack. -->
             <div class="clk-rate"></div>
           </div>
 
+          <!-- x6 — the two lines swapped languages, because they were naming
+               two different things. `D-DAY −02` counts down to a date, and this
+               unit counts ATTEMPTS: the day is re-run, it does not approach. The
+               figure is what the operator reads under pressure, so it is now
+               spelled in the language they read the rest of the paper in, and
+               the Latin line above it joins OPERATOR / CASE as the rail of
+               small caps that says what the field is. Ids untouched —
+               `#ddayNum` is `components/run-counter.ts`'s and the pips are the
+               same strip. -->
           <div class="tb-dday" id="ddayUnit">
-            <div class="dd-label">잔여 시행</div>
-            <div class="dd-value">D-DAY <span id="ddayNum"></span></div>
+            <div class="dd-label">REMAINING ATTEMPTS</div>
+            <div class="dd-value">잔여 시행 <span id="ddayNum"></span></div>
             <div class="dd-runs"><span id="runNum"></span> / <span id="runTotal"></span></div>
             <div class="dd-pips" id="ddayPips"></div>
           </div>

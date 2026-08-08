@@ -1,15 +1,18 @@
 // [u5] LIVE FEED — the rendered half: a whole fixture round on the fanfold, the
-// diegetic wait, the 17:33 fallback, clock-landed lines, and a surface the
-// player cannot touch.
+// silent wait, the 17:33 fallback, clock-landed lines, and a surface the player
+// cannot touch.
 //
-// Covers [u5#c2] round renders in order · [u5#c4] diegetic waiting ·
+// Covers [u5#c2] round renders in order · [u5#c4] silent waiting ·
 // [u5#c5] fallback line · [u5#c6] lines land on the clock ·
 // [u5#c7] untouchable during a run.
 //
 // Test titles are load-bearing: the unit's verification commands filter with
-// `-g 'round renders in order'`, `-g 'diegetic waiting'`, `-g 'fallback line'`,
+// `-g 'round renders in order'`, `-g 'silent waiting'`, `-g 'fallback line'`,
 // `-g 'lines land on the clock'` and `-g 'untouchable during a run'`. Do not
 // rename a describe block without updating `.claude/super/units/u5.md`.
+//
+// x6 — `diegetic waiting` became `silent waiting` when the wait markers were
+// removed; see that block for why the rename was safe to make.
 //
 // The two handles this suite drives:
 //   • `window.__shell` — u3's: `{ frame(), drain() }`, the driver undecorated.
@@ -18,21 +21,16 @@
 //     reach 21:04 inside an e2e budget (design D13).
 //
 // C3: no synthetic fixture literal is asserted. The Korean strings that appear
-// are the *client's own* component states (`(변화 없음)`, the wait phrasings —
-// design README 74–76) and the reference marks, not run content.
+// are the *client's own* component states (`(변화 없음)`) and the reference
+// marks, not run content. The wait phrasings used to be on that list; x6 took
+// them off it by taking them out of the client.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
+import { deployFile } from './fixtures/harness.ts'
 
 const FEED = '#w-feed'
 const LIST = '#w-feed #feedList'
 const SCROLL = '#w-feed #feedScroll'
-
-/** The wait phrasings, by `waiting.for` — design README 74–76, verbatim. */
-const WAIT_PHRASE = {
-  judgment: '무전 회신 대기 중',
-  narration: '현장 상황 수신 대기 중',
-  report: '보고서 회신 대기 중',
-} as const
 
 /** The reference marks (app.js:405) as they must reach `.fl-c[data-mark]`. */
 const MARKS: Record<string, string> = {
@@ -147,11 +145,57 @@ async function domLines(page: Page): Promise<DomLine[]> {
 const streamRendered = (lines: DomLine[]): DomLine[] =>
   lines.filter((l) => !l.empty && !l.text.startsWith('집계. '))
 
+/* ══ the day opens on the press, never before it ══════════════════════════ */
+
+test.describe('the day opens on the press', () => {
+  // THE DEFECT (fixed 2026-08-09). The shell opens the desk with `advance(0)`
+  // so the run's `meta` reaches the chrome at boot, and that release used to
+  // carry the whole opening MINUTE with it — on the demo run, the case's first
+  // script event and 서지형's first line. The fanfold printed the day's opening
+  // while the AGENT FILE was still empty and ECHO-1 had not gone in, which is
+  // the one edge spec-client §5.1 names outright: `BUILD → (deploy) RUN`.
+  //
+  // The driver holds it now (`tests/driver/build-hold.test.ts` pins that side,
+  // including the half that costs a model call). This is the operator's own
+  // view of the same claim: the paper the desk boots with is blank, and the
+  // press is what puts the first line on it.
+  test('the day opens on the press — the fanfold is empty until the file is committed', async ({ page }) => {
+    await boot(page)
+
+    // The window is up and the head is printed — the stock is not a run line.
+    await expect(page.locator(`${FEED} .feed-head`)).toHaveCount(1)
+    await expect(page.locator(`${LIST} li`), 'the run printed before it was opened').toHaveCount(0)
+
+    // …and the desk still knows which day it is: `meta` is not run content, so
+    // the counter, the pips and the callsign are all on the desk at boot.
+    const opened = await frame(page)
+    expect(opened.events.map((e) => e.type)).toContain('meta')
+    expect(
+      opened.events.filter((e) => e.type === 'feed'),
+      'the driver released a feed line into an unopened day',
+    ).toEqual([])
+
+    await deployFile(page)
+
+    await expect(page.locator(`${LIST} li`).first()).toBeAttached({ timeout: 10_000 })
+    // The first line is the run's own first line, not a client-minted one —
+    // whatever the pack authors at its opening minute.
+    const first = (await domLines(page))[0]!
+    const stream = await streamLines(page)
+    expect(stream.length, 'the press released nothing').toBeGreaterThan(0)
+    expect(first.text).toBe(stream[0]!.text)
+  })
+})
+
 /* ══ [u5#c2] a full fixture round renders in stream order ═════════════════ */
 
 test.describe('round renders in order', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page)
+    // The day does not open until the file is committed — the driver holds the
+    // run's own stream until a `deploy` op arrives (spec-client §5.1), so a
+    // fanfold read before the press is an empty one by contract.
+    await deployFile(page)
     await setRate(page, 0)
     await seek(page, '21:04')
   })
@@ -224,57 +268,74 @@ test.describe('round renders in order', () => {
   })
 })
 
-/* ══ [u5#c4] waiting is diegetic, never a spinner ═════════════════════════ */
+/* ══ [u5#c4] waiting is SILENT — x6 ═══════════════════════════════════════
+   The criterion used to read "waiting is diegetic, never a spinner", and the
+   feed carried `……무전 회신 대기 중 ● ● ●` for every call in flight: latency told
+   as a radio waiting for its answer rather than as a percentage. Half of that
+   survives — no spinner, no percentage, still true and still checked below.
+   The other half is gone (민서, 08-09). On a seven-round day three markers a
+   beat were the most frequent thing on the paper, and each one said only that
+   the desk was still working; the answer says that a beat later, with content.
 
-test.describe('diegetic waiting', () => {
+   So the describe is `silent waiting` now, not `diegetic waiting`. The old
+   title was load-bearing for a `-g` filter in `.claude/super/units/u5.md` —
+   that file no longer exists (`.claude/super/` is gitignored runtime state),
+   which is why this rename is safe to make. The header above was updated with
+   it. `WAIT_PHRASE` left this file with the markers: nothing in the client
+   authors those three strings any more, so a test that named them would be the
+   only place they still lived.                                                */
+
+test.describe('silent waiting', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page)
+    // The day does not open until the file is committed — the driver holds the
+    // run's own stream until a `deploy` op arrives (spec-client §5.1), so a
+    // fanfold read before the press is an empty one by contract.
+    await deployFile(page)
     await setRate(page, 0)
   })
 
-  test('diegetic waiting — an open wait shows one breathing marker, no spinner', async ({ page }) => {
-    // 09:25 opens the judgment wait; the reply lands at 09:26.
+  test('silent waiting — an open wait draws nothing at all, and still no spinner', async ({ page }) => {
+    // 09:25 opens the judgment wait; the reply lands at 09:26. Parked between
+    // the two, on the one frame that used to be guaranteed to show a marker.
     await seek(page, '09:25')
-    const open = page.locator(`${LIST} li.fl-wait:not(.resolved)`)
-    await expect(open).toHaveCount(1)
-    await expect(open).toBeVisible()
-
-    const text = ((await open.locator('.fl-c').textContent()) ?? '').trim()
-    expect(text.startsWith('……')).toBe(true)
-    expect(text).toContain(WAIT_PHRASE.judgment)
-    expect(text).not.toMatch(/\d/)
-    expect(text).not.toMatch(/%/)
-
-    await expect(open.locator('.dots i')).toHaveCount(3)
-    await expect(page.locator(`${FEED} [role=progressbar], ${FEED} .spinner, ${FEED} progress`)).toHaveCount(0)
+    await expect(page.locator(`${LIST} li.fl-wait`)).toHaveCount(0)
+    await expect(page.locator(`${FEED} .dots`)).toHaveCount(0)
+    // The half of [u5#c4] that outlived the marker: an open call may not be
+    // reported as a machine measuring itself, and now may not be reported at
+    // all. A regression that brought back a spinner INSTEAD of the marker would
+    // pass a count-0 check on `.fl-wait` alone, so both are asserted.
+    await expect(
+      page.locator(`${FEED} [role=progressbar], ${FEED} .spinner, ${FEED} progress`),
+    ).toHaveCount(0)
   })
 
-  test('diegetic waiting — the phrasing table covers every `waiting.for`', async ({ page }) => {
-    await seek(page, '09:25')
-    const phrases = Object.values(WAIT_PHRASE)
-    expect(new Set(phrases).size).toBe(3)
-    const text = ((await page.locator(`${LIST} li.fl-wait`).first().locator('.fl-c').textContent()) ?? '').trim()
-    expect(phrases.some((p) => text.includes(p))).toBe(true)
-  })
-
-  test('diegetic waiting — the reply resolves the marker and hides it', async ({ page }) => {
-    await seek(page, '09:26')
-    await expect(page.locator(`${LIST} li.fl-wait:not(.resolved)`)).toHaveCount(0)
-    const resolved = page.locator(`${LIST} li.fl-wait.resolved`)
-    expect(await resolved.count()).toBeGreaterThan(0)
-    await expect(resolved.first()).toBeHidden()
-  })
-
-  test('diegetic waiting — never two open markers at once, across the whole day', async ({ page }) => {
+  test('silent waiting — no marker at any beat that used to open one', async ({ page }) => {
+    // The same seven stamps the old "never two open markers at once" test
+    // walked. The claim inverted with the mechanism: the ceiling was one, and
+    // it is now zero.
     for (const at of ['09:25', '11:30', '14:20', '16:41', '17:31', '20:12', '21:04']) {
       await seek(page, at)
-      expect(await page.locator(`${LIST} li.fl-wait:not(.resolved)`).count()).toBeLessThanOrEqual(1)
+      expect(await page.locator(`${LIST} li.fl-wait, ${FEED} .dots`).count()).toBe(0)
     }
   })
 
-  test('diegetic waiting — deterministic lines land instantly, with no marker at all', async ({ page }) => {
+  test('silent waiting — the answer still lands, so the pause reads as a pause', async ({ page }) => {
+    // What replaces the marker is nothing, and this is the test that proves
+    // "nothing" is a pause and not a break: the paper is quiet across the wait
+    // and then the reply arrives on it. Without this, a feed that had stopped
+    // dead at 09:25 would satisfy every assertion above.
+    await seek(page, '09:25')
+    const before = (await domLines(page)).length
+    await seek(page, '09:26')
+    const after = await domLines(page)
+    expect(after.length).toBeGreaterThan(before)
+    expect(after.some((l) => l.kind === 'radio')).toBe(true)
+  })
+
+  test('silent waiting — deterministic lines land instantly, as they always did', async ({ page }) => {
     await seek(page, '08:52')
-    await expect(page.locator(`${LIST} li.fl-wait:not(.resolved)`)).toHaveCount(0)
+    await expect(page.locator(`${LIST} li.fl-wait`)).toHaveCount(0)
     expect((await domLines(page)).length).toBeGreaterThanOrEqual(4)
   })
 })
@@ -284,6 +345,10 @@ test.describe('diegetic waiting', () => {
 test.describe('fallback line', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page)
+    // The day does not open until the file is committed — the driver holds the
+    // run's own stream until a `deploy` op arrives (spec-client §5.1), so a
+    // fanfold read before the press is an empty one by contract.
+    await deployFile(page)
     await setRate(page, 0)
   })
 
@@ -317,10 +382,14 @@ test.describe('fallback line', () => {
     expect(errors).toEqual([])
   })
 
-  test('fallback line — the open wait it answers is resolved by it', async ({ page }) => {
-    await seek(page, '17:35')
-    await expect(page.locator(`${LIST} li.fl-wait:not(.resolved)`)).toHaveCount(0)
-  })
+  // DELETED (08-09, x6): 'fallback line — the open wait it answers is resolved
+  // by it'. It seeked to 17:35 and required no unresolved `.fl-wait` — a claim
+  // about a marker that 17:33's fallback took down. With no marker put up in
+  // the first place the assertion is vacuously true, and a vacuous check reads
+  // like coverage. What the fallback does to the paper is still pinned by the
+  // two tests above (it renders as a ※ line, and the day carries on past it),
+  // and that no wait is drawn anywhere is `silent waiting`'s beat, not this
+  // block's.
 })
 
 /* ══ [u5#c6] lines land on the game clock, not on a timer of their own ════ */
@@ -328,10 +397,20 @@ test.describe('fallback line', () => {
 test.describe('lines land on the clock', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page)
+    // The day does not open until the file is committed — the driver holds the
+    // run's own stream until a `deploy` op arrives (spec-client §5.1), so a
+    // fanfold read before the press is an empty one by contract.
+    await deployFile(page)
   })
 
   test('lines land on the clock — a paused clock lands nothing', async ({ page }) => {
     await setRate(page, 0)
+    // The press opened the day at ×1, so a pause here catches the reveal queue
+    // mid-flight: `run-feed.ts` flushes what is queued when the sim stops, and
+    // a count taken in that same frame would read short and then grow — which
+    // is the very thing this test would report as a line landing on a paused
+    // clock. The claim is about what lands AFTER the desk has settled.
+    await page.waitForTimeout(500)
     const before = (await domLines(page)).length
     await page.waitForTimeout(2200)
     expect((await domLines(page)).length).toBe(before)
@@ -402,6 +481,10 @@ test.describe('lines land on the clock', () => {
 test.describe('untouchable during a run', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page)
+    // The day does not open until the file is committed — the driver holds the
+    // run's own stream until a `deploy` op arrives (spec-client §5.1), so a
+    // fanfold read before the press is an empty one by contract.
+    await deployFile(page)
     await setRate(page, 0)
     await seek(page, '21:04')
   })
@@ -456,6 +539,7 @@ test.describe('untouchable during a run', () => {
 test.describe('[U5.4] the agent line names the slots that moved it', () => {
   test('[U5.4] (a) a cited radio line carries the slot mark, an uncited one does not', async ({ page }) => {
     await boot(page)
+    await deployFile(page)
     // Release the day up to the fixture's cited line (09:26).
     await page.evaluate(() => {
       const handle = (window as unknown as { __feed?: { seek(at: string): void } }).__feed

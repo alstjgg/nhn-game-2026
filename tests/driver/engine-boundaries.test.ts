@@ -100,6 +100,11 @@ describe('[e7#A14] the existing tests/driver seam suites are untouched', () => {
     // switch moves the coverage instead of leaving it aimed at a pack the
     // deploy no longer carries.
     'shipped-pack.test.ts',
+    // The BUILD hold: `BUILD → (deploy) RUN` on both client driver shapes — the
+    // fixture loop's facade and the live adapter. Client side, and it asserts
+    // nothing about the engine beyond WHEN it is allowed to be stepped, which
+    // is why it is registered here rather than named `engine-*`.
+    'build-hold.test.ts',
   ])
 
   it('(b) everything e7 added under tests/driver is named `engine-*`', () => {

@@ -2,8 +2,15 @@
    win-reports.css — WINDOW 3 · REPORTS (desktop.css lines 471..548).
 
    Two filed documents on white bond, side by side: the fact column and the
-   보고서 body with its red margin rule. Every `.min` sentence is mineable — the
-   red thread is anchored to it once it has been slotted.
+   보고서 body. Every `.min` sentence is mineable — the red thread is anchored to
+   it once it has been slotted.
+
+   x6 — the 보고서 body no longer carries a red margin rule. The reference drew a
+   ledger rule 33px in and indented the prose past it, which is how a ruled pad
+   is printed and not how this pane is read: the operator reads the two panes as
+   one spread, and the rule put the right one 20px off the left one's axis for
+   the sake of a decoration nothing was written against. Both panes now hang
+   from `.doc`'s own padding.
    =========================================================================== */
 
 .win-rep{--delay:.36s}
@@ -31,10 +38,13 @@
 .doc::-webkit-scrollbar-thumb{background:var(--sh-22)}
 .doc-facts{border-right:1px solid var(--sh-2);
   background:linear-gradient(90deg,transparent 96%,var(--sh-04))}
-.doc-body{background:
-  linear-gradient(90deg,transparent 0 33px,var(--seal-a55) 33px 34px,transparent 34px),
-  var(--bond);
-  padding-left:var(--space-34)}
+/* x6 — flat stock, and NO left padding of its own. The 34px indent was sized to
+   clear the ledger rule that used to be painted at x=33–34px; with the rule gone
+   it was 20px of unexplained dead space that pushed 무전 기록 off 현장 기록's
+   axis. `.doc` above sets the padding for both panes and is the only place it is
+   set. The `--bond` fill stays: `.bond` (paper.css) glazes the window body with a
+   sheen gradient, and the body pane is flat sheet under the prose. */
+.doc-body{background:var(--bond)}
 /* x5 — the head is the title and the rule under it. The boxed `가` / `나` file
    letter and the italic subtitle both left `report-view.ts`; what is left is one
    element, so the flex row survives only to hang the rule off. */

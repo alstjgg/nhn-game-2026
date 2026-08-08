@@ -19,7 +19,7 @@ import type { Locator, Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { awaitRecordFinal, confirmDeploy, mineFirst, raiseWindow, turnToAgent } from './fixtures/harness.ts'
+import { awaitRecordFinal, confirmDeploy, deployFile, mineFirst, raiseWindow, turnToAgent } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -195,6 +195,24 @@ test.describe('report renders once after the last beat', () => {
     await expect(page.locator(`${FACTS} li`)).toHaveCount(0)
   })
 
+  // x6 — the DOM half of the seal rule; the rule itself is proved under node
+  // (`tests/windows/reports.test.ts`, `[x6]`). A 검인 chop is a receipt for the
+  // SITTING, and the sitting is not received until the driver's `score` — its
+  // terminal — has landed. Reduced motion is on in this describe, so the replay
+  // is finished on its first paint and `score` is the only thing left to wait
+  // for: exactly the case that used to stamp a blank sheet.
+  test('report renders once after the last beat — the 검인 chop waits for the day to close', async ({
+    page,
+  }) => {
+    const chop = page.locator(`${REP} .sig-stamp`)
+    await expect(chop, 'the signature block never mounted — the oracle is vacuous').toHaveCount(1)
+    await expect(chop, 'a 수신 완료 chop on a day that has filed nothing').toBeHidden()
+
+    await drain(page)
+    await expect(chop).toHaveClass(/\bon\b/)
+    await expect(chop).toBeVisible()
+  })
+
   test('report renders once after the last beat — both panes render the event, in event order', async ({
     page,
   }) => {
@@ -248,21 +266,38 @@ test.describe('report renders once after the last beat', () => {
     expect(facts!.x + facts!.width).toBeLessThanOrEqual(body!.x + 1)
   })
 
-  test('report renders once after the last beat — the report side carries the red margin rule', async ({
+  // x6 — INVERTED. This case used to require a red ledger rule down the report
+  // side, painted as a gradient band at x=33–34px with the prose indented 34px
+  // to clear it. The rule is gone: it was a decoration nothing was written
+  // against, and the indent it needed put 무전 기록 20px off 현장 기록's axis, so
+  // the pane the operator reads as one spread was visibly two.
+  //
+  // What is asserted instead is the thing the rule cost — the two panes hang
+  // from the same left edge — plus the rule's absence, so it cannot come back
+  // without this reading again.
+  test('report renders once after the last beat — the two panes hang from one left edge, with no ledger rule', async ({
     page,
   }) => {
     await drain(page)
-    const paint = await page
-      .locator(`${REP} .doc-body`)
-      .evaluate((n) => getComputedStyle(n as HTMLElement).backgroundImage)
-    expect(paint).toContain('gradient')
+    const pane = async (sel: string): Promise<{ paint: string; padding: string }> =>
+      page.locator(`${REP} ${sel}`).evaluate((n) => {
+        const style = getComputedStyle(n as HTMLElement)
+        return { paint: style.backgroundImage, padding: style.paddingLeft }
+      })
 
-    const reds = [...paint.matchAll(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/g)].map((m) => ({
+    const facts = await pane('.doc-facts')
+    const body = await pane('.doc-body')
+    expect(body.padding, `무전 기록 is indented off 현장 기록's axis`).toBe(facts.padding)
+
+    // No red band anywhere in the body pane's paint. `.doc-facts` keeps its own
+    // gradient (a grey edge shade at 96%), which is why the assert is on colour
+    // and not on the mere presence of a gradient.
+    const reds = [...body.paint.matchAll(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/g)].map((m) => ({
       r: Number(m[1]),
       g: Number(m[2]),
       b: Number(m[3]),
     }))
-    expect(reds.some((c) => c.r > c.g + 20 && c.r > c.b + 20), `no red rule in: ${paint}`).toBe(true)
+    expect(reds.some((c) => c.r > c.g + 20 && c.r > c.b + 20), `a red rule is back: ${body.paint}`).toBe(false)
   })
 })
 
@@ -350,6 +385,9 @@ test.describe('typewriter is replay', () => {
     page,
   }) => {
     await boot(page, { reduced: false })
+    // The press first: the driver holds the run's stream until the file is
+    // committed (spec-client §5.1), so an unopened day has nothing to seek into.
+    await deployFile(page)
     // One sim-minute short of the terminal, then let the clock run there itself.
     await page.evaluate(() => {
       const feed = (window as unknown as { __feed?: { seek(at: string): void; rate(to: number): void } }).__feed

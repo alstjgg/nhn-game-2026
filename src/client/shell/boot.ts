@@ -126,7 +126,14 @@ function renderIdentity(): void {
 const HIDDEN_PUMP_MS = 250
 
 /**
- * Pumps real elapsed milliseconds into the driver and repaints the clock.
+ * Pumps real elapsed milliseconds into the driver. That is the whole job.
+ *
+ * x6 — it used to repaint the top bar's clock as well, from `driver.clock.at()`.
+ * The digits now read the LIVE FEED's latest printed stamp instead
+ * (`shell/feed-clock.ts`), so the pump has nothing left to paint and the `paint`
+ * parameter is dropped rather than handed a no-op: a callback nobody passes is
+ * an invitation to start feeding this view again from the sim clock, which is
+ * exactly the disagreement the seam was built to close.
  *
  * TWO PUMPS, ONE TIMELINE. A frame callback does not fire in a hidden document
  * — a background tab, a minimised window, a window another app fully covers —
@@ -148,7 +155,7 @@ const HIDDEN_PUMP_MS = 250
  * with and the one that keeps running while hidden, so `previous` carries
  * across a swap with no seam: no minute is double-counted and none is dropped.
  */
-function runPump(driver: FixtureDriver, paint: (at: string, minute: number) => void): void {
+function runPump(driver: FixtureDriver): void {
   let previous: number | null = null
   let frame: number | null = null
   let timer: number | null = null
@@ -156,7 +163,6 @@ function runPump(driver: FixtureDriver, paint: (at: string, minute: number) => v
   const pump = (now: number): void => {
     if (previous !== null) driver.advance(now - previous)
     previous = now
-    paint(driver.clock.at(), driver.clock.minute)
   }
 
   const step = (now: number): void => {
@@ -228,11 +234,17 @@ export async function bootShell(): Promise<void> {
       : ((await openLiveDesk(identity)) ??
         createRunLoopDriver([placeholderBootRun(identity)]))
 
-  // 3 — the chrome the driver feeds.
-  const clock = createGameClock({
+  // 3 — the chrome. The run counter is driver-fed; the clock is not any more.
+  //
+  // x6 — the clock takes the pack's opening stamp and then follows the LIVE
+  // FEED's own printed stamps (`shell/feed-clock.ts`), so it is wired here
+  // without the driver and without `identity.end`. The terminal stamp was the
+  // right end of a progress bar that no longer exists; the pack still carries it
+  // and the driver still ends the run on it — the chrome simply stopped printing
+  // a second, faster time next to the one the operator can read off the paper.
+  createGameClock({
     root: must('#clockUnit'),
     start: identity.start,
-    end: identity.end,
   })
   const runs = createRunCounter(must('#ddayUnit'))
   driver.subscribe((event) => {
@@ -323,7 +335,7 @@ export async function bootShell(): Promise<void> {
     }
   }
 
-  runPump(driver, clock.paint)
+  runPump(driver)
   desk.focus('feed')
 
   // 6 — the hand-over. Signed in, the operator gets one thing on the desk: the

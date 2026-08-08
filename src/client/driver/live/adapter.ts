@@ -162,6 +162,24 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
   let finished = false
   let started = false
   let rebuilding = false
+  /**
+   * The BUILD hold — `BUILD → (deploy) RUN` (spec-client §5.1).
+   *
+   * The desk opens with `start()` + `advance(0)` (`shell/boot.ts` step 5) so the
+   * run's `meta` lands on the chrome at boot. Unheld, that opening release also
+   * carried the run: `release()` let out everything stamped at the opening
+   * minute and `kick()` — seeing nothing pending and the clock level with the
+   * frontier — stepped the first beat. So the LIVE FEED printed the case's
+   * opening before the operator had committed anything, and, worse, Call 1 went
+   * to the model with `membrane.deployed()` empty: the first gate was judged
+   * with no agent file at all, and the file the operator then sent in only ever
+   * reached the beats after it.
+   *
+   * Both halves are held here. Nothing STAMPED is released and no beat is
+   * stepped until a `deploy` op passes through — the run's `meta` still goes out
+   * at boot, because it describes the day rather than happening inside it.
+   */
+  let armed = false
   /** Whether the run currently bound has already been handed to the run loop. */
   let closed = false
 
@@ -206,7 +224,10 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
         held.push(item)
         continue
       }
-      if (!all && item.minute !== null && item.minute > clock.minute) {
+      // A STAMPED event is the run happening; it waits for the clock, and until
+      // the file is committed it waits for that too (see `armed`). `all` is
+      // `drain()`, which overrides both on the same terms.
+      if (!all && item.minute !== null && (!armed || item.minute > clock.minute)) {
         releasing = false
         held.push(item)
         continue
@@ -223,7 +244,7 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
    * frontier would let a paused desk run the whole run in the background.
    */
   function kick(): void {
-    if (!started || stepping || finished || rebuilding) return
+    if (!started || !armed || stepping || finished || rebuilding) return
     if (pending.length > 0 || clock.minute < frontier) return
     stepping = true
     void bound.driver
@@ -340,6 +361,10 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
     // Submitted before `release()`, because `kick()` may step into Call 1.
     for (const [seat, id] of seats) opened.driver.submit({ op: 'slot', block_id: id, slot: seat })
     opened.driver.submit({ op: 'deploy', blocks: [...deployed] })
+    // That submit IS the new day's commit — under one press (W4) the gesture
+    // that opened this day committed its file first — so the day opens armed
+    // and the BUILD hold above never re-arms mid-sitting.
+    armed = true
     release()
     kick()
   }
@@ -411,6 +436,11 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
     },
 
     drain() {
+      // The BUILD hold comes off here on the same terms the clock does: this is
+      // the DEV/TEST override — reachable only through the `__shell` handle,
+      // which inv 11 keeps out of the player build — and a lane that drains a
+      // day it never deployed still means to see the whole day.
+      armed = true
       // Everything already produced, regardless of the clock. It cannot pull
       // the REST of the run forward the way the fixture's can — those events do
       // not exist yet, and manufacturing them would mean calling a model — so
@@ -431,7 +461,15 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
       if (op.op === 'mine' && !mined.includes(op.sentence_id)) mined = [...mined, op.sentence_id]
       if (op.op === 'slot') slots.set(op.slot, op.block_id)
       if (op.op === 'unslot') slots.delete(op.slot)
-      if (op.op === 'deploy') deployed = [...new Set(op.blocks)].sort()
+      if (op.op === 'deploy') {
+        deployed = [...new Set(op.blocks)].sort()
+        // The BUILD→RUN edge. Stepped straight away rather than on the next
+        // frame, because the first beat is a model call and the day the
+        // operator just committed should start thinking on the press.
+        armed = true
+        release()
+        kick()
+      }
       if (op.op === 'new_run') {
         // Refused BEFORE the ack, never after. `rebuild()` settling on `null`
         // would leave the desk already told `ok`, and `tally.ts` reads that

@@ -99,7 +99,13 @@ test.describe('acceptance 1-7', () => {
     const caseName = await page.locator(CHROME.caseName).innerText()
     expect(caseName.trim().length, 'the chrome title is empty — the pack did not load').toBeGreaterThan(0)
 
-    // Counter and clock are painted from the driver, not from markup defaults.
+    // Counter and clock carry a real time, not a markup default. x6 — the two
+    // no longer share a source: the counter is still driver-fed (the `meta`
+    // event), while the clock reads the LIVE FEED's printed stamp
+    // (`shell/feed-clock.ts`). §7 #1 asks only that the chrome SHOW a clock, and
+    // it does either way — the opening stamp `shell/pack.ts` hands the view is
+    // already `HH:MM`, so the digits are never blank even before the fanfold's
+    // first line lands.
     await expect(page.locator(CHROME.runNum)).not.toBeEmpty()
     await expect(page.locator(CHROME.ddayNum)).not.toBeEmpty()
     await expect(page.locator(CHROME.clockDigits)).toHaveText(/\d{2}:\d{2}/)
@@ -262,6 +268,14 @@ test.describe('acceptance 1-7', () => {
     await seedClock(page, '21:04')
     await drain(page)
 
+    // x6 — the digits are the FEED's stamp now, so this reads one step further
+    // than it used to: not "the sim clock was seeded to 21:04" but "the paper
+    // printed 21:04". It still holds at this line, and holds for a reason rather
+    // than by luck. The fanfold paces its reveal only while the clock RUNS
+    // (`components/run-feed.ts`); seeding to the terminal minute ends the run, so
+    // every queued line — including the 21:04 symptom and the `score` that
+    // reuses its stamp — lands whole in the same turn as the `drain` above,
+    // with no queue left to hold the chrome behind the paper.
     await expect(page.locator(CHROME.clockDigits)).toContainText('21:04')
     await expect(page.locator(RECORD.root)).toHaveCount(1)
 
