@@ -252,9 +252,18 @@ test.describe('a11y — landmarks and roles', () => {
 
     const said: string[] = []
     said.push((await toast.textContent()) ?? '')
-    // Drive the run to its close: the wait, the fallback, the filed report and
-    // the tally all have to reach an operator who is not watching pixels. Via
-    // the harness, so this spec is inside the u7 gap rule rather than beside it.
+    // Drive the run to its close: the fallback, the filed report and the tally
+    // all have to reach an operator who is not watching pixels. Via the harness,
+    // so this spec is inside the u7 gap rule rather than beside it.
+    //
+    // x6 — the WAIT used to head that list, and it is deliberately not on it any
+    // more (민서, 08-09). `무전 회신 대기 중` / `무전 회신 도착` bracketed every
+    // model call, which on a seven-round day is most of what this channel ever
+    // said, and both only said the desk was still working — the next
+    // announcement proves that with content. `shell/announcer.ts`'s `waiting`
+    // case now returns `null`. What is asserted below is unchanged and is the
+    // point: the region still CARRIES something, from the events that are worth
+    // interrupting an operator for.
     await drain(page)
     await expect
       .poll(async () => ((await toast.textContent()) ?? '') !== said[0], { timeout: 15_000 })

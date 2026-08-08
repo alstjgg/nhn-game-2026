@@ -311,8 +311,11 @@ test.describe('count-up pacing absorbs the report call', () => {
     // x5 — the settled line stopped announcing the report's arrival (REPORTS
     // filling itself in already does that) and became the instruction for what
     // the operator does next. The claim is unchanged: the wait resolves into
-    // DIEGETIC copy — words from inside the fiction, never a spinner, a
-    // timeout or an error. `WAIT_PHRASE` below scans it for exactly that.
+    // DIEGETIC copy — words from inside the fiction, never a spinner, a timeout
+    // or an error. x6 — this is the LAST wait copy on the desk. `#deployState`
+    // is the day's own hold, which is a state the operator is being asked to act
+    // on; the feed's per-call waiting marker said only that the desk was still
+    // working and was removed. `latency` below is what holds that line.
     await expect(page.locator(WAIT)).toContainText('파견')
     await expect(page.locator(NEW_RUN)).toBeEnabled()
   })
@@ -484,21 +487,32 @@ test.describe('new run unlocks and files the report', () => {
  *    counts up over ~9 s → NEW RUN … files RUN 03's report into the archive",
  *    and [u7#c2] is written as "the count-up pacing ABSORBS the report call".
  *    So the reporter's latency is covered by the TALLY count-up (third test
- *    below), and the feed's waiting marker covers the radio calls (first two).
- *    The `report` phrasing stays implemented in `components/waiting-marker.ts`
- *    for a live driver that does open one; nothing here asserts that the FIXTURE
- *    must emit one (C3 forbids binding to fixture content, and the demo stream
- *    is faithful to the reference on this point). What every test below asserts
- *    is the client property C18 is actually about: whatever wait is open, it
- *    holds past 9 s, survives 30 s, and never turns into dead UI.
+ *    below), and the radio calls are covered by the first two.
+ *
+ *    x6 — REWRITTEN, because the thing the first two tests watched no longer
+ *    exists. They parked the sim on an open wait and read the fanfold's
+ *    `……무전 회신 대기 중 ● ● ●` marker back off `.fl-wait`, holding it visible
+ *    and on-phrase past 9 s and past 30 s. 민서 removed the whole mechanism on
+ *    08-09: no feed line, no toast, no fixture line, no CSS, and
+ *    `components/waiting-marker.ts` deleted — three markers a beat over seven
+ *    rounds, each saying only that the desk was still working, which the answer
+ *    itself says a beat later with content. A wait now reads as the pause it is.
+ *
+ *    `waiting` is a SEAM-ONLY event from here on. It stays on the frozen seam
+ *    (`shared/view-driver.ts`), `src/driver/live-driver.ts` still emits it and
+ *    the live adapter's queue is still built around the bracket — so the tests
+ *    below still find their wait, and still find it the same way: off
+ *    `window.__shell.frame().events`, never off the DOM. The three phrasings
+ *    that used to live here in `WAIT_PHRASE` went with the marker; the design
+ *    note that authored them (`docs/design/phase2-ui/README.md`'s latency
+ *    bullet) and spec-client §3 inv 5's `WaitingMarker` row now describe a
+ *    component no client implements.
+ *
+ *    What the first two tests assert is C18 with the phrasing taken out of it,
+ *    plus the claim that replaced it: while a wait is open the desk draws
+ *    NOTHING for it — zero lines land on the paper — and it still holds past
+ *    9 s, survives 30 s, and never turns into dead UI.
  *    ═══════════════════════════════════════════════════════════════════════ */
-
-/** The three diegetic wait phrasings (components/waiting-marker.ts). */
-const WAIT_PHRASE = {
-  judgment: '무전 회신 대기 중',
-  narration: '현장 상황 수신 대기 중',
-  report: '보고서 회신 대기 중',
-} as const
 
 /**
  * Copy that would mean the CLIENT gave up. Deliberately narrow: 실패 / 오류 are
@@ -542,7 +556,10 @@ function waitDue(f: Frame, forWhat: string): string | null {
 test.describe('latency', () => {
   test.setTimeout(120_000)
 
-  test('latency — the open call holds past 9 s and stays diegetic', async ({ page }) => {
+  /** Anything the removed marker would have put on the paper (x6). */
+  const WAIT_NODE = '#w-feed .fl-wait, #w-feed [data-kind="wait"], #w-feed .dots'
+
+  test('latency — the open call draws nothing and still holds past 9 s', async ({ page }) => {
     await boot(page)
     await drain(page)
 
@@ -552,17 +569,10 @@ test.describe('latency', () => {
       for: string
     }[]
     expect(waits.length, 'the stream opens no waiting window at all').toBeGreaterThan(0)
-    const opened = [...new Set(waits.map((w) => w.for))]
-    for (const kind of opened) {
-      expect(
-        Object.keys(WAIT_PHRASE),
-        `the run waits on '${kind}', which has no diegetic phrasing`,
-      ).toContain(kind)
-    }
 
     // The releasable minute is read off the DRAINED stream — a freshly booted
     // desk has released nothing yet, so its frame carries no wait to look up.
-    const kind = opened[0]!
+    const kind = waits[0]!.for
     const due = waitDue(f, kind)
     expect(due, `the '${kind}' wait has no releasable minute`).toBeTruthy()
 
@@ -575,21 +585,26 @@ test.describe('latency', () => {
     await seekTo(page, due!)
     await holdRate(page, 0)
 
-    const phrase = WAIT_PHRASE[kind as keyof typeof WAIT_PHRASE]
-    const wait = page.locator('#w-feed .fl-wait, #w-feed [data-kind="wait"]').last()
-    await expect(wait).toBeVisible()
-    await expect(wait).toContainText(phrase)
+    // The paper is not blank — the run printed up to the call — and the wait
+    // itself put nothing on it.
+    const lines = page.locator('#w-feed #feedList .fl')
+    const before = await lines.count()
+    expect(before, 'the desk printed nothing at all — this guard is measuring an empty window').toBeGreaterThan(0)
+    await expect(page.locator(WAIT_NODE), 'a wait marker came back onto the paper').toHaveCount(0)
 
-    // Hold past the 9 s the proxy actually takes.
+    // Hold past the 9 s the proxy actually takes. Nothing lands: the sim is
+    // held at rate 0, and a wait is not a line.
     await page.waitForTimeout(9_500)
-    await expect(wait, 'the wait line vanished on its own — a client-side timeout').toBeVisible()
-    await expect(wait).toContainText(phrase)
+    await expect(page.locator(WAIT_NODE), 'the wait drew a marker after all').toHaveCount(0)
+    expect(await lines.count(), 'the held desk printed a line with the sim stopped').toBe(before)
 
-    // No spinner, no percentage, no error copy anywhere on the desk (inv 5).
+    // No spinner, no percentage, no error copy anywhere on the desk (inv 5) —
+    // the half of C18 the removal does not touch. A wait that shows nothing is
+    // only acceptable while nothing ELSE turns into machine-failure copy.
     const desk = await page.locator('#app').innerText()
     for (const dead of DEAD_UI) expect(desk, `the desk rendered dead-UI copy: ${dead}`).not.toMatch(dead)
     expect(await page.locator('#app progress, #app [role="progressbar"], #app .spinner').count()).toBe(0)
-    expect(desk, 'the wait rendered a percentage — it must carry no measure').not.toMatch(/\d+\s*%/)
+    expect(desk, 'the desk rendered a percentage — a wait must carry no measure').not.toMatch(/\d+\s*%/)
   })
 
   test('latency — the open call survives the 30 s worst case with a live desk', async ({ page }) => {
@@ -612,13 +627,13 @@ test.describe('latency', () => {
     await seekTo(page, due!)
     await holdRate(page, 0)
 
-    const wait = page.locator('#w-feed .fl-wait, #w-feed [data-kind="wait"]').last()
-    await expect(wait).toBeVisible()
-
-    // The engine's one retry puts the ceiling near 30 s.
+    // The engine's one retry puts the ceiling near 30 s. x6 — what is being
+    // watched is no longer a marker staying up; it is the desk staying ALIVE
+    // and staying silent for the whole of the worst case.
     await page.waitForTimeout(30_000)
-    await expect(wait, 'the wait died before the 30 s worst case').toBeVisible()
-    await expect(wait).toContainText(WAIT_PHRASE[kind as keyof typeof WAIT_PHRASE])
+    await expect(page.locator(WAIT_NODE), 'a wait marker appeared during the 30 s hold').toHaveCount(0)
+    const desk = await page.locator('#app').innerText()
+    for (const dead of DEAD_UI) expect(desk, `the desk rendered dead-UI copy: ${dead}`).not.toMatch(dead)
 
     // The desk is not dead: a window control still answers.
     const rep = page.locator('#w-rep')

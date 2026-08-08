@@ -27,7 +27,16 @@ const NOTE_PARTIAL = '편성 중 — 배치를 기다립니다'
 const NOTE_LOCKED = '배치됨 — 이번 시행에서 잠김'
 
 const DEPLOY_MAIN = 'DEPLOY'
-const DEPLOY_SUB = '배치 · 파일 잠금'
+// x6 — 요원 파견, not 배치 · 파일 잠금 (민서, 08-09). The sub line was describing
+// the BOOKKEEPING the press performs — a file committed, a file locked — which is
+// the desk narrating its own state change to the one person who already knows
+// they pressed it. What the press actually does is send an agent out for the day.
+// The chop that lands a moment later already says 파 견 완 료 (`buildDeployStamp`
+// below, x5b) and the confirmation plate already asks for a 파견; this is the
+// third surface of the same act finally using the same word for it. The lock is
+// not lost — `NOTE_LOCKED` still says 잠김 once it has happened, which is where a
+// state belongs: on the readout, not on the button that causes it.
+const DEPLOY_SUB = '요원 파견'
 
 /**
  * W4 — the second label is gone; only the sub line survives. `NEW RUN` was the
@@ -55,7 +64,7 @@ export interface DeployView {
   mode: DeployMode
   /** `bd-main` — `DEPLOY` or `NEW RUN`. */
   mainLabel: string
-  /** `bd-sub` — `배치 · 파일 잠금` or `다음 시행 · HH:MM으로`. */
+  /** `bd-sub` — `요원 파견` or `다음 시행 · HH:MM으로`. */
   subLine: string
 }
 
@@ -132,7 +141,10 @@ export function buildDeployZone(onDeploy: () => void): DeployPart {
 
   const mainEl = el('span', 'bd-main')
   const subEl = el('span', 'bd-sub')
-  const deploy = button('btn-deploy', '배치 — 요원 파일을 이번 시행 동안 잠급니다', '')
+  // x6 — the accessible name takes the same word the face does. It keeps the
+  // lock clause, because a name is the one place an operator driving by ear is
+  // told what the press costs them before they commit to it.
+  const deploy = button('btn-deploy', '요원 파견 — 요원 파일을 이번 시행 동안 잠급니다', '')
   deploy.id = 'btnDeploy'
   deploy.append(mainEl, subEl)
   deploy.addEventListener('click', onDeploy)
