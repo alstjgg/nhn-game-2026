@@ -180,7 +180,7 @@ Replacement text:
 // - **the listener set** — `game-clock`, the three windows and the run counter
 ```
 
-### E5 — `src/client/styles/shell.css:155-157`
+### E5 — `src/client/styles/shell.css:156-157`
 
 Current text:
 
@@ -239,12 +239,24 @@ Replacement text:
 
 - [ ] `git diff --name-only` names exactly four files.
 - [ ] Every `+`/`-` line in the diff is inside a comment.
-- [ ] `grep -rn "five windows" src/client/shell/layout.ts src/client/driver/run-loop.ts`
-      returns nothing.
+- [ ] `grep -rn "five windows" src/client/driver/run-loop.ts` returns nothing.
 - [ ] `grep -n "four desk windows" src/client/shell/layout.ts` returns nothing.
-- [ ] `grep -rn "BLOCK STORE" src/client/shell/layout.ts src/client/styles/base.css`
-      returns nothing. (`shell.css` keeps one mention — E5 names it as the reason
-      that lapsed, deliberately.)
+- [ ] `grep -n "BLOCK STORE" src/client/styles/base.css` returns nothing.
+- [ ] In `layout.ts` and `shell.css`, every surviving mention of "five windows"
+      or "BLOCK STORE" is **provenance** — a clause about what the desk used to
+      hold, inside the replacement text E3 and E5 prescribe. Read each one and
+      confirm it is narrating history, not claiming a present fact. No mention
+      may be load-bearing for a reader trying to understand the current desk.
+
+      *(Amended after execution. These three items originally demanded the
+      strings vanish outright from `layout.ts` — which contradicted E3's own
+      prescribed replacement, since the whole point of that rewrite is to say
+      the desk "has held five windows, then four, and now three". The executor
+      applied E3 verbatim, reported both greps as literal failures, and refused
+      to edit prescribed text to satisfy a checklist. That is exactly right: a
+      Done-when condition that fights the change list is a defect in the
+      document, and §5.3's own rule — scope a grep to what the unit actually
+      claims — is what was missed here.)*
 - [ ] Full vitest run is green.
 - [ ] **Behavioural:** `npm run build` succeeds and the built bundle is unchanged
       in behaviour — run `npx vitest run tests/shell/apply-layout.test.ts` and

@@ -509,6 +509,22 @@ Rules for the change list:
   grandfathered sites and test comments — `published-data.test.ts:144` carries
   `객관 로그` in a comment forever — and then a binary condition can never go
   true. (v8.)
+- **Sweep the test files' SHADOW types, not just the module under edit.** A
+  suite that imports its subject dynamically often declares a private mirror of
+  that subject's interfaces to type the import. `tsc` sees the mirror and
+  `vitest` does not, so widening a type in `src/` leaves a suite fully green
+  while `npm run check` fails. R1 (g12-3) stopped here: `report-view.ts` gained
+  a field, `tests/windows/reports.test.ts:115` still declared the old shape,
+  and the executor reported 49/49 and 1597/1597 passing against a red `check`.
+  Grep the test files for `interface <TypeName>` before handing over. (v14.)
+- **A Done-when condition may never contradict the change list.** T3 (g12-4)
+  asked for greps to come back empty on strings its own prescribed replacement
+  text deliberately introduces, so two binary conditions could not go true
+  however correctly the unit was executed. The executor applied the prescribed
+  text and reported the contradiction rather than editing prose to satisfy a
+  checklist — the right call, and a document defect either way. Read every
+  Done-when grep against the replacement text, not against the current tree.
+  (v14.)
 - **Every line number cites the stamped tree, and same-file edits are listed
   bottom-up.** An earlier edit in the same file moves every line below it; a
   citation read off a mid-application tree is wrong for the executor, who
