@@ -267,7 +267,7 @@ Replacement text:
       return openRun(next.carried, next.run, close.shown)
 ```
 
-**E3b — `:93`.** Current text:
+**E3b — `:94`.** Current text:
 
 ```
   function openRun(carried: readonly Block[], run: number): BoundRun {
@@ -397,6 +397,27 @@ try to make the stub emit.**
       that file unmodified**.
 - [ ] **Behavioural:** report what `blocks.has(id)` and `blocks.mine(id)` each
       answer for a seeded-but-unmined sentence, read out of `(i)`, not guessed.
+
+---
+
+# Amendment 1 — E3b's citation was off by one
+
+E1–E3a as applied are correct and stay. Only the line number was wrong: `:93`
+is the JSDoc closer `*/`, and `openRun`'s declaration is at **`:94`**. E3b now
+cites `:94`; its stated current text and replacement text are unchanged.
+
+The executor stopped exactly where it should have, and left the tree in the
+inconsistent state that stop produced — E3a passes `close.shown` as a third
+argument while `openRun` still takes two. **That is not a defect to work
+around: apply E3b and the two halves meet.** Nothing else in the change list
+moves, and E4 is still to do.
+
+§5.3 already says every line number cites the stamped tree. What it does not
+say, and what caught this author twice in one pair of PRDs, is the shape of the
+miss: a citation landing on the closing line of a doc comment reads as correct
+when skimmed, because the block above the target looks like the target. When a
+change list cites a declaration, the line to verify is the one carrying the
+declaration's own keyword.
 
 ## If this PRD is wrong
 
