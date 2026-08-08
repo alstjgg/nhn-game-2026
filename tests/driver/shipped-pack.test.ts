@@ -125,6 +125,8 @@ function realRun(run: number): BoundRun {
   return bindLiveRun(bindDeps, {
     run,
     carried: [],
+    // A fixture opens one run and shows nothing before it.
+    shown: [],
     start: displayStamp(META.clock.start),
     end: displayStamp(META.clock.end),
     meta,

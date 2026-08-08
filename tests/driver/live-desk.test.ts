@@ -78,7 +78,7 @@ function realRun(run: number): BoundRun {
     carried: [],
     archive: [],
   }
-  return bindLiveRun(bindDeps, { run, carried: [], start: '08:50', end: '21:04', meta })
+  return bindLiveRun(bindDeps, { run, carried: [], shown: [], start: '08:50', end: '21:04', meta })
 }
 
 /** Pumps the adapter like `shell/boot.ts`'s frame callback, until `done`. */
