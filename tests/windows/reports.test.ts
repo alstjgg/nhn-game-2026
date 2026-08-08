@@ -121,6 +121,7 @@ interface ReportModel {
 interface ViewModule {
   typeCursor(state: TypeState, elapsedMs: number, lengths: readonly number[]): TypeState
   minedCount(model: ReportModel, marks: MarkSets): number
+  accumulated(held: ReportModel | null, slice: ReportModel): ReportModel
 }
 
 async function minable(): Promise<MinableModule> {
@@ -622,5 +623,68 @@ describe('[u6#c10] run-wide hard constraints hold in this unit', () => {
   it('(g) C5/C6 — u6 edits neither runner config nor vitest.config.ts', () => {
     expect(read(path.join(CLIENT, '../../playwright.config.ts'))).not.toMatch(/reports\.spec|u6/)
     expect(read(path.join(CLIENT, '../../vitest.config.ts'))).not.toMatch(/jsdom|happy-dom/)
+  })
+})
+
+/* ══ [w2] one sitting, one accumulating record ══════════════════════════ */
+
+describe('[w2] a sitting accumulates its rounds into one document', () => {
+  const s = (id: string): Sentence => ({ id, text: `${id} 문장`, species: 'fact' })
+
+  it('(a) the first round of a sitting is the document', async () => {
+    const v = await view()
+    const round = { round: 0, facts: [s('f1')], report_body: [s('b1')] }
+    expect(v.accumulated(null, round)).toEqual(round)
+  })
+
+  it('(b) each further round appends to both panes, in arrival order', async () => {
+    const v = await view()
+    const one = v.accumulated(null, { round: 0, facts: [s('f1')], report_body: [s('b1')] })
+    const two = v.accumulated(one, { round: 1, facts: [s('f2')], report_body: [s('b2'), s('b3')] })
+
+    expect(two.facts.map((x) => x.id)).toEqual(['f1', 'f2'])
+    expect(two.report_body.map((x) => x.id)).toEqual(['b1', 'b2', 'b3'])
+  })
+
+  it('(c) the model carries the LATEST round filed — that is the replay key', async () => {
+    const v = await view()
+    const one = v.accumulated(null, { round: 0, facts: [], report_body: [s('b1')] })
+    expect(v.accumulated(one, { round: 6, facts: [], report_body: [s('b2')] }).round).toBe(6)
+  })
+
+  it('(d) it mutates neither side — the held document and the slice are untouched', async () => {
+    const v = await view()
+    const held = { round: 0, facts: [s('f1')], report_body: [s('b1')] }
+    const slice = { round: 1, facts: [s('f2')], report_body: [s('b2')] }
+    v.accumulated(held, slice)
+    expect(held.facts.map((x) => x.id)).toEqual(['f1'])
+    expect(held.report_body.map((x) => x.id)).toEqual(['b1'])
+    expect(slice.facts.map((x) => x.id)).toEqual(['f2'])
+  })
+
+  it('(e) a seven-round day is ONE document, and the mined tally counts all of it', async () => {
+    const v = await view()
+    const m = await minable()
+    let doc: ReportModel | null = null
+    for (let round = 0; round < 7; round += 1) {
+      doc = v.accumulated(doc, {
+        round,
+        facts: [s(`f${round}`)],
+        report_body: [s(`b${round}`)],
+      })
+    }
+    expect(doc!.facts).toHaveLength(7)
+    expect(doc!.report_body).toHaveLength(7)
+    expect(v.minedCount(doc!, m.deriveMarks(store({ mined: ['f3', 'b5'] }), []))).toBe(2)
+  })
+
+  it('(f) the window keys its rail on the run, never on the round', () => {
+    // The defect was `railEntries(archive, [...filed.keys()])` being handed
+    // ROUND numbers. `filed` is now keyed by the sitting, and the only write
+    // to it takes its key from the run `meta` last named.
+    const window = scannedSources().find((s) => s.file.endsWith('windows/reports.ts'))
+    expect(window, 'the REPORTS window is not in the scanned set').toBeTruthy()
+    expect(window!.text, 'the report handler no longer names the sitting').toMatch(/const sitting = run/)
+    expect(window!.text, 'a report is still filed under its round').not.toMatch(/filed\.set\(\s*event\.round/)
   })
 })
