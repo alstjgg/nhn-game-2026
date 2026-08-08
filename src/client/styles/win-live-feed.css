@@ -63,3 +63,19 @@
 .fl-mark .fl-c::after{content:'';position:absolute;left:0;right:0;top:50%;
   border-top:1px dashed var(--sh-35)}
 .feed-tail{height:120px}
+
+/* The behind-indicator (U2). Chrome pinned to the window's foot, above the
+   fanfold rather than on it — the paper carries only what the run printed.
+   A READING, never a control ([u5#c7]): no pointer affordance, `pointer-events`
+   off so it cannot even take a click, and absent whenever the feed is following
+   — which is the resting state. Centred with `translate`, leaving `transform`
+   free for the entry animation. */
+.feed-behind{position:absolute;left:50%;bottom:var(--space-14);translate:-50% 0;z-index:2;
+  pointer-events:none;user-select:none;
+  padding:var(--space-4) var(--space-12);border:1px solid var(--sh-35);
+  background:var(--chrome-raise-2);
+  font-family:var(--kmono);font-size:var(--fs-9-5);letter-spacing:.06em;
+  color:var(--txt-2);white-space:nowrap;
+  animation:behindIn .18s cubic-bezier(.25,.9,.3,1) both}
+.feed-behind[hidden]{display:none}
+@keyframes behindIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
