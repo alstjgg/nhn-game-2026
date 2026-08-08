@@ -213,6 +213,26 @@ export function createReportView(options: ReportViewOptions): ReportView {
   }
 
   /**
+   * One 현장 기록 row: [번호] [시각] [문장].
+   *
+   * The sentence sits inside its own cell instead of BEING the third grid cell.
+   * A grid item is blockified, and `.min`'s marks are painted as backgrounds —
+   * on one block box, a `채굴` rule drawn every 1.35em drifts against a 1.62
+   * line box (≈2px per line, so line 3 is struck through) and a `배치`
+   * highlight lands on the last line alone. Wrapped in a cell, `.min` stays a
+   * real inline box and every line fragment is painted alike, exactly as the
+   * 무전 기록 pane's `.sent` already is. The wrap is load-bearing: the pane only
+   * looked right on a window wide enough to keep each sentence to one line.
+   */
+  function factRow(node: HTMLElement): HTMLLIElement {
+    const row = el('li', 'min-row')
+    const cell = el('div', 'f-s')
+    cell.append(node)
+    row.append(el('span', 'f-t'), cell)
+    return row
+  }
+
+  /**
    * The operator asked for no motion, or the determinism gate is closed — in
    * both the document is already whole on paper.
    *
@@ -281,9 +301,7 @@ export function createReportView(options: ReportViewOptions): ReportView {
       for (const sentence of slice.facts) {
         const node = bind(sentence, marks)
         node.textContent = sentence.text
-        const row = el('li', 'min-row')
-        row.append(el('span', 'f-t'), node)
-        facts.append(row)
+        facts.append(factRow(node))
       }
 
       const grown = slice.report_body.map((sentence) => {
@@ -309,9 +327,7 @@ export function createReportView(options: ReportViewOptions): ReportView {
       for (const sentence of model.facts) {
         const node = bind(sentence, marks)
         node.textContent = sentence.text
-        const row = el('li', 'min-row')
-        row.append(el('span', 'f-t'), node)
-        facts.append(row)
+        facts.append(factRow(node))
       }
 
       body.replaceChildren()
