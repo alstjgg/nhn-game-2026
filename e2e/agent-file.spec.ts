@@ -20,7 +20,7 @@
 // re-points `playwright.config.ts` per C5) — nothing below assumes a dev server.
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
-import { newRun } from './fixtures/harness.ts'
+import { confirmDeploy, newRun } from './fixtures/harness.ts'
 
 const FILE = '#w-file'
 const CAP = 4
@@ -286,6 +286,7 @@ test.describe('deploy stamp locks the file', () => {
     for (const [i, s] of SEEDS.entries()) await place(page, s.id, i)
 
     await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
 
     const stamp = page.locator('#deployStamp')
     await expect(stamp).toHaveClass(/\bon\b/)
@@ -307,6 +308,7 @@ test.describe('deploy stamp locks the file', () => {
     await place(page, SEEDS[0].id, 0)
     await place(page, SEEDS[1].id, 1)
     await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
     await expect(page.locator('#btnDeploy')).toBeDisabled()
 
     const before = await pinnedIds(page)
@@ -326,6 +328,7 @@ test.describe('deploy stamp locks the file', () => {
     await place(page, SEEDS[1].id, 0)
     await place(page, SEEDS[0].id, 2)
     await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
     await expect(page.locator('#btnDeploy')).toBeDisabled()
 
     const store = await seamStore(page)
@@ -338,6 +341,7 @@ test.describe('deploy stamp locks the file', () => {
     await boot(page)
     await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
     await expect(page.locator('#deployStamp')).toHaveClass(/\bon\b/)
     await expect(page.locator('#slotCount')).toHaveText('0 / 4')
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'locked')
@@ -452,6 +456,14 @@ test.describe('a11y membrane ops', () => {
 
     await page.locator('#btnDeploy').focus()
     await page.keyboard.press('Space')
+    // x2 — and the confirmation plate is answered by keyboard too, or this
+    // claim would quietly become "keyboard alone up to the last press".
+    // `openConfirm` focuses 아니오, so 예 is one Tab away.
+    await expect(page.locator('#confirmNo')).toBeFocused()
+    await page.keyboard.press('Tab')
+    await expect(page.locator('#confirmYes')).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#confirm')).toHaveCount(0)
     await expect(page.locator('#deployStamp')).toHaveClass(/\bon\b/)
     await expect(page.locator('#btnDeploy')).toBeDisabled()
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'locked')
@@ -515,6 +527,7 @@ test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
     const flying = await page.locator(`${FILE} .sect`).nth(0).locator('dd').first().textContent()
     expect(flying, '식별 carries no callsign to fly').toMatch(/^ECHO-\d+$/)
     await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
     await expect(page.locator('#btnDeploy')).toHaveAttribute('data-state', 'deployed')
 
     // …then the day closes and the next press opens the following agent.
@@ -538,5 +551,138 @@ test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
     await expect(page.locator(`${FILE} #slotBoard`)).toHaveCount(0)
     await expect(page.locator(`${FILE} .slot-unset`)).toHaveCount(0)
     await expect(page.locator(`${FILE} [data-block-id]`)).toHaveCount(0)
+  })
+})
+
+/* ══ x2 · the confirmation plate ══════════════════════════════════════════
+   The press asks before it commits. What is asserted here is the SHAPE of the
+   question — that it is a question and not a window, that it has exactly two
+   ways out, and that the one that says no leaves the desk untouched.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const PLATE = '#confirm'
+
+/**
+ * The driver's clock fields, read straight off `window.__shell`.
+ *
+ * `harness.ts`'s own `Frame` models the SEAM (events + store) and does not
+ * carry the clock, so the clock half is read here the way `shell.spec.ts`
+ * reads it. What it is for: W4 made a committed file the one thing that starts
+ * the day, which makes the clock the honest witness to whether a refused
+ * commit committed anything.
+ */
+async function clockFrame(page: Page): Promise<{ minute: number; rate: number }> {
+  return page.evaluate(() => {
+    const handle = (window as unknown as { __shell?: { frame(): unknown } }).__shell
+    if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
+    return handle.frame() as never
+  })
+}
+
+test.describe('[x2] DEPLOY asks before it commits', () => {
+  test('[x2] (a) the press raises a centred plate that is not a window', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await page.locator('#btnDeploy').click()
+
+    const plate = page.locator(PLATE)
+    await expect(plate).toBeVisible()
+    // A question, not furniture: no `.win` skin, no title-bar controls, and it
+    // never enters the taskbar the window manager owns.
+    await expect(page.locator(`${PLATE} .win`)).toHaveCount(0)
+    await expect(page.locator(`${PLATE} .win-ctl`)).toHaveCount(0)
+    await expect(page.locator(`${PLATE} .win-grip`)).toHaveCount(0)
+    await expect(page.locator('#taskbar .task', { hasText: '배치 확인' })).toHaveCount(0)
+    await expect(plate).toHaveAttribute('role', 'alertdialog')
+    await expect(plate).toHaveAttribute('aria-modal', 'true')
+
+    // Centred on the screen — the plate's midpoint is the viewport's. Measured
+    // once it has SETTLED: `cfRise` opens from `translateY(14px)`, and a box
+    // read mid-animation is the entry, not the position.
+    await page.locator(`${PLATE} .cf-plate`).evaluate(async (n) => {
+      await Promise.all(n.getAnimations().map((a) => a.finished))
+    })
+    const box = (await page.locator(`${PLATE} .cf-plate`).boundingBox())!
+    const view = page.viewportSize()!
+    expect(Math.abs(box.x + box.width / 2 - view.width / 2), 'the plate is off-centre horizontally').toBeLessThan(2)
+    expect(Math.abs(box.y + box.height / 2 - view.height / 2), 'the plate is off-centre vertically').toBeLessThan(2)
+  })
+
+  test('[x2] (b) it offers exactly two answers and no way to dismiss it', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await page.locator('#btnDeploy').click()
+
+    const buttons = page.locator(`${PLATE} button`)
+    await expect(buttons).toHaveCount(2)
+    await expect(page.locator('#confirmNo')).toHaveText('아니오')
+    await expect(page.locator('#confirmYes')).toHaveText('예')
+    // 아니오 holds the focus: the reflex keystroke on an irreversible act must
+    // not be the one that confirms it.
+    await expect(page.locator('#confirmNo')).toBeFocused()
+    // The desk behind it cannot be reached while the question is up.
+    await expect(page.locator('#desktop')).toHaveAttribute('inert', '')
+    await expect(page.locator('#topbar')).toHaveAttribute('inert', '')
+  })
+
+  test('[x2] (c) 아니오 closes the plate and commits nothing', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await seed(page)
+    await place(page, SEEDS[0].id, 0)
+
+    const held = (await clockFrame(page)).minute
+    await page.locator('#btnDeploy').click()
+    await confirmDeploy(page, 'no')
+
+    await expect(page.locator(PLATE)).toHaveCount(0)
+    await expect(page.locator('#deployStamp')).not.toHaveClass(/\bon\b/)
+    await expect(page.locator('#btnDeploy')).toHaveAttribute('data-state', 'ready')
+    await expect(page.locator('#btnDeploy')).toBeEnabled()
+    await expect(page.locator(`${FILE} .slots`)).not.toHaveAttribute('data-state', 'locked')
+    // W4 — a committed file is the only thing that starts the day, so a refused
+    // commit leaves the clock exactly where it was.
+    expect((await clockFrame(page)).rate, 'the day started on a refused commit').toBe(0)
+    expect((await clockFrame(page)).minute).toBe(held)
+    expect((await seamStore(page)).deployed, 'a refused commit reached the seam').toEqual([])
+    // …and the desk is handed back.
+    await expect(page.locator('#desktop')).not.toHaveAttribute('inert', '')
+  })
+
+  test('[x2] (d) Escape answers 아니오 — a modal with no exit is a keyboard trap', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await page.locator('#btnDeploy').click()
+    await expect(page.locator(PLATE)).toBeVisible()
+
+    await page.keyboard.press('Escape')
+
+    await expect(page.locator(PLATE)).toHaveCount(0)
+    await expect(page.locator('#deployStamp')).not.toHaveClass(/\bon\b/)
+    await expect(page.locator('#btnDeploy')).toBeEnabled()
+  })
+
+  test('[x2] (e) 예 closes the plate and the commit lands', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
+
+    await expect(page.locator(PLATE)).toHaveCount(0)
+    await expect(page.locator('#deployStamp')).toHaveClass(/\bon\b/)
+    await expect(page.locator('#btnDeploy')).toHaveAttribute('data-state', 'deployed')
+    await expect.poll(async () => (await clockFrame(page)).rate, { timeout: 2000 }).toBe(1)
+  })
+
+  test('[x2] (f) the plate opens no free-text surface (spec-client §3 inv 1)', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await page.locator('#btnDeploy').click()
+    await expect(page.locator(PLATE)).toBeVisible()
+
+    await expect(page.locator(`${PLATE} input, ${PLATE} textarea, ${PLATE} select, ${PLATE} form`)).toHaveCount(0)
+    expect(
+      await page.locator(PLATE).evaluate((n) => n.querySelectorAll('[contenteditable]').length),
+    ).toBe(0)
   })
 })
