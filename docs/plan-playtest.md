@@ -3,11 +3,13 @@
 > Source: 민서 playtest of the deployed Pages build (live proxy, 우는다리).
 > Priority tiebreaker: **mechanism legibility** — the C-BLOCK loop (block choice →
 > interpretation shift → stance change → visible result) must read clearly.
-> Cut line against the ~08-10 deadline is §4. Rules live in /CLAUDE.md; state in status.md.
-> **This is a plan, not a work log.** What has shipped lives in `status.md` and in git;
-> a unit's row changes here only when the unit itself does. Coordinates are audited when
-> a unit is picked up, and a PRD re-verifies every one against the tree it will run on.
-> Later playtests add rows (U6); they do not restructure the list.
+> Deadline ~2026-08-10. Rules live in /CLAUDE.md; project state in status.md.
+> **This is a plan, not a work log.** A unit's row changes only when the unit itself
+> does; §1's `landed` column is a pointer, not a record — the account of what shipped and
+> why lives in `status.md` and in git. Coordinates are audited when a unit is picked up,
+> and a PRD re-verifies every one against the tree it will run on. Later playtests add
+> rows (U6); they do not restructure the list. §3 carries the order; there is no cut line
+> — everything listed is meant to be built, and what is not is said so in §3.
 
 ## 0. Frame
 
@@ -37,14 +39,14 @@ is drawn.
 
 ### G — Gate exposure
 
-| id | item | where | cost |
-|---|---|---|---|
-| G1a | **landed** (`e270604`) — the pack shipped whole, so `dist/data/scenario/우는다리/draft.md` (44 kB) was readable by URL | `vite.config.ts:45-73` enumerates by file; 22 published files → 8 | — |
-| G1b | **landed** (`e270604`) — LIVE FEED printed `(갈림길 G1의 자리)` … `(갈림길 G6의 자리)`, six distinct strings | removed from `data/scenario/우는다리/timeline.json` **and** `draft.md`, or the next `datapack:compile` restores it | — |
-| G1c | **landed** — two more leaks sat inside files entitled to ship: `gates.json:44` `key_examples[].mined_from` ("런 1 객관 로그 · 시계 09:40 — 다음 런의 G1 이전에 채굴 가능", 18 such values, 12 naming a gate) and `characters.json` `strands.gate_ids` | `tests/scaffold/no-gate-vocab.test.ts` scans every string value through `publishedContentOf()` (`vite.config.ts:159-164`); `gates[].gate` exempt by path and exact shape | — |
-| G2 | LIVE FEED names the fault in mechanism terms | `src/client/components/fallback-notice.ts:27-31` — see below | S |
-| G4 | AGENT FILE 행동 원칙 reads as a manual | hardcoded at `src/client/components/dossier.ts:102`, **not** authored in the datapack | S |
-| G3 | REPORTS rail labels every segment `RUN nn` | `src/client/components/report-archive.ts` — see below | M |
+| id | item | where | cost | landed |
+|---|---|---|---|---|
+| G1a | the pack shipped whole, so `dist/data/scenario/우는다리/draft.md` (44 kB) was readable by URL | `vite.config.ts:45-73` enumerates by file; 22 published files → 8 | — | `e270604` |
+| G1b | LIVE FEED printed `(갈림길 G1의 자리)` … `(갈림길 G6의 자리)`, six distinct strings | removed from `data/scenario/우는다리/timeline.json` **and** `draft.md`, or the next `datapack:compile` restores it | — | `e270604` |
+| G1c | two more leaks sat inside files entitled to ship: `gates.json:44` `key_examples[].mined_from` ("런 1 객관 로그 · 시계 09:40 — 다음 런의 G1 이전에 채굴 가능", 18 such values, 12 naming a gate) and `characters.json` `strands.gate_ids` | `tests/scaffold/no-gate-vocab.test.ts` scans every string value through `publishedContentOf()` (`vite.config.ts:159-164`); `gates[].gate` exempt by path and exact shape | — | `e270604` |
+| G2 | LIVE FEED names the fault in mechanism terms | `src/client/components/fallback-notice.ts:27-31` — see below | S | #156 |
+| G4 | AGENT FILE 행동 원칙 reads as a manual | hardcoded at `src/client/components/dossier.ts:102`, **not** authored in the datapack | S | #159 |
+| G3 | REPORTS rail labels every segment `RUN nn` | `src/client/components/report-archive.ts` — see below | M | #180 |
 
 **G2 is smaller than it looked, and wider.** `announcementOf(event)`
 (`announcer.ts:54-69`) already receives the whole event, the fallback event
@@ -90,11 +92,11 @@ reads who their agent is. Same information as a person — *"확인되지 않은
 
 ### T — Text volume
 
-| id | item | resolution | depends on |
-|---|---|---|---|
-| T1 | BLOCK STORE duplicates report sentences | remove the window; its one distinct function — a cross-run view of mined sentences — moves into the report | U5.2a (landed) |
-| T2 | Radio reports too long to read before the next event | lower `max_chars` in `data/policy/report-guidance.json:11` (300–1200자, character-bounded; rendered by `src/shared/report-guidance.ts:49-56`) | — |
-| T3 | Layout: REPORTS left (large), LIVE FEED top-right, AGENT FILE bottom-right | `src/client/shell/layout.ts:33,50,65-111` | M |
+| id | item | resolution | depends on | landed |
+|---|---|---|---|---|
+| T1 | BLOCK STORE duplicates report sentences | remove the window; its one distinct function — a cross-run view of mined sentences — moves into the report | U5.2a | #181 |
+| T2 | Radio reports too long to read before the next event | lower `max_chars` in `data/policy/report-guidance.json:11` (300–1200자, character-bounded; rendered by `src/shared/report-guidance.ts:49-56`) | — | #158 · #172 |
+| T3 | Layout: REPORTS left (large), LIVE FEED top-right, AGENT FILE bottom-right | `src/client/shell/layout.ts:33,50,78-95` | M | **no** |
 
 **T1's sites:** `src/client/windows/block-store.ts` (deleted),
 `src/client/shell/window-registry.ts:12,40` (the import and the mount — its
@@ -109,26 +111,41 @@ header says it is the only module that imports `windows/`),
 compares tab order to the rects row-major with a 24 px row tolerance, so a
 mismatch is a real red now rather than an expected failure.
 
-T1 takes most of T3 with it: removing BLOCK STORE shrinks `WINDOW_KEYS` and
-`DESK_ORDER` to three, returns the columns to full desk height, and drops the
-two ≥4-distinct-origin floors (`tests/shell/apply-layout.test.ts:104`,
-`e2e/shell.spec.ts:359`) to 3 — which T1 must do, or T3 fails them later. What
-is then left of T3 is **prose**: `layout.ts`'s header still narrates five
-windows, a BLOCK STORE column and a floating TALLY sheet, and `layout.ts:47`'s
-"quarantined" wording is stale. A comment that contradicts the code is the
-defect; the arrangement itself is already right.
+**T1 does not do T3, and reading it as though it had is a mistake this document
+has already made once.** T1 removes a window: `WINDOW_KEYS` and `DESK_ORDER`
+shrink to three, the columns return to full desk height, and the two
+≥4-distinct-origin floors (`tests/shell/apply-layout.test.ts:104`,
+`e2e/shell.spec.ts:359`) drop to 3 — which T1 must do, or T3 fails them later.
+That is a **smaller desk of the same shape**, not T3's shape.
+
+What ships today is three side-by-side full-height columns — LIVE FEED
+(`COL_A_RATIO` .265) · REPORTS (`COL_B_RATIO` .395) · AGENT FILE (the
+remainder). T3 is a **two-column desk**: REPORTS large on the left, with the
+right column split horizontally into LIVE FEED above and AGENT FILE below. No
+part of that exists. `applyLayout` returns three rects at one `y`, and T3 needs
+two `y` values and a vertical split ratio the file has no constant for.
+
+Why it matters, in the terms this document ranks by: REPORTS is where mining
+happens and where U5.2c will render cause, and it is currently the middle of
+three narrow columns — the smallest surface the most-read window could have.
+LIVE FEED is a ticker that is watched, not read closely, and it holds the
+widest column of the three.
+
+The prose is a separate, smaller defect and rides with it: `layout.ts`'s header
+still narrates five windows, a BLOCK STORE column and a floating TALLY sheet,
+and `layout.ts:47`'s "quarantined" wording is stale.
 
 T2 changes what is mineable and the Call-3 latency figure recorded on 08-04.
 Re-run one probe after changing it.
 
 ### C — Concept and naming
 
-| id | item | where |
-|---|---|---|
-| C1 | AGENT FILE becomes a paged dossier, not a scroll | `src/client/components/dossier.ts:88-120` (`dossierModel`, six sections §0–§5 in one array); `src/client/windows/agent-file.ts` |
-| C2 | "알고 있는 문장" → **인수인계 사항** (picked 08-06) | `dossier.ts:107` is the only rendered site |
-| C3 | "보고 지침" → **교신 지침** (picked 08-06) | `dossier.ts:113` |
-| C4 | 객관 로그 → 현장 기록, 요원 보고서 → 무전 기록 | `src/client/components/report-view.ts:123` and `:124` |
+| id | item | where | landed |
+|---|---|---|---|
+| C1 | AGENT FILE becomes a paged dossier, not a scroll | `src/client/components/dossier.ts:88-120` (`dossierModel`, six sections §0–§5 in one array); `src/client/windows/agent-file.ts` | **no** |
+| C2 | "알고 있는 문장" → **인수인계 사항** (picked 08-06) | `dossier.ts:107` is the only rendered site | #164 |
+| C3 | "보고 지침" → **교신 지침** (picked 08-06) | `dossier.ts:113` | #164 |
+| C4 | 객관 로그 → 현장 기록, 요원 보고서 → 무전 기록 | `src/client/components/report-view.ts:123` and `:124` | #164 |
 
 - **C1 is not a layout fix, and reading it as one is how it got cut.** "Not a
   scroll" describes the shape, not the reason. The reason is in U5.3's own row,
@@ -149,9 +166,9 @@ Re-run one probe after changing it.
   `e2e/agent-file.spec.ts:129-139`, and the deployed set per sitting has to be
   retained to fill a past page — but it is cost against the tiebreaker, not
   against polish.
-  *(Cut as a Won't from the first cut line onward with no reason ever recorded,
-  and re-read on 08-08 as an overflow fix, which it is not. 민서 corrected it
-  back to Must the same day.)*
+  *(Cut from the first cut line onward with no reason ever recorded, and
+  re-read on 08-08 as an overflow fix, which it is not. 민서 corrected it the
+  same day; it is group 6 in §3.)*
 - **C1's page inventory uses spaced forms on disk** — `행동 원칙`, `알고 있는 문장`,
   `보고 지침`. `문서번호` **does not exist anywhere in the tree**; it is new copy to
   be authored. `문서번호` and `호출부호` are built in the window, not the component
@@ -174,19 +191,19 @@ C2–C4 are copy and land in one commit.
 
 ### U — Usability
 
-| id | item | resolution |
-|---|---|---|
-| U1 | LIVE FEED emits many lines at once, so time stutters instead of passing | reveal queue in `src/client/windows/live-feed.ts`, downstream of the adapter's fanout (`adapter.ts:155-158`) |
-| U2 | 4 slots too few; drag sentences rather than cards | `SLOT_CAP` at `src/client/components/slot-board.ts:19`; a U-owned §9 parameter (`docs/spec-client.md:149,380,405`), not a datapack field |
-| U3 | Remove TALLY; merge NEW RUN into DEPLOY; casualties and results in 현장 기록 as unmineable, visually distinct records | see below — the sites span four files |
-| U4 | Nothing tells a judge what to press first | resolved into O1 and O2 |
-| U5.1 | REPORTS tabs → ECHO-1, ECHO-2…, each opening that sitting's 현장 기록 + 무전 기록 | needs a **new store** — see below |
-| U5.2a | **landed** (`afe02d6`) — the slotted highlight was written and never rendered | `src/client/components/minable-sentence.ts:55-74`, `src/client/windows/reports.ts:108-132`, `src/client/styles/win-reports.css:75-77` |
-| U5.2b | Carry the agent's chosen stance to the client at all | engine seam — see below |
-| U5.2b+ | Carry the **citation** with it: `judged.cited_ids`, the judgment's `because_block_ids` filtered to what the player deployed | second engine-seam unit; §5.2's authored/engine/client split applies twice here |
-| U5.2c | Show that stance beside the sentence that moved it, and show unused sentences as unused | depends on U5.2b+ — see below |
-| U5.3 | AGENT FILE gains one page per ECHO-*; a new simulation appends a page, **and flipping back reads past instructions** | depends on C1 (`dossier.ts:88-120`); needs the deployed set retained per sitting |
-| U6 | The loop the player operates: one sitting is one record, one gesture mines, one press deploys | five units — see below |
+| id | item | resolution | landed |
+|---|---|---|---|
+| U1 | LIVE FEED emits many lines at once, so time stutters instead of passing | reveal queue in `src/client/windows/live-feed.ts`, downstream of the adapter's fanout (`adapter.ts:155-158`) | #169 · #171 |
+| U2 | 4 slots too few; drag sentences rather than cards | `SLOT_CAP` at `src/client/components/slot-board.ts:19`; a U-owned §9 parameter (`docs/spec-client.md:149,380,405`), not a datapack field | **no** |
+| U3 | Remove TALLY; merge NEW RUN into DEPLOY; casualties and results in 현장 기록 as unmineable, visually distinct records | see below — the sites span four files | #174 |
+| U4 | Nothing tells a judge what to press first | resolved into O1 and O2 | — |
+| U5.1 | REPORTS tabs → ECHO-1, ECHO-2…, each opening that sitting's 현장 기록 + 무전 기록 | needs a **new store** — see below | **no** |
+| U5.2a | the slotted highlight was written and never rendered | `src/client/components/minable-sentence.ts:55-74`, `src/client/windows/reports.ts:108-132`, `src/client/styles/win-reports.css:75-77` | `afe02d6` |
+| U5.2b | Carry the agent's chosen stance to the client at all | engine seam — see below | #160 |
+| U5.2b+ | Carry the **citation** with it: `judged.cited_ids`, the judgment's `because_block_ids` filtered to what the player deployed | second engine-seam unit; §5.2's authored/engine/client split applies twice here | #178 |
+| U5.2c | Show that stance beside the sentence that moved it, and show unused sentences as unused | depends on U5.2b+ — see below | **no** |
+| U5.3 | AGENT FILE gains one page per ECHO-*; a new simulation appends a page, **and flipping back reads past instructions** | depends on C1 (`dossier.ts:88-120`); needs the deployed set retained per sitting | **no** |
+| U6 | The loop the player operates: one sitting is one record, one gesture mines, one press deploys | five units — see below | #186 · #187 · #190 · #191 · #194 |
 
 **U1 must not go in the adapter.** A pacing queue already exists there —
 `adapter.ts:117` (`Pending`), `:160-166` (`absorb`), `:169-186` (`release`) — and
@@ -300,11 +317,11 @@ not against the one-round document this row was first written for.
 
 ### O — Opening
 
-| id | item | where |
-|---|---|---|
-| O1 | Play the 08:50 call before the desk appears: empty screen, radio only, then it cuts off and the windows come up | `src/client/main.ts:9` (`void bootShell()`), or between `boot.ts:118` (`holdDesk`) and `:216-219` (`revealDesk`) — the hold/reveal seam exists at `src/client/components/desktop-dressing.ts:15,20` |
-| O2 | First report's first mineable sentence pulses once, first run only | `src/client/components/minable-sentence.ts:20,78-82,121-126` for the state; first-arrival is decided at `src/client/windows/reports.ts:95-108` / `report-view.ts:94` (`RenderOptions.replay`); new class beside `win-reports.css:75-77`, values in `tokens.css` (invariant 8) |
-| O3 | Three or four sound effects — static, the phone, the silence at 21:04 | files under `public/assets/`; entry per file in `assets-manifest.json`'s `assets[]` — generated `{file, tool, prompt, license}`, sourced `{file, source, license, note}` (see the font entries) |
+| id | item | where | landed |
+|---|---|---|---|
+| O1 | Play the 08:50 call before the desk appears: empty screen, radio only, then it cuts off and the windows come up | `src/client/main.ts:9` (`void bootShell()`), or between `boot.ts:118` (`holdDesk`) and `:216-219` (`revealDesk`) — the hold/reveal seam exists at `src/client/components/desktop-dressing.ts:15,20` | #175 |
+| O2 | First report's first mineable sentence pulses once, first run only | `src/client/components/minable-sentence.ts:20,78-82,121-126` for the state; first-arrival is decided at `src/client/windows/reports.ts:95-108` / `report-view.ts:94` (`RenderOptions.replay`); new class beside `win-reports.css:75-77`, values in `tokens.css` (invariant 8) | **dropped** |
+| O3 | Three or four sound effects — static, the phone, the silence at 21:04 | files under `public/assets/`; entry per file in `assets-manifest.json`'s `assets[]` — generated `{file, tool, prompt, license}`, sourced `{file, source, license, note}` (see the font entries) | #179 |
 
 An opening is not a tutorial. Ten seconds establishes who the player is, what
 they are for, and why it is urgent, and it is the first ten seconds of
@@ -314,10 +331,10 @@ already holds and reveals.
 
 ### M — Misc
 
-| id | item | where |
-|---|---|---|
-| M1 | Agent callsign increments per simulation (ECHO-1, ECHO-2…) | `dossier.ts:19` (`CALLSIGN = 'ECHO-1'`), consumed at `:92` and `src/client/windows/agent-file.ts:95`; a per-run callsign threads through `DossierInput` (`dossier.ts:35-42`). Other literals: `run-feed.ts:60`, `report-view.ts:124,143` |
-| M2 | Species tags ('자기서술') removed from display, and from the dataset where possible | the literal is `SPECIES_DISPLAY` at `components/block-card.ts:33-38`; the render M2 removes is `:158-161`; the filter prints it twice at `components/species-filter.ts:76,78` |
+| id | item | where | landed |
+|---|---|---|---|
+| M1 | Agent callsign increments per simulation (ECHO-1, ECHO-2…) | `dossier.ts:19` (`CALLSIGN = 'ECHO-1'`), consumed at `:92` and `src/client/windows/agent-file.ts:95`; a per-run callsign threads through `DossierInput` (`dossier.ts:35-42`). Other literals: `run-feed.ts:60`, `report-view.ts:124,143` | #166 |
+| M2 | Species tags ('자기서술') removed from display, and from the dataset where possible | the literal is `SPECIES_DISPLAY` at `components/block-card.ts:33-38`; the render M2 removes is `:158-161`; the filter prints it twice at `components/species-filter.ts:76,78` | #162 |
 
 - **M1's assertions:** `e2e/agent-file.spec.ts:186`, `tests/windows/live-feed.test.ts:400`.
   M1 is the cheapest piece of U5 — `RUN 01` is a number and reads as "my second
@@ -400,79 +417,45 @@ around it.
 
 ## 3. Work groups
 
+Ordered by what a group unblocks, not by size. The `landed` column in §1 says
+what is done; this section says what is next and why it sits where it does.
+
 1. **Copy pass** — G2, G4, C2, C3, C4, M1, M2, T2. Strings and data only.
-2. **Time** — U1, then O1/O2. The day has to pass before anything about it reads.
-3. **Ending** — U3. No longer waits on anything.
-4. **Cause** — U5.2b (seam), U5.2b+ (seam), then U5.2c (render).
-5. **Report becomes the archive** — T1 → T3.
-6. **History** — G3, U5.1, then C1 → U5.3.
-7. **Polish** — O3.
-8. **Slot cap** — U2, probe first.
-9. **The loop** — U6: W1 and W3 together, then W2, then W4, then R1. It cuts
-   across the groups above because it is not a feature but the shape of a
-   sitting; it came out of playing the build the earlier groups produced.
+2. **Time** — U1, then O1. The day has to pass before anything about it reads.
+3. **Ending** — U3. Blocks on nothing once the scorer lands.
+4. **The loop** — U6: W1 and W3 together, then W2, then W4, then R1. It cuts
+   across every other group because it is not a feature but the shape of a
+   sitting, and it could only be found by playing the build the groups above
+   produced. A loop that dead-ends is worse than a missing feature.
+5. **Report becomes the archive** — T1, then T3. T1 removes a window; T3
+   re-shapes the desk around what is left, and gives REPORTS the surface the
+   mining and the cause both need (§1 T).
+6. **The agent's own history** — C1, then U5.3. The player cannot compare this
+   sitting against the last one until the previous file exists somewhere on the
+   desk. This is the half of the tiebreaker that survives a failed run: a
+   citation is read once, a comparison is read every sitting after.
+7. **Cause** — U5.2b (seam), U5.2b+ (seam), then U5.2c (render). Crosses the
+   engine/client boundary, so it is three units by §5.2 and never one.
+8. **History** — G3, then U5.1. G3 gates U5.1 and waits on U3, which reworks
+   two of its sites.
+9. **Polish** — O3.
+10. **Slot cap** — U2, probe first.
 
-## 4. Cut line (~08-10; the deployed build stays green)
+**The manual's §1–§4 content is its own row, and it is not polish.** `MANUAL`
+(`src/client/shell/manual.ts`) is one swappable object of placeholder copy, and
+two of its bodies are already false — they describe a 집계 window U3 deleted and
+a two-press day W4 replaced. It is the opening/tutorial conversation 민서
+wanted, held against a live screen. It lands after T1 (hard — 보관함 must not be
+taught) and prefers T3 (soft — prose can avoid naming positions). What §3–§4
+teach is the C-BLOCK loop itself.
 
-**Must:** U1 · group 1 (G2, G4, C2, C3, C4, M1, M2, T2) · U3 · U5.2b + U5.2b+ +
-U5.2c · T1 · U6 · **C1 → U5.3** · the manual's content (below).
-
-**C1 → U5.3 is a Must** (민서, 08-08), and it is the second half of the same
-tiebreaker U5.2c serves. U5.2c shows which sentence moved *this* agent; C1/U5.3
-is what lets the player compare it against the file they gave the last one. A
-loop whose results cannot be compared teaches nothing, and today the previous
-sitting's file is not anywhere on the desk to compare against — the pages are
-unwritten, not off-screen (§1 C). Ranked against the other Musts it comes after
-U5.2c, because a citation with nothing to compare it to still reads, while
-pages of files whose causes are invisible do not.
-
-U1 leads: a day that arrives in bursts is skipped rather than lived, and 21:04
-then lands on nothing. U5.2b+c is the only place cause becomes visible, which is
-the tiebreaker this document ranks by — and it grew an engine-seam half, so it
-starts earlier than its old position implied. U3 moves up because the scorer
-landed and it now blocks on nothing.
-
-**O1 landed as the door (08-08):** a hand-built opening — full-viewport
-sign-in over the desk's own world, the terminal-issue manual as hand-over,
-the desk booting at full speed behind the curtain (no second hold; the
-membrane holds at the door: the fields are spans). The e2e lanes skip it via
-`navigator.webdriver`; `?signin=show` forces it, `?signin=skip` bypasses.
-**The manual's §1–§4 content is a placeholder** (`MANUAL` in
-`src/client/shell/manual.ts`, one swappable object) — writing it is the
-opening/tutorial conversation 민서 wanted, now held against a live screen,
-and the swap is a Must row of its own before 08-10. O2 (the first-mining
-pulse) stays deferred to that same conversation; `g2-3` stamps when it
-closes.
-
-**U6 is a Must and it was not in the original list**, because it could only be
-found by playing: the day the earlier groups produced runs hands-off, and what
-the player does at the close — read one record, mine from it, rebuild the file,
-press once — had no shape until it was tried. A loop that dead-ends is worse
-than a missing feature.
-
-**Should:** G3 · T3 · U5.1 · O3.
-
-**U5.1 moved down from must.** It was sized as a client change; it needs a new
-persistence store, because `report_archive` is an index of run ids and its schema
-forbids widening. M1 alone — distinct callsigns per sitting — carries most of the
-value it was wanted for, and M1 is in the copy pass. **U6's `W2` then took its
-client half outright**, which is what would move it to Won't: what is left is
-schema churn in the headless runner for something no player sees.
-
-**G3 was in no bucket** — it is Should: it gates U5.1, and it stays in group 6
-because U3 first deletes or reworks two of its sites (`tally.ts:54`,
-`deploy-button.ts:51`).
-
-**Won't:** U2 · O2.
-
-**U2** is deferred because raising the cap without a probe risks the mechanism
-claim days before submission: C-BLOCK was measured with **one** injected
-sentence (9/10 stance shift, one-sided Fisher p=0.0000595), and at ten the
-effect may dilute or saturate, losing exactly the attribution the loop depends
-on. Raise to 6 behind one probe arm, or hold at 4.
-
-**O2** is dropped rather than deferred: it shares all six REPORTS files with
-U5.2c, so it costs a serial wave on the spine (§2) to buy one debut animation.
+**Two items are not being built.** **U2** — raising the slot cap without a probe
+risks the mechanism claim: C-BLOCK was measured with **one** injected sentence
+(9/10 stance shift, one-sided Fisher p=0.0000595), and at ten the effect may
+dilute or saturate, losing exactly the attribution the loop depends on. Raise
+to 6 behind one probe arm, or hold at 4. **O2** (the first-mining pulse) shares
+all six REPORTS files with U5.2c, so it costs a serial wave on the spine (§2)
+to buy one debut animation.
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
@@ -753,7 +736,7 @@ stamped rows cite another unit's *output* waits for that unit's **merge** —
 stacking branches is not used (see the #153 stranding). Before each merge the
 author re-runs the PR's suite on a local merge preview. Playtest cadence
 follows waves; feel values flagged in a PR are checked at that wave's game
-check. Wave 4 was `g2-1` alone: `g2-2`/`g2-3` are deferred with O1/O2 (§4).
+check.
 
 ### 5.7 When the PRD is wrong
 
