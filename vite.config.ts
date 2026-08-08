@@ -87,8 +87,19 @@ export function publishedDataFiles(root: string = process.cwd()): string[] {
  * authored file keeps them. `tests/scaffold/published-data.test.ts (g)` holds
  * this to the no-consumer premise: if a seam ever starts reading one, the
  * stripping has to be reconsidered rather than silently breaking it.
+ *
+ * `key_conditions` joins them (08-08). Stripping `key_examples` — the sentences
+ * that open a gate — while shipping the RULE those sentences satisfy was half a
+ * door: `{axis: 두려움, referent: 발신자, species: 사실}` is the lock's
+ * specification, and the manual's whole premise (§3-5) is that the key is the
+ * condition class, not any one string. Whoever reads it knows what to mine
+ * without needing the examples. It also carried the last `기질`/`조건절` on a
+ * player surface, in `targets_clause` — so the leak closes structurally rather
+ * than by finding non-leaking words for a field that should never have shipped.
+ * Call 1 receives `GATE_QUESTION · STANCE_SET · TIMELINE_EXCERPT · TEMPERAMENT`
+ * (`src/engine/index.ts:86-93`) and nothing else; no seam reads this one either.
  */
-const DESIGN_ONLY_FIELDS = ['standard_form', 'branch_note', 'key_examples'] as const
+const DESIGN_ONLY_FIELDS = ['standard_form', 'branch_note', 'key_examples', 'key_conditions'] as const
 
 /** Strips `DESIGN_ONLY_FIELDS` from every gate. Shape-preserving otherwise. */
 export function stripDesignNotes(raw: string): string {

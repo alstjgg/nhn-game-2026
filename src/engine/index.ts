@@ -50,6 +50,7 @@ import type {
 } from '../shared/contracts.ts'
 import type { Symptoms, Temperament } from '../shared/datapack.ts'
 import type { PredicateState } from '../shared/predicates.ts'
+import { holds, problems } from '../shared/predicates.ts'
 
 import { buildSchedule, createBeatDriver, parseClock } from './beat/index.ts'
 import type {
@@ -252,8 +253,45 @@ export function createEngine(deps: EngineDeps): EngineHandle {
     return beat
   }
 
+  /**
+   * Does this event's `exposure.extra_condition` hold right now?
+   *
+   * The slot was authored, compiled and linted, and NOTHING read it: every
+   * event in a beat reached the feed unconditionally. 전구간정상 authors its
+   * day as exclusive pairs — the 21:22 announcement is either "차량 안에서
+   * 대기하십시오" or "차에서 내리십시오", and the closing 개요서 either names
+   * 일반 화물 or twelve pallets — so an unread condition does not merely lose a
+   * branch, it prints BOTH halves of it in the same minute.
+   *
+   * ── Un-hardened prose shows the line, it does not delete it ────────────────
+   *
+   * Exactly `gateOpen`'s rule (`beat/driver.ts`), for exactly its reason.
+   * `extra_condition` is a `contract-datapack` F4 slot: packs may still carry
+   * free text there pending promotion — 우는다리's t5 says 현장(관리동)을
+   * 들여다본 런에만 보임 — and `datapack:lint` FLAGs it as hardening work.
+   * Routing that through `holds()` alone would read it as `false` and silently
+   * delete two authored events from every run of a pack nobody changed. So a
+   * condition that does not PARSE is treated as "no condition authored yet".
+   * Only a real predicate is enforced, which is also why `snapshot()` is
+   * reached only when there is one to resolve.
+   *
+   * ── Why here, and why once ────────────────────────────────────────────────
+   *
+   * `recordOf` memoises per beat and is first called from `applyBeatEffects()`,
+   * after `beats.applyBeatEffects()` — so the state this reads already carries
+   * this beat's own effects, and a later `recordOf` for narration returns the
+   * same record rather than re-deciding against a state that has moved on.
+   */
+  function exposed(condition: string | null | undefined): boolean {
+    if (condition === null || condition === undefined || condition === '') return true
+    if (problems(condition).length > 0) return true
+    return holds(condition, core.port.snapshot())
+  }
+
   function scriptLinesOf(beat: Beat): ScriptLine[] {
-    return beat.events.map((event) => ({ id: event.id, text: event.text }))
+    return beat.events
+      .filter((event) => exposed(event.exposure?.extra_condition))
+      .map((event) => ({ id: event.id, text: event.text }))
   }
 
   /**

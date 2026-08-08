@@ -17,9 +17,11 @@
 //     `frame()` delegating straight to the driver so "driver-fed" is testable.
 //
 // C3 (placeholder fixtures): nothing here asserts synthetic fixture CONTENT.
-// The two literals that do appear — `우는다리` and `21:04` — are frozen repo
-// data (`data/scenario/우는다리/meta.json`), not fixture text, and `21:04` is
-// named by the acceptance criterion itself.
+// The two literals that do appear — `전구간정상` and `23:12` — are repo data
+// (`data/scenario/전구간정상/meta.json`), not fixture text, and the terminal
+// stamp is named by the acceptance criterion itself. Both track the SHIPPED
+// pack (`src/client/shell/pack.ts`'s `PACK_SLUG`): switching the slug moves
+// them, which is what these two assertions are for.
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
@@ -43,7 +45,7 @@ interface Rect {
 
 // C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted. This helper waited
 // for all FIVE windows to be VISIBLE. `#w-tally` boots `class="win hidden"` and
-// comes up only at 21:04 — u7 made it a floating sheet again and C15 rules that
+// comes up only at the pack's terminal beat — u7 made it a floating sheet again and C15 rules that
 // display:none-by-class before its phase is CORRECT behaviour, not a bug. So the
 // wait is now: every window is ATTACHED, and every window not held by its phase
 // is visible. Nothing is skipped; the desk census below still counts all five.
@@ -386,13 +388,15 @@ test.describe('topbar', () => {
     for (const id of ['#portalName', '#portalCode', '#opName', '#caseName']) {
       await expect(bar.locator(id)).not.toBeEmpty()
     }
-    // The case comes from the frozen scenario pack, not from a fixture.
-    await expect(bar.locator('#caseName')).toContainText('우는다리')
+    // The case comes from the shipped scenario pack, not from a fixture.
+    await expect(bar.locator('#caseName')).toContainText('전구간정상')
   })
 
-  test('topbar — the clock reads HH:MM and runs toward the 21:04 terminal', async ({ page }) => {
+  test('topbar — the clock reads HH:MM and runs toward the 23:12 terminal', async ({ page }) => {
     await expect(page.locator('#clockDigits')).toHaveText(/^\d{2}:\d{2}$/)
-    await expect(page.locator('#clockUnit .clk-term')).toContainText('21:04')
+    // `meta.clock.end` is authored `23:12+`; `shell/pack.ts` strips the
+    // sub-minute `+` before the band is painted, so the gutter reads `23:12`.
+    await expect(page.locator('#clockUnit .clk-term')).toContainText('23:12')
   })
 
   test('topbar — the clock time is driver-fed, never view-computed', async ({ page }) => {
@@ -722,7 +726,7 @@ test.describe('a11y', () => {
         // cannot take focus, so `el.focus()` is a no-op and the snapshot could
         // only ever be unchanged. The three that reported here were #w-tally's
         // bar and its two controls — the sheet boots `class="win hidden"` and
-        // comes up at 21:04, which C15 rules CORRECT. Nothing is skipped: the
+        // comes up at the terminal beat, which C15 rules CORRECT. Nothing is skipped: the
         // held ones are reported and pinned to that window below.
         if (el.getClientRects().length === 0) {
           heldByPhase.push(`${el.closest('.win')?.id ?? '(no window)'} ${el.className}`)
