@@ -1,5 +1,5 @@
 // The shell's boot sequence — spec-client §5.1, in that order:
-// fetch the pack → build the chrome and the five windows → applyLayout →
+// fetch the pack → build the chrome and the three windows → applyLayout →
 // connect the driver → open the run.
 //
 // The shell owns the desk and nothing else: it never renders run content (the
@@ -21,7 +21,7 @@ import { openSignIn, signInSkipped } from './sign-in.ts'
 import { fetchScenarioIdentity } from './pack.ts'
 import type { ScenarioIdentity } from './pack.ts'
 import { PORTAL, TASKBAR_HINT } from './portal-identity.ts'
-import { restoredRun } from './run-state.ts'
+import { clearRunState } from './run-state.ts'
 import { WINDOW_REGISTRY } from './window-registry.ts'
 import { createWindowManager } from './window-manager.ts'
 // A namespace import on purpose: the overlay may only be mounted once the desk
@@ -152,12 +152,16 @@ export async function bootShell(): Promise<void> {
   // player build gets, since `demoRunLoop` answers `null` there (§5.4) and the
   // fixtures tree-shake out. The placeholder is the floor: a pack that will not
   // load must still leave a booted desk rather than a blank page.
+  // H2 — a page load is a new sitting. Before the driver is built, because
+  // `createRunState` reads this module's slot the moment it is constructed and
+  // the live path reads the runloop's inside `createLiveRunDriver`.
+  clearRunState()
   const fixtures = await demoRunLoop({ withoutReports: lapseDrill() })
   const driver =
     fixtures !== null
-      ? createRunLoopDriver(fixtures, { openAt: restoredRun() })
+      ? createRunLoopDriver(fixtures)
       : ((await openLiveDesk(identity)) ??
-        createRunLoopDriver([placeholderBootRun(identity)], { openAt: restoredRun() }))
+        createRunLoopDriver([placeholderBootRun(identity)]))
 
   // 3 — the chrome the driver feeds.
   const clock = createGameClock({
@@ -176,7 +180,7 @@ export async function bootShell(): Promise<void> {
   createAnnouncer(must('#toast'), driver)
   bindRadioSfx(driver)
 
-  // 4 — the five windows and the taskbar, then the computed desk arrangement.
+  // 4 — the three windows and the taskbar, then the computed desk arrangement.
   const desk = createWindowManager({
     desk: must('#desktop'),
     taskbar: must('#taskbar'),

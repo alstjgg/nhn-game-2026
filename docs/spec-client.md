@@ -266,7 +266,7 @@ driver, not the windows, is where that guarantee is enforced (invariant 12).
 | State | Owner | Client's part |
 |---|---|---|
 | game state (meters, gates, journal) | engine | none — not even mirrored |
-| run counter · carried blocks · report archive | run-loop manager (meta-state, `sessionStorage` — §9) | display + membrane ops against it; arrives as `meta` events |
+| run counter · carried blocks · report archive | run-loop manager (meta-state, `sessionStorage` — §9; written through, cleared at boot per §7 #8) | display + membrane ops against it; arrives as `meta` events |
 | window geometry · focus · collapsed set · archive-rail selection · animation state | **client** | in-memory only — cosmetic state legitimately resets on refresh |
 | mining/slotted marks on sentences | derived from meta-state by id | render only |
 
@@ -334,8 +334,10 @@ Against `data/scenario/우는다리/`, in fixture mode, in a browser.
 6. Terminal clock reached → score renders.
 7. A forced `fallback` feed line renders per engine §5, and the run
    continues.
-8. Refresh mid-run: the multi-run meta-state (counter, archive, carried
-   blocks) survives via `sessionStorage`; closing the tab starts clean
+8. Refresh mid-run: a page load starts a NEW sitting — the run slots in
+   `sessionStorage` are cleared at boot (H2, 08-08), because a resume that
+   restores the archive rail's identities but not the report documents behind
+   them hands back a desk of empty tabs. Closing the tab starts clean
    (윤석's resolution, §9). Window geometry and other cosmetic state may
    reset.
 
@@ -391,9 +393,11 @@ slices so LLM-generated text never hits a missing glyph).
   types land in `src/shared/view-driver.ts`. The sentence-id scheme
   (engine-minted, channel-derived species, shared segmenter with golden
   test) is part of the ratification.
-- **Persistence** — `sessionStorage` for meta-state: survives refresh (the
-  multi-run loop isn't destroyed by F5), dies with the tab (every judge
-  starts clean — `localStorage` would break the run-3 demo staging). 윤석
+- **Persistence** — `sessionStorage` for meta-state, written but no longer read
+  back on load: **F5 starts a new sitting** (H2, 08-08 — the resume could not
+  restore the filed reports, so it returned an archive of empty tabs), and the
+  slot dies with the tab either way (`localStorage` would break the run-3 demo
+  staging). 윤석
   revises physical §1 and game-design §6; §7 #8 binds it here.
 - **`src/` scaffolding** — already done (physical §3.8 step 1: the four
   `src/` dirs and the `tsconfig`/`tsconfig.core` split exist). **Condition
