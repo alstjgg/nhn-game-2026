@@ -156,6 +156,13 @@ async function playOneRun(): Promise<ViewEvent[]> {
   const events: ViewEvent[] = []
   adapter.subscribe((event) => events.push(event))
   adapter.start()
+  // …and the press. `BUILD → (deploy) RUN` (spec-client §5.1) is held by the
+  // adapter: nothing stamped is released and no beat is stepped until a
+  // `deploy` op arrives, so `start()` alone opens a desk that shows the day's
+  // `meta` and waits. An EMPTY file is a committed file — the DEPLOY control is
+  // live with no slot filled — and this run takes every gate's default stance
+  // regardless, which is the no-intervention day (d) scores the baseline off.
+  adapter.send({ op: 'deploy', blocks: [] })
   await pump(adapter, () => events.some((event) => event.type === 'run_end'))
   return events
 }

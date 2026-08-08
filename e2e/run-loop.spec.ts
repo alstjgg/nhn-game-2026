@@ -16,7 +16,7 @@
 // suite binds to whatever run the shell boots.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
-import { confirmDeploy, turnToAgent } from './fixtures/harness.ts'
+import { confirmDeploy, deployFile, turnToAgent } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -569,6 +569,9 @@ test.describe('latency', () => {
     // Re-open the run and park exactly on that wait, sim paused.
     await page.reload()
     await boot(page)
+    // The press: the driver holds the run's stream until the file is committed
+    // (spec-client §5.1), so a re-opened desk has no day to park inside yet.
+    await deployFile(page)
     await seekTo(page, due!)
     await holdRate(page, 0)
 
@@ -603,6 +606,9 @@ test.describe('latency', () => {
 
     await page.reload()
     await boot(page)
+    // The press: the driver holds the run's stream until the file is committed
+    // (spec-client §5.1), so a re-opened desk has no day to park inside yet.
+    await deployFile(page)
     await seekTo(page, due!)
     await holdRate(page, 0)
 

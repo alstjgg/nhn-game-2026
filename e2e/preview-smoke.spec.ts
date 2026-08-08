@@ -12,7 +12,7 @@ import { expect, test } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { watchWire } from './fixtures/harness.ts'
+import { deployFile, watchWire } from './fixtures/harness.ts'
 import { CHROME, FREE_TEXT, WIN } from './fixtures/selectors.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -166,6 +166,13 @@ test.describe('preview smoke', () => {
     // the sibling test greps the bundle for fixture and debug-pane needles, which
     // is the check that can actually tell the two apart. What survives here is
     // the browser-side half: the desk that booted is the LIVE one.
+    // The press is part of the claim now. `BUILD → (deploy) RUN` (spec-client
+    // §5.1) is held by the driver: an unopened day prints nothing, so a line on
+    // the fanfold of a PLAYER build is proof both that a live run is behind the
+    // desk and that the operator's own commit is what starts it — the only
+    // gesture in the game that reaches the engine at all.
+    await deployFile(page)
+
     // Waited for, not sampled. The claim is "there is a run behind this desk",
     // and the live path fetches a pack and opens a run loop before it can show
     // one — so counting at first paint measures machine load, not the claim. It

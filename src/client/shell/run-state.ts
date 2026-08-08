@@ -244,22 +244,23 @@ export function createRunState(driver: FixtureDriver, options: RunStateOptions =
 
   const remembered = restored(storage)
   let state = remembered === null ? initialRunState() : reduce(initialRunState(), remembered)
-  let openedAt = driver.clock.minute
 
-  /**
-   * The stream a run opens with lands before the operator has done anything:
-   * `advance(0)` releases the opening minute so the desk is not blank, and the
-   * clock then waits on ▶. That opening batch is still BUILD — the day has not
-   * begun until it moves. Everything else is the reducer's, unconditionally.
-   */
-  function begun(event: ViewEvent): boolean {
-    if (event.type !== 'feed' && event.type !== 'beat_start') return true
-    return driver.clock.minute > openedAt
-  }
-
+  // Unconditional, and the driver's clock is not consulted at all.
+  //
+  // It used to be: a `feed` or `beat_start` released at the opening minute was
+  // refused, because the shell's `advance(0)` (`boot.ts` step 5) released the
+  // whole opening minute before the operator had pressed anything, and a desk
+  // that jumped to RUN off a batch nobody asked for was wrong. That guard held
+  // the PHASE right while the LIVE FEED went on printing the batch anyway.
+  //
+  // The hold now lives where the events do — the driver holds the run's own
+  // stream until a `deploy` op arrives (`driver/run-loop.ts`, `driver/live/
+  // adapter.ts`) — so a run event reaching this reducer is proof the file was
+  // committed, whatever minute the clock is sitting on. Which matters: the
+  // opening batch is released BY the press, with the clock still on the opening
+  // minute, and the old guard would now refuse the very events that mean RUN.
   driver.subscribe((event: ViewEvent) => {
-    if (event.type === 'meta') openedAt = driver.clock.minute
-    if (begun(event)) state = reduce(state, event)
+    state = reduce(state, event)
     if (event.type === 'meta') persist(storage, event)
     for (const listener of [...listeners]) listener(state)
   })
