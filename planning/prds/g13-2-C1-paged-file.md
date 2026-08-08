@@ -791,3 +791,33 @@ replaced by:
       unmodified** — A1 is what keeps it so.
 
 Every other Done-when line stands, and E13 is still to do.
+
+---
+
+# Amendment 2 — `HOST_STUB` goes
+
+A2a-ii said to leave `HOST_STUB` even if unused, and to report if `tsc`
+disagreed. It disagreed: `noUnusedLocals` is on and `typecheck:test` fails with
+TS6133. That instruction was wrong — it was written to stop scope creep, but
+`HOST_STUB` is not incidental leftovers. It was a DOM-free stand-in for the slot
+host, and no model takes a slot host any more: `agentModel` is `{slotCap,
+callsign}`, `coverModel` is a string. It is dead by this unit's own design, so
+removing it is this unit's business after all.
+
+## B1 — `tests/windows/agent-file.test.ts:176-177`
+
+Current text:
+
+```
+/** A DOM-free stand-in for the 인수인계 사항 host — no model may touch it. */
+const HOST_STUB = Object.freeze({ __hostStub: true }) as unknown as HTMLElement
+```
+
+Replacement: **nothing.** Delete both lines, and the blank line left behind if
+one results.
+
+If any reference to `HOST_STUB` survives elsewhere in the file, do NOT delete it
+— stop and report instead, because then the premise above is wrong.
+
+Then continue: **E13**, the full Verification, the Done-when as corrected by A4,
+and the single commit.
