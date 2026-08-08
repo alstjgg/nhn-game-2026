@@ -213,26 +213,37 @@ describe('[u11#c6] frozen inputs stayed frozen (C1 / C13 / C20)', () => {
   // authored INTO it, and lint has been reporting them as the hardening
   // worklist (F1–F4) with nowhere to do the work.
   //
-  // `data/scenario/_schema/` stays frozen, and the distinction is the point:
-  // the pack is content and revises with the scenario; the schemas are the
-  // ratified law that content is checked against, and nothing about the run's
-  // merge expired that. §3.6's grammar was deliberately sized to fit the
-  // already-ratified `string[]` so hardening never needs to touch them.
-  //
   // The same release carries a second repair (08-06), on the same expiry: the
   // timeline printed `(갈림길 Gn의 자리)` on six lines of a player surface,
   // against the 08-03 decision log and `docs/spec-client.md` §3 invariant 6.
   // That leak cannot be repaired anywhere but the authored file — fixing only
   // the compiled `timeline.json` would let the next `datapack:compile` restore
-  // it. `_schema/` stays frozen for this one too: the schemas are not what
-  // either defect is in.
-  const RELEASED =['docs/spec-client.md', 'src/shared/species.ts', 'data/scenario/우는다리/']
-  const FROZEN = [
+  // it. `_schema/` stayed frozen for both of those: the schemas are not what
+  // either defect was in.
+  //
+  // RELEASED (08-09, the gate-excerpt ratification): `data/scenario/_schema/`.
+  // The argument that held it was that the schemas are the ratified law content
+  // is checked against, sharpened by a specific claim — §3.6's grammar was
+  // sized to fit the already-ratified `string[]` so HARDENING never needs to
+  // touch them. That claim is still true, and it is still about hardening.
+  // What released the directory is a different act: a ratified feature that
+  // AMENDS the law. `planning/research/gate-excerpt-design.md` §2 is the
+  // amendment — a gate card declares the timeline rows the agent reads at that
+  // gate, so what the agent knows stops being a side effect of the prompt
+  // budget — and it cannot land anywhere but in the schema.
+  //
+  // The release carries its condition, and the condition is what keeps the
+  // schemas law: AMENDMENTS ARE ADDITIVE. Every pack already on disk must stay
+  // valid byte-for-byte, so a new field is optional and never joins `required`.
+  // A schema edit that would invalidate an existing pack is not an amendment,
+  // and this release does not cover it.
+  const RELEASED = [
+    'docs/spec-client.md',
+    'src/shared/species.ts',
+    'data/scenario/우는다리/',
     'data/scenario/_schema/',
-    'docs/design/',
-    'src/shared/segment.ts',
-    'tools/tests/segment.golden.mjs',
   ]
+  const FROZEN = ['docs/design/', 'src/shared/segment.ts', 'tools/tests/segment.golden.mjs']
 
   it('(m) this run\'s commits introduced no diff under a frozen path', () => {
     const merge = runMerge()

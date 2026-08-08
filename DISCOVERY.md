@@ -322,6 +322,17 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   a `vite.config.ts` edit inside upstream's §3.7 plugin — routed to the plugin's
   owner (ledger owner `u0`; the plugin arrived with PR #114 and C20 freezes this
   run's base).
+- [gate-excerpt] **`data/scenario/_schema/` is no longer a frozen path** (08-09).
+  The finding above calls the schema files "frozen inputs" and that clause is now
+  historical — it was true of this run and of every hardening pass since, because
+  the freeze's argument was that hardening never needs to touch the schemas. It
+  still doesn't. What released the directory is a ratified AMENDMENT to the law
+  itself: a gate card now declares the timeline rows the agent reads at that gate
+  (`planning/research/gate-excerpt-design.md`), which can land nowhere but in
+  `gates.schema.json`. The release carries a standing condition — amendments are
+  ADDITIVE, so every pack on disk stays valid byte-for-byte and a new field is
+  optional and never joins `required`. Nothing else about the seam break above
+  changed: `dist/` still publishes `_schema/`, and that fix is still upstream's.
 - [u11] **C19 bookkeeping — "base 7/13 red" is seven FILES, thirteen TESTS.**
   The raw record is `discovery/u2f.md` §5: "7 files / 13 tests already red before
   this unit". All thirteen were red; the seven is a file count. The ledger
