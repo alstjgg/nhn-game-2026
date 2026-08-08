@@ -212,6 +212,27 @@
     },
     {
       "id": "t11",
+      "time": "21:17",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "차우진이 비상전화를 다시 든다. 소화기를 두 개째 비웠다고 말한다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t12",
       "time": "21:22",
       "surface": "onsite",
       "place_id": "p1",
@@ -232,7 +253,7 @@
       ]
     },
     {
-      "id": "t12",
+      "id": "t13",
       "time": "21:22",
       "surface": "onsite",
       "place_id": "p1",
@@ -253,7 +274,7 @@
       ]
     },
     {
-      "id": "t13",
+      "id": "t14",
       "time": "21:26",
       "surface": "call",
       "place_id": "p4",
@@ -274,7 +295,7 @@
       ]
     },
     {
-      "id": "t14",
+      "id": "t15",
       "time": "21:33",
       "surface": "onsite",
       "place_id": "p2",
@@ -295,7 +316,7 @@
       ]
     },
     {
-      "id": "t15",
+      "id": "t16",
       "time": "21:38",
       "surface": "cctv",
       "place_id": "p3",
@@ -316,7 +337,7 @@
       ]
     },
     {
-      "id": "t16",
+      "id": "t17",
       "time": "21:50",
       "surface": "call",
       "place_id": "p3",
@@ -337,14 +358,14 @@
       ]
     },
     {
-      "id": "t17",
+      "id": "t18",
       "time": "21:50",
       "surface": "call",
       "place_id": "p3",
       "text": "오세라가 말한다. \"내렸습니다. 차 옆에 서서 기다립니다. 어디로 가라는 말이 아직 없어요\"",
       "exposure": {
         "visible_from": null,
-        "extra_condition": "pallet_named"
+        "extra_condition": "pallet_named and not driven_out"
       },
       "effects": {
         "deltas": {},
@@ -358,7 +379,7 @@
       ]
     },
     {
-      "id": "t18",
+      "id": "t19",
       "time": "21:52",
       "surface": "onsite",
       "place_id": "p3",
@@ -379,7 +400,7 @@
       ]
     },
     {
-      "id": "t19",
+      "id": "t20",
       "time": "21:55",
       "surface": "onsite",
       "place_id": "p1",
@@ -400,7 +421,7 @@
       ]
     },
     {
-      "id": "t20",
+      "id": "t21",
       "time": "21:55",
       "surface": "onsite",
       "place_id": "p1",
@@ -421,7 +442,7 @@
       ]
     },
     {
-      "id": "t21",
+      "id": "t22",
       "time": "22:04",
       "surface": "cctv",
       "place_id": "p2",
@@ -437,7 +458,7 @@
       "present": null
     },
     {
-      "id": "t22",
+      "id": "t23",
       "time": "22:11",
       "surface": "onsite",
       "place_id": "p4",
@@ -458,7 +479,7 @@
       ]
     },
     {
-      "id": "t23",
+      "id": "t24",
       "time": "22:19",
       "surface": "onsite",
       "place_id": "p4",
@@ -479,7 +500,7 @@
       ]
     },
     {
-      "id": "t24",
+      "id": "t25",
       "time": "22:26",
       "surface": "onsite",
       "place_id": "p5",
@@ -495,7 +516,7 @@
       "present": null
     },
     {
-      "id": "t25",
+      "id": "t26",
       "time": "22:41",
       "surface": "call",
       "place_id": "p4",
@@ -516,7 +537,7 @@
       ]
     },
     {
-      "id": "t26",
+      "id": "t27",
       "time": "22:58",
       "surface": "cctv",
       "place_id": "p5",
@@ -532,7 +553,7 @@
       "present": null
     },
     {
-      "id": "t27",
+      "id": "t28",
       "time": "23:12+",
       "surface": "document",
       "place_id": "p1",
@@ -553,7 +574,7 @@
       ]
     },
     {
-      "id": "t28",
+      "id": "t29",
       "time": "23:12+",
       "surface": "document",
       "place_id": "p1",
