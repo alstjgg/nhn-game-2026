@@ -475,6 +475,52 @@ for (const g of pack.gates.gates ?? []) {
   }
 }
 
+/* ── W-B1 — a flag set and never read (the mirror of E-P2) ───────────────── */
+
+// E-P2 asks whether a predicate names a flag nothing sets. This asks the other
+// direction: something SETS a flag no predicate names. What that costs is a
+// stance the player can pick that no later line branches on — the bucket-level
+// twin of "a gate that changes no tally is decoration" above, one level down
+// from the gate to the bucket.
+//
+// Every reader is enumerated here, not just score: a flag can legitimately be
+// read by an exposure condition, an edge predicate, a gate's availability or a
+// place's depth. Only predicates that PARSE count as readers, which is the same
+// rule E-A1 and the F4 worklist use — un-promoted prose is not yet a read.
+//
+// WARN, not ERROR, and the message splits the two cases. A bucket earns its
+// slot on meters and symptoms too, so a flag that drives only a symptom
+// sentence is doing real work on the desk even though nothing branches on it.
+// A flag with neither is unobservable, and that is the one that is almost
+// always a defect.
+const readNames = new Set();
+const readFrom = (predicate) => {
+  if (typeof predicate !== 'string' || !predicate.trim()) return;
+  if (problems(predicate).length) return;
+  for (const name of identifiers(predicate)) readNames.add(name);
+};
+for (const u of pack.score.units ?? []) for (const p of u.predicates ?? []) readFrom(p);
+for (const e of pack.timeline.events ?? []) readFrom(e.exposure?.extra_condition);
+for (const g of pack.gates.gates ?? []) {
+  readFrom(g.availability);
+  for (const p of g.edge_predicates ?? []) readFrom(p);
+}
+for (const p of pack.places.places ?? []) for (const y of p.yields ?? []) readFrom(y.depth_note);
+
+const symptomFlags = new Set(Object.keys(pack.symptoms?.flags ?? {}));
+for (const g of pack.gates.gates ?? []) {
+  for (const b of g.buckets ?? []) {
+    for (const f of Object.keys(b.flags ?? {})) {
+      if (readNames.has(f)) continue;
+      warns.push(
+        symptomFlags.has(f)
+          ? `${g.gate} bucket "${b.id}": sets "${f}", which no predicate reads — it has a symptom line, so the desk shows it, but nothing later branches on it`
+          : `${g.gate} bucket "${b.id}": sets "${f}", which no predicate reads and no symptom renders — setting it is unobservable`,
+      ); // W-B1
+    }
+  }
+}
+
 /* ── E-P5 — the first run is the worst run (guide §5, manual §5) ─────────── */
 
 // Sibling of E-P3, one step in from it. E-P3 catches a flag the fixed timeline
