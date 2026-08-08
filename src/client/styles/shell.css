@@ -224,25 +224,6 @@ body.booting .win{visibility:hidden}
 .wc:hover{background:var(--ctl-hover);color:var(--txt-hi)}
 .wc-close:hover{background:var(--seal-2);color:var(--txt-max)}
 
-/* x5 — the three desk windows read at 1.2×; everything outside them stays 1.5×.
-   The scale itself is `--fsw-*` in tokens.css (see the block there); this is
-   only the mapping, so not one size literal lives here. The chrome the operator
-   reads across the room is untouched: the title bar sits OUTSIDE `.win-body`,
-   and so do the topbar, the clock and the taskbar.
-
-   Enumerated, not `.win .win-body`: `shell/manual.ts` builds the onboarding
-   sheet as a `.win` too, and that sheet is a full-screen briefing read once at
-   1.5×. A fourth desk window opts in here, deliberately. */
-.win-feed .win-body,
-.win-file .win-body,
-.win-rep .win-body{
-  --fs-7:var(--fsw-7);--fs-7-5:var(--fsw-7-5);--fs-8:var(--fsw-8);--fs-8-5:var(--fsw-8-5);
-  --fs-9:var(--fsw-9);--fs-9-5:var(--fsw-9-5);--fs-10:var(--fsw-10);--fs-10-5:var(--fsw-10-5);
-  --fs-11:var(--fsw-11);--fs-11-5:var(--fsw-11-5);--fs-12:var(--fsw-12);--fs-13:var(--fsw-13);
-  --fs-14:var(--fsw-14);--fs-15:var(--fsw-15);--fs-16:var(--fsw-16);--fs-17:var(--fsw-17);
-  --fs-19:var(--fsw-19);--fs-20:var(--fsw-20);--fs-21:var(--fsw-21);--fs-26:var(--fsw-26);
-  --fs-34:var(--fsw-34);--fs-44:var(--fsw-44)}
-
 .win-body{flex:1;min-height:0;position:relative;overflow:hidden}
 .win-grip{position:absolute;right:0;bottom:0;width:24px;height:24px;cursor:nwse-resize;z-index:5}
 .win-grip::after{content:'';position:absolute;right:5px;bottom:5px;width:12px;height:12px;

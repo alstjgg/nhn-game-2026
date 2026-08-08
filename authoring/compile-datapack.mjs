@@ -584,6 +584,21 @@ let score;
     if (!hit) die(`점수: "- **${label}** …" 글머리가 없다`);
     return hit.slice(label.length).trim();
   };
+  // `score.json` has three slots and no fourth. A bullet under a label none of
+  // them read compiles to nothing at all — the sentences, and any number in
+  // them, stay in the draft while the pack the game and the tests read goes on
+  // without them. Same rule as the rule block above: extraction that drops its
+  // input is a lie. A fourth idea belongs inside one of the three.
+  const SCORE_LABELS = [
+    '무개입 기준 점수(자연 기준):',
+    '못 막은 런들끼리도 점수가 다르다:',
+    '막은 런에도 치른 값이 남는다:',
+  ];
+  for (const text of bl) {
+    if (!SCORE_LABELS.some((label) => text.startsWith(label))) {
+      die(`점수: 팩에 실리지 않는 글머리 — "${text.slice(0, 30)}…"`);
+    }
+  }
   score = {
     units,
     baseline_summary: find('무개입 기준 점수(자연 기준):') ? `무개입 기준 점수(자연 기준): ${find('무개입 기준 점수(자연 기준):')}` : null,

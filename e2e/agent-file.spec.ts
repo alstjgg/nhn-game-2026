@@ -97,15 +97,46 @@ async function seamStore(page: Page): Promise<SeamStore> {
   })
 }
 
+/**
+ * The pack slug the CLIENT actually asked the server for.
+ *
+ * RE-AIMED (08-09). Both callers used to read `#caseName`, which carried the
+ * slug until `ui(x2)` (#212) pointed it at `PACK_DISPLAY_NAME` — a display name
+ * that is `전 구간 정상` where the slug is `전구간정상`, and which `shell/pack.ts`
+ * says outright is "DELIBERATELY not derived from `PACK_SLUG` — there is no
+ * rule". So the chrome stopped being a slug source, silently: `(d)` compared
+ * the doc number against a string with spaces in it, and `(e)` fetched
+ * `data/scenario/전 구간 정상/meta.json`, got the dev server's index.html and
+ * died parsing it as JSON. Neither is caught by CI, which runs the `preview`
+ * project alone.
+ *
+ * The boot request is the honest replacement. It is not a literal (C3), it is
+ * not the display name, and it is not the doc line either — which matters,
+ * because `(d)` exists to check the doc line against an INDEPENDENT source.
+ * `performance` is read rather than a request listener so there is no ordering
+ * race with `boot()`'s own `goto`.
+ */
+async function packSlug(page: Page): Promise<string> {
+  const url = await page.evaluate(() =>
+    performance
+      .getEntriesByType('resource')
+      .map((entry) => entry.name)
+      .find((name) => /\/data\/scenario\/[^/]+\/meta\.json(\?|$)/.test(name)) ?? '',
+  )
+  const found = /\/data\/scenario\/([^/]+)\/meta\.json(\?|$)/.exec(url)
+  expect(found, `no pack meta.json request was observed: ${url}`).not.toBeNull()
+  return decodeURIComponent(found![1]!)
+}
+
 /** The pack's own clock band — the source §1 and the topbar both read. */
 async function packClock(page: Page): Promise<{ start: string; end: string }> {
-  return page.evaluate(async () => {
-    const slug = document.querySelector('#caseName')?.textContent ?? ''
-    const url = new URL(`data/scenario/${slug}/meta.json`, document.baseURI)
+  const slug = await packSlug(page)
+  return page.evaluate(async (name: string) => {
+    const url = new URL(`data/scenario/${name}/meta.json`, document.baseURI)
     const raw = (await (await fetch(url)).json()) as { clock: { start: string; end: string } }
     const strip = (s: string): string => s.replace(/\+$/, '')
     return { start: strip(raw.clock.start), end: strip(raw.clock.end) }
-  })
+  }, slug)
 }
 
 /**
@@ -227,7 +258,11 @@ test.describe('dossier sections', () => {
     // C1 — the number names the DOCUMENT, which spans every agent, so it has
     // no run segment. It used to end `/01`, `/02`, …
     await expect(doc).toHaveText(/^문서번호 ERR-2\/AF\/[^/]+$/)
-    const slug = (await page.locator('#caseName').textContent())?.trim() ?? ''
+    // The slug the client fetched the pack under, not the chrome's display
+    // name — see `packSlug`. Still an independent source: the doc line is
+    // built by `windows/agent-file.ts` from the fetched identity, and this
+    // comes off the network.
+    const slug = await packSlug(page)
     expect(slug.length).toBeGreaterThan(0)
     await expect(doc).toHaveText(new RegExp(`/AF/${slug}$`))
     await expect(page.locator(`${FILE} .fh-title`)).toHaveText('현장 요원 운용 파일')

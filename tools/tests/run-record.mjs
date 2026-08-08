@@ -39,6 +39,7 @@ import {
 
 import { createFixtureProvider } from '../../src/transport/fixture.ts'
 import { createMemoryMetaStore } from '../../src/runloop/store.ts'
+import { deathsOf } from '../../src/shared/predicates.ts'
 import { validate as validateAgainst, loadSchema } from '../driver/run/schema.ts'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
@@ -542,8 +543,11 @@ describe('record assembly', () => {
   // AUTHORS one (contract-datapack §3.6), so the premise moved while the claim
   // did not. The ending is still never synthesized HERE; it is read. What the
   // test measures is exactly that: every recorded value is the tail of a rule
-  // the pack wrote, and `total` is the sum of the numeric ones rather than a
-  // number this file invented.
+  // the pack wrote, and `total` is what those values cost in deaths rather than
+  // a number this file invented. The cost rule is `deathsOf`'s and is imported:
+  // a copy here would be a second definition of the pack's arithmetic, and the
+  // one this file used to hold — numbers only — stopped being the whole rule
+  // when a person-unit's prose outcome (`사망 · …`) started counting.
   test('score comes from the pack — every value is an authored rule, never synthesized', async () => {
     const { record } = await pass()
     const authored = JSON.parse(
@@ -552,11 +556,8 @@ describe('record assembly', () => {
     assert.ok(record.score, 'the run recorded no score at all')
     assert.equal(record.score.units.length, authored.units.length)
 
-    const sum = record.score.units.reduce(
-      (n, u) => n + (typeof u.value === 'number' ? u.value : 0),
-      0,
-    )
-    assert.equal(record.score.total, sum, 'total is not the sum of the numeric values')
+    const sum = record.score.units.reduce((n, u) => n + deathsOf(u.value), 0)
+    assert.equal(record.score.total, sum, 'total is not what the recorded values cost')
 
     for (const unit of record.score.units) {
       const rules = authored.units.find((u) => u.id === unit.id)?.predicates ?? []

@@ -36,6 +36,26 @@ export interface ScenarioIdentity {
 // no longer carries.
 export const PACK_SLUG = '전구간정상'
 
+/**
+ * The same case, spelled for a reader instead of for a filesystem.
+ *
+ * x2 (08-08) — the chrome was printing `PACK_SLUG` straight into `#caseName`,
+ * so the desk named its own case 전구간정상: one run-on word, which is what a
+ * directory name has to be and not what a control room writes. The pack's own
+ * logline already spells it 전 구간 정상 in prose, so this is the pack agreeing
+ * with itself rather than a new name.
+ *
+ * DELIBERATELY not derived from `PACK_SLUG` — there is no rule that puts the
+ * spaces back (전/구간/정상 is not a segmentation any code here could know), and
+ * a display name is authored text either way.
+ *
+ * The slug stays the slug everywhere it is an IDENTIFIER: the `data/scenario/`
+ * path, `metaKey()`'s storage key, and the `ERR-2/AF/…` · `ERR-2/TL/…` document
+ * numbers, which are catalogue numbers a reader is meant to quote back, not
+ * prose. Only the places that read as a name take this.
+ */
+export const PACK_DISPLAY_NAME = '전 구간 정상'
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
