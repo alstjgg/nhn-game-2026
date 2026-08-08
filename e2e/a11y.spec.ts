@@ -23,7 +23,7 @@
 // Titles are load-bearing — [u9#c5]'s verification runs this whole file, and
 // `-g` filters in later units may target these describe names.
 import { expect, test } from 'playwright/test'
-import { awaitRecordFinal, drain, raiseWindow } from './fixtures/harness.ts'
+import { awaitRecordFinal, drain, raiseWindow, turnToAgent } from './fixtures/harness.ts'
 import type { Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
 
@@ -57,6 +57,7 @@ async function boot(page: Page): Promise<void> {
   // C14 / [u11#c12] — the DEV-only debug pane covers the desk's bottom-left
   // quadrant and steals the pointer there. See `fixtures/dev-surface.ts`.
   await hideDebugPane(page)
+  await turnToAgent(page)
 }
 
 interface ControlMeta {
@@ -243,6 +244,9 @@ test.describe('a11y — landmarks and roles', () => {
     await page.goto('./?drill=tally-lapse')
     await page.waitForFunction(() => Boolean((window as { __shell?: unknown }).__shell))
     await hideDebugPane(page)
+    // C1 — `#deployState` and `#btnDeploy` are on the agent's page; the file
+    // opens on its cover. This test drives the desk by URL, not through boot().
+    await turnToAgent(page)
 
     // Drive the day to its close; the terminal record counts up on its own
     // ~9 s cadence, unrelated to whether the report has filed. The harness
@@ -335,6 +339,10 @@ test.describe('a11y — keyboard reach', () => {
     await page.waitForFunction(
       () => (window as unknown as { __shell?: unknown }).__shell !== undefined,
     )
+    // C1 — the reload re-opens the file on its cover, so `slot`/`unslot` are
+    // not in the document until it is turned. boot()'s own turn was undone by
+    // the reload above.
+    await turnToAgent(page)
 
     const opsOf = (): Promise<string[]> =>
       page
@@ -401,6 +409,24 @@ test.describe('a11y — keyboard reach', () => {
       .locator('.win-grip')
       .evaluateAll((nodes) => nodes.filter((n) => n.getAttribute('aria-hidden') === 'true').length)
     expect(hidden, 'the resize grip is hidden from assistive tech').toBe(0)
+
+    // g13-3 — the AGENT FILE is a fixed sheet, and BOTH halves are pinned here
+    // because only both together keep 2.1.1: a window that resized by pointer
+    // and not by key would be the very violation this test was added for. So
+    // the sheet must have no grip to drag, no Shift promise in the name its bar
+    // announces, and no resize when the key is actually pressed.
+    await expect(page.locator('#w-file .win-grip')).toHaveCount(0)
+    expect(
+      (await page.locator('#w-file .win-bar').getAttribute('aria-label')) ?? '',
+      'the fixed sheet advertises a resize path it does not have',
+    ).not.toMatch(/Shift/)
+    const sheetH = async (): Promise<number> =>
+      page.locator('#w-file').evaluate((n) => Math.round(n.getBoundingClientRect().height))
+    const sheetBefore = await sheetH()
+    await page.locator('#w-file .win-bar').focus()
+    await page.keyboard.press('Shift+ArrowDown')
+    await page.keyboard.press('Shift+ArrowDown')
+    expect(await sheetH(), 'Shift+ArrowDown resized the fixed sheet').toBe(sheetBefore)
 
     const bar = page.locator('#w-rep .win-bar')
     expect(

@@ -49,11 +49,17 @@ interface SeamStore {
 
 type Handles = { __agentFile?: AgentFileHandle; __shell?: { frame(): { store: SeamStore } } }
 
-/** Boot the desk and wait until the AGENT FILE has rendered its dossier. */
+/**
+ * Boot the desk and wait until the AGENT FILE has rendered its cover.
+ *
+ * C1 — one page is mounted at a time, so six sections never share a DOM. The
+ * window opens on the cover and its four; a test that wants 식별 or
+ * 인수인계 사항 turns the page itself.
+ */
 async function boot(page: Page): Promise<void> {
   await page.goto('./')
   await expect(page.locator(FILE)).toBeVisible()
-  await expect(page.locator(`${FILE} .sect`)).toHaveCount(6)
+  await expect(page.locator(`${FILE} .sect`)).toHaveCount(4)
   await page.waitForFunction(() => (window as unknown as Handles).__agentFile !== undefined)
 }
 
@@ -124,31 +130,25 @@ function slot(page: Page, index: number): Locator {
 /* ══ [u4#c1] ════════════════════════════════════════════════════════════ */
 
 test.describe('dossier sections', () => {
-  test('[u4#c1] (a) §0–§5 render in order with their titles and flags', async ({ page }) => {
+  test('[u4#c1] (a) the cover and the agent page carry the ratified titles and flags', async ({ page }) => {
     await boot(page)
+    // C1 — one page is mounted at a time, so the six sections are read across
+    // two: the cover's four, then the agent's two. `.sect-no` is gone.
     const sects = page.locator(`${FILE} .win-body .sect`)
-    await expect(sects).toHaveCount(6)
-    await expect(sects.locator('.sect-no')).toHaveText(['§0', '§1', '§2', '§3', '§4', '§5'])
-    await expect(sects.locator('h4')).toHaveText([
-      '식별',
-      '임무',
-      '행동 원칙',
-      '기질',
-      '인수인계 사항',
-      '교신 지침',
-    ])
-    await expect(sects.locator('.sect-flag')).toHaveText([
-      '고정',
-      '고정',
-      '고정',
-      '봉인',
-      '조작 가능',
-      '고정',
-    ])
+    await expect(sects).toHaveCount(4)
+    await expect(sects.locator('h4')).toHaveText(['임무', '행동 원칙', '기질', '교신 지침'])
+    await expect(page.locator(`${FILE} .sect-no`)).toHaveCount(0)
+    await expect(sects.locator('.sect-flag')).toHaveText(['고정', '고정', '봉인', '고정'])
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await expect(sects).toHaveCount(2)
+    await expect(sects.locator('h4')).toHaveText(['식별', '인수인계 사항'])
+    await expect(sects.locator('.sect-flag')).toHaveText(['고정', '조작 가능'])
   })
 
-  test('[u4#c1] (b) §0 is a three-row identity table', async ({ page }) => {
+  test('[u4#c1] (b) 식별 is a three-row identity table', async ({ page }) => {
     await boot(page)
+    // C1 — 식별 opens the AGENT's page, not the document.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     const rows = page.locator(`${FILE} .sect`).nth(0).locator('dl.sect-rows')
     await expect(rows).toHaveCount(1)
     await expect(rows.locator('dt')).toHaveCount(3)
@@ -156,9 +156,12 @@ test.describe('dossier sections', () => {
     await expect(rows.locator('dt').first()).toHaveText('호출부호')
   })
 
-  test('[u4#c1] (c) §4 holds the slot board — exactly four numbered slots', async ({ page }) => {
+  test('[u4#c1] (c) 인수인계 사항 holds the slot board — exactly four numbered slots', async ({ page }) => {
     await boot(page)
-    const board = page.locator(`${FILE} .sect`).nth(4).locator('#slotBoard')
+    // C1 — the board is on the agent's page, second of that page's two
+    // sections. It was index 4 of six in one scrolling dossier.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    const board = page.locator(`${FILE} .sect`).nth(1).locator('#slotBoard')
     await expect(board).toHaveCount(1)
     const slots = board.locator('.slot')
     await expect(slots).toHaveCount(CAP)
@@ -178,25 +181,35 @@ test.describe('dossier sections', () => {
   test('[u4#c1] (d) the case slug and doc number come from the pack, never a literal', async ({ page }) => {
     await boot(page)
     const doc = page.locator(`${FILE} .fh-doc`)
-    await expect(doc).toHaveText(/^문서번호 NDSP-2\/AF\/[^/]+\/\d{2}$/)
+    // C1 — the number names the DOCUMENT, which spans every agent, so it has
+    // no run segment. It used to end `/01`, `/02`, …
+    await expect(doc).toHaveText(/^문서번호 NDSP-2\/AF\/[^/]+$/)
     const slug = (await page.locator('#caseName').textContent())?.trim() ?? ''
     expect(slug.length).toBeGreaterThan(0)
-    await expect(doc).toHaveText(new RegExp(`/AF/${slug}/\\d{2}$`))
+    await expect(doc).toHaveText(new RegExp(`/AF/${slug}$`))
     await expect(page.locator(`${FILE} .fh-title`)).toHaveText('현장 요원 운용 파일')
-    await expect(page.locator(`${FILE} .fh-v`)).toHaveText('ECHO-3')
+    // …and the callsign left the header outright. `.fh-v` is gone: a header
+    // that always names the CURRENT agent would contradict the page the moment
+    // the player turned back to an earlier one. It is 식별's first row now.
+    await expect(page.locator(`${FILE} .fh-v`)).toHaveCount(0)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    const identity = page.locator(`${FILE} .sect`).nth(0).locator('dl.sect-rows')
+    await expect(identity.locator('dd').first()).toHaveText('ECHO-3')
   })
 
-  test('[u4#c1] (e) §1 prints the pack\'s own clock band', async ({ page }) => {
+  test('[u4#c1] (e) 임무 prints the pack\'s own clock band', async ({ page }) => {
     await boot(page)
     const { start, end } = await packClock(page)
     expect(start).toMatch(/^\d{2}:\d{2}$/)
     expect(end).toMatch(/^\d{2}:\d{2}$/)
-    await expect(page.locator(`${FILE} .sect`).nth(1).locator('.sect-body')).toContainText(
+    // C1 — 임무 opens the cover, so it is index 0. It was index 1 while 식별
+    // sat above it in one scrolling dossier; 식별 is on the agent's page now.
+    await expect(page.locator(`${FILE} .sect`).nth(0).locator('.sect-body')).toContainText(
       `${start} → ${end}`,
     )
   })
 
-  test('[u4#c1] (f) §3 is a redaction — bars and the sealed note, no temperament text', async ({ page }) => {
+  test('[u4#c1] (f) 기질 is a redaction — bars and the sealed note, no temperament text', async ({ page }) => {
     await boot(page)
     const sealed = page.locator(`${FILE} .sect.sealed`)
     await expect(sealed).toHaveCount(1)
@@ -204,13 +217,14 @@ test.describe('dossier sections', () => {
     await expect(sealed.locator('.sealed-note')).toHaveText(
       '열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)',
     )
-    // Nothing but the header and the sealed copy is readable inside §3.
+    // Nothing but the header and the sealed copy is readable inside 기질.
     const text = ((await sealed.textContent()) ?? '').replace(/\s+/g, ' ').trim()
-    expect(text).toBe('§3 기질 봉인 열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)')
+    expect(text).toBe('기질 봉인 열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)')
   })
 
   test('[u4#c1] (g) the file opens unstamped, with an empty board', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await expect(page.locator('#deployStamp')).not.toHaveClass(/\bon\b/)
     await expect(page.locator('#deployStamp')).toBeHidden()
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'empty')
@@ -223,6 +237,7 @@ test.describe('dossier sections', () => {
 test.describe('deploy stamp locks the file', () => {
   test('[u4#c4] (a) empty · partial · full are all reachable before deploy', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
 
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'empty')
@@ -248,6 +263,7 @@ test.describe('deploy stamp locks the file', () => {
 
   test('[u4#c4] (b) unslotting walks the board back down', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     await place(page, SEEDS[0].id, 0)
     await place(page, SEEDS[1].id, 1)
@@ -264,6 +280,7 @@ test.describe('deploy stamp locks the file', () => {
 
   test('[u4#c4] (c) DEPLOY stamps the file and locks it for the run', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     for (const [i, s] of SEEDS.entries()) await place(page, s.id, i)
 
@@ -284,6 +301,7 @@ test.describe('deploy stamp locks the file', () => {
 
   test('[u4#c4] (d) a locked file absorbs every further op', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     await place(page, SEEDS[0].id, 0)
     await place(page, SEEDS[1].id, 1)
@@ -302,6 +320,7 @@ test.describe('deploy stamp locks the file', () => {
 
   test('[u4#c4] (e) the deployed SET reaches the seam, order carrying no meaning', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     await place(page, SEEDS[1].id, 0)
     await place(page, SEEDS[0].id, 2)
@@ -316,6 +335,7 @@ test.describe('deploy stamp locks the file', () => {
 
   test('[u4#c4] (f) an empty file deploys too — the stamp does not need blocks', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await page.locator('#btnDeploy').click()
     await expect(page.locator('#deployStamp')).toHaveClass(/\bon\b/)
     await expect(page.locator('#slotCount')).toHaveText('0 / 4')
@@ -353,6 +373,7 @@ test.describe('a11y membrane ops', () => {
 
   test('[u4#c6] (b) Tab walks the slots then the deploy button, in DOM order', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     await place(page, SEEDS[0].id, 1)
 
@@ -373,6 +394,7 @@ test.describe('a11y membrane ops', () => {
 
   test('[u4#c6] (c) every membrane control carries a non-empty accessible name', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     await place(page, SEEDS[0].id, 0)
 
@@ -392,6 +414,7 @@ test.describe('a11y membrane ops', () => {
 
   test('[u4#c6] (d) Enter and Space slot, unslot and deploy — keyboard alone', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
 
     // Enter places the armed pick.
@@ -420,6 +443,7 @@ test.describe('a11y membrane ops', () => {
 
   test('[u4#c6] (e) Space on DEPLOY deploys, keyboard alone', async ({ page }) => {
     await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     await pick(page, SEEDS[0].id)
     await slot(page, 2).locator('.slot-target').focus()
@@ -434,6 +458,16 @@ test.describe('a11y membrane ops', () => {
 
   test('[u4#c6] (f) every membrane control paints a visible focus ring', async ({ page }) => {
     await boot(page)
+    // Turned WITHOUT a real input event, deliberately. Chromium decides
+    // `:focus-visible` from the last interaction modality, and this census reads
+    // the UA ring off a programmatic `.focus()`. A real pointer click moves the
+    // page out of the "no interaction yet" state the census has always relied
+    // on, and every slot control then reports no ring — a fact about the
+    // gesture, not about the control. (`#btnDeploy` hides this: it carries a
+    // permanent `box-shadow`, so it satisfies the check either way.) A
+    // synthetic click inside the page turns the leaf and leaves the heuristic
+    // where it was.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().evaluate((n) => (n as HTMLElement).click())
     await seed(page)
     await place(page, SEEDS[0].id, 0)
 

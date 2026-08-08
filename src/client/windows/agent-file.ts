@@ -18,15 +18,14 @@
 // no sibling window import, nothing from engine or composer (C8 / inv 12), and
 // no fixture module — carried ids resolve through the report index (D13).
 import type { FixtureDriver, Sentence } from '../driver/index.ts'
-import { el } from '../shell/dom.ts'
+import { button, el } from '../shell/dom.ts'
 import { announce } from '../shell/announcer.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
 import { createRunState, hasFiledReport } from '../shell/run-state.ts'
 import type { RunPhase, RunState } from '../shell/run-state.ts'
-import { pad2, setPickedBlockId } from '../components/block-card.ts'
-import { buildDossier, callsignOf, dossierModel } from '../components/dossier.ts'
-import type { DossierInput } from '../components/dossier.ts'
+import { setPickedBlockId } from '../components/block-card.ts'
+import { agentModel, buildDossier, callsignOf, coverModel } from '../components/dossier.ts'
 import { SLOT_CAP, createSlotBoard } from '../components/slot-board.ts'
 import { buildDeployStamp, buildDeployZone, deployView } from '../components/deploy-button.ts'
 import { PACE, settleRelease } from '../components/score-tally.ts'
@@ -104,7 +103,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   let settleNote = ''
 
   const docLine = el('div', 'fh-doc')
-  const callsignLine = el('div', 'fh-v', callsignOf(run))
 
   const board = createSlotBoard({
     emit: (op) => driver.send(op).ok,
@@ -123,15 +121,12 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     },
   })
 
-  function dossierInput(): DossierInput {
-    return { slotCap: SLOT_CAP, callsign: callsignOf(run), clockBand: band, slotHost: board.root }
-  }
-
   let currentView = deployView({ slots: board.cells(), deployed: false, run, at: opensAt })
 
   function sync(): void {
-    docLine.textContent = `${DOC_CAPTION}${PORTAL.portalCode}/AF/${slug}/${pad2(run)}`
-    callsignLine.textContent = callsignOf(run)
+    // C1 — one document across every agent, so the number names the document
+    // and not the run. The run used to be its last segment.
+    docLine.textContent = `${DOC_CAPTION}${PORTAL.portalCode}/AF/${slug}`
     const view = deployView({
       slots: board.cells(),
       deployed: board.isLocked(),
@@ -190,16 +185,66 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   // `deployView` (design #5: the note is the one thing it cannot derive purely).
   const noteEl = zone.root.querySelector<HTMLElement>('#deployState')!
   const deployBtn = zone.root.querySelector<HTMLButtonElement>('#btnDeploy')!
-  let dossier = buildDossier(dossierModel(dossierInput()), board.root)
-
+  // C1 — the file is a document with pages, and exactly one page is mounted.
+  // Page 0 is the cover: the document's own number and title, then everything
+  // true of every agent. Page 1 is the agent on the desk, and it is the last
+  // page, which is where the DEPLOY control lives — the last page is the agent
+  // who has not gone out yet. U5.3 appends a page per agent after this one; the
+  // only thing this unit owes it is that `pages` is a list.
   const head = el('div', 'file-head')
   const left = el('div', 'fh-left')
   left.append(docLine, el('div', 'fh-title', FILE_TITLE))
-  const right = el('div', 'fh-right')
-  right.append(el('div', 'fh-k', '호출부호'), callsignLine)
-  head.append(left, right)
+  head.append(left)
 
-  host.append(stamp.root, head, dossier, zone.root)
+  const sheet = el('div', 'file-sheet')
+  const pgPrev = button('pg-turn', '이전 장', '‹')
+  const pgNext = button('pg-turn', '다음 장', '›')
+  const pgCount = el('span', 'pg-count')
+  const nav = el('div', 'pg-nav')
+  nav.append(pgPrev, pgCount, pgNext)
+
+  let viewing = 0
+
+  /** The document, in order. Index 0 is the cover; the rest are agents. */
+  function pages(): HTMLElement[] {
+    const cover = el('div', 'file-page')
+    cover.append(head, buildDossier(coverModel(band), board.root))
+
+    const agent = el('div', 'file-page')
+    agent.append(buildDossier(agentModel({ slotCap: SLOT_CAP, callsign: callsignOf(run) }), board.root))
+    agent.append(zone.root)
+
+    return [cover, agent]
+  }
+
+  /** Mounts the page being viewed, and nothing else. */
+  function turn(): void {
+    const built = pages()
+    // Clamped with conditionals, never `Math.max`: `tally.test.ts` (f) bans
+    // that call outright in this file so a driver-fed number (`run`,
+    // `runs_left`, `carried`, `archive`) cannot be quietly clamped. A page
+    // index is none of those, but the guard is a blanket source scan and it is
+    // right to be — the cheap way to keep it honest is not to reach for the
+    // call at all.
+    const last = built.length - 1
+    const clamped = viewing < 0 ? 0 : viewing > last ? last : viewing
+    viewing = clamped
+    sheet.replaceChildren(built[clamped]!)
+    pgCount.textContent = `${clamped + 1} / ${built.length}`
+    pgPrev.disabled = clamped === 0
+    pgNext.disabled = clamped === built.length - 1
+  }
+
+  pgPrev.addEventListener('click', () => {
+    viewing -= 1
+    turn()
+  })
+  pgNext.addEventListener('click', () => {
+    viewing += 1
+    turn()
+  })
+
+  host.append(stamp.root, sheet, nav)
 
   function dropHold(): void {
     if (hold === null) return
@@ -338,11 +383,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     }
     // M1 — §0's callsign is per sitting, so only a changed run re-prints the
     // dossier; an archive-only `meta` must not re-parent the live slot board.
-    if (changedRun) {
-      const next = buildDossier(dossierModel(dossierInput()), board.root)
-      dossier.replaceWith(next)
-      dossier = next
-    }
+    if (changedRun) turn()
     sync()
   })
 
@@ -354,9 +395,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       slug = identity.slug
       opensAt = identity.start
       band = `${identity.start} → ${identity.end}`
-      const next = buildDossier(dossierModel(dossierInput()), board.root)
-      dossier.replaceWith(next)
-      dossier = next
+      turn()
       sync()
     })
     .catch(() => undefined)

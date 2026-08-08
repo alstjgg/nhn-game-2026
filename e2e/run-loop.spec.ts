@@ -16,6 +16,7 @@
 // suite binds to whatever run the shell boots.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
+import { turnToAgent } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -116,6 +117,7 @@ async function pipIndex(page: Page): Promise<number> {
 async function boot(page: Page): Promise<void> {
   await page.goto('./')
   await expect(page.locator('#runNum')).not.toBeEmpty()
+  await turnToAgent(page)
 }
 
 /** Drains to 21:04 and returns the measured `run_end → final` milliseconds. */
