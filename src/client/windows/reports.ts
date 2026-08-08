@@ -189,7 +189,10 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    * set exists to prevent (R4 on windows/reports.ts:90).
    */
   function sync(draw = true): void {
-    const entries = railEntries(archive, [...filed.keys()])
+    // A sitting the desk has a file for is one that filed a report OR earned a
+    // record. The lapse drill files no report at all, and its record still
+    // belongs to a day the operator can select.
+    const entries = railEntries(archive, [...new Set([...filed.keys(), ...records.keys()])])
     if (entries.length === 0) return
     if (active === null || !entries.some((entry) => entry.run === active)) {
       active = entries[entries.length - 1]?.run ?? null
@@ -245,11 +248,22 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       // document was read under the latest day's 집계표. Exactly one is ever
       // mounted: `mountRecord()` attaches the active sitting's and detaches
       // every other.
-      if (host.querySelector('article.doc-facts') === null) return
       records.get(run)?.remove()
       const node = el('article', 'terminal-record')
       node.setAttribute('aria-label', '시행 결과')
       records.set(run, node)
+      // The scored day takes the rail and the record mounts under it. Going
+      // through `sync()` rather than straight to `mountRecord()` is what covers
+      // a day that filed NO report (`?drill=tally-lapse`): without a rail
+      // identity of its own, that sitting was never the active one and its
+      // record had nowhere to land.
+      active = run
+      // `draw: false`, and then mount by hand. `score` lands in the same beat
+      // as the day's own report, which at that moment is still writing itself
+      // out — a redraw here repaints the body whole and kills the replay
+      // mid-sentence (`e2e/reports.spec.ts:334`). The rail still reconciles, so
+      // a day that filed no report still takes its identity.
+      sync(false)
       mountRecord()
       const tally = createScoreTally({ host: node })
       tally.open()
