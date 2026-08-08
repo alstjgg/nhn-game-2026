@@ -821,3 +821,192 @@ If any reference to `HOST_STUB` survives elsewhere in the file, do NOT delete it
 
 Then continue: **E13**, the full Verification, the Done-when as corrected by A4,
 and the single commit.
+
+---
+
+# Amendment 3 — E13's six remainders, specified
+
+E13's criterion ("reaches the slot board or DEPLOY → add one click, else stop")
+was too narrow. It covered the 13 tests that address the board by a stable
+selector and misses every test that addresses a section **by index**, or that
+reads an element C1 moved or deleted. The survey that found them is correct;
+here are the six, verbatim.
+
+The page turn is the same expression already used in the 13:
+`await page.locator(\`${FILE} .pg-nav .pg-turn\`).last().click()`. Cover-page
+tests need no turn — the window opens on the cover.
+
+Bottom-up.
+
+## C3f — `(f)`, `:191` and `:201`
+
+Title, current: `test('[u4#c1] (f) §3 is a redaction — bars and the sealed note, no temperament text', async ({ page }) => {`
+→ replace `§3` with `기질`.
+
+Line `:199` comment, current: `    // Nothing but the header and the sealed copy is readable inside §3.`
+→ replace `§3` with `기질`.
+
+Line `:201`, current:
+
+```
+    expect(text).toBe('§3 기질 봉인 열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)')
+```
+
+Replacement:
+
+```
+    expect(text).toBe('기질 봉인 열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)')
+```
+
+`.sect.sealed` is on the cover, which is the page the window opens on. **No page
+turn.**
+
+## C3e — `(e)`, `:181-188`
+
+Current text:
+
+```
+  test('[u4#c1] (e) §1 prints the pack\'s own clock band', async ({ page }) => {
+    await boot(page)
+    const { start, end } = await packClock(page)
+    expect(start).toMatch(/^\d{2}:\d{2}$/)
+    expect(end).toMatch(/^\d{2}:\d{2}$/)
+    await expect(page.locator(`${FILE} .sect`).nth(1).locator('.sect-body')).toContainText(
+      `${start} → ${end}`,
+    )
+```
+
+Replacement text:
+
+```
+  test('[u4#c1] (e) 임무 prints the pack\'s own clock band', async ({ page }) => {
+    await boot(page)
+    const { start, end } = await packClock(page)
+    expect(start).toMatch(/^\d{2}:\d{2}$/)
+    expect(end).toMatch(/^\d{2}:\d{2}$/)
+    // C1 — 임무 opens the cover, so it is index 0. It was index 1 while 식별
+    // sat above it in one scrolling dossier; 식별 is on the agent's page now.
+    await expect(page.locator(`${FILE} .sect`).nth(0).locator('.sect-body')).toContainText(
+      `${start} → ${end}`,
+    )
+```
+
+## C3d — `(d)`, `:170-179`
+
+Current text:
+
+```
+  test('[u4#c1] (d) the case slug and doc number come from the pack, never a literal', async ({ page }) => {
+    await boot(page)
+    const doc = page.locator(`${FILE} .fh-doc`)
+    await expect(doc).toHaveText(/^문서번호 NDSP-2\/AF\/[^/]+\/\d{2}$/)
+    const slug = (await page.locator('#caseName').textContent())?.trim() ?? ''
+    expect(slug.length).toBeGreaterThan(0)
+    await expect(doc).toHaveText(new RegExp(`/AF/${slug}/\\d{2}$`))
+    await expect(page.locator(`${FILE} .fh-title`)).toHaveText('현장 요원 운용 파일')
+    await expect(page.locator(`${FILE} .fh-v`)).toHaveText('ECHO-3')
+  })
+```
+
+Replacement text:
+
+```
+  test('[u4#c1] (d) the case slug and doc number come from the pack, never a literal', async ({ page }) => {
+    await boot(page)
+    const doc = page.locator(`${FILE} .fh-doc`)
+    // C1 — the number names the DOCUMENT, which spans every agent, so it has
+    // no run segment. It used to end `/01`, `/02`, …
+    await expect(doc).toHaveText(/^문서번호 NDSP-2\/AF\/[^/]+$/)
+    const slug = (await page.locator('#caseName').textContent())?.trim() ?? ''
+    expect(slug.length).toBeGreaterThan(0)
+    await expect(doc).toHaveText(new RegExp(`/AF/${slug}$`))
+    await expect(page.locator(`${FILE} .fh-title`)).toHaveText('현장 요원 운용 파일')
+    // …and the callsign left the header outright. `.fh-v` is gone: a header
+    // that always names the CURRENT agent would contradict the page the moment
+    // the player turned back to an earlier one. It is 식별's first row now.
+    await expect(page.locator(`${FILE} .fh-v`)).toHaveCount(0)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    const identity = page.locator(`${FILE} .sect`).nth(0).locator('dl.sect-rows')
+    await expect(identity.locator('dd').first()).toHaveText('ECHO-3')
+  })
+```
+
+## C3c — `(c)`, `:151-153`
+
+Current text:
+
+```
+  test('[u4#c1] (c) §4 holds the slot board — exactly four numbered slots', async ({ page }) => {
+    await boot(page)
+    const board = page.locator(`${FILE} .sect`).nth(4).locator('#slotBoard')
+```
+
+Replacement text:
+
+```
+  test('[u4#c1] (c) 인수인계 사항 holds the slot board — exactly four numbered slots', async ({ page }) => {
+    await boot(page)
+    // C1 — the board is on the agent's page, second of that page's two
+    // sections. It was index 4 of six in one scrolling dossier.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    const board = page.locator(`${FILE} .sect`).nth(1).locator('#slotBoard')
+```
+
+The rest of `(c)` is correct and is **not** touched.
+
+## C3b — `(b)`, `:142-144`
+
+Current text:
+
+```
+  test('[u4#c1] (b) §0 is a three-row identity table', async ({ page }) => {
+    await boot(page)
+    const rows = page.locator(`${FILE} .sect`).nth(0).locator('dl.sect-rows')
+```
+
+Replacement text:
+
+```
+  test('[u4#c1] (b) 식별 is a three-row identity table', async ({ page }) => {
+    await boot(page)
+    // C1 — 식별 opens the AGENT's page, not the document.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    const rows = page.locator(`${FILE} .sect`).nth(0).locator('dl.sect-rows')
+```
+
+## C3a — `boot()`, `:52-56`
+
+The helper every test in the file runs first, and the reason none of them can
+pass yet.
+
+Current text:
+
+```
+/** Boot the desk and wait until the AGENT FILE has rendered its dossier. */
+async function boot(page: Page): Promise<void> {
+  await page.goto('./')
+  await expect(page.locator(FILE)).toBeVisible()
+  await expect(page.locator(`${FILE} .sect`)).toHaveCount(6)
+```
+
+Replacement text:
+
+```
+/**
+ * Boot the desk and wait until the AGENT FILE has rendered its cover.
+ *
+ * C1 — one page is mounted at a time, so six sections never share a DOM. The
+ * window opens on the cover and its four; a test that wants 식별 or
+ * 인수인계 사항 turns the page itself.
+ */
+async function boot(page: Page): Promise<void> {
+  await page.goto('./')
+  await expect(page.locator(FILE)).toBeVisible()
+  await expect(page.locator(`${FILE} .sect`)).toHaveCount(4)
+```
+
+## C3g — after these, finish the unit
+
+E13 is then complete. Run the full Verification, work the Done-when as corrected
+by A4, and make the single commit. If a seventh site turns up that none of the
+above covers, stop and report it — the survey has been right three times.
