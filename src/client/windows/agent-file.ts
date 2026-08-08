@@ -151,6 +151,19 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (closed) noteEl.textContent = settleNote
   }
 
+  /**
+   * W4 — the press IS the start.
+   *
+   * The topbar's ×1 / ×4 / pause left with this unit: a day is not a recording
+   * the operator scrubs, it is something they commit a file to and then watch.
+   * So the one thing that sets the clock going is a committed file, and 21:04
+   * is the one thing that stops it (`driver/clock.ts` halts at `end`). The
+   * desk boots held at 0 — ECHO-1 does not go in until the operator says so.
+   */
+  function startDay(): void {
+    driver.clock.setRate(1)
+  }
+
   const zone = buildDeployZone(() => {
     if (currentView.mode === 'next') {
       // W4 — ONE press, TWO ops, and the order is load-bearing. `deploy` must
@@ -161,9 +174,13 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       // only module allowed to mint the op literal.
       board.deploy()
       sendNewRun()
+      startDay()
       return
     }
-    if (currentView.mode === 'deploy') board.deploy()
+    if (currentView.mode === 'deploy') {
+      board.deploy()
+      startDay()
+    }
     // 'settling' / 'spent': the control is disabled — a click cannot land.
   })
   const stamp = buildDeployStamp()

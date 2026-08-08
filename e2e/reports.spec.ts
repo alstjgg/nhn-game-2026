@@ -312,8 +312,9 @@ test.describe('typewriter is replay', () => {
     await drain(page)
     const report = await reportForActiveRun(page)
 
-    // The pump only ticks while the clock runs — the operator presses ▶.
-    await page.locator('.rate-btn[data-rate="1"]').click()
+    // The pump only ticks while the clock runs. RE-AIMED (08-08, W4): there is
+    // no ▶ any more — the operator starts the day by committing a file to it.
+    await page.locator('#w-file #btnDeploy').click()
 
     await expect
       .poll(

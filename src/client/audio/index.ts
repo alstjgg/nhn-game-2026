@@ -236,7 +236,7 @@ export function installAudio(deps: AudioDeps): AudioHandle {
     // context — so it is the one click in the game that cannot sound
     // immediately, and `pendingPress` below is what pays that back.
     if (target.closest('.si-login')) return press('door:login')
-    if (target.closest('button, .task, .rate-btn')) press('ui:click')
+    if (target.closest('button, .task')) press('ui:click')
   }
 
   /**
@@ -403,12 +403,11 @@ export function installAudio(deps: AudioDeps): AudioHandle {
 
   /* ── the mute toggle ───────────────────────────────────────────────────── */
 
-  // Its OWN class, not `rate-btn`. The toggle sits inside `.clk-rate` and wore
-  // the rate buttons' class to inherit their skin — but `.rate-btn` is what
-  // `game-clock.ts` collects as the clock's rate control and what the topbar's
-  // census counts, so a fourth one that carries no `data-rate` (and holds
-  // `is-on` whenever sound is up) read as a rate. `.snd-btn` shares the skin
-  // in `shell.css` and nothing else.
+  // Its OWN class. The toggle sits in the row that used to hold the transport
+  // and briefly wore `.rate-btn` to inherit that skin, which made it read as a
+  // fourth rate to `game-clock.ts` and to the topbar census. W4 has since
+  // retired the transport entirely, so this is the only control in the row —
+  // and it keeps its own name for it.
   const toggle = button('snd-btn', '소리 켬/끔', '♪')
   const paintToggle = (): void => {
     toggle.classList.toggle('is-on', !muted)
