@@ -505,21 +505,31 @@ test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
     await place(page, SEEDS[0].id, 0)
     await place(page, SEEDS[1].id, 1)
 
-    // The OPENING commit — this is the file ECHO-1 flies, and write site 1.
+    // The OPENING commit — this is the file this agent flies, and write site 1.
+    //
+    // The callsign is READ off 식별, never assumed. The fixture desk opens at
+    // run 3, not run 1 — `(d)` above pins ECHO-3 — so a hardcoded ECHO-1 here
+    // asserted a property of an imagined fixture instead of one of the page,
+    // and C3 forbids exactly that. What the claim actually needs is that the
+    // page turned back to names the agent that just flew, whoever it was.
+    const flying = await page.locator(`${FILE} .sect`).nth(0).locator('dd').first().textContent()
+    expect(flying, '식별 carries no callsign to fly').toMatch(/^ECHO-\d+$/)
     await page.locator('#btnDeploy').click()
     await expect(page.locator('#btnDeploy')).toHaveAttribute('data-state', 'deployed')
 
-    // …then the day closes and the next press opens ECHO-2.
+    // …then the day closes and the next press opens the following agent.
     await newRun(page)
 
-    // Three pages now, and the file opened on the new agent's own.
+    // Three pages now, and the file opened on the new agent's own — a different
+    // agent from the one that just went out.
     await expect(page.locator(`${FILE} .pg-count`)).toHaveText('3 / 3')
     await expect(page.locator(`${FILE} #btnDeploy`)).toHaveCount(1)
+    await expect(page.locator(`${FILE} .sect`).nth(0).locator('dd').first()).not.toHaveText(flying!)
 
-    // Turn back one: ECHO-1's page, read-only, carrying what ECHO-1 flew.
+    // Turn back one: the page of the agent that flew, read-only, still theirs.
     await page.locator(`${FILE} .pg-nav .pg-turn`).first().click()
     await expect(page.locator(`${FILE} .pg-count`)).toHaveText('2 / 3')
-    await expect(page.locator(`${FILE} .sect`).nth(0).locator('dd').first()).toHaveText('ECHO-1')
+    await expect(page.locator(`${FILE} .sect`).nth(0).locator('dd').first()).toHaveText(flying!)
     await expect(page.locator(`${FILE} .sect`).nth(1).locator('.sect-flag')).toHaveText('열람')
     await expect(page.locator(`${FILE} .filed-cell`)).toHaveCount(2)
     await expect(page.locator(`${FILE} .filed-cell .bc-text`).first()).toHaveText(SEEDS[0].text)

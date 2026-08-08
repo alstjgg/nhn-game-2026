@@ -744,6 +744,25 @@ existing `data-block-id` assertions at `:255`. C3 is not touched.
       'ECHO-1', deployed: 2})` actually returns — both titles, both states, both
       flags as `FLAG` maps them — read out of the test you added, not guessed.
 
+---
+
+# Amendment 2 — the e2e test asserted a fixture that does not exist
+
+E5 as written hardcoded `ECHO-1` as the agent that flies, and read the past
+page back expecting the same. **The fixture desk opens at run 3**, which
+`e2e/agent-file.spec.ts`'s own `(d)` already pins (`ECHO-3`), so the assertion
+was false on a tree where every other part of the unit worked: the run reached
+`1 / 2` → `3 / 3` → `2 / 3`, the page was appended, and the desk opened on the
+new agent. Only the callsign literal was wrong.
+
+This is a C3 violation in the PRD — an assertion about fixture CONTENT rather
+than about the page — and it is the author's, not the executor's.
+
+The fix reads the callsign off 식별 before the deploy and asserts the page
+turned back to carries *that*, whoever it is, plus a new assertion the original
+did not make: the agent now on the desk is a **different** one. Applied as an
+author commit on the branch (§5.6 step 4).
+
 ## If this PRD is wrong
 
 An edit whose stated current text is not at the cited path and line is a defect
