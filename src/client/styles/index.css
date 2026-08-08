@@ -27,6 +27,14 @@
    load-bearing: every rule in it is an override. */
 @import './win-manual.css';
 
+/* The sheet the door takes back. Third and last of the `.cf-*` family — the
+   confirmation plate is the hardware, the briefing re-cuts it as a walk, and the
+   ending is that walk again at the other end of the sitting. It follows BOTH:
+   like the briefing every rule in it is an override of a `.cf-*`, and `.end-plate`
+   ties with `.cf-plate` on specificity, so source order is the whole tiebreak.
+   It sits before tutorial.css for the same reason every other skin does. */
+@import './win-ending.css';
+
 /* x3 — the onboarding mark. Last: it decorates whatever the sheets above
    painted, and it must win against their own outlines. */
 @import './tutorial.css';
