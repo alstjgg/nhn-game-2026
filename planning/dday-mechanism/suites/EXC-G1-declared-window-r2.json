@@ -13,7 +13,7 @@
     ],
     "reachability_audit": "planning/research/gate-excerpt-design.md §3 — the W5 rule is the machine form of the 규칙 6 audit this suite's window was authored against"
   },
-  "experiment": "EXC-G1-declared-window",
+  "experiment": "EXC-G1-declared-window-r2",
   "call_type": "judgment",
   "channel": "C-BLOCK",
   "template_version": "v0.4",
