@@ -969,6 +969,29 @@ deleted, excluded or `.skip`ped — every one is re-aimed and logged here (C12/C
   named explicitly, since the client run landed its own suites under
   `tests/driver/`.
 
+### W4 (08-08 playtest) — a deploy now carries, because the press moved
+
+The 08-08 playtest collapsed the two-press day (NEW RUN, then DEPLOY inside the
+new day) into one: the close hands the file back, the operator rebuilds it from
+the day's own report, and a single 배치 commits it AND opens tomorrow. The
+commit therefore happens *before* the run boundary instead of after it, which
+reverses one deliberate ruling. Both asserts that encoded the old order are
+re-aimed, neither deleted (C12/C17):
+
+- [W4] `tests/driver/run-loop-continuity.test.ts` — `(b)` asserted "a deploy
+  does NOT carry — the new day has not been deployed yet". That was exactly
+  right while DEPLOY was a press made *inside* the new day: carrying it would
+  have pre-deployed a file the operator had not built. Under one-press the
+  deployed set IS the file the next day runs with, so `(b)` now asserts it
+  carries — alongside the seats, which `(a)` already proved carry.
+- [W4] `tests/driver/live-adapter-run-transition.test.ts` — `(d)`'s
+  `{ mined: [B1.id], slots: {}, deployed: [] }` said the board is empty because
+  "a new day has not been built yet". Same reversal, and on the live path it
+  was load-bearing in a way the fixture path hid: `closingState()` harvests
+  `deployed` into `carried`, so a rebuild that cleared both handed the composer
+  an empty agent file on every day after the first. The carried deck now also
+  seats and re-arms.
+
 ### C8 (`fixture-only`) has expired — the player build may carry the engine
 
 `tests/invariants/seam-integrity.test.ts` `(c)` asserted that **no** engine or

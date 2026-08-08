@@ -140,10 +140,11 @@ describe('the store the desk shows is the store the new run has', () => {
     adapter.send({ op: 'new_run' } as never)
     await settle()
 
-    // The deck is the carry-over and nothing else; the board is empty because a
-    // new day has not been built yet (`SlotBoard.unlock()` assumes exactly this).
-    // A slot surviving here drew a card the deck no longer listed.
-    expect(adapter.store()).toEqual({ mined: [B1.id], slots: {}, deployed: [] })
+    // RE-AIMED (08-08, W4). The deck is still the carry-over and nothing else —
+    // but the carry-over IS the file the operator committed, so it also seats
+    // and re-arms. An empty board here would hand the composer an empty agent
+    // file on every day after the first.
+    expect(adapter.store()).toEqual({ mined: [B1.id], slots: { 0: B1.id }, deployed: [B1.id] })
   })
 
   it('(e) the carry-over handed to `next()` is what was DEPLOYED, resolved to text', async () => {

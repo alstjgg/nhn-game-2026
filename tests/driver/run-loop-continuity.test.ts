@@ -58,14 +58,21 @@ describe('run loop — the operator’s meta-state survives `new_run`', () => {
     expect(driver.store().slots, 'the slot board and the driver disagree after `new_run`').toEqual({ 0: id })
   })
 
-  it('(b) a deploy does NOT carry — the new day has not been deployed yet', () => {
+  // RE-AIMED (08-08, W4), never deleted. The claim was "a new day has not been
+  // deployed yet", which was true while DEPLOY was a press the operator made
+  // INSIDE the new day. One-press moves the commit to before the boundary: the
+  // deployed set IS the file the next day runs with, so it carries — exactly
+  // like the seats `(a)` already proves carry.
+  it('(b) a deploy CARRIES — the committed file is the file the next day runs', () => {
     const driver = booted()
     const id = mintedIds(driver, 0)[0]!
     driver.send({ op: 'mine', sentence_id: id })
+    driver.send({ op: 'slot', block_id: id, slot: 0 })
     driver.send({ op: 'deploy', blocks: [id] })
     expect(driver.store().deployed).toEqual([id])
     driver.send({ op: 'new_run' })
-    expect(driver.store().deployed).toEqual([])
+    expect(driver.store().deployed, 'the committed file did not carry').toEqual([id])
+    expect(driver.store().slots, 'the seats did not carry').toEqual({ 0: id })
   })
 })
 

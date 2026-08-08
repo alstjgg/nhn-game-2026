@@ -443,7 +443,7 @@ test.describe('a11y — keyboard reach', () => {
   })
 
   // C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted and not narrowed by
-  // selector: the sweep still visits every `.wc, .task, .win-bar, .rate-btn,
+  // selector: the sweep still visits every `.wc, .task, .win-bar, .snd-btn,
   // [data-op]` in the document. What changed is that a control with NO LAYOUT
   // BOX is now reported as such instead of being counted as unringed. The three
   // that failed were `#w-tally`'s own bar and its two window controls: the tally
@@ -466,9 +466,9 @@ test.describe('a11y — keyboard reach', () => {
       // `.win-grip` joined the sweep on 08-05 with its keyboard path (R2 on
       // window-frame.ts:55) — a control the operator can now reach has to ring.
       for (const el of document.querySelectorAll<HTMLElement>(
-        // `.snd-btn` (the mute toggle) keeps the coverage it had while it wore
-        // `.rate-btn` — it left that class, not this sweep.
-        '.wc, .task, .win-bar, .win-grip, .rate-btn, .snd-btn, [data-op]',
+        // `.rate-btn` is gone with W4's transport row; `.snd-btn` (the mute
+        // toggle) is what stands in that row now, and it keeps the coverage.
+        '.wc, .task, .win-bar, .win-grip, .snd-btn, [data-op]',
       )) {
         const name = `${el.tagName.toLowerCase()}.${el.className}`
         if (el.getClientRects().length === 0) {

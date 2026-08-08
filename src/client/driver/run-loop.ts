@@ -89,12 +89,21 @@ export function createRunLoopDriver(
     carry(kept)
   }
 
-  /** Replays the kept meta-state into the new day through the ops that made it. */
+  /**
+   * Replays the kept meta-state into the new day through the ops that made it.
+   *
+   * W4 — `deploy` now replays too. It used to be deliberately dropped ("a new
+   * day has not been deployed yet"), which was right while DEPLOY was a press
+   * the operator made INSIDE the new day. Under one-press the commit happens
+   * before the day opens, so a day that did not carry its deployed set would
+   * open with an agent file the composer cannot see.
+   */
   function carry(kept: FixtureStore): void {
     for (const id of kept.mined) inner.send({ op: 'mine', sentence_id: id })
     for (const [slot, id] of Object.entries(kept.slots)) {
       inner.send({ op: 'slot', block_id: id, slot: Number(slot) })
     }
+    if (kept.deployed.length > 0) inner.send({ op: 'deploy', blocks: [...kept.deployed] })
   }
 
   const clock: Clock = {

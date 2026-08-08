@@ -8,7 +8,7 @@
 // event does, spec-client §5.2 amendment d).
 import { createLiveRunDriver, createRunLoopDriver, demoRunLoop, installClockHook } from '../driver/index.ts'
 import { placeholderBootRun } from './boot-run.ts'
-import type { ClockHook, ClockRate, FixtureDriver, Frame } from '../driver/index.ts'
+import type { ClockHook, FixtureDriver, Frame } from '../driver/index.ts'
 import { createGameClock } from '../components/game-clock.ts'
 import { createRunCounter } from '../components/run-counter.ts'
 import { holdDesk, revealDesk } from '../components/desktop-dressing.ts'
@@ -164,7 +164,6 @@ export async function bootShell(): Promise<void> {
     root: must('#clockUnit'),
     start: identity.start,
     end: identity.end,
-    onRate: (rate: ClockRate) => driver.clock.setRate(rate),
   })
   const runs = createRunCounter(must('#ddayUnit'))
   driver.subscribe((event) => {
