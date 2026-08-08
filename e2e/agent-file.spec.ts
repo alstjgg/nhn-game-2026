@@ -346,7 +346,10 @@ test.describe('deploy stamp locks the file', () => {
     const stamp = page.locator('#deployStamp')
     await expect(stamp).toHaveClass(/\bon\b/)
     await expect(stamp).toBeVisible()
-    await expect(stamp.locator('span')).toHaveText('배 치 완 료')
+    // x5b — 파견, matching the plate that authorised it and the line the desk
+    // says out loud (`slot-board.ts`'s `announcementOfAction`). `#deployState`
+    // below still reads 배치됨: that is the file's own STATE, not the act.
+    await expect(stamp.locator('span')).toHaveText('파 견 완 료')
     await expect(stamp.locator('em')).toHaveText(/^ECHO-\d+ · \d{2}:\d{2}$/)
 
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'locked')

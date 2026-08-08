@@ -321,6 +321,44 @@
   --fsw-44:52.8px;    /* ref 44   */
 }
 
+/* ─── the PLATE type scale — the same steps at 1× (x5b, 08-09) ────────────
+   Two thirds of the desk's 1.5×, which lands exactly on the design reference's
+   own pixels — the sizes `docs/design/phase2-ui/desktop.css` was drawn at. That
+   is arithmetic, not a coincidence worth relying on, so the values are written
+   out here like the other two scales rather than derived.
+
+   Who wears it: the door's authentication plate (`signin.css`), at 민서's
+   request — the crest and the portal's name keep their weight, and the box you
+   actually operate stops being the largest thing on a screen with one control
+   on it. The `--fsr-*` name is the SCALE's, not the plate's: anything else that
+   needs the reference's own sizes points at it rather than minting a third
+   answer.
+   ─────────────────────────────────────────────────────────────────────── */
+:root{
+  --fsr-7:7px;        /* ref 7    */
+  --fsr-7-5:7.5px;    /* ref 7.5  */
+  --fsr-8:8px;        /* ref 8    */
+  --fsr-8-5:8.5px;    /* ref 8.5  */
+  --fsr-9:9px;        /* ref 9    */
+  --fsr-9-5:9.5px;    /* ref 9.5  */
+  --fsr-10:10px;      /* ref 10   */
+  --fsr-10-5:10.5px;  /* ref 10.5 */
+  --fsr-11:11px;      /* ref 11   */
+  --fsr-11-5:11.5px;  /* ref 11.5 */
+  --fsr-12:12px;      /* ref 12   */
+  --fsr-13:13px;      /* ref 13   */
+  --fsr-14:14px;      /* ref 14   */
+  --fsr-15:15px;      /* ref 15   */
+  --fsr-16:16px;      /* ref 16   */
+  --fsr-17:17px;      /* ref 17   */
+  --fsr-19:19px;      /* ref 19   */
+  --fsr-20:20px;      /* ref 20   */
+  --fsr-21:21px;      /* ref 21   */
+  --fsr-26:26px;      /* ref 26   */
+  --fsr-34:34px;      /* ref 34   */
+  --fsr-44:44px;      /* ref 44   */
+}
+
 /* ─── spacing scale (padding · margin · gap only) ─────────────────────── */
 :root{
   --space-1:1px;

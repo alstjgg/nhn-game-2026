@@ -1,4 +1,4 @@
-// DeployButton — the run gate at the foot of the AGENT FILE, and the 배치 완료
+// DeployButton — the run gate at the foot of the AGENT FILE, and the 파견 완료
 // stamp that lands on the paper when it closes (spec-client §6).
 //
 // Ported from docs/design/phase2-ui/index.html 132..143 + `app.js` `syncDeployUI`
@@ -163,7 +163,12 @@ export function buildDeployStamp(): DeployPart {
   const line = el('em')
   const root = el('div', 'stamp stamp-deploy')
   root.id = 'deployStamp'
-  root.append(el('span', undefined, '배 치 완 료'), line)
+  // x5b — 파견, not 배치. The confirmation plate already asks the operator to
+  // send an agent 파견 and its button says so; the chop that lands a moment
+  // later was still
+  // reporting a 배치, which is warehouse vocabulary for a person going out on a
+  // shift. One act, one word.
+  root.append(el('span', undefined, '파 견 완 료'), line)
 
   return {
     root,

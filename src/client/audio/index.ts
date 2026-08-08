@@ -308,11 +308,14 @@ export function installAudio(deps: AudioDeps): AudioHandle {
         continue
       }
 
+      // x5b — the `win-manual` skip that used to sit here is gone with the
+      // window it named: the onboarding sheet is a plate now (`shell/manual.ts`)
+      // and carries no `.win`, so this guard already excludes it and the second
+      // one was unreachable. The reason it was skipped still holds — the
+      // hand-over is O3's moment, `shell/radio-sfx.ts` plays its squelch there,
+      // and a drawer sliding under a radio squelch is one departure sounding
+      // twice (coexistence decision).
       if (!node.classList.contains('win')) continue
-      // The manual sheet is O3's moment, not a drawer: `shell/radio-sfx.ts`
-      // plays its squelch at the hand-over, and a drawer sliding under a radio
-      // squelch is one departure sounding twice (coexistence decision).
-      if (node.classList.contains('win-manual')) continue
       // `hidden` is how the manager puts a desk window away; `is-closing` is
       // how a late-arriving frame leaves (removed 460 ms later, the class is
       // the moment the player caused). Both are the same event to the ear.
@@ -323,19 +326,21 @@ export function installAudio(deps: AudioDeps): AudioHandle {
     }
   })
 
-  // Windows that arrive AFTER boot — the manual sheet is one, appended straight
-  // to `#app` at the hand-over. Seeding them on insertion is what stops the
+  // Windows that arrive AFTER boot. Seeding them on insertion is what stops the
   // observer above reading their first class change as an opening — an unseeded
   // frame looks like one that just became visible. Direct children only, so the
   // fanfold's lines and the report's repaints never reach this callback.
+  //
+  // x5b — the onboarding sheet used to be the one such arrival, appended
+  // straight to `#app` at the hand-over and skipped here because both its edges
+  // are O3's (it arrives under radio-sfx's login static and leaves on its
+  // squelch). It is a plate now and carries no `.win`, so the `.win` test below
+  // is the whole of it and the sheet is silent by construction.
   const arrivals = new MutationObserver((records) => {
     for (const record of records) {
       for (const node of record.addedNodes) {
         if (!(node instanceof HTMLElement) || !node.classList.contains('win')) continue
         openState.set(node, true)
-        // The manual sheet arrives under radio-sfx's login static and leaves
-        // on its squelch — both of its edges are O3's (coexistence decision).
-        if (node.classList.contains('win-manual')) continue
         fire('ui:window-open')
       }
     }

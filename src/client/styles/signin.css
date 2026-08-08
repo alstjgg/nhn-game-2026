@@ -111,38 +111,59 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
 
 @keyframes siRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-/* ═══ THE AUTHENTICATION PLATE ════════════════════════════════════════════ */
-.si-plate{width:100%;margin-top:var(--space-26);position:relative;
+/* ═══ THE AUTHENTICATION PLATE ════════════════════════════════════════════
+   TWO THIRDS, x5b (08-09) — and only the plate.
+
+   The crest and the portal's name are the door's WEIGHT and they keep it; the
+   plate is the one thing on this screen you operate, and at full stack width it
+   was also the largest thing on it — a box with two read-only fields and one
+   button, presented at the scale of the institution behind it. It is 2/3 now:
+   `66.667%` of `.si-stack`, every fixed dimension inside it two thirds of what
+   it was, and the type remapped onto `--fsr-*` — which is 2/3 of the desk's
+   1.5×, and therefore the sizes the reference was drawn at (tokens.css).
+
+   The remap is var()-only, so no size literal leaves tokens.css (inv 8). The
+   heights below are geometry, not type, and were already px here.
+
+   `letter-spacing` and `text-indent` are in `em` throughout, so they follow the
+   type down on their own and are not restated. */
+.si-plate{width:66.667%;margin-top:var(--space-18);position:relative;
+  --fs-7:var(--fsr-7);--fs-7-5:var(--fsr-7-5);--fs-8:var(--fsr-8);--fs-8-5:var(--fsr-8-5);
+  --fs-9:var(--fsr-9);--fs-9-5:var(--fsr-9-5);--fs-10:var(--fsr-10);--fs-10-5:var(--fsr-10-5);
+  --fs-11:var(--fsr-11);--fs-11-5:var(--fsr-11-5);--fs-12:var(--fsr-12);--fs-13:var(--fsr-13);
+  --fs-14:var(--fsr-14);--fs-15:var(--fsr-15);--fs-16:var(--fsr-16);--fs-17:var(--fsr-17);
+  --fs-19:var(--fsr-19);--fs-20:var(--fsr-20);--fs-21:var(--fsr-21);--fs-26:var(--fsr-26);
+  --fs-34:var(--fsr-34);--fs-44:var(--fsr-44);
   background:linear-gradient(to bottom,var(--chrome-hi),var(--chrome-lo));
   border:1px solid var(--edge);box-shadow:var(--shadow-win);
   animation:siRise .85s cubic-bezier(.16,.9,.2,1) .42s both}
 .si-plate::before{content:'';position:absolute;inset:0;pointer-events:none;
   box-shadow:inset 0 1px 0 var(--sheen-05)}
 
-.si-plate-hd{display:flex;align-items:center;gap:var(--space-9);height:42px;
-  padding:0 var(--space-11);background:var(--chrome-deep);
+.si-plate-hd{display:flex;align-items:center;gap:var(--space-6);height:28px;
+  padding:0 var(--space-7);background:var(--chrome-deep);
   border-bottom:1px solid var(--edge);position:relative}
 .si-plate-hd::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;
   background:linear-gradient(90deg,var(--seal),transparent 62%);opacity:.7}
-.si-led{width:9px;height:9px;flex:0 0 auto;background:var(--seal);
+.si-led{width:6px;height:6px;flex:0 0 auto;background:var(--seal);
   animation:livePulse 1.4s ease-in-out infinite}
 .si-plate-hd b{font-size:var(--fs-9-5);font-weight:600;letter-spacing:.22em;color:var(--txt-2)}
 .si-plate-hd i{margin-left:auto;font-style:normal;font-size:var(--fs-8);
   letter-spacing:.2em;color:var(--txt-7)}
 
 /* ─── the two filled fields — display only, never a form (inv 1) ───────── */
-.si-form{padding:var(--space-20) var(--space-20) var(--space-16);
-  display:flex;flex-direction:column;gap:var(--space-11)}
-.si-field{display:flex;align-items:center;gap:var(--space-12)}
-.si-label{width:87px;flex:0 0 auto;font-size:var(--fs-8-5);letter-spacing:.2em;
+.si-form{padding:var(--space-13) var(--space-13) var(--space-11);
+  display:flex;flex-direction:column;gap:var(--space-7)}
+.si-field{display:flex;align-items:center;gap:var(--space-8)}
+.si-label{width:58px;flex:0 0 auto;font-size:var(--fs-8-5);letter-spacing:.2em;
   color:var(--txt-6);text-align:right}
-.si-well{flex:1;min-width:0;height:51px;display:flex;align-items:center;
-  padding:0 var(--space-12);background:var(--track);
+.si-well{flex:1;min-width:0;height:34px;display:flex;align-items:center;
+  padding:0 var(--space-8);background:var(--track);
   box-shadow:inset 0 0 0 1px var(--ink-line), inset 0 2px 5px -2px var(--sh-8)}
 .si-value{font-size:var(--fs-14);letter-spacing:.06em;color:var(--txt-hi);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .si-value.si-secret{letter-spacing:.3em;color:var(--txt-3)}
-.si-caret{width:10px;height:24px;margin-left:var(--space-2);flex:0 0 auto;
+.si-caret{width:7px;height:16px;margin-left:var(--space-1);flex:0 0 auto;
   background:var(--gauge-2);opacity:.85;animation:siBlink .9s steps(2) infinite}
 @keyframes siBlink{0%,49%{opacity:.85}50%,100%{opacity:0}}
 .si-lock{margin-left:auto;flex:0 0 auto;font-size:var(--fs-8);letter-spacing:.14em;
@@ -150,9 +171,9 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
 
 /* ─── the one control on the screen ────────────────────────────────────── */
 .si-login{position:relative;overflow:hidden;display:flex;align-items:center;
-  justify-content:center;gap:var(--space-14);
-  width:calc(100% - var(--space-20) - var(--space-20));height:69px;
-  margin:0 var(--space-20) var(--space-16);
+  justify-content:center;gap:var(--space-9);
+  width:calc(100% - var(--space-13) - var(--space-13));height:46px;
+  margin:0 var(--space-13) var(--space-11);
   background:linear-gradient(to bottom,var(--seal),var(--seal-2));
   border:1px solid var(--edge);color:var(--txt-max);
   box-shadow:inset 0 1px 0 var(--sheen-25), 0 6px 18px -10px var(--sh-9);
@@ -169,14 +190,14 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
 .si-login:focus-visible{outline:2px solid var(--txt-4);outline-offset:3px}
 .si-login[disabled]{pointer-events:none}
 
-.si-note{display:flex;align-items:center;gap:var(--space-8);
-  padding:var(--space-8) var(--space-20) var(--space-11);
+.si-note{display:flex;align-items:center;gap:var(--space-5);
+  padding:var(--space-5) var(--space-13) var(--space-7);
   border-top:1px solid var(--ink-line);
   font-size:var(--fs-8);letter-spacing:.14em;color:var(--txt-8);line-height:1.6}
 .si-note em{font-style:normal;color:var(--seal);opacity:.8}
 
 /* ═══ THE AUTHENTICATION READOUT (swapped in on LOGIN) ════════════════════ */
-.si-auth{display:none;padding:var(--space-18) var(--space-20) var(--space-16)}
+.si-auth{display:none;padding:var(--space-12) var(--space-13) var(--space-11)}
 .si-plate.is-auth .si-form,
 .si-plate.is-auth .si-login,
 .si-plate.is-auth .si-note{display:none}
@@ -189,7 +210,7 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
 .si-line s{flex:1;min-width:0;height:1px;text-decoration:none;
   background:repeating-linear-gradient(90deg,var(--ink-line) 0 2px,transparent 2px 5px)}
 .si-line u{text-decoration:none;font-size:var(--fs-8-5);letter-spacing:.16em;color:var(--gauge-2)}
-.si-bar{height:3px;margin-top:var(--space-14);background:var(--track);overflow:hidden}
+.si-bar{height:2px;margin-top:var(--space-9);background:var(--track);overflow:hidden}
 .si-bar i{display:block;height:100%;width:0;
   background:linear-gradient(90deg,var(--gauge-1),var(--gauge-2));
   animation:siFill 2.24s cubic-bezier(.4,0,.2,1) both}

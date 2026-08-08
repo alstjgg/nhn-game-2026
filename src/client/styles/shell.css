@@ -249,10 +249,18 @@ body.booting .win{visibility:hidden}
   border-right:1px solid var(--sh-35);border-bottom:1px solid var(--sh-35)}
 
 /* ═══ TOAST ═══════════════════════════════════════════════════════════════ */
-#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);z-index:950;
+/* x5b — the desk's own line moved to the MIDDLE of the screen.
+   It sat at the foot of the viewport, which is where a web page puts a toast
+   and where nobody watching a radio feed is looking: '무전 회신 대기 중' is the
+   desk telling the operator the day has stopped for a moment, and it was
+   arriving in the one band of the screen the three windows do not occupy.
+   Centred, it lands in the eyeline. Still `role="status" aria-live="polite"`,
+   still `pointer-events:none`, still gone in 2.6 s — a reading, never a
+   control, so it never stands between the operator and a window. */
+#toast{position:fixed;left:50%;top:50%;transform:translate(-50%,calc(-50% + 20px));z-index:950;
   padding:var(--space-8) var(--space-18);background:var(--chrome-hi);border:1px solid var(--ink-line);
   border-left:2px solid var(--seal);
   font-family:var(--myeong);font-size:var(--fs-11-5);color:var(--txt);letter-spacing:.02em;
   opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
   box-shadow:0 14px 30px -12px var(--sh-9)}
-#toast.on{opacity:1;transform:translate(-50%,0)}
+#toast.on{opacity:1;transform:translate(-50%,-50%)}

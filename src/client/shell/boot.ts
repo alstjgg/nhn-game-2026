@@ -321,7 +321,9 @@ export async function bootShell(): Promise<void> {
   // the SAME reveal the desk has always used, just released later.
   if (door !== null) {
     await door
-    await openManual(must('#app'), { width: window.innerWidth, height: window.innerHeight })
+    // x5b — the sheet is a centred plate now and places itself, so it no longer
+    // takes the viewport it used to size a window against.
+    await openManual(must('#app'))
     sfxHandOver()
   }
   const revealed = revealDesk(
