@@ -478,7 +478,7 @@ mistake, and §1.5 already set the precedent.
 
 ## 5. Execution — authoring mini-PRDs for low-cost executors
 
-> As of 2026-08-08 (v14). A PRD names the version it was written against.
+> As of 2026-08-08 (v15). A PRD names the version it was written against.
 
 The items above are not worked by hand and not worked one at a time. Each is
 specified as a **mini-PRD** by a high-capability model, then executed by a
@@ -581,6 +581,18 @@ Rules for the change list:
   condition that demands a string be absent while the change list deliberately
   introduces it can never go true, however correctly the unit is executed.
   (v14 — T3.)
+- **An absence check greps the CALL FORM, and copies the guard's own regex.**
+  The rule above was already written when the same author broke it three times
+  in one session — `data-block-id` and `Math.max` in g13-4, `padStart` in
+  g15-1 — every time in the same shape: the change list writes the banned token
+  into a comment *explaining why it is not being used*, and the Done-when then
+  greps for the bare token. Stating the principle has not been enough, so the
+  mechanical form replaces it: where a condition exists because a test guards
+  against something, **open that test, copy the regex it actually scans with,
+  and make that the Done-when.** `no-digit-npc.test.ts:177` scans
+  `/\b(toFixed|toLocaleString|padStart)\s*\(/`; the Done-when greps for exactly
+  that, not for `padStart`. A condition that does not match its guard is not a
+  weaker check, it is a different one. (v15 — g13-4, g15-1.)
 - **Scope a Done-when grep to the unit's files.** A repo-wide grep meets
   grandfathered sites and test comments — `published-data.test.ts:144` carries
   `객관 로그` in a comment forever — and then a binary condition can never go
