@@ -50,15 +50,6 @@ export type OpenRunDeps = {
 }
 
 /**
- * Carry-over, wired into the run — the same absorb-then-mine path
- * `tools/driver/run/bind.mjs` takes, for the same reason: the store's only
- * public route into the mined tier is through a line it has seen, and reaching
- * past that would let the composer resolve a block the driver cannot.
- *
- * The seeded line is never emitted, never enters the feed, never reaches the
- * timeline; `kind`/`clock` exist only to satisfy the `FeedLine` shape.
- */
-/**
  * Every sentence the desk has already shown, into this run's `seen` tier only.
  *
  * NOT mined — `mine()` reads `seen` and `has()`/`get()` read `mined`, so an
@@ -77,6 +68,15 @@ export function seedShown(blocks: MutableBlockStore, shown: readonly Block[]): v
   }
 }
 
+/**
+ * Carry-over, wired into the run — the same absorb-then-mine path
+ * `tools/driver/run/bind.mjs` takes, for the same reason: the store's only
+ * public route into the mined tier is through a line it has seen, and reaching
+ * past that would let the composer resolve a block the driver cannot.
+ *
+ * The seeded line is never emitted, never enters the feed, never reaches the
+ * timeline; `kind`/`clock` exist only to satisfy the `FeedLine` shape.
+ */
 function seedCarried(blocks: MutableBlockStore, carried: readonly Block[]): void {
   for (const block of carried) {
     blocks.absorbLine({ kind: 'mark', clock: '00:00', text: block.text, sentence_id: block.id })

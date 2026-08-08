@@ -57,7 +57,6 @@ export type BoundRun = {
   meta: ViewEvent
 }
 
-/** What the closing run hands the run loop so the next one can inherit it. */
 /**
  * Every sentence a stream has shown, newest text winning, in first-seen order.
  *
@@ -80,6 +79,7 @@ export function shownFrom(events: readonly ViewEvent[]): Block[] {
   return [...byId].map(([id, text]) => ({ id, text }))
 }
 
+/** What the closing run hands the run loop so the next one can inherit it. */
 export type RunClose = {
   /** `"HH:MM"` the desk reached — e8 deepens timeline exposure from this. */
   reachedClock: string
