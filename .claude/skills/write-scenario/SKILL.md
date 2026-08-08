@@ -123,6 +123,15 @@ hidden truths 3–4 · timeline rows 20–25 · score units 4 or fewer.
 someone who will see three or four runs and then decide. Anything the player
 must read twice to hold is a number too large.
 
+**The span must close before midnight.** Not a taste — the sim clock is
+same-day only, and it ends the run the moment its minute counter reaches the
+terminal stamp. A band that reads 21:47 → 00:12 is *already ended* when the
+run is built: the clock never ticks, the progress bar's span collapses to one
+minute, and the game boots into a finished day. `compile-datapack.mjs` refuses
+a timeline whose rows would cross midnight, so this fails loudly at compile
+rather than quietly on the desk. An evening scenario starts early enough that
+its last row still lands on the same date.
+
 **Three people, three gates — one gate belongs to each.** There is no 조연
 tier: a body that brushes the story once and leaves is furniture, and
 furniture belongs in the timeline's prose, not in the cast. Three is few

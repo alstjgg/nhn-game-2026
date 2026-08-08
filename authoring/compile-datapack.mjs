@@ -234,19 +234,32 @@ const events = [];
       present: null,
     });
   }
-  // Ordering is by minute, not by string. `HH:MM+` is the next-day marker the
-  // schemas have always allowed (`^([01][0-9]|2[0-3]):[0-5][0-9]\+?$`, and
-  // 우는다리's `clock.end` is `21:04+`), but a lexical compare reads `00:12` as
-  // earlier than `23:58` and refuses any situation that crosses midnight —
-  // which an evening one routinely does.
+  // Ordering is by minute, not by string — a lexical compare cannot rank
+  // `21:04+` against `21:04` at all.
+  //
+  // The trailing `+` is a SUB-MINUTE weight: "immediately after that minute"
+  // (decision D7, `src/engine/beat/clock.ts`, and the same reading in
+  // `src/client/driver/clock.ts` `mm()`). It is NOT a next-day marker. This
+  // once treated it as one — `+1440` — to let a timeline cross midnight, which
+  // both invented a second meaning for the token and silenced a guard that was
+  // telling the truth: the RUNTIME clock is same-day only. `createClock`'s
+  // `isEnded()` is `minute >= endMinute`, so a band of 21:47 → 00:12 is ended
+  // at construction and the run never ticks. A pack that crosses midnight
+  // compiles into a game that cannot be played.
+  //
+  // So the refusal below is load-bearing, and it is the compile-time face of a
+  // runtime limit. Lift it only together with a day-aware clock.
+  const SUB_MINUTE = 0.5;
   const minute = (t) => {
     const [h, m] = t.replace('+', '').split(':').map(Number);
-    return h * 60 + m + (t.endsWith('+') ? 1440 : 0);
+    return h * 60 + m + (t.endsWith('+') ? SUB_MINUTE : 0);
   };
   const keys = events.map((e) => e.time);
   for (let i = 1; i < keys.length; i++) {
     if (minute(keys[i]) < minute(keys[i - 1])) {
-      die(`timeline: rows out of clock order at ${keys[i]} — past midnight needs the "+" suffix (${keys[i]}+)`);
+      die(
+        `timeline: rows out of clock order at ${keys[i]} (after ${keys[i - 1]}) — the clock is same-day only, so a situation that would cross midnight has to be authored earlier in the evening`,
+      );
     }
   }
 }

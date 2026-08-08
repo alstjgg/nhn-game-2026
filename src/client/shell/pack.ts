@@ -17,7 +17,18 @@ export interface ScenarioIdentity {
   end: string
 }
 
-const PACK_SLUG = '우는다리'
+// The shipped scenario. Switching it is a one-line change here plus the
+// `<title>` in `index.html`, and nothing else: `packSlugs()` in
+// `vite.config.ts` publishes every pack under `data/scenario/`, the engine
+// reads whatever `meta.json` this points at, and `metaKey(packSlug)` keys the
+// saved meta-state per slug, so a switch starts a clean shelf rather than
+// resuming another scenario's counters.
+//
+// The clock band is same-day only (`driver/clock.ts` `createClock` ends the
+// run on `minute >= endMinute`), which is why `compile-datapack.mjs` refuses a
+// timeline that would cross midnight — a pack that did would boot already
+// ended. A candidate pack has to close before 23:59.
+const PACK_SLUG = '전구간정상'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
