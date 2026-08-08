@@ -7,7 +7,13 @@
 
 .win-feed{--delay:.14s}
 
-.feed-scroll{position:absolute;inset:0;padding:0 var(--space-26);overflow-y:auto;scroll-behavior:smooth}
+/* `overflow-anchor:none` — this box does its own pinning (U2), and the browser's
+   scroll anchoring fights it. A resolving wait marker goes `display:none` ABOVE
+   the reader, the anchor compensates by moving `scrollTop`, and a feed that
+   detaches on drift reads that as a hand on the paper. It let go mid-run with
+   nobody touching it. Anchoring has nothing to add to a log pinned at its foot. */
+.feed-scroll{position:absolute;inset:0;padding:0 var(--space-26);overflow-y:auto;
+  scroll-behavior:smooth;overflow-anchor:none}
 .feed-scroll::-webkit-scrollbar{width:8px}
 .feed-scroll::-webkit-scrollbar-track{background:var(--sh-06)}
 .feed-scroll::-webkit-scrollbar-thumb{background:var(--sh-28)}
@@ -62,15 +68,35 @@
 .fl-mark .fl-c span{background:var(--fanfold);padding:0 var(--space-12);position:relative;z-index:1}
 .fl-mark .fl-c::after{content:'';position:absolute;left:0;right:0;top:50%;
   border-top:1px dashed var(--sh-35)}
-.feed-tail{height:180px}
+/* The tail spacer — air under the last line, so the newest thing printed is not
+   flush against the window's bottom edge.
+
+   It carries NO length of its own, on purpose. As a flat height (120px, then
+   x1's 180px) it was sized against a full-height feed, and T3 then gave the
+   window a fraction of the right column: the spacer stayed absolute while the
+   box holding it became a couple of hundred pixels, so it grew into most of
+   that box. Pinning to the tail then meant pinning INSIDE the spacer, and the
+   window went blank with a run in it. Every re-tune of the desk re-opened the
+   same wound, because the number here had to be re-derived by hand each time.
+
+   A share of the window cannot fall out of step with the window. `cqh` and not
+   `vh` — the viewport is not what changed. `.win-body` takes a definite height
+   from `.win`'s own `--h`, so it can carry the size container without
+   circularity. */
+.win-feed .win-body{container-type:size}
+.feed-tail{height:25cqh}
 
 /* The behind-indicator (U2). Chrome pinned to the window's foot, above the
    fanfold rather than on it — the paper carries only what the run printed.
    A READING, never a control ([u5#c7]): no pointer affordance, `pointer-events`
    off so it cannot even take a click, and absent whenever the feed is following
    — which is the resting state. Centred with `translate`, leaving `transform`
-   free for the entry animation. */
-.feed-behind{position:absolute;left:50%;bottom:var(--space-14);translate:-50% 0;z-index:2;
+   free for the entry animation.
+
+   The foot offset is a share of the window for the same reason the tail is: a
+   flat 14px is air in a tall feed and a sixth of a short one, where it pushed
+   the indicator up over the lines it is reporting on. */
+.feed-behind{position:absolute;left:50%;bottom:5cqh;translate:-50% 0;z-index:2;
   pointer-events:none;user-select:none;
   padding:var(--space-4) var(--space-12);border:1px solid var(--sh-35);
   background:var(--chrome-raise-2);
