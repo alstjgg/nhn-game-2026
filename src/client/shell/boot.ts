@@ -19,7 +19,7 @@ import { must } from './dom.ts'
 import { openManual } from './manual.ts'
 import { openSignIn, signInSkipped } from './sign-in.ts'
 import { installTutorial } from './tutorial.ts'
-import { fetchScenarioIdentity } from './pack.ts'
+import { PACK_DISPLAY_NAME, fetchScenarioIdentity } from './pack.ts'
 import type { ScenarioIdentity } from './pack.ts'
 import { PORTAL, TASKBAR_HINT } from './portal-identity.ts'
 import { clearRunState } from './run-state.ts'
@@ -99,12 +99,23 @@ async function openLiveDesk(identity: ScenarioIdentity): Promise<FixtureDriver |
   }
 }
 
-function renderIdentity(identity: ScenarioIdentity): void {
+/**
+ * The chrome row's left two thirds. Takes no argument: every string it paints
+ * is authored (`PORTAL`, `PACK_DISPLAY_NAME`), and it stopped reading the
+ * fetched identity when the case name became display text rather than the
+ * slug. The identity is still fetched — the clock band below needs it.
+ */
+function renderIdentity(): void {
   must('#portalName').textContent = PORTAL.portal
   must('#portalCode').textContent = PORTAL.portalCode
-  must('#opName').textContent = `${PORTAL.operatorId} · ${PORTAL.operator}`
+  // x2 (08-08) — the id alone. `PORTAL.operator` still exists and the sign-in
+  // readout still prints it, because the door is where the terminal tells you
+  // WHO you signed in as; the chrome row afterwards is a badge, and a badge
+  // that also spells the name out is the same fact twice at the top of every
+  // screen. The name is not orphaned data — it is data the door consumes.
+  must('#opName').textContent = PORTAL.operatorId
   must('#opClearance').textContent = `권한 ${PORTAL.clearance}`
-  must('#caseName').textContent = identity.slug
+  must('#caseName').textContent = PACK_DISPLAY_NAME
 }
 
 /**
@@ -194,7 +205,7 @@ export async function bootShell(): Promise<void> {
 
   // 1 — the scenario pack.
   const identity = await fetchScenarioIdentity()
-  renderIdentity(identity)
+  renderIdentity()
 
   // 2 — the driver behind the §5.2 seam. Nothing above this line knows it.
   // The loop opens on the run the tab left off at (§7 #8): the persisted `meta`
