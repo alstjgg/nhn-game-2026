@@ -193,3 +193,60 @@ describe('the two halves the two consumers take', () => {
     })
   })
 })
+
+// ── The shipped pack's rescue day ───────────────────────────────────────────
+//
+// 우는다리 above cannot reach this: every unit of its that counts is a crowd,
+// authored as a number. 전구간정상 scores two units that are ONE PERSON each
+// (오세라 · 차우진), and a person's outcome is prose because the record prints
+// where they were found. The day the tunnel empties and only 오세라 is left
+// behind therefore closed on 총 사망자 수 0명 — with 오세라: 사망 · 아홉 번째
+// 문 안쪽 printed one line above it.
+const SHIPPED = JSON.parse(
+  fs.readFileSync(path.join(REPO, 'data/scenario/전구간정상/score.json'), 'utf8'),
+) as ScorePack
+
+describe('a unit that is one person counts as one', () => {
+  /** Every gate answered the way that empties the tunnel — 가이드 §5's best run. */
+  const RESCUED: PredicateState = {
+    vent_panel_opened: true,
+    pallet_named: true,
+    doors_opened: true,
+  }
+
+  it('(m) the day nobody drives out still counts 오세라', () => {
+    const units = scoreUnits(SHIPPED, RESCUED)
+    const byId = new Map(units.map((u) => [u.id, u.value]))
+    // The crowd got out; the person who opened the doors for them did not.
+    expect(byId.get('u1')).toBe(0)
+    expect(byId.get('u2')).toBe('사망 · 아홉 번째 문 안쪽')
+    expect(byId.get('u3')).toBe('생존 · 입건')
+    expect(totalOf(units)).toBe(1)
+  })
+
+  it('(n) the one run that saves her is the only one that scores no death', () => {
+    // `variance_notes`: "오세라 단위가 사는 길은 하나뿐이다 — 갱구로 몰아낸
+    // 41의 런에서 맨 뒤로 걸어 나오는 것." So the headline there is the crowd's
+    // own 41 and nothing else.
+    const drivenOut: PredicateState = {
+      vent_panel_opened: true,
+      pallet_named: true,
+      driven_out: true,
+    }
+    const byId = new Map(scoreUnits(SHIPPED, drivenOut).map((u) => [u.id, u.value]))
+    expect(byId.get('u2')).toBe('생존 · 갱구 밖 집결지에서 발견된다')
+    expect(totalOf(scoreUnits(SHIPPED, drivenOut))).toBe(41)
+  })
+
+  it('(o) the untouched day is the crowd PLUS the two who are named', () => {
+    // 137 · 오세라 사망 · 차우진 사망. The pack used to call this day 137 — the
+    // crowd axis standing in for the headline, which is what let the rescue day
+    // be called "the 0 run". Both the prose and the tally say 139 now, and this
+    // holds them together: a summary that drifts back to the crowd number fails
+    // here rather than on the desk.
+    const nothing: PredicateState = {}
+    expect(totalOf(scoreUnits(SHIPPED, nothing))).toBe(137 + 1 + 1)
+    const summary = (SHIPPED as unknown as { baseline_summary: string }).baseline_summary
+    expect(summary).toContain('총 사망자 139명')
+  })
+})

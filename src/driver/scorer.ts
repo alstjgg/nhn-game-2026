@@ -15,7 +15,7 @@
 // work happens once, here, and each caller takes the half it needs.
 
 import type { PredicateState, PredicateValue } from '../shared/predicates.ts'
-import { resolve } from '../shared/predicates.ts'
+import { deathsOf, resolve } from '../shared/predicates.ts'
 import type { ScorerPort } from './ports.ts'
 
 /** One `score.json` unit, as much of it as scoring reads. */
@@ -118,20 +118,28 @@ export function scoreUnits(
 }
 
 /**
- * The tally headline: the sum of the NUMERIC values, and nothing else.
+ * The tally headline: what every unit's value says it cost, in deaths.
  *
- * `windows/tally.ts` labels this 사망 · 명, so what sums has to be deaths. That
- * is the whole reason §5.2 amendment g widened a row's value and left `total`
- * alone: authoring writes a death count as a number and everything else as a
- * word — 강필주 resolves to `6시간 구금` rather than `6`, because six hours of
- * detention added to six deaths is a headline that lies. On 우는다리's baseline
- * day this is 24 + 1 + 1 = 26, which is what `score.json`'s own
- * `baseline_summary` says. A PLAYED run is whatever its own stances scored —
- * the two agree only when the day moved nothing, and the ledger prints both.
+ * `windows/reports.ts` labels this 총 사망자 수 · 명, so what sums has to be
+ * deaths — which is the whole reason §5.2 amendment g widened a row's value and
+ * left `total` alone: 강필주 resolves to `6시간 구금` rather than `6`, because
+ * six hours of detention added to six deaths is a headline that lies. On
+ * 우는다리's baseline day this is 24 + 1 + 1 = 26, which is what `score.json`'s
+ * own `baseline_summary` says.
+ *
+ * What `deathsOf` adds is the OTHER half of the same rule: a unit that is one
+ * named person authors its outcome as prose, so that the record can print where
+ * they were found, and `사망 · 아홉 번째 문 안쪽` is a death whatever it is
+ * spelled with. Counting only numbers closed 전구간정상's rescue day on 총
+ * 사망자 수 0명 with 오세라: 사망 printed directly above it. The rule stays the
+ * pack's, not the scorer's — see `deathsOf`.
+ *
+ * A PLAYED run is whatever its own stances scored — it and the baseline agree
+ * only when the day moved nothing, and the ledger carries both.
  */
 export function totalOf(units: readonly ScoredUnit[]): number {
   let total = 0
-  for (const unit of units) if (typeof unit.value === 'number') total += unit.value
+  for (const unit of units) total += deathsOf(unit.value)
   return total
 }
 

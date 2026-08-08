@@ -12,7 +12,15 @@
 //     names and reject syntax without a second copy of the grammar. A test that
 //     only exercised `holds`/`resolve` would let those two rot.
 import { describe, it, expect } from 'vitest'
-import { hasValue, holds, identifiers, problems, resolve } from '../../src/shared/predicates.ts'
+import {
+  deathsOf,
+  hasValue,
+  holds,
+  identifiers,
+  problems,
+  readValue,
+  resolve,
+} from '../../src/shared/predicates.ts'
 import type { PredicateState } from '../../src/shared/predicates.ts'
 
 /** A run that capped entry and named the caller, with 서지형's two meters bound. */
@@ -185,5 +193,44 @@ describe('one parser — what lint reads the grammar through', () => {
     expect(hasValue('entry_capped')).toBe(false)
     expect(hasValue('entry_capped and not cancel_requested')).toBe(false)
     expect(hasValue('trust >= 20')).toBe(false)
+  })
+})
+
+describe('what a value costs — the 총 사망자 수 rule', () => {
+  it('(q) a number is a body count and counts itself', () => {
+    expect(deathsOf(137)).toBe(137)
+    expect(deathsOf(0)).toBe(0)
+  })
+
+  it('(r) a person-unit that resolves to 사망 counts one, wherever they were found', () => {
+    // The defect this closes. 전구간정상 scores 오세라 and 차우진 one person
+    // each, and the record prints WHERE they died — so their values are prose,
+    // and a headline that summed numbers only closed the rescue day on
+    // 총 사망자 수 0명 with 오세라: 사망 printed directly above it.
+    expect(deathsOf('사망 · 아홉 번째 문 안쪽')).toBe(1)
+    expect(deathsOf('사망 · 아홉 번째 문 앞, 쇠사슬을 손으로 흔든 자세')).toBe(1)
+    expect(deathsOf('사망')).toBe(1)
+  })
+
+  it('(s) every other outcome reads without counting', () => {
+    // The outcome word is the pack's, in the leading position the packs put it
+    // in. `사망` anywhere else is a sentence about a death, not a death.
+    for (const reads of [
+      '생존 · 갱구 밖 집결지에서 발견된다',
+      '생존 · 입건',
+      '입건 · 개요서 적재물 칸이 채워진다',
+      '6시간 구금',
+      '71명',
+      '아무것도 남지 않음',
+      '사망자 없음',
+    ]) {
+      expect(deathsOf(reads), reads).toBe(0)
+    }
+  })
+
+  it('(t) the two rules meet in `readValue` — `"0"` is a count, `"사망"` is not', () => {
+    expect(deathsOf(readValue(' 0 '))).toBe(0)
+    expect(deathsOf(readValue(' 137 '))).toBe(137)
+    expect(deathsOf(readValue(' 사망 · 하행 4.2km 갓길 '))).toBe(1)
   })
 })
