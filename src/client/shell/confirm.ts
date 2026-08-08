@@ -24,27 +24,6 @@
 // `tests/shell/no-free-text.test.ts` holds that line at source level.
 import { button, el } from './dom.ts'
 
-/**
- * PLACEHOLDER COPY — replace the strings in this object, not the module.
- *
- * `body` is what the plate asks. It is deliberately a real question rather than
- * "정말 배치하시겠습니까?": the operator is not being asked whether they meant to
- * click, they are being asked whether the file is finished, and the file is the
- * 인수인계 — what this shift hands the next agent. Swapping these strings is the
- * whole edit; nothing below reads anything else.
- *
- * `head` is the plate's own label, `meta` the line at its right edge, and
- * `yes`/`no` the two answers. Keep `no` first in the DOM (see `openConfirm`).
- */
-export const CONFIRM_DEPLOY = {
-  head: '배치 확인',
-  meta: '되돌릴 수 없음',
-  body: '인수인계 사항을 잘 작성하셨나요?',
-  note: '배치하면 이번 시행 동안 파일이 잠깁니다.',
-  yes: '예',
-  no: '아니오',
-} as const
-
 export interface ConfirmCopy {
   head: string
   meta: string
@@ -52,6 +31,39 @@ export interface ConfirmCopy {
   note: string
   yes: string
   no: string
+}
+
+/**
+ * The plate's copy, for the agent the press commits.
+ *
+ * x5 — it STATES rather than asks, and the two answers name the act.
+ *
+ * It used to ask '인수인계 사항을 잘 작성하셨나요?' and answer 예 / 아니오. Three
+ * things were wrong with that. A yes/no pair puts the operator's own judgement
+ * of their work between them and the button, and the honest answer at the
+ * moment you press DEPLOY is always yes — so the question was a speed bump, not
+ * a decision. `배치` is warehouse vocabulary for something that is a person
+ * going out on a shift. And what actually cannot be undone was buried in the
+ * small print: the file locking is a consequence, the agent leaving the radio
+ * is the loss.
+ *
+ * So the plate says what is about to happen, then what it costs, and the button
+ * says 파견 — the operator confirms an ACT they can name, not their own quality
+ * control. `취소` and `파견` are also not near-homographs the way 예 / 아니오 are
+ * on a plate you have already dismissed forty times.
+ *
+ * A function, not a constant: the body names the agent, and the agent is
+ * `windows/agent-file.ts`'s to know (M1 — the callsign is per sitting).
+ */
+export function deployCopy(callsign: string): ConfirmCopy {
+  return {
+    head: '배치 확인',
+    meta: '되돌릴 수 없음',
+    body: `${callsign}에 대한 인수 인계를 완료하여 현장에 파견합니다.`,
+    note: '현장 파견 시 더 이상 요원과 소통할 수 없습니다.',
+    yes: '파견',
+    no: '취소',
+  }
 }
 
 /** The elements the shell must hold still while a question is on the screen. */
@@ -69,10 +81,10 @@ function hold(on: boolean): void {
 /**
  * Puts the question on the screen and resolves with the operator's answer.
  *
- * `true` is 예 and nothing else: the promise resolves `false` for 아니오 and for
+ * `true` is 파견 and nothing else: the promise resolves `false` for 취소 and for
  * Escape, so a caller that does not read the value can only ever fail closed.
  *
- * ESCAPE IS 아니오. The plate carries no close control by design — the two
+ * ESCAPE IS 취소. The plate carries no close control by design — the two
  * answers are the only way out of it, and neither is a dismissal. But a modal
  * layer with no keyboard exit is a keyboard trap (WCAG 2.1.2), and the safe
  * answer to an unanswered question about an irreversible act is "no". So the
@@ -83,7 +95,7 @@ function hold(on: boolean): void {
  * questions over one desk — the caller here is a single button, so this is a
  * guard, not a flow.
  */
-export function openConfirm(app: HTMLElement, copy: ConfirmCopy = CONFIRM_DEPLOY): Promise<boolean> {
+export function openConfirm(app: HTMLElement, copy: ConfirmCopy): Promise<boolean> {
   if (document.getElementById('confirm')) return Promise.resolve(false)
 
   const layer = el('div')
@@ -107,7 +119,7 @@ export function openConfirm(app: HTMLElement, copy: ConfirmCopy = CONFIRM_DEPLOY
   const body = el('div', 'cf-body')
   body.append(bodyText, el('p', 'cf-note', copy.note))
 
-  // 아니오 is built first and focused first: the opening keystroke on an
+  // 취소 is built first and focused first: the opening keystroke on an
   // irreversible act should not be able to confirm it by reflex.
   const no = button('cf-btn cf-no', copy.no, copy.no)
   no.id = 'confirmNo'

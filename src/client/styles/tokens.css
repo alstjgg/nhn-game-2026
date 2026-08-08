@@ -51,9 +51,28 @@
   --shadow-win:0 2px 0 rgba(0,0,0,.5), 0 28px 64px -20px rgba(0,0,0,.9),
                0 0 0 1px rgba(0,0,0,.7);
 
-  /* three faces: mono chrome · Korean mono radio · 명조 document body */
+  /* TWO faces, and the split is what a thing IS, not which window it is in (x5).
+     `--mono` is every FIXED value the desk prints — window names, section
+     titles, clock digits, document numbers, slot numbers, flags, stamps and
+     marks. `--myeong` is everything a person said or wrote — the two REPORTS
+     panes, the live feed's content column, a mined sentence wherever it has been
+     carried to, the handover paragraph.
+
+     `--kmono` (Nanum Gothic Coding first) was a third face used only by the live
+     feed, for the radio lines, the fallback notice and the behind-indicator. It
+     put the one thing in that window an actual person says into a monospace,
+     while the same sentence set in 명조 the moment it was mined into the AGENT
+     FILE — the same words changing face by which window they were in. Deleted
+     rather than left declared: an unused token is a fourth answer waiting to be
+     picked by someone reading the list.
+
+     It is FOLDED, not dropped, and the port's parity guard reads this line:
+       --kmono -> --mono
+     Nanum Gothic Coding is still the Korean face every one of those surfaces
+     renders in — it is the second family in `--mono`'s own stack, and IBM Plex
+     Mono carries no Hangul. Nothing about how those lines LOOK changed; what
+     changed is that the sheet no longer has two names for the same answer. */
   --mono:'IBM Plex Mono','Nanum Gothic Coding',ui-monospace,Menlo,monospace;
-  --kmono:'Nanum Gothic Coding','IBM Plex Mono',ui-monospace,monospace;
   --myeong:'Nanum Myeongjo','AppleMyungjo','Batang',ui-serif,serif;
 }
 

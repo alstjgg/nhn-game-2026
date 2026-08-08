@@ -13,15 +13,15 @@
 
 .arch-rail{display:flex;gap:0;flex:0 0 auto;background:var(--bond-2);
   border-bottom:1px solid var(--sh-35);overflow-x:auto;padding-left:var(--space-2)}
-.arch{padding:var(--space-7) var(--space-14) var(--space-6);font-size:var(--fs-8-5);
+/* x5 — one line, not two. The tab was a stacked pair (callsign over the run
+   id); with the subtitle gone it is a single label, so the column flow and its
+   gap go with it and the type takes the step the subtitle used to occupy. */
+.arch{padding:var(--space-7) var(--space-14) var(--space-6);font-size:var(--fs-9-5);
   letter-spacing:.14em;color:var(--faded);
   border-right:1px solid var(--sh-18);white-space:nowrap;transition:.14s;position:relative;
-  display:flex;flex-direction:column;gap:var(--space-2);align-items:flex-start}
-.arch em{font-style:normal;font-family:var(--myeong);font-size:var(--fs-9-5);
-  letter-spacing:.02em;color:var(--pap-7)}
+  display:flex;align-items:center}
 .arch:hover{background:var(--sheen-6);color:var(--graphite)}
 .arch.on{background:var(--bond);color:var(--pap-hd);box-shadow:inset 0 -2px 0 var(--seal)}
-.arch.on em{color:var(--seal-2)}
 .arch-note{margin-left:auto;align-self:center;padding:0 var(--space-12);font-size:var(--fs-8);
   letter-spacing:.13em;color:var(--faded-2);white-space:nowrap}
 
@@ -35,14 +35,13 @@
   linear-gradient(90deg,transparent 0 33px,var(--seal-a55) 33px 34px,transparent 34px),
   var(--bond);
   padding-left:var(--space-34)}
-.doc-hd{display:flex;align-items:baseline;gap:var(--space-8);padding-bottom:var(--space-6);
+/* x5 — the head is the title and the rule under it. The boxed `가` / `나` file
+   letter and the italic subtitle both left `report-view.ts`; what is left is one
+   element, so the flex row survives only to hang the rule off. */
+.doc-hd{display:flex;align-items:baseline;padding-bottom:var(--space-6);
   margin-bottom:var(--space-10);border-bottom:1.5px solid var(--graphite)}
-.doc-no{width:24px;height:24px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
-  font-family:var(--myeong);font-size:var(--fs-10);font-weight:700;
-  border:1px solid var(--graphite);color:var(--graphite)}
-.doc-hd h3{font-family:var(--myeong);font-size:var(--fs-14);font-weight:800;color:var(--pap-hd);
-  letter-spacing:.01em}
-.doc-hd i{font-style:normal;font-size:var(--fs-8);letter-spacing:.14em;color:var(--faded);margin-left:auto}
+.doc-hd h3{font-family:var(--mono);font-size:var(--fs-13);font-weight:700;color:var(--pap-hd);
+  letter-spacing:.1em}
 
 .facts{list-style:none;counter-reset:f}
 .facts li{counter-increment:f;display:grid;grid-template-columns:26px 51px 1fr;gap:0 var(--space-5);
@@ -66,12 +65,22 @@
    day reads as seven transmissions instead of one paragraph. */
 .rbody .r-brk{display:block;height:var(--space-6)}
 .sig{margin-top:var(--space-20);display:flex;align-items:center;justify-content:flex-end;gap:var(--space-14)}
-.sig-line{font-family:var(--myeong);font-size:var(--fs-12);color:var(--pap-3);
+.sig-line{font-family:var(--mono);font-size:var(--fs-11);color:var(--pap-3);letter-spacing:.14em;
   border-bottom:1px solid var(--graphite);padding:0 var(--space-22) var(--space-2)}
-.sig-stamp{width:57px;height:57px;border:2px solid var(--seal);color:var(--seal);
-  display:flex;align-items:center;justify-content:center;font-family:var(--myeong);
-  font-size:var(--fs-11);font-weight:800;letter-spacing:.02em;transform:rotate(-7deg);
-  opacity:.8;mix-blend-mode:multiply;border-radius:2px}
+/* x5 — the chop is TWO lines and it is absent until the transmission lands.
+   `검 인` is the seal; `수신 완료` is what it certifies, so it is set small under
+   it rather than beside it — a receipt has a stamp and a legend, not two
+   headings. `.on` is written by `report-view.ts`'s `stamped()` alone. */
+.sig-stamp{display:none;width:57px;height:57px;border:2px solid var(--seal);color:var(--seal);
+  flex-direction:column;align-items:center;justify-content:center;gap:var(--space-1);
+  transform:rotate(-7deg);opacity:.8;mix-blend-mode:multiply;border-radius:2px}
+.sig-stamp.on{display:flex;animation:chopIn .4s cubic-bezier(.2,1.3,.3,1) both}
+.sig-stamp b{font-family:var(--mono);font-size:var(--fs-10-5);font-weight:800;letter-spacing:.04em}
+.sig-stamp em{font-style:normal;font-family:var(--mono);font-size:var(--fs-7);
+  letter-spacing:.06em;opacity:.85}
+@keyframes chopIn{
+  0%{transform:rotate(-18deg) scale(2.2);opacity:0}
+  100%{transform:rotate(-7deg) scale(1);opacity:.8}}
 
 /* minable sentence */
 .min{cursor:pointer;transition:background .15s,box-shadow .15s;position:relative;

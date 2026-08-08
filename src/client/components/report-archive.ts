@@ -21,25 +21,38 @@ export interface ArchiveEntry {
   label: string
 }
 
-/** One rail segment, ready to paint. */
+/**
+ * One rail segment, ready to paint.
+ *
+ * x5 — a segment is a RUN and nothing else. The entry's `label` used to be
+ * printed under the callsign as the tab's own subtitle, and what the live seam
+ * actually puts in that field is the run id (`driver/live/index.ts` —
+ * `${slug}-r${run}`), so the rail read `ECHO-1 / 전구간정상-r1`: the pack's slug
+ * and the run number, on a tab already headed by the run number, in a window
+ * whose whole rail is one scenario. The label is still VALIDATED below — inv 6
+ * is about what may reach a player surface, and the cheapest way to keep that
+ * true is to keep refusing a bad one even now that none of it is printed.
+ */
 export interface ArchiveSegment {
   run: number
   runLabel: string
-  span: string
   selected: boolean
 }
-
-/** `RUN 01 / ` or `RUN 01 · ` at the head of a label — stripped, never doubled. */
-const OWN_PREFIX = /^\s*RUN\s*\d+\s*[/·]\s*/i
 
 /** Design-time run grouping. It never reaches a player surface (inv 6). */
 const REFUSED = /gate|게이트/i
 
-/** The rail's accessible name — it is a list of filed runs, nothing more. */
-export const RAIL_LABEL = '보관 기록 · 시행/시각'
+/**
+ * The rail's accessible name — it is a list of filed runs, nothing more.
+ *
+ * x5 — both of these said `시행/시각`, and the tab no longer prints a 시각. A
+ * label that names a column the rail does not have is worse than no label:
+ * sighted or not, the reader goes looking for it.
+ */
+export const RAIL_LABEL = '보관 기록 · 시행'
 
 /** The rail's own footnote, decorative and hidden from the listbox. */
-export const RAIL_NOTE = '보관 기록 · 시행/시각 순'
+export const RAIL_NOTE = '보관 기록 · 시행 순'
 
 /**
  * One segment per archive entry, in stream order, with exactly one selected.
@@ -56,7 +69,6 @@ export function archiveSegments(
     return {
       run: entry.run,
       runLabel: callsignOf(entry.run),
-      span: entry.label.replace(OWN_PREFIX, '').trim(),
       selected: entry.run === activeRun,
     }
   })
@@ -144,9 +156,7 @@ export function createArchiveRail(options: ArchiveRailOptions): ArchiveRail {
         const node = el('button', 'arch')
         node.type = 'button'
         node.setAttribute('role', 'option')
-        // The space is load-bearing: `ECHO-1` and the span must read as two
-        // words in the accessible name, not as one run of digits.
-        node.append(el('span', undefined, segment.runLabel), document.createTextNode(' '), el('em', undefined, segment.span))
+        node.append(el('span', undefined, segment.runLabel))
         node.addEventListener('click', () => {
           choose(segment.run)
         })

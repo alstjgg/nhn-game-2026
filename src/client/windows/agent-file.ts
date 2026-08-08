@@ -19,13 +19,13 @@
 // no fixture module — carried ids resolve through the report index (D13).
 import type { FixtureDriver, Sentence } from '../driver/index.ts'
 import { button, el, must } from '../shell/dom.ts'
-import { openConfirm } from '../shell/confirm.ts'
+import { deployCopy, openConfirm } from '../shell/confirm.ts'
 import { announce } from '../shell/announcer.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
 import { createRunState, hasFiledReport } from '../shell/run-state.ts'
 import type { RunPhase, RunState } from '../shell/run-state.ts'
-import { blockCardModel, buildBlockCard, pad2, setPickedBlockId } from '../components/block-card.ts'
+import { blockCardModel, setPickedBlockId } from '../components/block-card.ts'
 import { agentModel, buildDossier, callsignOf, coverModel, filedModel } from '../components/dossier.ts'
 import { SLOT_CAP, createSlotBoard, usedIds } from '../components/slot-board.ts'
 import { buildDeployStamp, buildDeployZone, deployView } from '../components/deploy-button.ts'
@@ -34,8 +34,16 @@ import { PACE, settleRelease } from '../components/score-tally.ts'
 
 /** The wait line, verbatim from `windows/tally.ts` — diegetic, never a spinner. */
 const WAITING = '……보고서 정리 중'
-/** The line the control settles on once the run's report is on the desk. */
-const FILED_TAIL = ' 보고서가 부검 창에 도착했습니다'
+/**
+ * The line the control settles on once the run's report is on the desk.
+ *
+ * x5 — was `${callsign} 보고서가 부검 창에 도착했습니다`, which reported a fact the
+ * REPORTS window had already announced by filling itself in. This is the one
+ * moment in the loop where the operator has something to DO and no prompt
+ * telling them, so the line is the instruction instead. It names no callsign
+ * because it is about the NEXT agent, not the one who just came back.
+ */
+const FILED_NOTE = '인수 인계 완료 후 요원을 파견하여 시뮬레이션을 재시도 하십시오'
 /** …and the line it settles on when the hold ran out and none came. */
 const LAPSED_TAIL = ' 보고서는 아직 부검 창에 없습니다 — 다음 시행은 열려 있습니다'
 /** The allotment is spent: `new_run` was refused, and the loop has no next day. */
@@ -213,7 +221,10 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     // question in front of ECHO-1 and nobody after — from day 2 the commit
     // arrives in `next` mode, and that is the press that carries a file the
     // operator has actually revised.
-    void openConfirm(must('#app')).then((confirmed) => {
+    // x5 — the plate names the agent it is about to send out. `run` is the
+    // sitting on the desk, which is exactly the agent the last page carries and
+    // whose file this press commits.
+    void openConfirm(must('#app'), deployCopy(callsignOf(run))).then((confirmed) => {
       if (confirmed) commitFile(mode)
     })
   })
@@ -245,14 +256,23 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   let viewing = 0
 
   /**
-   * A finished sitting's file — the cards that went out, read-only.
+   * A finished sitting's file — what went out with them, as ONE PARAGRAPH.
    *
-   * U5.3. These are NOT slots: no `.slot`, no `.slot-pin`, and above all no
+   * x5. U5.3 built this as a stack of bordered cells, each with its slot number
+   * down the left. That was the four-box reading of the handover, kept alive on
+   * the one page the operator reads a shift's work back from — and x4 had
+   * already taken it off the live page for being exactly that (see the note in
+   * `components/slot-board.ts`). The numbers are gone with the boxes: a slot
+   * index is an address for putting something IN, and nothing goes into a page
+   * whose run is over. What a past agent was handed is a paragraph, so it reads
+   * as one.
+   *
+   * These are still NOT slots: no `.slot`, no `.slot-pin`, and above all no
    * `data-block-id`, which is what `shell/thread-layer.ts:28` selects slot
-   * anchors by. `buildBlockCard` writes `data-block`, so a past page is
-   * invisible to the thread layer by construction — do not add the attribute
-   * for symmetry. An id the index cannot resolve gets F1's fallback text from
-   * `blockCardModel`, which is already its job.
+   * anchors by — a past page is invisible to the thread layer by construction,
+   * so do not add the attribute for symmetry. `blockCardModel` is still what
+   * resolves the text, because F1's fallback for an unresolvable id is already
+   * its job; only the card's markup is dropped.
    */
   function filedHost(ids: readonly string[]): HTMLElement {
     const host = el('div', 'filed-file')
@@ -260,14 +280,14 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       host.append(el('div', 'filed-empty', FILED_EMPTY))
       return host
     }
+    const para = el('p', 'filed-para')
+    // Built element by element the sentences would abut with no separator, the
+    // same whitespace-text-node problem `components/dossier.ts` documents.
     for (const [index, id] of ids.entries()) {
-      const cell = el('div', 'filed-cell')
-      cell.append(
-        el('span', 'filed-no', pad2(index + 1)),
-        buildBlockCard(blockCardModel(id, sentences.get(id) ?? null), { inSlot: true }),
-      )
-      host.append(cell)
+      if (index > 0) para.append(document.createTextNode(' '))
+      para.append(el('span', 'filed-s', blockCardModel(id, sentences.get(id) ?? null).text))
     }
+    host.append(para)
     return host
   }
 
@@ -291,7 +311,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       const ids = filed.get(flown) ?? []
       const page = el('div', 'file-page')
       page.append(
-        buildDossier(filedModel({ callsign: callsignOf(flown), deployed: ids.length }), filedHost(ids)),
+        buildDossier(filedModel({ callsign: callsignOf(flown) }), filedHost(ids)),
       )
       past.push(page)
     }
@@ -364,7 +384,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     dropHold()
     const who = callsignOf(store.get().meta.run)
     if (release === 'filed') {
-      settleNote = `${who}${FILED_TAIL}`
+      settleNote = FILED_NOTE
       sync()
       announce(`${who}${SAY_FILED_TAIL}`)
     } else {

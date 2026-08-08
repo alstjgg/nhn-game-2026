@@ -97,15 +97,46 @@ async function seamStore(page: Page): Promise<SeamStore> {
   })
 }
 
+/**
+ * The pack slug the CLIENT actually asked the server for.
+ *
+ * RE-AIMED (08-09). Both callers used to read `#caseName`, which carried the
+ * slug until `ui(x2)` (#212) pointed it at `PACK_DISPLAY_NAME` — a display name
+ * that is `전 구간 정상` where the slug is `전구간정상`, and which `shell/pack.ts`
+ * says outright is "DELIBERATELY not derived from `PACK_SLUG` — there is no
+ * rule". So the chrome stopped being a slug source, silently: `(d)` compared
+ * the doc number against a string with spaces in it, and `(e)` fetched
+ * `data/scenario/전 구간 정상/meta.json`, got the dev server's index.html and
+ * died parsing it as JSON. Neither is caught by CI, which runs the `preview`
+ * project alone.
+ *
+ * The boot request is the honest replacement. It is not a literal (C3), it is
+ * not the display name, and it is not the doc line either — which matters,
+ * because `(d)` exists to check the doc line against an INDEPENDENT source.
+ * `performance` is read rather than a request listener so there is no ordering
+ * race with `boot()`'s own `goto`.
+ */
+async function packSlug(page: Page): Promise<string> {
+  const url = await page.evaluate(() =>
+    performance
+      .getEntriesByType('resource')
+      .map((entry) => entry.name)
+      .find((name) => /\/data\/scenario\/[^/]+\/meta\.json(\?|$)/.test(name)) ?? '',
+  )
+  const found = /\/data\/scenario\/([^/]+)\/meta\.json(\?|$)/.exec(url)
+  expect(found, `no pack meta.json request was observed: ${url}`).not.toBeNull()
+  return decodeURIComponent(found![1]!)
+}
+
 /** The pack's own clock band — the source §1 and the topbar both read. */
 async function packClock(page: Page): Promise<{ start: string; end: string }> {
-  return page.evaluate(async () => {
-    const slug = document.querySelector('#caseName')?.textContent ?? ''
-    const url = new URL(`data/scenario/${slug}/meta.json`, document.baseURI)
+  const slug = await packSlug(page)
+  return page.evaluate(async (name: string) => {
+    const url = new URL(`data/scenario/${name}/meta.json`, document.baseURI)
     const raw = (await (await fetch(url)).json()) as { clock: { start: string; end: string } }
     const strip = (s: string): string => s.replace(/\+$/, '')
     return { start: strip(raw.clock.start), end: strip(raw.clock.end) }
-  })
+  }, slug)
 }
 
 /**
@@ -227,7 +258,11 @@ test.describe('dossier sections', () => {
     // C1 — the number names the DOCUMENT, which spans every agent, so it has
     // no run segment. It used to end `/01`, `/02`, …
     await expect(doc).toHaveText(/^문서번호 ERR-2\/AF\/[^/]+$/)
-    const slug = (await page.locator('#caseName').textContent())?.trim() ?? ''
+    // The slug the client fetched the pack under, not the chrome's display
+    // name — see `packSlug`. Still an independent source: the doc line is
+    // built by `windows/agent-file.ts` from the fetched identity, and this
+    // comes off the network.
+    const slug = await packSlug(page)
     expect(slug.length).toBeGreaterThan(0)
     await expect(doc).toHaveText(new RegExp(`/AF/${slug}$`))
     await expect(page.locator(`${FILE} .fh-title`)).toHaveText('현장 요원 운용 파일')
@@ -256,7 +291,15 @@ test.describe('dossier sections', () => {
     await boot(page)
     const sealed = page.locator(`${FILE} .sect.sealed`)
     await expect(sealed).toHaveCount(1)
-    await expect(sealed.locator('.redact i')).toHaveCount(10)
+    // x5 — the redaction is two lines, not six, and the count is the art's own.
+    // What is asserted is that the strip is REAL (bars are present) and that
+    // none of them carries a pixel width — `dossier.ts` sets `flex-basis` as a
+    // percentage, which is inv 8's requirement and the thing a re-vendoring of
+    // the reference's own `px` rhythm would break.
+    const bars = sealed.locator('.redact i')
+    expect(await bars.count()).toBeGreaterThan(0)
+    const bases = await bars.evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).style.flexBasis))
+    expect(bases.every((b) => b.endsWith('%'))).toBe(true)
     await expect(sealed.locator('.sealed-note')).toHaveText(
       '열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)',
     )
@@ -338,7 +381,10 @@ test.describe('deploy stamp locks the file', () => {
     const stamp = page.locator('#deployStamp')
     await expect(stamp).toHaveClass(/\bon\b/)
     await expect(stamp).toBeVisible()
-    await expect(stamp.locator('span')).toHaveText('배 치 완 료')
+    // x5b — 파견, matching the plate that authorised it and the line the desk
+    // says out loud (`slot-board.ts`'s `announcementOfAction`). `#deployState`
+    // below still reads 배치됨: that is the file's own STATE, not the act.
+    await expect(stamp.locator('span')).toHaveText('파 견 완 료')
     await expect(stamp.locator('em')).toHaveText(/^ECHO-\d+ · \d{2}:\d{2}$/)
 
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'locked')
@@ -612,8 +658,17 @@ test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
     await expect(page.locator(`${FILE} .pg-count`)).toHaveText('2 / 3')
     await expect(page.locator(`${FILE} .sect`).nth(0).locator('dd').first()).toHaveText(flying!)
     await expect(page.locator(`${FILE} .sect`).nth(1).locator('.sect-flag')).toHaveText('열람')
-    await expect(page.locator(`${FILE} .filed-cell`)).toHaveCount(2)
-    await expect(page.locator(`${FILE} .filed-cell .bc-text`).first()).toHaveText(SEEDS[0].text)
+    // x5 — one paragraph, not two bordered cells. The claim is unchanged: the
+    // page holds exactly what that sitting flew, in order, and it reads the
+    // sentences themselves rather than an id or a placeholder. Both spans are
+    // checked, so a paragraph that lost a sentence still fails.
+    await expect(page.locator(`${FILE} .filed-cell`)).toHaveCount(0)
+    await expect(page.locator(`${FILE} .filed-para`)).toHaveCount(1)
+    await expect(page.locator(`${FILE} .filed-s`)).toHaveCount(2)
+    await expect(page.locator(`${FILE} .filed-s`).first()).toHaveText(SEEDS[0].text)
+    await expect(page.locator(`${FILE} .filed-s`).last()).toHaveText(SEEDS[1].text)
+    // …and no slot number survived the boxes.
+    await expect(page.locator(`${FILE} .filed-no`)).toHaveCount(0)
 
     // A past page is not a board, carries no gesture, and anchors no thread.
     await expect(page.locator(`${FILE} #slotBoard`)).toHaveCount(0)
@@ -683,9 +738,14 @@ test.describe('[x2] DEPLOY asks before it commits', () => {
 
     const buttons = page.locator(`${PLATE} button`)
     await expect(buttons).toHaveCount(2)
-    await expect(page.locator('#confirmNo')).toHaveText('아니오')
-    await expect(page.locator('#confirmYes')).toHaveText('예')
-    // 아니오 holds the focus: the reflex keystroke on an irreversible act must
+    // x5 — the answers NAME THE ACT. 예 / 아니오 answered a question about the
+    // operator's own work ('인수인계 사항을 잘 작성하셨나요?'), where the honest
+    // answer at the moment you press DEPLOY is always 예; 취소 / 파견 answer what
+    // the plate now states. The plate also names the agent it is about to send.
+    await expect(page.locator('#confirmNo')).toHaveText('취소')
+    await expect(page.locator('#confirmYes')).toHaveText('파견')
+    await expect(page.locator('#cf-body')).toContainText(/ECHO-\d+/)
+    // 취소 holds the focus: the reflex keystroke on an irreversible act must
     // not be the one that confirms it.
     await expect(page.locator('#confirmNo')).toBeFocused()
     // The desk behind it cannot be reached while the question is up.

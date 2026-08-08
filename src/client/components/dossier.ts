@@ -46,9 +46,18 @@ const CALLSIGN_CLASS = 'rd-code'
  *
  * The reference sets these widths in `px` (`app.js` 226); C11 / inv 8 forbids a
  * size literal in component code, and `%` is the ratio the reference's rhythm
- * actually encodes. Frozen 10-value pattern, reference widths halved.
+ * actually encodes.
+ *
+ * x5 — TWO LINES, down from six. Ten bars filled roughly six rows of the strip,
+ * which is a paragraph's worth of blacked-out text: the page spent more height
+ * on what the operator may not read than on 임무 and 행동 원칙 together, and read
+ * as the file's main event. There is nothing underneath it to reveal (I13), so
+ * length was never carrying information — two lines say 봉인 just as completely
+ * and give the page back to the sections that have something in them. The last
+ * bar is the widest so the block ends ragged, the way a redacted paragraph's
+ * final line does.
  */
-const SEALED_BARS: readonly number[] = [46, 27, 70, 34, 55, 22, 63, 40, 29, 52]
+const SEALED_BARS: readonly number[] = [58, 34, 71]
 
 /** Reference stagger between bars (`app.js` 226); pinned to one frame when frozen. */
 const BAR_STEP = 45
@@ -65,9 +74,29 @@ export interface AgentInput {
 export interface FiledInput {
   /** 식별's 호출부호 — the agent whose sitting this page records (M1). */
   callsign: string
-  /** How many sentences went out with them. The cards themselves are the host's. */
-  deployed: number
 }
+
+/** A past page's 인수인계 사항 note — the sitting is over and nothing is operable. */
+const FILED_NOTE = '파견 종료. 열람 전용'
+
+/**
+ * 교신 지침's standing orders (민서's own words, x5).
+ *
+ * The line it replaces was an AGENT'S PROMPT wearing a dossier's clothes: it
+ * named the round loop and the seam's own per-round budget ('라운드 종료 시
+ * 현장 기록 최대 8건과 무전 기록 한 편을 송신한다'), which is scheduling the
+ * player can neither see nor change, printed on a page that is meant to read as
+ * standing orders issued to a person on a radio. Worse, it exposed the shape of
+ * the machine at exactly the point where the fiction asks to be believed.
+ *
+ * The replacement says what a real comms instruction would — and it hands the
+ * one-sentence-per-line rule the one thing it never had: a reason a field agent
+ * would accept for writing that way. Kept at module scope rather than inline in
+ * `coverModel` so the model half stays a value, which `agent-file.test.ts (d)`
+ * reads the source of.
+ */
+const COMMS_ORDERS =
+  '회선이 열려 있는 동안 수시로 상황을 보고한다. 관측한 것과 판단한 것을 구분하여 송신하며, 수신 신호가 약할 수 있으니 문장을 짧게 끝맺는다.'
 
 interface SectionHead {
   title: string
@@ -133,7 +162,7 @@ export function coverModel(clockBand: string): DossierSection[] {
     {
       title: '교신 지침',
       state: 'fixed',
-      body: '라운드 종료 시 현장 기록 최대 8건과 무전 기록 한 편을 송신한다. 판단과 인상은 한 문장에 하나씩, 문장 단위로 완결되게 쓴다.',
+      body: COMMS_ORDERS,
     },
   ]
 }
@@ -151,9 +180,13 @@ export function agentModel(input: AgentInput): DossierSection[] {
       ],
     },
     {
+      // x5 — was '주입 슬롯 4칸. 배치 후 잠금.', which described the MECHANISM: a
+      // slot, an injection, a lock. None of those are things one shift tells the
+      // next. The cap still comes from `slotCap` and not from a literal (D3), so
+      // the note and the board it sits above cannot drift.
       title: '인수인계 사항',
       state: 'operable',
-      note: `주입 슬롯 ${input.slotCap}칸. 배치 후 잠금.`,
+      note: `요원에게 최대 ${input.slotCap}가지 주요 사항을 전달하십시오`,
     },
   ]
 }
@@ -178,9 +211,13 @@ export function filedModel(input: FiledInput): DossierSection[] {
       ],
     },
     {
+      // x5 — was '배치 N건. 시행 종료 — 열람 전용.' The count is printed by the
+      // page itself now (the handover is a paragraph of N sentences, right
+      // below), so the note said out loud what the reader can see, and 배치 is
+      // the vocabulary the confirmation plate retired in favour of 파견.
       title: '인수인계 사항',
       state: 'filed',
-      note: `배치 ${input.deployed}건. 시행 종료 — 열람 전용.`,
+      note: FILED_NOTE,
     },
   ]
 }

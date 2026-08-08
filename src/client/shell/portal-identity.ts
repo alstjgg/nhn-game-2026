@@ -30,7 +30,12 @@ export interface PortalIdentity {
 export const PORTAL: PortalIdentity = {
   portal: '긴급상황대응실',
   portalCode: 'ERR-2',
-  operator: '박민서',
+  // x5 — the operator is the PLAYER, and the player is not 박민서. A Korean
+  // personal name on the chrome reads as one more character in the fiction, and
+  // this one happened to be the author's; the account handle says "you are
+  // signed in" and casts nobody. It matches `SIGN_IN.userId` below, which is the
+  // same account seen at the door.
+  operator: 'tester_123',
   operatorId: 'OP-2291',
   clearance: 'C-2',
 }
@@ -60,7 +65,7 @@ export interface SignInCard {
 }
 
 export const SIGN_IN: SignInCard = {
-  userId: 'test_user123',
+  userId: 'tester_123',
   secret: '*********',
   terminal: 'T-14',
   agency: '행정안전부 · 상황대응본부',

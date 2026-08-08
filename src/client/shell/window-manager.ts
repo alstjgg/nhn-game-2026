@@ -212,7 +212,10 @@ export function createWindowManager(deps: Deps): WindowManager {
       const def = frame.def
       const task = button('task', `${def.en} 창 열기 · 닫기`, '')
       task.dataset.win = def.key
-      task.append(el('b', undefined, def.en), el('span', 't-ko', def.ko))
+      // x5 — the `.t-ko` half is gone with `WindowDef.ko`. A taskbar button is a
+      // target the operator hits by muscle memory, and `LIVE FEED 무전` was the
+      // same window named twice inside one 32px chip.
+      task.append(el('b', undefined, def.en))
       task.addEventListener('click', () => toggle(def.key))
       tasks.set(def.key, task)
       deps.taskbar.append(task)

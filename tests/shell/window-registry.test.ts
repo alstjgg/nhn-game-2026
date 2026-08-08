@@ -102,16 +102,23 @@ describe('[u3#c6] the registry is shell-owned', () => {
     expect(WINDOW_REGISTRY.map((w) => w.key)).toEqual([...WINDOW_KEYS])
   })
 
-  it('(d) every entry carries a unique w-<key> dom id and both labels', async () => {
+  /**
+   * x5 — ONE label, not two. `ko` (the taskbar's short Korean name) and `sub`
+   * (the title bar's long Korean subtitle) both left the registry, so what this
+   * checks is that every entry still carries a name and that the names are
+   * DISTINCT — which is the claim that actually matters now that a window has
+   * exactly one of them. `LIVE FEED 무전` on a taskbar chip named the same
+   * window twice; two windows sharing `en` would name two windows once.
+   */
+  it('(d) every entry carries a unique w-<key> dom id and a distinct name', async () => {
     const { WINDOW_REGISTRY } = await loadRegistry()
     for (const def of WINDOW_REGISTRY) {
       expect(def.id).toBe(`w-${def.key}`)
       expect(typeof def.en).toBe('string')
       expect(def.en.trim().length).toBeGreaterThan(0)
-      expect(typeof def.ko).toBe('string')
-      expect(def.ko.trim().length).toBeGreaterThan(0)
     }
     expect(new Set(WINDOW_REGISTRY.map((w) => w.id)).size).toBe(WINDOW_KEYS.length)
+    expect(new Set(WINDOW_REGISTRY.map((w) => w.en)).size).toBe(WINDOW_KEYS.length)
   })
 
   it('(e) every entry mounts the module that owns that window', async () => {

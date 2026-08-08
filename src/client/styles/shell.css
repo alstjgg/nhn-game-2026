@@ -155,7 +155,6 @@
   font-size:var(--fs-9-5);letter-spacing:.14em;transition:.15s;position:relative}
 .task:hover{color:var(--txt-2);border-color:var(--line-1);background:var(--chrome-raise-2)}
 .task b{font-weight:500}
-.task .t-ko{font-family:var(--myeong);font-size:var(--fs-10);letter-spacing:0;color:var(--txt-6)}
 .task.open{color:var(--txt-hi);background:var(--chrome-open);border-color:var(--line-2)}
 .task.open::before{content:'';position:absolute;left:-1px;top:-1px;bottom:-1px;width:2px;background:var(--seal)}
 .task.focused{background:var(--chrome-focus);border-color:var(--line-3)}
@@ -214,13 +213,12 @@ body.booting .win{visibility:hidden}
 @keyframes livePulse{0%,100%{opacity:.35;box-shadow:none}50%{opacity:1;box-shadow:0 0 9px var(--seal)}}
 /* x1 — `white-space:nowrap` on the title. At 1.5× the two right-column
    windows are 383 px wide and `AGENT FILE` broke over two lines, which doubled
-   the bar's height and pushed the body down behind it. The Korean subtitle
-   beside it already ellipsises; the English name is what must not wrap. */
+   the bar's height and pushed the body down behind it.
+   x5 — the Korean subtitle that used to sit beside it is gone (`.win-bar h2 i`,
+   deleted with `WindowDef.sub`), so the bar carries the English name alone. */
 .win-bar h2{font-size:var(--fs-10);font-weight:600;letter-spacing:.22em;color:var(--txt-2);
   display:flex;align-items:baseline;gap:var(--space-10);min-width:0;white-space:nowrap}
 .win.focused .win-bar h2{color:var(--txt-hi)}
-.win-bar h2 i{font-style:normal;font-family:var(--myeong);font-size:var(--fs-10-5);
-  letter-spacing:0;color:var(--txt-5);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .win-ctl{margin-left:auto;display:flex;gap:var(--space-1)}
 .wc{width:36px;height:30px;font-size:var(--fs-11);line-height:1;color:var(--txt-5);transition:.12s}
 .wc:hover{background:var(--ctl-hover);color:var(--txt-hi)}
@@ -232,10 +230,18 @@ body.booting .win{visibility:hidden}
   border-right:1px solid var(--sh-35);border-bottom:1px solid var(--sh-35)}
 
 /* ═══ TOAST ═══════════════════════════════════════════════════════════════ */
-#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);z-index:950;
+/* x5b — the desk's own line moved to the MIDDLE of the screen.
+   It sat at the foot of the viewport, which is where a web page puts a toast
+   and where nobody watching a radio feed is looking: '무전 회신 대기 중' is the
+   desk telling the operator the day has stopped for a moment, and it was
+   arriving in the one band of the screen the three windows do not occupy.
+   Centred, it lands in the eyeline. Still `role="status" aria-live="polite"`,
+   still `pointer-events:none`, still gone in 2.6 s — a reading, never a
+   control, so it never stands between the operator and a window. */
+#toast{position:fixed;left:50%;top:50%;transform:translate(-50%,calc(-50% + 20px));z-index:950;
   padding:var(--space-8) var(--space-18);background:var(--chrome-hi);border:1px solid var(--ink-line);
   border-left:2px solid var(--seal);
   font-family:var(--myeong);font-size:var(--fs-11-5);color:var(--txt);letter-spacing:.02em;
   opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
   box-shadow:0 14px 30px -12px var(--sh-9)}
-#toast.on{opacity:1;transform:translate(-50%,0)}
+#toast.on{opacity:1;transform:translate(-50%,-50%)}

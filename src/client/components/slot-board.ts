@@ -64,7 +64,10 @@ export type SlotAction =
 
 /** What the desk says out loud when the membrane accepts an action (PRD §4). */
 export function announcementOfAction(action: SlotAction): string {
-  if (action.kind === 'deploy') return '배치 완료 — 요원 파일이 잠겼습니다'
+  // x5b — moved with the chop (`deploy-button.ts`). This line and that stamp
+  // report the same instant to two different senses, and an operator driving by
+  // ear must not be told 배치 완료 while the paper says 파견 완료.
+  if (action.kind === 'deploy') return '파견 완료 — 요원 파일이 잠겼습니다'
   const no = pad2(action.slot + 1)
   return action.kind === 'place' ? `슬롯 ${no} 배치` : `슬롯 ${no} 해제`
 }
