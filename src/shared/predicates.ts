@@ -85,7 +85,7 @@ export function readValue(raw: string): PredicateValue {
  *
  * `contract-datapack` §3.6 gave the headline its arithmetic with one rule — a
  * NUMBER counts, a WORD reads — and that rule is right for a unit that counts a
- * crowd (`터널에서 나오지 못한 사람 => 137`) and wrong for a unit that IS a
+ * crowd (`터널에서 나오지 못한 사람 => 136`) and wrong for a unit that IS a
  * person. 전구간정상 scores 오세라 and 차우진 one person each, and the record
  * has to print WHERE they died (`사망 · 아홉 번째 문 안쪽`), so their values
  * are authored as prose. Under the numbers-only rule the day where the tunnel
