@@ -153,8 +153,10 @@
   padding-right:var(--space-4)}
 
 /* ═══ DESKTOP + THREADS ═══════════════════════════════════════════════════ */
-/* no stacking context here — every .win must share one z-order, including the
-   BLOCK STORE, which lives outside #desktop in the markup */
+/* no stacking context here — every .win must share the one runtime `--z`
+   ladder the window manager writes. The rule outlived its original reason
+   (BLOCK STORE used to sit outside #desktop in the markup; T1 dissolved it):
+   `display:contents` is what keeps this element from creating one. */
 #desktop{display:contents;}
 /* red string is laid ON TOP of the documents — corkboard, not wallpaper */
 #threads{position:fixed;inset:0;z-index:460;pointer-events:none}
