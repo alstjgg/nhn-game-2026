@@ -128,6 +128,27 @@
     },
     {
       "id": "t7",
+      "time": "21:03",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "관제 화면 열두 칸이 전부 초록이다. 저녁 내내 바뀐 칸이 없어 하만식은 훑고 지나간다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t8",
       "time": "21:07",
       "surface": "cctv",
       "place_id": "p2",
@@ -148,7 +169,7 @@
       ]
     },
     {
-      "id": "t8",
+      "id": "t9",
       "time": "21:09",
       "surface": "document",
       "place_id": "p2",
@@ -169,7 +190,7 @@
       ]
     },
     {
-      "id": "t9",
+      "id": "t10",
       "time": "21:12",
       "surface": "document",
       "place_id": "p5",
@@ -190,7 +211,7 @@
       ]
     },
     {
-      "id": "t10",
+      "id": "t11",
       "time": "21:16",
       "surface": "cctv",
       "place_id": "p5",
@@ -211,7 +232,7 @@
       ]
     },
     {
-      "id": "t11",
+      "id": "t12",
       "time": "21:22",
       "surface": "onsite",
       "place_id": "p1",
@@ -232,7 +253,7 @@
       ]
     },
     {
-      "id": "t12",
+      "id": "t13",
       "time": "21:22",
       "surface": "onsite",
       "place_id": "p1",
@@ -253,7 +274,7 @@
       ]
     },
     {
-      "id": "t13",
+      "id": "t14",
       "time": "21:26",
       "surface": "call",
       "place_id": "p4",
@@ -274,7 +295,7 @@
       ]
     },
     {
-      "id": "t14",
+      "id": "t15",
       "time": "21:33",
       "surface": "onsite",
       "place_id": "p2",
@@ -295,7 +316,7 @@
       ]
     },
     {
-      "id": "t15",
+      "id": "t16",
       "time": "21:38",
       "surface": "cctv",
       "place_id": "p3",
@@ -316,7 +337,7 @@
       ]
     },
     {
-      "id": "t16",
+      "id": "t17",
       "time": "21:50",
       "surface": "call",
       "place_id": "p3",
@@ -337,7 +358,7 @@
       ]
     },
     {
-      "id": "t17",
+      "id": "t18",
       "time": "21:50",
       "surface": "call",
       "place_id": "p3",
@@ -358,7 +379,7 @@
       ]
     },
     {
-      "id": "t18",
+      "id": "t19",
       "time": "21:52",
       "surface": "onsite",
       "place_id": "p3",
@@ -379,7 +400,7 @@
       ]
     },
     {
-      "id": "t19",
+      "id": "t20",
       "time": "21:55",
       "surface": "onsite",
       "place_id": "p1",
@@ -400,7 +421,7 @@
       ]
     },
     {
-      "id": "t20",
+      "id": "t21",
       "time": "21:55",
       "surface": "onsite",
       "place_id": "p1",
@@ -421,7 +442,7 @@
       ]
     },
     {
-      "id": "t21",
+      "id": "t22",
       "time": "22:04",
       "surface": "cctv",
       "place_id": "p2",
@@ -437,7 +458,7 @@
       "present": null
     },
     {
-      "id": "t22",
+      "id": "t23",
       "time": "22:11",
       "surface": "onsite",
       "place_id": "p4",
@@ -458,7 +479,7 @@
       ]
     },
     {
-      "id": "t23",
+      "id": "t24",
       "time": "22:19",
       "surface": "onsite",
       "place_id": "p4",
@@ -479,7 +500,7 @@
       ]
     },
     {
-      "id": "t24",
+      "id": "t25",
       "time": "22:26",
       "surface": "onsite",
       "place_id": "p5",
@@ -495,7 +516,7 @@
       "present": null
     },
     {
-      "id": "t25",
+      "id": "t26",
       "time": "22:41",
       "surface": "call",
       "place_id": "p4",
@@ -516,7 +537,7 @@
       ]
     },
     {
-      "id": "t26",
+      "id": "t27",
       "time": "22:58",
       "surface": "cctv",
       "place_id": "p5",
@@ -532,7 +553,7 @@
       "present": null
     },
     {
-      "id": "t27",
+      "id": "t28",
       "time": "23:12+",
       "surface": "document",
       "place_id": "p1",
@@ -553,7 +574,7 @@
       ]
     },
     {
-      "id": "t28",
+      "id": "t29",
       "time": "23:12+",
       "surface": "document",
       "place_id": "p1",

@@ -1,0 +1,75 @@
+{
+  "_what": "G1에 정상화하는 행을 하나 세우고 다시 잰다. 앞선 네 번의 시도가 실패한 뒤 갈라 본 결과, PR #214의 `a`를 만든 것은 라벨도 모델도 아니라 창에 섞여 있던 픽스처 세 줄 — 특히 `(변화 없음)` — 이었다(EXC-G1-residue-haiku: 같은 모델·같은 라벨에서 a 2/10 → 6/10, EXC-G1-t6-opus: 큰 모델은 오히려 b 10/10). 기본 stance의 라벨이 「달리 볼 이유가 없으므로」로 시작하므로, 그 전제를 참으로 만드는 것은 반증의 부재를 말하는 줄이다. 배포에서 그 자리에 오는 것은 Call 2가 그 런에서 쓴 산문이고 아무도 그것을 정하지 않았다. 그래서 그 역할을 저작된 행으로 옮겼다 — 21:03 「관제 화면 열두 칸이 전부 초록이다. 저녁 내내 바뀐 칸이 없어 하만식은 훑고 지나간다」. 이 행은 화면의 주장(A24가 지적한 없는 전제)과 변화의 부재(이번에 측정된 필요조건)를 한 줄로 준다.",
+  "_authoring_provenance": {
+    "owner": "gate-excerpt A안 재측정",
+    "gate_source": "data/scenario/전구간정상/gates.json — gates[] 'G1' (21:04, 해원터널 관제소)",
+    "authoring_choices": [
+      "TIMELINE_EXCERPT는 팩의 G1 excerpt(t6 · t7)를 timeline.json에서 그대로 읽어 만들었다 — 손으로 옮겨 적지 않았으므로 팩과 어긋날 수 없다.",
+      "새 행은 반증이 아니라 반증의 부재를 말한다. 화면이 초록이라고 주장하기만 하는 행은 도움이 되지 않는다(요원은 이미 질문에서 그것을 안다) — 측정이 가리킨 것은 「바뀐 것이 없다」 쪽이다.",
+      "라벨·기질·기본 프롬프트·모델은 앞선 G1 수트들과 바이트 동일하다. 이 런에서 움직인 것은 창 하나뿐이고, EXC-G1-window-t6-only(b 8/10)가 같은 조건의 대조군이다.",
+      "열쇠 팔을 함께 둔다. 기본값을 세우면서 열쇠를 막으면 아무것도 고친 것이 아니기 때문이다."
+    ],
+    "reachability_audit": "planning/research/gate-excerpt-design.md §3 — the W5 rule is the machine form of the 규칙 6 audit this suite's window was authored against"
+  },
+  "experiment": "EXC-G1-normalising-row",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "전구간정상",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "정상화하는 행을 창에 세우면 빈 인수인계가 기본값 `a`를 내고, k1 주입은 여전히 `b`로 옮긴다. 앞의 절반은 EXC-G1-residue-haiku가 픽스처로 보인 효과를 저작된 문장으로 재현하는 것이고, 뒤의 절반은 그 행이 자물쇠를 잠가 버리지 않았는지 확인하는 것이다.",
+    "n_per_arm": 10,
+    "drop_condition": "baseline의 최빈이 `a`가 아니면 이 행으로는 부족하다 — 다음 레버는 스탠스 세트이고 그것은 별도 작업이다. baseline이 `a`인데 live_k1이 `b`로 가지 않으면 더 나쁘다: 기본 라벨에 실린 사실이 열쇠가 통하지 않는 자물쇠를 만든다는 PR #214 규칙 3의 재발이고, 그때는 이 행의 문면에서 '초록'을 빼고 변화의 부재만 남겨 다시 재야 한다.",
+    "contingencies": [
+      "Fabricated because_block_ids in the baseline arm are EXPECTED with no blocks injected — a compliance number, not a discard.",
+      "A baseline split between `a` and `b` with neither at 6 tells us the window is doing something the manual protocol could not see, which is exactly the class of thing this feature exists to make visible. Record it and do not raise N.",
+      "If the discard rate is materially worse than the 우는다리 baselines, suspect the longer stance labels against max_tokens before suspecting the window."
+    ],
+    "not_claimed": "placebo 팔이 없다. 그리고 이것은 한 갈림길·한 모델·N=10이다 — 이 행이 G2·G3에 미치는 영향은 재지 않았다(둘의 창에는 이 행이 없다)."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다.",
+      "대응이 늦어져 피해가 커질 위험을 먼저 줄인다.",
+      "판단을 마친 뒤 근거를 시간순으로 정리한다.",
+      "외부에 공유하기 전 사건 시각을 명확히 남긴다."
+    ],
+    "TIMELINE_EXCERPT": [
+      "하만식이 본사 당직에 전화를 건다. 차단은 승인이 있어야 한다고 말한다",
+      "관제 화면 열두 칸이 전부 초록이다. 저녁 내내 바뀐 칸이 없어 하만식은 훑고 지나간다"
+    ],
+    "GATE_QUESTION": "관제 화면이 내놓은 '전 구간 정상'을 상황 보고의 근거로 삼을 것인가",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "계기 기재 — 달리 볼 이유가 없으므로, 계기가 내놓은 값을 그대로 상황 보고에 올린다"
+      },
+      {
+        "id": "b",
+        "label": "현장 대조 — 계기를 의심할 근거가 있다고 보고, 근무자에게 설비를 직접 열어 맞춰 보게 한다"
+      },
+      {
+        "id": "c",
+        "label": "권한 압박 — 근무자가 무언가를 감추고 있다고 보고, 권한을 걸어 밀어붙인다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live_k1": {
+      "BLOCKS": [
+        {
+          "id": "b1",
+          "text": "5·6번 송풍기 칸에 '시운전 신호 유지'라고 적혀 있다. 회전한 기록은 적히지 않았다"
+        }
+      ]
+    }
+  }
+}

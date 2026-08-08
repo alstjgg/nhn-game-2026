@@ -1,0 +1,381 @@
+{
+  "experiment": "EXC-G1-normalising-row",
+  "arm": "baseline",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "transport": "anthropic",
+  "dry_run": false,
+  "pre_registration": {
+    "hypothesis": "정상화하는 행을 창에 세우면 빈 인수인계가 기본값 `a`를 내고, k1 주입은 여전히 `b`로 옮긴다. 앞의 절반은 EXC-G1-residue-haiku가 픽스처로 보인 효과를 저작된 문장으로 재현하는 것이고, 뒤의 절반은 그 행이 자물쇠를 잠가 버리지 않았는지 확인하는 것이다.",
+    "n_per_arm": 10,
+    "drop_condition": "baseline의 최빈이 `a`가 아니면 이 행으로는 부족하다 — 다음 레버는 스탠스 세트이고 그것은 별도 작업이다. baseline이 `a`인데 live_k1이 `b`로 가지 않으면 더 나쁘다: 기본 라벨에 실린 사실이 열쇠가 통하지 않는 자물쇠를 만든다는 PR #214 규칙 3의 재발이고, 그때는 이 행의 문면에서 '초록'을 빼고 변화의 부재만 남겨 다시 재야 한다.",
+    "contingencies": [
+      "Fabricated because_block_ids in the baseline arm are EXPECTED with no blocks injected — a compliance number, not a discard.",
+      "A baseline split between `a` and `b` with neither at 6 tells us the window is doing something the manual protocol could not see, which is exactly the class of thing this feature exists to make visible. Record it and do not raise N.",
+      "If the discard rate is materially worse than the 우는다리 baselines, suspect the longer stance labels against max_tokens before suspecting the window."
+    ],
+    "not_claimed": "placebo 팔이 없다. 그리고 이것은 한 갈림길·한 모델·N=10이다 — 이 행이 G2·G3에 미치는 영향은 재지 않았다(둘의 창에는 이 행이 없다)."
+  },
+  "n_effective": 10,
+  "n_overridden": false,
+  "calls": [
+    {
+      "arm": "baseline",
+      "slot": 1,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.511,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "계기가 주는 값은 객관적이다. 하만식이 \"저녁 내내 바뀐 칸이 없어\" 훑고 지나갔다는 것은 그가 화면을 감시했다는 뜻이다. 확인되지 않은 의심으로 현장을 동원하거나 권한으로 압박하는 것은, 아직 근거 없는 움직임이다.",
+        "stance": "a",
+        "because_referent": "관제 화면 열두 칸이 전부 초록으로 나타나고 있고, 근무자가 저녁 내내 감시해 바뀐 칸이 없었기 때문이다.",
+        "because_block_ids": [],
+        "rejected_stance": "b",
+        "rejected_reason": "현장 대조를 요청하려면 계기를 의심할 근거가 필요한데, 지금은 그것이 없다. 확인되지 않은 의심으로 인원을 동원하는 것은 내가 줄이겠다고 약속한 위험 중 첫 번째다.",
+        "utterance": "전 구간 정상. 계기 기재."
+      },
+      "problems": [],
+      "stance": "a",
+      "because_referent": "관제 화면 열두 칸이 전부 초록으로 나타나고 있고, 근무자가 저녁 내내 감시해 바뀐 칸이 없었기 때문이다.",
+      "because_block_ids": [],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 15,
+      "inner_note_chars": 121
+    },
+    {
+      "arm": "baseline",
+      "slot": 2,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 5.323,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "화면이 보이고 있는 데이터는 객관적인 계기 값이다. 하만식이 '차단은 승인이 있어야 한다'고 말한 것은 현재 상황이 정상이라는 뜻이 아니라, 절차상 권한 문제를 언급한 것이다. 녹색 화면이 저녁 내내 바뀌지 않았다는 것 자체가 이상 신호일 수 있다.",
+        "stance": "b",
+        "because_referent": "관제 화면이 장시간 변화 없이 유지되고 있으며, 현장 근무자가 절차상 권한 문제를 언급하는 상황",
+        "because_block_ids": [
+          "cctv_no_change",
+          "manshik_procedure_mention"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "계기 값만으로는 정상 운영 중인지, 아니면 계기 자체가 응답 불가 상태인지 판단할 수 없다. 장시간 변화가 없는 화면은 설비 고장, 센서 오류, 또는 신호 단절의 가능성을 배제하지 못한다. 확인되지 않은 주장에 따라 움직일 위험을 먼저 줄여야 한다.",
+        "utterance": "화면의 전 칸이 초록이지만 저녁 내내 한 번도 바뀌지 않았다는 점에서, 실제 설비 상태와 화면 표시가 일치하는지 현장에서 직접 대조하도록 지시한다."
+      },
+      "problems": [
+        "because_block_ids unknown: cctv_no_change,manshik_procedure_mention"
+      ],
+      "stance": "b",
+      "because_referent": "관제 화면이 장시간 변화 없이 유지되고 있으며, 현장 근무자가 절차상 권한 문제를 언급하는 상황",
+      "because_block_ids": [
+        "cctv_no_change",
+        "manshik_procedure_mention"
+      ],
+      "because_invalid_ids": [
+        "cctv_no_change",
+        "manshik_procedure_mention"
+      ],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 82,
+      "inner_note_chars": 139
+    },
+    {
+      "arm": "baseline",
+      "slot": 3,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 5.195,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "화면의 초록색 열두 칸이 저녁 내내 바뀐 적 없다는 것은 수치다. 하만식의 통화 신청 자체는 별개의 신호다. 계기가 거짓말을 하거나 고장난 증거는 없다. 다만 현장과 화면이 어긋날 개연성을 먼저 낮춰야 한다.",
+        "stance": "a",
+        "because_referent": "관제 화면 열두 칸이 저녁 내내 초록으로 유지된 상태 — 계기가 보고하는 값이다.",
+        "because_block_ids": [
+          "screen_green_12_all_evening"
+        ],
+        "rejected_stance": "c",
+        "rejected_reason": "근무자가 무언가를 감추고 있다는 결의는 아직 어떤 불일치도 없는 상태에서 사람을 의심하는 것이다. 이것이 먼저 오면 확인되지 않은 추측이 판단을 움직인다.",
+        "utterance": "계기 값을 근거로 삼는다. 현재까지 계기와 현장이 어긋난다는 신호는 없다."
+      },
+      "problems": [
+        "because_block_ids unknown: screen_green_12_all_evening"
+      ],
+      "stance": "a",
+      "because_referent": "관제 화면 열두 칸이 저녁 내내 초록으로 유지된 상태 — 계기가 보고하는 값이다.",
+      "because_block_ids": [
+        "screen_green_12_all_evening"
+      ],
+      "because_invalid_ids": [
+        "screen_green_12_all_evening"
+      ],
+      "rejected_stance": "c",
+      "rejected_malformed": false,
+      "utterance_chars": 41,
+      "inner_note_chars": 116
+    },
+    {
+      "arm": "baseline",
+      "slot": 4,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.174,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "계기가 저녁 내내 한 번도 변화를 보이지 않는다는 것 자체가 의심의 근거다. 실제 현장은 항상 미세한 변화가 있다. 다만 현재 화면만으로는 고장과 위조를 구분할 수 없다. 직접 확인 없이는 판단이 불가능하다.",
+        "stance": "b",
+        "because_referent": "저녁 내내 열두 칸이 모두 초록으로 변하지 않았다는 점이 자연스럽지 않다.",
+        "because_block_ids": [],
+        "rejected_stance": "a",
+        "rejected_reason": "달리 볼 이유가 없다는 판단이 위험하다. 오랜 근무에서 배운 것은, 계기가 완벽하게 정지한 것처럼 보일 때가 가장 의심스럽다는 점이다.",
+        "utterance": "설비 직접 확인을 지시한다. 계기 영상과 현장 상태가 맞는지 근무자가 직접 열어 맞춰 보게 한다."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "저녁 내내 열두 칸이 모두 초록으로 변하지 않았다는 점이 자연스럽지 않다.",
+      "because_block_ids": [],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 54,
+      "inner_note_chars": 116
+    },
+    {
+      "arm": "baseline",
+      "slot": 5,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.33,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "a",
+        "inner_note": "화면 열두 칸이 전부 초록이고, 저녁 내내 바뀐 칸이 없다. 하만식이 차단 승인 운운한 것은 본사 당직 업무 설명이지, 현장에 뭔가 있다는 신호가 아니다. 계기 기재를 택한다.",
+        "because_referent": "관제 화면이 보이는 전 구간 초록 상태가 현재 가용한 정보의 전부",
+        "because_block_ids": [],
+        "rejected_stance": "b",
+        "rejected_reason": "계기를 의심할 근거 자체가 없다. 의심은 근거 위에만 세운다. 저녁 내내 초록인 화면이 갑자기 이상을 숨긴다고 보기는 어렵다.",
+        "utterance": "본사 당직 하만식으로부터 수신. 전체 구간 정상 상태 확인, 보고 대기 중."
+      },
+      "problems": [],
+      "stance": "a",
+      "because_referent": "관제 화면이 보이는 전 구간 초록 상태가 현재 가용한 정보의 전부",
+      "because_block_ids": [],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 42,
+      "inner_note_chars": 98
+    },
+    {
+      "arm": "baseline",
+      "slot": 6,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 3.429,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "a",
+        "inner_note": "화면 열두 칸이 전부 초록이고 저녁 내내 바뀐 칸이 없다. 하만식이 통보한 것은 차단 절차일 뿐, 계기 고장이나 조작을 가리키는 구체적 증거는 없다. 계기가 없으면 판단 자체가 불가능하다.",
+        "because_referent": "관제 화면의 전 구간 정상 표시",
+        "because_block_ids": [],
+        "rejected_stance": "b",
+        "rejected_reason": "계기를 의심할 만한 구체적 근거가 현재로서는 없다. 현장 대조는 확인되지 않은 의심에 따라 자원을 낭비하고 대응을 지연시킬 수 있다.",
+        "utterance": "전 구간 정상으로 상황 보고를 올린다. 다만 차단 승인 경로는 별도로 확인하겠다."
+      },
+      "problems": [],
+      "stance": "a",
+      "because_referent": "관제 화면의 전 구간 정상 표시",
+      "because_block_ids": [],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 45,
+      "inner_note_chars": 105
+    },
+    {
+      "arm": "baseline",
+      "slot": 7,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 3.936,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "a",
+        "inner_note": "하만식의 전화 — 차단 승인을 요청하는 내용. 화면의 열두 칸이 모두 초록. 저녁 내내 변화 없음. 확인된 계기 값과 어긋나는 현상은 없다.",
+        "because_referent": "관제 화면이 지속적으로 '전 구간 정상'을 표시하고 있고, 이를 의심할 기술적 근거나 현장 보고가 없다.",
+        "because_block_ids": [],
+        "rejected_stance": "c",
+        "rejected_reason": "근무자가 무언가를 감추고 있다는 결정적 근거가 없으므로, 권한 압박은 시기상조다. 확인되지 않은 의혹으로 절차를 강제하는 것은 거짓 신호를 낼 위험이 크다.",
+        "utterance": "계기가 주는 값을 받아 보고한다. 필요하면 정기 점검 시 설비를 대조한다."
+      },
+      "problems": [],
+      "stance": "a",
+      "because_referent": "관제 화면이 지속적으로 '전 구간 정상'을 표시하고 있고, 이를 의심할 기술적 근거나 현장 보고가 없다.",
+      "because_block_ids": [],
+      "because_invalid_ids": [],
+      "rejected_stance": "c",
+      "rejected_malformed": false,
+      "utterance_chars": 41,
+      "inner_note_chars": 78
+    },
+    {
+      "arm": "baseline",
+      "slot": 8,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.586,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "계기가 일관되게 초록을 내놓는 상태다. 다른 근거가 없다. 현장을 내가 볼 수 없고, 하만식의 말도 \"차단 승인\"에 관한 것이지 설비 상태에 관한 것이 아니다. 지금 현장 대조나 권한 압박을 할 이유가 없다.",
+        "stance": "a",
+        "because_referent": "관제 화면의 열두 칸 전부가 초록이고, 저녁 내내 바뀐 칸이 없으며, 달리 볼 근거가 현재 주어진 정보 안에 없다.",
+        "because_block_ids": [],
+        "rejected_stance": "b",
+        "rejected_reason": "현장 대조는 계기를 의심할 근거가 있을 때다. 지금은 없다. 근무자를 의심 없이 믿고 괜한 설비 점검으로 불필요한 확인을 늘릴 이유가 없다.",
+        "utterance": "계기 기재. 화면이 정상을 말하고 있고, 그것을 의심할 다른 신호가 없다. 상황 보고는 계기가 내놓은 값 그대로 올린다."
+      },
+      "problems": [],
+      "stance": "a",
+      "because_referent": "관제 화면의 열두 칸 전부가 초록이고, 저녁 내내 바뀐 칸이 없으며, 달리 볼 근거가 현재 주어진 정보 안에 없다.",
+      "because_block_ids": [],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 67,
+      "inner_note_chars": 116
+    },
+    {
+      "arm": "baseline",
+      "slot": 9,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.041,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "밤 근무를 오래 하며 들었던 전화들이 있다. 화면이 초록색 일색이던 저녁도 있었다. 그럴 때조차 무언가는 흘러가고 있었다. 하지만 지금 내 손에 있는 것은 '계기'다. 하만식의 음성 톤을 의심할 근거는 없다. 시간이 흐르고 있다.",
+        "stance": "a",
+        "because_referent": "관제 화면이 12칸 전부 초록으로 표시하고 있으며, 저녁 내내 변화가 없다",
+        "because_block_ids": [],
+        "rejected_stance": "c",
+        "rejected_reason": "하만식의 보고에서 감추려는 의도를 읽을 근거가 없다. 권한 압박은 확인 없는 의심을 행동으로 만드는 것이다",
+        "utterance": "관제 화면 값을 상황 보고의 근거로 삼는다. 전 구간 정상으로 기록한다"
+      },
+      "problems": [],
+      "stance": "a",
+      "because_referent": "관제 화면이 12칸 전부 초록으로 표시하고 있으며, 저녁 내내 변화가 없다",
+      "because_block_ids": [],
+      "because_invalid_ids": [],
+      "rejected_stance": "c",
+      "rejected_malformed": false,
+      "utterance_chars": 39,
+      "inner_note_chars": 128
+    },
+    {
+      "arm": "baseline",
+      "slot": 10,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.093,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "관제 화면이 저녁 내내 변화가 없다는 것 자체가 이상하다. 시스템 고장일 가능성이 있지만, 현재로선 화면값만 있고 다른 근거가 없다. 하만식의 차단 요청도 정상 절차 범위 내다. 확인되지 않은 의심으로 권한을 걸 단계가 아니다.",
+        "stance": "b",
+        "because_referent": "관제 화면이 저녁 내내 변화가 없었다는 점이 계기 신뢰도 판단의 근거다.",
+        "because_block_ids": [],
+        "rejected_stance": "c",
+        "rejected_reason": "권한 압박은 근거 없는 의심을 권력으로 밀어붙이는 것이다. 하만식이 정상 절차를 따르고 있고, 아직 감춤의 증거가 없다.",
+        "utterance": "설비 현황을 직접 대조하라. 화면 값이 맞는지 확인해서 보고 올려."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "관제 화면이 저녁 내내 변화가 없었다는 점이 계기 신뢰도 판단의 근거다.",
+      "because_block_ids": [],
+      "because_invalid_ids": [],
+      "rejected_stance": "c",
+      "rejected_malformed": false,
+      "utterance_chars": 37,
+      "inner_note_chars": 127
+    }
+  ],
+  "sequence": "a,b,a,b,a,a,a,a,a,b",
+  "distribution": {
+    "a": 7,
+    "b": 3
+  },
+  "coverage": {
+    "status": "sampled",
+    "offered": [
+      "a",
+      "b",
+      "c"
+    ],
+    "selected": [
+      "a",
+      "b"
+    ],
+    "unobserved": [
+      "c"
+    ]
+  },
+  "advisory_logs": {
+    "state_variable_shadow": null,
+    "mineability": null
+  },
+  "latency": {
+    "calls": 10,
+    "mean_s": 4.362,
+    "min_s": 3.429,
+    "max_s": 5.323
+  },
+  "compliance": {
+    "discarded_total": 0,
+    "failed_total": 0,
+    "schema_retries_total": 0,
+    "foreign_tool_uses_total": 0,
+    "because_invalid_id_total": 3
+  }
+}
