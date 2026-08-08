@@ -3,7 +3,7 @@
     {
       "id": "u1",
       "label": "터널에서 나오지 못한 사람",
-      "tallies": "00:12 상황 종료까지 갱구 또는 피난연결통로 밖으로 나오지 못한 인원 (터널 안 총원 341명)",
+      "tallies": "00:12 상황 종료까지 갱구 또는 피난연결통로 밖으로 나오지 못한 차량 탑승자 (터널 안 탑승자 341명 — 점검 용역 인원은 별도 단위)",
       "baseline": "137명",
       "attributed_gates": [
         "G1",
@@ -11,17 +11,17 @@
         "G3"
       ],
       "predicates": [
-        "logs_opened and pallet_named and doors_opened => 0",
+        "vent_panel_opened and pallet_named and doors_opened => 0",
         "pallet_named and doors_opened => 31",
-        "logs_opened and doors_opened => 52",
+        "vent_panel_opened and doors_opened => 52",
         "doors_opened => 63",
-        "logs_opened and pallet_named and driven_out => 41",
+        "vent_panel_opened and pallet_named and driven_out => 41",
         "pallet_named and driven_out => 62",
-        "logs_opened and driven_out => 74",
+        "vent_panel_opened and driven_out => 74",
         "driven_out => 88",
-        "logs_opened and pallet_named => 79",
+        "vent_panel_opened and pallet_named => 79",
         "pallet_named => 96",
-        "logs_opened => 112",
+        "vent_panel_opened => 112",
         "=> 137"
       ]
     },
@@ -62,7 +62,7 @@
         "G1"
       ],
       "predicates": [
-        "logs_opened and pallet_named => 차단 지연 열한 분과 적재 은폐가 함께 남는다",
+        "vent_panel_opened => 시운전 점퍼가 개요서에 남는다",
         "logs_opened => 차단 지연 열한 분이 개요서에 남는다",
         "=> 아무것도 남지 않음"
       ]

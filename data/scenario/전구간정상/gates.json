@@ -79,7 +79,7 @@
             "defensiveness": -20
           },
           "flags": {
-            "logs_opened": true,
+            "vent_panel_opened": true,
             "line_kept": true
           }
         },
@@ -92,6 +92,7 @@
             "defensiveness": 25
           },
           "flags": {
+            "logs_opened": true,
             "manifest_checked": true,
             "line_kept": true
           }
@@ -149,7 +150,7 @@
         },
         {
           "for": "k2",
-          "text": "차우진은 신고 통화에서 짐 이야기를 세 번 피하고, 세 번 다 소화기 이야기로 돌린다",
+          "text": "신고 녹취에서 무엇을 실었는지는 끝내 적히지 않았다. 차우진은 짐 이야기가 나올 때마다 소화기 이야기로 돌린다",
           "mined_from": "통화 · 시계 21:47 신고 녹취 — 2~3런쯤"
         }
       ],

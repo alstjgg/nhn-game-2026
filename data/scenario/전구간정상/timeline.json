@@ -404,7 +404,7 @@
       "time": "22:55",
       "surface": "onsite",
       "place_id": "p1",
-      "text": "책상에 열린 뒤판과 펼친 로그가 있다. 소방 지휘부가 관제소를 회선에 남겨 둔다",
+      "text": "소방 지휘부가 관제소를 회선에 남겨 둔다. 관제소 마이크가 켜진 채로 있다",
       "exposure": {
         "visible_from": null,
         "extra_condition": "line_kept"
@@ -539,7 +539,28 @@
       "text": "상황 종료. 사고 개요서 적재물 칸에 '일반 화물'이 적힌다",
       "exposure": {
         "visible_from": "00:12+",
-        "extra_condition": "line_kept"
+        "extra_condition": "line_kept · not pallet_named"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t28",
+      "time": "00:12+",
+      "surface": "document",
+      "place_id": "p1",
+      "text": "상황 종료. 사고 개요서 적재물 칸에 폐리튬 배터리 팰릿 열두 개가 적힌다",
+      "exposure": {
+        "visible_from": "00:12+",
+        "extra_condition": "line_kept · pallet_named"
       },
       "effects": {
         "deltas": {},
