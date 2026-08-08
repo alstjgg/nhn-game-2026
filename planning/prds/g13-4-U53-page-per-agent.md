@@ -733,8 +733,11 @@ existing `data-block-id` assertions at `:255`. C3 is not touched.
 - [ ] `git diff --name-only HEAD` names exactly the five files in Scope. In
       particular `src/client/components/slot-board.ts` is **not** among them —
       if it is, `tests/windows/block-store.test.ts:557-559` is already red.
-- [ ] `grep -n "data-block-id" src/client/windows/agent-file.ts` returns nothing.
-- [ ] `grep -n "Math.max" src/client/windows/agent-file.ts` returns nothing.
+- [ ] `grep -nE "dataset\.blockId|'data-block-id'|\"data-block-id\"" src/client/windows/agent-file.ts`
+      returns nothing — the file *writes* no such attribute.
+- [ ] `grep -nE "Math\.max\s*\(" src/client/windows/agent-file.ts` returns
+      nothing. This is the exact regex `tests/windows/tally.test.ts:268` scans
+      with, which is the condition that actually matters.
 - [ ] `npx vitest run tests/windows/tally.test.ts` is green **with that file
       unmodified**.
 - [ ] **Behavioural:** in your report, state what `filedModel({callsign:
