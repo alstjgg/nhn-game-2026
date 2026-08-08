@@ -34,6 +34,13 @@
   font-size:var(--fs-10-5);line-height:1.6}
 .sect-rows dt{color:var(--faded);letter-spacing:.06em}
 .sect-rows dd{font-family:var(--myeong);color:var(--pap-3)}
+/* x4 — 식별's 호출부호. The rest of 식별 is standing text that reads the same on
+   every agent's page (배치 · 권한 never change); the callsign is the ONE value
+   that says which agent this page is about, and the file is now a document the
+   operator flips through. It is set in the seal's own red so a page turn lands
+   on the identity first. `components/dossier.ts` decides which row wears the
+   class — the sheet never spells the Korean key. */
+.sect-rows dd.rd-code{color:var(--seal-2);font-weight:800;letter-spacing:.08em}
 
 /* §3 기질 — redacted */
 .sect.sealed .sect-body{position:relative;color:transparent;user-select:none}

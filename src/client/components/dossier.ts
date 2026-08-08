@@ -24,6 +24,24 @@ export function callsignOf(run: number): string {
 export const SEALED_COPY = '열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)'
 
 /**
+ * 식별's first row — the one value on an agent's page that IDENTIFIES them.
+ *
+ * x4 (08-08) — the callsign is printed in seal red and bold, and this constant
+ * is what decides which row gets it. The decision lives HERE, beside the copy,
+ * rather than as a `dd[data-key='호출부호']` selector in the sheet: the row key
+ * is Korean document art this module owns, and a stylesheet that had to spell it
+ * would be reading copy it does not own (inv 8 — the sheet gets a class name).
+ *
+ * Both `agentModel` and `filedModel` open on this same key, so the live agent's
+ * page and every past agent's page mark the callsign alike. That is the point —
+ * the pages are one document and flipping between them compares like with like.
+ */
+const CALLSIGN_KEY = '호출부호'
+
+/** The class the sheet paints the callsign with. */
+const CALLSIGN_CLASS = 'rd-code'
+
+/**
  * The redaction's rhythm, as **percentages** of the strip.
  *
  * The reference sets these widths in `px` (`app.js` 226); C11 / inv 8 forbids a
@@ -199,7 +217,8 @@ function buildSection(section: DossierSection, slotHost: HTMLElement): HTMLEleme
   if ('rows' in section) {
     const rows = el('dl', 'sect-rows')
     for (const [key, value] of section.rows) {
-      rows.append(...spaced(el('dt', undefined, key), el('dd', undefined, value)))
+      const dd = el('dd', key === CALLSIGN_KEY ? CALLSIGN_CLASS : undefined, value)
+      rows.append(...spaced(el('dt', undefined, key), dd))
     }
     node.append(...spaced(head, rows))
     return node
