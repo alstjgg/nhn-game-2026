@@ -256,7 +256,15 @@ test.describe('dossier sections', () => {
     await boot(page)
     const sealed = page.locator(`${FILE} .sect.sealed`)
     await expect(sealed).toHaveCount(1)
-    await expect(sealed.locator('.redact i')).toHaveCount(10)
+    // x5 — the redaction is two lines, not six, and the count is the art's own.
+    // What is asserted is that the strip is REAL (bars are present) and that
+    // none of them carries a pixel width — `dossier.ts` sets `flex-basis` as a
+    // percentage, which is inv 8's requirement and the thing a re-vendoring of
+    // the reference's own `px` rhythm would break.
+    const bars = sealed.locator('.redact i')
+    expect(await bars.count()).toBeGreaterThan(0)
+    const bases = await bars.evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).style.flexBasis))
+    expect(bases.every((b) => b.endsWith('%'))).toBe(true)
     await expect(sealed.locator('.sealed-note')).toHaveText(
       '열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)',
     )
@@ -612,8 +620,17 @@ test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
     await expect(page.locator(`${FILE} .pg-count`)).toHaveText('2 / 3')
     await expect(page.locator(`${FILE} .sect`).nth(0).locator('dd').first()).toHaveText(flying!)
     await expect(page.locator(`${FILE} .sect`).nth(1).locator('.sect-flag')).toHaveText('열람')
-    await expect(page.locator(`${FILE} .filed-cell`)).toHaveCount(2)
-    await expect(page.locator(`${FILE} .filed-cell .bc-text`).first()).toHaveText(SEEDS[0].text)
+    // x5 — one paragraph, not two bordered cells. The claim is unchanged: the
+    // page holds exactly what that sitting flew, in order, and it reads the
+    // sentences themselves rather than an id or a placeholder. Both spans are
+    // checked, so a paragraph that lost a sentence still fails.
+    await expect(page.locator(`${FILE} .filed-cell`)).toHaveCount(0)
+    await expect(page.locator(`${FILE} .filed-para`)).toHaveCount(1)
+    await expect(page.locator(`${FILE} .filed-s`)).toHaveCount(2)
+    await expect(page.locator(`${FILE} .filed-s`).first()).toHaveText(SEEDS[0].text)
+    await expect(page.locator(`${FILE} .filed-s`).last()).toHaveText(SEEDS[1].text)
+    // …and no slot number survived the boxes.
+    await expect(page.locator(`${FILE} .filed-no`)).toHaveCount(0)
 
     // A past page is not a board, carries no gesture, and anchors no thread.
     await expect(page.locator(`${FILE} #slotBoard`)).toHaveCount(0)
@@ -683,9 +700,14 @@ test.describe('[x2] DEPLOY asks before it commits', () => {
 
     const buttons = page.locator(`${PLATE} button`)
     await expect(buttons).toHaveCount(2)
-    await expect(page.locator('#confirmNo')).toHaveText('아니오')
-    await expect(page.locator('#confirmYes')).toHaveText('예')
-    // 아니오 holds the focus: the reflex keystroke on an irreversible act must
+    // x5 — the answers NAME THE ACT. 예 / 아니오 answered a question about the
+    // operator's own work ('인수인계 사항을 잘 작성하셨나요?'), where the honest
+    // answer at the moment you press DEPLOY is always 예; 취소 / 파견 answer what
+    // the plate now states. The plate also names the agent it is about to send.
+    await expect(page.locator('#confirmNo')).toHaveText('취소')
+    await expect(page.locator('#confirmYes')).toHaveText('파견')
+    await expect(page.locator('#cf-body')).toContainText(/ECHO-\d+/)
+    // 취소 holds the focus: the reflex keystroke on an irreversible act must
     // not be the one that confirms it.
     await expect(page.locator('#confirmNo')).toBeFocused()
     // The desk behind it cannot be reached while the question is up.

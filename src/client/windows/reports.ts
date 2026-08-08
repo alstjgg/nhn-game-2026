@@ -228,6 +228,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (event.type === 'meta') {
       archive = [...event.archive]
       carried = [...event.carried]
+      // x5 — a NEW SITTING takes the rail. `sync()` keeps whatever `active`
+      // already names as long as the rail still offers it, which is right for
+      // every other reason the rail reconciles (an archive-only `meta`, a
+      // re-selection) and wrong for the one that matters: the operator presses
+      // 파견, the day restarts, and the desk left them reading the day they had
+      // just finished with while the new one filled in on a tab behind it. The
+      // AGENT FILE already turns to the new agent's page on this same event
+      // (`turn('last')`); this is REPORTS keeping step with it.
+      if (event.run !== run) active = event.run
       run = event.run
       // The callsign is NOT branded here any more. `brand()` re-writes the
       // signature and 무전 기록's subtitle on the document that is mounted, and

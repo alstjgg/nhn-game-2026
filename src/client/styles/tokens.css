@@ -51,9 +51,28 @@
   --shadow-win:0 2px 0 rgba(0,0,0,.5), 0 28px 64px -20px rgba(0,0,0,.9),
                0 0 0 1px rgba(0,0,0,.7);
 
-  /* three faces: mono chrome · Korean mono radio · 명조 document body */
+  /* TWO faces, and the split is what a thing IS, not which window it is in (x5).
+     `--mono` is every FIXED value the desk prints — window names, section
+     titles, clock digits, document numbers, slot numbers, flags, stamps and
+     marks. `--myeong` is everything a person said or wrote — the two REPORTS
+     panes, the live feed's content column, a mined sentence wherever it has been
+     carried to, the handover paragraph.
+
+     `--kmono` (Nanum Gothic Coding first) was a third face used only by the live
+     feed, for the radio lines, the fallback notice and the behind-indicator. It
+     put the one thing in that window an actual person says into a monospace,
+     while the same sentence set in 명조 the moment it was mined into the AGENT
+     FILE — the same words changing face by which window they were in. Deleted
+     rather than left declared: an unused token is a fourth answer waiting to be
+     picked by someone reading the list.
+
+     It is FOLDED, not dropped, and the port's parity guard reads this line:
+       --kmono -> --mono
+     Nanum Gothic Coding is still the Korean face every one of those surfaces
+     renders in — it is the second family in `--mono`'s own stack, and IBM Plex
+     Mono carries no Hangul. Nothing about how those lines LOOK changed; what
+     changed is that the sheet no longer has two names for the same answer. */
   --mono:'IBM Plex Mono','Nanum Gothic Coding',ui-monospace,Menlo,monospace;
-  --kmono:'Nanum Gothic Coding','IBM Plex Mono',ui-monospace,monospace;
   --myeong:'Nanum Myeongjo','AppleMyungjo','Batang',ui-serif,serif;
 }
 
@@ -257,6 +276,49 @@
   --fs-26:39px;       /* ref 26   */
   --fs-34:51px;       /* ref 34   */
   --fs-44:66px;       /* ref 44   */
+}
+
+/* ─── the WINDOW type scale — the same steps at 1.2× (x5, 08-08) ──────────
+   1.5× was applied to the whole desk at once, and on the desk it was right:
+   7px chrome does not read across a table. Inside the three windows it was too
+   much of a good thing — the AGENT FILE's page outgrew its own window (x1 had
+   to make the sheet scroll and pin the page-turn strip so the document did not
+   carry its own exit off the bottom), and the two REPORTS panes lost the
+   several-sentences-at-a-glance reading that mining depends on. 민서 asked for
+   1.2× on the three windows and 1.5× everywhere else.
+
+   TWO SCALES, ONE MAPPING. This block is the second scale; `shell.css` is where
+   the three desk windows point `--fs-*` at it, and that mapping is var()-only
+   so no size literal leaves this file (inv 8). tokens.css may target `:root`
+   and nothing else — `token-lint (e)` holds that — which is precisely why the
+   scoping cannot live here.
+
+   The names line up step for step with `--fs-*` above, so a call site reads the
+   same in either scale and a sheet never has to know which one it is under.
+   ─────────────────────────────────────────────────────────────────────── */
+:root{
+  --fsw-7:8.4px;      /* ref 7    */
+  --fsw-7-5:9px;      /* ref 7.5  */
+  --fsw-8:9.6px;      /* ref 8    */
+  --fsw-8-5:10.2px;   /* ref 8.5  */
+  --fsw-9:10.8px;     /* ref 9    */
+  --fsw-9-5:11.4px;   /* ref 9.5  */
+  --fsw-10:12px;      /* ref 10   */
+  --fsw-10-5:12.6px;  /* ref 10.5 */
+  --fsw-11:13.2px;    /* ref 11   */
+  --fsw-11-5:13.8px;  /* ref 11.5 */
+  --fsw-12:14.4px;    /* ref 12   */
+  --fsw-13:15.6px;    /* ref 13   */
+  --fsw-14:16.8px;    /* ref 14   */
+  --fsw-15:18px;      /* ref 15   */
+  --fsw-16:19.2px;    /* ref 16   */
+  --fsw-17:20.4px;    /* ref 17   */
+  --fsw-19:22.8px;    /* ref 19   */
+  --fsw-20:24px;      /* ref 20   */
+  --fsw-21:25.2px;    /* ref 21   */
+  --fsw-26:31.2px;    /* ref 26   */
+  --fsw-34:40.8px;    /* ref 34   */
+  --fsw-44:52.8px;    /* ref 44   */
 }
 
 /* ─── spacing scale (padding · margin · gap only) ─────────────────────── */

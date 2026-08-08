@@ -22,33 +22,42 @@
   font-size:var(--fs-8-5);letter-spacing:.12em;color:var(--feed-hd);line-height:1.7;text-align:center}
 #feedList{list-style:none}
 
+/* x5 — TWO FACES, and the column decides which.
+   The row's own frame is machine print (`--mono`), which is what the 시각 column
+   reads off; the content column is 명조, once, and every kind below inherits it.
+   `--kmono` used to sit between them — a Korean-first monospace on the radio
+   lines, the fallback notice and the behind-indicator — so the feed printed
+   three faces and the radio, which is the one thing in this window an actual
+   person says, was the least legible of them. See `styles/tokens.css`. */
 .fl{display:grid;grid-template-columns:66px 1fr;gap:0 var(--space-10);
   padding:var(--space-3) var(--space-8) var(--space-3) var(--space-4);
-  font-family:var(--kmono);font-size:var(--fs-11);line-height:1.65;
+  font-family:var(--mono);font-size:var(--fs-11);line-height:1.65;
   position:relative;animation:lineIn .34s cubic-bezier(.25,.9,.3,1) both}
 @keyframes lineIn{from{opacity:0;transform:translateY(4px);clip-path:inset(0 100% 0 0)}
   to{opacity:1;transform:none;clip-path:inset(0 0 0 0)}}
 .fl.band{background:linear-gradient(90deg,var(--band-1),var(--band-2))}
 .fl-t{font-size:var(--fs-9-5);color:var(--feed-t);letter-spacing:.02em;padding-top:var(--space-2);
   font-variant-numeric:tabular-nums;text-align:right}
-.fl-c{color:var(--feed-1);min-width:0;padding-left:var(--space-14)}
+.fl-c{font-family:var(--myeong);color:var(--feed-1);min-width:0;padding-left:var(--space-14)}
 .fl-c::before{content:attr(data-mark);display:inline-block;width:21px;margin-left:var(--space-n21);
   color:var(--feed-mark);font-size:var(--fs-10)}
 
-.fl-event .fl-c{font-family:var(--myeong);font-size:var(--fs-11-5);color:var(--feed-2)}
+/* Each kind below sets its SIZE and its COLOUR; the face comes from `.fl-c` and
+   is not restated. The one exception is the radio's own channel label, which is
+   a fixed caption on a content line. */
+.fl-event .fl-c{font-size:var(--fs-11-5);color:var(--feed-2)}
 .fl-radio{margin:var(--space-2) 0}
-.fl-radio .fl-c{font-weight:700;color:var(--radio);letter-spacing:-.01em;
-  font-family:var(--kmono);font-size:var(--fs-11)}
+.fl-radio .fl-c{font-weight:700;color:var(--radio);letter-spacing:-.01em;font-size:var(--fs-11)}
 .fl-radio .fl-c::before{color:var(--radio)}
-.fl-radio .fl-c b{display:block;font-size:var(--fs-8);letter-spacing:.22em;color:var(--radio-2);
-  font-weight:600;margin-bottom:var(--space-1)}
-.fl-npc .fl-c{font-family:var(--myeong);font-size:var(--fs-12);color:var(--feed-3)}
+.fl-radio .fl-c b{display:block;font-family:var(--mono);font-size:var(--fs-8);letter-spacing:.22em;
+  color:var(--radio-2);font-weight:600;margin-bottom:var(--space-1)}
+.fl-npc .fl-c{font-size:var(--fs-12);color:var(--feed-3)}
 .fl-npc .fl-c b{font-weight:700;color:var(--npc);font-size:var(--fs-10-5);letter-spacing:.04em}
 .fl-npc .fl-c q{quotes:'“' '”';font-style:normal}
-.fl-symptom .fl-c{font-family:var(--myeong);font-style:italic;font-size:var(--fs-11);
+.fl-symptom .fl-c{font-style:italic;font-size:var(--fs-11);
   color:var(--symptom);padding-left:var(--space-26)}
 .fl-symptom .fl-c::before{color:var(--symptom-mark);margin-left:var(--space-n39);width:39px;text-align:center}
-.fl-wait .fl-c{color:var(--feed-wait);font-size:var(--fs-10-5);letter-spacing:.04em;font-family:var(--myeong)}
+.fl-wait .fl-c{color:var(--feed-wait);font-size:var(--fs-10-5);letter-spacing:.04em}
 .fl-wait .dots{display:inline-flex;gap:var(--space-3);margin-left:var(--space-5);vertical-align:1px}
 .fl-wait .dots i{width:5px;height:5px;background:var(--feed-wait);display:block;
   animation:waitDot 1.35s ease-in-out infinite}
@@ -59,10 +68,10 @@
 .fl-wait.resolved{display:none}
 .fl-fallback{background:repeating-linear-gradient(135deg,var(--seal-a09) 0 6px,transparent 6px 12px);
   border-top:1px solid var(--seal-a4);border-bottom:1px solid var(--seal-a4);margin:var(--space-3) 0}
-.fl-fallback .fl-c{color:var(--seal-2);font-family:var(--kmono);font-size:var(--fs-10-5)}
+.fl-fallback .fl-c{color:var(--seal-2);font-size:var(--fs-10-5)}
 .fl-fallback .fl-c::before{color:var(--seal)}
 .fl-mark{grid-template-columns:1fr;padding:var(--space-11) 0 var(--space-12);margin:var(--space-6) 0}
-.fl-mark .fl-c{padding:0;text-align:center;font-family:var(--myeong);font-size:var(--fs-9-5);
+.fl-mark .fl-c{padding:0;text-align:center;font-size:var(--fs-9-5);
   letter-spacing:.34em;color:var(--feed-rule);position:relative}
 .fl-mark .fl-c::before{display:none}
 .fl-mark .fl-c span{background:var(--fanfold);padding:0 var(--space-12);position:relative;z-index:1}
@@ -100,7 +109,7 @@
   pointer-events:none;user-select:none;
   padding:var(--space-4) var(--space-12);border:1px solid var(--sh-35);
   background:var(--chrome-raise-2);
-  font-family:var(--kmono);font-size:var(--fs-9-5);letter-spacing:.06em;
+  font-family:var(--mono);font-size:var(--fs-9-5);letter-spacing:.06em;
   color:var(--txt-2);white-space:nowrap;
   animation:behindIn .18s cubic-bezier(.25,.9,.3,1) both}
 .feed-behind[hidden]{display:none}

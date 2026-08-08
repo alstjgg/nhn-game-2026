@@ -16,12 +16,18 @@ export interface WindowDef {
   key: WindowKey
   /** DOM id, always `w-<key>`. */
   id: string
-  /** Title-bar and taskbar name. */
+  /**
+   * Title-bar and taskbar name — and, since x5, the ONLY name either carries.
+   *
+   * The reference gave every window a short Korean name for the taskbar (`ko`)
+   * and a long Korean subtitle for the title bar (`sub`): `무전` / `실시간 무전
+   * · 열람 전용`, `요원 파일` / `요원 파일 — 프롬프트 편성`, `부검` / `부검 —
+   * 시행 기록`. Both are gone (민서, 08-08). Three windows on one desk do not
+   * need six names for three things, and the subtitles were the desk explaining
+   * itself to a reader who is already looking at the window — the LIVE FEED
+   * announcing it is 열람 전용 above a pane with nothing to press in it.
+   */
   en: string
-  /** The short Korean name the taskbar carries (reference: `WINS[].ko`). */
-  ko: string
-  /** The long Korean subtitle the title bar carries. */
-  sub: string
   /** The file-tab code above the frame. */
   tab: string
   /** The paper stock this window's body is printed on (u1's `paper.css`). */
@@ -40,7 +46,7 @@ export interface WindowDef {
 }
 
 export const WINDOW_REGISTRY: readonly WindowDef[] = [
-  { key: 'feed', id: 'w-feed', en: 'LIVE FEED', ko: '무전', sub: '실시간 무전 · 열람 전용', tab: 'LF', stock: 'fanfold', live: true, mount: mountLiveFeed },
-  { key: 'file', id: 'w-file', en: 'AGENT FILE', ko: '요원 파일', sub: '요원 파일 — 프롬프트 편성', tab: 'AF', stock: 'paper kraft', resizable: false, mount: mountAgentFile },
-  { key: 'rep', id: 'w-rep', en: 'REPORTS', ko: '부검', sub: '부검 — 시행 기록', tab: 'RP', stock: 'paper bond', mount: mountReports },
+  { key: 'feed', id: 'w-feed', en: 'LIVE FEED', tab: 'LF', stock: 'fanfold', live: true, mount: mountLiveFeed },
+  { key: 'file', id: 'w-file', en: 'AGENT FILE', tab: 'AF', stock: 'paper kraft', resizable: false, mount: mountAgentFile },
+  { key: 'rep', id: 'w-rep', en: 'REPORTS', tab: 'RP', stock: 'paper bond', mount: mountReports },
 ]

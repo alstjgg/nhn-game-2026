@@ -117,8 +117,18 @@ export function buildDeployZone(onDeploy: () => void): DeployPart {
   const state = el('span')
   state.id = 'deployState'
 
+  // x5 — the counter and the note are two lines, and the note gets the PAGE's
+  // width rather than the column left over beside the button.
+  //
+  // They used to be one run joined by `·`: `0 / 4 슬롯 사용 · 편성 중`. That
+  // worked while the note was two words. It stopped working when the settled
+  // note became a full instruction — '인수 인계 완료 후 요원을 파견하여 시뮬레이션을
+  // 재시도 하십시오' — which in a third-width window wrapped to three lines and
+  // ran under the page-turn strip, and read as a sentence beginning with a
+  // fraction. The counter is a READING and the note is a DIRECTION; they are
+  // not one sentence and no longer set as one. Both ids are unchanged.
   const meta = el('div', 'dz-meta')
-  meta.append(count, document.createTextNode(' 슬롯 사용 · '), state)
+  meta.append(count, document.createTextNode(' 슬롯 사용'))
 
   const mainEl = el('span', 'bd-main')
   const subEl = el('span', 'bd-sub')
@@ -127,8 +137,11 @@ export function buildDeployZone(onDeploy: () => void): DeployPart {
   deploy.append(mainEl, subEl)
   deploy.addEventListener('click', onDeploy)
 
+  const row = el('div', 'dz-row')
+  row.append(meta, deploy)
+
   const root = el('div', 'deploy-zone')
-  root.append(meta, deploy)
+  root.append(row, state)
 
   return {
     root,

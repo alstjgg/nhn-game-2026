@@ -509,12 +509,20 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
     expect(release(false, false, true), 'a ledger that never counted is still owed its day back').toBe('lapsed')
     expect(release(true, true, true), 'a report in hand at the ceiling is still an arrival').toBe('filed')
 
-    // …and 'lapsed' says something else: the arrival copy is the arrival's, so
-    // a release that saw no report may not borrow it.
+    // …and 'lapsed' says something else. The claim here is NOT about any one
+    // word: it is that the two releases have separate copy and that the
+    // degraded one may not borrow the good one's.
+    //
+    // x5 — the good release stopped being an arrival NOTICE and became an
+    // instruction ('인수 인계 완료 후 요원을 파견하여…'), because REPORTS filling
+    // itself in already reports the arrival and the operator is the one thing on
+    // the desk with nothing telling it what to do next. So the anchor moved off
+    // '도착' — which now appears in the LAPSED line alone, where it is negated —
+    // and onto what always mattered: both lines exist, and they differ.
     const text = sourceOf(AGENT_FILE_TS)
-    const filedLine = /const FILED_TAIL = '([^']*)'/.exec(text)?.[1] ?? ''
+    const filedLine = /const FILED_NOTE = '([^']*)'/.exec(text)?.[1] ?? ''
     const lapsedLine = /const LAPSED_TAIL = '([^']*)'/.exec(text)?.[1] ?? ''
-    expect(filedLine, 'the arrival line is gone').toContain('도착')
+    expect(filedLine, 'the good release has no line of its own').toBeTruthy()
     expect(lapsedLine, 'the degraded release has no line of its own').toBeTruthy()
     expect(lapsedLine, 'the degraded release claims an arrival it never saw').not.toBe(filedLine)
     expect(lapsedLine).not.toMatch(/도착했습니다/)

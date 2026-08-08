@@ -142,7 +142,9 @@ interface DossierSection {
 interface DossierModule {
   coverModel(clockBand: string): DossierSection[]
   agentModel(input: { slotCap: number; callsign: string }): DossierSection[]
-  filedModel(input: { callsign: string; deployed: number }): DossierSection[]
+  // x5 — `deployed` left `FiledInput` with the count that used to be printed
+  // from it. The page's own paragraph is where a past sitting's size is read.
+  filedModel(input: { callsign: string }): DossierSection[]
   buildDossier: unknown
 }
 
@@ -226,7 +228,11 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
     expect(strings.sort()).toEqual(['sealed', SEALED_COPY, '기질'].sort())
 
     expect(Array.isArray(sealed.bars)).toBe(true)
-    expect(sealed.bars).toHaveLength(10)
+    // x5 — TWO LINES of redaction, not six. The count is the art's own and the
+    // test does not pin it; what it pins is that the bars are RATIOS of the
+    // strip (0 < n < 100), which is inv 8's requirement and the thing that would
+    // actually break if someone re-vendored the reference's pixel widths.
+    expect(sealed.bars!.length).toBeGreaterThan(0)
     for (const bar of sealed.bars!) {
       expect(typeof bar).toBe('number')
       expect(bar).toBeGreaterThan(0)
@@ -750,25 +756,29 @@ describe('[u4#c9] u4 sources hold the run-wide hard constraints', () => {
 describe('[U5.3] filedModel is the same document, closed', () => {
   it('(a) it carries 식별 and a FILED 인수인계 사항, and nothing operable', async () => {
     const { filedModel } = await loadDossier()
-    const sections = filedModel({ callsign: 'ECHO-1', deployed: 3 })
+    const sections = filedModel({ callsign: 'ECHO-1' })
 
     expect(sections.map((s) => s.title)).toEqual(['식별', '인수인계 사항'])
     expect(sections.map((s) => s.state)).toEqual(['fixed', 'filed'])
-    // The count is the page's own, so a past page cannot claim a slot cap it
-    // no longer has — `filedModel` takes no cap at all.
-    expect(sections[1]!.note).toContain('3')
+    // x5 — the note no longer counts anything. It used to print '배치 3건', and
+    // the page below it now prints those three sentences as a paragraph, so the
+    // count was the document telling the reader what the reader can see. What
+    // the note owes is that the sitting is CLOSED — a past page must not read
+    // like a file that can still be written to.
+    expect(sections[1]!.note).toBeTruthy()
+    expect(sections[1]!.note).not.toMatch(/\d/)
     expect(JSON.stringify(sections[0]!.rows)).toContain('ECHO-1')
   })
 
   it('(b) it is pure, takes no host, and names no document', async () => {
     const { filedModel } = await loadDossier()
-    const input = Object.freeze({ callsign: 'ECHO-2', deployed: 0 })
-    const before = JSON.stringify({ callsign: input.callsign, deployed: input.deployed })
+    const input = Object.freeze({ callsign: 'ECHO-2' })
+    const before = JSON.stringify({ callsign: input.callsign })
 
     const first = filedModel(input)
-    const second = filedModel({ callsign: 'ECHO-2', deployed: 0 })
+    const second = filedModel({ callsign: 'ECHO-2' })
 
-    expect(JSON.stringify({ callsign: input.callsign, deployed: input.deployed })).toBe(before)
+    expect(JSON.stringify({ callsign: input.callsign })).toBe(before)
     expect(JSON.stringify(second)).toBe(JSON.stringify(first))
     expect(String(filedModel)).not.toMatch(/document/)
   })

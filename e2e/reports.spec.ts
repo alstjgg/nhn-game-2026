@@ -316,8 +316,19 @@ test.describe('typewriter is replay', () => {
 
     // The pump only ticks while the clock runs. RE-AIMED (08-08, W4): there is
     // no ▶ any more — the operator starts the day by committing a file to it.
-    await page.locator('#w-file #btnDeploy').click()
-    await confirmDeploy(page)
+    //
+    // RE-AIMED AGAIN (x5): the clock is started through the LIVE FEED's own rate
+    // hook, exactly as the next case does, rather than by pressing DEPLOY. The
+    // press opens the NEXT sitting, and REPORTS now follows the new sitting onto
+    // its own tab — so the document whose replay this case is about would be
+    // unmounted mid-poll. What is under test here is the PUMP: a partially typed
+    // body finishes, and the caret is cleaned up when it does. That the press
+    // starts the day is `run-loop.spec.ts`'s claim and is asserted there.
+    await page.evaluate(() => {
+      const feed = (window as unknown as { __feed?: { rate(to: number): void } }).__feed
+      if (!feed) throw new Error('window.__feed is not exposed by the LIVE FEED window')
+      feed.rate(4)
+    })
 
     await expect
       .poll(
@@ -395,11 +406,23 @@ test.describe('typewriter is replay', () => {
       .poll(async () => page.locator(BODY).evaluate((n) => (n.textContent ?? '').length), { timeout: 30_000 })
       .toBeGreaterThanOrEqual(whole)
 
+    // x5 — the day this document belongs to, remembered before the press. The
+    // desk now follows the NEW sitting onto its own tab, so the filed document
+    // is one tab back; the defect this case guards has always been about what
+    // happens to that document, not about which tab is in front.
+    const filedTab = (await page.locator(`${OPTION}[aria-selected="true"]`).first().innerText()).trim()
+
     const newRun = page.locator('#w-file #btnDeploy')
     await expect(newRun, 'the day never unlocked NEW RUN').toHaveAttribute('data-op', 'new_run', { timeout: 30_000 })
     await expect(newRun, 'the day never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
     await newRun.click()
     await confirmDeploy(page)
+
+    // The desk moved. Come back to the day that filed it — and it must be whole
+    // ON ARRIVAL and stay whole: a re-typed document reads 0 on the first
+    // sample, a re-typing one dips on a later sample. Both are caught below.
+    await expect(page.locator(`${OPTION}[aria-selected="true"]`).first()).not.toHaveText(filedTab)
+    await page.locator(OPTION, { hasText: filedTab }).first().click()
 
     const samples: number[] = []
     for (let i = 0; i < 8; i += 1) {
@@ -457,10 +480,17 @@ test.describe('archive segmentation and highlight marks', () => {
     const known = [...new Set([...meta!.archive.map((a) => a.run), ...filed])]
     await expect(page.locator(OPTION)).toHaveCount(known.length)
     const labels = await page.locator(OPTION).evaluateAll((nodes) => nodes.map((n) => (n.textContent ?? '').trim()))
+    // x5 — the tab is the CALLSIGN and nothing else, so the per-entry check
+    // inverts: it used to prove the label's time span reached the tab, and now
+    // it proves that no part of the seam's `label` does. That field is the
+    // authority's, and what it holds depends on which authority is driving —
+    // `RUN 03 / 08:50 — 21:04` from the fixture loop, `전구간정상-r3` from the live
+    // adapter. Neither is something this rail promises to render.
     for (const [i, entry] of meta!.archive.entries()) {
       expect(labels[i]).toMatch(new RegExp(`ECHO-${entry.run}\\b`))
       const span = entry.label.replace(/^\s*RUN\s*\d+\s*[/·]\s*/i, '').trim()
-      expect(labels[i]!.replace(/\s+/g, ' ')).toContain(span.replace(/\s+/g, ' '))
+      expect(span.length, 'the fixture label is empty — this check is vacuous').toBeGreaterThan(0)
+      expect(labels[i]!.replace(/\s+/g, ' ')).not.toContain(span.replace(/\s+/g, ' '))
     }
   })
 

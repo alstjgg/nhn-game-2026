@@ -209,6 +209,9 @@ test.describe('full loop back to BUILD', () => {
     await boot(page)
     await drainToFinal(page)
 
+    // x5 — the tab the record belongs to, read before the press moves the desk.
+    const scoredTab = (await page.locator(`${OPTION}[aria-selected="true"]`).first().innerText()).trim()
+
     await expect(page.locator(NEW_RUN)).toBeEnabled()
     await page.locator(NEW_RUN).click()
     await confirmDeploy(page)
@@ -219,8 +222,18 @@ test.describe('full loop back to BUILD', () => {
     // What the loop turning over means is that the desk left `tally`.
     await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
     await expect(page.locator(NEW_RUN)).toHaveAttribute('data-op', 'deploy')
-    // The record persists on the desk between days (design #1) — the control
-    // closing is not the record closing.
+    // The record persists between days (design #1) — the control closing is not
+    // the record closing.
+    //
+    // RE-AIMED (x5): the desk now FOLLOWS the new sitting onto its own REPORTS
+    // tab, and that tab has no record because the day it names has not been
+    // scored yet. So "persists" is checked where the record actually lives — go
+    // back to the day that earned it. That the new day arrives clean is the
+    // claim of `(the terminal record refreshes clean on the next 21:04)` below,
+    // and the two must not contradict each other, which is why this asserts
+    // BOTH sides of the move.
+    await expect(page.locator(RECORD)).toHaveCount(0)
+    await page.locator(OPTION, { hasText: scoredTab }).first().click()
     await expect(page.locator(RECORD)).toHaveCount(1)
   })
 
@@ -295,7 +308,12 @@ test.describe('count-up pacing absorbs the report call', () => {
     await expect(page.locator(`${FILE} .spinner, ${FILE} .loading, ${FILE} progress`)).toHaveCount(0)
 
     await expect(page.locator(LEDGER)).toHaveAttribute('data-tally-state', 'final', { timeout: 20_000 })
-    await expect(page.locator(WAIT)).toContainText('도착했습니다')
+    // x5 — the settled line stopped announcing the report's arrival (REPORTS
+    // filling itself in already does that) and became the instruction for what
+    // the operator does next. The claim is unchanged: the wait resolves into
+    // DIEGETIC copy — words from inside the fiction, never a spinner, a
+    // timeout or an error. `WAIT_PHRASE` below scans it for exactly that.
+    await expect(page.locator(WAIT)).toContainText('파견')
     await expect(page.locator(NEW_RUN)).toBeEnabled()
   })
 

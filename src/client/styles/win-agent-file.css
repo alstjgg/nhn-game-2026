@@ -13,15 +13,21 @@
 .file-head::after{content:'';position:absolute;left:0;right:0;bottom:-4px;height:1px;
   background:var(--graphite);opacity:.5}
 .fh-doc{font-size:var(--fs-8-5);letter-spacing:.13em;color:var(--faded)}
-.fh-title{font-family:var(--myeong);font-weight:800;font-size:var(--fs-19);
-  letter-spacing:-.01em;color:var(--pap-hd);margin-top:var(--space-2)}
+/* x5 — the file's own name is a FIXED value, so it is machine print like the
+   document number above it. 명조 is reserved for what a person wrote, and
+   nobody wrote 현장 요원 운용 파일 — it is what the form is called. */
+.fh-title{font-family:var(--mono);font-weight:700;font-size:var(--fs-17);
+  letter-spacing:.06em;color:var(--pap-hd);margin-top:var(--space-2)}
 .fh-right{text-align:right}
 .fh-k{font-size:var(--fs-8);letter-spacing:.2em;color:var(--faded)}
 .fh-v{font-size:var(--fs-14);font-weight:700;letter-spacing:.13em;color:var(--seal-2)}
 
 .sect{margin-bottom:var(--space-13);position:relative}
 .sect-hd{display:flex;align-items:baseline;gap:var(--space-8);margin-bottom:var(--space-4)}
-.sect-hd h4{font-family:var(--myeong);font-size:var(--fs-13);font-weight:700;color:var(--pap-1)}
+/* …and so are the section titles: 임무 · 행동 원칙 · 기질 · 교신 지침 · 식별 ·
+   인수인계 사항 are the form's headings, printed on it before anyone filled it in. */
+.sect-hd h4{font-family:var(--mono);font-size:var(--fs-12);font-weight:700;
+  letter-spacing:.08em;color:var(--pap-1)}
 .sect-flag{margin-left:auto;font-size:var(--fs-7-5);letter-spacing:.2em;
   padding:var(--space-1) var(--space-6);
   border:1px solid var(--sh-3);color:var(--faded)}
@@ -33,7 +39,9 @@
 .sect-rows{display:grid;grid-template-columns:96px 1fr;gap:var(--space-2) var(--space-10);
   font-size:var(--fs-10-5);line-height:1.6}
 .sect-rows dt{color:var(--faded);letter-spacing:.06em}
-.sect-rows dd{font-family:var(--myeong);color:var(--pap-3)}
+/* 식별's three rows are typed-in form values (배치 · 권한 read the same on every
+   agent's page), not prose — machine print, like the keys beside them. */
+.sect-rows dd{font-family:var(--mono);color:var(--pap-3)}
 /* x4 — 식별's 호출부호. The rest of 식별 is standing text that reads the same on
    every agent's page (배치 · 권한 never change); the callsign is the ONE value
    that says which agent this page is about, and the file is now a document the
@@ -109,18 +117,24 @@
 .slot-blank.locked{opacity:.92}
 .slot-blank.locked .slot-empty{opacity:.5}
 
-.deploy-zone{margin-top:var(--space-18);padding-top:var(--space-12);border-top:2px solid var(--graphite);
-  display:flex;align-items:center;justify-content:space-between;gap:var(--space-12)}
-.dz-meta{font-size:var(--fs-9);letter-spacing:.08em;color:var(--faded);line-height:1.6}
+/* x5 — the zone is a COLUMN: the counter-and-button row, then the note across
+   the full page width. See the note in `deploy-button.ts` on why they split. */
+.deploy-zone{margin-top:var(--space-18);margin-bottom:var(--space-10);
+  padding-top:var(--space-12);border-top:2px solid var(--graphite);
+  display:flex;flex-direction:column;gap:var(--space-8)}
+.dz-row{display:flex;align-items:center;justify-content:space-between;gap:var(--space-12)}
+.dz-meta{min-width:0;font-size:var(--fs-9);letter-spacing:.08em;color:var(--faded);line-height:1.6}
 .dz-meta span{color:var(--graphite);font-weight:600}
-.btn-deploy{display:flex;flex-direction:column;align-items:center;gap:var(--space-1);
+#deployState{font-size:var(--fs-9);letter-spacing:.06em;line-height:1.6;
+  color:var(--graphite);font-weight:600;word-break:keep-all}
+.btn-deploy{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:var(--space-1);
   padding:var(--space-9) var(--space-20);background:var(--graphite);color:var(--kraft);
   border:1px solid var(--edge);box-shadow:2px 2px 0 var(--sh-35);transition:.14s}
 .btn-deploy:hover:not(:disabled){background:var(--seal-2);box-shadow:2px 2px 0 var(--sh-5);transform:translate(-1px,-1px)}
 .btn-deploy:active:not(:disabled){transform:translate(1px,1px);box-shadow:none}
 .btn-deploy:disabled{opacity:.3;cursor:not-allowed;box-shadow:none}
 .bd-main{font-size:var(--fs-13);font-weight:700;letter-spacing:.28em;text-indent:.28em}
-.bd-sub{font-family:var(--myeong);font-size:var(--fs-9);opacity:.72;letter-spacing:.02em}
+.bd-sub{font-family:var(--mono);font-size:var(--fs-9);opacity:.72;letter-spacing:.06em}
 
 /* deploy stamp */
 .stamp{position:absolute;right:39px;top:132px;z-index:4;pointer-events:none;
@@ -128,7 +142,7 @@
   padding:var(--space-9) var(--space-15);border:3px double var(--seal);color:var(--seal);
   transform:rotate(-11deg);opacity:.82;mix-blend-mode:multiply}
 .stamp.on{display:flex;animation:stampSlam .55s cubic-bezier(.2,1.4,.3,1) both}
-.stamp span{font-family:var(--myeong);font-weight:800;font-size:var(--fs-17);letter-spacing:.12em}
+.stamp span{font-family:var(--mono);font-weight:800;font-size:var(--fs-16);letter-spacing:.12em}
 .stamp em{font-style:normal;font-size:var(--fs-8);letter-spacing:.16em;opacity:.85}
 @keyframes stampSlam{
   0%{transform:rotate(-24deg) scale(3.4);opacity:0;filter:blur(5px)}
@@ -157,12 +171,17 @@
 .pg-turn:disabled{opacity:.35;cursor:default}
 .pg-count{font-size:var(--fs-8-5);letter-spacing:.16em;color:var(--faded)}
 
-/* U5.3 — a finished sitting's page. The cards are the ones that went out: no
-   `해제`, nothing to press, and no `data-block-id`, so no red thread reaches
-   back into a page whose run is over. */
-.filed-file{display:flex;flex-direction:column;gap:var(--space-8)}
-.filed-cell{display:flex;align-items:flex-start;gap:var(--space-8);
-  border:1px solid var(--sh-28);border-left:2px solid var(--sh-35);
-  padding:var(--space-8) var(--space-10)}
-.filed-no{font-family:var(--mono);font-size:var(--fs-8);letter-spacing:.1em;color:var(--faded)}
+/* U5.3 — a finished sitting's page: nothing to press, and no `data-block-id`,
+   so no red thread reaches back into a page whose run is over.
+
+   x5 — and no boxes and no numbers either. It was a stack of bordered cells with
+   a slot index down the left, which is the four-box reading of the handover kept
+   alive on the one page a shift is read back from; x4 had already taken it off
+   the live page for the same reason. It prints as a paragraph, in the same
+   `.slots` type at the same measure, gone to pencil: this is a record of what
+   was said, not a place anything can be put. */
+.filed-file{padding-top:var(--space-2)}
+.filed-para{font-family:var(--myeong);font-size:var(--fs-11-5);line-height:2.05;
+  color:var(--pap-3);text-align:left;word-break:keep-all}
+.filed-s{display:inline}
 .filed-empty{font-size:var(--fs-8-5);color:var(--faded)}

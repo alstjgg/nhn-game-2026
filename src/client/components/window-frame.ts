@@ -26,7 +26,11 @@ export function buildWindowFrame(def: WindowDef): WindowFrame {
   const root = el('section', `win win-${def.key}`)
   root.id = def.id
   root.dataset.win = def.key
-  root.setAttribute('aria-label', `${def.en} · ${def.sub}`)
+  // x5 — the subtitle left the registry, so the region's accessible name is the
+  // window's name. It was `LIVE FEED · 실시간 무전 · 열람 전용`; a landmark whose
+  // name is three clauses long is one an assistive-tech user has to sit through
+  // on every window cycle.
+  root.setAttribute('aria-label', def.en)
 
   const tab = el('div', 'win-tab', def.tab)
 
@@ -48,8 +52,7 @@ export function buildWindowFrame(def: WindowDef): WindowFrame {
   const dot = el('span', def.live === true ? 'win-dot live' : 'win-dot')
   dot.setAttribute('aria-hidden', 'true')
 
-  const title = el('h2')
-  title.append(document.createTextNode(def.en), el('i', undefined, def.sub))
+  const title = el('h2', undefined, def.en)
 
   const collapse = button('wc wc-min', `${def.en} 접기`, '—')
   const close = button('wc wc-close', `${def.en} 닫기`, '×')

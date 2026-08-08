@@ -141,7 +141,10 @@ export interface ReportView {
   flash(id: string): void
   /** The round currently on the page, or `null` before the first report. */
   round(): number | null
-  /** Re-brands the callsign surfaces — `나`'s sub and the signature (M1). */
+  /**
+   * Re-brands the callsign surface — the signature under 무전 기록, and since x5
+   * the only one this window has (the pane's subtitle went with `documentHead`).
+   */
   brand(callsign: string): void
 }
 
@@ -159,15 +162,41 @@ interface Anchor {
   node: HTMLElement
 }
 
-/** `가` / `나` — the two documents' file letters, as the reference prints them. */
-const FACTS_HEAD = { no: '가', title: '현장 기록', sub: '일어난 것 · 관측된 것' }
-/** The callsign half of `나`'s sub and the signature re-brands per sitting (M1). */
-const BODY_SUB_TAIL = ' 송신 · 1인칭'
-const BODY_HEAD = { no: '나', title: '무전 기록', sub: `ECHO-1${BODY_SUB_TAIL}` }
+/**
+ * The two documents' names — and, since x5, the whole of their heads.
+ *
+ * What left with them: the `가` / `나` file letters the reference boxed in front
+ * of each title (`app.js`), and the italic subtitles behind them (`일어난 것 ·
+ * 관측된 것`, `ECHO-1 송신 · 1인칭`). The letters index a filing system this game
+ * has exactly two entries in — 현장 기록 and 무전 기록 are already told apart by
+ * being the left column and the right one — and the subtitles restated the
+ * titles in longer words.
+ *
+ * The callsign therefore has ONE surface left in this window: the signature
+ * under the 무전 기록 body, which `brand()` writes (M1).
+ */
+const FACTS_TITLE = '현장 기록'
+const BODY_TITLE = '무전 기록'
 
-function documentHead(head: { no: string; title: string; sub: string }): HTMLElement {
+/** The chop's two lines: the seal itself, then what it certifies (x5). */
+const STAMP_SEAL = '검 인'
+const STAMP_RECEIVED = '수신 완료'
+
+/**
+ * The window's own standing instruction, at the foot of both panes.
+ *
+ * x5 — was '문장을 누르면 뜯어내 요원 파일의 빈 칸에 앉힙니다', which described the
+ * GESTURE. The gesture is discoverable (every sentence lights under the cursor
+ * and the AGENT FILE's blank says where they land); what the operator has no
+ * way to work out from the desk is that choosing well is the job. So the line
+ * says the job.
+ */
+const FOOT_LEAD = '기록 중 주요 사항을 선정하여 다음 요원에게 인수인계 하십시오 · '
+const FOOT_TAIL = '건 채굴됨'
+
+function documentHead(title: string): HTMLElement {
   const header = el('header', 'doc-hd')
-  header.append(el('span', 'doc-no', head.no), el('h3', undefined, head.title), el('i', undefined, head.sub))
+  header.append(el('h3', undefined, title))
   return header
 }
 
@@ -178,17 +207,33 @@ export function createReportView(options: ReportViewOptions): ReportView {
   body.id = 'bodyList'
 
   const docFacts = el('article', 'doc doc-facts')
-  docFacts.append(documentHead(FACTS_HEAD), facts)
+  docFacts.append(documentHead(FACTS_TITLE), facts)
 
   const sig = el('div', 'sig')
   sig.setAttribute('aria-hidden', 'true')
   const sigLine = el('span', 'sig-line', 'ECHO-1')
-  sig.append(sigLine, el('span', 'sig-stamp', '검 인'))
+  // x5 — the 검인 chop is two lines and it lands on ARRIVAL, not on paint.
+  //
+  // It used to be printed the moment the window was built, which put a
+  // 수신-완료 mark on a blank sheet and left it there while the transmission it
+  // certifies typed itself out underneath. A chop is a receipt: it goes on when
+  // the thing has been received. `stamped()` below is the only writer.
+  const stamp = el('span', 'sig-stamp')
+  stamp.append(el('b', undefined, STAMP_SEAL), el('em', undefined, STAMP_RECEIVED))
+  sig.append(sigLine, stamp)
 
   const docBody = el('article', 'doc doc-body')
-  const bodyHead = documentHead(BODY_HEAD)
-  const bodySub = bodyHead.querySelector('i')
-  docBody.append(bodyHead, body, sig)
+  docBody.append(documentHead(BODY_TITLE), body, sig)
+
+  /**
+   * The chop is down, or it is not. Driven from exactly one place — the end of
+   * `replay()` — so a frozen-animation paint, a rail re-selection and a live
+   * typewriter all reach it by the same road.
+   */
+  function stamped(on: boolean): void {
+    stamp.classList.toggle('on', on)
+  }
+  stamped(false)
 
   const grid = el('div', 'rep-grid')
   grid.append(docFacts, docBody)
@@ -197,9 +242,9 @@ export function createReportView(options: ReportViewOptions): ReportView {
   count.id = 'minedCount'
   const foot = el('footer', 'rep-foot')
   foot.append(
-    document.createTextNode('문장을 누르면 뜯어내 요원 파일의 빈 칸에 앉힙니다 · '),
+    document.createTextNode(FOOT_LEAD),
     count,
-    document.createTextNode('건 채굴됨'),
+    document.createTextNode(FOOT_TAIL),
   )
 
   options.host.append(options.rail, grid, foot)
@@ -277,11 +322,16 @@ export function createReportView(options: ReportViewOptions): ReportView {
 
   function replay(sentences: Sentence[], nodes: HTMLElement[], animate: boolean): void {
     const lengths = sentences.map((s) => s.text.length)
+    // An empty document is not an unstamped one that will get there — it is a
+    // sitting that has filed nothing, and there is no transmission to certify.
+    const arrived = lengths.length > 0
     if (!animate || motionless()) {
       paint({ sentence: lengths.length, chars: 0, done: true }, sentences, nodes)
+      stamped(arrived)
       return
     }
     paint(TYPE_START, sentences, nodes)
+    stamped(false)
     let elapsed = 0
     const unregister = registerAnimation(PUMP, (realMs: number) => {
       elapsed += realMs
@@ -289,6 +339,7 @@ export function createReportView(options: ReportViewOptions): ReportView {
       paint(cursor, sentences, nodes)
       if (!cursor.done) return
       unregister()
+      stamped(arrived)
       if (stopReplay === unregister) stopReplay = null
     })
     stopReplay = unregister
@@ -396,7 +447,6 @@ export function createReportView(options: ReportViewOptions): ReportView {
 
     brand(callsign: string): void {
       sigLine.textContent = callsign
-      if (bodySub !== null) bodySub.textContent = `${callsign}${BODY_SUB_TAIL}`
     },
   }
 }

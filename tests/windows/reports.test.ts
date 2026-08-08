@@ -465,18 +465,30 @@ describe('[u6#c4] archive segmentation is pure and gate-free', () => {
     expect(segments[1]!.runLabel).toBe('ECHO-12')
   })
 
-  it('(c) a label that already carries its own `RUN nn /` prefix is normalised, not doubled', async () => {
+  /**
+   * x5 — the tab prints the CALLSIGN and nothing else, so the doubled-prefix
+   * defect this case was written for cannot be reached at all: there is no
+   * second line for a label to be normalised onto.
+   *
+   * It holds the stronger claim that replaced it. The seam's `label` is whatever
+   * the authority put there — `RUN 01 / 08:50 — 21:04` from the fixture loop,
+   * `전구간정상-r1` from the live adapter (`driver/live/index.ts`), and neither is
+   * something this window promises to print well. A segment must carry no trace
+   * of it, so nothing about the tab can drift when the label's format does.
+   */
+  it('(c) no part of the seam label reaches a segment — the tab is the callsign alone', async () => {
     const a = await archive()
     const segments = a.archiveSegments(
       [
         { run: 1, label: 'RUN 01 / 08:50 — 21:04' },
-        { run: 2, label: '09:10 — 21:04' },
+        { run: 2, label: '전구간정상-r2' },
       ],
       1,
     )
-    expect(segments[0]!.span).toBe('08:50 — 21:04')
-    expect(segments[1]!.span).toBe('09:10 — 21:04')
-    for (const s of segments) expect(`${s.runLabel} ${s.span}`).not.toMatch(/RUN\s*\d+[\s/·]*RUN/)
+    const printed = segments.map((s) => JSON.stringify(s))
+    expect(printed[0]).not.toMatch(/08:50|21:04|RUN\s*01/)
+    expect(printed[1]).not.toMatch(/전구간정상|-r2/)
+    expect(segments.map((s) => s.runLabel)).toEqual(['ECHO-1', 'ECHO-2'])
   })
 
   it('(d) exactly one segment is selected — the active run', async () => {
