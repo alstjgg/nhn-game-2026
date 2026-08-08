@@ -17,11 +17,12 @@
 //     `frame()` delegating straight to the driver so "driver-fed" is testable.
 //
 // C3 (placeholder fixtures): nothing here asserts synthetic fixture CONTENT.
-// The two literals that do appear — `전구간정상` and `23:12` — are repo data
+// The two literals that do appear — `전 구간 정상` and `23:12` — are repo data
 // (`data/scenario/전구간정상/meta.json`), not fixture text, and the terminal
 // stamp is named by the acceptance criterion itself. Both track the SHIPPED
-// pack (`src/client/shell/pack.ts`'s `PACK_SLUG`): switching the slug moves
-// them, which is what these two assertions are for.
+// pack (`src/client/shell/pack.ts`): the case name asserts against
+// `PACK_DISPLAY_NAME`, which is `PACK_SLUG` spelled for a reader — the chrome
+// prints the display name, and the slug stays on the paths and doc numbers.
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
@@ -389,7 +390,7 @@ test.describe('topbar', () => {
       await expect(bar.locator(id)).not.toBeEmpty()
     }
     // The case comes from the shipped scenario pack, not from a fixture.
-    await expect(bar.locator('#caseName')).toContainText('전구간정상')
+    await expect(bar.locator('#caseName')).toContainText('전 구간 정상')
   })
 
   test('topbar — the clock reads HH:MM and runs toward the 23:12 terminal', async ({ page }) => {

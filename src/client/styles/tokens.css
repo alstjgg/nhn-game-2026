@@ -214,49 +214,64 @@
 }
 
 /* ─── type scale ──────────────────────────────────────────────────────────
-   1.5× (x1, 08-08). The desk was ported at the design reference's own sizes,
-   and the reference was drawn for a screenshot: 7px chrome and 9px feed lines
-   read on a 13" mock and do not read on a judge's monitor across a table.
-   민서 asked for 1.5× on the type and the type ALONE, so this block is the
-   whole change — `--space-*` below is untouched and the desk keeps its
-   proportions.
+   1.2× — THE DESK'S scale (x2, 08-08). The door runs at 1.0×; see below.
+
+   x1 (08-08) took this block ×1.5 on the theory that the reference was drawn
+   for a screenshot and would not read on a judge's monitor across a table.
+   On the built desk it read as too large in every window. x2 walked it down
+   with 민서 watching — 1.2, then 1.0, then back to 1.2, which is the figure
+   that reads at arm's length without the windows fighting their own type.
+
+   THE DOOR IS NOT ON THIS SCALE. `signin.css` overrides every `--fs-*` it
+   uses back to reference px inside `#signin`, and shrinks the plate's own
+   hardware to match, because the sign-in screen is one plate on an empty
+   field — it has no window to outgrow, and at 1.2× it read as a mock-up
+   blown up rather than as a terminal. Two scales is the intent, not drift:
+   the door at the reference, the desk one step above it.
+
+   What did NOT scale back with x2: the hardware sizes in `shell.css` (bar
+   heights, the emblem, the clock column, the pips, the window chrome) and
+   `shell/layout.ts`'s `TOP`. Those went ×1.5 alongside x1's type and stay
+   there — 민서 asked for the desk's FRAMES to be kept and only the type
+   inside them to shrink. `--space-*` below was never touched by any of this.
 
    THE NAME IS THE STEP, NOT THE PIXEL. `--fs-9` is "step 9 of the reference
    scale", which is what all 115 call sites mean by it; the value is what that
    step ships at today. Renaming the tokens to their new pixels would churn
    every sheet and buy nothing — and half the steps would land on names like
    `--fs-11-25`. Reference px are kept in the comments so a port from
-   `docs/design/phase2-ui/desktop.css` can still be traced by eye.
+   `docs/design/phase2-ui/desktop.css` can still be traced by eye, and so the
+   door's override has something to be checked against.
 
-   Fractional values are deliberate: every step is EXACTLY ×1.5, so the scale's
+   Fractional values are deliberate: every step is EXACTLY ×1.2, so the scale's
    internal ratios survive intact. Browsers lay out fractional type fine.
 
    `tests/styles/token-lint.test.ts (c)` needs ≥5 of these to stay plain length
    values — do not convert this block to `calc(7px * var(--fs-scale))`.
    ─────────────────────────────────────────────────────────────────────── */
 :root{
-  --fs-7:10.5px;      /* ref 7    */
-  --fs-7-5:11.25px;   /* ref 7.5  */
-  --fs-8:12px;        /* ref 8    */
-  --fs-8-5:12.75px;   /* ref 8.5  */
-  --fs-9:13.5px;      /* ref 9    */
-  --fs-9-5:14.25px;   /* ref 9.5  */
-  --fs-10:15px;       /* ref 10   */
-  --fs-10-5:15.75px;  /* ref 10.5 */
-  --fs-11:16.5px;     /* ref 11   */
-  --fs-11-5:17.25px;  /* ref 11.5 */
-  --fs-12:18px;       /* ref 12   */
-  --fs-13:19.5px;     /* ref 13   */
-  --fs-14:21px;       /* ref 14   */
-  --fs-15:22.5px;     /* ref 15   */
-  --fs-16:24px;       /* ref 16   */
-  --fs-17:25.5px;     /* ref 17   */
-  --fs-19:28.5px;     /* ref 19   */
-  --fs-20:30px;       /* ref 20   */
-  --fs-21:31.5px;     /* ref 21   */
-  --fs-26:39px;       /* ref 26   */
-  --fs-34:51px;       /* ref 34   */
-  --fs-44:66px;       /* ref 44   */
+  --fs-7:8.4px;       /* ref 7    */
+  --fs-7-5:9px;       /* ref 7.5  */
+  --fs-8:9.6px;       /* ref 8    */
+  --fs-8-5:10.2px;    /* ref 8.5  */
+  --fs-9:10.8px;      /* ref 9    */
+  --fs-9-5:11.4px;    /* ref 9.5  */
+  --fs-10:12px;       /* ref 10   */
+  --fs-10-5:12.6px;   /* ref 10.5 */
+  --fs-11:13.2px;     /* ref 11   */
+  --fs-11-5:13.8px;   /* ref 11.5 */
+  --fs-12:14.4px;     /* ref 12   */
+  --fs-13:15.6px;     /* ref 13   */
+  --fs-14:16.8px;     /* ref 14   */
+  --fs-15:18px;       /* ref 15   */
+  --fs-16:19.2px;     /* ref 16   */
+  --fs-17:20.4px;     /* ref 17   */
+  --fs-19:22.8px;     /* ref 19   */
+  --fs-20:24px;       /* ref 20   */
+  --fs-21:25.2px;     /* ref 21   */
+  --fs-26:31.2px;     /* ref 26   */
+  --fs-34:40.8px;     /* ref 34   */
+  --fs-44:52.8px;     /* ref 44   */
 }
 
 /* ─── spacing scale (padding · margin · gap only) ─────────────────────── */
