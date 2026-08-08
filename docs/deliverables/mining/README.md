@@ -13,12 +13,38 @@ work — and committing it keeps the process auditable: every later sweep record
 what it covered, and every claim in the final document traces back to a source
 listed here.
 
+## Where the atoms are
+
+This directory carries the **method, the manifests, and the outputs**. It does
+not carry the ore. The ten `atoms-S*.md` files — 905 atoms, the raw extraction
+Phase 1 produced — are frozen at the tag **`mining/ores-20260809`** and were
+removed from the tree there: they are input to the induction, not a deliverable,
+and at ~8,950 lines they buried the documents a reader actually wants.
+
+Nothing about them is lost. Every theme in `theme-map-passA.md`,
+`theme-map-passB.md`, and `theme-map-final.md` cites atom ids, and any id
+resolves against the tag:
+
+```bash
+git show mining/ores-20260809:docs/deliverables/mining/atoms-S6.md | grep -A12 'S6-024'
+```
+
+Each atom in turn cites its own source — a SHA, a PR number, a document section —
+so a claim in the final document can be traced to primary evidence in this repo
+without the ore in the tree at all. The ore shortens that walk; it is not the
+bottom of it. `atom-format.md` documents the record shape, and the S1–S10 slice
+table below says what each file covers.
+
+An incremental sweep that produces new atoms writes them into a working copy
+restored from the tag, and re-freezes under a new dated tag rather than
+reintroducing the files here.
+
 ## Method (six phases)
 
 | phase | what | output |
 |---|---|---|
 | 0 | **Corpus map** — enumerate every mining target | `corpus-files.md`, `corpus-commits.md`, `corpus-prs.md` (this snapshot) |
-| 1 | **Atom mining** — parallel agents sweep each slice, extracting story atoms `{source, date, event, tension/decision, quote, lane}`; no selection, boring atoms kept | `atoms-S*.md` per slice |
+| 1 | **Atom mining** — parallel agents sweep each slice, extracting story atoms `{source, date, event, tension/decision, quote, lane}`; no selection, boring atoms kept | `atoms-S*.md` per slice — frozen at `mining/ores-20260809`, see above |
 | 2 | **Theme induction** — cluster atoms bottom-up; pre-existing theme hypotheses compete on equal footing and are reported "unevidenced" if nothing attaches; each theme carries supporting atoms, counter-evidence, and gaps | theme map |
 | 3 | **Theme review** — human selects/merges/kills; first moment selection happens | reviewed theme set |
 | 4 | **Story bank** — per theme, a narrative with every claim linked to evidence (SHA / PR # / doc §) | story bank |
