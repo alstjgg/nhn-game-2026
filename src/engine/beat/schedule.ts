@@ -34,6 +34,13 @@ export type OutcomeBucket = AuthoredGate['buckets'][number]
 /** A beat either carries a gate (Call 1 runs) or it does not (§3.1). */
 export type BeatKind = 'script' | 'gate'
 
+/**
+ * One authored timeline row a gate named in `excerpt`, projected down to the
+ * two things the driver does anything with: the sentence, and the condition
+ * that decides whether this run sees it.
+ */
+export type ExcerptLine = { text: string; condition: string | null }
+
 /** A gate, with its predicates already compiled. */
 export type ScheduledGate = {
   id: string
@@ -59,6 +66,30 @@ export type ScheduledGate = {
    * rounds the reports are owed against.
    */
   availability: string
+  /**
+   * The declared timeline window — the rows the agent reads AT this gate,
+   * authored as ids on the gate card and resolved here to their text
+   * (`planning/research/gate-excerpt-design.md`). `null` is not "empty": it
+   * means the card declared nothing, and it is the entire fallback signal the
+   * driver reads before windowing the narrated lines as it always has.
+   *
+   * Resolved at build time because the ids point INTO `timeline.json`, and
+   * `buildSchedule` is the last place that holds both files at once. What is
+   * carried across is deliberately minimal — `ScheduledGate` is a lossy
+   * projection of the gate card, holding only what the driver reads, and the
+   * alternative (handing the driver the pack and letting it scan the timeline
+   * per view) would end that discipline for one prompt slot.
+   *
+   * The row's `exposure.extra_condition` rides along uncompiled for the same
+   * reason `availability` above does: it reads run state, and this schedule is
+   * built once, before the first beat. `driver.ts`'s `gateView` resolves it.
+   *
+   * An id that names no row is dropped rather than raised. The throws in this
+   * module are for a pack that cannot be ROUTED — a run that would die
+   * mid-beat; losing one window line is not that, and `datapack:lint` catches
+   * it while it is still authoring work.
+   */
+  excerpt: ExcerptLine[] | null
 }
 
 export type Beat = {
@@ -93,9 +124,11 @@ export function buildSchedule(timeline: Timeline, gates: Gates): Beat[] {
   }
 
   for (const event of timeline.events) slotAt(event.time).events.push(event)
+
+  const rows = new Map(timeline.events.map((event) => [event.id, event]))
   for (const authored of gates.gates) {
     if (authored.clock === null || authored.clock === undefined) continue
-    slotAt(authored.clock).gate = compileGate(authored)
+    slotAt(authored.clock).gate = compileGate(authored, rows)
   }
 
   const ordered = [...slots.entries()]
@@ -116,7 +149,7 @@ export function buildSchedule(timeline: Timeline, gates: Gates): Beat[] {
   return assignRounds(beats)
 }
 
-function compileGate(authored: AuthoredGate): ScheduledGate {
+function compileGate(authored: AuthoredGate, rows: ReadonlyMap<string, TimelineEvent>): ScheduledGate {
   return {
     id: authored.gate,
     question: authored.question,
@@ -126,7 +159,29 @@ function compileGate(authored: AuthoredGate): ScheduledGate {
     buckets: authored.buckets,
     edges: compileEdges(authored.edge_predicates),
     availability: authored.availability ?? '',
+    excerpt: resolveExcerpt(authored.excerpt, rows),
   }
+}
+
+/**
+ * Gate-card ids → the rows they name, in the order the card lists them.
+ *
+ * Authored order is the answer, never the timeline's: the card says what the
+ * agent reads first, and a card that names a later row ahead of an earlier one
+ * is making a claim about emphasis that sorting would quietly overrule.
+ */
+function resolveExcerpt(
+  ids: readonly string[] | null | undefined,
+  rows: ReadonlyMap<string, TimelineEvent>,
+): ExcerptLine[] | null {
+  if (ids === null || ids === undefined) return null
+  const lines: ExcerptLine[] = []
+  for (const id of ids) {
+    const row = rows.get(id)
+    if (row === undefined) continue
+    lines.push({ text: row.text, condition: row.exposure?.extra_condition ?? null })
+  }
+  return lines
 }
 
 /** A gate opens a round; the beat before the next gate closes it. */

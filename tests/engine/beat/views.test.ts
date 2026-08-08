@@ -7,7 +7,7 @@ import { TIMELINE_CAP_LINES } from '../../../src/engine/beat/caps.ts'
 import * as beatIndex from '../../../src/engine/beat/index.ts'
 import type { BeatDriver } from '../../../src/engine/beat/driver.ts'
 import type { BeatPack } from '../../../src/engine/beat/ports.ts'
-import { driveAll, rig } from './harness.ts'
+import { assertSnapshotContract, driveAll, rig } from './harness.ts'
 import {
   CHARACTERS,
   REPO,
@@ -28,37 +28,6 @@ function filesUnder(dir: string): string[] {
     const p = path.join(dir, d.name)
     return d.isDirectory() ? filesUnder(p) : [p]
   })
-}
-
-/** Every object/array node reachable from both values must be a distinct instance. */
-function expectDistinctDeep(a: unknown, b: unknown, at = '$'): void {
-  if (a === null || typeof a !== 'object') return
-  expect(a, `shared reference at ${at}`).not.toBe(b)
-  if (Array.isArray(a)) {
-    expect(Array.isArray(b), at).toBe(true)
-    a.forEach((v, i) => expectDistinctDeep(v, (b as unknown[])[i], `${at}[${i}]`))
-    return
-  }
-  for (const [k, v] of Object.entries(a as Record<string, unknown>)) {
-    expectDistinctDeep(v, (b as Record<string, unknown>)[k], `${at}.${k}`)
-  }
-}
-
-/** A8 in one place: run it against each of the three views. */
-function assertSnapshotContract(get: () => Record<string, unknown>, label: string): void {
-  const first = get()
-  const second = get()
-  expect(first, label).toEqual(second)
-  expect(first, label).not.toBe(second)
-  expectDistinctDeep(first, second, label)
-
-  // Mutating a returned view neither survives nor reaches the driver.
-  for (const [k, v] of Object.entries(first)) {
-    if (Array.isArray(v)) (v as unknown[]).push('MUTATED')
-    else if (v && typeof v === 'object') (v as Record<string, unknown>).MUTATED = true
-    else if (typeof v === 'string') (first as Record<string, unknown>)[k] = 'MUTATED'
-  }
-  expect(get(), `${label} — mutation leaked back`).toEqual(second)
 }
 
 describe('[e3#A8] gateView / beatView / roundView return snapshots', () => {

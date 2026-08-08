@@ -1,4 +1,5 @@
 // [e3] — test-side driving helpers. No production logic lives here.
+import { expect } from 'vitest'
 import { buildSchedule } from '../../../src/engine/beat/schedule.ts'
 import { createBeatDriver } from '../../../src/engine/beat/driver.ts'
 import type { Beat } from '../../../src/engine/beat/schedule.ts'
@@ -61,4 +62,42 @@ export function driveAll(
     if (onNarration) onNarration(r.driver, beat)
     if (!r.driver.advance()) break
   }
+}
+
+/** Every object/array node reachable from both values must be a distinct instance. */
+function expectDistinctDeep(a: unknown, b: unknown, at = '$'): void {
+  if (a === null || typeof a !== 'object') return
+  expect(a, `shared reference at ${at}`).not.toBe(b)
+  if (Array.isArray(a)) {
+    expect(Array.isArray(b), at).toBe(true)
+    a.forEach((v, i) => expectDistinctDeep(v, (b as unknown[])[i], `${at}[${i}]`))
+    return
+  }
+  for (const [k, v] of Object.entries(a as Record<string, unknown>)) {
+    expectDistinctDeep(v, (b as Record<string, unknown>)[k], `${at}.${k}`)
+  }
+}
+
+/**
+ * A8 in one place: run it against a view getter.
+ *
+ * Lives here rather than beside its first caller because a second suite asks
+ * the same question — `excerpt.test.ts` asserts the contract on a gate that
+ * declares its own window — and two copies would let the definition of
+ * "snapshot" drift between them.
+ */
+export function assertSnapshotContract(get: () => Record<string, unknown>, label: string): void {
+  const first = get()
+  const second = get()
+  expect(first, label).toEqual(second)
+  expect(first, label).not.toBe(second)
+  expectDistinctDeep(first, second, label)
+
+  // Mutating a returned view neither survives nor reaches the driver.
+  for (const [k, v] of Object.entries(first)) {
+    if (Array.isArray(v)) (v as unknown[]).push('MUTATED')
+    else if (v && typeof v === 'object') (v as Record<string, unknown>).MUTATED = true
+    else if (typeof v === 'string') (first as Record<string, unknown>)[k] = 'MUTATED'
+  }
+  expect(get(), `${label} — mutation leaked back`).toEqual(second)
 }

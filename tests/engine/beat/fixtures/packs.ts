@@ -37,7 +37,7 @@ export function ev(id: string, time: string, opts: Partial<Ev> = {}): Ev {
     surface: opts.surface ?? 'call',
     place_id: null,
     text: opts.text ?? `${id}-text`,
-    exposure: { visible_from: null, extra_condition: null },
+    exposure: opts.exposure ?? { visible_from: null, extra_condition: null },
   }
 }
 
@@ -49,6 +49,10 @@ export function gate(id: string, clock: string, opts: Partial<G> = {}): G {
     place_id: null,
     availability: opts.availability ?? null,
     scene: opts.scene ?? `${id}-scene`,
+    // Spread in only when a caller asked for one: a card with no `excerpt` KEY
+    // is the fallback path, and every other fixture in this file must stay on
+    // it. `excerpt: undefined` would be a third state neither side describes.
+    ...(opts.excerpt === undefined ? {} : { excerpt: opts.excerpt }),
     branch_note: null,
     standard_form: 'std',
     question: opts.question ?? `${id}-question`,
@@ -195,6 +199,34 @@ export function linesPack(n: number): BeatPack {
     events.push(ev(`L${i}`, `${hh}:00`))
   }
   return pack(events)
+}
+
+// ── excerpt · the gate declares which timeline rows the agent reads ─────────
+//
+// Three script beats, then a gate co-timed with the last row. Every row's text
+// is distinguishable from the narrated lines a test records, so one pack drives
+// the whole decision table: authored order, a condition the run answers, prose
+// no grammar can parse, an id that names nothing — and, with `ids` omitted, the
+// same day on the fallback path as the control.
+//
+// `t2` is gated on `opened`, which no beat here ever sets: the seed given to
+// `rig` is what decides it, so one pack reads both ways.
+export function excerptPack(ids?: string[]): BeatPack {
+  return pack(
+    [
+      ev('t1', '01:00', { text: 't1-authored' }),
+      ev('t2', '02:00', {
+        text: 't2-authored',
+        exposure: { visible_from: null, extra_condition: 'opened' },
+      }),
+      ev('t3', '03:00', {
+        text: 't3-authored',
+        exposure: { visible_from: null, extra_condition: '현장(관리동)을 들여다본 런에만 보임' },
+      }),
+      ev('t4', '04:00', { text: 't4-authored' }),
+    ],
+    [gate('GX', '04:00', ids === undefined ? {} : { excerpt: ids })],
+  )
 }
 
 /** Same, but with a gate on the LAST beat — lets a test read TIMELINE_EXCERPT. */

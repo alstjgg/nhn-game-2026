@@ -21,7 +21,7 @@
 import type { BeatView, GateView, RoundView } from '../index.ts'
 import type { PresentNpc } from '../../shared/contracts.ts'
 import type { BeatPack, RoundAssemblerPort, StateCorePort } from './ports.ts'
-import type { Beat, BeatKind, OutcomeBucket, ScheduledGate } from './schedule.ts'
+import type { Beat, BeatKind, ExcerptLine, OutcomeBucket, ScheduledGate } from './schedule.ts'
 import { BeatPhaseError, StanceResolutionError } from './errors.ts'
 import { evaluateEdges } from './predicates.ts'
 import { holds, problems } from '../../shared/predicates.ts'
@@ -302,7 +302,13 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
       return {
         GATE_QUESTION: gate.question,
         STANCE_SET: cloneDeep(gate.stances),
-        TIMELINE_EXCERPT: windowLines(lineGroups),
+        // A declared window REPLACES the narrated one: what the agent knows at
+        // a gate is authored on the card, not whatever the preceding beats
+        // happened to leave inside the prompt budget. A gate that declared
+        // nothing compiles to `null` and keeps the old behaviour byte for byte,
+        // so this is inert for every pack that has not opted in.
+        TIMELINE_EXCERPT:
+          gate.excerpt === null ? windowLines(lineGroups) : exposedExcerpt(gate.excerpt, state),
         TEMPERAMENT: cloneDeep(pack.temperament),
       }
     },
@@ -362,6 +368,41 @@ function gateOpen(beat: Beat | undefined, state: StateCorePort): boolean {
   const condition = beat.gate.availability
   if (condition === '' || problems(condition).length > 0) return true
   return holds(condition, state.snapshot())
+}
+
+/**
+ * The rows a gate declared, minus the ones this run was never exposed to.
+ *
+ * Filtered when the view is built rather than when the schedule is, because
+ * `extra_condition` is about the run: a run that intervened at an earlier gate
+ * must be able to arrive here reading a different window than one that did not,
+ * and that property is the reason the conditions were kept in the first place.
+ * `gateOpen` above resolves `availability` at this same moment for this same
+ * reason — by then the previous beat's effects have landed, so this is the
+ * state the gate is asking about.
+ *
+ * ── Un-hardened prose shows the line, it does not delete it ──────────────────
+ *
+ * `gateOpen`'s rule again, and `engine/index.ts`'s `exposed()`.
+ * `extra_condition` is a `contract-datapack` F4 slot: packs may still carry
+ * free text there pending promotion — 우는다리's t5 says 현장(관리동)을 들여다본
+ * 런에만 보임 — and `datapack:lint` FLAGs it as hardening work. Routing that
+ * through `holds()` alone would read it as `false` and silently delete an
+ * authored row from the one prompt the whole gate turns on. So a condition that
+ * does not PARSE is treated as "no condition authored yet", and `snapshot()` is
+ * reached only where there is a real predicate to resolve.
+ */
+function exposedExcerpt(lines: readonly ExcerptLine[], state: StateCorePort): string[] {
+  const shown: string[] = []
+  for (const line of lines) {
+    const condition = line.condition
+    if (condition === null || condition === '' || problems(condition).length > 0) {
+      shown.push(line.text)
+    } else if (holds(condition, state.snapshot())) {
+      shown.push(line.text)
+    }
+  }
+  return shown
 }
 
 function openingPhase(beat: Beat | undefined, gateLive: boolean): BeatPhase {
