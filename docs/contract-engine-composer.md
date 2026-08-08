@@ -60,7 +60,7 @@ would read.
 export type GateView = {
   GATE_QUESTION: string
   STANCE_SET: Stance[]
-  TIMELINE_EXCERPT: string[]   // most recent 6 lines, never a severed beat (§3.2)
+  TIMELINE_EXCERPT: string[]   // gate's declared `excerpt` rows if it named any, else most recent 6 lines, never a severed beat (§3.2)
   TEMPERAMENT: TemperamentPack // structured; the composer renders it (§4)
 }
 
@@ -334,7 +334,10 @@ gate still reading "seven".
   must not decide alone.
 - **`TIMELINE_EXCERPT` / `TIMELINE_TAIL` caps** — 6 lines is provisional (engine
   spec §3.2) and retunes on the RUNLOG A4 latency measurement. The interface does
-  not change when the number does.
+  not change when the number does. This governs the fallback window only: a gate
+  that declares `excerpt` (contract-datapack §2) bypasses it entirely — its
+  window is the card's own row list, bounded instead by the schema's separately-
+  ratified `maxItems: 6`, which does not track this constant.
 - **`AGENT_UTTERANCE` in call contracts §6's supplier table** (§2.1) — a table
   gap, fix belongs in that document.
 - **Where the run-loop manager lives.** In scope for the next build (08-03) and

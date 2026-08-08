@@ -317,12 +317,24 @@ run. Why this boundary:
 
 | Slot | Cap |
 |---|---|
-| `TIMELINE_EXCERPT` (Call 1) | most recent **6 lines** |
+| `TIMELINE_EXCERPT` (Call 1) | most recent **6 lines**, windowed across beats — the fallback |
 | `TIMELINE_TAIL` (Call 2) | most recent **6 lines** |
 
 **Never truncate mid-beat.** On hitting the cap, remove the **whole** oldest
 beat. With several `npc_lines` a single beat occupies several lines, so counting
 lines alone leaves a severed half-beat behind — that is noise, not context.
+
+**`TIMELINE_EXCERPT` has a second source that skips this windowing
+entirely.** A gate card may declare `excerpt` — an authored list of timeline
+row ids (`data/scenario/_schema/gates.schema.json`, contract-datapack §2). When
+a gate declares one, `TIMELINE_EXCERPT` is exactly those rows' authored text,
+in the order the card lists them, each still filtered by its own
+`exposure.extra_condition` against current run state; the beat-windowing rule
+above and this section's cap do not apply to it at all — the schema bounds a
+declared window separately (`maxItems: 6`, not derived from this constant). A
+gate that declares nothing is unaffected: `TIMELINE_EXCERPT` is `windowLines`
+exactly as above, and this is the fallback every existing pack still uses.
+See `planning/research/gate-excerpt-design.md` for the rationale.
 
 Basis and limits: the shapes that have actually been measured are
 `TIMELINE_EXCERPT` at 4 lines (`RB1-rebaseline-v04`) and `TIMELINE_TAIL` at 5

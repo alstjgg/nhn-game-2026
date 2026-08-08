@@ -40,7 +40,7 @@ input.
 | `characters.json` | id · role · interest · knows / doesn't-know · ≤2 meters (variable binding + initial, `null` until hardening) · strands (truth/gate refs — attributability input) | characters |
 | `places.json` | id · name · yields: ≥2 entries of (clock or depth note → info) | places |
 | `temperament.json` | default disposition · ≤2 clauses (axis · **`axis_vocabulary`** · condition · defeat condition) | temperament proposal |
-| `gates.json` | the gate card as-is (hardening manual §5): standard form · stance set · `default_stance` · **`key_conditions`** · `key_examples` · false leads · buckets (`deltas` + `flags`) · `edge_predicates` — plus clock/place/scene prose carried from the draft | gate cards |
+| `gates.json` | the gate card as-is (hardening manual §5): standard form · stance set · `default_stance` · **`key_conditions`** · `key_examples` · false leads · buckets (`deltas` + `flags`) · `edge_predicates` · optional **`excerpt`** (declared timeline window — §2, §3.2 E9/E10/W5) — plus clock/place/scene prose carried from the draft | gate cards |
 | `truths.json` | truth → carrier sentences (id + text + where) · false leads. **This file issues sentence ids** (`trN-sN` / `trN-fN`) | hidden truths |
 | `score.json` | units (tallies · baseline · attributed gates · predicates) · no-intervention baseline · variance notes | score |
 | `symptoms.json` | state change → symptom sentences, per (variable × direction × magnitude band) + flag set/unset. **The only channel by which state reaches the screen** (engine spec §2.2) | — (hardening; compile emits an empty skeleton) |
@@ -88,6 +88,19 @@ deltas, and the draft format has no symptoms section.
 (`extra_condition` / `depth_note` / `availability`). They become engine
 predicates during hardening; until then lint flags them as incomplete rather
 than compile inventing semantics.
+
+**A gate card may declare `excerpt` — the timeline window its agent reads, as
+row ids, never as prose.** Absent means absent: the field is omitted entirely
+(not an empty array — the schema's `minItems: 1` makes an empty array a
+schema violation, so "declared but empty" surfaces as E1 rather than becoming
+a silent third state), and the engine falls back to windowing the narrated
+lines as it always has. A declared window still honors each named row's own
+`exposure.extra_condition` at render time, so a run that intervened at an
+earlier gate can still arrive at a later one reading a different window than
+a run that did not. `maxItems: 6` in the schema is a separately-ratified
+number that happens to equal the engine's prompt-budget constant
+(`TIMELINE_CAP_LINES`) — it does not track that constant, and the two may
+diverge later. See `planning/research/gate-excerpt-design.md`.
 
 **Buckets carry `flags` alongside `deltas` (v0.4).** Caller-facing gates
 (G1 · G4 · G7 — the man on the line) discharge through scalar deltas on his
@@ -144,6 +157,8 @@ node authoring/lint-datapack.mjs data/scenario/<slug>
 | E6 | **Symptom file coherence** — per-direction lists sorted by `min` **descending** (the renderer takes the first match, so order carries meaning) · no digits in symptom sentences (I12) | engine spec §2.2 · §2.3-7 |
 | E7 | **Symptom coverage** — for every `(variable, direction)` any actuator can produce (bucket deltas/flags **and** timeline event `effects`), `symptoms.json` must have an entry reaching down to `min: 1`; every flag an event can flip needs a matching `set`/`unset` sentence. Without this, a missing sentence becomes a runtime hard error, and only on the path that actually steps on that delta. Passes vacuously while deltas/effects are empty (pre-hardening) | engine spec §6-2 |
 | E8 | **Deltas are non-zero integers.** The symptom lookup matches \|Δ\| against integer `min` bands: a fractional delta matches nothing (§2.3-2 hard error) and `0` drops out of rendering entirely (§2.3-1). E7 only inspects `(variable, direction)`, so it passes this data — exactly the "looks plausible, detonates on one path" class, caught at authoring time. Integer-ness is doubled in the schema (`integer`); non-zero lives only here | engine spec §1.3 · §6-3 |
+| E9 | A declared `excerpt` id names no row in `timeline.events`. The runtime skips an unknown id in silence, so a typo costs the agent one line of its window with nothing to show for it — authoring time is the only place it is visible | gate-excerpt design §4 · `predicates.ts`'s "nothing here throws" precedent |
+| E10 | A declared `excerpt` row is not strictly before its gate's own `clock` — skipped when `clock` is `null` (a gate off the 무개입 line has no stamp to be before). The window would show the agent a row that has not happened yet | gate-excerpt design §2 |
 
 ### 3.3 WARN — design audit
 
@@ -153,6 +168,7 @@ node authoring/lint-datapack.mjs data/scenario/<slug>
 | W2 | **Attributability** — a gate that no score unit attributes to is decoration | guide §5, "an effect with no cause is a bug" |
 | W3 | **Example species coherence** — infer each `key_examples` entry's species from its `mined_from` phrasing (subjective report → 자기서술 · objective log → 사실) and compare with the condition's species. Since a key is a condition *class*, a species-mismatched example teaches the wrong lock shape | manual §3-5; promoted after 3 instances in the 우는다리 paper check |
 | W4 | **Example axis vocabulary** — flag an example sentence carrying none of its target clause's axis vocabulary (2-syllable stem matching). The same fact scores zero if the axis is off | manual §3-1; promoted after 4 instances in the 우는다리 paper check round 2 |
+| W5 | **A declared `excerpt` hands out its own key.** Flag a row sitting at a clock this same gate's own `key_examples[].mined_from` names — the gate's window would show the agent the exact material a `key_example` was mined from, i.e. answer its own question. The machine form of PR #214's 규칙 6. Deliberately over-triggering (every row at that clock counts) and only **partial** — a `mined_from` with no clock in it contributes nothing | gate-excerpt design §3, §6 리스크 2 |
 
 ### 3.4 FLAG — hardening incomplete
 
@@ -296,3 +312,4 @@ when its OUTCOME WORD — everything before the first space or `·` — is exact
 - Where the pack physically lives and who may read it: [`spec-physical-architecture.md`](./spec-physical-architecture.md) §3.1, §3.7
 - Gate card canonical form: [`scenario/gate-hardening-manual.md`](./scenario/gate-hardening-manual.md) §5
 - Handoff status for the first real pack: [`handoffs/datapack.md`](./handoffs/datapack.md)
+- Declared timeline window (`excerpt`) design record: [`planning/research/gate-excerpt-design.md`](../planning/research/gate-excerpt-design.md)
