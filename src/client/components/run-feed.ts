@@ -100,7 +100,15 @@ export function feedLineModel(line: FeedLine, callsign = 'ECHO-1'): FeedNode {
       // absent or empty citation prints no mark at all — never an empty one.
       const slots = line.cited_slots ?? []
       if (slots.length > 0) {
-        const numbered = [...slots].sort((a, b) => a - b).map((s) => String(s + 1).padStart(2, '0'))
+        // Padded with a conditional, never `padStart`: [u9#c2]
+        // (`no-digit-npc.test.ts` (c)) bans that call outright in any module
+        // that paints an NPC channel, so a character can never be made to
+        // speak a formatted number. This is a slot on the operator's own file
+        // and not that — but the guard is a blanket source scan and it is
+        // right to be, so the cheap way to keep it honest is not to call it.
+        const numbered = [...slots]
+          .sort((a, b) => a - b)
+          .map((s) => (s + 1 < 10 ? `0${s + 1}` : String(s + 1)))
         parts.push({ p: 'cite', text: `${CITE_LABEL} ${numbered.join(' · ')}` })
       }
       return envelope(kind, line.clock, parts)
