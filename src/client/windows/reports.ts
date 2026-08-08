@@ -146,6 +146,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
 
   function drawDocument(): void {
     if (active === null) return
+    // The document being drawn belongs to `active`, so the signature and
+    // 무전 기록's subtitle are that sitting's agent — not the desk's current
+    // one. This is the only place both facts are known at once, which is why
+    // the `meta` handler no longer brands (E1).
+    view.brand(callsignOf(active))
     const model = filed.get(active) ?? { round: active, facts: [], report_body: [] }
     // W2 — the replay key is `sitting:round`, not the round alone: two
     // sittings both have a round 1, and the second one's arrival must not read
@@ -180,7 +185,13 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     // A sitting the desk has a file for is one that filed a report OR earned a
     // record. The lapse drill files no report at all, and its record still
     // belongs to a day the operator can select.
-    const entries = railEntries(archive, [...new Set([...filed.keys(), ...records.keys()])])
+    // …plus the sitting on the desk right now, which has filed nothing yet and
+    // earned no record. Without it a day has no tab of its own until its first
+    // report lands, so the rail offers every past sitting and not the one being
+    // played. `run` is 0 only before the first `meta`, and a rail entry for run
+    // 0 would be a sitting that does not exist.
+    const live = run > 0 ? [run] : []
+    const entries = railEntries(archive, [...new Set([...filed.keys(), ...records.keys(), ...live])])
     if (entries.length === 0) return
     if (active === null || !entries.some((entry) => entry.run === active)) {
       active = entries[entries.length - 1]?.run ?? null
@@ -218,7 +229,12 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       archive = [...event.archive]
       carried = [...event.carried]
       run = event.run
-      view.brand(callsignOf(event.run))
+      // The callsign is NOT branded here any more. `brand()` re-writes the
+      // signature and 무전 기록's subtitle on the document that is mounted, and
+      // the mounted document is the SELECTED sitting's — which is not
+      // necessarily this event's run. Branding on `meta` signed every archived
+      // report with whoever was on duty when it was opened. `drawDocument()`
+      // owns it now, because that is where the selection is known.
       sync()
       return
     }

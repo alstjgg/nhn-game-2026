@@ -40,11 +40,32 @@ export type BindDeps = {
 export type OpenRunDeps = {
   run: number
   carried: readonly Block[]
+  /** Every sentence shown so far, seeded minable-but-unmined (`RunClose.shown`). */
+  shown: readonly Block[]
   /** `"HH:MM"` bounds for this run's clock, read off the pack's meta. */
   start: string
   end: string
   /** The run/meta view e8 folds onto the stream. */
   meta: BoundRun['meta']
+}
+
+/**
+ * Every sentence the desk has already shown, into this run's `seen` tier only.
+ *
+ * NOT mined — `mine()` reads `seen` and `has()`/`get()` read `mined`, so an
+ * absorbed-but-unmined sentence is exactly "minable, not deployed". That is
+ * what lets an operator mine out of a past sitting's report on a later day
+ * without any of it reaching Call 1 unbidden.
+ *
+ * There is deliberately no throw here, unlike `seedCarried`: a carried block
+ * that cannot be seeded is a broken carry-over, but a shown sentence that
+ * cannot be is just a line the next day will refuse to mine, which is the
+ * behaviour this unit is replacing rather than a corruption of it.
+ */
+export function seedShown(blocks: MutableBlockStore, shown: readonly Block[]): void {
+  for (const block of shown) {
+    blocks.absorbLine({ kind: 'mark', clock: '00:00', text: block.text, sentence_id: block.id })
+  }
 }
 
 /**
@@ -68,6 +89,9 @@ function seedCarried(blocks: MutableBlockStore, carried: readonly Block[]): void
 /** Wires one run and hands back what the adapter needs to open it. */
 export function bindLiveRun(deps: BindDeps, open: OpenRunDeps): BoundRun {
   const blocks = createBlockStore()
+  // Order matters: `shown` only absorbs, `seedCarried` absorbs AND mines. A
+  // carried block appears in both and must end up mined, so it goes last.
+  seedShown(blocks, open.shown)
   seedCarried(blocks, open.carried)
 
   const engine = createEngine({ pack: deps.pack, run: open.run })

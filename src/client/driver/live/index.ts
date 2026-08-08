@@ -91,10 +91,13 @@ export async function createLiveRunDriver(deps: LiveRunDeps): Promise<FixtureDri
    * in, then the binder wires an engine seeded with both. The `meta` event is
    * taken AFTER `startRun` so the counter the desk renders is this run's.
    */
-  function openRun(carried: readonly Block[], run: number): BoundRun {
+  function openRun(carried: readonly Block[], run: number, shown: readonly Block[] = []): BoundRun {
     return bindLiveRun(bindDeps, {
       run,
       carried,
+      // Defaulted, so the FIRST run of a session needs no argument: nothing has
+      // been shown yet, and there is no closing day to have collected it.
+      shown,
       start: deps.start,
       end: deps.end,
       meta: runLoop.metaEvent(),
@@ -189,7 +192,9 @@ export async function createLiveRunDriver(deps: LiveRunDeps): Promise<FixtureDri
 
       const next = runLoop.startRun()
       current = next.run
-      return openRun(next.carried, next.run)
+      // `next.carried` is the run loop's carry-over; `close.shown` is the
+      // desk's whole history and comes from the closing day, not the loop.
+      return openRun(next.carried, next.run, close.shown)
     },
   })
 }
