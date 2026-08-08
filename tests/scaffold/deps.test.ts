@@ -105,15 +105,48 @@ describe('[u0#c4] script wiring', () => {
     // could ship a predicate that names a flag nothing sets and no run would
     // say so. `datapack:check` is the type-drift check and is a different
     // question; the two are not substitutes.
+    // WIDENED (08-08): the clause named ONE slug, so the gate covered one pack
+    // and the second pack (전구간정상) landed with no gate at all — the exact
+    // hole the paragraph above describes, reopened by a hardcoded argument.
+    // `datapack:lint:all` enumerates `data/scenario/` instead, which is why
+    // this array does not grow a row per pack; (g4) below is what holds the
+    // enumeration honest.
     const check = (pkg().scripts ?? {})['check'] ?? ''
     expect(check.split('&&').map((c) => c.trim())).toEqual([
       'tsc -p tsconfig.core.json',
       'tsc',
       'npm run typecheck:test',
       'npm run datapack:check',
-      'npm run datapack:lint -- data/scenario/우는다리',
+      'npm run datapack:lint:all',
       'npm run test:shared',
     ])
+  })
+
+  // (g3) can only assert the clause is SPELLED right. It cannot see whether the
+  // enumeration behind it actually reaches every pack — and an enumeration that
+  // silently covers nothing looks identical from the outside to one that covers
+  // everything. So this measures the set the runner would lint against the set
+  // on disk, which is the property (g3) is standing in for.
+  it('(g4) `datapack:lint:all` reaches every pack on disk — no slug is unlinted', () => {
+    const scenarioDir = path.join(REPO, 'data', 'scenario')
+    const onDisk = fs
+      .readdirSync(scenarioDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && !entry.name.startsWith('_'))
+      .map((entry) => entry.name.normalize('NFC'))
+      .sort()
+
+    expect(onDisk.length, 'no packs found — the enumeration would lint nothing').toBeGreaterThan(0)
+
+    const listed = execFileSync('node', ['authoring/lint-all-packs.mjs'], {
+      encoding: 'utf8',
+      cwd: REPO,
+    })
+    for (const slug of onDisk) {
+      // The runner prints a `── <slug>` banner per pack. Compare NFC-normalized
+      // on both sides: macOS hands these back NFD and the comparison is the
+      // whole point of the test.
+      expect(listed.normalize('NFC'), `pack "${slug}" was never linted`).toContain(`── ${slug}`)
+    }
   })
 
   it('(g2) pre-existing scripts are unchanged', () => {

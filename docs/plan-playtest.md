@@ -667,9 +667,11 @@ Rules for the change list:
 ### 5.5 Verification
 
 `npm run check` is the **type-and-data gate** — `tsc -p tsconfig.core.json` · `tsc`
-· `typecheck:test` · `datapack:check` · **`datapack:lint -- data/scenario/우는다리`**
-· `test:shared` (`node --test` over `tools/tests/*.mjs`). The `datapack:lint` step
-is what a data edit (G1b, T2) trips.
+· `typecheck:test` · `datapack:check` · **`datapack:lint:all`**
+· `test:shared` (`node --test` over `tools/tests/*.mjs`). The lint step is what a
+data edit (G1b, T2) trips. It named one slug until 08-08, which meant a second
+pack landed with no gate at all; it now enumerates `data/scenario/` so the gate
+covers a pack the day the pack exists.
 
 **`check` does not run vitest.** Every vitest suite, including every structure test
 in §5.4, runs only under `npm run test`. `npm run build` adds the Vite build and is
