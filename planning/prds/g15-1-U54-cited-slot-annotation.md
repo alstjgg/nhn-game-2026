@@ -703,9 +703,36 @@ Replacing the count in both sections:
 - [ ] Full vitest green at **1613**.
 - [ ] `ls tests/driver/ | grep -c '^membrane-slots'` returns `0` — A1's rename
       landed and `engine-boundaries.test.ts (b)` is green untouched.
-- [ ] `grep -n "padStart" src/client/components/run-feed.ts` returns nothing.
+- [ ] `grep -nE "\b(toFixed|toLocaleString|padStart)\s*\(" src/client/components/run-feed.ts`
+      returns nothing. **This is the exact regex `no-digit-npc.test.ts:177`
+      scans with**, which is the condition that actually matters. See
+      Amendment 2 — the first version of this line was written against the
+      tree and A2's own comment then made it unsatisfiable.
 
 Every other Done-when line stands.
+
+---
+
+# Amendment 2 — the `padStart` check, corrected
+
+A1 and A2 as applied are correct and stay. This replaces one Done-when line and
+changes no code.
+
+`grep -n "padStart" run-feed.ts` could never return nothing: A2's replacement
+comment says the word `padStart` on purpose, to record why the call is not
+being made. The corrected line above greps for the **call form** — the same
+`/\b(toFixed|toLocaleString|padStart)\s*\(/` that `no-digit-npc.test.ts:177`
+uses — and returns nothing on `f82f8a3`.
+
+This is §5.3's own rule for the third time in two documents by the same author:
+*read every Done-when grep against the replacement text, not the tree.* g13-4's
+Amendment 1 was the same mistake with `Math.max` and `data-block-id`, and its
+correction was the same shape: grep for what the guard greps for.
+
+The rule as written is not enough on its own, because the failure keeps
+recurring in one specific place — a Done-when that asserts the ABSENCE of a
+token the change list deliberately writes into a comment explaining its absence.
+§5.3 is amended to say so directly in this repo's copy of the rule.
 
 ## If this PRD is wrong
 
