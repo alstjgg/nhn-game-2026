@@ -29,6 +29,13 @@ export type Membrane = {
   deployed(): string[]
   /** Block ids currently in slots, in ascending slot order. */
   slottedIds(): string[]
+  /**
+   * The slot a block sits in, or `null` if it sits in none — U5.4's whole
+   * lookup. The map is already here because `unslot` validates against it; a
+   * citation naming a block the operator never seated resolves to `null` and
+   * prints nothing, which is the failure mode that keeps the mark honest.
+   */
+  slotOf(blockId: string): number | null
   /** True once the player asked to end the run. */
   ending(): boolean
 }
@@ -77,6 +84,11 @@ export function createMembrane(blocks: MutableBlockStore): Membrane {
 
     slottedIds: () =>
       [...slots.entries()].sort((left, right) => left[0] - right[0]).map(([, id]) => id),
+
+    slotOf: (blockId: string) => {
+      for (const [slot, id] of slots) if (id === blockId) return slot
+      return null
+    },
 
     ending: () => ending,
   }
