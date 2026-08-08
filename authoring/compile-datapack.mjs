@@ -234,9 +234,20 @@ const events = [];
       present: null,
     });
   }
+  // Ordering is by minute, not by string. `HH:MM+` is the next-day marker the
+  // schemas have always allowed (`^([01][0-9]|2[0-3]):[0-5][0-9]\+?$`, and
+  // 우는다리's `clock.end` is `21:04+`), but a lexical compare reads `00:12` as
+  // earlier than `23:58` and refuses any situation that crosses midnight —
+  // which an evening one routinely does.
+  const minute = (t) => {
+    const [h, m] = t.replace('+', '').split(':').map(Number);
+    return h * 60 + m + (t.endsWith('+') ? 1440 : 0);
+  };
   const keys = events.map((e) => e.time);
   for (let i = 1; i < keys.length; i++) {
-    if (keys[i] < keys[i - 1]) die(`timeline: rows out of clock order at ${keys[i]}`);
+    if (minute(keys[i]) < minute(keys[i - 1])) {
+      die(`timeline: rows out of clock order at ${keys[i]} — past midnight needs the "+" suffix (${keys[i]}+)`);
+    }
   }
 }
 

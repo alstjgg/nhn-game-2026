@@ -116,21 +116,25 @@ caller is.
 
 ## 3. Quantities
 
-Span roughly 2–3 hours · gates 3 · 주요인물 4 or fewer (+ 조연 1–2) ·
-places 3–5 · hidden truths 4–6.
+Span roughly 2–3 hours · gates 3 · 인물 exactly 3 · places 3–5 ·
+hidden truths 3–4 · timeline rows 20–25 · score units 4 or fewer.
 
-The direction of these numbers is **long, not wide** — but "long" means deep
-in run-layers, not long on the clock. The span is one report call to its
-resolution; treat 2–3 hours as guidance rather than a fence, and spend the
-compression on finer graduations, never on fewer layers.
+**A judge plays this for minutes, not hours.** Every number above is sized for
+someone who will see three or four runs and then decide. Anything the player
+must read twice to hold is a number too large.
 
-**The cast cap scales with the span.** The familiar "seven faces an audience
-can track" comes from feature-length work, where each person returns often
-enough to be re-learned. In two or three hours the audience meets each person
-about twice — so **four 주요인물 is the ceiling**, and a fifth doesn't fail to
-shine, it fails to be remembered. Past those four, 1–2 **조연** may exist: a
-voice on the line, a body in the room, someone who brushes the story once and
-is gone.
+**Three people, three gates — one gate belongs to each.** There is no 조연
+tier: a body that brushes the story once and leaves is furniture, and
+furniture belongs in the timeline's prose, not in the cast. Three is few
+enough that a face arrives fully formed on its first appearance, and that each
+gate can be *about* somebody rather than about a decision with people nearby.
+
+**Twenty-odd rows, not forty.** The clock is short and its graduations should
+be fine, but fine is not the same as dense: the player reads this timeline
+plus two reports every run, and ore they skim is ore they do not mine. Cut the
+rows that only establish; keep the rows that carry a sentence someone will
+want to hand over. If the world feels thin at 25 rows, the fix is deeper
+places and more carriers per truth, not more rows.
 
 Instead of widening, one character spans several truths and gates, and one
 place yields different information at different depths. Don't stretch story
@@ -148,8 +152,21 @@ the scenario at once, and the back half goes shallow in a single run. At
 three, each gate can hold its own axis-and-지목 pair and stay a real question.
 
 Spend what the gate count frees on **depth**, not on more scenes: more
-carrying sentences per truth, more clock graduations between the gates, more
-that one place yields at different depths.
+carrying sentences per truth, more that one place yields at different depths.
+
+**The three gates are not equal, and must not be.** One of them is worth tens
+of lives — it is the gate the whole scenario is built to deliver the player
+to. The other two are worth a named person's fate and, more importantly,
+**control what can be mined before the decisive one**: an outcome at G1 is
+what puts the key to G3 into the ore, or keeps it out. Three gates that each
+save a third of the toll produce no moment worth replaying; one that saves
+tens, reachable only through the other two, is the whole game.
+
+**Run 1 should be short.** It is the run with an empty handover, so it is the
+run that watches the day happen — and the player has to reach the score screen
+fast enough to want a second one. Let the early runs end early: the 요원 is
+shut out, the line is taken away, the desk stops answering. Later runs earn
+their length by going further. Screen time is a reward, not a default.
 
 ## 4. Output format
 
@@ -231,22 +248,26 @@ notes about one.
    the cell and a leak in the second.
    **One exposure per row** — information with different exposure
    depths is split into separate rows.
-3. **`인물`** (주요인물 4 or fewer + 조연 1–2) — each character in this
-   shape:
+3. **`인물`** (exactly 3) — each character in this shape:
    - Under a `**이름** (나이 · 역할)` heading, four bullets:
      `- 이해관계: …` / `- 아는 것: 항목 · 항목 · …. 모르는 것: ….`
      (items separated by `·` — commas belong inside sentences) /
      `- 눈금 후보: A · B.` (max 2 per character) /
      `- 걸치는 줄기: 진실 1·2…, 갈림길 G1·G3….` (truth and gate numbers in
      exactly this notation).
-   - Every **주요인물** spans two or more hidden truths or gates — a main
-     character carrying only one strand doesn't earn the slot.
-   - A **조연** takes the same heading and the same four bullets; the format
-     does not distinguish them, and every bullet is required of every
-     character. The whole difference is quantity: a 조연 names **one** strand
-     and **one** 눈금 후보. Don't write a 조연 with no strand at all — a body
-     attached to nothing is furniture, and furniture belongs in the
-     timeline's prose, not in this section.
+   - Every character spans two or more hidden truths or gates, and **one of
+     the three owns each gate** — the person that gate is about. A character
+     carrying one strand doesn't earn a slot, and at three slots there is
+     nowhere for them to hide.
+   - **Anyone who is not one of the three lives in the timeline's prose.** The
+     crowd, the dispatcher who reads a number out, the child someone carries —
+     they can be named, spoken and killed in a row of the fixed timeline
+     without ever taking a slot here. This section is for the people the 요원
+     argues with; everyone else is the day happening.
+   - **One of the three is the face of the toll.** When the tally counts a
+     crowd (§4-8), the number cannot be felt on its own — so one of these
+     three stands where the number falls: known by name, reachable by the
+     player, and lost in the run that changes nothing.
 4. **`장소`** (3–5) — each place as a
    `**이름** — one line: what information surfaces only there.` heading,
    followed by two or more `- 깊이: 정보` bullets. 깊이 is `시계 HH:MM`
@@ -257,7 +278,7 @@ notes about one.
    different depth even at the same clock. This section is **not** published,
    so naming the gate here is fine; the same depth written into the timeline's
    run-depth cell is not (§4-2).
-5. **`숨겨진 진실`** (4–6) — each under a `**진실 N — 진실 한 문장**`
+5. **`숨겨진 진실`** (3–4) — each under a `**진실 N — 진실 한 문장**`
    heading:
    - Under `- 실어 나르는 문장:`, 3 or more entries of
      `- "문장 원문" — 나오는 자리(표면 · 시계 깊이 · 몇 번째 런쯤)`.
@@ -340,6 +361,30 @@ notes about one.
    is not invented — it is the record.** A run where the 요원 changed nothing
    replays what actually happened that day, and that result *is* the baseline
    score. The player competes against the record, every run.
+
+   **The day kills more than a hundred people, and a good run saves most of
+   them.** This sets the shape of everything above it. A toll in the single
+   digits cannot be felt across a score screen, and it makes one mining
+   decision worth one life — which is a puzzle, not a disaster. Build the
+   situation so the record runs to **three digits**: a crowd has to be
+   somewhere it cannot leave quickly, and the clock has to reach it. A
+   stadium, a ferry, a platform at rush hour, a tower with one stair.
+
+   **One unit carries the number; the rest carry the names.** Four units at
+   most, and exactly one of them is the crowd count — that is the unit whose
+   value the tally screen shows against the record, and `137 → 62` is legible
+   in a second where six mixed units are not. The other units are the three
+   people: what each of them loses, and whether they are alive at 상황 종료.
+
+   **Zero is reachable, and the disaster still happens.** The floor of the
+   crowd count is **0** — every single person out in time is a run the player
+   can achieve, and it must feel like winning rather than like a smaller
+   number. This does not soften §1: the roof still comes down, the ferry still
+   lists, the platform still floods. What the 요원 changes is who is standing
+   there when it does. So `막은 런에도 치른 값이 남는다` is paid by the other
+   units, never by keeping a body on the crowd count — the whistleblower is
+   prosecuted anyway, the building is condemned, the one who stayed behind to
+   hold a door is still lost.
 
    **The first run is the worst run. This is an invariant, not a tendency.**
    The 무개입 기준 column is not a description sitting beside the game — it is
