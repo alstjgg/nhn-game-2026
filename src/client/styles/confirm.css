@@ -1,0 +1,68 @@
+/* ===========================================================================
+   confirm.css — the confirmation plate (shell/confirm.ts).
+
+   The door's plate, at the size of a question. `signin.css` owns the original
+   — the LED head, the chrome gradient, the sealed rule under the header — and
+   this sheet re-cuts it as a free-standing centred panel rather than the foot
+   of a full-screen curtain. Nothing here is a `.win`: no title bar controls, no
+   grip, no `--z` from the window manager. It sits above every window and below
+   nothing.
+
+   Imported after `signin.css` in index.css, which is where its family lives.
+   =========================================================================== */
+
+#confirm{position:fixed;inset:0;z-index:970;
+  display:flex;align-items:center;justify-content:center;
+  /* Dimmed, not blacked out. The question is about the file the operator just
+     wrote, and a veil that hides the file hides what the question is about. */
+  background:radial-gradient(70% 60% at 50% 50%,var(--sh-4),var(--sh-8));
+  backdrop-filter:blur(2px);
+  animation:cfVeil .18s ease-out both}
+@keyframes cfVeil{from{opacity:0}to{opacity:1}}
+#confirm.cf-out{animation:cfVeil .2s ease-in reverse both}
+
+.cf-plate{width:520px;max-width:calc(100% - var(--space-32));position:relative;
+  background:linear-gradient(to bottom,var(--chrome-hi),var(--chrome-lo));
+  border:1px solid var(--edge);box-shadow:var(--shadow-win);
+  animation:cfRise .26s cubic-bezier(.16,.9,.2,1) both}
+@keyframes cfRise{from{opacity:0;transform:translateY(14px) scale(.985)}
+  to{opacity:1;transform:none}}
+.cf-plate::before{content:'';position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 1px 0 var(--sheen-05)}
+
+/* ─── the head — the door's `.si-plate-hd`, same hardware ─────────────────── */
+.cf-plate-hd{display:flex;align-items:center;gap:var(--space-9);height:42px;
+  padding:0 var(--space-16);background:var(--chrome-deep);
+  border-bottom:1px solid var(--edge);position:relative}
+.cf-plate-hd::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,var(--seal),transparent 62%);opacity:.7}
+.cf-led{width:9px;height:9px;flex:0 0 auto;background:var(--seal);
+  animation:livePulse 1.4s ease-in-out infinite}
+.cf-plate-hd b{font-size:var(--fs-9-5);font-weight:600;letter-spacing:.22em;color:var(--txt-2)}
+.cf-plate-hd i{margin-left:auto;font-style:normal;font-size:var(--fs-8);
+  letter-spacing:.2em;color:var(--seal);opacity:.85}
+
+/* ─── the question ───────────────────────────────────────────────────────── */
+.cf-body{padding:var(--space-26) var(--space-26) var(--space-20)}
+.cf-ask{font-family:var(--myeong);font-size:var(--fs-15);line-height:1.7;
+  color:var(--txt-hi);letter-spacing:.01em;word-break:keep-all}
+.cf-note{margin-top:var(--space-11);font-size:var(--fs-8-5);letter-spacing:.12em;
+  color:var(--txt-7);line-height:1.6}
+
+/* ─── the two answers ────────────────────────────────────────────────────── */
+.cf-foot{display:flex;gap:var(--space-10);justify-content:flex-end;
+  padding:var(--space-14) var(--space-26) var(--space-20);
+  border-top:1px solid var(--ink-line)}
+.cf-btn{min-width:132px;height:52px;font-size:var(--fs-13);font-weight:700;
+  letter-spacing:.3em;text-indent:.3em;border:1px solid var(--edge);
+  transition:transform .12s, box-shadow .18s, filter .18s, background .18s}
+.cf-btn:focus-visible{outline:2px solid var(--txt-4);outline-offset:3px}
+.cf-btn:active{transform:translateY(1px)}
+
+.cf-no{background:var(--chrome-raise);color:var(--txt-3);border-color:var(--ink-line)}
+.cf-no:hover{background:var(--chrome-raise-2);color:var(--txt-hi);border-color:var(--line-1)}
+
+.cf-yes{background:linear-gradient(to bottom,var(--seal),var(--seal-2));color:var(--txt-max);
+  box-shadow:inset 0 1px 0 var(--sheen-25), 0 6px 18px -10px var(--sh-9)}
+.cf-yes:hover{filter:brightness(1.12);
+  box-shadow:inset 0 1px 0 var(--sheen-35), 0 12px 26px -12px var(--seal-a5)}

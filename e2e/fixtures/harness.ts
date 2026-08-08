@@ -251,7 +251,25 @@ export async function newRun(page: Page): Promise<void> {
   await expect(control).toHaveAttribute('data-op', 'new_run', { timeout: 30_000 })
   await expect(control).toBeEnabled({ timeout: 30_000 })
   await control.click()
+  await confirmDeploy(page)
   await expect(control).toHaveAttribute('data-op', 'deploy', { timeout: 20_000 })
+}
+
+/**
+ * Answers the confirmation plate (x2 — `shell/confirm.ts`).
+ *
+ * Every committing press of DEPLOY now raises a question before it commits, in
+ * BOTH of the control's committing modes, so every lane that drives the press
+ * answers it. The plate is not a window: it has no title bar, it is not in the
+ * registry, and it holds `#topbar` and `#desktop` inert while it is up — which
+ * is why this waits for it to go before handing control back. A press that
+ * raised no plate is a real failure and is asserted, not tolerated.
+ */
+export async function confirmDeploy(page: Page, answer: 'yes' | 'no' = 'yes'): Promise<void> {
+  const plate = page.locator('#confirm')
+  await expect(plate, 'the deploy press raised no confirmation plate').toBeVisible({ timeout: 10_000 })
+  await page.locator(answer === 'yes' ? '#confirmYes' : '#confirmNo').click()
+  await expect(plate).toHaveCount(0, { timeout: 10_000 })
 }
 
 /** Seeds the SIM clock through the C16 hook — the only way to REACH 21:04. */

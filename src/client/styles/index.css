@@ -21,6 +21,9 @@
 @import './signin.css';
 @import './win-manual.css';
 
+/* x2 — the confirmation plate. It re-cuts the door's plate, so it follows it. */
+@import './confirm.css';
+
 /* u10 — the self-hosted @font-face set. Appended, so u1's four core sheets keep
    the first four slots; @font-face is order-independent. */
 @import './fonts.css';

@@ -16,7 +16,7 @@
 // suite binds to whatever run the shell boots.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
-import { turnToAgent } from './fixtures/harness.ts'
+import { confirmDeploy, turnToAgent } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -209,6 +209,7 @@ test.describe('full loop back to BUILD', () => {
 
     await expect(page.locator(NEW_RUN)).toBeEnabled()
     await page.locator(NEW_RUN).click()
+    await confirmDeploy(page)
 
     // RE-AIMED (08-08, W4): the press now STARTS the day it opens, so `build`
     // is a phase the desk passes THROUGH — the first beat moves it to `run`,
@@ -232,6 +233,7 @@ test.describe('full loop back to BUILD', () => {
 
     await drainToFinal(page)
     await page.locator(NEW_RUN).click()
+    await confirmDeploy(page)
     await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
 
     const emitted = lastMeta(await frame(page))
@@ -251,6 +253,7 @@ test.describe('full loop back to BUILD', () => {
     await boot(page)
     await drainToFinal(page)
     await page.locator(NEW_RUN).click()
+    await confirmDeploy(page)
     await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
     await expect(page.locator(NEW_RUN)).toHaveAttribute('data-op', 'deploy')
 
@@ -341,8 +344,16 @@ test.describe('new run unlocks and files the report', () => {
     const before = lastMeta(await frame(page)).run
     const button = page.locator(NEW_RUN)
     await button.click()
+    // x2 — the hammering now lands on a desk that is `inert` behind the
+    // confirmation plate, and one press can only ever raise ONE plate
+    // (`openConfirm` refuses a second). So the claim is unchanged and its guard
+    // has moved: the question absorbs the extra presses, and the single answer
+    // is what commits. Asserting the plate count is the part that would catch a
+    // regression here — two plates would mean two pending commits.
     await button.click({ force: true }).catch(() => undefined)
     await button.click({ force: true }).catch(() => undefined)
+    await expect(page.locator('#confirm'), 'the hammering stacked a second plate').toHaveCount(1)
+    await confirmDeploy(page)
 
     await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
     expect(lastMeta(await frame(page)).run, 'a double click advanced the loop twice').toBe(before + 1)
@@ -367,6 +378,7 @@ test.describe('new run unlocks and files the report', () => {
     await expect(page.locator(`${FILE} .slot.locked`), 'the close did not hand the file back').toHaveCount(0)
 
     await page.locator(NEW_RUN).click()
+    await confirmDeploy(page)
     await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
 
     await expect(page.locator(FILE)).not.toHaveClass(/\bhidden\b/)
@@ -385,6 +397,7 @@ test.describe('new run unlocks and files the report', () => {
     const railBefore = await page.locator(OPTION).count()
 
     await page.locator(NEW_RUN).click()
+    await confirmDeploy(page)
     await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
 
     const filed = lastMeta(await frame(page))
@@ -401,6 +414,7 @@ test.describe('new run unlocks and files the report', () => {
     await boot(page)
     await drainToFinal(page)
     await page.locator(NEW_RUN).click()
+    await confirmDeploy(page)
     await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
 
     const emitted = lastMeta(await frame(page))
@@ -424,6 +438,7 @@ test.describe('new run unlocks and files the report', () => {
     const firstRows = await page.locator(ROWS).count()
 
     await page.locator(NEW_RUN).click()
+    await confirmDeploy(page)
     await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
     await expect(page.locator(NEW_RUN)).toHaveAttribute('data-op', 'deploy')
 

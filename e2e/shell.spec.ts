@@ -23,7 +23,7 @@
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
-import { turnToAgent } from './fixtures/harness.ts'
+import { confirmDeploy, turnToAgent } from './fixtures/harness.ts'
 
 /** The four windows, in the taskbar order the registry must emit. */
 const WINDOWS = [
@@ -419,6 +419,7 @@ test.describe('topbar', () => {
     expect((await frame(page)).minute, 'the clock advanced with no file committed').toBe(held)
 
     await page.locator('#w-file #btnDeploy').click()
+    await confirmDeploy(page)
 
     await expect.poll(async () => (await frame(page)).rate, { timeout: 2000 }).toBe(1)
     await expect.poll(async () => (await frame(page)).minute, { timeout: 8000 }).toBeGreaterThan(held)
@@ -446,6 +447,7 @@ test.describe('topbar', () => {
     // that starts it now is a committed file. ×4 is gone, so the wait widens to
     // match ×1 rather than the transport's fast-forward.
     await page.locator('#w-file #btnDeploy').click()
+    await confirmDeploy(page)
     const m0 = (await frame(page)).minute
     await expect
       .poll(async () => {

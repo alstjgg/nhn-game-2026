@@ -19,7 +19,7 @@ import type { Locator, Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { awaitRecordFinal, mineFirst, raiseWindow, turnToAgent } from './fixtures/harness.ts'
+import { awaitRecordFinal, confirmDeploy, mineFirst, raiseWindow, turnToAgent } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -126,6 +126,7 @@ async function fileAnotherRun(page: Page): Promise<void> {
   await expect(newRun, 'the day never unlocked NEW RUN').toHaveAttribute('data-op', 'new_run', { timeout: 30_000 })
   await expect(newRun, 'the day never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
   await newRun.click()
+  await confirmDeploy(page)
   await drain(page)
   await page.locator(`${REP} .win-bar`).click()
 }
@@ -316,6 +317,7 @@ test.describe('typewriter is replay', () => {
     // The pump only ticks while the clock runs. RE-AIMED (08-08, W4): there is
     // no ▶ any more — the operator starts the day by committing a file to it.
     await page.locator('#w-file #btnDeploy').click()
+    await confirmDeploy(page)
 
     await expect
       .poll(
@@ -397,6 +399,7 @@ test.describe('typewriter is replay', () => {
     await expect(newRun, 'the day never unlocked NEW RUN').toHaveAttribute('data-op', 'new_run', { timeout: 30_000 })
     await expect(newRun, 'the day never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
     await newRun.click()
+    await confirmDeploy(page)
 
     const samples: number[] = []
     for (let i = 0; i < 8; i += 1) {
