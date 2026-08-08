@@ -130,21 +130,28 @@ Re-run one probe after changing it.
 | C3 | "보고 지침" → **교신 지침** (picked 08-06) | `dossier.ts:113` |
 | C4 | 객관 로그 → 현장 기록, 요원 보고서 → 무전 기록 | `src/client/components/report-view.ts:123` and `:124` |
 
-- **C1's premise is not what it says, and that is why it is a Won't.** The
-  window does not scroll. `.win-body` is `overflow:hidden` (`shell.css:211`) and
-  `win-agent-file.css` declares no scroll container at all — unlike REPORTS
-  (`.doc`), LIVE FEED (`.feed-scroll`) and the manual (`.man-sheet`), which each
-  have one. So the AGENT FILE is not a scroll to be paged; it is a fixed box
-  that **clips**, and C9 forbids anything off-screen in the default layout.
-  Paging is one answer to that. A scroll container is a smaller one, and the
-  window has since absorbed U3's settle control and W4's deploy zone without
-  needing either — the body still fits at 1280×800. C1 therefore stays a Won't
-  on cost, not on merit: it is a presentation rewrite that touches the section
-  order two suites assert (`agent-file.test.ts:262-274`,
-  `e2e/agent-file.spec.ts:129-139`), it moves no mechanism, and the tiebreaker
-  this document ranks by is mechanism legibility. **If the file ever clips, the
-  fix is a scroll container, not C1.** U5.3 (a page per ECHO-n) is the reason
-  C1 was ever wanted, and U5.3 is a post-deadline step.
+- **C1 is not a layout fix, and reading it as one is how it got cut.** "Not a
+  scroll" describes the shape, not the reason. The reason is in U5.3's own row,
+  which C1 exists to make possible: *flipping back reads past instructions*.
+  **The player cannot see what they told a previous agent.** Each sitting they
+  compose a file, the day runs on it, and at the close the file is rebuilt for
+  the next agent — and the version ECHO-1 flew is then gone from the desk
+  entirely. Nothing on screen answers "what did I change between ECHO-2 and
+  ECHO-3, and what changed in the result".
+  That is the C-BLOCK loop's own comparison surface, and this document ranks by
+  mechanism legibility. U5.2c shows which sentence moved *this* agent; without
+  C1/U5.3 there is nothing to compare it against, because the previous file
+  does not exist anywhere the player can look. **No scroll container fixes
+  this** — the pages are not off-screen, they are unwritten.
+  A paged dossier is what gives a sitting somewhere to live: §0–§5 become a
+  page, and U5.3 appends one per ECHO-n. Cost is real and stays named — section
+  order is asserted at `tests/windows/agent-file.test.ts:262-274` and
+  `e2e/agent-file.spec.ts:129-139`, and the deployed set per sitting has to be
+  retained to fill a past page — but it is cost against the tiebreaker, not
+  against polish.
+  *(Cut as a Won't from the first cut line onward with no reason ever recorded,
+  and re-read on 08-08 as an overflow fix, which it is not. 민서 corrected it
+  back to Must the same day.)*
 - **C1's page inventory uses spaced forms on disk** — `행동 원칙`, `알고 있는 문장`,
   `보고 지침`. `문서번호` **does not exist anywhere in the tree**; it is new copy to
   be authored. `문서번호` and `호출부호` are built in the window, not the component
@@ -178,7 +185,7 @@ C2–C4 are copy and land in one commit.
 | U5.2b | Carry the agent's chosen stance to the client at all | engine seam — see below |
 | U5.2b+ | Carry the **citation** with it: `judged.cited_ids`, the judgment's `because_block_ids` filtered to what the player deployed | second engine-seam unit; §5.2's authored/engine/client split applies twice here |
 | U5.2c | Show that stance beside the sentence that moved it, and show unused sentences as unused | depends on U5.2b+ — see below |
-| U5.3 | AGENT FILE gains one page per ECHO-*; a new simulation appends a page | depends on C1 (`dossier.ts:88-120`) |
+| U5.3 | AGENT FILE gains one page per ECHO-*; a new simulation appends a page, **and flipping back reads past instructions** | depends on C1 (`dossier.ts:88-120`); needs the deployed set retained per sitting |
 | U6 | The loop the player operates: one sitting is one record, one gesture mines, one press deploys | five units — see below |
 
 **U1 must not go in the adapter.** A pacing queue already exists there —
@@ -408,7 +415,16 @@ around it.
 ## 4. Cut line (~08-10; the deployed build stays green)
 
 **Must:** U1 · group 1 (G2, G4, C2, C3, C4, M1, M2, T2) · U3 · U5.2b + U5.2b+ +
-U5.2c · T1 · U6 · the manual's content (below).
+U5.2c · T1 · U6 · **C1 → U5.3** · the manual's content (below).
+
+**C1 → U5.3 is a Must** (민서, 08-08), and it is the second half of the same
+tiebreaker U5.2c serves. U5.2c shows which sentence moved *this* agent; C1/U5.3
+is what lets the player compare it against the file they gave the last one. A
+loop whose results cannot be compared teaches nothing, and today the previous
+sitting's file is not anywhere on the desk to compare against — the pages are
+unwritten, not off-screen (§1 C). Ranked against the other Musts it comes after
+U5.2c, because a citation with nothing to compare it to still reads, while
+pages of files whose causes are invisible do not.
 
 U1 leads: a day that arrives in bursts is skipped rather than lived, and 21:04
 then lands on nothing. U5.2b+c is the only place cause becomes visible, which is
@@ -447,13 +463,7 @@ schema churn in the headless runner for something no player sees.
 because U3 first deletes or reworks two of its sites (`tally.ts:54`,
 `deploy-button.ts:51`).
 
-**Won't:** C1 · U5.3 · U2 · O2.
-
-**C1 is a cost cut, not a merit one** (§1 C). The window it re-shapes does not
-scroll — it clips — so C1 is one answer to a problem a scroll container answers
-more cheaply, and the body still fits. It moves no mechanism, and it touches
-the section order two suites assert. U5.3, the thing C1 was ever wanted for, is
-the next step rather than a cut casualty.
+**Won't:** U2 · O2.
 
 **U2** is deferred because raising the cap without a probe risks the mechanism
 claim days before submission: C-BLOCK was measured with **one** injected
