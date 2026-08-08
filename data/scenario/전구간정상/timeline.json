@@ -428,7 +428,7 @@
       "text": "천장 마감재가 떨어진다. 카메라 12번 화면이 검게 된다",
       "exposure": {
         "visible_from": "22:04",
-        "extra_condition": "line_kept"
+        "extra_condition": null
       },
       "effects": {
         "deltas": {},
@@ -444,7 +444,7 @@
       "text": "끊긴 쇠사슬이 바닥에 있다. 문 안쪽 상행 대피로에 사람 줄이 선다",
       "exposure": {
         "visible_from": "22:11",
-        "extra_condition": "doors_opened · line_kept"
+        "extra_condition": "doors_opened"
       },
       "effects": {
         "deltas": {},
@@ -465,7 +465,7 @@
       "text": "문 앞에 사람들이 겹쳐 있다. 쇠사슬은 그대로다",
       "exposure": {
         "visible_from": "22:19",
-        "extra_condition": "not doors_opened · line_kept"
+        "extra_condition": "not doors_opened"
       },
       "effects": {
         "deltas": {},
@@ -486,7 +486,7 @@
       "text": "소방 진입이 1.4km에서 멈춘다. 열이 대원들을 되돌려 보낸다",
       "exposure": {
         "visible_from": "22:26",
-        "extra_condition": "line_kept"
+        "extra_condition": null
       },
       "effects": {
         "deltas": {},
@@ -502,7 +502,7 @@
       "text": "오세라의 무전이 끊긴다. 마지막 말은 9번이라는 숫자다",
       "exposure": {
         "visible_from": "22:41",
-        "extra_condition": "not driven_out · line_kept"
+        "extra_condition": "not driven_out and line_kept"
       },
       "effects": {
         "deltas": {},
@@ -523,7 +523,7 @@
       "text": "갱구 밖 집결지에서 인원을 센다. 세 번 세고 세 번 다른 수가 나온다",
       "exposure": {
         "visible_from": "22:58",
-        "extra_condition": "line_kept"
+        "extra_condition": null
       },
       "effects": {
         "deltas": {},
@@ -539,7 +539,7 @@
       "text": "상황 종료. 사고 개요서 적재물 칸에 '일반 화물'이 적힌다",
       "exposure": {
         "visible_from": "23:12+",
-        "extra_condition": "line_kept · not pallet_named"
+        "extra_condition": "not pallet_named"
       },
       "effects": {
         "deltas": {},
@@ -560,7 +560,7 @@
       "text": "상황 종료. 사고 개요서 적재물 칸에 폐리튬 배터리 팰릿 열두 개가 적힌다",
       "exposure": {
         "visible_from": "23:12+",
-        "extra_condition": "line_kept · pallet_named"
+        "extra_condition": "pallet_named"
       },
       "effects": {
         "deltas": {},

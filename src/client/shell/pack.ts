@@ -28,7 +28,13 @@ export interface ScenarioIdentity {
 // run on `minute >= endMinute`), which is why `compile-datapack.mjs` refuses a
 // timeline that would cross midnight — a pack that did would boot already
 // ended. A candidate pack has to close before 23:59.
-const PACK_SLUG = '전구간정상'
+//
+// EXPORTED so a test can ask "which pack ships?" instead of restating the
+// answer. `tests/driver/shipped-pack.test.ts` plays whatever this names and
+// derives every expectation from that pack's own files, so switching the slug
+// moves the coverage with it rather than leaving it aimed at a pack the deploy
+// no longer carries.
+export const PACK_SLUG = '전구간정상'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
