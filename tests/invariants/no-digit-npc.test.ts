@@ -44,6 +44,12 @@ const NPC_TEXT_SELECTOR = '.fl-c'
 /**
  * Excluded by name. Each one renders digits legitimately: the per-line and
  * topbar clocks are chrome, the tally is score.
+ *
+ * x4 — the ledger's table went with its sheet skin, so `.tly-table` / `.th-v` /
+ * `.tr-v` name nothing any more. The day's digits are painted into the record's
+ * LINES now: `.tly-lines` (the list) and `.tly-line` (one 집계 line). The
+ * exclusion is the same one it always was — score is allowed digits, an NPC
+ * line is not — re-pointed at the selectors that carry them.
  */
 const EXCLUDED_SELECTORS = [
   '.fl-t',
@@ -52,9 +58,8 @@ const EXCLUDED_SELECTORS = [
   '.dd-value',
   '.dd-runs',
   '.ledger',
-  '.tly-table',
-  '.th-v',
-  '.tr-v',
+  '.tly-lines',
+  '.tly-line',
 ] as const
 
 /** The seam's own names for the two channels — a rename must break the scope. */

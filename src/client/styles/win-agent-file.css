@@ -34,6 +34,13 @@
   font-size:var(--fs-10-5);line-height:1.6}
 .sect-rows dt{color:var(--faded);letter-spacing:.06em}
 .sect-rows dd{font-family:var(--myeong);color:var(--pap-3)}
+/* x4 — 식별's 호출부호. The rest of 식별 is standing text that reads the same on
+   every agent's page (배치 · 권한 never change); the callsign is the ONE value
+   that says which agent this page is about, and the file is now a document the
+   operator flips through. It is set in the seal's own red so a page turn lands
+   on the identity first. `components/dossier.ts` decides which row wears the
+   class — the sheet never spells the Korean key. */
+.sect-rows dd.rd-code{color:var(--seal-2);font-weight:800;letter-spacing:.08em}
 
 /* §3 기질 — redacted */
 .sect.sealed .sect-body{position:relative;color:transparent;user-select:none}
@@ -45,40 +52,62 @@
   display:flex;align-items:center;gap:var(--space-6)}
 .sealed-note::before{content:'✕';font-size:var(--fs-9)}
 
-/* slots */
-.slots{display:grid;gap:var(--space-7);margin-top:var(--space-8)}
-.slot{position:relative;min-height:81px;
-  padding:var(--space-8) var(--space-10) var(--space-8) var(--space-34);
-  border:1px dashed var(--sh-34);background:var(--sheen-28);
-  transition:background .18s,border-color .18s,box-shadow .18s}
-.slot::before{content:attr(data-no);position:absolute;left:0;top:0;bottom:0;width:36px;
-  display:flex;align-items:center;justify-content:center;font-size:var(--fs-9);font-weight:600;
-  color:var(--faded);border-right:1px dashed var(--sh-22);letter-spacing:.04em}
-.slot .slot-empty{font-family:var(--myeong);font-size:var(--fs-11);color:var(--faded-2);
-  display:flex;align-items:center;height:57px}
-.slot.droppable{border-color:var(--seal);background:var(--seal-wash);
-  box-shadow:0 0 0 3px var(--seal-a12)}
-.slot.filled{border-style:solid;border-color:var(--sh-4);background:var(--sheen-55)}
-.slot.locked{opacity:.92}
-.slot.locked .slot-empty{opacity:.5}
-.slot.pop{animation:slotPop .4s cubic-bezier(.3,1.5,.4,1)}
-@keyframes slotPop{0%{transform:scale(.94)}100%{transform:none}}
+/* 인수인계 사항 — a paragraph, not four boxes (x4).
 
-/* the seated sentence, its pin and its 해제 — REHOMED from the retired
-   `win-block-store.css`. That sheet owned the whole `.bcard` skin, so T1's
-   deletion of the BLOCK STORE left the AGENT FILE's own slot cards unstyled
-   (the 08-08 playtest). What a slot holds is a line of the file, not an object
-   off a deck: no card face, no shadow, no lift — just type. */
-.slot .bcard{position:relative;padding:0;background:transparent;border:0}
-.slot .bc-text{font-family:var(--myeong);font-size:var(--fs-11-5);line-height:1.6;
-  color:var(--pap-1);text-align:justify;padding-right:var(--space-24)}
-.slot-pin{position:absolute;right:12px;top:12px;width:12px;height:12px;border-radius:50%;
+   T1 had already taken the card FACE off a seated sentence ("what a slot holds
+   is a line of the file, not an object off a deck"), but the BOX stayed: four
+   dashed rectangles with a numbered rail down the left, standing there empty
+   whether or not the operator had anything to hand over. The file is a handover
+   the operator WRITES, so it reads as writing now — one justified flow, with
+   each sentence's slot number and its 해제 sitting in the margin of the line
+   they belong to.
+
+   The four permanent boxes are down to one blank, and only while the file is
+   empty; `#slotCount` in the deploy zone below is where the remaining seats are
+   read. `components/slot-board.ts` decides all of that — nothing here counts. */
+/* Ragged right, deliberately — the 무전 기록 pane justifies because it is one
+   long piece of prose, and this is a handful of short discrete sentences with a
+   button on the end of each. Justified, the last line of every seat stretched
+   its inter-word spaces into rivers wide enough to read as a table. */
+.slots{margin-top:var(--space-8);font-family:var(--myeong);font-size:var(--fs-11-5);
+  line-height:2.05;color:var(--pap-1);text-align:left;word-break:keep-all}
+
+/* one seated sentence: an inline run, so the paragraph can break inside it */
+.slot{display:inline}
+.slot::before{content:attr(data-no);font-family:var(--mono);font-size:var(--fs-8);font-weight:700;
+  letter-spacing:.1em;color:var(--seal-2);vertical-align:.15em;margin-right:var(--space-4);
+  padding:0 var(--space-3);border:1px solid var(--seal-a25);border-radius:1px;
+  white-space:nowrap}
+.slot .bcard{display:inline;padding:0;background:transparent;border:0}
+.slot .bc-text{display:inline;font-family:inherit;font-size:inherit;line-height:inherit;
+  color:inherit;text-align:inherit}
+/* the thread's landing dot rides the line rather than a box corner, and it
+   CLOSES the run — see the note in `slot-board.ts` on why it is last */
+.slot-pin{display:inline-block;width:7px;height:7px;border-radius:50%;vertical-align:.28em;
+  margin-left:var(--space-4);
   background:radial-gradient(circle at 35% 30%,var(--pin-hi),var(--seal-2));
-  box-shadow:0 2px 4px var(--sh-5), 0 0 8px var(--seal-a55);z-index:2}
-.slot-unset{position:absolute;right:9px;bottom:9px;font-size:var(--fs-8);letter-spacing:.14em;
-  color:var(--faded);padding:var(--space-1) var(--space-5);border:1px solid transparent;transition:.14s}
-.slot:hover .slot-unset{border-color:var(--sh-25);color:var(--seal-2)}
+  box-shadow:0 0 6px var(--seal-a55)}
+.slot-unset{font-size:var(--fs-8);letter-spacing:.14em;color:var(--faded);
+  margin-left:var(--space-5);padding:0 var(--space-5);vertical-align:.15em;
+  border:1px solid var(--sh-25);border-radius:1px;background:var(--sheen-28);
+  transition:.14s;white-space:nowrap}
+.slot-unset:hover{border-color:var(--seal);color:var(--seal-2);background:var(--seal-wash)}
+.slot.locked::before{color:var(--faded);border-color:var(--sh-25)}
 .slot.locked .slot-unset{display:none}
+
+/* the blank — one panel, the line centred in it both ways */
+.slot-blank{display:flex;align-items:center;justify-content:center;min-height:96px;
+  padding:var(--space-10) var(--space-14);border:1px dashed var(--sh-34);
+  background:var(--sheen-28);text-align:center;
+  transition:background .18s,border-color .18s,box-shadow .18s}
+.slot-blank::before{content:none}
+.slot-blank .slot-empty{font-family:var(--myeong);font-size:var(--fs-11);line-height:1.7;
+  color:var(--faded-2);background:transparent;border:0;word-break:keep-all}
+.slot-blank .slot-target{cursor:pointer}
+.slot-blank.droppable{border-color:var(--seal);background:var(--seal-wash);
+  box-shadow:0 0 0 3px var(--seal-a12)}
+.slot-blank.locked{opacity:.92}
+.slot-blank.locked .slot-empty{opacity:.5}
 
 .deploy-zone{margin-top:var(--space-18);padding-top:var(--space-12);border-top:2px solid var(--graphite);
   display:flex;align-items:center;justify-content:space-between;gap:var(--space-12)}
