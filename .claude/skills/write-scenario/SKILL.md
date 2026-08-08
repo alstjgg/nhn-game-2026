@@ -1,19 +1,27 @@
 ---
 name: write-scenario
-description: Scenario factory — runs one assignment through the write → compile → lint → paper-check → revise loop, producing a validated datapack and a verdict memo. Args - brief file path (replaces built-in §1–§3) · draft-only (write, then stop) · existing draft path (skip writing, run the validation loop only). Format canon - drafts follow §4, datapacks follow data/scenario/_schema.
+description: Scenario factory — runs one assignment through the write → compile → lint → paper-check → revise loop, producing a validated datapack and a verdict memo, and on request hardens a selected pack into a playable one. Args - brief file path (replaces built-in §1–§3) · draft-only (write, then stop) · existing draft path (skip writing, run the validation loop only) · harden <slug> (skip writing, run §7 against an existing pack). Format canon - drafts follow §4, datapacks follow data/scenario/_schema.
 ---
 
 # Scenario factory
 
 The session running this skill is the **orchestrator** — it does not write. §0–§5
 are the material fed wholesale to the writing sub-agent (the entirety of the
-writer's world); the process this session follows is §6. The final product is a
-bundle that has passed the validation loop: **datapack + verdict memo + draft
-diff + remainder list**. All produced artifacts (draft, datapack, memos) are
-written in Korean.
+writer's world); the process this session follows is §6, and §7 when asked. The
+default product is a bundle that has passed the validation loop: **datapack +
+verdict memo + draft diff + remainder list**. All produced artifacts (draft,
+datapack, memos) are written in Korean.
+
+**That default pack is not playable, and that is deliberate.** The loop produces
+a *draft-stage* pack: no meter is bound to an engine variable, no gate carries
+buckets, `symptoms.json` is `{}`, and lint's FLAG list is the hardening
+worklist. Making it playable is §7, and §7 runs **only when asked**, because the
+manual is written for the scenario that was chosen (`당선 시나리오 확정 후`) and
+hardening a candidate you will discard is wasted work.
 
 **Args:** brief file path (replaces §1–§3) · `draft-only` (stop after §6-1) ·
-existing draft path (skip §6-1, enter §6-2 with that draft).
+existing draft path (skip §6-1, enter §6-2 with that draft) · `harden <slug>`
+(skip §6 entirely, run §7 against an existing pack).
 
 ## 0. Preparation — what to read, and what not to
 
@@ -160,11 +168,22 @@ sentences; the skeleton follows the below exactly. Section headers are
 
 Not all nine sections ship. Some are compiled into files the browser
 downloads, and some exist only for the workshop — and you cannot tell which
-from the draft, so here it is:
+from the draft, so here it is.
 
-| 플레이어가 읽는다 | 절대 나가지 않는다 |
+Read the left column as **reaches the browser**, not as *appears on screen*.
+Some of it is rendered into the 요원's own prompt rather than shown to the
+player; either way it has left the workshop and is fetchable, so it is written
+in the world's language.
+
+| 브라우저가 받는다 | 워크숍에 남는다 |
 |---|---|
-| `로그라인` · `고정 타임라인` (사건 텍스트 **와** 런 깊이 칸) · `인물` · `기질 제안` (통째로) · `갈림길`의 장면 산문 · `question` · `stances` · `false_leads` · `점수`의 집계 규칙 | `장소` · `숨겨진 진실` · `자기 검사` · `걸치는 줄기` · `standard_form` · `key_examples` · `점수` 표와 세 글머리 |
+| `로그라인` · `고정 타임라인` 사건 텍스트 **와** 런 깊이 칸 · `인물`의 이름·역할·이해관계·아는 것·**눈금 라벨** · `기질 제안`의 기본 성향·조건절 본문·패배 조건·**축 이름과 축 어휘** · `갈림길`의 제목·장면·`question`·`stances`·`false_leads` · `점수`의 단위 이름과 집계 규칙 | `장소` · `숨겨진 진실` · `자기 검사` · `걸치는 줄기` · `눈금 후보`라는 말 자체 · `standard_form` · `key_examples` · `key_conditions` (축·지목·종·`targets_clause` 전부) · `점수` 표와 세 글머리 |
+
+Two things that surprise people. **Your section headings are not the data** —
+`**조건절 1 (축 어휘: …)**` is parsed into `cl1` and the words `조건절`,
+`눈금 후보` never travel; what travels is the prose under them, plus the axis
+name you chose. And **the split runs per-bullet, not per-section**: inside
+`인물`, `걸치는 줄기` stays home while `눈금 후보`'s label ships.
 
 The left column is the membrane, and two kinds of word are barred from it.
 
@@ -398,7 +417,7 @@ subjects, weight at the end of the sentence:
 
 1. **Write** — spawn one sub-agent. Its task: read §0–§5 of this file plus
    the guide (`docs/scenario/scenario-generation-guide.md`) and **follow
-   §0–§5 only; §6 is a process document — ignore it**. If a brief argument
+   §0–§5 only; §6 and §7 are process documents — ignore them**. If a brief argument
    exists, pass it per §0-3. So the orchestrator's vocabulary cannot seep
    into the draft, **writing always happens in a sub-agent**. If
    `draft-only`, report the draft path and stop.
@@ -450,10 +469,108 @@ subjects, weight at the end of the sentence:
 5. **Loop** — run §6-2 → §6-3 again. Exit condition: lint ERROR 0 **and**
    draft-fixable blockers 0. Maximum 3 rounds — if anything remains, stop
    and report it as remainder.
+
+   **"Blockers 0" is a verdict, not an inference.** Only §6-3 can establish
+   it, so a round that fixes every named blocker and then stops at the machine
+   gate has **paused, not exited** — lint cannot see a preemption or an escape
+   hatch, which is why §6-3 exists. Either run the confirming check or say in
+   the report that the last verdict on record is the one *before* the fixes,
+   and name which blockers were fixed without re-reading.
 6. **Report** — close with the bundle: pack path · final verdict memo ·
    draft diff (against the freshly written draft) · remainder list
    (cross-track / advisory / "lint promotion candidates" — a finding a
    machine could have caught proposes a rule promotion) · a summary of
    remaining lint WARN·FLAG. **Passing this loop does not replace the human
    read of manual §6** — the report must state that one human read before
-   the probe still stands.
+   the probe still stands. State plainly that the pack is **draft-stage and
+   not playable**, and that §7 is what makes it so — the FLAG count is that
+   sentence in numbers.
+
+## 7. Hardening — orchestrator only, and only when asked
+
+> Runs on `harden <slug>`, never as part of a default run. Read
+> `docs/scenario/gate-hardening-manual.md` in full first — §6 used it as the
+> checker's rulebook; here it is the instruction set.
+
+**Precondition, and what to do when it is not met.** The input is a pack with
+lint ERROR 0 and a §6-3 verdict of 통과 or 조건부 통과. A 재작업 verdict whose
+blockers were all fixed **does not become 통과 by being fixed** (§6-5) — the
+verdict on record is still 재작업, because nothing re-read the draft. Two ways
+forward, and pick deliberately rather than by default:
+
+- **Run §6-3 once more first.** Correct, and the only option if any fix
+  touched a stance set, a key example or a timeline row near a gate — those
+  are exactly what a paper check sees and lint does not.
+- **Proceed on the stale verdict.** Acceptable when every blocker was
+  individually verified and the fixes were narrow. Then say so in the §7-5
+  report, in these words: which verdict is on record, that it predates the
+  fixes, and what went unread. Hardening on an unconfirmed draft is a choice
+  someone may need to revisit; it must not be discoverable only by reading
+  timestamps.
+
+**Why this is a separate stage and not the loop's last step.** The manual is
+addressed to the session that runs *after* a scenario is chosen. Hardening is
+also the only place three of lint's rules can fail: `E-P5`, symptom coverage
+and `E8` all need buckets to exist before they mean anything, so a draft-stage
+pack passes them vacuously. Hardening is where they start biting.
+
+1. **Order is forced, because each artifact names the one before it.** Buckets
+   declare the flags; the score ladders and the symptom dictionary can only
+   read flags that already exist. Author in this order, in one pass per gate:
+
+   1. **`buckets`** in the draft's yaml cards (manual §5 is the canon; the
+      draft is where they live, so recompiling stays idempotent). 2–4 per
+      gate, every stance covered, deltas non-zero integers.
+   2. **`hardening.json`** — `characters` (meter → engine variable + integer
+      initial), `timeline` (per event `time` · `text_head` · `effects` ·
+      `present[]`), `symptoms`.
+
+      **`effects` defaults to explicit `{}` on every event.** The fixed
+      timeline is the day that happened; what the player changes rides on gate
+      buckets, and `{}` says "authored, none" where `null` says "not looked
+      at yet" — which is why the empty object clears the worklist flag and the
+      null does not. Give an event a real effect only when the record itself
+      must assert something no bucket can, and know the price before you do:
+      **every settable flag needs its own symptom sentence**, so one timeline
+      flag is one more piece of authored prose, and a flag that only the fixed
+      timeline sets is unreadable by any predicate anyway (`E-P3`) — it can
+      only ever be texture.
+   3. **`집계 규칙:`** fence under §8, keyed by the exact unit label from the
+      table, ordered, fallback last.
+   4. **Exposure tails** — replace the Korean in each run-depth cell's
+      `" · "` tail with the flag identifier that now exists. This is what
+      finally clears `W-V2`; see §4-2.
+
+2. **The rules that only exist here.** Each one is an ERROR, not taste:
+   - **No default-stance bucket sets a flag any score ladder reads** (`E-P5`).
+     The all-default path is the first run, and the first run is the record —
+     §4-8. Meter deltas on a default bucket are fine; flags are not.
+   - **Score conditions read intervention flags only**, never scalars, or the
+     default bucket's deltas reach the ladder by the back door.
+   - **Symptom coverage** — every `(variable, direction)` a bucket can reach
+     needs a list with a `min: 1` floor, entries in descending `min` order,
+     and a sentence for every settable flag. No digits in symptom text.
+   - **`text_head` is derived, not typed.** Slice it from the compiled
+     `timeline.json`; a hand-typed head that drifts from the event stops the
+     compiler, and forty of them typed by hand is forty chances to be wrong.
+
+3. **Split the work by what it is.** The rosters and text heads are mechanical
+   — derive them from the compiled pack with a script rather than by hand. The
+   design-bearing parts (which meters bind and to what initials, delta sizes,
+   flag semantics, and every symptom sentence) are authored, and the symptom
+   sentences are **prose**: spawn a sub-agent with §5's Korean persona for
+   them, exactly as §6-1 does, or they arrive in translationese.
+
+4. **Machine gate** — recompile, then lint. Recompiling merges the overlay, so
+   it is also the check that the overlay actually bound: the compile NOTE
+   reports how many characters, events and symptom variables merged, and a
+   zero there means the file did not take. Exit condition: **lint ERROR 0**,
+   and the FLAG list reduced to items that are genuinely someone else's
+   (routing vocabulary, engine-side gaps). Loop at most 3 times.
+
+5. **Report** — pack path · what bound (meters, flags, symptom variables) ·
+   FLAG count before and after · anything left on the worklist and whose it
+   is. Then state what hardening does **not** buy: the manual's §6 human read
+   still stands, and the probe (~30 calls, first gate only) is what actually
+   confirms the recipe survived into this pack's fixture text. Passing lint is
+   not a gate's certificate.

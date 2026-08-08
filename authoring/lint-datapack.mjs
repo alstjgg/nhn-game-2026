@@ -563,6 +563,7 @@ const playerFacing = [];
 const say = (where, value) => {
   if (typeof value === 'string' && value.trim()) playerFacing.push([where, value]);
 };
+say('meta.title', pack.meta.title);
 say('meta.logline', pack.meta.logline);
 for (const e of pack.timeline.events ?? []) {
   say(`timeline ${e.id} 사건`, e.text);
@@ -572,11 +573,18 @@ say('기질 기본 성향', pack.temperament.default_disposition);
 for (const c of pack.temperament.clauses ?? []) {
   say(`기질 ${c.id} 조건절`, c.condition);
   say(`기질 ${c.id} 패배 조건`, c.defeat_condition);
+  // The axis NAME and its vocabulary ship too — they are what the composer
+  // renders into Call 1, so an axis called `런` would reach the player.
+  say(`기질 ${c.id} 축`, c.axis);
+  for (const v of c.axis_vocabulary ?? []) say(`기질 ${c.id} 축 어휘`, v);
 }
 for (const c of pack.characters.characters ?? []) {
   say(`${c.id} ${c.name} 이해관계`, c.interest);
   for (const k of [...(c.knows ?? []), ...(c.doesnt_know ?? [])]) say(`${c.id} ${c.name} 아는 것`, k);
+  // `strands` is stripped at publish; `meters[].label` is not.
+  for (const m of c.meters ?? []) say(`${c.id} ${c.name} 눈금 라벨`, m.label);
 }
+for (const u of pack.score.units ?? []) say(`score ${u.id} 단위`, u.label);
 for (const g of pack.gates.gates ?? []) {
   say(`${g.gate} 제목`, g.title);
   say(`${g.gate} 장면`, g.scene);
@@ -614,14 +622,22 @@ for (const [where, value] of playerFacing) {
 // hid this — `시계 N까지 간 런에만 보임` is parsed into `visible_from` and never
 // ships, so the same word is harmless in one half of the cell and a leak in the
 // other half.
+// Flag only what does NOT parse. This asked hardening to "promote it to a
+// predicate" and then kept firing on the promoted value, because it tested for
+// non-null rather than for unreadable — so the worklist item could never be
+// closed and 집필 스킬 §7-4's exit condition was unreachable by construction.
+// `problems()` is the same reader the engine uses, so "parses" here means
+// exactly what it will mean at run time.
 for (const e of pack.timeline.events ?? []) {
-  if (e.exposure.extra_condition) {
-    flags.push(`timeline ${e.id}: exposure has free-text extra_condition — it ships verbatim to the player, so hardening must promote it to a predicate`);
+  if (e.exposure.extra_condition && problems(e.exposure.extra_condition).length > 0) {
+    flags.push(`timeline ${e.id}: exposure condition does not parse ("${e.exposure.extra_condition}") — it ships verbatim to the player, so hardening must promote it to a predicate`);
   }
 }
 for (const p of pack.places.places ?? []) {
   for (const [i, y] of (p.yields ?? []).entries()) {
-    if (!y.clock && y.depth_note) flags.push(`${p.id} ${p.name} yield[${i}]: depth is free text ("${y.depth_note}") — promote to a predicate`);
+    if (!y.clock && y.depth_note && problems(y.depth_note).length > 0) {
+      flags.push(`${p.id} ${p.name} yield[${i}]: depth does not parse ("${y.depth_note}") — promote to a predicate`);
+    }
   }
 }
 if (!Object.keys(symptoms).length) flags.push('symptoms.json empty — authored during hardening; until then state changes have no path to the screen');

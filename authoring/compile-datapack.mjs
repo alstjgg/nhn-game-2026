@@ -637,6 +637,17 @@ writeJSON('truths.json', { truths });
 writeJSON('score.json', score);
 // authored via the hardening overlay; empty skeleton until then (lint flags it)
 writeJSON('symptoms.json', symptoms);
+// The overlay itself, when the pack has never been hardened. `{}` is the
+// schema's own minimum ("최소 오버레이는 빈 객체다"), and lint REQUIRES the file
+// — `hardening` is in its FILES list, so a missing one is an ERROR. Without
+// this line a freshly compiled pack always fails the factory's machine gate on
+// something the draft cannot fix, and §6-5's exit condition (lint ERROR 0) is
+// unreachable until a human hand-writes the file. Never overwritten: a hardened
+// pack keeps everything it has, which is what makes recompiling idempotent.
+if (!existsSync(hardeningPath)) {
+  writeJSON('hardening.json', {});
+  notes.push('hardening.json 없음 — 빈 오버레이를 생성했다 (하드닝 전 기본 상태)');
+}
 copyFileSync(resolve(draftPath), join(outDir, 'draft.md'));
 
 console.log(`✓ compiled ${basename(draftPath)} → ${outDir}`);

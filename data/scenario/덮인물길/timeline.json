@@ -1,0 +1,813 @@
+{
+  "events": [
+    {
+      "id": "t1",
+      "time": "08:12",
+      "surface": "call",
+      "place_id": "p1",
+      "text": "최두일이 신고한다. 노점 앞 맨홀 뚜껑이 들썩이고 물이 솟는다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t2",
+      "time": "08:14",
+      "surface": "call",
+      "place_id": "p1",
+      "text": "최두일이 덕진천이라는 이름을 댄다. 접수는 하수도 막힘 항목으로 내려간다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t3",
+      "time": "08:18",
+      "surface": "document",
+      "place_id": "p5",
+      "text": "야간 당직 일지에 어젯밤 특이사항 없음으로 적혀 있다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t4",
+      "time": "08:20",
+      "surface": "document",
+      "place_id": "p5",
+      "text": "서정민이 민원 대장을 넘긴다. 같은 자리 항목이 2022년에 하나 올라 있다. 처리란은 '현장 확인, 이상 없음'.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t5",
+      "time": "08:22",
+      "surface": "document",
+      "place_id": null,
+      "text": "간밤 강우량이 관측 이래 손꼽히는 값으로 올라온다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": null
+    },
+    {
+      "id": "t6",
+      "time": "08:26",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "솟는 물이 회색에서 흙빛으로 바뀐다. 하수 냄새가 나지 않는다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t7",
+      "time": "08:29",
+      "surface": "document",
+      "place_id": "p5",
+      "text": "서정민이 준설 배차 화면을 띄운다. 배차가 나가면 이 접수 건의 통제 항목은 다시 열리지 않는다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t8",
+      "time": "08:31",
+      "surface": "call",
+      "place_id": "p1",
+      "text": "최두일이 다시 건다. 접수 항목을 바꿔 달라고 한다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t9",
+      "time": "08:33",
+      "surface": "call",
+      "place_id": "p1",
+      "text": "최두일이 도면에 없는 아치를 말한다. 어릴 때 저 밑으로 다녔고, 나올 때는 늘 하류 쪽이었다고. 3년 전 물이 솟았을 때도 하류 우수토실에서 먼저 물이 나왔다고 한다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "elder_recorded"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t10",
+      "time": "08:35",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "서정민이 준설차를 부르겠다고 한다. 최두일이 맨홀을 발로 짚으며 소리친다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        },
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t11",
+      "time": "08:40",
+      "surface": "document",
+      "place_id": null,
+      "text": "하수처리장 유입량이 새벽 세 시부터 평소의 두 배로 찍힌다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": null
+    },
+    {
+      "id": "t12",
+      "time": "08:44",
+      "surface": "document",
+      "place_id": "p5",
+      "text": "준설차 배차. 도착 예정 09:30. 도로 통제 항목은 비어 있다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t13",
+      "time": "08:50",
+      "surface": "onsite",
+      "place_id": "p3",
+      "text": "위탁업체 차가 선다. 정길수와 강미르가 사다리를 내린다. 작업 신고서는 접수되지 않았다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c5",
+          "side": "room"
+        },
+        {
+          "char_id": "c3",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t14",
+      "time": "08:52",
+      "surface": "onsite",
+      "place_id": "p3",
+      "text": "정길수가 어젯밤부터 받은 전화 이야기를 한다. 열한 통이었다고.",
+      "exposure": {
+        "visible_from": "08:52",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c5",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t15",
+      "time": "08:57",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "정길수 무전. 관이 아니라 물길이고 벽이 다듬돌이라고 한다. 지상에서 받는 사람이 없다.",
+      "exposure": {
+        "visible_from": "08:57",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c5",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t16",
+      "time": "09:02",
+      "surface": "cctv",
+      "place_id": "p4",
+      "text": "공사장 카메라에 가물막이가 잡힌다. 하천 정비 표지. 물이 전부 복개 쪽으로 밀려든다.",
+      "exposure": {
+        "visible_from": "09:02",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": null
+    },
+    {
+      "id": "t17",
+      "time": "09:10",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "3번 노점과 4번 노점 사이 노면이 갈라진다. 폭 3센티, 길이 4미터. 금이 도로를 가로지르지 않고 세로로 뻗는다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t18",
+      "time": "09:14",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "차량 통행이 이어진다. 노점 세 동이 자리를 지킨다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t19",
+      "time": "09:18",
+      "surface": "onsite",
+      "place_id": "p3",
+      "text": "정길수가 사다리를 올라온다. 장갑 한 짝이 없다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c5",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t20",
+      "time": "09:18",
+      "surface": "onsite",
+      "place_id": "p3",
+      "text": "사다리 발판에 젖은 자국이 올라와 있다. 내려갈 때 무릎이던 물이 올라올 때는 허리다. 이 속도면 삼십 분 안에 발판이 잠긴다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c5",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t21",
+      "time": "09:25",
+      "surface": "onsite",
+      "place_id": "p3",
+      "text": "서정민이 작업 신고서를 찾는다. 시스템에 아무것도 없다. 소방이 점검구 앞에서 승인을 기다린다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "room"
+        },
+        {
+          "char_id": "c5",
+          "side": "room"
+        },
+        {
+          "char_id": "c6",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t22",
+      "time": "09:29",
+      "surface": "call",
+      "place_id": "p3",
+      "text": "정길수가 회선에 대고 위치를 댄다. 상류 60미터 지점에 강미르를 두고 올라왔다고.",
+      "exposure": {
+        "visible_from": "09:29",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c5",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t23",
+      "time": "09:33",
+      "surface": "call",
+      "place_id": "p5",
+      "text": "서정민이 과장에게 건다. 신호만 간다. 결재선이 비어 있다.",
+      "exposure": {
+        "visible_from": "09:33",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t24",
+      "time": "09:36",
+      "surface": "cctv",
+      "place_id": "p4",
+      "text": "가물막이 마대 두 줄이 주저앉아 있다. 유량이 한 번 더 뛴다.",
+      "exposure": {
+        "visible_from": "09:36",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": null
+    },
+    {
+      "id": "t25",
+      "time": "09:40",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "최두일이 노점을 옮기지 않는다. 물통을 노면 금 위에 올려놓고 물이 차오르는지 본다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t26",
+      "time": "09:44",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "금이 11센티로 벌어진다. 차가 지날 때마다 물이 밀려 올라온다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t27",
+      "time": "09:47",
+      "surface": "onsite",
+      "place_id": "p3",
+      "text": "점검구에서 공기가 밀려 올라온다. 사다리가 울린다.",
+      "exposure": {
+        "visible_from": "09:47",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c6",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t28",
+      "time": "09:52",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "노면이 꺼진다. 길이 11미터. 승용차 한 대가 떨어지고, 노점 세 동이 함께 내려앉는다. 최두일이 그 안에 있다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t29",
+      "time": "09:58",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "지휘가 소방으로 넘어간다. 회선이 정리되고 도로가 닫힌다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c6",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t30",
+      "time": "10:00",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "강미르 휴대폰이 잡힌다. 물이 가슴까지 왔고, 들어온 사다리 쪽으로 되돌아가겠다고 한다.",
+      "exposure": {
+        "visible_from": "10:00",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t31",
+      "time": "10:03",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "강미르가 하류 쪽 벽에 뚫린 아치를 말한다. 물이 그리로 빠져나가는 소리가 들린다고.",
+      "exposure": {
+        "visible_from": "10:00",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t32",
+      "time": "10:05",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "강미르가 어느 쪽이냐고 묻는다. 회선 저쪽이 조용하다.",
+      "exposure": {
+        "visible_from": "10:00",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t33",
+      "time": "10:12",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "상류 쪽으로 8미터가 더 꺼진다. 15번 점검구가 함몰 구간에 들어간다.",
+      "exposure": {
+        "visible_from": "10:00",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": null
+    },
+    {
+      "id": "t34",
+      "time": "10:20",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "강미르 통화가 끊긴다. 마지막 소리는 물이 아니라 콘크리트다.",
+      "exposure": {
+        "visible_from": "10:00",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t35",
+      "time": "10:28",
+      "surface": "call",
+      "place_id": "p5",
+      "text": "윤경숙이 서정민에게 건다. 3년 전 그 자리 등급을 자기가 고쳐 적었다고 말한다.",
+      "exposure": {
+        "visible_from": "10:28",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c4",
+          "side": "line"
+        },
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t36",
+      "time": "10:31",
+      "surface": "document",
+      "place_id": "p5",
+      "text": "캐비닛 아래칸에서 점검 보고서 초안이 나온다. 5번 기둥 항목에 세굴 깊이가 손글씨로 적혀 있다.",
+      "exposure": {
+        "visible_from": "10:31",
+        "extra_condition": "elder_recorded"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t37",
+      "time": "10:35",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "소방이 노점 자리를 걷어낸다. 최두일을 찾는다.",
+      "exposure": {
+        "visible_from": "10:35",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c6",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t38",
+      "time": "10:38",
+      "surface": "onsite",
+      "place_id": "p2",
+      "text": "하류 우수토실 쪽으로 안전모 하나와 장갑 한 짝이 떠내려온다.",
+      "exposure": {
+        "visible_from": "10:38",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": null
+    },
+    {
+      "id": "t39",
+      "time": "10:40",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "상황 종료가 선언된다. 물은 여전히 흙빛이다.",
+      "exposure": {
+        "visible_from": "10:40",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c6",
+          "side": "room"
+        }
+      ]
+    }
+  ]
+}
