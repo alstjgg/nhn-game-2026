@@ -166,10 +166,21 @@ from the draft, so here it is:
 |---|---|
 | `로그라인` · `고정 타임라인` (사건 텍스트 **와** 런 깊이 칸) · `인물` · `기질 제안` (통째로) · `갈림길`의 장면 산문 · `question` · `stances` · `false_leads` · `점수`의 집계 규칙 | `장소` · `숨겨진 진실` · `자기 검사` · `걸치는 줄기` · `standard_form` · `key_examples` · `점수` 표와 세 글머리 |
 
-The left column is the membrane. Machinery vocabulary — `G1`, `갈림길`,
-`게이트`, stance labels quoted as labels — belongs only on the right. Write
-the left column as the world describing itself: the player is looking at a
-reconstruction, not at your notes about one.
+The left column is the membrane, and two kinds of word are barred from it.
+
+**Gate structure** — `G1`, `갈림길`, `게이트`, stance labels quoted as labels.
+
+**The vocabulary of the game itself** — `런`, `에이전트`, `기질`, `stance`,
+`주입`, `블록`, `조건절`, `눈금`, `플레이어`. This is the one that slips:
+`재앙의 정체는 이 순간까지 간 런에서만 확정된다` names no gate and still
+breaks the frame, because **the reconstruction does not know it is being
+replayed.** Nobody inside that afternoon has a word for a run. Write the
+sentence from inside the day — `폭발음은 기록되지 않았다` — and let the
+exposure column carry when it becomes visible.
+
+Both are checked by `datapack:lint`. Write the left column as the world
+describing itself: the player is looking at a reconstruction, not at your
+notes about one.
 
 1. **`로그라인`** — 3 sentences or fewer.
 2. **`고정 타임라인`** — the no-intervention event table, from the report
@@ -187,8 +198,18 @@ reconstruction, not at your notes about one.
    player (§4의 「어디까지 플레이어에게 닿는가」), and a gate id there is
    forbidden-list item 9. Write it as a condition on *this* run, never as
    something unlocked for runs afterward — the axis does not survive a run
-   boundary (§1). Hardening turns the tail into a machine predicate; the draft
-   writes prose.
+   boundary (§1).
+
+   **The tail is the one slot whose prose cannot survive to ship, and that is
+   deliberate.** Every Korean phrasing of a gate outcome contains the word
+   `런`, which is itself barred from player surfaces — so there is no wording
+   that is both natural and clean. The draft writes prose because prose is
+   what a human hardener reads; **hardening then replaces the tail with a flag
+   identifier** (`roof_seen`), which has no prose in it to leak. A pack that
+   still carries Korean here is unfinished, and lint says so on every such row.
+   Watch the asymmetry: `시계 N까지 간 런에만 보임` is parsed into a clock
+   stamp and never ships, so the same word is harmless in the first half of
+   the cell and a leak in the second.
    **One exposure per row** — information with different exposure
    depths is split into separate rows.
 3. **`인물`** (주요인물 4 or fewer + 조연 1–2) — each character in this

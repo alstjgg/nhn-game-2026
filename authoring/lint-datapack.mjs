@@ -539,8 +539,26 @@ if (clauseIds.length > 1) {
 // Failing safe is the point: if a strip is added later this may over-report,
 // which costs one rewording. It can never under-report into a hole, because
 // the test above is what actually holds the line.
+// Two tiers, and the split is not arbitrary.
+//
+// GATE_* is invariant 6 and nothing in the repo violates it, so it is an ERROR.
+//
+// SYSTEM_VOCAB is the wider rule the client layer has always had for UI copy
+// (`report-archive.ts`'s `REFUSED`, plan-playtest §"label guard") and the
+// scenario data layer never got: `런`, `에이전트`, `stance` and friends are
+// words for the workshop, and a reconstruction of a real afternoon does not
+// describe itself in them. It is a WARN only because 우는다리 currently trips it
+// in five slots and it is the shipped pack — this becomes an ERROR the moment
+// those are repaired, and the repair is the whole of the work.
+//
+// `런` needs an eojeol boundary or 그런/이런 match on the tail syllable; the
+// trailing exclusion keeps 런던/런닝 out. Ordinary Korean words that are also
+// design terms — 기질, 눈금, 주입, 블록 — are in the WARN tier precisely
+// because they can be diegetic, and a false positive costs one rewording.
+// 열쇠 is deliberately absent: in this pack it is a physical key on a ring.
 const GATE_VOCAB = /갈림길|게이트|\bgate\b/i;
 const GATE_REF = /\bG[1-9]\d*\b/;
+const SYSTEM_VOCAB = /(?<![가-힣])런(?![닝던])|에이전트|플레이어|조건절|기질|눈금|주입|블록|\bstance\b/i;
 const playerFacing = [];
 const say = (where, value) => {
   if (typeof value === 'string' && value.trim()) playerFacing.push([where, value]);
@@ -578,14 +596,28 @@ for (const [variable, dirs] of Object.entries(pack.symptoms ?? {})) {
   }
 }
 for (const [where, value] of playerFacing) {
-  const hit = GATE_VOCAB.exec(value) ?? GATE_REF.exec(value);
-  if (hit) {
-    errors.push(`E-V1 ${where}: gate structure on a player surface — "${hit[0]}" in "${value.slice(0, 32)}…". Say what happened in the world instead (가이드 §6-9)`);
+  const gate = GATE_VOCAB.exec(value) ?? GATE_REF.exec(value);
+  if (gate) {
+    errors.push(`E-V1 ${where}: gate structure on a player surface — "${gate[0]}" in "${value.slice(0, 32)}…". Say what happened in the world instead (가이드 §6-9)`);
+  }
+  const system = SYSTEM_VOCAB.exec(value);
+  if (system) {
+    warns.push(`W-V2 ${where}: game-system vocabulary on a player surface — "${system[0]}" in "${value.slice(0, 32)}…". The reconstruction does not know it is being replayed (가이드 §6-9)`);
   }
 }
 
+// `extra_condition` is a machine-read condition that SHIPS VERBATIM, so prose
+// left here is not merely un-promoted — it is authored Korean on a player
+// surface, and the only phrasings that express a gate outcome in Korean use the
+// word 런. That is why promotion is mandatory rather than aspirational: a flag
+// identifier (`roof_seen`) has no prose in it to leak. Note the asymmetry that
+// hid this — `시계 N까지 간 런에만 보임` is parsed into `visible_from` and never
+// ships, so the same word is harmless in one half of the cell and a leak in the
+// other half.
 for (const e of pack.timeline.events ?? []) {
-  if (e.exposure.extra_condition) flags.push(`timeline ${e.id}: exposure has free-text extra_condition — promote to a predicate`);
+  if (e.exposure.extra_condition) {
+    flags.push(`timeline ${e.id}: exposure has free-text extra_condition — it ships verbatim to the player, so hardening must promote it to a predicate`);
+  }
 }
 for (const p of pack.places.places ?? []) {
   for (const [i, y] of (p.yields ?? []).entries()) {
