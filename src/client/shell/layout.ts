@@ -72,8 +72,22 @@ const GUTTER = 14
 const GAP = 16
 /** REPORTS' share of the desk width. The right column is the remainder. */
 const COL_LEFT_RATIO = 0.5
-/** LIVE FEED's share of the right column's height; AGENT FILE takes the rest. */
-const ROW_TOP_RATIO = 0.42
+/**
+ * LIVE FEED's share of the right column's height; AGENT FILE takes the rest.
+ *
+ * Sized from what the FILE needs, not from taste. C1 made it a paged document
+ * and its two pages measure 413px (cover) and 487px (the agent's own page,
+ * whose four slots alone are 216) against a body that is the window less its
+ * title bar. At .42 the file got 392 and clipped both — 교신 지침 off the cover
+ * and the page control off the window entirely, which is C9 ("nothing
+ * off-screen in the default layout") and would have left no way to turn the
+ * page at all. At .25 the file gets 507 and both pages fit whole.
+ *
+ * The feed pays for it, and can: it is a ticker that scrolls, and the one
+ * window here whose content is endless by nature. The file is a document that
+ * has to be read entire.
+ */
+const ROW_TOP_RATIO = 0.2
 const MIN_W = 240
 const MIN_H = 120
 
