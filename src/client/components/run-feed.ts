@@ -157,6 +157,38 @@ const HEAD_NOTE = '열람 전용 — 이 창은 조작되지 않습니다'
 /** The sitting the header names arrives on the `meta` event, never from here (C3). */
 const HEAD_SEP = ' · '
 
+/**
+ * Following the tail is CONDITIONAL (U2). The reference pinned the fanfold to
+ * its tail on every push, which makes reading anything but the last screen
+ * impossible: scroll back and the next line — or a webfont reflow — drags the
+ * paper out of your hands again. So the feed follows only while the paper is
+ * ALREADY at its tail, and lets go the moment the operator scrolls away, the
+ * way a real fanfold does when a hand comes down on it. Scrolling back to the
+ * tail re-attaches, so the resting state is still "it runs on its own".
+ *
+ * The slack is what still counts as the tail: a fractional line-height leaves
+ * `scrollTop + clientHeight` a pixel or two short of `scrollHeight` even when
+ * the paper is pinned, and a trackpad's momentum overshoots by about as much.
+ */
+const FOLLOW_SLACK_PX = 32
+
+/**
+ * What the behind-indicator says. It carries the count because that is the live
+ * feed's whole claim — the run does not stop for the reader, and a number
+ * climbing at the foot of the paper says so more plainly than the tail moving
+ * on its own ever did.
+ *
+ * It is a READING, not a control ([u5#c7]): the way back to the tail is the
+ * scrollbar the operator just used to leave it, and the window goes on printing
+ * `열람 전용 — 이 창은 조작되지 않습니다` without lying.
+ *
+ * `미열람` rather than anything from the 회신 family — `무전 회신 대기 중`,
+ * `무전 회신 도착`, `회신 불량` each already name one specific event, and this
+ * counts every kind the run prints. It is the window's own word (`열람 전용`)
+ * turned back on the reader: what the paper holds that they have not read yet.
+ */
+const behindLabel = (missed: number): string => `▾ 미열람 ${missed}줄`
+
 /** The handle the e2e suite reads the landed lines back through. */
 export interface RunFeed {
   count(): number
@@ -164,6 +196,8 @@ export interface RunFeed {
   stamps(): string[]
   /** Applies everything still queued — the reveal never outlives a seek (U1). */
   flush(): void
+  /** Whether the paper is still following its tail (U2) — read by e2e only. */
+  following(): boolean
 }
 
 function partNode(part: FeedPart): Node {
@@ -226,7 +260,18 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   const scroll = el('div', 'feed-scroll')
   scroll.id = 'feedScroll'
   scroll.append(head, list, tail)
-  host.append(left, right, scroll)
+
+  // The behind-indicator. It sits OUTSIDE the scrolling box on purpose: it is
+  // chrome pinned to the window's foot, not a line of the record — the fanfold
+  // holds nothing but what the run printed ([u5#c7]). Hidden from the a11y tree
+  // because it reports a VIEWPORT state: `#feedList` is a `role="log"`, so a
+  // reader listening to the run is never behind it and has nothing to catch up.
+  const behind = el('div', 'feed-behind')
+  behind.id = 'feedBehind'
+  behind.hidden = true
+  behind.setAttribute('aria-hidden', 'true')
+
+  host.append(left, right, scroll, behind)
 
   // Instance state: the green band alternates down the page (app.js:434) and a
   // beat is watched for symptoms so a silent one still prints a line.
@@ -239,15 +284,75 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
 
   const openWait = (): Element | null => list.querySelector('li.fl-wait:not(.resolved)')
 
-  /** Pin the fanfold to its tail — the reference's `pushFeed` catch-up. */
-  const follow = (): void => {
-    scroll.scrollTop = scroll.scrollHeight
+  const motionless = (): boolean => {
+    if (animationsFrozen()) return true
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }
 
+  /* ── following the tail (U2) ─────────────────────────────────────────────
+     `attached` is the last thing the OPERATOR said with the scrollbar, and
+     `missed` is what the run printed while they were reading further up. */
+  let attached = true
+  let missed = 0
+
+  const atTail = (): boolean =>
+    scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight <= FOLLOW_SLACK_PX
+
+  const paintBehind = (): void => {
+    behind.hidden = attached || missed === 0
+    behind.textContent = behindLabel(missed)
+  }
+
+  /** Pin the fanfold to its tail — the reference's `pushFeed` catch-up. */
+  const follow = (): void => {
+    if (!attached) return
+    // Instant, against the sheet's `scroll-behavior:smooth`. A smooth catch-up
+    // is still in flight when the next line lands, and every frame of it sits
+    // short of the tail — which is exactly what `atTail` reads as a hand coming
+    // down on the paper. The feed would let go of itself. Only `jump` animates.
+    scroll.scrollTo({ top: scroll.scrollHeight, behavior: 'instant' })
+  }
+
+  /**
+   * Re-read attachment from the paper itself. One question, asked the same way
+   * everywhere: is it at its tail? `follow` lands there instantly, so the feed's
+   * own pinning answers yes and never detaches itself.
+   *
+   * Re-attaching deliberately does NOT scroll — the operator may be mid-gesture,
+   * and pulling the last few pixels out from under them is the snap this whole
+   * change is about. The next line pins it.
+   */
+  const reread = (): void => {
+    const tail = atTail()
+    if (tail === attached) return
+    attached = tail
+    if (tail) missed = 0
+    paintBehind()
+  }
+
+  // The unit's ONE listener ([u5#c7]). It is passive, it only reads an offset
+  // this window already owns, and it hands the player no control: nothing about
+  // it is reachable except by scrolling paper that was always scrollable. It is
+  // for RESPONSE — the indicator answering the gesture instead of the next line
+  // — and never the sole reading, because it runs a frame behind the scroll it
+  // reports and `append` cannot afford to be that late (see there).
+  scroll.addEventListener('scroll', reread, { passive: true })
+
   const append = (node: FeedNode): void => {
+    // BEFORE the line lands, while `scrollHeight` still describes the paper the
+    // operator is actually looking at — and because a `scroll` event runs a
+    // frame behind the gesture that caused it. A line arriving inside that frame
+    // would otherwise follow on a reading already one gesture out of date, and
+    // yank the reader to the tail: the exact failure this all exists to stop.
+    reread()
+
     if (node.kind === 'event' || node.kind === 'npc') band = !band
     list.append(lineElement(node, (node.kind === 'event' || node.kind === 'npc') && band))
     if (node.stamp !== null && node.stamp !== '') stamp = node.stamp
+    if (!attached) {
+      missed += 1
+      paintBehind()
+    }
     follow()
   }
 
@@ -331,11 +436,6 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   let sinceReveal = 0
   let holdMs = 0
 
-  const motionless = (): boolean => {
-    if (animationsFrozen()) return true
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  }
-
   const flush = (): void => {
     while (queue.length > 0) apply(queue.shift()!)
     sinceReveal = 0
@@ -399,7 +499,9 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   // height is watched, so the paper stays at its tail when the layout settles
   // after the lines have landed — a webfont swapping in reflows the whole run.
   // The observer reads size and moves the scroll; it lands nothing, and the
-  // only clock in this window is still the driver's ([u5#c6]).
+  // only clock in this window is still the driver's ([u5#c6]). It goes through
+  // `follow`, so a reflow can no longer yank a detached reader to the tail —
+  // that was the second half of the old pin, and the harder half to escape.
   new ResizeObserver(follow).observe(list)
 
   const lines = (): HTMLLIElement[] => [...list.querySelectorAll('li')]
@@ -409,5 +511,6 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
     kinds: () => lines().map((li) => (/\bfl-([a-z]+)\b/.exec(li.className) ?? [, ''])[1] ?? ''),
     stamps: () => lines().map((li) => li.querySelector('.fl-t')?.textContent ?? ''),
     flush,
+    following: () => attached,
   }
 }

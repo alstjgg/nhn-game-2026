@@ -364,11 +364,32 @@ describe('[u5#c6] lines land on the driver clock, not on a timer of their own', 
 /* ══ [u5#c7] untouchable during a run ═════════════════════════════════════ */
 
 describe('[u5#c7] the feed attaches nothing a player can touch', () => {
-  it('(a) no listener is attached anywhere in the unit', () => {
+  it('(a) no listener a player can OPERATE is attached anywhere in the unit', () => {
     for (const file of SOURCES) {
-      expect(`${file}:${/addEventListener|\bon(click|mousedown|pointerdown|select)\s*=/.test(code(file))}`).toBe(
-        `${file}:false`,
+      const source = code(file)
+      // U2 narrowed this from "no listener at all". A listener and a control are
+      // not the same thing, and c7 is about the second: the window prints
+      // `열람 전용 — 이 창은 조작되지 않습니다`, so it offers no button, no
+      // handle, no target. `scroll` is the one exception and is not a control —
+      // it is passive, it only READS an offset this window already owns, and it
+      // reaches nothing a player could not already do by scrolling the paper.
+      // Every pointer and selection event stays banned outright.
+      const all = (source.match(/addEventListener/g) ?? []).length
+      const passive = (source.match(/addEventListener\(\s*'scroll'/g) ?? []).length
+      expect(`${file}: ${all} listeners, ${passive} of them scroll`).toBe(
+        `${file}: ${passive} listeners, ${passive} of them scroll`,
       )
+      expect(`${file}:${/\bon(click|mousedown|pointerdown|select)\s*=/.test(source)}`).toBe(`${file}:false`)
+    }
+  })
+
+  it('(a2) the unit builds no interactive element — nothing to operate exists', () => {
+    // The guard that carries c7 now that (a) admits a passive read: whatever the
+    // unit puts on screen, none of it is a control. A window with no button, no
+    // link and no field cannot be operated however its listeners are written.
+    for (const file of SOURCES) {
+      const built = /el\(\s*'(button|a|input|select|textarea|label|form|details|summary)'|\bbutton\(/.test(code(file))
+      expect(`${file}:${built}`).toBe(`${file}:false`)
     }
   })
 
@@ -396,12 +417,15 @@ describe('[u5#c9] the window renders, never authors', () => {
     }
   })
 
-  it('(c) run-feed.ts authors exactly the four declared chrome literals', () => {
+  it('(c) run-feed.ts authors exactly the five declared chrome literals', () => {
     const ALLOWED = new Set([
       '연속용지 · 상황실 무전 기록',
       '열람 전용 — 이 창은 조작되지 않습니다',
       '(변화 없음)',
       ' · 무전',
+      // U2's behind-indicator. Chrome about the VIEWPORT — it counts lines the
+      // window has already printed and authors nothing about the run itself.
+      '▾ 미열람 ${missed}줄',
     ])
     const hangul = literals(code('src/client/components/run-feed.ts')).filter((s) => HANGUL.test(s))
     expect(hangul.filter((s) => !ALLOWED.has(s))).toEqual([])

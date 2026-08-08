@@ -45,6 +45,8 @@ export const FEED = {
   list: '#w-feed #feedList',
   scroll: '#w-feed #feedScroll',
   line: '#w-feed #feedList .fl',
+  /** The behind-indicator (U2) — shown only while the feed is NOT following. */
+  behind: '#w-feed #feedBehind',
 } as const
 
 /** `(변화 없음)` — the empty symptom set's own copy (§7 #2), not fixture text. */
