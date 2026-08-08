@@ -184,7 +184,7 @@ test.describe('dossier sections', () => {
     const doc = page.locator(`${FILE} .fh-doc`)
     // C1 — the number names the DOCUMENT, which spans every agent, so it has
     // no run segment. It used to end `/01`, `/02`, …
-    await expect(doc).toHaveText(/^문서번호 NDSP-2\/AF\/[^/]+$/)
+    await expect(doc).toHaveText(/^문서번호 ERR-2\/AF\/[^/]+$/)
     const slug = (await page.locator('#caseName').textContent())?.trim() ?? ''
     expect(slug.length).toBeGreaterThan(0)
     await expect(doc).toHaveText(new RegExp(`/AF/${slug}$`))

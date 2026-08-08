@@ -213,30 +213,50 @@
   --glow-tick:rgba(220,240,255,.6);
 }
 
-/* ─── type scale ──────────────────────────────────────────────────────── */
+/* ─── type scale ──────────────────────────────────────────────────────────
+   1.5× (x1, 08-08). The desk was ported at the design reference's own sizes,
+   and the reference was drawn for a screenshot: 7px chrome and 9px feed lines
+   read on a 13" mock and do not read on a judge's monitor across a table.
+   민서 asked for 1.5× on the type and the type ALONE, so this block is the
+   whole change — `--space-*` below is untouched and the desk keeps its
+   proportions.
+
+   THE NAME IS THE STEP, NOT THE PIXEL. `--fs-9` is "step 9 of the reference
+   scale", which is what all 115 call sites mean by it; the value is what that
+   step ships at today. Renaming the tokens to their new pixels would churn
+   every sheet and buy nothing — and half the steps would land on names like
+   `--fs-11-25`. Reference px are kept in the comments so a port from
+   `docs/design/phase2-ui/desktop.css` can still be traced by eye.
+
+   Fractional values are deliberate: every step is EXACTLY ×1.5, so the scale's
+   internal ratios survive intact. Browsers lay out fractional type fine.
+
+   `tests/styles/token-lint.test.ts (c)` needs ≥5 of these to stay plain length
+   values — do not convert this block to `calc(7px * var(--fs-scale))`.
+   ─────────────────────────────────────────────────────────────────────── */
 :root{
-  --fs-7:7px;
-  --fs-7-5:7.5px;
-  --fs-8:8px;
-  --fs-8-5:8.5px;
-  --fs-9:9px;
-  --fs-9-5:9.5px;
-  --fs-10:10px;
-  --fs-10-5:10.5px;
-  --fs-11:11px;
-  --fs-11-5:11.5px;
-  --fs-12:12px;
-  --fs-13:13px;
-  --fs-14:14px;
-  --fs-15:15px;
-  --fs-16:16px;
-  --fs-17:17px;
-  --fs-19:19px;
-  --fs-20:20px;
-  --fs-21:21px;
-  --fs-26:26px;
-  --fs-34:34px;
-  --fs-44:44px;
+  --fs-7:10.5px;      /* ref 7    */
+  --fs-7-5:11.25px;   /* ref 7.5  */
+  --fs-8:12px;        /* ref 8    */
+  --fs-8-5:12.75px;   /* ref 8.5  */
+  --fs-9:13.5px;      /* ref 9    */
+  --fs-9-5:14.25px;   /* ref 9.5  */
+  --fs-10:15px;       /* ref 10   */
+  --fs-10-5:15.75px;  /* ref 10.5 */
+  --fs-11:16.5px;     /* ref 11   */
+  --fs-11-5:17.25px;  /* ref 11.5 */
+  --fs-12:18px;       /* ref 12   */
+  --fs-13:19.5px;     /* ref 13   */
+  --fs-14:21px;       /* ref 14   */
+  --fs-15:22.5px;     /* ref 15   */
+  --fs-16:24px;       /* ref 16   */
+  --fs-17:25.5px;     /* ref 17   */
+  --fs-19:28.5px;     /* ref 19   */
+  --fs-20:30px;       /* ref 20   */
+  --fs-21:31.5px;     /* ref 21   */
+  --fs-26:39px;       /* ref 26   */
+  --fs-34:51px;       /* ref 34   */
+  --fs-44:66px;       /* ref 44   */
 }
 
 /* ─── spacing scale (padding · margin · gap only) ─────────────────────── */
@@ -268,4 +288,9 @@
   --space-n1:-1px;
   --space-n14:-14px;
   --space-n26:-26px;
+  /* x1 — the two feed marks hang by exactly their own width, and that width
+     tracks the type (`win-live-feed.css`). Added, not edited: the two steps
+     above still have consumers. */
+  --space-n21:-21px;
+  --space-n39:-39px;
 }

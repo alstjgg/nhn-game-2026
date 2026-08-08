@@ -23,7 +23,7 @@ import { PORTAL, SIGN_IN } from './portal-identity.ts'
  * the draft stamp.
  */
 export const MANUAL = {
-  docNo: 'NDSP-2 / OM-01',
+  docNo: 'ERR-2 / OM-01',
   issued: '모의운영과',
   grade: '내부용',
   title: '신규 운영자 운용 안내서',
@@ -56,7 +56,7 @@ export const MANUAL = {
         '하루는 08:50에 시작해 21:04에 닫힙니다. 시행이 끝나면 집계가 열리고, 남은 시행 횟수만큼 다시 편성할 수 있습니다.',
     },
   ],
-  office: '재난안전본부 모의운영과장',
+  office: '상황대응본부 모의운영과장',
   chop: '초안',
   foot: '확인 후 창을 닫으면 단말이 인수됩니다.',
   ack: '확인 — 단말 인수',

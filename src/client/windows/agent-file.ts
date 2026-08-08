@@ -297,6 +297,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     const clamped = viewing < 0 ? 0 : viewing > last ? last : viewing
     viewing = clamped
     sheet.replaceChildren(built[clamped]!)
+    // x1 — a turned page opens at its head. The sheet scrolls now (1.5× type in
+    // a third-width column: `win-agent-file.css`), and `replaceChildren` leaves
+    // the scroll offset where the last page left it, so turning onto a page
+    // landed the reader halfway down a document they had not read yet.
+    sheet.scrollTop = 0
     pgCount.textContent = `${clamped + 1} / ${built.length}`
     pgPrev.disabled = clamped === 0
     pgNext.disabled = clamped === built.length - 1

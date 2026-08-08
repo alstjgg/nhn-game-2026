@@ -86,9 +86,17 @@ async function census(page: Page, selector: string): Promise<ControlMeta[]> {
 interface TabStop {
   readonly top: number
   readonly left: number
+  /** The same position in the VIEWPORT frame, un-normalised. */
+  readonly vtop: number
+  readonly vleft: number
   readonly where: string
   /** The `.win` id that owns this stop, or `(chrome)` for the persistent chrome. */
   readonly win: string
+  /**
+   * The nearest scrolling ancestor, named. Two stops are only comparable in the
+   * content frame when this matches — see `tabWalk` and the ordering assert.
+   */
+  readonly scroller: string
 }
 
 /**
@@ -114,6 +122,17 @@ async function tabWalk(page: Page, limit = 60): Promise<TabStop[]> {
       // visual order is in fact forwards. Adding the scroller's offset back
       // undoes the scroll and compares like with like; the ordering rule below
       // is untouched.
+      //
+      // x1 (08-08) — AND THE FRAME IS ONLY SHARED WHEN THE SCROLLER IS. That
+      // normalisation assumed one scroll container per window. The AGENT FILE
+      // now has two: `.file-sheet` scrolls the page, and the `.pg-nav` strip
+      // under it is pinned OUTSIDE it (`win-agent-file.css`, x1). Adding the
+      // sheet's offset to `#btnDeploy` and nothing to `.pg-turn` puts them in
+      // different frames, and the deploy button — genuinely above the strip —
+      // read as below it. So the stop records its scroller, and the ordering
+      // rule falls back to the viewport frame across a scroller boundary: both
+      // stops were measured while focused, and focus scrolls its own element
+      // into view, so the viewport rect at that instant IS the visual position.
       const scrolled = (axis: 'scrollTop' | 'scrollLeft'): number => {
         let node: HTMLElement | null = el.parentElement
         let sum = 0
@@ -123,11 +142,30 @@ async function tabWalk(page: Page, limit = 60): Promise<TabStop[]> {
         }
         return sum
       }
+      const name = (node: Element): string =>
+        `${node.tagName.toLowerCase()}${node.id ? `#${node.id}` : ''}.${node.className || ''}`
+      const scrollerOf = (): string => {
+        let node: HTMLElement | null = el.parentElement
+        while (node) {
+          const cs = getComputedStyle(node)
+          if (
+            /auto|scroll/.test(cs.overflowY + cs.overflowX) &&
+            (node.scrollHeight > node.clientHeight || node.scrollWidth > node.clientWidth)
+          ) {
+            return name(node)
+          }
+          node = node.parentElement
+        }
+        return '(document)'
+      }
       return {
         top: Math.round(r.top + scrolled('scrollTop')),
         left: Math.round(r.left + scrolled('scrollLeft')),
+        vtop: Math.round(r.top),
+        vleft: Math.round(r.left),
         where: `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ''}.${el.className || ''}`,
         win: el.closest('.win')?.id ?? '(chrome)',
+        scroller: scrollerOf(),
       }
     })
     if (!stop) break
@@ -555,8 +593,16 @@ test.describe('a11y — focus order follows visual order at 1280x800', () => {
       const prev = stops[i - 1]!
       const cur = stops[i]!
       if (cur.win !== prev.win) continue
-      const sameRow = Math.abs(cur.top - prev.top) < 8
-      const forwards = sameRow ? cur.left >= prev.left : cur.top > prev.top
+      // Content frame inside one scroller, viewport frame across two — see the
+      // note in `tabWalk`. Mixing the frames is what makes a stop read backwards
+      // when it is not.
+      const shared = cur.scroller === prev.scroller
+      const curTop = shared ? cur.top : cur.vtop
+      const prevTop = shared ? prev.top : prev.vtop
+      const curLeft = shared ? cur.left : cur.vleft
+      const prevLeft = shared ? prev.left : prev.vleft
+      const sameRow = Math.abs(curTop - prevTop) < 8
+      const forwards = sameRow ? curLeft >= prevLeft : curTop > prevTop
       expect(forwards, `tab stop ${i} (${cur.where}) goes backwards from ${prev.where} inside ${cur.win}`).toBe(true)
     }
   })

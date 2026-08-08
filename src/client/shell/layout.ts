@@ -17,8 +17,15 @@
 // That is the wrong desk for what REPORTS became. It is where the day is read,
 // where sentences are mined, and where cause will be shown; LIVE FEED is a
 // ticker that is watched rather than read closely. So REPORTS takes the left
-// half outright and the right half is split — the feed above, the file below,
-// the file larger because it is worked in and the feed only scrolls.
+// column outright and the right column is split — the feed above, the file
+// below, the file larger because it is worked in and the feed only scrolls.
+//
+// TWO THIRDS (x1, 08-08). T3 gave REPORTS half the desk; 민서 asked for two
+// thirds, and the type scale went up 1.5× in the same breath. Both push the
+// same way: REPORTS is the one window here whose content is PROSE, and prose
+// at 1.5× in a half-width column wraps to ribbon. The right column pays — it
+// carries a ticker that scrolls by nature and a document that is paged, and
+// neither needs width the way a mined paragraph does.
 //
 // `DESK_ORDER` below must move with these rects: the focus-order assert in
 // `e2e/a11y.spec.ts` sorts the windows row-major and compares that to tab
@@ -64,14 +71,22 @@ export interface WinRect {
   h: number
 }
 
-/** Chrome band: top row 47 + taskbar 29 + air. Nothing may sit above it. */
-const TOP = 94
+/**
+ * Chrome band: top row 71 + taskbar 44 + air. Nothing may sit above it.
+ *
+ * x1 (08-08) — 94 → 133. This number is not a measurement, it is a promise
+ * about `styles/shell.css`, and the 1.5× type scale broke it: `.tb-row-1` went
+ * 47 → 71 and `.tb-row-2` 29 → 44, so a desk that still started at 94 would
+ * have put REPORTS and LIVE FEED under the taskbar. The 18 px of air between
+ * the bar and the first window is unchanged — it is desk margin, not type.
+ */
+const TOP = 133
 /** Desk margin against the viewport edges. */
 const GUTTER = 14
 /** Air between two columns. */
 const GAP = 16
 /** REPORTS' share of the desk width. The right column is the remainder. */
-const COL_LEFT_RATIO = 0.5
+const COL_LEFT_RATIO = 2 / 3
 /**
  * LIVE FEED's share of the right column's height; AGENT FILE takes the rest.
  *
@@ -86,8 +101,17 @@ const COL_LEFT_RATIO = 0.5
  * The feed pays for it, and can: it is a ticker that scrolls, and the one
  * window here whose content is endless by nature. The file is a document that
  * has to be read entire.
+ *
+ * x1 (08-08) — .2 → .28, and the sentence above no longer holds. Two thirds of
+ * the desk to REPORTS and 1.5× type together put the agent's page at 655 px
+ * against a sheet of 389: the file scrolls now whatever this ratio says, and
+ * `win-agent-file.css` pins the page control so that is survivable. Once the
+ * file is scrolling either way, holding the feed at .2 buys the file nothing
+ * and costs the feed everything — it measured 82 px of body, two lines, which
+ * is not a ticker. .28 restores the three lines the desk was designed to show
+ * and leaves the file the same scroll it already had.
  */
-const ROW_TOP_RATIO = 0.2
+const ROW_TOP_RATIO = 0.28
 const MIN_W = 240
 const MIN_H = 120
 

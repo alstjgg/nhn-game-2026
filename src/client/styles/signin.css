@@ -77,13 +77,13 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
    Geometrically centred sits optically low, because the plate carries all the
    weight and the crest almost none — the margin lifts the block back onto its
    optical centre. */
-.si-stack{width:452px;display:flex;flex-direction:column;align-items:center;
+.si-stack{width:678px;display:flex;flex-direction:column;align-items:center;
   margin-bottom:var(--space-30)}
 
-/* ─── crest — the 災 seal the top bar wears, at full size ──────────────── */
-.si-crest{position:relative;width:86px;height:86px;
+/* ─── crest — the 緊 seal the top bar wears, at full size ──────────────── */
+.si-crest{position:relative;width:129px;height:129px;
   animation:siRise .8s cubic-bezier(.2,.8,.2,1) .1s both}
-.si-crest svg{position:absolute;inset:0;width:86px;height:86px;display:block}
+.si-crest svg{position:absolute;inset:0;width:129px;height:129px;display:block}
 .si-crest .si-ring{fill:none;stroke:var(--seal);stroke-width:.8;opacity:.45;
   stroke-dasharray:3 7;transform-origin:50% 50%;animation:siSpin 34s linear infinite}
 .si-crest .si-seal circle{fill:none;stroke:var(--seal);stroke-width:1.1;opacity:.9}
@@ -119,12 +119,12 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
 .si-plate::before{content:'';position:absolute;inset:0;pointer-events:none;
   box-shadow:inset 0 1px 0 var(--sheen-05)}
 
-.si-plate-hd{display:flex;align-items:center;gap:var(--space-9);height:28px;
+.si-plate-hd{display:flex;align-items:center;gap:var(--space-9);height:42px;
   padding:0 var(--space-11);background:var(--chrome-deep);
   border-bottom:1px solid var(--edge);position:relative}
 .si-plate-hd::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;
   background:linear-gradient(90deg,var(--seal),transparent 62%);opacity:.7}
-.si-led{width:6px;height:6px;flex:0 0 auto;background:var(--seal);
+.si-led{width:9px;height:9px;flex:0 0 auto;background:var(--seal);
   animation:livePulse 1.4s ease-in-out infinite}
 .si-plate-hd b{font-size:var(--fs-9-5);font-weight:600;letter-spacing:.22em;color:var(--txt-2)}
 .si-plate-hd i{margin-left:auto;font-style:normal;font-size:var(--fs-8);
@@ -134,15 +134,15 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
 .si-form{padding:var(--space-20) var(--space-20) var(--space-16);
   display:flex;flex-direction:column;gap:var(--space-11)}
 .si-field{display:flex;align-items:center;gap:var(--space-12)}
-.si-label{width:58px;flex:0 0 auto;font-size:var(--fs-8-5);letter-spacing:.2em;
+.si-label{width:87px;flex:0 0 auto;font-size:var(--fs-8-5);letter-spacing:.2em;
   color:var(--txt-6);text-align:right}
-.si-well{flex:1;min-width:0;height:34px;display:flex;align-items:center;
+.si-well{flex:1;min-width:0;height:51px;display:flex;align-items:center;
   padding:0 var(--space-12);background:var(--track);
   box-shadow:inset 0 0 0 1px var(--ink-line), inset 0 2px 5px -2px var(--sh-8)}
 .si-value{font-size:var(--fs-14);letter-spacing:.06em;color:var(--txt-hi);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .si-value.si-secret{letter-spacing:.3em;color:var(--txt-3)}
-.si-caret{width:7px;height:16px;margin-left:var(--space-2);flex:0 0 auto;
+.si-caret{width:10px;height:24px;margin-left:var(--space-2);flex:0 0 auto;
   background:var(--gauge-2);opacity:.85;animation:siBlink .9s steps(2) infinite}
 @keyframes siBlink{0%,49%{opacity:.85}50%,100%{opacity:0}}
 .si-lock{margin-left:auto;flex:0 0 auto;font-size:var(--fs-8);letter-spacing:.14em;
@@ -151,7 +151,7 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
 /* ─── the one control on the screen ────────────────────────────────────── */
 .si-login{position:relative;overflow:hidden;display:flex;align-items:center;
   justify-content:center;gap:var(--space-14);
-  width:calc(100% - var(--space-20) - var(--space-20));height:46px;
+  width:calc(100% - var(--space-20) - var(--space-20));height:69px;
   margin:0 var(--space-20) var(--space-16);
   background:linear-gradient(to bottom,var(--seal),var(--seal-2));
   border:1px solid var(--edge);color:var(--txt-max);
@@ -189,8 +189,8 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
 .si-line s{flex:1;min-width:0;height:1px;text-decoration:none;
   background:repeating-linear-gradient(90deg,var(--ink-line) 0 2px,transparent 2px 5px)}
 .si-line u{text-decoration:none;font-size:var(--fs-8-5);letter-spacing:.16em;color:var(--gauge-2)}
-.si-bar{height:2px;margin-top:var(--space-14);background:var(--track);overflow:hidden}
+.si-bar{height:3px;margin-top:var(--space-14);background:var(--track);overflow:hidden}
 .si-bar i{display:block;height:100%;width:0;
   background:linear-gradient(90deg,var(--gauge-1),var(--gauge-2));
-  animation:siFill 1.34s cubic-bezier(.4,0,.2,1) both}
+  animation:siFill 2.24s cubic-bezier(.4,0,.2,1) both}
 @keyframes siFill{to{width:100%}}
