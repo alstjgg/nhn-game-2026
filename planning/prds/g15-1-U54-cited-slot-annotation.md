@@ -633,6 +633,80 @@ test.describe('[U5.4] the agent line names the slots that moved it', () => {
       `{ kind: 'radio', clock: '09:26', text: 'x', cited_slots: [2, 0] }` — the
       full `parts` array — read out of the test you added, not guessed.
 
+---
+
+# Amendment 1 — two guards this PRD walked into, and a stale count
+
+Three defects, all in this document. E1–E10 as applied are correct and stay;
+these are additions and one replacement. The executor was right to report all
+three rather than repair them.
+
+## What was wrong
+
+1. **The expected vitest count was stale.** The PRD said 1599 + 5 = 1604. 1599
+   was wave-g13's count; `main` has taken #197 since and is green at **1608**.
+   The correct expectation is **1613**. Verified on `playtest/wave-g15` with no
+   code edits applied: 104 files, 1608 passed. There are **no** pre-existing
+   failures on this branch — a `tests/scaffold/deps.test.ts` red in a fresh
+   worktree is that suite shelling out to `playwright --list` before its
+   browsers are installed, not a real one. Re-run it after `npm install`
+   completes; if it is still red **alone**, report it and do not repair it.
+2. **`tests/driver/` names its suites.** `engine-boundaries.test.ts:105` — `(b)
+   everything e7 added under tests/driver is named 'engine-*'` — requires every
+   file there outside its frozen list to start with `engine-`. E8 minted
+   `membrane-slots.test.ts`, which does not. The guard is right and is not the
+   thing to change: A1 renames the file instead.
+3. **`padStart` is banned in any module that paints an NPC channel.**
+   `tests/invariants/no-digit-npc.test.ts:174` — `(c) no client module formats a
+   count/percent/score into an NPC channel` — scans for
+   `/\b(toFixed|toLocaleString|padStart)\s*\(/` across the sources that paint
+   NPC lines, and `run-feed.ts` is one. E6b reached for `padStart`. [u9#c2]
+   exists so a character never speaks a digit, and like `agent-file.ts`'s
+   `Math.max` ban it is a blunt source scan and right to be. A2 pads with a
+   conditional, exactly as g13-2's A1 did for the same class of guard.
+
+## A1 — rename E8's file
+
+`tests/driver/membrane-slots.test.ts` → **`tests/driver/engine-membrane-slots.test.ts`**.
+
+Content unchanged. Use `git mv` if it is already committed, or rename it in
+place if not. Do **not** edit `engine-boundaries.test.ts`; it stays out of
+Scope, and if it is still red after the rename, stop and report.
+
+## A2 — `src/client/components/run-feed.ts`, E6b's padding
+
+Current text (as E6b left it):
+
+```
+        const numbered = [...slots].sort((a, b) => a - b).map((s) => String(s + 1).padStart(2, '0'))
+```
+
+Replacement text:
+
+```
+        // Padded with a conditional, never `padStart`: [u9#c2]
+        // (`no-digit-npc.test.ts` (c)) bans that call outright in any module
+        // that paints an NPC channel, so a character can never be made to
+        // speak a formatted number. This is a slot on the operator's own file
+        // and not that — but the guard is a blanket source scan and it is
+        // right to be, so the cheap way to keep it honest is not to call it.
+        const numbered = [...slots]
+          .sort((a, b) => a - b)
+          .map((s) => (s + 1 < 10 ? `0${s + 1}` : String(s + 1)))
+```
+
+## A3 — corrected Verification and Done-when
+
+Replacing the count in both sections:
+
+- `npx vitest run` — expect **1613** (1608 on `main` + A1's three + E9b's two).
+- [ ] Full vitest green at **1613**.
+- [ ] `ls tests/driver/ | grep -c '^membrane-slots'` returns `0` — A1's rename
+      landed and `engine-boundaries.test.ts (b)` is green untouched.
+- [ ] `grep -n "padStart" src/client/components/run-feed.ts` returns nothing.
+
+Every other Done-when line stands.
+
 ## If this PRD is wrong
 
 An edit whose stated current text is not at the cited path and line is a defect
