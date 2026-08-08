@@ -561,3 +561,233 @@ Stop at the first mismatch and report:
 
 Change nothing further, and open no PR. A report of this kind is a completed
 run, not a failed one.
+
+---
+
+# Amendment 1 (after the executor's §5.7 stop)
+
+Three defects, all in this document. Apply these **in place of** E12a/E12b's
+remainders and before E13; everything E1–E11 applied is correct and stays.
+
+Cited line numbers are the **worktree as the executor left it** — E1–E12b
+already applied. Same-file edits are bottom-up.
+
+## What was wrong
+
+1. **E12a reordered the sections and left the assertion that reads them.** Its
+   spliced array produced 식별 · 임무 · 행동 원칙 · 기질 · 교신 지침 · 인수인계 사항
+   while the untouched remainder of the test still expects the old order. The
+   splice was the wrong idea outright: under two pages there is no six-section
+   sequence to preserve. A2d asserts the two models separately.
+2. **E12c could not be followed for `(a)` and `(d)`.** Both read `slotCap` and
+   `clockBand` out of ONE object, and no single model takes both. They are
+   rewritten verbatim here rather than surveyed.
+3. **`Math.max` is banned outright in `agent-file.ts`.** `tests/windows/tally.test.ts`
+   `(f)` blanket-scans this file for `/Math\.max\s*\(/` to stop a driver-fed
+   number being clamped. A page index is not one, but the guard is a source
+   scan and is right to be blunt. A1 clamps with conditionals instead, so the
+   guard stays intact and `tally.test.ts` is **not** touched — it remains out of
+   scope, and if it is still red after A1, stop and report.
+
+Also: the local shadow type at `:131` still declares `no: string`. §5.3's own
+rule — sweep the test files' shadow types — was written after R1 hit this and
+was still missed here. A2a fixes it.
+
+## A1 — `src/client/windows/agent-file.ts:223`
+
+Current text:
+
+```
+    const clamped = Math.max(0, Math.min(viewing, built.length - 1))
+```
+
+Replacement text:
+
+```
+    // Clamped with conditionals, never `Math.max`: `tally.test.ts` (f) bans
+    // that call outright in this file so a driver-fed number (`run`,
+    // `runs_left`, `carried`, `archive`) cannot be quietly clamped. A page
+    // index is none of those, but the guard is a blanket source scan and it is
+    // right to be — the cheap way to keep it honest is not to reach for the
+    // call at all.
+    const last = built.length - 1
+    const clamped = viewing < 0 ? 0 : viewing > last ? last : viewing
+```
+
+## A2 — `tests/windows/agent-file.test.ts`, bottom-up
+
+### A2d — the whole of test `(e)`, `:266-296`
+
+Replace from `  it('(e) the two models carry the ratified titles and flags, and no numbers', async () => {`
+through its closing `  })` — that is, everything the executor wrote for E12a
+plus the remainder that followed it — with:
+
+```
+  it('(e) the two models carry the ratified titles and flags, and no numbers', async () => {
+    const { coverModel, agentModel } = await loadDossier()
+    const cover = coverModel(BAND)
+    const agent = agentModel({ slotCap: 4, callsign: 'ECHO-1' })
+
+    // C1 — the document reads the cover first, then the agent's own page. The
+    // six sections are the same six; what changed is which page each sits on,
+    // and that none of them carries a `§n` any more. There is deliberately no
+    // assertion about a combined six-section order — there is no such order.
+    expect(
+      [...cover, ...agent].every((s) => !('no' in s)),
+      'a section still carries a number',
+    ).toBe(true)
+
+    expect(cover.map((s) => s.title)).toEqual(['임무', '행동 원칙', '기질', '교신 지침'])
+    expect(cover.map((s) => s.state)).toEqual(['fixed', 'fixed', 'sealed', 'fixed'])
+    expect(agent.map((s) => s.title)).toEqual(['식별', '인수인계 사항'])
+    expect(agent.map((s) => s.state)).toEqual(['fixed', 'operable'])
+
+    // 임무 renders the pack-fed clock band, never a literal (c1/D2).
+    expect(cover[0]!.body).toContain('08:50 → 21:04')
+    // 인수인계 사항's note reads the cap, so the two cannot drift.
+    expect(agent[1]!.note).toContain('4')
+    // 식별 carries the callsign it was handed (M1).
+    expect(JSON.stringify(agent[0]!.rows)).toContain('ECHO-1')
+  })
+```
+
+### A2c — test `(d)`, `:245-255`
+
+Current text:
+
+```
+  it('(d) dossierModel is pure — frozen input in, deep-equal input out, no document', async () => {
+    const { dossierModel } = await loadDossier()
+    const input = Object.freeze(dossierInput())
+    const before = JSON.stringify({ slotCap: input.slotCap, clockBand: input.clockBand })
+
+    const first = dossierModel(input)
+    const second = dossierModel(dossierInput())
+
+    expect(JSON.stringify({ slotCap: input.slotCap, clockBand: input.clockBand })).toBe(before)
+    expect(JSON.stringify(second)).toBe(JSON.stringify(first))
+    expect(String(dossierModel)).not.toMatch(/document/)
+```
+
+Replacement text:
+
+```
+  it('(d) both models are pure — frozen input in, deep-equal input out, no document', async () => {
+    const { coverModel, agentModel } = await loadDossier()
+    const input = Object.freeze({ slotCap: 4, callsign: 'ECHO-1' })
+    const before = JSON.stringify({ slotCap: input.slotCap, callsign: input.callsign })
+
+    const firstAgent = agentModel(input)
+    const secondAgent = agentModel({ slotCap: 4, callsign: 'ECHO-1' })
+    const firstCover = coverModel(BAND)
+    const secondCover = coverModel(BAND)
+
+    expect(JSON.stringify({ slotCap: input.slotCap, callsign: input.callsign })).toBe(before)
+    expect(JSON.stringify(secondAgent)).toBe(JSON.stringify(firstAgent))
+    expect(JSON.stringify(secondCover)).toBe(JSON.stringify(firstCover))
+    expect(String(agentModel)).not.toMatch(/document/)
+    expect(String(coverModel)).not.toMatch(/document/)
+```
+
+The rest of `(d)` — the `buildDossier`-precedence check on the source — is
+correct as it stands and is **not** touched.
+
+### A2b — test `(a)`, `:203-212`
+
+Current text:
+
+```
+    const { dossierModel } = await loadDossier()
+    const input = dossierInput()
+    const sections = dossierModel(input)
+```
+
+Replacement text:
+
+```
+    const { coverModel, agentModel } = await loadDossier()
+    const input = { slotCap: 4, callsign: 'ECHO-1' }
+    const sections = [...coverModel(BAND), ...agentModel(input)]
+```
+
+Then, in the same test, two literals:
+
+- `'§3 must be modelled as a sealed section'` → `'기질 must be modelled as a sealed section'`
+- `expect(Object.keys(sealed!).sort()).toEqual(['bars', 'body', 'no', 'state', 'title'])`
+  → `expect(Object.keys(sealed!).sort()).toEqual(['bars', 'body', 'state', 'title'])`
+
+### A2a-ii — the helper, `:176-184`
+
+Current text:
+
+```
+/** A DOM-free stand-in for the §4 host — `dossierModel` must never touch it. */
+const HOST_STUB = Object.freeze({ __hostStub: true }) as unknown as HTMLElement
+
+const dossierInput = (): { slotCap: number; callsign: string; clockBand: string; slotHost: HTMLElement } => ({
+  slotCap: 4,
+  callsign: 'ECHO-1',
+  clockBand: '08:50 → 21:04',
+  slotHost: HOST_STUB,
+})
+```
+
+Replacement text:
+
+```
+/** A DOM-free stand-in for the 인수인계 사항 host — no model may touch it. */
+const HOST_STUB = Object.freeze({ __hostStub: true }) as unknown as HTMLElement
+```
+
+If `HOST_STUB` has no remaining reference after this, leave it in place anyway —
+deleting it is not this unit's business and an unused const is not an error
+here. If `tsc` disagrees, report rather than deleting more.
+
+### A2a — the shadow type, `:131-139`
+
+Current text:
+
+```
+interface DossierSection {
+  no: string
+  title: string
+```
+
+Replacement text:
+
+```
+interface DossierSection {
+  title: string
+```
+
+## A3 — `src/client/components/dossier.ts`, bottom-up
+
+Four doc comments name the dossier's own `§n`. **References to `spec-client §N`
+are a different document's sections and stay exactly as they are.**
+
+**A3d — `:134`.** Current: `` * would run its words together (`§3기질봉인열람 불가…`). The separators are ``
+→ replace `` `§3기질봉인열람 불가…` `` with `` `기질봉인열람 불가…` ``.
+
+**A3c — `:78`.** Current: `/** §1's mission line: the band is the pack's, the sentence is the design target's. */`
+→ `/** 임무's mission line: the band is the pack's, the sentence is the design target's. */`
+
+**A3b — `:9`.** Current: `// §3 기질 is SEALED BY CONSTRUCTION (spec-client §3 inv 4 / I13): `SealedSection``
+→ replace the leading `§3 기질` with `기질`. Leave `(spec-client §3 inv 4 / I13)` untouched.
+
+**A3a — `:1`.** Current: `// Dossier — the AGENT FILE's §0–§5, the document the operator reads`
+→ `// Dossier — the AGENT FILE's sections, the document the operator reads`
+
+## A4 — corrected Done-when
+
+The `§` grep in the original Done-when could never go true: it matches
+`spec-client §3` and `spec-client §4`, which this unit must not change. It is
+replaced by:
+
+- [ ] `grep -n "§[0-5]" src/client/components/dossier.ts | grep -v "spec-client"`
+      returns nothing.
+- [ ] `grep -rn "dossierModel\|DossierInput\|dossierInput" src/ tests/ e2e/` returns
+      nothing.
+- [ ] `npx vitest run tests/windows/tally.test.ts` is green **with that file
+      unmodified** — A1 is what keeps it so.
+
+Every other Done-when line stands, and E13 is still to do.
