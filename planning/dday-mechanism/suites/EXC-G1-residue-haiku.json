@@ -1,0 +1,67 @@
+{
+  "_what": "PR #214는 G1에서 새 라벨로 `a`를 얻었다고 보고했고, 이 저장소의 재측정은 네 번 모두 `b`였다. 두 프로토콜의 차이는 정확히 둘이다 — (1) #214의 페이로드는 헤드리스 런에서 캡처한 것이라 창에 픽스처 세 줄이 들어 있었고 그중 하나가 `(변화 없음)`이다. (2) #214는 격리된 대화, 즉 큰 모델에서 쟀고 이 저장소의 프로브는 배포 모델(Haiku 4.5)에서 잰다. 두 수트가 그 둘을 하나씩 갈라 본다. 나머지 슬롯은 EXC-G1-window-t6-only와 바이트 동일하다. 이 수트는 (1)만 되돌린다 — 창을 캡처된 네 줄 그대로 두고 모델은 배포 모델을 유지한다. `a`가 나오면 #214의 G1 결과를 만든 것은 픽스처 잔재다.",
+  "_authoring_provenance": {
+    "owner": "gate-excerpt A안 재측정",
+    "gate_source": "data/scenario/전구간정상/gates.json — gates[] 'G1' (21:04, 해원터널 관제소)",
+    "authoring_choices": [
+      "TIMELINE_EXCERPT는 헤드리스 무개입 런에서 캡처한 fallback 창 네 줄 그대로다. `(변화 없음)`은 픽스처 Call 2가 SCENE_SYMPTOMS를 timeline_entries에 복사해 생긴 것이고, 실제 런에서는 그 자리에 Call 2 산문이 온다. 여기서는 그것을 그대로 재는 것이 목적이다 — #214가 실제로 무엇을 쟀는지 재현하는 것이므로.",
+      "모델·라벨·기질·기본 프롬프트는 EXC-G1-window-t6-only와 바이트 동일하다."
+    ],
+    "reachability_audit": "planning/research/gate-excerpt-design.md §3 — the W5 rule is the machine form of the 규칙 6 audit this suite's window was authored against"
+  },
+  "experiment": "EXC-G1-residue-haiku",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "전구간정상",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "캡처된 창 네 줄을 그대로 주면 배포 모델에서도 기본값 `a`가 선다. `(변화 없음)`이 「달리 볼 이유가 없으므로」를 참으로 만들어 주기 때문이다.",
+    "n_per_arm": 10,
+    "drop_condition": "`a`가 최빈이 아니면 잔재 가설은 기각되고, 남는 후보는 모델 차이뿐이다(EXC-G1-t6-opus가 그것을 잰다).",
+    "contingencies": [
+      "Fabricated because_block_ids in the baseline arm are EXPECTED with no blocks injected — a compliance number, not a discard.",
+      "A baseline split between `a` and `b` with neither at 6 tells us the window is doing something the manual protocol could not see, which is exactly the class of thing this feature exists to make visible. Record it and do not raise N.",
+      "If the discard rate is materially worse than the 우는다리 baselines, suspect the longer stance labels against max_tokens before suspecting the window."
+    ],
+    "not_claimed": "열쇠 팔이 없다. 이 런은 #214의 G1 결과가 무엇에 기대고 있었는지만 묻는다. 픽스처 문자열을 프롬프트에 넣는 것은 배포 동작의 측정이 아니라 과거 측정의 재현이다."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다.",
+      "대응이 늦어져 피해가 커질 위험을 먼저 줄인다.",
+      "판단을 마친 뒤 근거를 시간순으로 정리한다.",
+      "외부에 공유하기 전 사건 시각을 명확히 남긴다."
+    ],
+    "TIMELINE_EXCERPT": [
+      "하만식이 본사 당직에 전화를 건다. 차단은 승인이 있어야 한다고 말한다",
+      "(변화 없음)",
+      "고정 픽스처 서술.",
+      "고정 픽스처 대사."
+    ],
+    "GATE_QUESTION": "관제 화면이 내놓은 '전 구간 정상'을 상황 보고의 근거로 삼을 것인가",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "계기 기재 — 달리 볼 이유가 없으므로, 계기가 내놓은 값을 그대로 상황 보고에 올린다"
+      },
+      {
+        "id": "b",
+        "label": "현장 대조 — 계기를 의심할 근거가 있다고 보고, 근무자에게 설비를 직접 열어 맞춰 보게 한다"
+      },
+      {
+        "id": "c",
+        "label": "권한 압박 — 근무자가 무언가를 감추고 있다고 보고, 권한을 걸어 밀어붙인다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    }
+  }
+}
