@@ -417,12 +417,16 @@ describe('[u5#c9] the window renders, never authors', () => {
     }
   })
 
-  it('(c) run-feed.ts authors exactly the five declared chrome literals', () => {
+  it('(c) run-feed.ts authors exactly the six declared chrome literals', () => {
     const ALLOWED = new Set([
       '연속용지 · 상황실 무전 기록',
       '열람 전용 — 이 창은 조작되지 않습니다',
       '(변화 없음)',
       ' · 무전',
+      // U5.4's citation mark. Chrome, not run text: it names a SLOT of the
+      // operator's own file — the same word the AGENT FILE prints over those
+      // slots — and authors nothing about the scenario.
+      '인수인계',
       // U2's behind-indicator. Chrome about the VIEWPORT — it counts lines the
       // window has already printed and authors nothing about the run itself.
       '▾ 미열람 ${missed}줄',
@@ -486,5 +490,29 @@ describe('[u5#c10] the unit stays inside its seam', () => {
 
   it('(d) live-feed.ts still exports the shell-facing `mount(host, driver)`', () => {
     expect(code('src/client/windows/live-feed.ts')).toMatch(/export function mount\s*\(/)
+  })
+})
+
+/* ══ U5.4 — the citation mark ════════════════════════════════════════════ */
+
+describe('[U5.4] the agent line names the slots that moved it', () => {
+  it('(a) a cited radio line gains a cite part, numbered as the file numbers it', () => {
+    const line: FeedLine = { kind: 'radio', clock: '09:26', text: '질문지를 덮겠습니다.', cited_slots: [1] }
+    const node = feedLineModel(line)
+    const cite = node.parts.find((p) => p.p === 'cite')
+    // Slot 1 at the seam is 인수인계 02 on the paper — the AGENT FILE prints
+    // `pad2(slot + 1)` and the two must not drift.
+    expect(cite && 'text' in cite ? cite.text : '').toBe('인수인계 02')
+  })
+
+  it('(b) several slots read ascending, and an empty citation prints nothing', () => {
+    const many: FeedLine = { kind: 'radio', clock: '16:43', text: '재분류를 요청합니다.', cited_slots: [2, 0] }
+    const cite = feedLineModel(many).parts.find((p) => p.p === 'cite')
+    expect(cite && 'text' in cite ? cite.text : '').toBe('인수인계 01 · 03')
+
+    const none: FeedLine = { kind: 'radio', clock: '08:51', text: '회선 유지합니다.', cited_slots: [] }
+    expect(feedLineModel(none).parts.some((p) => p.p === 'cite')).toBe(false)
+    const absent: FeedLine = { kind: 'radio', clock: '08:51', text: '회선 유지합니다.' }
+    expect(feedLineModel(absent).parts.some((p) => p.p === 'cite')).toBe(false)
   })
 })

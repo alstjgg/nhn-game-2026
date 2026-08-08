@@ -43,6 +43,8 @@ interface FeedRow {
   kind: FeedKind
   text: string
   who?: string
+  /** U5.4 — slot indices this line cited, 0-based as the seam carries them. */
+  cited?: number[]
 }
 
 /** The reference feed, in reference order. */
@@ -54,7 +56,7 @@ const FEED: FeedRow[] = [
   { t: '09:12', kind: 'event', text: '통화 음성 판독 요청 접수. 회신 대기.' },
   { t: '09:25', kind: 'event', text: '두 번째 전화. 책상 위에 위협 대응 매뉴얼 카드가 펼쳐진다.' },
   { t: '09:25', kind: 'wait', text: '무전 회신 대기 중' },
-  { t: '09:26', kind: 'radio', text: '질문지를 덮겠습니다. 이 사람은 요구를 하러 전화한 게 아닙니다.' },
+  { t: '09:26', kind: 'radio', text: '질문지를 덮겠습니다. 이 사람은 요구를 하러 전화한 게 아닙니다.', cited: [1] },
   { t: '09:26', kind: 'npc', who: '차은규', text: '요구 조건부터 받아내라니까. 매뉴얼이 있잖나.' },
   { t: '09:27', kind: 'npc', who: '서지형', text: '……요구는 없다. 막으라는 것뿐이다.' },
   { t: '09:27', kind: 'symptom', text: '발신자의 통화가 길어진다 — 끊지 않고, 다음 질문을 기다린다' },
@@ -86,7 +88,7 @@ const FEED: FeedRow[] = [
   { t: '16:40', kind: 'event', text: '네 번째이자 마지막 전화.' },
   { t: '16:40', kind: 'npc', who: '서지형', text: '내가 터뜨리는 게 아니다. 너희가 세운 게 스스로 무너진다. 못 믿겠으면 스물한 시에 정착부를 열어 봐라 — 사람이 있을 테니.' },
   { t: '16:41', kind: 'wait', text: '무전 회신 대기 중' },
-  { t: '16:43', kind: 'radio', text: '이 통화를 협박이 아니라 구조 결함 신고로 재분류할 것을 요청합니다.' },
+  { t: '16:43', kind: 'radio', text: '이 통화를 협박이 아니라 구조 결함 신고로 재분류할 것을 요청합니다.', cited: [0, 2] },
   { t: '16:44', kind: 'symptom', text: '발신자가 처음으로 제 이름을 말했다' },
   { t: '16:44', kind: 'npc', who: '서지형', text: '서지형. 세명건설 계측기사였다.' },
   { t: '16:45', kind: 'mark', text: '라운드 2 종료 · 보고서 작성' },
@@ -173,6 +175,7 @@ const identify = (row: FeedRow, seq: Map<Channel, number>): string | undefined =
 const lineOf = (row: FeedRow, seq: Map<Channel, number>): FeedLine => {
   const line: FeedLine = { kind: row.kind, clock: row.t, text: row.text }
   if (row.who !== undefined) line.speaker = row.who
+  if (row.cited !== undefined) line.cited_slots = row.cited
   const id = identify(row, seq)
   if (id !== undefined) line.sentence_id = id
   return line

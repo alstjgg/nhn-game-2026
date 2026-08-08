@@ -93,6 +93,13 @@ describe('[e7#A14] the existing tests/driver seam suites are untouched', () => {
     // It reads the engine's snapshot rather than asserting anything about the
     // engine, and it is `src/driver/`'s composition-facing half, not e7's.
     'scorer.test.ts',
+    // The SHIPPED pack, played the same way `live-desk.test.ts` plays 우는다리
+    // — same reason it is registered here rather than named `engine-*`. The two
+    // are not duplicates: that one states its pack's numbers, this one derives
+    // every number from whatever `shell/pack.ts`'s `PACK_SLUG` names, so a slug
+    // switch moves the coverage instead of leaving it aimed at a pack the
+    // deploy no longer carries.
+    'shipped-pack.test.ts',
   ])
 
   it('(b) everything e7 added under tests/driver is named `engine-*`', () => {

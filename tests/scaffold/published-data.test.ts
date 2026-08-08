@@ -144,21 +144,36 @@ describe('published data — the allowlist tracks what the client fetches', () =
     // `key_examples[].mined_from` is the third: "런 1 객관 로그 · 시계 09:40 —
     // 다음 런의 G1 이전에 채굴 가능" names the gate AND the mining schedule.
     expect(shipped, 'key_examples reached the published copy').not.toMatch(/"key_examples"/)
+    // `key_conditions` is the fourth (08-08), and stripping the examples while
+    // shipping it was half a door: the manual §3-5 is explicit that the key is
+    // the CONDITION CLASS, not any one sentence, so `{axis, referent, species}`
+    // is the lock's specification — strictly more useful to a reader than the
+    // examples it generates. It also carried the pack's last `기질`/`조건절` on
+    // a player surface, in `targets_clause`.
+    expect(shipped, 'key_conditions reached the published copy').not.toMatch(/"key_conditions"/)
 
     // Shape-preserving: gates survive the strip, and so does everything a seam
-    // does read.
+    // does read — Call 1 takes GATE_QUESTION · STANCE_SET · TIMELINE_EXCERPT ·
+    // TEMPERAMENT (`src/engine/index.ts`), so `stances` is the load-bearing one.
     const before = JSON.parse(authored) as { gates: Record<string, unknown>[] }
     const after = JSON.parse(shipped) as { gates: Record<string, unknown>[] }
     expect(after.gates.length).toBe(before.gates.length)
     for (const [i, gate] of after.gates.entries()) {
       expect(gate.gate).toBe(before.gates[i]!.gate)
       expect(gate.stances).toEqual(before.gates[i]!.stances)
-      expect(gate.key_conditions).toEqual(before.gates[i]!.key_conditions)
+      expect(gate.question).toBe(before.gates[i]!.question)
     }
 
     // The premise the strip rests on: no runtime consumer. `datapack.ts` may
     // TYPE them — that is the schema, not a read.
-    const consumers = consumersOf(['standard_form', 'branch_note', 'key_examples', 'mined_from'])
+    const consumers = consumersOf([
+      'standard_form',
+      'branch_note',
+      'key_examples',
+      'mined_from',
+      'key_conditions',
+      'targets_clause',
+    ])
     expect(
       consumers,
       `a seam now reads a stripped field: ${consumers.join(' | ')} — reconsider the strip`,
