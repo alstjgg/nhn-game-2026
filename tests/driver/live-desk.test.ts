@@ -90,6 +90,22 @@ async function pump(driver: FixtureDriver, done: () => boolean, frames = 40_000)
   for (let i = 0; i < 50 && !done(); i += 1) await new Promise((resolve) => setTimeout(resolve, 0))
 }
 
+/**
+ * Opens the day the way the DESK opens one: boot, then the press.
+ *
+ * `start()` alone no longer plays anything. `BUILD → (deploy) RUN`
+ * (spec-client §5.1) is held by the adapter itself now: nothing stamped is
+ * released and no beat is stepped until a `deploy` op arrives, so a run's
+ * opening no longer prints — and Call 1 no longer goes out — before the
+ * operator has committed a file. An EMPTY file is a committed file: the DEPLOY
+ * control is live with no slot filled (`components/deploy-button.ts`), and
+ * these runs take every gate's default stance regardless.
+ */
+function openDay(adapter: FixtureDriver): void {
+  adapter.start()
+  adapter.send({ op: 'deploy', blocks: [] })
+}
+
 describe('(A) the live desk plays its day to the end', () => {
   // The pack's terminal beat is authored `21:04+` — engine/beat/clock.ts's
   // "immediately after this minute". `buildSchedule` keeps the string verbatim
@@ -110,7 +126,7 @@ describe('(A) the live desk plays its day to the end', () => {
     })
     const events: ViewEvent[] = []
     adapter.subscribe((event) => events.push(event))
-    adapter.start()
+    openDay(adapter)
     await pump(adapter, () => events.some((e) => e.type === 'run_end'))
 
     const types = events.map((e) => e.type)
@@ -178,7 +194,7 @@ describe('(A) the live desk plays its day to the end', () => {
     })
     const events: ViewEvent[] = []
     adapter.subscribe((event) => events.push(event))
-    adapter.start()
+    openDay(adapter)
     await pump(adapter, () => events.some((e) => e.type === 'run_end'))
 
     const texts = events
@@ -326,7 +342,7 @@ describe('(D) the deck is a set — a repeated MINE deals one card', () => {
     })
     const events: ViewEvent[] = []
     adapter.subscribe((event) => events.push(event))
-    adapter.start()
+    openDay(adapter)
     await pump(adapter, () => events.some((e) => e.type === 'feed' && e.line.sentence_id !== undefined), 400)
 
     const line = events.find((e) => e.type === 'feed' && e.line.sentence_id !== undefined)
@@ -358,7 +374,7 @@ describe('(E) the clock gutter prints a time, and `21:04+` is not one', () => {
     })
     const events: ViewEvent[] = []
     adapter.subscribe((event) => events.push(event))
-    adapter.start()
+    openDay(adapter)
     await pump(adapter, () => events.some((e) => e.type === 'run_end'))
 
     const plus = events.filter((e) => e.type === 'feed' && e.line.clock.endsWith('+'))

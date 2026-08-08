@@ -19,7 +19,7 @@ import type { Locator, Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { awaitRecordFinal, confirmDeploy, mineFirst, raiseWindow, turnToAgent } from './fixtures/harness.ts'
+import { awaitRecordFinal, confirmDeploy, deployFile, mineFirst, raiseWindow, turnToAgent } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -350,6 +350,9 @@ test.describe('typewriter is replay', () => {
     page,
   }) => {
     await boot(page, { reduced: false })
+    // The press first: the driver holds the run's stream until the file is
+    // committed (spec-client §5.1), so an unopened day has nothing to seek into.
+    await deployFile(page)
     // One sim-minute short of the terminal, then let the clock run there itself.
     await page.evaluate(() => {
       const feed = (window as unknown as { __feed?: { seek(at: string): void; rate(to: number): void } }).__feed

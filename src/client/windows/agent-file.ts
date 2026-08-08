@@ -188,6 +188,20 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    * so nothing can move the control under the question it is asking.
    */
   function commitFile(mode: DeployMode): void {
+    // THE CLOCK GOES FIRST, and it is not a formality.
+    //
+    // The driver holds the run's own stream until this very `deploy` reaches it
+    // (`driver/run-loop.ts`, `driver/live/adapter.ts` — the BUILD hold), so the
+    // op below is what releases the day's opening minute. Released onto a desk
+    // whose clock is still at 0, that batch lands whole and instantly: the feed
+    // bypasses its reveal queue whenever the sim is paused (`run-feed.ts`,
+    // `receive`), so the press would slap four lines onto the fanfold in one
+    // frame. Starting the clock first puts them through the reveal at reading
+    // pace, which is the way every other minute of the day arrives.
+    //
+    // Nothing can escape in the gap: a running clock releases nothing while the
+    // hold is on, and the hold only comes off on the op.
+    startDay()
     if (mode === 'next') {
       // W4 — ONE press, TWO ops, and the order is load-bearing. `deploy` must
       // reach the CLOSING run's membrane, because that is what the live
@@ -197,7 +211,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       // only module allowed to mint the op literal.
       board.deploy()
       sendNewRun()
-      startDay()
       return
     }
     board.deploy()
@@ -207,7 +220,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     // round again — and without it the first sitting would never get a page,
     // which is the first comparison the operator would reach for.
     filed.set(run, usedIds(board.cells()))
-    startDay()
   }
 
   const zone = buildDeployZone(() => {

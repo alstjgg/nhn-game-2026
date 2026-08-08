@@ -22,6 +22,7 @@
 // design README 74–76) and the reference marks, not run content.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
+import { deployFile } from './fixtures/harness.ts'
 
 const FEED = '#w-feed'
 const LIST = '#w-feed #feedList'
@@ -147,11 +148,57 @@ async function domLines(page: Page): Promise<DomLine[]> {
 const streamRendered = (lines: DomLine[]): DomLine[] =>
   lines.filter((l) => !l.empty && !l.text.startsWith('집계. '))
 
+/* ══ the day opens on the press, never before it ══════════════════════════ */
+
+test.describe('the day opens on the press', () => {
+  // THE DEFECT (fixed 2026-08-09). The shell opens the desk with `advance(0)`
+  // so the run's `meta` reaches the chrome at boot, and that release used to
+  // carry the whole opening MINUTE with it — on the demo run, the case's first
+  // script event and 서지형's first line. The fanfold printed the day's opening
+  // while the AGENT FILE was still empty and ECHO-1 had not gone in, which is
+  // the one edge spec-client §5.1 names outright: `BUILD → (deploy) RUN`.
+  //
+  // The driver holds it now (`tests/driver/build-hold.test.ts` pins that side,
+  // including the half that costs a model call). This is the operator's own
+  // view of the same claim: the paper the desk boots with is blank, and the
+  // press is what puts the first line on it.
+  test('the day opens on the press — the fanfold is empty until the file is committed', async ({ page }) => {
+    await boot(page)
+
+    // The window is up and the head is printed — the stock is not a run line.
+    await expect(page.locator(`${FEED} .feed-head`)).toHaveCount(1)
+    await expect(page.locator(`${LIST} li`), 'the run printed before it was opened').toHaveCount(0)
+
+    // …and the desk still knows which day it is: `meta` is not run content, so
+    // the counter, the pips and the callsign are all on the desk at boot.
+    const opened = await frame(page)
+    expect(opened.events.map((e) => e.type)).toContain('meta')
+    expect(
+      opened.events.filter((e) => e.type === 'feed'),
+      'the driver released a feed line into an unopened day',
+    ).toEqual([])
+
+    await deployFile(page)
+
+    await expect(page.locator(`${LIST} li`).first()).toBeAttached({ timeout: 10_000 })
+    // The first line is the run's own first line, not a client-minted one —
+    // whatever the pack authors at its opening minute.
+    const first = (await domLines(page))[0]!
+    const stream = await streamLines(page)
+    expect(stream.length, 'the press released nothing').toBeGreaterThan(0)
+    expect(first.text).toBe(stream[0]!.text)
+  })
+})
+
 /* ══ [u5#c2] a full fixture round renders in stream order ═════════════════ */
 
 test.describe('round renders in order', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page)
+    // The day does not open until the file is committed — the driver holds the
+    // run's own stream until a `deploy` op arrives (spec-client §5.1), so a
+    // fanfold read before the press is an empty one by contract.
+    await deployFile(page)
     await setRate(page, 0)
     await seek(page, '21:04')
   })
@@ -229,6 +276,10 @@ test.describe('round renders in order', () => {
 test.describe('diegetic waiting', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page)
+    // The day does not open until the file is committed — the driver holds the
+    // run's own stream until a `deploy` op arrives (spec-client §5.1), so a
+    // fanfold read before the press is an empty one by contract.
+    await deployFile(page)
     await setRate(page, 0)
   })
 
@@ -284,6 +335,10 @@ test.describe('diegetic waiting', () => {
 test.describe('fallback line', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page)
+    // The day does not open until the file is committed — the driver holds the
+    // run's own stream until a `deploy` op arrives (spec-client §5.1), so a
+    // fanfold read before the press is an empty one by contract.
+    await deployFile(page)
     await setRate(page, 0)
   })
 
@@ -328,10 +383,20 @@ test.describe('fallback line', () => {
 test.describe('lines land on the clock', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page)
+    // The day does not open until the file is committed — the driver holds the
+    // run's own stream until a `deploy` op arrives (spec-client §5.1), so a
+    // fanfold read before the press is an empty one by contract.
+    await deployFile(page)
   })
 
   test('lines land on the clock — a paused clock lands nothing', async ({ page }) => {
     await setRate(page, 0)
+    // The press opened the day at ×1, so a pause here catches the reveal queue
+    // mid-flight: `run-feed.ts` flushes what is queued when the sim stops, and
+    // a count taken in that same frame would read short and then grow — which
+    // is the very thing this test would report as a line landing on a paused
+    // clock. The claim is about what lands AFTER the desk has settled.
+    await page.waitForTimeout(500)
     const before = (await domLines(page)).length
     await page.waitForTimeout(2200)
     expect((await domLines(page)).length).toBe(before)
@@ -402,6 +467,10 @@ test.describe('lines land on the clock', () => {
 test.describe('untouchable during a run', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page)
+    // The day does not open until the file is committed — the driver holds the
+    // run's own stream until a `deploy` op arrives (spec-client §5.1), so a
+    // fanfold read before the press is an empty one by contract.
+    await deployFile(page)
     await setRate(page, 0)
     await seek(page, '21:04')
   })
@@ -456,6 +525,7 @@ test.describe('untouchable during a run', () => {
 test.describe('[U5.4] the agent line names the slots that moved it', () => {
   test('[U5.4] (a) a cited radio line carries the slot mark, an uncited one does not', async ({ page }) => {
     await boot(page)
+    await deployFile(page)
     // Release the day up to the fixture's cited line (09:26).
     await page.evaluate(() => {
       const handle = (window as unknown as { __feed?: { seek(at: string): void } }).__feed
