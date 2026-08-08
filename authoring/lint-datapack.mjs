@@ -451,6 +451,139 @@ for (const u of pack.score.units ?? []) {
     }
   }
 }
+/* ── E-P5 — the first run is the worst run (guide §5, manual §5) ─────────── */
+
+// Sibling of E-P3, one step in from it. E-P3 catches a flag the fixed timeline
+// always sets; this catches a flag set by DOING NOTHING. An empty handover
+// takes `default_stance` at every gate, so whatever those buckets set is on in
+// run 1 — and a score rule reading one of them matches before the player has
+// touched the game. The unit then never resolves to its `=>` fallback on the
+// no-intervention path, which is precisely the 무개입 기준 the draft printed.
+// The symptom is quiet and expensive: the baseline column looks authored and
+// correct, and no run ever scores it.
+//
+// Only flags are checked. Meter deltas on a default bucket are fine — symptoms
+// are the surface of state, not score — and stay fine exactly because score
+// conditions read intervention flags, never scalars.
+const defaultStanceFlags = new Map();
+for (const g of pack.gates.gates ?? []) {
+  const bucket = (g.buckets ?? []).find((b) => (b.stances ?? []).includes(g.default_stance));
+  for (const f of Object.keys(bucket?.flags ?? {})) defaultStanceFlags.set(f, g.gate);
+}
+for (const u of pack.score.units ?? []) {
+  u.predicates.forEach((predicate, i) => {
+    for (const name of identifiers(predicate)) {
+      const gate = defaultStanceFlags.get(name);
+      if (gate === undefined) continue;
+      errors.push(
+        `score ${u.id} (${u.label}) predicate[${i}]: "${name}" is set by ${gate}'s default stance, so an empty handover sets it — this rule matches on run 1 and the unit can never reach its 무개입 baseline. Move the flag off the default stance, or read a different one`,
+      );
+    }
+  });
+}
+
+/* ── E-K1/E-K2 — the lock space (manual §3-5, 집필 스킬 §4-7) ─────────────── */
+
+// A key is 축 × 지목 × 인증 종, and the probe measured that a right-axis
+// sentence pointed at the wrong thing scores zero. So two axes are NOT two
+// locks — the 지목 is what keeps them apart, and a repeated triple is one lock
+// wearing two gates' clothes: the same mined sentence opens both, and the
+// second gate stops being a question. 우는다리 cuts nine conditions out of two
+// axes with no repeat, which is the standard this encodes.
+const tripleSeen = new Map();
+for (const g of pack.gates.gates ?? []) {
+  for (const k of g.key_conditions ?? []) {
+    const triple = `${k.axis} × ${k.referent} × ${k.species}`;
+    const prior = tripleSeen.get(triple);
+    if (prior) {
+      errors.push(`${g.gate} ${k.id}: key condition ${triple} repeats ${prior} — one lock on two gates. Vary the 지목`); // E-K1
+    } else tripleSeen.set(triple, `${g.gate} ${k.id}`);
+  }
+}
+
+// E-K2 — clause coverage. A clause no gate targets is a lock with no door; a
+// clause EVERY gate targets means one learned axis opens the whole scenario in
+// a single run. Only meaningful with two clauses — a one-clause 기질
+// necessarily owns every gate, and the schema permits it.
+const clauseIds = (pack.temperament.clauses ?? []).map((c) => c.id);
+if (clauseIds.length > 1) {
+  const gateCount = (pack.gates.gates ?? []).length;
+  const byClause = new Map(clauseIds.map((id) => [id, new Set()]));
+  for (const g of pack.gates.gates ?? []) {
+    for (const k of g.key_conditions ?? []) {
+      // `targets_clause` is authored prose ("기질 조건절 1 (두려움 축)") — the
+      // ordinal in it is the link, so read that rather than demanding an id.
+      const n = /(\d+)/.exec(k.targets_clause ?? '');
+      const id = n ? `cl${n[1]}` : null;
+      if (id !== null && byClause.has(id)) byClause.get(id).add(g.gate);
+    }
+  }
+  for (const [id, gates] of byClause) {
+    if (gates.size === 0) warns.push(`기질 ${id}: no gate targets this clause — a lock with no door`);
+    else if (gateCount > 1 && gates.size === gateCount) {
+      warns.push(`기질 ${id}: every gate targets this clause — one learned axis opens the whole scenario`);
+    }
+  }
+}
+
+/* ── E-V1 — 갈림길 구조가 플레이어에게 닿는 면에 (가이드 §6-9) ───────────── */
+
+// spec-client §3 invariant 6. `tests/scaffold/no-gate-vocab.test.ts` is the
+// authoritative guard: it scans every string in every published file through
+// the build plugin's own `publishedContentOf`, so it cannot pass on bytes the
+// deploy does not ship. This is NOT a second copy of that — it is the
+// WRITER-FACING subset, the authored slots a draft can put prose into that the
+// browser then downloads, checked here so the factory's compile→lint gate
+// catches a leak in round 1 instead of at `npm test` long afterwards.
+//
+// Failing safe is the point: if a strip is added later this may over-report,
+// which costs one rewording. It can never under-report into a hole, because
+// the test above is what actually holds the line.
+const GATE_VOCAB = /갈림길|게이트|\bgate\b/i;
+const GATE_REF = /\bG[1-9]\d*\b/;
+const playerFacing = [];
+const say = (where, value) => {
+  if (typeof value === 'string' && value.trim()) playerFacing.push([where, value]);
+};
+say('meta.logline', pack.meta.logline);
+for (const e of pack.timeline.events ?? []) {
+  say(`timeline ${e.id} 사건`, e.text);
+  say(`timeline ${e.id} 런 깊이`, e.exposure?.extra_condition);
+}
+say('기질 기본 성향', pack.temperament.default_disposition);
+for (const c of pack.temperament.clauses ?? []) {
+  say(`기질 ${c.id} 조건절`, c.condition);
+  say(`기질 ${c.id} 패배 조건`, c.defeat_condition);
+}
+for (const c of pack.characters.characters ?? []) {
+  say(`${c.id} ${c.name} 이해관계`, c.interest);
+  for (const k of [...(c.knows ?? []), ...(c.doesnt_know ?? [])]) say(`${c.id} ${c.name} 아는 것`, k);
+}
+for (const g of pack.gates.gates ?? []) {
+  say(`${g.gate} 제목`, g.title);
+  say(`${g.gate} 장면`, g.scene);
+  say(`${g.gate} question`, g.question);
+  for (const s of g.stances ?? []) say(`${g.gate} stance ${s.id}`, s.desc);
+  for (const [i, f] of (g.false_leads ?? []).entries()) say(`${g.gate} false_lead[${i}]`, f);
+}
+for (const [variable, dirs] of Object.entries(pack.symptoms ?? {})) {
+  if (variable === 'flags') {
+    for (const [id, kinds] of Object.entries(dirs ?? {})) {
+      for (const kind of ['set', 'unset']) say(`symptoms flags.${id}.${kind}`, kinds?.[kind]);
+    }
+  } else {
+    for (const dir of ['up', 'down']) {
+      for (const e of dirs?.[dir] ?? []) say(`symptoms ${variable}.${dir}`, e.text);
+    }
+  }
+}
+for (const [where, value] of playerFacing) {
+  const hit = GATE_VOCAB.exec(value) ?? GATE_REF.exec(value);
+  if (hit) {
+    errors.push(`E-V1 ${where}: gate structure on a player surface — "${hit[0]}" in "${value.slice(0, 32)}…". Say what happened in the world instead (가이드 §6-9)`);
+  }
+}
+
 for (const e of pack.timeline.events ?? []) {
   if (e.exposure.extra_condition) flags.push(`timeline ${e.id}: exposure has free-text extra_condition — promote to a predicate`);
 }

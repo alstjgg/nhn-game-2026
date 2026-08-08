@@ -63,9 +63,16 @@ existing draft path (skip §6-1, enter §6-2 with that draft).
   **gate outcome** — which way the 요원 broke at an earlier gate changes what
   surfaces later. The second axis works **within a run only**: nothing about
   which stance was taken survives into the next run. So
-  `G3에서 추궁한 런에서 보임` is writable and `G3에서 추궁한 런 이후로 보임`
-  is not. This axis does not accumulate across runs — it makes runs differ
-  from one another.
+  `요원이 옥상에 함께 오른 런에서 보임` is writable and
+  `요원이 옥상에 함께 오른 런 이후로 보임` is not. This axis does not
+  accumulate across runs — it makes runs differ from one another.
+- **Name the outcome, never the gate.** Write that second axis as something
+  that happened in the world — `요원이 옥상에 함께 오른 런`,
+  `관장이 종이를 두 장 편 런` — never as `G3에서 동행을 택한 런`. `G1`,
+  `갈림길`, `게이트` are words for the workshop, and the timeline is read by
+  the player. The rule is not a style preference: naming a gate on a player
+  surface is item 9 of the guide's forbidden list, and it fails a machine
+  check.
 - **Sentence mining:** when a run ends, the player receives two reports (an
   objective event log + a subjective report the 요원 wrote in its own
   temperament) and **drags sentences out of them into the next run's
@@ -101,7 +108,7 @@ caller is.
 
 ## 3. Quantities
 
-Span roughly 2–3 hours · gates 5–7 · 주요인물 4 or fewer (+ 조연 1–2) ·
+Span roughly 2–3 hours · gates 3 · 주요인물 4 or fewer (+ 조연 1–2) ·
 places 3–5 · hidden truths 4–6.
 
 The direction of these numbers is **long, not wide** — but "long" means deep
@@ -123,10 +130,18 @@ strands horizontally; stack them vertically along run depth — best of all is
 a chain where a sentence carrying one truth delivers the player to the door
 of the next.
 
-Gates stay at 5–7 inside the shorter span deliberately — a situation that
-forks often reads as a situation with weight. If that count starts crowding
-the clock, say so in the note you return with the draft rather than quietly
-thinning the scenes to fit.
+**Three gates, and three is not a budget to spend up to — it is the count.**
+A forking situation reads as a weighty one, which is exactly the trap: past
+three, the forks stop being decisions and become a checklist the 요원 walks.
+Three also keeps the locks honest. The 기질 carries at most two conditional
+clauses (§4-6), so every gate past the second is another lock cut from the
+same two keys; at six or seven gates a player who learns one axis opens half
+the scenario at once, and the back half goes shallow in a single run. At
+three, each gate can hold its own axis-and-지목 pair and stay a real question.
+
+Spend what the gate count frees on **depth**, not on more scenes: more
+carrying sentences per truth, more clock graduations between the gates, more
+that one place yields at different depths.
 
 ## 4. Output format
 
@@ -141,6 +156,21 @@ sentences; the skeleton follows the below exactly. Section headers are
 `## N. <name>` with exactly these nine Korean names, in this order:
 `로그라인 · 고정 타임라인 · 인물 · 장소 · 숨겨진 진실 · 기질 제안 · 갈림길 · 점수 · 자기 검사`.
 
+### 어디까지 플레이어에게 닿는가
+
+Not all nine sections ship. Some are compiled into files the browser
+downloads, and some exist only for the workshop — and you cannot tell which
+from the draft, so here it is:
+
+| 플레이어가 읽는다 | 절대 나가지 않는다 |
+|---|---|
+| `로그라인` · `고정 타임라인` (사건 텍스트 **와** 런 깊이 칸) · `인물` · `기질 제안` (통째로) · `갈림길`의 장면 산문 · `question` · `stances` · `false_leads` · `점수`의 집계 규칙 | `장소` · `숨겨진 진실` · `자기 검사` · `걸치는 줄기` · `standard_form` · `key_examples` · `점수` 표와 세 글머리 |
+
+The left column is the membrane. Machinery vocabulary — `G1`, `갈림길`,
+`게이트`, stance labels quoted as labels — belongs only on the right. Write
+the left column as the world describing itself: the player is looking at a
+reconstruction, not at your notes about one.
+
 1. **`로그라인`** — 3 sentences or fewer.
 2. **`고정 타임라인`** — the no-intervention event table, from the report
    call to the final clock (the span is §3's — roughly 2–3 hours). Exactly
@@ -150,12 +180,15 @@ sentences; the skeleton follows the below exactly. Section headers are
    verbatim (— if none applies). The run-depth cell uses exactly one of three
    phrasings: `초반 런에도 보임` / `시계 N까지 간 런에만 보임` /
    `시계 끝까지 간 런에만 보임` — extra conditions are appended after
-   `" · "`. A **gate-outcome depth** goes in that tail, in prose, naming the
-   gate and the stance:
-   `초반 런에도 보임 · G3에서 추궁을 택한 런에서만`. Write it as a condition
-   on *this* run, never as something unlocked for runs afterward — the axis
-   does not survive a run boundary (§1). Hardening turns the tail into a
-   machine predicate; the draft writes prose.
+   `" · "`. A **gate-outcome depth** goes in that tail, in prose, named by
+   what happened in the world — never by gate id or stance label:
+   `초반 런에도 보임 · 요원이 옥상에 함께 오른 런에서만`. `G3에서 동행을 택한
+   런에서만` says the same thing and is forbidden — this cell ships to the
+   player (§4의 「어디까지 플레이어에게 닿는가」), and a gate id there is
+   forbidden-list item 9. Write it as a condition on *this* run, never as
+   something unlocked for runs afterward — the axis does not survive a run
+   boundary (§1). Hardening turns the tail into a machine predicate; the draft
+   writes prose.
    **One exposure per row** — information with different exposure
    depths is split into separate rows.
 3. **`인물`** (주요인물 4 or fewer + 조연 1–2) — each character in this
@@ -164,7 +197,7 @@ sentences; the skeleton follows the below exactly. Section headers are
      `- 이해관계: …` / `- 아는 것: 항목 · 항목 · …. 모르는 것: ….`
      (items separated by `·` — commas belong inside sentences) /
      `- 눈금 후보: A · B.` (max 2 per character) /
-     `- 걸치는 줄기: 진실 1·2…, 갈림길 G1·G4….` (truth and gate numbers in
+     `- 걸치는 줄기: 진실 1·2…, 갈림길 G1·G3….` (truth and gate numbers in
      exactly this notation).
    - Every **주요인물** spans two or more hidden truths or gates — a main
      character carrying only one strand doesn't earn the slot.
@@ -181,7 +214,9 @@ sentences; the skeleton follows the below exactly. Section headers are
    different depths. Inside a 2–3 hour span the clock depths sit closer
    together than they used to, so one of a place's depths may instead be a
    gate-outcome depth (`G2에서 침묵을 택한 런` …) — that counts as a
-   different depth even at the same clock.
+   different depth even at the same clock. This section is **not** published,
+   so naming the gate here is fine; the same depth written into the timeline's
+   run-depth cell is not (§4-2).
 5. **`숨겨진 진실`** (4–6) — each under a `**진실 N — 진실 한 문장**`
    heading:
    - Under `- 실어 나르는 문장:`, 3 or more entries of
@@ -192,13 +227,13 @@ sentences; the skeleton follows the below exactly. Section headers are
    conditional clauses, each under a
    `**조건절 N (축 어휘: 축 — '어휘', '어휘')**` heading with body text and a
    `- 패배 조건: 단, ….` bullet.
-7. **`갈림길`** (5–7) — each gate opens with a
+7. **`갈림길`** (exactly 3) — each gate opens with a
    `### GN 「제목」 — 시각, 장소` heading, then prose (the scene and its
    tension), then the gate card as a **yaml code block**. A gate without a
    card is unfinished:
 
    ```yaml
-   gate: G3                          # G1..G7
+   gate: G3                          # G1..G3
    standard_form: >
      갈림길 G3에서, 기질은 기본 stance 경청을 낸다;
      열쇠 조건 k1을 만족하는 문장 주입 시 공감으로 이동한다.
@@ -207,7 +242,7 @@ sentences; the skeleton follows the below exactly. Section headers are
      - { id: a, label: 추궁, desc: "발화에서 어떻게 나타나는지" }
      - { id: c, label: 경청, desc: "..." }
      - { id: d, label: 공감, desc: "..." }
-   default_stance: c                 # prediction with no injection
+   default_stance: c                 # no injection — and it must land on the record
    key_conditions:                   # a key is a condition, not a sentence — 1+
      - id: k1
        axis: 두려움                   # the axis of the clause it strikes
@@ -225,6 +260,31 @@ sentences; the skeleton follows the below exactly. Section headers are
    with only one key is a lottery, not deduction. (This card format is a
    synchronized copy of the authoring-tool canon — the session follows this
    copy alone.)
+
+   **`default_stance` is where the first run goes, so it is where the record
+   goes.** With an empty handover the 요원 takes the default at every gate, so
+   the all-default path across your three gates must reproduce the fixed
+   timeline exactly — the day as it actually happened, with nothing improved.
+   Write each `default_stance` as the stance that changes nothing: the one
+   that defers, or accepts what the authority says, or walks past. If a
+   stance would save someone, spare a building, or open a document, it is not
+   the default of that gate — it is what a handover has to buy.
+
+   **Three gates, two clauses — so the 지목 is what keeps the locks apart.**
+   A key is 축 × 지목 × 인증 종, and a sentence with the right axis pointed at
+   the wrong thing opens nothing (that is measured, not assumed). Two axes are
+   therefore not two locks: **no two key conditions in the whole scenario may
+   share the same `(axis, referent, species)` triple**, and a machine check
+   enforces it. Vary the 지목 first — the same 하중 axis can point at the roof
+   plant, at the truss, at the gutter, and each is a different lock.
+
+   Two more, for the same reason. **Both 조건절 must be used, and neither may
+   own all three gates** — if one clause opens everything, a player who learns
+   one axis on run 3 has the rest for free. And **at least one condition
+   should be `자기서술` pointed at the 요원 itself**, drawn from what it wrote
+   about its own mistake in an earlier report: a self-description key cannot
+   be learned once as a world-fact, it has to be re-earned each run, so it
+   resists the flattening the other keys are prone to.
 8. **`점수`** — a table
    `| 단위 | 무엇이 집계되나 | 무개입 기준 | 소급되는 갈림길 |`
    (the baseline in concrete numbers; gates in GN notation), followed by
@@ -240,8 +300,23 @@ sentences; the skeleton follows the below exactly. Section headers are
    is not invented — it is the record.** A run where the 요원 changed nothing
    replays what actually happened that day, and that result *is* the baseline
    score. The player competes against the record, every run.
-9. **`자기 검사`** — for each of the 8 items on the guide's forbidden list,
-   one line confirming this draft does not violate it, plus a 9th line
+
+   **The first run is the worst run. This is an invariant, not a tendency.**
+   The 무개입 기준 column is not a description sitting beside the game — it is
+   what the machine computes when no handover is carried, and the two must be
+   the same number. So write every unit's baseline as the *worst* value that
+   unit can take: the most dead, the most trapped, the wrongly arrested one
+   still arrested, the collapse at its widest. Nothing the player does may
+   land below it. If some intervention would make a unit worse than the
+   record — a run that gets someone killed who survived that day — then the
+   record was not the floor and the baseline is miswritten; move the worse
+   outcome into the baseline and let the intervention climb from there.
+
+   Every later run is measured as distance from that floor, which is what
+   makes run 1 legible: the player watches the day happen, and every run
+   after is an argument with it.
+9. **`자기 검사`** — for each of the 9 items on the guide's forbidden list,
+   one line confirming this draft does not violate it, plus a 10th line
    confirming the translationese sweep (§5, "The language of the draft") was
    run. If you discover a violation, fix it first, then submit.
 
@@ -264,7 +339,7 @@ Translated Korean has a smell, and mined sentences carry that smell straight
 into the game.
 
 Before submitting, sweep the draft for the usual translationese tells
-(this sweep is the 9th line of `자기 검사`):
+(this sweep is the 10th line of `자기 검사`):
 
 - **Pronouns 그/그녀/그것/그들** — Korean repeats the name or drops the
   subject. `그녀는 대장을 덮었다` → `윤은 대장을 덮었다`.
