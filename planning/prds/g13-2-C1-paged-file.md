@@ -1010,3 +1010,35 @@ async function boot(page: Page): Promise<void> {
 E13 is then complete. Run the full Verification, work the Done-when as corrected
 by A4, and make the single commit. If a seventh site turns up that none of the
 above covers, stop and report it — the survey has been right three times.
+
+---
+
+# Amendment 4 — the last `DossierInput`
+
+A4's grep is right and the comment is stale. E4 renamed the type; A3 swept four
+comments and this is a fifth, three lines above one of them.
+
+The sentence is also wrong twice over now: the arguments are no longer one
+type's, and "the two arguments" describes a signature that no longer exists.
+
+## D1 — `src/client/components/dossier.ts:5-7`
+
+Current text:
+
+```
+// The copy is DOCUMENT ART, not pack data: the pack carries no callsign and no
+// standing orders. Exactly four things are pack-fed, and they arrive as the two
+// arguments of `DossierInput` (u4 D2/D4).
+```
+
+Replacement text:
+
+```
+// The copy is DOCUMENT ART, not pack data: the pack carries no callsign and no
+// standing orders. What IS pack-fed arrives as the models' own arguments — the
+// clock band to `coverModel`, the callsign and slot cap to `agentModel`
+// (u4 D2/D4).
+```
+
+Then finish: full Verification, the Done-when as corrected by A4, and the single
+commit.
