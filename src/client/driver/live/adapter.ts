@@ -58,6 +58,28 @@ export type BoundRun = {
 }
 
 /** What the closing run hands the run loop so the next one can inherit it. */
+/**
+ * Every sentence a stream has shown, newest text winning, in first-seen order.
+ *
+ * Pure and exported so it can be tested without driving an adapter: the stub in
+ * `tests/driver/live-adapter-run-transition.test.ts` never emits, and a rule
+ * this small does not need a run to prove. The rule itself is `blocks.ts`'s own
+ * `seen` tier restated — a feed line carrying a `sentence_id`, and a report's
+ * facts and body — restated rather than shared because the store exposes no way
+ * to enumerate that tier.
+ */
+export function shownFrom(events: readonly ViewEvent[]): Block[] {
+  const byId = new Map<string, string>()
+  for (const event of events) {
+    if (event.type === 'feed') {
+      if (event.line.sentence_id !== undefined) byId.set(event.line.sentence_id, event.line.text)
+    } else if (event.type === 'report') {
+      for (const sentence of [...event.facts, ...event.report_body]) byId.set(sentence.id, sentence.text)
+    }
+  }
+  return [...byId].map(([id, text]) => ({ id, text }))
+}
+
 export type RunClose = {
   /** `"HH:MM"` the desk reached — e8 deepens timeline exposure from this. */
   reachedClock: string
@@ -68,6 +90,15 @@ export type RunClose = {
    * would carry material the player looked at and rejected.
    */
   carried: Block[]
+  /**
+   * Every sentence the desk has shown since boot, across every run — a SUPERSET
+   * of `carried` and a different job. `carried` is the file the next day flies;
+   * this is only what the next day is allowed to MINE, so that a report the
+   * operator can still read on the archive rail is a report they can still mine
+   * from (민서, 08-08). Seeded into the new run's `seen` tier and never into
+   * `mined`, so nothing here reaches Call 1 unless the operator deploys it.
+   */
+  shown: Block[]
 }
 
 export type LiveAdapterDeps = {
@@ -245,7 +276,11 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
       const block = store.get(id)
       if (block !== undefined) carried.push({ id, text: block.text })
     }
-    return { reachedClock: clock.at(), carried }
+    // Every sentence the desk has EVER shown, derived from the event log rather
+    // than from any store: `seen` is adapter-scoped and never cleared, so it
+    // spans runs, while each run's block store is built fresh and knows only
+    // its own day.
+    return { reachedClock: clock.at(), carried, shown: shownFrom(seen) }
   }
 
   /** Opens the next day underneath the listeners that are already bound. */
