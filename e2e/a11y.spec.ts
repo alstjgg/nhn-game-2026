@@ -405,15 +405,21 @@ test.describe('a11y — keyboard reach', () => {
     // the same gesture, and it is `aria-disabled` afterwards — a second click
     // here would hang on a control that correctly refuses. Driving it is the
     // point: a census taken before the operator has done anything is exactly
-    // the empty one this replaces. `slot`'s own control stays on the census
-    // through the three seats still empty.
+    // the empty one this replaces.
+    //
+    // x4 — the two are scanned on OPPOSITE sides of that activation, because
+    // the AGENT FILE's blank is gone the moment the file has a line in it: the
+    // four permanent boxes became one paragraph and one blank, and the blank is
+    // the `slot` op's control. So `slot` is censused while the file is still
+    // empty and `unslot` after the sentence lands. Both still have to exist —
+    // neither assert is dropped, only ordered.
     //
     // Each window is RAISED before it is used — a click that lands under
     // another focused window does nothing. See `raiseWindow`.
+    await expect(page.locator('[data-op="slot"]').first()).toBeAttached({ timeout: 15_000 })
     await raiseWindow(page, 'rep')
     await page.locator('[data-op="mine"]').first().click()
     await raiseWindow(page, 'file')
-    await expect(page.locator('[data-op="slot"]').first()).toBeAttached({ timeout: 15_000 })
     await expect(page.locator('[data-op="unslot"]').first()).toBeAttached({ timeout: 15_000 })
 
     const afterDrain = await opsOf()

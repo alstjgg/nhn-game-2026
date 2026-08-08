@@ -18,9 +18,18 @@ import { blockCardModel, buildBlockCard, pad2, pickedBlockId, setPickedBlockId }
 /** spec-client §9 dev value, not a guess. */
 export const SLOT_CAP = 4
 
-/** The slot's own copy, ported verbatim from the design target (`app.js` 262). */
-const EMPTY_HINT = '부검 창에서 문장을 누르면 이 칸에 앉습니다'
-const LOCKED_HINT = '— 비어 있음 (잠김)'
+/**
+ * The blank's own copy.
+ *
+ * x4 — was '부검 창에서 문장을 누르면 이 칸에 앉습니다', ported from the design
+ * target (`app.js` 262) back when it was printed four times, once per empty box.
+ * There is one blank now (below), so the line can say what the file is FOR
+ * rather than what a box does: the operator is writing a handover, and the
+ * sentences come out of the record.
+ */
+const EMPTY_HINT = '다음 요원에게 인수인계할 사항을 기록에서 가져오세요'
+/** …and what the blank says once the file is committed and nothing went in. */
+const LOCKED_HINT = '인수인계 사항 없음 — 잠김'
 
 export interface SlotCell {
   slot: number
@@ -178,55 +187,101 @@ export function createSlotBoard(options: SlotBoardOptions): SlotBoard {
     options.onChange([...slots], deployed)
   }
 
-  function buildSlot(cell: SlotCell): HTMLElement {
-    const node = el('div', 'slot')
+  /** Where the next sentence would sit, or `null` when the file is full. */
+  function firstFree(): number | null {
+    const seat = slotCells(slots).find((cell) => cell.blockId === null)
+    return seat === undefined ? null : seat.slot
+  }
+
+  /**
+   * One seated sentence, as a RUN OF TEXT rather than a card in a box.
+   *
+   * x4 — the four boxes are gone. What the operator is assembling is a handover
+   * paragraph, and it now reads as one: 01 · the sentence · 해제 · 02 · the
+   * sentence · 해제 · … in a single justified flow. The boxes made four
+   * sentences look like four objects off a deck — the same reading T1 already
+   * took the card FACE away for. What is left is the file's own prose, with the
+   * slot number and its release sitting in the margin of the line they belong
+   * to. Every attribute a filled slot carried is carried still (`data-slot`,
+   * `data-no`, `data-block-id`, the `.slot-pin` anchor, the `[data-op=unslot]`
+   * control), because the thread layer, the membrane census and the tutorial
+   * all reach for them by name.
+   */
+  function buildSeat(cell: SlotCell, blockId: string): HTMLElement {
+    const node = el('span', 'slot filled')
     const no = pad2(cell.slot + 1)
     node.dataset.slot = String(cell.slot)
     node.dataset.no = no
+    // I1 (spec-client §3 inv 3): the slot holds an authored ID, and the pin
+    // anchor carries the same one — u8's RedThread pins to it.
+    node.dataset.blockId = blockId
     if (deployed) node.classList.add('locked')
 
-    if (cell.blockId !== null) {
-      node.classList.add('filled')
-      // I1 (spec-client §3 inv 3): the slot holds an authored ID, and the pin
-      // anchor carries the same one — u8's RedThread pins to it.
-      node.dataset.blockId = cell.blockId
-      const card = buildBlockCard(blockCardModel(cell.blockId, options.resolve(cell.blockId)), {
-        inSlot: true,
+    node.append(buildBlockCard(blockCardModel(blockId, options.resolve(blockId)), { inSlot: true }))
+
+    if (!deployed) {
+      const unset = button('slot-unset', `슬롯 ${no} 해제`, '해제')
+      // The `unslot` op's control, marked for the PRD §4 membrane census.
+      unset.dataset.op = 'unslot'
+      unset.addEventListener('click', (event) => {
+        event.stopPropagation()
+        apply({ kind: 'clear', slot: cell.slot })
       })
-      const pin = el('span', 'slot-pin')
-      pin.dataset.blockId = cell.blockId
-      pin.setAttribute('aria-hidden', 'true')
-      node.append(card, pin)
-      if (!deployed) {
-        const unset = button('slot-unset', `슬롯 ${no} 해제`, '해제')
-        // The `unslot` op's control, marked for the PRD §4 membrane census.
-        unset.dataset.op = 'unslot'
-        unset.addEventListener('click', (event) => {
-          event.stopPropagation()
-          apply({ kind: 'clear', slot: cell.slot })
-        })
-        node.append(unset)
-      }
-    } else if (deployed) {
-      node.append(el('div', 'slot-empty', LOCKED_HINT))
-    } else {
-      // A real button, so the membrane op is reachable by keyboard alone
-      // (inv 1 + PRD §4 a11y). Enter and Space both fire its click.
-      const target = button('slot-empty slot-target', `슬롯 ${no}에 배치`, EMPTY_HINT)
-      // The `slot` op's control, marked for the PRD §4 membrane census.
-      target.dataset.op = 'slot'
-      node.append(target)
+      node.append(unset)
     }
 
+    // The thread's anchor CLOSES the run rather than opening it.
+    //
+    // It sat between the number and the sentence to begin with, and a paragraph
+    // has soft-wrap opportunities the four boxes never did: the line broke
+    // between the dot and the first word, leaving `02 ●` stranded on the end of
+    // the line ABOVE the sentence it numbers. Last, it can only ever be orphaned
+    // from a `해제` — which is invisible, because it is a dot.
+    const pin = el('span', 'slot-pin')
+    pin.dataset.blockId = blockId
+    pin.setAttribute('aria-hidden', 'true')
+    node.append(pin)
+
+    return node
+  }
+
+  /**
+   * The blank — ONE of them, and only while the file is empty (민서, 08-08).
+   *
+   * Four permanent boxes were four promises the file kept whether or not the
+   * operator had anything to put in them. The cap is not lost with them: the
+   * deploy zone's `#slotCount` has always printed `0 / 4` a few lines below, and
+   * that is where the remaining seats are read now.
+   *
+   * It stays a real `<button>` so the `slot` op is reachable by keyboard alone
+   * (inv 1 + PRD §4 a11y) — Enter and Space both fire its click — and it seats
+   * into `firstFree()`, which on an empty board is seat 0.
+   */
+  function buildBlank(): HTMLElement {
+    const node = el('div', 'slot slot-blank')
+    const seat = firstFree() ?? 0
+    const no = pad2(seat + 1)
+    node.dataset.slot = String(seat)
+    node.dataset.no = no
+
+    if (deployed) {
+      node.classList.add('locked')
+      node.append(el('div', 'slot-empty', LOCKED_HINT))
+      return node
+    }
+
+    const target = button('slot-empty slot-target', `슬롯 ${no}에 배치`, EMPTY_HINT)
+    // The `slot` op's control, marked for the PRD §4 membrane census.
+    target.dataset.op = 'slot'
+    node.append(target)
+
     node.addEventListener('click', () => {
-      if (deployed) return
       const armed = pickedBlockId()
       if (armed === null) return
       setPickedBlockId(null)
-      apply({ kind: 'place', blockId: armed, slot: cell.slot })
+      apply({ kind: 'place', blockId: armed, slot: seat })
     })
     node.addEventListener('dragover', (event) => {
-      if (deployed) return
       event.preventDefault()
       node.classList.add('droppable')
     })
@@ -234,9 +289,8 @@ export function createSlotBoard(options: SlotBoardOptions): SlotBoard {
     node.addEventListener('drop', (event) => {
       event.preventDefault()
       node.classList.remove('droppable')
-      if (deployed) return
       const dropped = event.dataTransfer?.getData('text/plain') ?? ''
-      if (dropped.length > 0) apply({ kind: 'place', blockId: dropped, slot: cell.slot })
+      if (dropped.length > 0) apply({ kind: 'place', blockId: dropped, slot: seat })
     })
 
     return node
@@ -244,7 +298,16 @@ export function createSlotBoard(options: SlotBoardOptions): SlotBoard {
 
   function render(): void {
     root.dataset.state = boardState(slots, deployed)
-    root.replaceChildren(...slotCells(slots).map(buildSlot))
+    const seated = slotCells(slots).flatMap((cell) =>
+      cell.blockId === null ? [] : [buildSeat(cell, cell.blockId)],
+    )
+    // Built element by element, the runs would abut with no separator and the
+    // paragraph would read `…앉힙니다해제02…`. The same whitespace-text-node
+    // trick `components/dossier.ts` uses, and for the same reason.
+    const flow: Node[] = seated.flatMap((node, index) =>
+      index === 0 ? [node] : [document.createTextNode(' '), node],
+    )
+    root.replaceChildren(...(seated.length === 0 ? [buildBlank()] : flow))
   }
 
   const board: SlotBoard = {

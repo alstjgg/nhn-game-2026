@@ -157,26 +157,68 @@ test.describe('dossier sections', () => {
     await expect(rows.locator('dt').first()).toHaveText('호출부호')
   })
 
-  test('[u4#c1] (c) 인수인계 사항 holds the slot board — exactly four numbered slots', async ({ page }) => {
+  // x4 — RE-AIMED. This used to read "exactly four numbered slots", and four
+  // permanent boxes are exactly what 민서 took out on 08-08: the file is a
+  // handover the operator WRITES, so it prints as one paragraph of seated
+  // sentences, and the empty seats are read off `#slotCount` below rather than
+  // standing there as boxes. What the case still holds is everything that was
+  // load-bearing about the old assert — the board is on the agent's page, a
+  // seated sentence is numbered, and the number is painted by the skin.
+  test('[u4#c1] (c) 인수인계 사항 holds the slot board — a numbered paragraph, one blank when empty', async ({
+    page,
+  }) => {
     await boot(page)
     // C1 — the board is on the agent's page, second of that page's two
     // sections. It was index 4 of six in one scrolling dossier.
     await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     const board = page.locator(`${FILE} .sect`).nth(1).locator('#slotBoard')
     await expect(board).toHaveCount(1)
-    const slots = board.locator('.slot')
-    await expect(slots).toHaveCount(CAP)
+
+    // Empty: one blank, and it says what the file is for.
+    await expect(board.locator('.slot')).toHaveCount(1)
+    await expect(board.locator('.slot-blank')).toHaveCount(1)
+    await expect(board.locator('.slot.filled')).toHaveCount(0)
+    await expect(board.locator('.slot-blank .slot-empty')).toHaveText(
+      '다음 요원에게 인수인계할 사항을 기록에서 가져오세요',
+    )
+    // …centred both ways in its panel, which is what makes it a blank sheet
+    // rather than a left-aligned label.
     expect(
-      await slots.evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.slot)),
-    ).toEqual(['0', '1', '2', '3'])
-    expect(
-      await slots.evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.no)),
-    ).toEqual(['01', '02', '03', '04'])
+      await board.locator('.slot-blank').evaluate((n) => {
+        const s = getComputedStyle(n as HTMLElement)
+        return { justify: s.justifyContent, align: s.alignItems, text: s.textAlign }
+      }),
+    ).toEqual({ justify: 'center', align: 'center', text: 'center' })
+
+    // Two seated: two runs, numbered, and the blank is gone.
+    await seed(page)
+    await place(page, SEEDS[0].id, 0)
+    await place(page, SEEDS[1].id, 1)
+    const seats = board.locator('.slot.filled')
+    await expect(seats).toHaveCount(2)
+    await expect(board.locator('.slot-blank')).toHaveCount(0)
+    expect(await seats.evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.slot))).toEqual([
+      '0',
+      '1',
+    ])
+    expect(await seats.evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.no))).toEqual([
+      '01',
+      '02',
+    ])
     // The numbering is painted by the vendored skin, not by a text node.
-    const printed = await slots
-      .first()
-      .evaluate((n) => getComputedStyle(n, '::before').content.replace(/["']/g, ''))
-    expect(printed).toBe('01')
+    expect(
+      await seats.evaluateAll((nodes) =>
+        nodes.map((n) => getComputedStyle(n as HTMLElement, '::before').content.replace(/["']/g, '')),
+      ),
+    ).toEqual(['01', '02'])
+    // And it is a PARAGRAPH: the seats are inline runs the flow can break
+    // inside, not blocks stacked in a grid.
+    expect(
+      await seats.evaluateAll((nodes) => nodes.map((n) => getComputedStyle(n as HTMLElement).display)),
+    ).toEqual(['inline', 'inline'])
+    // The cap is still readable — `#slotCount`, a few lines down. This is the
+    // one surface that says how many seats are left now.
+    await expect(page.locator('#slotCount')).toHaveText(`2 / ${CAP}`)
   })
 
   test('[u4#c1] (d) the case slug and doc number come from the pack, never a literal', async ({ page }) => {
@@ -271,12 +313,17 @@ test.describe('deploy stamp locks the file', () => {
 
     await slot(page, 1).locator('.slot-unset').click()
     await expect(page.locator('#slotCount')).toHaveText('1 / 4')
-    await expect(slot(page, 1)).not.toHaveAttribute('data-block-id', /./)
+    // x4 — a released seat leaves the paragraph outright; it used to stay behind
+    // as an empty box carrying no `data-block-id`. Absence is the assert now.
+    await expect(slot(page, 1)).toHaveCount(0)
     expect(await pinnedIds(page)).toEqual([SEEDS[0].id])
 
     await slot(page, 0).locator('.slot-unset').click()
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'empty')
     expect(await pinnedIds(page)).toEqual([])
+    // …and the blank comes back, because an empty file is the one state that
+    // needs telling.
+    await expect(page.locator(`${FILE} .slot-blank`)).toHaveCount(1)
   })
 
   test('[u4#c4] (c) DEPLOY stamps the file and locks it for the run', async ({ page }) => {
@@ -376,25 +423,36 @@ test.describe('a11y membrane ops', () => {
     expect(editable).toBe(0)
   })
 
+  // x4 — RE-AIMED for the paragraph. The rule is unchanged (the file's controls
+  // walk in DOM order and end on DEPLOY); what changed is how many there are,
+  // because three empty boxes no longer sit in the tab ring waiting for a pick
+  // the desk has no way to arm any more. Both states are walked: the empty file,
+  // whose one blank is the `slot` op's control, and a written one, where every
+  // stop is a real release.
   test('[u4#c6] (b) Tab walks the slots then the deploy button, in DOM order', async ({ page }) => {
     await boot(page)
     await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
-    await place(page, SEEDS[0].id, 1)
 
-    await slot(page, 0).locator('.slot-target').focus()
-    const seen: string[] = [await page.evaluate(DESCRIBE_ACTIVE)]
-    for (let i = 0; i < 4; i += 1) {
-      await page.keyboard.press('Tab')
-      seen.push(await page.evaluate(DESCRIBE_ACTIVE))
+    const walk = async (steps: number): Promise<string[]> => {
+      const seen: string[] = [await page.evaluate(DESCRIBE_ACTIVE)]
+      for (let i = 0; i < steps; i += 1) {
+        await page.keyboard.press('Tab')
+        seen.push(await page.evaluate(DESCRIBE_ACTIVE))
+      }
+      return seen
     }
-    expect(seen).toEqual([
-      'slot-target@0',
-      'slot-unset@1',
-      'slot-target@2',
-      'slot-target@3',
-      '#btnDeploy',
-    ])
+
+    // Empty: the blank, then the button.
+    await page.locator(`${FILE} .slot-blank .slot-target`).focus()
+    expect(await walk(1)).toEqual(['slot-target@0', '#btnDeploy'])
+
+    // Written out of order — seats 1 and 3 — and the walk still follows the
+    // paragraph, which is slot order, not the order they were seated in.
+    await place(page, SEEDS[0].id, 3)
+    await place(page, SEEDS[1].id, 1)
+    await slot(page, 1).locator('.slot-unset').focus()
+    expect(await walk(2)).toEqual(['slot-unset@1', 'slot-unset@3', '#btnDeploy'])
   })
 
   test('[u4#c6] (c) every membrane control carries a non-empty accessible name', async ({ page }) => {
@@ -417,31 +475,38 @@ test.describe('a11y membrane ops', () => {
     expect(unnamed).toEqual([])
   })
 
+  // x4 — both keys still drive both ops, but there is ONE blank to place
+  // through, so the sequence cycles it instead of walking four boxes: Enter
+  // seats, Enter releases, Space seats, Space releases. The claim — every
+  // membrane op on this window is reachable by keyboard alone, on both keys —
+  // is exactly the one it was.
   test('[u4#c6] (d) Enter and Space slot, unslot and deploy — keyboard alone', async ({ page }) => {
     await boot(page)
     await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
+    const blank = page.locator(`${FILE} .slot-blank .slot-target`)
 
-    // Enter places the armed pick.
+    // Enter places the armed pick into the first free seat.
     await pick(page, SEEDS[0].id)
-    await slot(page, 0).locator('.slot-target').focus()
+    await blank.focus()
     await page.keyboard.press('Enter')
     await expect(slot(page, 0)).toHaveAttribute('data-block-id', SEEDS[0].id)
+    await expect(page.locator('#slotCount')).toHaveText('1 / 4')
+
+    // Enter releases it, and the blank comes back.
+    await slot(page, 0).locator('.slot-unset').focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'empty')
+    await expect(blank).toHaveCount(1)
 
     // Space places the next one.
     await pick(page, SEEDS[1].id)
-    await slot(page, 1).locator('.slot-target').focus()
+    await blank.focus()
     await page.keyboard.press('Space')
-    await expect(slot(page, 1)).toHaveAttribute('data-block-id', SEEDS[1].id)
-    await expect(page.locator('#slotCount')).toHaveText('2 / 4')
+    await expect(slot(page, 0)).toHaveAttribute('data-block-id', SEEDS[1].id)
 
-    // Enter unslots.
+    // Space releases it too.
     await slot(page, 0).locator('.slot-unset').focus()
-    await page.keyboard.press('Enter')
-    await expect(slot(page, 0)).not.toHaveAttribute('data-block-id', /./)
-
-    // Space unslots.
-    await slot(page, 1).locator('.slot-unset').focus()
     await page.keyboard.press('Space')
     await expect(page.locator(`${FILE} .slots`)).toHaveAttribute('data-state', 'empty')
   })
@@ -451,8 +516,11 @@ test.describe('a11y membrane ops', () => {
     await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
     await pick(page, SEEDS[0].id)
-    await slot(page, 2).locator('.slot-target').focus()
+    // x4 — the blank seats into the first free seat, so this lands at 0. It used
+    // to name seat 2, which only meant anything while four boxes stood there.
+    await page.locator(`${FILE} .slot-blank .slot-target`).focus()
     await page.keyboard.press('Enter')
+    await expect(page.locator('#slotCount')).toHaveText('1 / 4')
 
     await page.locator('#btnDeploy').focus()
     await page.keyboard.press('Space')
