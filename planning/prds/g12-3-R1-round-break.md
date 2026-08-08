@@ -37,8 +37,8 @@ May modify, only these three files:
 
 - `src/client/components/report-view.ts`
 - `src/client/styles/win-reports.css`
-- `tests/windows/reports.test.ts` (E6 — one **added** test; change nothing else
-  in this file)
+- `tests/windows/reports.test.ts` (E6 — one **added** test; E7 — the local
+  shadow type. Change nothing else in this file.)
 
 Must NOT modify:
 
@@ -224,8 +224,42 @@ Replacement text:
 })
 ```
 
+### E7 — `tests/windows/reports.test.ts:115-119`
+
+Added by amendment after the executor's §5.7 stop. This file types its
+dynamically-imported `ViewModule` against a **local shadow** of `ReportModel`,
+not against the real one, so E4's new field is invisible to `(g)` and
+`typecheck:test` fails on `Property 'opens' does not exist`. Apply this edit
+**before** E6 — it is above E6 in the file, and E6's insertion point moves it.
+
+Current text:
+
+```
+interface ReportModel {
+  round: number
+  facts: Sentence[]
+  report_body: Sentence[]
+}
+```
+
+Replacement text:
+
+```
+/** A shadow of `components/report-view.ts`'s own — keep the two in step. */
+interface ReportModel {
+  round: number
+  facts: Sentence[]
+  report_body: Sentence[]
+  opens?: string[]
+}
+```
+
 ## Invariants
 
+- **A test file's local shadow types are part of the change list.** `tsc` sees
+  them and `vitest` does not, so a suite can be fully green while
+  `npm run check` fails. The full `check` is what proves this unit, not the
+  suite alone.
 - **C11 — no `.style.` writes and no px/rem literals in TS**
   (`tests/windows/reports.test.ts` guards this). The break is a class plus a CSS
   rule using an existing token; `--space-6` already appears in this stylesheet.
