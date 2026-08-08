@@ -1,0 +1,64 @@
+{
+  "_what": "G1을 창 한 줄로 잰다. 헤드리스 무개입 런에서 엔진이 실제로 만든 fallback 창을 캡처했더니 스크립트 행은 t6 하나뿐이었다 — 비트당 네 줄이 기록되고 상한이 여섯이라 직전 한 비트만 들어간다. 나머지 세 줄은 픽스처 산물(`(변화 없음)` · `고정 픽스처 서술.` · `고정 픽스처 대사.`)이고 실제 런에서는 Call 2가 쓴 산문이 그 자리에 온다. 그러므로 이 수트가 묻는 것은 하나다 — 사고를 서술하는 행을 t6 하나로 줄여도 기본값 `a`가 서는가. r1(t1·t2·t6)은 b×10, r2(t5·t6)는 b 9/10이었다. 여기서도 `b`면 창으로는 풀리지 않는다는 뜻이고, 레버는 스탠스 라벨로 넘어간다.",
+  "_authoring_provenance": {
+    "owner": "gate-excerpt A안 재측정",
+    "gate_source": "data/scenario/전구간정상/gates.json — gates[] 'G1' (21:04, 해원터널 관제소)",
+    "authoring_choices": [
+      "TIMELINE_EXCERPT는 헤드리스 런에서 캡처한 fallback 창의 스크립트 행 그대로다(t6 한 줄). 픽스처 산물 세 줄은 넣지 않았다 — 실제 런에서 그 자리에 오는 것은 Call 2 산문이고, 픽스처 문자열을 재는 것은 PR #214가 이미 겪은 오류다.",
+      "라벨·기질·기본 프롬프트는 r1/r2와 바이트 동일하다. 이 런에서 움직인 것은 창뿐이다."
+    ],
+    "reachability_audit": "planning/research/gate-excerpt-design.md §3 — the W5 rule is the machine form of the 규칙 6 audit this suite's window was authored against"
+  },
+  "experiment": "EXC-G1-window-t6-only",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "전구간정상",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "창을 t6 한 줄로 줄이면 빈 인수인계가 기본값 `a`를 낸다. r1·r2에서 `b`를 끌어낸 행(t1·t2의 불과 연기, t5의 정체)이 모두 빠졌기 때문이다.",
+    "n_per_arm": 10,
+    "drop_condition": "최빈 stance가 여전히 `a`가 아니면, 21:04 이전의 어떤 창도 기본값을 세우지 못한다는 뜻이다 — 창 레버는 소진되고, 다음은 스탠스 라벨이다(레버 1).",
+    "contingencies": [
+      "Fabricated because_block_ids in the baseline arm are EXPECTED with no blocks injected — a compliance number, not a discard.",
+      "A baseline split between `a` and `b` with neither at 6 tells us the window is doing something the manual protocol could not see, which is exactly the class of thing this feature exists to make visible. Record it and do not raise N.",
+      "If the discard rate is materially worse than the 우는다리 baselines, suspect the longer stance labels against max_tokens before suspecting the window."
+    ],
+    "not_claimed": "열쇠 팔이 없다. 이 런은 기본값이 서는 창이 존재하는지만 묻고, k1의 힘에 대해서는 아무것도 말하지 않는다."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다.",
+      "대응이 늦어져 피해가 커질 위험을 먼저 줄인다.",
+      "판단을 마친 뒤 근거를 시간순으로 정리한다.",
+      "외부에 공유하기 전 사건 시각을 명확히 남긴다."
+    ],
+    "TIMELINE_EXCERPT": [
+      "하만식이 본사 당직에 전화를 건다. 차단은 승인이 있어야 한다고 말한다"
+    ],
+    "GATE_QUESTION": "관제 화면이 내놓은 '전 구간 정상'을 상황 보고의 근거로 삼을 것인가",
+    "STANCE_SET": [
+      {
+        "id": "a",
+        "label": "계기 기재 — 달리 볼 이유가 없으므로, 계기가 내놓은 값을 그대로 상황 보고에 올린다"
+      },
+      {
+        "id": "b",
+        "label": "현장 대조 — 계기를 의심할 근거가 있다고 보고, 근무자에게 설비를 직접 열어 맞춰 보게 한다"
+      },
+      {
+        "id": "c",
+        "label": "권한 압박 — 근무자가 무언가를 감추고 있다고 보고, 권한을 걸어 밀어붙인다"
+      }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    }
+  }
+}
