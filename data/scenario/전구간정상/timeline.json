@@ -317,13 +317,13 @@
     },
     {
       "id": "t16",
-      "time": "21:44",
+      "time": "21:50",
       "surface": "call",
       "place_id": "p3",
       "text": "오세라가 말한다. \"사람들이 안 내립니다. 방송을 믿고 앉아 있어요\"",
       "exposure": {
         "visible_from": null,
-        "extra_condition": "not pallet_named"
+        "extra_condition": "not pallet_named and not driven_out"
       },
       "effects": {
         "deltas": {},
@@ -338,13 +338,13 @@
     },
     {
       "id": "t17",
-      "time": "21:44",
+      "time": "21:50",
       "surface": "call",
       "place_id": "p3",
       "text": "오세라가 말한다. \"내렸습니다. 차 옆에 서서 기다립니다. 어디로 가라는 말이 아직 없어요\"",
       "exposure": {
         "visible_from": null,
-        "extra_condition": "pallet_named"
+        "extra_condition": "pallet_named and not driven_out"
       },
       "effects": {
         "deltas": {},
