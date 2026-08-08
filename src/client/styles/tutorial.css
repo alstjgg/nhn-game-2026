@@ -1,0 +1,59 @@
+/* ===========================================================================
+   tutorial.css — the onboarding mark (shell/tutorial.ts).
+
+   ONE class, `.is-lit`, on whatever the walk is pointing at. It has to sit on
+   three very different things — a whole window on a dark desk, a small control
+   on kraft paper, an inline sentence inside a justified paragraph — so the mark
+   is built from `outline` and `box-shadow` only. Neither takes part in layout:
+   nothing reflows when a mark lands, and a sentence marked mid-paragraph does
+   not move the line it is on.
+
+   It is 관인-red, the desk's one accent, because everything the walk points at
+   is something the operator is about to USE. It is not a new colour and not a
+   new vocabulary — the desk already says "here" in red.
+
+   POINTER-TRANSPARENT BY CONSTRUCTION. There is no overlay: the mark rides the
+   element, so it cannot come between the operator and the control it names.
+   =========================================================================== */
+
+.is-lit{
+  outline:2px solid var(--seal);
+  outline-offset:2px;
+  animation:litPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes litPulse{
+  0%,100%{outline-color:var(--seal-a55);box-shadow:0 0 0 0 var(--seal-a25)}
+  50%{outline-color:var(--seal);box-shadow:0 0 0 6px var(--seal-a08)}
+}
+
+/* A window is marked on its frame, and its frame already carries a heavy drop
+   shadow — the glow has to clear it to read at all. */
+.win.is-lit{
+  outline-offset:3px;
+  animation:litPulseWin 1.6s ease-in-out infinite;
+}
+@keyframes litPulseWin{
+  0%,100%{outline-color:var(--seal-a55);box-shadow:var(--shadow-win), 0 0 0 0 var(--seal-a25)}
+  50%{outline-color:var(--seal);box-shadow:var(--shadow-win), 0 0 26px 4px var(--seal-a25)}
+}
+
+/* An inline sentence wraps, and an outline on a wrapped inline box is drawn per
+   line fragment — which is what we want here (each line reads as marked), but
+   the offset has to come in or two marked lines touch. */
+.min.is-lit,
+.sent.is-lit{
+  outline-offset:1px;
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════════════════
+   `base.css` collapses every animation to a single 1 ms pass, which lands each
+   of these on its END keyframe — and the end keyframe of `litPulse` is its
+   DIMMEST. A mark that reads as "not marked" is worse than no mark, so the
+   static state is restated at full strength here, exactly as `.win-dot.live`
+   and `.caret` are.
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce){
+  .is-lit{outline-color:var(--seal);box-shadow:0 0 0 4px var(--seal-a12)}
+  .win.is-lit{outline-color:var(--seal);box-shadow:var(--shadow-win), 0 0 0 4px var(--seal-a12)}
+}
