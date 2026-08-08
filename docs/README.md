@@ -56,6 +56,7 @@ artifact that can enforce itself.*
 | [`plan-mechanism-test.md`](./plan-mechanism-test.md) | plan | The mechanism verification program: testing principles, run integrity, probe harness, decision procedure | 민서 |
 | [`plan-engine-build.md`](./plan-engine-build.md) | plan | PRD for the engine/LLM build: units, gates, the thirteen decisions already made, and what is deliberately left open | 윤석 |
 | [`plan-client-build.md`](./plan-client-build.md) | plan | The view-layer build: the PRD super-pipeline builds from — environment/gates, provided-input classes, work-unit DAG hint, definition of done. Derived from `spec-client.md`; the spec wins on conflict | 민서 |
+| [`plan-audio.md`](./plan-audio.md) | plan | Sound: the design position (foley, not score), the 34 shipped cues keyed to the §5.2 seam, per-source licensing, the AAC/lazy-load budget, and how each done-criterion is held. The mapping itself is law in `data/policy/audio-map.json` | 윤석 |
 | [`status.md`](./status.md) | — | **Mutable project state.** Updated freely by any session. Newest first | shared |
 | [`competition.md`](./competition.md) | — | The 5 required deliverables and the rules governing them | shared |
 | [`architecture-map.md`](./architecture-map.md) | — | **Derived map, not law** — one view of all layers: structure diagram, box catalog with per-claim sources, three flow diagrams. When it disagrees with a spec, the spec wins | 민서 |

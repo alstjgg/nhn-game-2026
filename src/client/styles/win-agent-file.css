@@ -65,6 +65,22 @@
 .slot.pop{animation:slotPop .4s cubic-bezier(.3,1.5,.4,1)}
 @keyframes slotPop{0%{transform:scale(.94)}100%{transform:none}}
 
+/* the seated sentence, its pin and its 해제 — REHOMED from the retired
+   `win-block-store.css`. That sheet owned the whole `.bcard` skin, so T1's
+   deletion of the BLOCK STORE left the AGENT FILE's own slot cards unstyled
+   (the 08-08 playtest). What a slot holds is a line of the file, not an object
+   off a deck: no card face, no shadow, no lift — just type. */
+.slot .bcard{position:relative;padding:0;background:transparent;border:0}
+.slot .bc-text{font-family:var(--myeong);font-size:var(--fs-11-5);line-height:1.6;
+  color:var(--pap-1);text-align:justify;padding-right:var(--space-24)}
+.slot-pin{position:absolute;right:8px;top:8px;width:8px;height:8px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,var(--pin-hi),var(--seal-2));
+  box-shadow:0 2px 4px var(--sh-5), 0 0 8px var(--seal-a55);z-index:2}
+.slot-unset{position:absolute;right:6px;bottom:6px;font-size:var(--fs-8);letter-spacing:.14em;
+  color:var(--faded);padding:var(--space-1) var(--space-5);border:1px solid transparent;transition:.14s}
+.slot:hover .slot-unset{border-color:var(--sh-25);color:var(--seal-2)}
+.slot.locked .slot-unset{display:none}
+
 .deploy-zone{margin-top:var(--space-18);padding-top:var(--space-12);border-top:2px solid var(--graphite);
   display:flex;align-items:center;justify-content:space-between;gap:var(--space-12)}
 .dz-meta{font-size:var(--fs-9);letter-spacing:.08em;color:var(--faded);line-height:1.6}

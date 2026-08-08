@@ -253,6 +253,13 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
     rebuilding = true
     const rate: ClockRate = clock.rate
     const close = closingState()
+    // H1 — the operator's own seating, captured BEFORE the mirror is
+    // reassigned below. `close.carried` is built from `deployed`, which is
+    // sorted, so re-indexing it from 0 moves cards to seats nobody chose.
+    const carriedIds = new Set(close.carried.map((block) => block.id))
+    const seats: [number, string][] = [...slots.entries()]
+      .filter(([, id]) => carriedIds.has(id))
+      .sort((left, right) => left[0] - right[0])
     let opened: BoundRun | null = null
     try {
       opened = await deps.next(close)
@@ -276,15 +283,28 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
     // (`run-loop.ts`, R3 on `run-loop.ts:115`), reproduced with the halves the
     // other way round.
     //
-    // `slots` clears rather than carries because a new day has not been built
-    // yet — which is what `SlotBoard.unlock()` assumes on the run change, and
-    // why the fixture loop does not carry `deployed` either.
+    // W4 — the day runs the file the operator committed. `close.carried` IS
+    // that file (`closingState()` reads `deployed`), so it re-seats in its own
+    // order and re-arms as the new run's deployed set. Clearing both was right
+    // while the operator deployed INSIDE the new day; under one-press it would
+    // hand the composer an empty file every single day.
     mined = close.carried.map((block) => block.id)
-    slots = new Map()
-    deployed = []
+    slots = new Map(seats)
+    deployed = close.carried.map((block) => block.id).sort()
     clock = createClock({ start: opened.start, end: opened.end, rate })
     frontier = mm(opened.start)
     bind(opened)
+    // H1 — the three assignments above are a MIRROR, and a mirror is not a
+    // membrane. `createMembrane` is per bound run (`driver/live-driver.ts`), so
+    // the day that just opened holds an empty seat map and an empty deployed
+    // set. Left that way `unslot` answers `empty_slot` and a carried sentence
+    // can never be released, and `membrane.deployed()` — what Call 1 carries
+    // (`live-driver.ts`, `composer.judgment`) — is empty, so the file the
+    // operator committed never reaches the model at all. The fixture loop has
+    // always replayed the file as real ops (`fixtures/run-loop.ts` `carry()`).
+    // Submitted before `release()`, because `kick()` may step into Call 1.
+    for (const [seat, id] of seats) opened.driver.submit({ op: 'slot', block_id: id, slot: seat })
+    opened.driver.submit({ op: 'deploy', blocks: [...deployed] })
     release()
     kick()
   }

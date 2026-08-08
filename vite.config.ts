@@ -53,7 +53,10 @@ const PACK_PARTS = [
 ] as const
 
 /** Scenario-independent policy the run fetches, relative to `data/`. */
-const POLICY_FILES = ['policy/report-guidance.json'] as const
+// `audio-map.json` is balance data like the rest of `data/`, and it is fetched
+// by the client rather than the driver — `src/client/audio/` reads it on the
+// first gesture, which is why it appears here and not in either `PACK_FILES`.
+const POLICY_FILES = ['policy/report-guidance.json', 'policy/audio-map.json'] as const
 
 /** `data/scenario/<slug>/` — every directory that is a pack, `_schema/` aside. */
 function packSlugs(scenarioDir: string): string[] {
@@ -132,11 +135,11 @@ export function stripCharacterNotes(raw: string): string {
 /**
  * The same problem in `score.json`, which the scorer made a published file.
  *
- * Only `id`, `label` and `predicates` are read — `src/driver/scorer.ts:94-105`
- * resolves the predicates for the value and resolves them AGAIN against the
- * untouched day for the baseline, deliberately not trusting the authored
- * `baseline` prose ("812명 진입, 사망 24 · 부상 71" is four numbers in one
- * sentence and no run produces it as a value).
+ * Only `id`, `label` and `predicates` are read — `scoreUnits` in
+ * `src/driver/scorer.ts` resolves the predicates for the value and resolves
+ * them AGAIN against the baseline day for the baseline, deliberately not
+ * trusting the authored `baseline` prose ("812명 진입, 사망 24 · 부상 71" is
+ * four numbers in one sentence and no run produces it as a value).
  *
  * What the rest says is the ending. `baseline_summary` states the
  * no-intervention outcome outright — "사망 26 · 부상 71 · 오인 구금 1건 …
@@ -208,6 +211,11 @@ export default defineConfig(({ mode }) => ({
   // pane's code in the bundle, flag or no flag.
   define: {
     __DEBUG_PANE__: JSON.stringify(mode !== 'production'),
+    // W1 — the sitting stamp: the web meta store honours a stored MetaState
+    // only while the stamp beside it matches this value, so a redeploy under
+    // an open tab (or state from an older build) starts fresh at ECHO-1. In
+    // dev the stamp is the constant 'dev', so HMR reloads keep resuming.
+    __BUILD_STAMP__: JSON.stringify(mode !== 'production' ? 'dev' : new Date().toISOString()),
   },
 
   server: {

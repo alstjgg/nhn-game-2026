@@ -19,7 +19,7 @@ import type { Locator, Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { awaitRecordFinal, raiseWindow } from './fixtures/harness.ts'
+import { awaitRecordFinal, mineFirst, raiseWindow } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -312,8 +312,9 @@ test.describe('typewriter is replay', () => {
     await drain(page)
     const report = await reportForActiveRun(page)
 
-    // The pump only ticks while the clock runs — the operator presses ▶.
-    await page.locator('.rate-btn[data-rate="1"]').click()
+    // The pump only ticks while the clock runs. RE-AIMED (08-08, W4): there is
+    // no ▶ any more — the operator starts the day by committing a file to it.
+    await page.locator('#w-file #btnDeploy').click()
 
     await expect
       .poll(
@@ -453,7 +454,7 @@ test.describe('archive segmentation and highlight marks', () => {
     await expect(page.locator(OPTION)).toHaveCount(known.length)
     const labels = await page.locator(OPTION).evaluateAll((nodes) => nodes.map((n) => (n.textContent ?? '').trim()))
     for (const [i, entry] of meta!.archive.entries()) {
-      expect(labels[i]).toMatch(new RegExp(`RUN\\s*0*${entry.run}\\b`))
+      expect(labels[i]).toMatch(new RegExp(`ECHO-${entry.run}\\b`))
       const span = entry.label.replace(/^\s*RUN\s*\d+\s*[/·]\s*/i, '').trim()
       expect(labels[i]!.replace(/\s+/g, ' ')).toContain(span.replace(/\s+/g, ' '))
     }
@@ -503,7 +504,7 @@ test.describe('archive segmentation and highlight marks', () => {
     expect(rounds.length, 'the stream carries fewer than two runs — the switch is untestable').toBeGreaterThan(1)
 
     for (const round of rounds) {
-      await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${round}\\b`) }).first().click()
+      await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${round}\\b`) }).first().click()
       await expect(page.locator(`${OPTION}[aria-selected="true"]`)).toHaveCount(1)
       expect(await activeRun(page)).toBe(round)
 
@@ -527,9 +528,12 @@ test.describe('archive segmentation and highlight marks', () => {
     const away = rounds[0]!
     const target = reports.filter((r) => r.round === home).pop()!.report_body[0]!
 
-    await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${home}\\b`) }).first().click()
+    await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${home}\\b`) }).first().click()
+    // One gesture (08-08): the click tears the sentence out AND seats it, so
+    // the mark it leaves is `slotted`. The mine op still reaches the seam —
+    // which is what this test is about.
     await page.locator(`${BODY} [data-sentence-id="${target.id}"]`).click()
-    await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bmined\b/)
+    await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bslotted\b/)
     expect((await frame(page)).store.mined).toContain(target.id)
 
     // C17 / [u11#c12] — RE-AIMED (08-04), never deleted. This step proved "the
@@ -541,15 +545,18 @@ test.describe('archive segmentation and highlight marks', () => {
     // across runs)". So the switch is proved where it is unambiguous — the
     // rail's own selection and a re-rendered body — and the id-keyed mark, which
     // is what this test is actually about, is still asserted below.
-    await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${away}\\b`) }).first().click()
+    await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${away}\\b`) }).first().click()
     expect(await activeRun(page), 'the rail did not switch to the other run').toBe(away)
     await expect(page.locator(`${BODY} .sent`), 'the away document rendered nothing').not.toHaveCount(0)
 
-    await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${home}\\b`) }).first().click()
-    await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bmined\b/)
+    await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${home}\\b`) }).first().click()
+    await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bslotted\b/)
 
     // Every mark on screen is a mark the STORE holds — nothing positional.
-    const marked = await anchorIds(page.locator(`${REP} .min.mined`))
+    // Both marks imply mined: `.min.mined` is a sentence whose seat was freed,
+    // `.min.slotted` one that still holds one.
+    const marked = await anchorIds(page.locator(`${REP} .min.mined, ${REP} .min.slotted`))
+    expect(marked.length, 'no mark is on screen — the store oracle is vacuous').toBeGreaterThan(0)
     const store = (await frame(page)).store.mined
     for (const id of marked) expect(store).toContain(id)
   })
@@ -559,13 +566,18 @@ test.describe('archive segmentation and highlight marks', () => {
   }) => {
     await expect(page.locator(`${REP} .min`), 'nothing is rendered — the mark scan is vacuous').not.toHaveCount(0)
     const f = await frame(page)
-    const slottedEver = new Set([...(metaOf(f)?.carried ?? []), ...Object.values(f.store.slots)])
-    const onScreen = await anchorIds(page.locator(`${REP} .min.slotted`))
-    for (const id of onScreen) expect([...slottedEver]).toContain(id)
+    // 08-08: the one mark split in two. TODAY's file is 배치 (`.slotted`); a
+    // sitting the operator already deployed is 과거 배치 (`.carried`). Each
+    // mark answers to its OWN set — that is the whole point of the split.
+    const slotted = new Set(Object.values(f.store.slots))
+    const carried = new Set(metaOf(f)?.carried ?? [])
+    for (const id of await anchorIds(page.locator(`${REP} .min.slotted`))) expect([...slotted]).toContain(id)
+    for (const id of await anchorIds(page.locator(`${REP} .min.carried`))) expect([...carried]).toContain(id)
 
     const rendered = new Set(await anchorIds(page.locator(`${REP} [data-sentence-id]`)))
-    for (const id of slottedEver) {
-      if (rendered.has(id) && !f.store.mined.includes(id)) expect(onScreen).toContain(id)
+    const onScreen = await anchorIds(page.locator(`${REP} .min.slotted, ${REP} .min.carried`))
+    for (const id of [...slotted, ...carried]) {
+      if (rendered.has(id)) expect(onScreen).toContain(id)
     }
   })
 })
@@ -601,24 +613,30 @@ test.describe('a11y', () => {
     expect(report.report_body.length, 'need two body sentences to test both keys').toBeGreaterThan(1)
     const [first, second] = report.report_body
 
+    // One gesture (08-08): each key mines AND seats, so the mark left behind is
+    // `slotted`. `#minedCount` counts the mined set, which both keys still grow.
     const before = await minedCount(page)
     await page.locator(`${BODY} [data-sentence-id="${first!.id}"]`).focus()
     await page.keyboard.press('Enter')
-    await expect(page.locator(`${BODY} [data-sentence-id="${first!.id}"]`)).toHaveClass(/\bmined\b/)
+    await expect(page.locator(`${BODY} [data-sentence-id="${first!.id}"]`)).toHaveClass(/\bslotted\b/)
     expect(await minedCount(page)).toBe(before + 1)
 
     await page.locator(`${BODY} [data-sentence-id="${second!.id}"]`).focus()
     await page.keyboard.press(' ')
-    await expect(page.locator(`${BODY} [data-sentence-id="${second!.id}"]`)).toHaveClass(/\bmined\b/)
+    await expect(page.locator(`${BODY} [data-sentence-id="${second!.id}"]`)).toHaveClass(/\bslotted\b/)
     expect(await minedCount(page)).toBe(before + 2)
     expect((await frame(page)).store.mined).toEqual([first!.id, second!.id])
   })
 
-  test('a11y — a mined sentence announces itself as disabled and re-mining is a no-op', async ({ page }) => {
+  test('a11y — a seated sentence is settled, and re-activating it is a no-op', async ({ page }) => {
     const report = await reportForActiveRun(page)
     const target = report.report_body[0]!
     const node = page.locator(`${BODY} [data-sentence-id="${target.id}"]`)
 
+    // RE-AIMED (08-08). This used to assert a mined sentence stays ENABLED,
+    // because T1 made it the pick control for a second click. One gesture
+    // retires that step: the click seats the sentence, and a sentence sitting
+    // in the file is a dead end until 해제 frees the seat.
     await node.click()
     await expect(node).toHaveAttribute('aria-disabled', 'true')
 
@@ -666,5 +684,59 @@ test.describe('a11y', () => {
     await expect(page.locator(`${REP} .min`), 'nothing is rendered — the inv-1 scan is vacuous').not.toHaveCount(0)
     await expect(page.locator(`${REP} input, ${REP} textarea, ${REP} select`)).toHaveCount(0)
     await expect(page.locator(`${REP} [contenteditable]`)).toHaveCount(0)
+  })
+})
+
+/* ── T1 — the report is the pick surface; the store window is gone ───────── */
+
+test.describe('slotting from the report (T1)', () => {
+  test.beforeEach(async ({ page }) => {
+    await boot(page, { reduced: true })
+    await drain(page)
+    await raiseWindow(page, 'rep')
+  })
+
+  test('one activation of a report sentence seats it in the file, by id', async ({ page }) => {
+    const id = await mineFirst(page)
+    await expect.poll(async () => (await frame(page)).store.slots[0]).toBe(id)
+    await raiseWindow(page, 'rep')
+    await expect(page.locator(`${REP} [data-sentence-id="${id}"]`).first()).toHaveClass(/\bslotted\b/)
+  })
+
+  test('a11y — slotting and unslotting complete with the keyboard alone, zero pointer events', async ({ page }) => {
+    // The id is TAKEN without acting on it: `mineFirst` clicks, and one gesture
+    // means that click would already have done the slotting this test is about.
+    const target = page.locator(`${REP} .min[data-sentence-id]`).first()
+    await expect(target, 'no mineable sentence is on the REPORTS pane').toBeVisible({ timeout: 20_000 })
+    const id = (await target.getAttribute('data-sentence-id'))!
+    await page.evaluate(() => {
+      const win = window as unknown as { __pointerEvents?: number }
+      win.__pointerEvents = 0
+      for (const type of ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup']) {
+        document.addEventListener(
+          type,
+          (event) => {
+            // A keyboard-activated button fires a click with no coordinates;
+            // only a real pointer carries them.
+            const pointer = event as MouseEvent
+            if (pointer.detail > 0 || pointer.clientX > 0 || pointer.clientY > 0) {
+              win.__pointerEvents = (win.__pointerEvents ?? 0) + 1
+            }
+          },
+          true,
+        )
+      }
+    })
+    await page.locator(`${REP} [data-sentence-id="${id}"]`).first().focus()
+    await page.keyboard.press('Enter')
+    await expect.poll(async () => (await frame(page)).store.slots[0]).toBe(id)
+    await page.locator('#w-file .slot[data-slot="0"] .slot-unset').focus()
+    await page.keyboard.press('Enter')
+    await expect.poll(async () => (await frame(page)).store.slots[0]).toBeUndefined()
+    await expect(page.locator(`${REP} [data-sentence-id="${id}"]`).first()).toHaveClass(/\bmined\b/)
+    expect(
+      await page.evaluate(() => (window as unknown as { __pointerEvents?: number }).__pointerEvents),
+      'the keyboard path fired a pointer event',
+    ).toBe(0)
   })
 })

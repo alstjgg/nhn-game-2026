@@ -6,7 +6,7 @@ import { parseClock } from '../../../src/engine/beat/clock.ts'
 import { ClockFormatError, PredicateSyntaxError, BeatPhaseError } from '../../../src/engine/beat/errors.ts'
 import type { Timeline, Gates } from '../../../src/shared/datapack.ts'
 import { beatAt, driveAll, rig } from './harness.ts'
-import { ev, gate, pack, realPack, trustPack, TRUST_SEED } from './fixtures/packs.ts'
+import { availabilityPack, ev, gate, pack, realPack, trustPack, TRUST_SEED } from './fixtures/packs.ts'
 
 const real = realPack()
 const schedule = buildSchedule(real.timeline, real.gates)
@@ -169,19 +169,27 @@ describe('[e3#A7] round boundary = just before the next gate', () => {
     }
   })
 
-  it('emits one judgment step per gate beat, 7 in all, before that beat s narration step', () => {
+  it('emits one judgment step per gate beat ASKED, before that beat s narration step', () => {
     const r = rig(real)
-    driveAll(r)
+    const asked: number[] = []
+    driveAll(r, undefined, (driver) => {
+      const cur = driver.current()
+      if (cur.kind === 'gate') asked.push(cur.index)
+    })
     const steps = r.driver.steps()
     const judgments = steps.filter((s) => s.kind === 'judgment')
-    expect(judgments).toHaveLength(7)
-    expect(judgments.map((s) => s.beat)).toEqual(
-      schedule.filter((b) => b.kind === 'gate').map((b) => b.index),
-    )
+    expect(judgments.map((s) => s.beat)).toEqual(asked)
     for (const j of judgments) {
       const narrationIdx = steps.findIndex((s) => s.kind === 'narration' && s.beat === j.beat)
       expect(steps.indexOf(j)).toBeLessThan(narrationIdx)
     }
+  })
+
+  it('every scheduled gate of the shipped pack is asked — none of them opts into availability yet', () => {
+    const r = rig(real)
+    driveAll(r)
+    expect(schedule.filter((b) => b.kind === 'gate')).toHaveLength(7)
+    expect(r.driver.steps().filter((s) => s.kind === 'judgment')).toHaveLength(7)
   })
 
   it('emits one narration step per beat, 19 in all (§3.1: script beats run Call 2 without exception)', () => {
@@ -272,5 +280,75 @@ describe('[e3#D5/D6] edge predicates compile at schedule-build time', () => {
   it('throws when the submitted stance resolves to no bucket', () => {
     const r = rig(trustPack(), { ...TRUST_SEED })
     expect(() => r.driver.submitStance({ stance: 'zzz', utterance: '' })).toThrow()
+  })
+})
+
+/* ══ F4 · `availability` — a gate that is only asked on some branches ═══════ */
+
+describe('[e3#F4] a gate is asked only where its availability holds', () => {
+  /** Drives the whole pack, answering each ASKED gate with `stances[G]`. */
+  function drive(r: ReturnType<typeof rig>, stances: Record<string, string>): void {
+    for (;;) {
+      const cur = r.driver.current()
+      const g = r.schedule[cur.index]!.gate
+      if (cur.kind === 'gate') {
+        r.driver.submitStance({ stance: stances[g!.id] ?? g!.defaultStance, utterance: 'u' })
+      }
+      r.driver.applyBeatEffects()
+      if (!r.driver.advance()) break
+    }
+  }
+
+  it('skips the gate when the predicate does not hold — no Call 1, no stance', () => {
+    const r = rig(availabilityPack())
+    drive(r, { G1: 'a' }) // `a` leaves `opened` unset
+    const judgments = r.driver.steps().filter((s) => s.kind === 'judgment')
+    expect(judgments.map((s) => s.beat)).toEqual([0])
+  })
+
+  it('asks it on the branch that sets the flag — the gate is gated, not dead', () => {
+    const r = rig(availabilityPack())
+    drive(r, { G1: 'b' }) // `b` sets `opened`
+    const judgments = r.driver.steps().filter((s) => s.kind === 'judgment')
+    expect(judgments.map((s) => s.beat)).toEqual([0, 1])
+  })
+
+  it('reports the skipped beat as `script` through the cursor — that is what the caller reads', () => {
+    const r = rig(availabilityPack())
+    r.driver.submitStance({ stance: 'a', utterance: 'u' })
+    r.driver.applyBeatEffects()
+    r.driver.advance()
+    // The SCHEDULE still holds it as a gate beat: round membership is assigned
+    // there once, at build time, and a beat that changed kind mid-run would
+    // renumber the rounds the reports are owed against.
+    expect(r.schedule[1]!.kind).toBe('gate')
+    expect(r.driver.current().kind).toBe('script')
+    expect(r.driver.phase()).toBe('effects')
+    expect(() => r.driver.gateView()).toThrow(BeatPhaseError)
+    expect(() => r.driver.submitStance({ stance: 'a', utterance: 'u' })).toThrow(BeatPhaseError)
+  })
+
+  it('still owes and emits the skipped gate’s round report', () => {
+    const r = rig(availabilityPack())
+    drive(r, { G1: 'a' })
+    const g2Round = r.schedule[1]!.roundIndex
+    expect(g2Round).not.toBeNull()
+    expect(r.driver.steps().some((s) => s.kind === 'report' && s.round === g2Round)).toBe(true)
+  })
+
+  it('un-hardened PROSE leaves the gate open — F4 is opt-in, and packs still carry it', () => {
+    // 우는다리's G7 says 특정 가지에서만. Reading that through `holds()` alone
+    // would answer false and delete the gate from every run; `datapack:lint`
+    // FLAGs it as hardening work instead, and the engine asks the gate.
+    const r = rig(availabilityPack(true))
+    drive(r, { G1: 'a' })
+    expect(r.driver.steps().filter((s) => s.kind === 'judgment')).toHaveLength(2)
+  })
+
+  it('touches the state core only when there IS a predicate to resolve', () => {
+    // Keeps §4.1's ordering chain (`ordering.test.ts`) measuring what it says:
+    // a pack with no availability adds no read in front of the deltas.
+    expect(rig(trustPack(), { ...TRUST_SEED }).state.ops()).toEqual([])
+    expect(rig(availabilityPack(true)).state.ops()).toEqual([])
   })
 })

@@ -173,6 +173,32 @@ test.describe('full loop back to BUILD', () => {
     expect(await digitsOf(page, BIG)).toBe(score!.total)
   })
 
+  test('full loop back to BUILD — the feed closes on the ledger’s own count, not a fixed one', async ({
+    page,
+  }) => {
+    // The two surfaces used to disagree at the same 21:04. The count was
+    // `timeline.json`'s `t19`, a FIXED event printed verbatim on every run
+    // (`scriptLinesOf` reads no state), so a day that saved people still read
+    // 사망 26 in the feed beside a ledger counting what it actually scored.
+    // The line comes off the `score` event now (`components/tally-line.ts`), so
+    // the fanfold and the record cannot part company.
+    await boot(page)
+    await drainToFinal(page)
+
+    const headline = await digitsOf(page, BIG)
+    const closing = await page.locator('#feedList li').last().innerText()
+    expect(closing, 'the feed did not close on a 집계 line').toContain('집계.')
+    expect(closing, `the feed closed on a count the ledger does not hold (${headline})`).toContain(
+      `사망 ${headline}`,
+    )
+
+    // And it is not minable: a count is a conclusion, not a source document.
+    // `t19` DID carry a `sentence_id`, so a player could mine 사망 26 and inject
+    // it into a run that never had it.
+    const minable = await page.locator('#feedList li').last().locator('.min').count()
+    expect(minable, 'the closing count became a minable sentence').toBe(0)
+  })
+
   test('full loop back to BUILD — NEW RUN returns the desk to BUILD and the control returns to deploy', async ({
     page,
   }) => {
@@ -182,7 +208,11 @@ test.describe('full loop back to BUILD', () => {
     await expect(page.locator(NEW_RUN)).toBeEnabled()
     await page.locator(NEW_RUN).click()
 
-    await expect.poll(async () => phase(page), { timeout: 20_000 }).toBe('build')
+    // RE-AIMED (08-08, W4): the press now STARTS the day it opens, so `build`
+    // is a phase the desk passes THROUGH — the first beat moves it to `run`,
+    // and polling for `build` was a race the suite happened to keep winning.
+    // What the loop turning over means is that the desk left `tally`.
+    await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
     await expect(page.locator(NEW_RUN)).toHaveAttribute('data-op', 'deploy')
     // The record persists on the desk between days (design #1) — the control
     // closing is not the record closing.
@@ -200,7 +230,7 @@ test.describe('full loop back to BUILD', () => {
 
     await drainToFinal(page)
     await page.locator(NEW_RUN).click()
-    await expect.poll(async () => phase(page), { timeout: 20_000 }).toBe('build')
+    await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
 
     const emitted = lastMeta(await frame(page))
     expect(emitted.run, 'the driver never fed a new run').toBe(before.run + 1)
@@ -219,7 +249,7 @@ test.describe('full loop back to BUILD', () => {
     await boot(page)
     await drainToFinal(page)
     await page.locator(NEW_RUN).click()
-    await expect.poll(async () => phase(page), { timeout: 20_000 }).toBe('build')
+    await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
     await expect(page.locator(NEW_RUN)).toHaveAttribute('data-op', 'deploy')
 
     await drainToFinal(page)
@@ -312,19 +342,37 @@ test.describe('new run unlocks and files the report', () => {
     await button.click({ force: true }).catch(() => undefined)
     await button.click({ force: true }).catch(() => undefined)
 
-    await expect.poll(async () => phase(page), { timeout: 20_000 }).toBe('build')
+    await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
     expect(lastMeta(await frame(page)).run, 'a double click advanced the loop twice').toBe(before + 1)
   })
 
-  test('new run unlocks and files the report — the file opens unlocked on the new run', async ({ page }) => {
+  // RE-AIMED (08-08, W4), never deleted. The claim was "the file opens unlocked
+  // on the new run", and it held while the loop took two presses: NEW RUN
+  // opened tomorrow with an empty file, and DEPLOY closed it later, inside the
+  // day. One press moved the unlock to the other side of the boundary — the
+  // CLOSE hands the file back so the day's own report can be mined into it, and
+  // the press that opens tomorrow is the press that commits it. So the assert
+  // now measures both ends of that window: unlocked at 21:04, locked once the
+  // press lands.
+  test('new run unlocks and files the report — the close unlocks the file, the press commits it', async ({
+    page,
+  }) => {
     await boot(page)
     await drainToFinal(page)
+
+    // The window the operator actually mines in.
+    await expect(page.locator(`${FILE} .slot`)).not.toHaveCount(0)
+    await expect(page.locator(`${FILE} .slot.locked`), 'the close did not hand the file back').toHaveCount(0)
+
     await page.locator(NEW_RUN).click()
-    await expect.poll(async () => phase(page), { timeout: 20_000 }).toBe('build')
+    await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
 
     await expect(page.locator(FILE)).not.toHaveClass(/\bhidden\b/)
     await expect(page.locator(`${FILE} .slot`)).not.toHaveCount(0)
-    await expect(page.locator(`${FILE} .slot.locked`)).toHaveCount(0)
+    await expect(
+      page.locator(`${FILE} .slot.locked`),
+      'the new day opened on an uncommitted file',
+    ).not.toHaveCount(0)
   })
 
   test('new run unlocks and files the report — the finished run is filed in the archive rail', async ({ page }) => {
@@ -335,7 +383,7 @@ test.describe('new run unlocks and files the report', () => {
     const railBefore = await page.locator(OPTION).count()
 
     await page.locator(NEW_RUN).click()
-    await expect.poll(async () => phase(page), { timeout: 20_000 }).toBe('build')
+    await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
 
     const filed = lastMeta(await frame(page))
     await expect(page.locator(OPTION)).toHaveCount(filed.archive.length)
@@ -343,7 +391,7 @@ test.describe('new run unlocks and files the report', () => {
     expect(filed.archive.map((a) => a.run), `RUN ${closed} is missing from the archive`).toContain(closed)
 
     const labels = await page.locator(OPTION).evaluateAll((nodes) => nodes.map((n) => (n.textContent ?? '').trim()))
-    expect(labels.some((l) => new RegExp(`RUN\\s*0*${closed}\\b`).test(l))).toBe(true)
+    expect(labels.some((l) => new RegExp(`ECHO-${closed}\\b`).test(l))).toBe(true)
     for (const label of labels) expect(label).not.toMatch(/gate|게이트/i)
   })
 
@@ -351,16 +399,19 @@ test.describe('new run unlocks and files the report', () => {
     await boot(page)
     await drainToFinal(page)
     await page.locator(NEW_RUN).click()
-    await expect.poll(async () => phase(page), { timeout: 20_000 }).toBe('build')
+    await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
 
     const emitted = lastMeta(await frame(page))
     expect(emitted.carried.length, 'the new run carries nothing — the scan is vacuous').toBeGreaterThan(0)
     expect((await meta(page)).carried).toEqual(emitted.carried)
 
-    const onDesk = await page
-      .locator('#w-store [data-block]')
-      .evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.block ?? ''))
-    for (const id of onDesk) expect(emitted.carried, `${id} is on the desk but not in meta.carried`).toContain(id)
+    // T1 retired the store deck, which was the one desk surface that listed
+    // `meta.carried` as an inventory. Carried ids DO surface as `.min.slotted`
+    // marks — but only on documents that exist, and report bodies from runs
+    // before the boot are persisted nowhere (that gap is U5.1's reason to
+    // exist). Until U5.1 gives past sittings readable documents, the seam
+    // round-trip above is the whole observable contract; the marks derivation
+    // itself is covered by reports.spec's mined-marks oracles.
   })
 
   test('new run unlocks and files the report — the terminal record refreshes clean on the next 21:04', async ({
@@ -371,7 +422,7 @@ test.describe('new run unlocks and files the report', () => {
     const firstRows = await page.locator(ROWS).count()
 
     await page.locator(NEW_RUN).click()
-    await expect.poll(async () => phase(page), { timeout: 20_000 }).toBe('build')
+    await expect.poll(async () => phase(page), { timeout: 20_000 }).not.toBe('tally')
     await expect(page.locator(NEW_RUN)).toHaveAttribute('data-op', 'deploy')
 
     await drain(page)

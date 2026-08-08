@@ -11,6 +11,7 @@ import {
   createRunLoop,
   createWebStorageMetaStore,
   metaKey,
+  stampKey,
 } from '../../src/runloop/index.ts'
 
 const SLUG = 'dday-demo'
@@ -190,5 +191,50 @@ describe('[e8#A5] StorageLike round-trip — refresh survival', () => {
     const rl = createRunLoop({ store: createMemoryMetaStore(seed), packSlug: SLUG, totalRuns: 4 })
     expect(rl.current().run_count).toBe(2)
     expect(rl.startRun()).toEqual({ run: 3, carried: [b1], exposureClock: '13:05' })
+  })
+})
+
+describe('[w1] the sitting stamp — state from another build is dropped', () => {
+  it('(a) a matching stamp resumes; a changed stamp starts fresh and clears both slots', () => {
+    const storage = fakeStorage()
+    const rl = createRunLoop({
+      store: createWebStorageMetaStore(storage, SLUG, 'build-1'),
+      packSlug: SLUG,
+      totalRuns: 4,
+    })
+    rl.startRun()
+    expect(rl.current().run_count).toBe(1)
+
+    const resumed = createRunLoop({
+      store: createWebStorageMetaStore(storage, SLUG, 'build-1'),
+      packSlug: SLUG,
+      totalRuns: 4,
+    })
+    expect(resumed.current().run_count).toBe(1)
+
+    const fresh = createRunLoop({
+      store: createWebStorageMetaStore(storage, SLUG, 'build-2'),
+      packSlug: SLUG,
+      totalRuns: 4,
+    })
+    expect(fresh.current().run_count).toBe(0)
+    expect(storage.getItem(metaKey(SLUG))).toBeNull()
+    expect(storage.getItem(stampKey(SLUG))).toBeNull()
+  })
+
+  it('(b) no stamp keeps the legacy behaviour — any valid state resumes', () => {
+    const storage = fakeStorage()
+    const rl = createRunLoop({
+      store: createWebStorageMetaStore(storage, SLUG, 'build-1'),
+      packSlug: SLUG,
+      totalRuns: 4,
+    })
+    rl.startRun()
+    const legacy = createRunLoop({
+      store: createWebStorageMetaStore(storage, SLUG),
+      packSlug: SLUG,
+      totalRuns: 4,
+    })
+    expect(legacy.current().run_count).toBe(1)
   })
 })

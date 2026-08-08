@@ -112,7 +112,6 @@ const SHOTS: readonly Shot[] = [
   { name: 'win-agent-file', selector: '#w-file' },
   { name: 'win-live-feed', selector: '#w-feed' },
   { name: 'win-reports', selector: '#w-rep' },
-  { name: 'win-block-store', selector: '#w-store' },
   { name: 'red-thread-overlay', selector: null, threaded: true },
   { name: 'terminal-record', selector: '#w-rep .terminal-record', seedAt: '21:04' },
   { name: 'terminal-record-final', selector: '#w-rep .terminal-record', seedAt: '21:04', holdMs: 11_000 },
@@ -268,8 +267,8 @@ test.describe('captures', () => {
         ).toBe(false)
         expect(
           desk.windows.length,
-          `only ${desk.windows.length}/4 windows mounted — the shot would capture a stalled boot`,
-        ).toBe(4)
+          `only ${desk.windows.length}/3 windows mounted — the shot would capture a stalled boot`,
+        ).toBe(3)
         expect(
           desk.windows.filter((w) => w.visibility === 'hidden').map((w) => w.id),
           'a mounted window computes visibility:hidden — it occupies its box but paints nothing',
@@ -344,7 +343,7 @@ test.describe('captures', () => {
     // keeps a refresh from quietly shipping nine shots.
     expect(fs.existsSync(REFERENCE_DIR), `reference shots are missing at ${REFERENCE_DIR}`).toBe(true)
     const reference = png(REFERENCE_DIR)
-    expect(reference.length, 'the reference side is not the expected ten shots').toBe(10)
+    expect(reference.length, 'the reference side is not the expected nine shots').toBe(9)
     expect(SHOTS.map((s) => `${s.name}.png`).sort()).toEqual(reference)
     expect(fs.existsSync(OUT_DIR), 'no build-side shots were produced').toBe(true)
     expect(png(OUT_DIR)).toEqual(reference)

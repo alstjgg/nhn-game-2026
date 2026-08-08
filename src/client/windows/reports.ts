@@ -19,16 +19,17 @@
 // children, so the record survives every repaint as a sibling article.
 import type { FixtureDriver, ViewEvent } from '../driver/index.ts'
 import { callsignOf } from '../components/dossier.ts'
-import { deriveMarks, mine } from '../components/minable-sentence.ts'
+import { deriveMarks, mine, sentenceState } from '../components/minable-sentence.ts'
 import type { MarkSets } from '../components/minable-sentence.ts'
 import { createArchiveRail } from '../components/report-archive.ts'
 import type { ArchiveEntry } from '../components/report-archive.ts'
-import { createReportView } from '../components/report-view.ts'
+import { accumulated, createReportView } from '../components/report-view.ts'
 import type { ReportModel } from '../components/report-view.ts'
 import { el } from '../shell/dom.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
 import { pad2 } from '../components/block-card.ts'
+import { getSlotBoard, SLOT_CAP } from '../components/slot-board.ts'
 import { createScoreTally } from '../components/score-tally.ts'
 import type { TallyModel, TallyRowModel } from '../components/score-tally.ts'
 
@@ -76,19 +77,23 @@ function sameRail(a: readonly ArchiveEntry[], b: readonly ArchiveEntry[]): boole
 
 /** Mounts this window's contents into the frame body the shell built. */
 export function mount(host: HTMLElement, driver: FixtureDriver): void {
+  // W2 — keyed by SITTING (the run), not by round. A live day files seven
+  // reports into ONE of these entries.
   const filed = new Map<number, ReportModel>()
+  /** Which rounds each sitting has already filed — a replayed stream files none twice. */
+  const rounds = new Map<number, Set<number>>()
   let archive: ArchiveEntry[] = []
   let carried: string[] = []
   let rendered: ArchiveEntry[] = []
   let active: number | null = null
 
   // U3 — the terminal record's own identity, tracked the same way `meta`
-  // already feeds the callsign below. There is ONE record: the next `score`
-  // replaces it whole (design #1).
+  // already feeds the callsign below. W2 — one record per SITTING, stored with
+  // it; `mountRecord()` keeps exactly one of them on the page.
   let run = 0
   let slug = ''
   let title = ''
-  let record: HTMLElement | null = null
+  const records = new Map<number, HTMLElement>()
 
   const marks = (): MarkSets => deriveMarks(driver.store(), carried)
 
@@ -103,10 +108,40 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     host,
     rail: rail.root,
     onMine: (id: string) => {
-      const outcome = mine(id, marks())
-      for (const op of outcome.ops) driver.send(op)
+      const m = marks()
+      const state = sentenceState(id, m)
+      // Settled — it is in a file already, today's or an earlier day's.
+      if (state === 'slotted' || state === 'carried') return
+
+      // ONE gesture (08-08 playtest): a single activation tears the sentence
+      // out AND seats it in the first free slot. `채굴` is no longer a resting
+      // state the operator has to click through — 해제 is the only way back
+      // into it. `slot-board.ts` stays the only membrane owner (`place()` runs
+      // planOps); a refusal is SHOWN, never swallowed.
+      const board = getSlotBoard()
+      const slots = driver.store().slots
+      const seat = [...Array(SLOT_CAP).keys()].find((i) => slots[i] === undefined)
+      if (board === null || seat === undefined || board.isLocked()) {
+        // No seat to tear it into: the file is full, or committed. Mining it
+        // anyway would strand the sentence in a state with nowhere to go.
+        view.flash(id)
+        return
+      }
+
+      if (state === 'unmined') {
+        const outcome = mine(id, m)
+        const landed = outcome.ops.every((op) => driver.send(op).ok)
+        if (!landed) {
+          view.refresh(marks())
+          view.flash(id)
+          return
+        }
+        for (const effect of outcome.effects) view.tear(effect.tear)
+      }
+
+      board.place(id, seat)
       view.refresh(marks())
-      for (const effect of outcome.effects) view.tear(effect.tear)
+      if (board.cells()[seat] !== id) view.flash(id)
     },
   })
 
@@ -119,18 +154,45 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    * for ~4 s over the opening of a day the operator had already moved on to
    * (R4 on windows/reports.ts:90). A round replays once, then repaints whole.
    */
-  const replayed = new Set<number>()
+  const replayed = new Set<string>()
 
   function drawDocument(): void {
     if (active === null) return
     const model = filed.get(active) ?? { round: active, facts: [], report_body: [] }
-    const first = model.report_body.length > 0 && !replayed.has(model.round)
-    if (first) replayed.add(model.round)
+    // W2 — the replay key is `sitting:round`, not the round alone: two
+    // sittings both have a round 1, and the second one's arrival must not read
+    // as "already replayed".
+    const key = `${active}:${model.round}`
+    const first = model.report_body.length > 0 && !replayed.has(key)
+    if (first) replayed.add(key)
     view.render(model, marks(), { replay: first })
+    mountRecord()
   }
 
-  function sync(): void {
-    const entries = railEntries(archive, [...filed.keys()])
+  /** Exactly one record is on the page: the active sitting's, or none. */
+  function mountRecord(): void {
+    const docFacts = host.querySelector('article.doc-facts')
+    if (docFacts === null) return
+    for (const [sitting, node] of records) {
+      if (sitting === active) {
+        if (node.parentElement !== docFacts) docFacts.append(node)
+      } else {
+        node.remove()
+      }
+    }
+  }
+
+  /**
+   * `draw: false` — the rail is reconciled but the document is left alone,
+   * because `view.append()` has just grown it in place. Redrawing there would
+   * blank the sitting and re-type it, which is the very thing the `replayed`
+   * set exists to prevent (R4 on windows/reports.ts:90).
+   */
+  function sync(draw = true): void {
+    // A sitting the desk has a file for is one that filed a report OR earned a
+    // record. The lapse drill files no report at all, and its record still
+    // belongs to a day the operator can select.
+    const entries = railEntries(archive, [...new Set([...filed.keys(), ...records.keys()])])
     if (entries.length === 0) return
     if (active === null || !entries.some((entry) => entry.run === active)) {
       active = entries[entries.length - 1]?.run ?? null
@@ -141,7 +203,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       rail.render(entries, active)
       rendered = entries
     }
-    drawDocument()
+    if (draw) drawDocument()
   }
 
   /** The terminal record's model, built from the `score` event alone. */
@@ -180,20 +242,63 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (event.type === 'score') {
       // Unmineable by construction: no `.min` node, no `sentence_id` — this
       // is a terminal, autopsy-window record, not a source document.
-      const docFacts = host.querySelector('article.doc-facts')
-      if (docFacts === null) return
-      record?.remove()
-      record = el('article', 'terminal-record')
-      record.setAttribute('aria-label', '시행 결과')
-      docFacts.append(record)
-      const tally = createScoreTally({ host: record })
+      //
+      // W2 — the record belongs to its SITTING and is stored with it. It used
+      // to be one element the next `score` replaced whole, so a past day's
+      // document was read under the latest day's 집계표. Exactly one is ever
+      // mounted: `mountRecord()` attaches the active sitting's and detaches
+      // every other.
+      records.get(run)?.remove()
+      const node = el('article', 'terminal-record')
+      node.setAttribute('aria-label', '시행 결과')
+      records.set(run, node)
+      // The scored day takes the rail and the record mounts under it. Going
+      // through `sync()` rather than straight to `mountRecord()` is what covers
+      // a day that filed NO report (`?drill=tally-lapse`): without a rail
+      // identity of its own, that sitting was never the active one and its
+      // record had nowhere to land.
+      active = run
+      // `draw: false`, and then mount by hand. `score` lands in the same beat
+      // as the day's own report, which at that moment is still writing itself
+      // out — a redraw here repaints the body whole and kills the replay
+      // mid-sentence (`e2e/reports.spec.ts:334`). The rail still reconciles, so
+      // a day that filed no report still takes its identity.
+      sync(false)
+      mountRecord()
+      const tally = createScoreTally({ host: node })
       tally.open()
       tally.run(scoreModel(event))
       return
     }
     if (event.type !== 'report') return
-    filed.set(event.round, { round: event.round, facts: event.facts, report_body: event.report_body })
-    active = event.round
+    // W2 — the seam types `report` with a ROUND, and a live day has seven of
+    // them (`tests/driver/live-desk.test.ts:126`). The SITTING it belongs to is
+    // the run `meta` last named; pairing the two here is what collapses seven
+    // rail tabs into one accumulating document. A round is filed once — a
+    // replayed stream must not double the day.
+    const sitting = run
+    const seen = rounds.get(sitting) ?? new Set<number>()
+    if (seen.has(event.round)) return
+    seen.add(event.round)
+    rounds.set(sitting, seen)
+
+    const held = filed.get(sitting) ?? null
+    const slice: ReportModel = {
+      round: event.round,
+      facts: event.facts,
+      report_body: event.report_body,
+    }
+    const whole = accumulated(held, slice)
+    filed.set(sitting, whole)
+
+    // The sitting already on the desk GROWS; any other case draws whole.
+    if (held !== null && active === sitting) {
+      replayed.add(`${sitting}:${event.round}`)
+      view.append(slice, whole, marks())
+      sync(false)
+      return
+    }
+    active = sitting
     sync()
   })
 

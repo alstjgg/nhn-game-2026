@@ -37,7 +37,6 @@ const WAITING = '……보고서 정리 중'
 const FILED_TAIL = ' 보고서가 부검 창에 도착했습니다'
 /** …and the line it settles on when the hold ran out and none came. */
 const LAPSED_TAIL = ' 보고서는 아직 부검 창에 없습니다 — 다음 시행은 열려 있습니다'
-const RUN_CAPTION = 'RUN '
 /** The allotment is spent: `new_run` was refused, and the loop has no next day. */
 const SPENT = '잔여 시행 없음 — 마지막 집계입니다'
 
@@ -152,12 +151,36 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (closed) noteEl.textContent = settleNote
   }
 
+  /**
+   * W4 — the press IS the start.
+   *
+   * The topbar's ×1 / ×4 / pause left with this unit: a day is not a recording
+   * the operator scrubs, it is something they commit a file to and then watch.
+   * So the one thing that sets the clock going is a committed file, and 21:04
+   * is the one thing that stops it (`driver/clock.ts` halts at `end`). The
+   * desk boots held at 0 — ECHO-1 does not go in until the operator says so.
+   */
+  function startDay(): void {
+    driver.clock.setRate(1)
+  }
+
   const zone = buildDeployZone(() => {
     if (currentView.mode === 'next') {
+      // W4 — ONE press, TWO ops, and the order is load-bearing. `deploy` must
+      // reach the CLOSING run's membrane, because that is what the live
+      // adapter harvests into `carried` (`live/adapter.ts` `closingState()`);
+      // sent after `new_run` it would name the new day and the file the
+      // operator just built would never carry. `board.deploy()` is also the
+      // only module allowed to mint the op literal.
+      board.deploy()
       sendNewRun()
+      startDay()
       return
     }
-    if (currentView.mode === 'deploy') board.deploy()
+    if (currentView.mode === 'deploy') {
+      board.deploy()
+      startDay()
+    }
     // 'settling' / 'spent': the control is disabled — a click cannot land.
   })
   const stamp = buildDeployStamp()
@@ -199,17 +222,17 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (release === 'hold') return
     settled = true
     dropHold()
-    const runLabel = pad2(store.get().meta.run)
+    const who = callsignOf(store.get().meta.run)
     if (release === 'filed') {
-      settleNote = `${RUN_CAPTION}${runLabel}${FILED_TAIL}`
+      settleNote = `${who}${FILED_TAIL}`
       sync()
-      announce(`${RUN_CAPTION}${runLabel}${SAY_FILED_TAIL}`)
+      announce(`${who}${SAY_FILED_TAIL}`)
     } else {
       // …and the lapse is SAID, above all: it is the release nothing else on
       // the desk echoes, and the one that hands back a degraded day.
-      settleNote = `${RUN_CAPTION}${runLabel}${LAPSED_TAIL}`
+      settleNote = `${who}${LAPSED_TAIL}`
       sync()
-      announce(`${RUN_CAPTION}${runLabel}${SAY_LAPSED_TAIL}`)
+      announce(`${who}${SAY_LAPSED_TAIL}`)
     }
   }
 
@@ -233,6 +256,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   store.subscribe((state: RunState) => {
     if (state.phase === 'tally' && !closed) {
       closed = true
+      // W4 — the close is what hands the file back. Until now the file stayed
+      // locked until NEW RUN, so the day's report could not be mined into the
+      // day it was written for; the operator had to open tomorrow before
+      // reading today. The file opens at 21:04 and the next press closes it.
+      board.unlock()
       settled = false
       counted = false
       lapsed = false
@@ -245,9 +273,9 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       // (`shell/announcer.ts`'s `run_end` handler) — a second write here would
       // replace it before anything reads it. `PACE.OPEN_DELAY` later the two
       // lines queue (R2 on the pre-U3 `windows/tally.ts:135`, ported).
-      const runLabel = pad2(store.get().meta.run)
+      const who = callsignOf(store.get().meta.run)
       setTimeout(() => {
-        if (!settled) announce(`${RUN_CAPTION}${runLabel}${SAY_HOLD_TAIL}`)
+        if (!settled) announce(`${who}${SAY_HOLD_TAIL}`)
       }, PACE.OPEN_DELAY)
       return
     }
@@ -299,8 +327,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (event.type !== 'meta') return
     const changedRun = event.run !== run
     run = event.run
-    // D10 — the seam carries no `new_run` event; a changed run IS the unlock.
-    if (committedRun !== null && event.run !== committedRun) board.unlock()
+    // W4 — the unlock moved to the CLOSE (see the `'tally'` branch above): the
+    // day's own report has to be minable into the file it was written for, and
+    // that window is between 21:04 and the press. A new run therefore arrives
+    // with the file already committed — it must stay locked, and only re-date
+    // its stamp to the sitting it now serves.
+    if (changedRun && board.isLocked()) {
+      committedRun = event.run
+      committedAt = opensAt
+    }
     // M1 — §0's callsign is per sitting, so only a changed run re-prints the
     // dossier; an archive-only `meta` must not re-parent the live slot board.
     if (changedRun) {

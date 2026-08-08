@@ -28,7 +28,7 @@ import type { Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
 
 /** The four windows, in the taskbar order `window-registry.ts` emits. */
-const WINDOW_IDS = ['w-feed', 'w-file', 'w-store', 'w-rep'] as const
+const WINDOW_IDS = ['w-feed', 'w-file', 'w-rep'] as const
 
 /** spec §5.2 `MembraneOp` — the entire player input vocabulary (inv 1 / C11). */
 const MEMBRANE_OPS = ['slot', 'unslot', 'mine', 'deploy', 'new_run'] as const
@@ -351,18 +351,20 @@ test.describe('a11y — keyboard reach', () => {
     await awaitRecordFinal(page)
     await expect(page.locator('[data-op="mine"]').first()).toBeAttached({ timeout: 15_000 })
 
-    // `unslot` only exists once a seat is filled, so the desk is driven through
-    // mine → pick → slot first. Driving it is the point: a census taken before
-    // the operator has done anything is exactly the empty one this replaces.
+    // `unslot` only exists once a seat is filled, so the desk is driven first.
+    // ONE activation does it (08-08): the sentence is torn out and seated in
+    // the same gesture, and it is `aria-disabled` afterwards — a second click
+    // here would hang on a control that correctly refuses. Driving it is the
+    // point: a census taken before the operator has done anything is exactly
+    // the empty one this replaces. `slot`'s own control stays on the census
+    // through the three seats still empty.
     //
     // Each window is RAISED before it is used — a click that lands under
     // another focused window does nothing. See `raiseWindow`.
     await raiseWindow(page, 'rep')
     await page.locator('[data-op="mine"]').first().click()
-    await raiseWindow(page, 'store')
-    await page.locator('#storeList .bcard').first().click()
     await raiseWindow(page, 'file')
-    await page.locator('[data-op="slot"]').first().click()
+    await expect(page.locator('[data-op="slot"]').first()).toBeAttached({ timeout: 15_000 })
     await expect(page.locator('[data-op="unslot"]').first()).toBeAttached({ timeout: 15_000 })
 
     const afterDrain = await opsOf()
@@ -400,14 +402,14 @@ test.describe('a11y — keyboard reach', () => {
       .evaluateAll((nodes) => nodes.filter((n) => n.getAttribute('aria-hidden') === 'true').length)
     expect(hidden, 'the resize grip is hidden from assistive tech').toBe(0)
 
-    const bar = page.locator('#w-store .win-bar')
+    const bar = page.locator('#w-rep .win-bar')
     expect(
       (await bar.getAttribute('aria-label')) ?? '',
       'the bar does not announce its resize path — an undiscoverable path is not a path',
     ).toMatch(/Shift/)
 
     const boxOf = async (): Promise<{ w: number; h: number }> =>
-      page.locator('#w-store').evaluate((n) => {
+      page.locator('#w-rep').evaluate((n) => {
         const r = n.getBoundingClientRect()
         return { w: Math.round(r.width), h: Math.round(r.height) }
       })
@@ -419,9 +421,9 @@ test.describe('a11y — keyboard reach', () => {
     expect(after.h, 'Shift+ArrowDown on the focused bar did not resize the window').toBeGreaterThan(before.h)
 
     // …and plain arrows still MOVE, unchanged.
-    const topBefore = await page.locator('#w-store').evaluate((n) => Math.round(n.getBoundingClientRect().top))
+    const topBefore = await page.locator('#w-rep').evaluate((n) => Math.round(n.getBoundingClientRect().top))
     await page.keyboard.press('ArrowDown')
-    const topAfter = await page.locator('#w-store').evaluate((n) => Math.round(n.getBoundingClientRect().top))
+    const topAfter = await page.locator('#w-rep').evaluate((n) => Math.round(n.getBoundingClientRect().top))
     expect(topAfter, 'the arrow-key move path regressed').toBeGreaterThan(topBefore)
   })
 
@@ -441,7 +443,7 @@ test.describe('a11y — keyboard reach', () => {
   })
 
   // C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted and not narrowed by
-  // selector: the sweep still visits every `.wc, .task, .win-bar, .rate-btn,
+  // selector: the sweep still visits every `.wc, .task, .win-bar, .snd-btn,
   // [data-op]` in the document. What changed is that a control with NO LAYOUT
   // BOX is now reported as such instead of being counted as unringed. The three
   // that failed were `#w-tally`'s own bar and its two window controls: the tally
@@ -464,7 +466,9 @@ test.describe('a11y — keyboard reach', () => {
       // `.win-grip` joined the sweep on 08-05 with its keyboard path (R2 on
       // window-frame.ts:55) — a control the operator can now reach has to ring.
       for (const el of document.querySelectorAll<HTMLElement>(
-        '.wc, .task, .win-bar, .win-grip, .rate-btn, [data-op]',
+        // `.rate-btn` is gone with W4's transport row; `.snd-btn` (the mute
+        // toggle) is what stands in that row now, and it keeps the coverage.
+        '.wc, .task, .win-bar, .win-grip, .snd-btn, [data-op]',
       )) {
         const name = `${el.tagName.toLowerCase()}.${el.className}`
         if (el.getClientRects().length === 0) {
@@ -581,7 +585,7 @@ test.describe('a11y — focus order follows visual order at 1280x800', () => {
   })
 
   test('a11y — a hidden window contributes no tab stop', async ({ page }) => {
-    const node = page.locator('#w-store')
+    const node = page.locator('#w-feed')
     await node.locator('.wc-close').click()
     await expect(node).toBeHidden()
     const reachable = await node.evaluate((n) => {

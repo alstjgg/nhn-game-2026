@@ -17,7 +17,7 @@
 // spent note text (WAITING/FILED_TAIL/LAPSED_TAIL/SPENT) is not decided here
 // — it is written directly by `windows/agent-file.ts`'s ported hold/settle
 // wiring, the same way `windows/tally.ts` once owned its wait line outright.
-import { pad2 } from './block-card.ts'
+import { callsignOf } from './dossier.ts'
 import { boardState, SLOT_CAP, usedIds } from './slot-board.ts'
 import type { BoardState } from './slot-board.ts'
 import { button, el } from '../shell/dom.ts'
@@ -29,8 +29,11 @@ const NOTE_LOCKED = '배치됨 — 이번 시행에서 잠김'
 const DEPLOY_MAIN = 'DEPLOY'
 const DEPLOY_SUB = '배치 · 파일 잠금'
 
-/** NEW RUN, as the reference prints it — moved in verbatim from `tally.ts`. */
-const NEW_RUN_MAIN = 'NEW RUN'
+/**
+ * W4 — the second label is gone; only the sub line survives. `NEW RUN` was the
+ * NAME of the second press, and there is no second press: the same 배치 both
+ * commits the file and opens the day it was built for.
+ */
 const NEW_RUN_SUB = '다음 시행 · '
 const NEW_RUN_SUB_TAIL = '으로'
 
@@ -45,7 +48,7 @@ export interface DeployView {
   /** What `#deployState` prints — blank once the day has closed (see header). */
   note: string
   stampOn: boolean
-  /** `"RUN 03 · 08:50"` — the run the file was committed for. */
+  /** `"ECHO-3 · 08:50"` — the sitting the file was committed for. */
   stampLine: string
   boardState: BoardState
   buttonState: 'ready' | 'deployed'
@@ -88,11 +91,15 @@ export function deployView(state: DeployState): DeployView {
     count: `${used} / ${SLOT_CAP}`,
     note: mode === 'deploy' ? (state.deployed ? NOTE_LOCKED : used > 0 ? NOTE_PARTIAL : NOTE_EMPTY) : '',
     stampOn: state.deployed,
-    stampLine: `RUN ${pad2(state.run)} · ${state.at}`,
+    stampLine: `${callsignOf(state.run)} · ${state.at}`,
     boardState: boardState(state.slots, state.deployed),
     buttonState: state.deployed ? 'deployed' : 'ready',
     mode,
-    mainLabel: mode === 'deploy' ? DEPLOY_MAIN : NEW_RUN_MAIN,
+    // W4 — ONE button. The main label never changes: every press of it is a
+    // 배치, and the sub line is the only thing that says which day it commits
+    // for. `mode` still drives `data-op`, because the op the press actually
+    // sends does change — and the membrane census reads it (see the builder).
+    mainLabel: DEPLOY_MAIN,
     subLine: mode === 'deploy' ? DEPLOY_SUB : `${NEW_RUN_SUB}${nextAt}${NEW_RUN_SUB_TAIL}`,
   }
 }

@@ -9,7 +9,7 @@
 // Two things have to survive the swap, because the shell binds them once at
 // boot and never looks again:
 //
-// - **the listener set** — `game-clock`, the five windows and the run counter
+// - **the listener set** — `game-clock`, the three windows and the run counter
 //   all subscribed to the facade, so the facade keeps the set and re-binds the
 //   inner driver underneath them;
 // - **the clock** — `shell/boot.ts` hands `driver.clock` to the game clock and
@@ -89,12 +89,21 @@ export function createRunLoopDriver(
     carry(kept)
   }
 
-  /** Replays the kept meta-state into the new day through the ops that made it. */
+  /**
+   * Replays the kept meta-state into the new day through the ops that made it.
+   *
+   * W4 — `deploy` now replays too. It used to be deliberately dropped ("a new
+   * day has not been deployed yet"), which was right while DEPLOY was a press
+   * the operator made INSIDE the new day. Under one-press the commit happens
+   * before the day opens, so a day that did not carry its deployed set would
+   * open with an agent file the composer cannot see.
+   */
   function carry(kept: FixtureStore): void {
     for (const id of kept.mined) inner.send({ op: 'mine', sentence_id: id })
     for (const [slot, id] of Object.entries(kept.slots)) {
       inner.send({ op: 'slot', block_id: id, slot: Number(slot) })
     }
+    if (kept.deployed.length > 0) inner.send({ op: 'deploy', blocks: [...kept.deployed] })
   }
 
   const clock: Clock = {

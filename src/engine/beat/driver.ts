@@ -24,6 +24,7 @@ import type { BeatPack, RoundAssemblerPort, StateCorePort } from './ports.ts'
 import type { Beat, BeatKind, OutcomeBucket, ScheduledGate } from './schedule.ts'
 import { BeatPhaseError, StanceResolutionError } from './errors.ts'
 import { evaluateEdges } from './predicates.ts'
+import { holds, problems } from '../../shared/predicates.ts'
 import { cloneDeep, windowLines } from './views.ts'
 
 /**
@@ -116,7 +117,19 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
   const { schedule, state, assembler, pack } = deps
 
   let cursor = 0
-  let phase: BeatPhase = openingPhase(schedule[0])
+  /**
+   * Is THIS beat's gate actually being asked? (contract-datapack F4)
+   *
+   * Read once when the beat opens and held, so `current()`, `openingPhase` and
+   * `gateView()` cannot disagree with each other inside one beat — the state
+   * moves under them as soon as effects land, and a gate that was open for the
+   * cursor and closed for the phase machine would be a hang.
+   *
+   * A gate with no authored `availability` compiles to `''`, which `holds()`
+   * answers `true` — so this is inert for every gate that does not use it.
+   */
+  let gateLive = gateOpen(schedule[0], state)
+  let phase: BeatPhase = openingPhase(schedule[0], gateLive)
   let utterance = ''
   let symptoms: string[] = []
   const stepLog: BeatStep[] = []
@@ -135,6 +148,11 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
     if (beat.gate === null) {
       throw new BeatPhaseError(`beat ${beat.index} (${beat.clock}) carries no gate`)
     }
+    if (!gateLive) {
+      throw new BeatPhaseError(
+        `gate ${beat.gate.id} is not available on this run (availability: ${JSON.stringify(beat.gate.availability)})`,
+      )
+    }
     return beat.gate
   }
 
@@ -147,7 +165,10 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
   function fixedAction(beat: Beat): string {
     const authored = beat.events.map((event) => event.text).join('\n')
     if (authored !== '') return authored
-    return beat.gate === null ? '' : beat.gate.scene
+    // A gate that is not being asked contributes no scene either: its prose
+    // describes the situation the gate is about, and that situation is what
+    // `availability` just said is not happening.
+    return beat.gate === null || !gateLive ? '' : beat.gate.scene
   }
 
   function presentNpcs(beat: Beat): PresentNpc[] {
@@ -174,7 +195,14 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
       return {
         index: beat.index,
         clock: beat.clock,
-        kind: beat.kind,
+        // What the CALLER must do this beat, which is the only thing a cursor
+        // is for: `live-driver.ts` reads this to decide whether Call 1 runs. A
+        // gate whose `availability` does not hold is not asked, so it is a
+        // script beat to everyone outside this module. `roundIndex` below is
+        // deliberately NOT recomputed — the round exists either way, and its
+        // report is still owed (`roundGates` already tolerates a round with no
+        // submission).
+        kind: beat.kind === 'gate' && gateLive ? 'gate' : 'script',
         roundIndex: beat.roundIndex,
         isRoundLast: beat.isRoundLast,
       }
@@ -261,7 +289,11 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
       utterance = ''
       symptoms = []
       activeGroup = null
-      phase = openingPhase(schedule[cursor])
+      // Read AFTER the cursor moves and before the phase is set: the previous
+      // beat's effects have landed, so this is the state the gate's condition
+      // is about.
+      gateLive = gateOpen(schedule[cursor], state)
+      phase = openingPhase(schedule[cursor], gateLive)
       return true
     },
 
@@ -304,7 +336,37 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
   }
 }
 
-function openingPhase(beat: Beat | undefined): BeatPhase {
+/**
+ * Does this beat's gate pass its `availability` condition right now?
+ *
+ * `false` for a beat with no gate, so the one call site can ask the question
+ * unconditionally.
+ *
+ * ── Un-hardened prose opens the gate, it does not close it ──────────────────
+ *
+ * `availability` is one of `contract-datapack`'s F4 slots: packs may still
+ * carry free text there pending promotion — 우는다리's G7 says 특정 가지에서만 —
+ * and `datapack:lint` FLAGs it as hardening work. Routing that through
+ * `holds()` alone would read it as `false` and silently delete a gate from
+ * every run, which is a behaviour change no author asked for. So a condition
+ * that does not PARSE is treated as "no condition authored yet" and the gate is
+ * asked, exactly as it was before this function existed. Only a real predicate
+ * is enforced.
+ *
+ * That also keeps the state core untouched for every pack that has not opted
+ * in: `snapshot()` is reached only when there is a predicate to resolve, so
+ * this adds no read to the §4.1 ordering chain.
+ */
+function gateOpen(beat: Beat | undefined, state: StateCorePort): boolean {
+  if (beat?.gate == null) return false
+  const condition = beat.gate.availability
+  if (condition === '' || problems(condition).length > 0) return true
+  return holds(condition, state.snapshot())
+}
+
+function openingPhase(beat: Beat | undefined, gateLive: boolean): BeatPhase {
   if (beat === undefined) return 'done'
-  return beat.kind === 'gate' ? 'stance' : 'effects'
+  // An unavailable gate opens where a script beat opens: its co-timed events
+  // still fire, Call 1 never runs, and no stance is ever submitted for it.
+  return beat.kind === 'gate' && gateLive ? 'stance' : 'effects'
 }

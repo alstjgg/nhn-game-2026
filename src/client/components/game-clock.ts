@@ -1,12 +1,14 @@
 // [u3#c3] GameClock — the topbar's sim clock (spec-client §4 chrome row, §6).
 //
-// Ported from docs/design/phase2-ui/app.js `paintClock()` / `initRate()`
-// (lines 171..201). One thing changed, and it is the point of the criterion:
-// the reference kept the time in a module-global `S.clock` and ticked it from
-// its own loop, while here the time arrives from the DRIVER's clock every
-// frame and the rate buttons push ×1 / ×4 / pause back into it. The view owns
-// no clock, no timer and no wall-clock read.
-import type { ClockRate } from '../driver/index.ts'
+// Ported from docs/design/phase2-ui/app.js `paintClock()` (line 171). One thing
+// changed, and it is the point of the criterion: the reference kept the time in
+// a module-global `S.clock` and ticked it from its own loop, while here the time
+// arrives from the DRIVER's clock every frame. The view owns no clock, no timer
+// and no wall-clock read.
+//
+// W4 dropped the other half of the port, `initRate()` (line 201) — the ×1 / ×4 /
+// pause row. A day is not a recording to scrub: DEPLOY starts it and 21:04 stops
+// it, so this view now pushes nothing at all.
 import { mm } from '../driver/index.ts'
 import { must } from '../shell/dom.ts'
 
@@ -22,43 +24,27 @@ export interface GameClockOptions {
   start: string
   /** The scenario's terminal stamp — the right end, and the run's hard stop. */
   end: string
-  /** Pushed straight at the driver's clock; the view never keeps a rate. */
-  onRate: (rate: ClockRate) => void
 }
 
-/** `data-rate` → the driver's rate, or null when the attribute is not one. */
-function readRate(value: string | undefined): ClockRate | null {
-  switch (value) {
-    case '0':
-      return 0
-    case '1':
-      return 1
-    case '4':
-      return 4
-    default:
-      return null
-  }
-}
-
+/**
+ * W4 — the rate control is gone, and with it the last thing this view PUSHED.
+ *
+ * The topbar offered ×1 / ×4 / pause, ported from the design target's own
+ * transport row. A day is not a recording to scrub: the operator commits a file
+ * and watches it run, so the only thing that may set the clock going is DEPLOY
+ * (`windows/agent-file.ts`), and 21:04 is the only thing that stops it. What is
+ * left here reads the driver's clock and paints it — the view now owns no
+ * control at all, which is what it always claimed in its header.
+ */
 export function createGameClock(options: GameClockOptions): GameClockView {
   const digits = must('#clockDigits', options.root)
   const fill = must('#clockFill', options.root)
   const term = must('.clk-term', options.root)
-  const buttons = [...options.root.querySelectorAll<HTMLButtonElement>('.rate-btn')]
 
   const from = mm(options.start)
   const to = mm(options.end)
   const span = Math.max(1, to - from)
   term.textContent = `→ ${options.end}`
-
-  for (const node of buttons) {
-    node.addEventListener('click', () => {
-      const rate = readRate(node.dataset.rate)
-      if (rate === null) return
-      for (const other of buttons) other.classList.toggle('is-on', other === node)
-      options.onRate(rate)
-    })
-  }
 
   let painted: string | null = null
 

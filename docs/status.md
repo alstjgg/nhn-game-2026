@@ -3,6 +3,103 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-08) — the loop the player operates, and two regressions only the live path could show
+
+**The day now runs hands-off, and the operator's turn is at the close.** Four
+units rebuilt the sitting (`plan-playtest.md` §1 U6): the resume carries a build
+stamp so a stale tab is not a live sitting (`W1`); one sitting is one
+accumulating record, keyed by RUN with rounds appended, which killed the
+run/round keyspace collision in `railEntries` (`W2`); mining is one gesture —
+a click mines *and* seats, and a refusal flashes instead of vanishing (`W3`);
+and DEPLOY is one phase-gated press that commits the file and opens the next
+day, which retired the ×1/×4/pause transport row with it (`W4`). A sitting's
+rounds now break a line between them (`R1`). `main` is at #194.
+
+**Two regressions shipped green through a 215-test browser suite, and the
+reason is structural.** `e2e/` drives the DEV fixture loop, whose store is one
+flat object surviving `new_run`; the live path rebuilds per day. Anything that
+crosses a run boundary is therefore untested in the browser by construction.
+
+- **The committed agent file never reached the model** (`H1`). `createMembrane`
+  is per bound run, and `W4` re-armed the carried file in the live adapter's
+  *view mirror* instead of the opened run's membrane. `unslot` answered
+  `empty_slot`, so a carried sentence could not be released — the loop
+  dead-ends once four seats arrive full — and `membrane.deployed()`, which is
+  what `composer.judgment` carries into Call 1, was empty. **From day 2 onward
+  on the live site, C-BLOCK was inert.** The fix replays the file as real
+  `slot`/`deploy` ops, which the fixture loop's `carry()` always did.
+- **A refresh returned a sitting that no longer existed** (`H2`). The resume
+  restored callsign, counter and archive, and could not restore the filed
+  report documents — they live in `windows/reports.ts` and are persisted
+  nowhere — so F5 came back as ECHO-n with n empty rail tabs. A page load now
+  starts a new sitting; `spec-client` §7 #8 is amended with it, and the audio
+  mute key is deliberately not cleared.
+
+**The rule this pays for:** a unit that changes what crosses a run boundary is
+proved at the driver seam under vitest, never in the browser, and its Done-when
+says so. The live path still has no end-to-end coverage at all — a real gap,
+deliberately not closed before the deadline.
+
+**Still open** — `plan-playtest.md` §3 carries the order, and it no longer
+carries a cut line: everything listed there is meant to be built, and the two
+items that are not (U2, O2) say so in place.
+
+- **T3** — the desk is still three side-by-side columns, which is T1's shape,
+  not T3's. T3 is two columns: REPORTS large on the left, the right split into
+  LIVE FEED above and AGENT FILE below. REPORTS is where mining happens and
+  where cause will render, and it currently has the middle of three narrow
+  columns while the LIVE FEED ticker has the widest.
+- **C1 → U5.3** — a page per ECHO-n, so the player can compare the file they
+  gave one agent against the next. Today the previous sitting's file leaves the
+  desk entirely when it is rebuilt, so nothing answers "what did I change, and
+  what changed in the result". 민서 raised this ahead of U5.2c on 08-08: a
+  citation is read once, a comparison is read every sitting after.
+- **U5.2c** — render the cause. The seam already carries `cited_ids`.
+- **The manual's §1–§4 content** — still placeholder, and two of its bodies are
+  now false: they describe a 집계 window U3 deleted and a two-press day W4
+  replaced.
+
+## Status (2026-08-08) — the desk has sound, and it costs the opening paint nothing
+
+**34 cues ship**, wired through one call in `boot.ts` step 4c. The whole layer is
+an observer: it reads the §5.2 stream, the `[data-op]` census markers the five
+membrane controls carry, the classes the window manager and the ledger set, the
+fanfold's revealed lines and the report typewriter's own repaints. It sends no op
+and no component imports it, so audio can be deleted or muted without touching
+what is playable — which is also why `audio:check` is deliberately **not** in
+`npm run check`. Plan, sources and per-criterion verification:
+[plan-audio.md](./plan-audio.md); the mapping itself is law in
+`data/policy/audio-map.json`.
+
+**Nothing is fetched before the player's first gesture.** A browser suspends an
+AudioContext built outside one, so the context, `audio-map.json` and every sample
+wait for it — measured headless at **0 audio bytes at first paint**. The pack
+then loads in three waves: the door's cues, the rest of the SFX, the two beds.
+Unlocking happens at O1's door so its controls answer; the ambience waits for
+`revealDesk` and retires 10 s later, because a room tone that plays out behind a
+curtain is one nobody hears. The format is **AAC in MP4**: `decodeAudioData`
+takes it in every desktop browser shipping today including Safari, and it does
+not depend on an ffmpeg built with `libvorbis`.
+
+**Everything sourced is CC0 or public domain**, so the game carries no mandatory
+attribution. `assets-manifest.json`'s 34 audio rows are **generated** from the
+builder's own source table (`npm run audio:manifest`), so provenance cannot drift
+from what was built. The other half is synthesised by `tools/audio/synth.mjs` —
+seeded and byte-reproducible, because the outputs are committed.
+
+**Sizes:** 141.0 kB of SFX, 494.4 kB of ambience, ~7 kB of map.
+
+**O3 coexists with this layer, moment by moment** (plan-audio §4.5). O3's
+implementation (`shell/radio-sfx.ts`, merged in #179) keeps its three moments
+and its no-assets approach — the carrier static under the LOGIN readout, the
+squelch at the hand-over, and 21:04, where **the static swells and cuts, and
+the silence after the cut is the cue**. This layer yields those three by data
+(`door:login`, `boot` and `ending:collapse` bound `null`; the window observer
+skips `.win-manual`) and does everything else, keeping the 2800 ms ledger lead
+that guards the ending's silence. O3 reads this layer's `dday.audio.muted` key
+before every burst, so the ♪ toggle is the desk's one mute. The yielded cues
+ship in the pack; each rebind is a one-line map edit.
+
 ## Status (2026-08-06) — the deployed build was publishing its own answer key
 
 **`dist/` is a player surface, and nothing was treating it as one.**
@@ -46,8 +143,9 @@ membrane op. The suite covering it seated a slotted-but-unmined id, which the
 engine forbids — it was covering a branch that could not execute.
 
 **Playtest triage lives at [plan-playtest.md](./plan-playtest.md)** — 17 items
-from the 08-05 session with dependency order and a cut line against ~08-10, plus
-§5, the rule set for specifying them as mini-PRDs for low-cost executors.
+from the 08-05 session with dependency order and work groups, plus §5, the rule
+set for specifying them as mini-PRDs for low-cost executors. (It carried a cut
+line until 08-08; priority lives in §3's ordering now.)
 
 **The 08-05 entry below is superseded on its central claim.** It says
 `ScorerPort` is declared but unbuilt, neither composition root supplies one, and
@@ -349,6 +447,19 @@ minimal-first.
 
 - Verify the exact submission deadline and video editing rules on the official
   competition page (deadline currently assumed ~2026-08-10).
+- **Regenerate the nine reference shots — deferred until the UI settles**
+  (민서, 2026-08-08). `e2e/reference-shots/` is a visual-regression baseline,
+  and seven of its nine frames were rendered 2026-08-05 (`e98ac9e`): they still
+  show four windows with the BLOCK STORE, the retired ×1/×4/pause transport
+  row, and the AGENT FILE's old block-store slot cards. The `captures` suite
+  pairs by NAME only — it never diffs pixels — so a stale baseline is green,
+  not red. It costs nothing today and guards nothing either; the moment the UI
+  stops moving it should be refreshed, because until then a real visual
+  regression has no oracle. One command, run on a build of `main`:
+  `CAPTURE_BASELINE=1 SHOT_OUT=e2e/reference-shots npx playwright test captures`
+  (the name/count asserts still bind in that mode, so a refresh cannot quietly
+  ship eight). The shots are renders of our own UI by our own harness, so they
+  are deliberately NOT in `assets-manifest.json`.
 
 ## Decision log
 

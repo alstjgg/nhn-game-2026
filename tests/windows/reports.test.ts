@@ -64,11 +64,12 @@ function offenders(re: RegExp): string[] {
 
 /* ── the exported surface (u6 design §4) ─────────────────────────────────── */
 
-type MinableState = 'unmined' | 'mined' | 'slotted'
+type MinableState = 'unmined' | 'mined' | 'slotted' | 'carried'
 
 interface MarkSets {
   mined: ReadonlySet<string>
-  slottedEver: ReadonlySet<string>
+  slotted: ReadonlySet<string>
+  carried: ReadonlySet<string>
 }
 
 interface MineEffect {
@@ -111,15 +112,18 @@ interface TypeState {
   done: boolean
 }
 
+/** A shadow of `components/report-view.ts`'s own — keep the two in step. */
 interface ReportModel {
   round: number
   facts: Sentence[]
   report_body: Sentence[]
+  opens?: string[]
 }
 
 interface ViewModule {
   typeCursor(state: TypeState, elapsedMs: number, lengths: readonly number[]): TypeState
   minedCount(model: ReportModel, marks: MarkSets): number
+  accumulated(held: ReportModel | null, slice: ReportModel): ReportModel
 }
 
 async function minable(): Promise<MinableModule> {
@@ -261,42 +265,51 @@ describe('[u6#c3] mine op carries authored id', () => {
 /* ══ [u6#c5] minable states ═════════════════════════════════════════════ */
 
 describe('[u6#c5] minable states', () => {
-  it('(a) unmined · mined · slotted are three distinct states', async () => {
+  it('(a) unmined · mined · slotted · carried are four distinct states', async () => {
     const m = await minable()
     // `id-slotted` is mined TOO, because that is the only way a sentence gets
-    // into a slot: the board seats cards off the deck, and the deck is
-    // `carried ∪ mined` (`engine-ops.test.ts (b)`, "an unmined block cannot be
-    // slotted"). This used to seat an unmined id — a state the app cannot
-    // produce — so the assert passed over a combination that never occurs.
+    // into a slot: an unmined block cannot be slotted (`engine-ops.test.ts (b)`).
+    // This used to seat an unmined id — a state the app cannot produce — so the
+    // assert passed over a combination that never occurs.
     const marks = m.deriveMarks(
       store({ mined: ['id-mined', 'id-slotted'], slots: { 0: 'id-slotted' } }),
-      [],
+      ['id-carried'],
     )
     expect(m.sentenceState('id-plain', marks)).toBe('unmined')
     expect(m.sentenceState('id-mined', marks)).toBe('mined')
     expect(m.sentenceState('id-slotted', marks)).toBe('slotted')
+    expect(m.sentenceState('id-carried', marks)).toBe('carried')
   })
 
-  it('(b) slotted wins over mined when a sentence is both', async () => {
+  it('(b) slotted wins over carried wins over mined when a sentence is several', async () => {
     // REVERSED (08-06). [u6#c5] b had mined win, which made `'slotted'`
     // unreachable — every slotted id is also mined (see (a)) — so `.min.slotted`
     // in `win-reports.css` never rendered and the operator got no sign that a
-    // sentence had been placed. Slotted is the more specific state and reads
-    // first; `unmined → mined → slotted` now tracks what the operator did.
+    // sentence had been placed. The more specific state reads first.
+    //
+    // `carried` split out of `slotted` (08-08): TODAY's file and an EARLIER
+    // day's are different facts about the desk, and the rail shows both at
+    // once. A carried id seated again today reads 배치, not 과거 배치.
     const m = await minable()
-    const marks = m.deriveMarks(store({ mined: ['id-x'], slots: { 2: 'id-x' } }), ['id-x'])
-    expect(m.sentenceState('id-x', marks)).toBe('slotted')
+    const both = m.deriveMarks(store({ mined: ['id-x'], slots: { 2: 'id-x' } }), ['id-x'])
+    expect(m.sentenceState('id-x', both)).toBe('slotted')
+
+    const past = m.deriveMarks(store({ mined: ['id-x'] }), ['id-x'])
+    expect(m.sentenceState('id-x', past)).toBe('carried')
   })
 
-  it('(c) the three classes are distinct and carry the skin selectors u1 shipped', async () => {
+  it('(c) the four classes are distinct and carry the skin selectors u1 shipped', async () => {
     const m = await minable()
-    const classes = (['unmined', 'mined', 'slotted'] as MinableState[]).map((s) => m.sentenceClass(s))
-    expect(new Set(classes).size).toBe(3)
+    const states: MinableState[] = ['unmined', 'mined', 'slotted', 'carried']
+    const classes = states.map((s) => m.sentenceClass(s))
+    expect(new Set(classes).size).toBe(4)
     for (const c of classes) expect(c.split(/\s+/)).toContain('min')
     expect(classes[0]!.split(/\s+/)).not.toContain('mined')
     expect(classes[0]!.split(/\s+/)).not.toContain('slotted')
+    expect(classes[0]!.split(/\s+/)).not.toContain('carried')
     expect(classes[1]!.split(/\s+/)).toContain('mined')
     expect(classes[2]!.split(/\s+/)).toContain('slotted')
+    expect(classes[3]!.split(/\s+/)).toContain('carried')
   })
 
   it('(d) deriveMarks folds store.mined, the slot values and meta.carried — and mutates nothing', async () => {
@@ -306,7 +319,8 @@ describe('[u6#c5] minable states', () => {
     const marks = m.deriveMarks(snapshot, carried)
 
     expect([...marks.mined].sort()).toEqual(['a'])
-    expect([...marks.slottedEver].sort()).toEqual(['b', 'c', 'd'])
+    expect([...marks.slotted].sort()).toEqual(['b', 'c'])
+    expect([...marks.carried].sort()).toEqual(['d'])
     expect(snapshot).toEqual(store({ mined: ['a'], slots: { 0: 'b', 3: 'c' } }))
     expect(carried).toEqual(['d'])
   })
@@ -438,7 +452,7 @@ describe('[u6#c4] archive segmentation is pure and gate-free', () => {
     expect(segments.map((s) => s.run)).toEqual([1, 2])
   })
 
-  it('(b) the run label is `RUN nn`, zero-padded, derived from the number', async () => {
+  it("(b) the run label is the sitting's callsign, derived from the number", async () => {
     const a = await archive()
     const segments = a.archiveSegments(
       [
@@ -447,8 +461,8 @@ describe('[u6#c4] archive segmentation is pure and gate-free', () => {
       ],
       1,
     )
-    expect(segments[0]!.runLabel).toBe('RUN 01')
-    expect(segments[1]!.runLabel).toBe('RUN 12')
+    expect(segments[0]!.runLabel).toBe('ECHO-1')
+    expect(segments[1]!.runLabel).toBe('ECHO-12')
   })
 
   it('(c) a label that already carries its own `RUN nn /` prefix is normalised, not doubled', async () => {
@@ -611,5 +625,85 @@ describe('[u6#c10] run-wide hard constraints hold in this unit', () => {
   it('(g) C5/C6 — u6 edits neither runner config nor vitest.config.ts', () => {
     expect(read(path.join(CLIENT, '../../playwright.config.ts'))).not.toMatch(/reports\.spec|u6/)
     expect(read(path.join(CLIENT, '../../vitest.config.ts'))).not.toMatch(/jsdom|happy-dom/)
+  })
+})
+
+/* ══ [w2] one sitting, one accumulating record ══════════════════════════ */
+
+describe('[w2] a sitting accumulates its rounds into one document', () => {
+  const s = (id: string): Sentence => ({ id, text: `${id} 문장`, species: 'fact' })
+
+  it('(a) the first round of a sitting is the document', async () => {
+    const v = await view()
+    const round = { round: 0, facts: [s('f1')], report_body: [s('b1')] }
+    expect(v.accumulated(null, round)).toEqual(round)
+  })
+
+  it('(b) each further round appends to both panes, in arrival order', async () => {
+    const v = await view()
+    const one = v.accumulated(null, { round: 0, facts: [s('f1')], report_body: [s('b1')] })
+    const two = v.accumulated(one, { round: 1, facts: [s('f2')], report_body: [s('b2'), s('b3')] })
+
+    expect(two.facts.map((x) => x.id)).toEqual(['f1', 'f2'])
+    expect(two.report_body.map((x) => x.id)).toEqual(['b1', 'b2', 'b3'])
+  })
+
+  it('(c) the model carries the LATEST round filed — that is the replay key', async () => {
+    const v = await view()
+    const one = v.accumulated(null, { round: 0, facts: [], report_body: [s('b1')] })
+    expect(v.accumulated(one, { round: 6, facts: [], report_body: [s('b2')] }).round).toBe(6)
+  })
+
+  it('(d) it mutates neither side — the held document and the slice are untouched', async () => {
+    const v = await view()
+    const held = { round: 0, facts: [s('f1')], report_body: [s('b1')] }
+    const slice = { round: 1, facts: [s('f2')], report_body: [s('b2')] }
+    v.accumulated(held, slice)
+    expect(held.facts.map((x) => x.id)).toEqual(['f1'])
+    expect(held.report_body.map((x) => x.id)).toEqual(['b1'])
+    expect(slice.facts.map((x) => x.id)).toEqual(['f2'])
+  })
+
+  it('(e) a seven-round day is ONE document, and the mined tally counts all of it', async () => {
+    const v = await view()
+    const m = await minable()
+    let doc: ReportModel | null = null
+    for (let round = 0; round < 7; round += 1) {
+      doc = v.accumulated(doc, {
+        round,
+        facts: [s(`f${round}`)],
+        report_body: [s(`b${round}`)],
+      })
+    }
+    expect(doc!.facts).toHaveLength(7)
+    expect(doc!.report_body).toHaveLength(7)
+    expect(v.minedCount(doc!, m.deriveMarks(store({ mined: ['f3', 'b5'] }), []))).toBe(2)
+  })
+
+  it('(f) the window keys its rail on the run, never on the round', () => {
+    // The defect was `railEntries(archive, [...filed.keys()])` being handed
+    // ROUND numbers. `filed` is now keyed by the sitting, and the only write
+    // to it takes its key from the run `meta` last named.
+    const window = scannedSources().find((s) => s.file.endsWith('windows/reports.ts'))
+    expect(window, 'the REPORTS window is not in the scanned set').toBeTruthy()
+    expect(window!.text, 'the report handler no longer names the sitting').toMatch(/const sitting = run/)
+    expect(window!.text, 'a report is still filed under its round').not.toMatch(/filed\.set\(\s*event\.round/)
+  })
+
+  it('(g) each round after the first records the id it opens on', async () => {
+    const v = await view()
+    const one = v.accumulated(null, { round: 0, facts: [], report_body: [s('b1'), s('b2')] })
+    // A single-round document carries no boundary at all — `(a)` above pins
+    // that identity, and a break before the very first sentence would open the
+    // record with a blank line.
+    expect(one.opens).toBeUndefined()
+
+    const two = v.accumulated(one, { round: 1, facts: [], report_body: [s('b3')] })
+    const three = v.accumulated(two, { round: 2, facts: [], report_body: [s('b4'), s('b5')] })
+    expect(three.opens).toEqual(['b3', 'b4'])
+    // The boundary is an id in the body, never an index into it: `render()`
+    // rebuilds the flat list and matches by id, so an id that is not there is
+    // simply no break rather than a break in the wrong place.
+    expect(three.report_body.map((x) => x.id)).toEqual(['b1', 'b2', 'b3', 'b4', 'b5'])
   })
 })

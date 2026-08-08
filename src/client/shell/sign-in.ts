@@ -16,6 +16,7 @@
 // fields are `<span>`s carrying `SIGN_IN`'s text; nothing here is an `<input>`,
 // nothing is contenteditable, and the one control is a real `<button>`.
 import { button, el } from './dom.ts'
+import { sfxLoginStatic } from './radio-sfx.ts'
 import { PORTAL, SIGN_IN } from './portal-identity.ts'
 
 /** SVG namespace — the crest is drawn, not marked up (cf. thread-layer.ts). */
@@ -222,6 +223,7 @@ export function openSignIn(app: HTMLElement, body: HTMLElement): Promise<void> {
       // line's `animation-delay` is measured from the same press.
       plate.classList.add('is-auth')
       const runway = authLines().length * STEP_MS + TAIL_MS
+      sfxLoginStatic(runway)
       window.setTimeout(() => {
         layer.classList.add('si-out')
         window.setTimeout(() => layer.remove(), 500)

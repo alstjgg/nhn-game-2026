@@ -1,5 +1,5 @@
 // The shell's boot sequence — spec-client §5.1, in that order:
-// fetch the pack → build the chrome and the five windows → applyLayout →
+// fetch the pack → build the chrome and the three windows → applyLayout →
 // connect the driver → open the run.
 //
 // The shell owns the desk and nothing else: it never renders run content (the
@@ -8,18 +8,20 @@
 // event does, spec-client §5.2 amendment d).
 import { createLiveRunDriver, createRunLoopDriver, demoRunLoop, installClockHook } from '../driver/index.ts'
 import { placeholderBootRun } from './boot-run.ts'
-import type { ClockHook, ClockRate, FixtureDriver, Frame } from '../driver/index.ts'
+import type { ClockHook, FixtureDriver, Frame } from '../driver/index.ts'
 import { createGameClock } from '../components/game-clock.ts'
 import { createRunCounter } from '../components/run-counter.ts'
 import { holdDesk, revealDesk } from '../components/desktop-dressing.ts'
+import { installAudio } from '../audio/index.ts'
 import { createAnnouncer } from './announcer.ts'
+import { bindRadioSfx, sfxHandOver } from './radio-sfx.ts'
 import { must } from './dom.ts'
 import { openManual } from './manual.ts'
 import { openSignIn, signInSkipped } from './sign-in.ts'
 import { fetchScenarioIdentity } from './pack.ts'
 import type { ScenarioIdentity } from './pack.ts'
 import { PORTAL, TASKBAR_HINT } from './portal-identity.ts'
-import { restoredRun } from './run-state.ts'
+import { clearRunState } from './run-state.ts'
 import { WINDOW_REGISTRY } from './window-registry.ts'
 import { createWindowManager } from './window-manager.ts'
 // A namespace import on purpose: the overlay may only be mounted once the desk
@@ -84,6 +86,7 @@ async function openLiveDesk(identity: ScenarioIdentity): Promise<FixtureDriver |
       baseUrl: document.baseURI,
       fetch: (url, init) => window.fetch(url, init),
       storage: window.sessionStorage,
+      stamp: __BUILD_STAMP__,
       slug: identity.slug,
       start: identity.start,
       end: identity.end,
@@ -128,6 +131,13 @@ export async function bootShell(): Promise<void> {
   // desk (see its doc comment).
   const door = signInSkipped(window) ? null : openSignIn(must('#app'), body)
 
+  // Resolved at the hand-over (step 6), when the desk is what the player is
+  // looking at. The ear waits on it — see 4c.
+  let openTheEars = (): void => {}
+  const atTheDesk = new Promise<void>((resolve) => {
+    openTheEars = () => resolve()
+  })
+
   // 1 — the scenario pack.
   const identity = await fetchScenarioIdentity()
   renderIdentity(identity)
@@ -142,19 +152,22 @@ export async function bootShell(): Promise<void> {
   // player build gets, since `demoRunLoop` answers `null` there (§5.4) and the
   // fixtures tree-shake out. The placeholder is the floor: a pack that will not
   // load must still leave a booted desk rather than a blank page.
+  // H2 — a page load is a new sitting. Before the driver is built, because
+  // `createRunState` reads this module's slot the moment it is constructed and
+  // the live path reads the runloop's inside `createLiveRunDriver`.
+  clearRunState()
   const fixtures = await demoRunLoop({ withoutReports: lapseDrill() })
   const driver =
     fixtures !== null
-      ? createRunLoopDriver(fixtures, { openAt: restoredRun() })
+      ? createRunLoopDriver(fixtures)
       : ((await openLiveDesk(identity)) ??
-        createRunLoopDriver([placeholderBootRun(identity)], { openAt: restoredRun() }))
+        createRunLoopDriver([placeholderBootRun(identity)]))
 
   // 3 — the chrome the driver feeds.
   const clock = createGameClock({
     root: must('#clockUnit'),
     start: identity.start,
     end: identity.end,
-    onRate: (rate: ClockRate) => driver.clock.setRate(rate),
   })
   const runs = createRunCounter(must('#ddayUnit'))
   driver.subscribe((event) => {
@@ -165,8 +178,9 @@ export async function bootShell(): Promise<void> {
   // state changes (R2 on index.html:125). It is bound before the windows mount
   // so the opening `meta` is announced like every later one.
   createAnnouncer(must('#toast'), driver)
+  bindRadioSfx(driver)
 
-  // 4 — the five windows and the taskbar, then the computed desk arrangement.
+  // 4 — the three windows and the taskbar, then the computed desk arrangement.
   const desk = createWindowManager({
     desk: must('#desktop'),
     taskbar: must('#taskbar'),
@@ -191,6 +205,28 @@ export async function bootShell(): Promise<void> {
     slotted: () => Object.values(driver.frame().store.slots),
   })
   if (import.meta.env.DEV) window.__threads = threads
+
+  // 4c — the ear. Mounted here because it observes what the windows wrote:
+  // `[data-op]`, the `.hidden` class the manager toggles, the fanfold's revealed
+  // lines and the report typewriter's repaints. Like the announcer it reads the
+  // §5.2 stream and sends nothing back — audio is redundant reinforcement, never
+  // a channel (plan-audio §2).
+  //
+  // It unlocks on the first gesture wherever that lands — the door has controls
+  // of its own — but the AMBIENCE waits for the hand-over below: an opening that
+  // plays out behind a curtain is an opening nobody hears. The opening `meta`
+  // lands during boot and carries `runs_left`, which the ending cue reads, so
+  // the subscription cannot wait; but the first gesture belongs to the door
+  // (O1), and unlocking there would spend the opening ambience behind it.
+  installAudio({
+    driver,
+    root: must('#app'),
+    controls: document.querySelector<HTMLElement>('.clk-rate'),
+    baseUrl: document.baseURI,
+    fetch: (url, init) => window.fetch(url, init),
+    storage: window.sessionStorage,
+    deskReady: atTheDesk,
+  })
 
   // 5 — open the run. `advance(0)` releases what is due at the opening minute
   // without moving the clock; the desk then waits on hold until the operator
@@ -232,9 +268,11 @@ export async function bootShell(): Promise<void> {
   if (door !== null) {
     await door
     await openManual(must('#app'), { width: window.innerWidth, height: window.innerHeight })
+    sfxHandOver()
   }
   revealDesk(
     body,
     desk.frames.map((f) => f.root),
   )
+  openTheEars()
 }

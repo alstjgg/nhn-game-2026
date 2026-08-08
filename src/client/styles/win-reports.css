@@ -50,12 +50,21 @@
   border-bottom:1px dotted var(--sh-2);align-items:baseline}
 .facts li::before{content:counter(f,decimal-leading-zero);font-size:var(--fs-8);color:var(--faded-2)}
 .facts .f-t{font-size:var(--fs-8-5);color:var(--faded);font-variant-numeric:tabular-nums}
-.facts .min{font-family:var(--myeong);font-size:var(--fs-11);line-height:1.62;color:var(--pap-1);
+/* the sentence cell — the typography lives HERE, and `.min` is inline inside it.
+   A `.min` used as the grid cell itself would be blockified, and its marks are
+   painted per box: one block box for the whole wrapped sentence paints one mark,
+   sliding out of step with the lines. See `factRow()` in report-view.ts. */
+.facts .f-s{font-family:var(--myeong);font-size:var(--fs-11);line-height:1.62;color:var(--pap-1);
   word-break:keep-all}
+.facts .min{display:inline}
 
 .rbody{font-family:var(--myeong);font-size:var(--fs-11-5);line-height:1.92;color:var(--pap-2);
   text-align:justify;word-break:keep-all}
 .rbody .sent{display:inline}
+/* R1 — the break between two rounds of one sitting. An empty block in the
+   justified flow: it ends the line and leaves one step of air, so a seven-round
+   day reads as seven transmissions instead of one paragraph. */
+.rbody .r-brk{display:block;height:var(--space-6)}
 .sig{margin-top:var(--space-20);display:flex;align-items:center;justify-content:flex-end;gap:var(--space-14)}
 .sig-line{font-family:var(--myeong);font-size:var(--fs-12);color:var(--pap-3);
   border-bottom:1px solid var(--graphite);padding:0 var(--space-22) var(--space-2)}
@@ -68,16 +77,34 @@
 .min{cursor:pointer;transition:background .15s,box-shadow .15s;position:relative;
   padding:var(--space-1) var(--space-2);margin:0 var(--space-n1);border-radius:1px}
 .min:hover{background:var(--seal-a13);box-shadow:0 1px 0 var(--seal)}
-.min.mined{color:var(--pap-5);cursor:default;
-  background:repeating-linear-gradient(180deg,transparent 0 1.35em,var(--seal-a5) 1.35em calc(1.35em + 1px))}
+/* The 채굴 rule is a DECORATION, not a background. Drawn as a gradient it was
+   pinned to a fixed offset inside the painted box, so it only landed under the
+   text while the font's own metrics kept it there — at 1.35em it sat under a
+   11px Nanum Myeongjo line with 0.9px to spare, and any fallback face
+   (AppleMyungjo, Batang) clipped it to a sliver. `text-underline-offset` is
+   measured from the BASELINE, per line, whichever face renders. */
+.min.mined{color:var(--pap-5);cursor:pointer;
+  text-decoration:underline;text-decoration-color:var(--seal-a5);
+  text-decoration-thickness:1px;text-underline-offset:.3em;text-decoration-skip-ink:none}
 .min.mined::after{content:'채굴';font-family:var(--mono);font-size:var(--fs-7);letter-spacing:.1em;
-  color:var(--seal);vertical-align:super;margin-left:var(--space-4);white-space:nowrap}
-.min.slotted{background:linear-gradient(transparent 55%,var(--highlight-a62) 55%)}
+  color:var(--seal);vertical-align:super;margin-left:var(--space-4);white-space:nowrap;
+  /* inline-block so the rule above stops at the sentence and does not run under
+     the label — the gradient never reached it either */
+  display:inline-block;text-decoration:none}
+.min.slotted{background:linear-gradient(transparent 55%,var(--highlight-a62) 55%);cursor:default}
 .min.slotted::after{content:'배치';font-family:var(--mono);font-size:var(--fs-7);letter-spacing:.1em;
   color:var(--slotted-ink);vertical-align:super;margin-left:var(--space-4);white-space:nowrap}
+/* a line the operator deployed on an EARLIER day: the same highlight, gone to
+   pencil. The rail keeps every past sitting readable, so both marks are on the
+   desk at once and they may not look alike. */
+.min.carried{background:linear-gradient(transparent 55%,var(--sh-15) 55%);color:var(--pap-3);cursor:default}
+.min.carried::after{content:'과거 배치';font-family:var(--mono);font-size:var(--fs-7);letter-spacing:.1em;
+  color:var(--faded);vertical-align:super;margin-left:var(--space-4);white-space:nowrap}
 .min.tear{animation:tearFlash .5s ease-out}
 @keyframes tearFlash{0%{background:var(--seal-a55);box-shadow:0 0 0 4px var(--seal-a25)}
   100%{background:transparent;box-shadow:none}}
+.min.refused{animation:refusedNudge .3s ease}
+@keyframes refusedNudge{25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
 .facts li.min-row{cursor:pointer}
 .facts li.min-row:hover{background:var(--seal-a08)}
 

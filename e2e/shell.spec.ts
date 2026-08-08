@@ -28,7 +28,6 @@ import { hideDebugPane } from './fixtures/dev-surface.ts'
 const WINDOWS = [
   { key: 'feed', id: 'w-feed' },
   { key: 'file', id: 'w-file' },
-  { key: 'store', id: 'w-store' },
   { key: 'rep', id: 'w-rep' },
 ] as const
 
@@ -117,8 +116,8 @@ test.describe('window ops', () => {
     await boot(page)
   })
 
-  test('window ops — the desk carries exactly the four spec §4 windows', async ({ page }) => {
-    await expect(page.locator('.win')).toHaveCount(4)
+  test('window ops — the desk carries exactly the three spec §4 windows', async ({ page }) => {
+    await expect(page.locator('.win')).toHaveCount(3)
     const keys = await page.locator('.win').evaluateAll((nodes) =>
       nodes.map((n) => (n as HTMLElement).dataset.win ?? ''),
     )
@@ -211,13 +210,13 @@ test.describe('window ops', () => {
       await expect(task).not.toHaveClass(/\bopen\b/)
     }
     // Closed to the taskbar, not destroyed.
-    await expect(page.locator('.win')).toHaveCount(4)
-    await expect(page.locator('.task')).toHaveCount(4)
+    await expect(page.locator('.win')).toHaveCount(3)
+    await expect(page.locator('.task')).toHaveCount(3)
   })
 
   test('window ops — the taskbar reopens a closed window', async ({ page }) => {
-    const node = win(page, 'w-store')
-    const task = page.locator('.task[data-win="store"]')
+    const node = win(page, 'w-feed')
+    const task = page.locator('.task[data-win="feed"]')
     await node.locator('.wc-close').click()
     await expect(node).toBeHidden()
 
@@ -229,10 +228,10 @@ test.describe('window ops', () => {
   })
 
   test('window ops — the taskbar raises an unfocused window before hiding it', async ({ page }) => {
-    const store = win(page, 'w-store')
-    const task = page.locator('.task[data-win="store"]')
+    const store = win(page, 'w-feed')
+    const task = page.locator('.task[data-win="feed"]')
 
-    // Focus something else, so BLOCK STORE is open but not focused.
+    // Focus something else, so LIVE FEED is open but not focused.
     await win(page, 'w-file').locator('.win-bar').click()
     await expect(store).not.toHaveClass(/\bfocused\b/)
 
@@ -357,7 +356,7 @@ test.describe('default layout fits 1280x800', () => {
       origins.add(`${Math.round(b.x)}:${Math.round(b.y)}`)
     }
     // Four distinct desk columns is the floor the reference arrangement produces.
-    expect(origins.size).toBeGreaterThanOrEqual(4)
+    expect(origins.size).toBeGreaterThanOrEqual(3)
   })
 })
 
@@ -392,34 +391,33 @@ test.describe('topbar', () => {
     }
   })
 
-  test('topbar — the clock ticks while running and stops on pause', async ({ page }) => {
-    await page.locator('.rate-btn[data-rate="1"]').click()
-    const start = (await frame(page)).minute
-    await expect.poll(async () => (await frame(page)).minute, { timeout: 8000 }).toBeGreaterThan(start)
-
-    await page.locator('.rate-btn[data-rate="0"]').click()
-    await expect.poll(async () => (await frame(page)).rate, { timeout: 2000 }).toBe(0)
-    const paused = (await page.locator('#clockDigits').textContent())?.trim()
+  // RE-AIMED (08-08, W4), never deleted. These two asserted the transport row:
+  // that ×1 / ×4 / pause existed, marked exactly one of themselves, and drove
+  // the DRIVER's clock rather than a view-local one. W4 removed the row — a day
+  // is not a recording the operator scrubs — so what they measure now is the
+  // claim that replaced it: the desk is held until a file is committed, and
+  // DEPLOY is what sets it running. The "drives the driver's clock, not a
+  // view-local one" half survives intact; only the control changed.
+  test('topbar — the desk is held until a file is committed, and DEPLOY starts it', async ({ page }) => {
+    // Held: the clock does not advance on its own, however long we watch.
+    expect((await frame(page)).rate, 'the desk booted already running').toBe(0)
+    const held = (await frame(page)).minute
     await page.waitForTimeout(700)
-    expect((await page.locator('#clockDigits').textContent())?.trim()).toBe(paused)
+    expect((await frame(page)).minute, 'the clock advanced with no file committed').toBe(held)
+
+    await page.locator('#w-file #btnDeploy').click()
+
+    await expect.poll(async () => (await frame(page)).rate, { timeout: 2000 }).toBe(1)
+    await expect.poll(async () => (await frame(page)).minute, { timeout: 8000 }).toBeGreaterThan(held)
   })
 
-  test('topbar — the rate control offers ×1 / ×4 / pause and marks exactly one', async ({ page }) => {
-    const rates = page.locator('.clk-rate .rate-btn')
-    await expect(rates).toHaveCount(3)
-    const values = await rates.evaluateAll((nodes) =>
-      nodes.map((n) => (n as HTMLElement).dataset.rate ?? ''),
-    )
-    expect(values).toEqual(['1', '4', '0'])
-    await expect(page.locator('.rate-btn.is-on')).toHaveCount(1)
-
-    for (const rate of [4, 0, 1]) {
-      await page.locator(`.rate-btn[data-rate="${rate}"]`).click()
-      await expect(page.locator(`.rate-btn[data-rate="${rate}"]`)).toHaveClass(/\bis-on\b/)
-      await expect(page.locator('.rate-btn.is-on')).toHaveCount(1)
-      // The control drives the DRIVER's clock, not a view-local one.
-      await expect.poll(async () => (await frame(page)).rate, { timeout: 2000 }).toBe(rate)
-    }
+  test('topbar — the desk offers no transport control at all', async ({ page }) => {
+    // The membrane's own logic: a day runs because a file was committed to it,
+    // so there is nothing here to scrub with. `.clk-rate` survives as the slot
+    // the audio toggle mounts into, and that toggle is not a rate.
+    await expect(page.locator('.rate-btn')).toHaveCount(0)
+    await expect(page.locator('.clk-rate [data-rate]')).toHaveCount(0)
+    await expect(page.locator('.clk-rate .snd-btn')).toHaveCount(1)
   })
 
   test('topbar — the progress fill tracks the clock and never leaves the bar', async ({ page }) => {
@@ -431,13 +429,16 @@ test.describe('topbar', () => {
     expect(r0).toBeGreaterThanOrEqual(0)
     expect(r0).toBeLessThanOrEqual(1)
 
-    await page.locator('.rate-btn[data-rate="4"]').click()
+    // RE-AIMED (08-08, W4): the fill needs the clock MOVING, and the only thing
+    // that starts it now is a committed file. ×4 is gone, so the wait widens to
+    // match ×1 rather than the transport's fast-forward.
+    await page.locator('#w-file #btnDeploy').click()
     const m0 = (await frame(page)).minute
     await expect
       .poll(async () => {
         const f = await frame(page)
         return f.minute - m0 >= 20 || f.ended
-      }, { timeout: 15000 })
+      }, { timeout: 40000 })
       .toBe(true)
 
     const r1 = await ratio()
@@ -539,19 +540,19 @@ test.describe('single stacking context', () => {
     expect(offenders).toEqual([])
   })
 
-  test('single stacking context — raising BLOCK STORE puts it above AGENT FILE', async ({ page }) => {
-    const store = win(page, 'w-store')
+  test('single stacking context — raising REPORTS puts it above AGENT FILE', async ({ page }) => {
+    const rep = win(page, 'w-rep')
     const file = win(page, 'w-file')
 
-    // Park BLOCK STORE on top of AGENT FILE so the two genuinely overlap.
+    // Park REPORTS on top of AGENT FILE so the two genuinely overlap.
     const fileBox = await box(file)
-    const storeBar = await box(store.locator('.win-bar'))
-    const storeBox = await box(store)
+    const repBar = await box(rep.locator('.win-bar'))
+    const repBox = await box(rep)
     await dragFrom(
       page,
-      storeBar,
-      fileBox.x + 40 - storeBox.x,
-      fileBox.y + 40 - storeBox.y,
+      repBar,
+      fileBox.x + 40 - repBox.x,
+      fileBox.y + 40 - repBox.y,
     )
 
     const probe = { x: fileBox.x + 90, y: fileBox.y + 90 }
@@ -561,14 +562,14 @@ test.describe('single stacking context', () => {
         probe,
       )
 
-    await store.locator('.win-bar').click({ position: { x: 20, y: 8 } })
-    expect(await topAt()).toBe('w-store')
+    await rep.locator('.win-bar').click({ position: { x: 20, y: 8 } })
+    expect(await topAt()).toBe('w-rep')
 
     await file.locator('.win-bar').click({ position: { x: 20, y: 8 } })
     expect(await topAt()).toBe('w-file')
 
-    await store.locator('.win-bar').click({ position: { x: 20, y: 8 } })
-    expect(await topAt()).toBe('w-store')
+    await rep.locator('.win-bar').click({ position: { x: 20, y: 8 } })
+    expect(await topAt()).toBe('w-rep')
   })
 
   test('single stacking context — focus raises the --z of exactly one window', async ({ page }) => {
@@ -615,7 +616,7 @@ test.describe('a11y', () => {
 
   test('a11y — each window is a named region', async ({ page }) => {
     const regions = page.getByRole('region', { includeHidden: true })
-    await expect(regions).toHaveCount(4)
+    await expect(regions).toHaveCount(3)
     const names = await page.locator('.win').evaluateAll((nodes) =>
       nodes.map((n) => n.getAttribute('aria-label') ?? n.getAttribute('aria-labelledby') ?? ''),
     )
@@ -623,9 +624,13 @@ test.describe('a11y', () => {
   })
 
   test('a11y — every window control is a real button and keyboard reachable', async ({ page }) => {
-    const controls = page.locator('.wc, .task, .rate-btn')
+    // RE-AIMED (08-08, W4): the three rate buttons left the topbar with the
+    // transport, so the census is three windows' controls plus three task
+    // buttons. The claim — every one of them is a real button and reachable —
+    // is unchanged.
+    const controls = page.locator('.wc, .task')
     const count = await controls.count()
-    expect(count).toBe(4 * 2 + 4 + 3)
+    expect(count).toBe(3 * 2 + 3)
     const meta = await controls.evaluateAll((nodes) =>
       nodes.map((n) => ({
         tag: n.tagName.toLowerCase(),
@@ -682,7 +687,9 @@ test.describe('a11y', () => {
       }
       const out: { sel: string; changed: boolean }[] = []
       const heldByPhase: string[] = []
-      const targets = [...document.querySelectorAll<HTMLElement>('.rate-btn, .task, .wc, .win-bar')]
+      // `.snd-btn` stands where `.rate-btn` did (W4 retired the transport) — the
+      // row still has a control in it, so the sweep still visits one.
+      const targets = [...document.querySelectorAll<HTMLElement>('.snd-btn, .task, .wc, .win-bar')]
       for (const el of targets) {
         // C15 / C17 / [u11#c12] — RE-AIMED (08-04): a control with no layout box
         // cannot take focus, so `el.focus()` is a no-op and the snapshot could
@@ -732,7 +739,7 @@ test.describe('a11y', () => {
   })
 
   test('a11y — a closed window is removed from the tab order', async ({ page }) => {
-    const node = win(page, 'w-store')
+    const node = win(page, 'w-feed')
     await node.locator('.wc-close').click()
     await expect(node).toBeHidden()
     const reachable = await node.evaluate((n) => {

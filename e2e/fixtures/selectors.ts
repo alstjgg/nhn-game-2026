@@ -8,14 +8,13 @@
 export const WINDOWS = {
   feed: '#w-feed',
   file: '#w-file',
-  store: '#w-store',
   rep: '#w-rep',
 } as const
 
 export type WindowKey = keyof typeof WINDOWS
 
 /** The four window ids without the `#`, in default-layout order (C9/C15). */
-export const WINDOW_IDS = ['w-feed', 'w-file', 'w-rep', 'w-store'] as const
+export const WINDOW_IDS = ['w-feed', 'w-file', 'w-rep'] as const
 
 /* ── chrome (item 1, item 6) ─────────────────────────────────────────────── */
 export const CHROME = {
@@ -46,6 +45,8 @@ export const FEED = {
   list: '#w-feed #feedList',
   scroll: '#w-feed #feedScroll',
   line: '#w-feed #feedList .fl',
+  /** The behind-indicator (U2) — shown only while the feed is NOT following. */
+  behind: '#w-feed #feedBehind',
 } as const
 
 /** `(변화 없음)` — the empty symptom set's own copy (§7 #2), not fixture text. */
@@ -70,13 +71,7 @@ export const REPORTS = {
   mined: '#w-rep .min.mined',
 } as const
 
-/* ── store + slots (items 5, 10) ─────────────────────────────────────────── */
-export const STORE = {
-  list: '#w-store #storeList',
-  empty: '#w-store #storeEmpty',
-  filter: '#w-store #storeFilter',
-  card: '#w-store #storeList .bcard',
-} as const
+/* ── slots (items 5, 10) ─────────────────────────────────────────────────── */
 
 export const FILE = {
   board: '#w-file #slotBoard',

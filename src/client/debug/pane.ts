@@ -98,13 +98,24 @@ function stampOf(event: ViewEvent): string {
 export interface PaneView {
   /** Repaints both tables from the records handed in. Reads nothing itself. */
   render(events: readonly ViewEvent[], ops: readonly MembraneOp[]): void
+  /** Shows or hides the pane. Painting continues either way. */
+  setVisible(on: boolean): void
+  /** Whether the pane is currently on screen. */
+  visible(): boolean
 }
 
-/** Mounts the pane as a direct child of `host` — never inside the desk. */
-export function mountPane(host: HTMLElement): PaneView {
+/**
+ * Mounts the pane as a direct child of `host` — never inside the desk.
+ *
+ * `visible` only decides whether the root paints: the pane mounts, records and
+ * publishes its handle regardless, so a dev desk that starts clean can still be
+ * switched on later without a reload.
+ */
+export function mountPane(host: HTMLElement, visible: boolean): PaneView {
   const root = document.createElement('section')
   root.id = PANE_ID
   root.dataset.pane = PANE_MARKER
+  root.hidden = !visible
 
   const style = document.createElement('style')
   style.textContent = CSS
@@ -138,6 +149,12 @@ export function mountPane(host: HTMLElement): PaneView {
           ]),
         ),
       )
+    },
+    setVisible(on) {
+      root.hidden = !on
+    },
+    visible() {
+      return !root.hidden
     },
   }
 }

@@ -2,52 +2,45 @@
 //
 // Ported from docs/design/phase2-ui/app.js `applyLayout()` (lines 98..122):
 // the same column ratios (.265 / .395), the same 94px chrome band, the same
-// .565 split between REPORTS and BLOCK STORE, the same 14/16px gutters. The
-// reference read the ambient viewport and wrote straight into the DOM; here
-// the viewport is an argument and the arrangement is the return value, so the
-// desk can be computed — and asserted — without a DOM at all.
+// 14/16px gutters. The reference read the ambient viewport and wrote straight
+// into the DOM; here the viewport is an argument and the arrangement is the
+// return value, so the desk can be computed — and asserted — without a DOM at
+// all.
 //
-// TALLY IS A FLOATING SHEET AGAIN (u7, 08-04 — see discovery/u7.md).
-// u3 originally deviated here: it parked TALLY in a 26 %-of-desk band under
-// the three columns so that all five windows could tile at once ([u3#c1]).
-// u7 ships the window's contents, and the band cannot hold them — at 1280×800
-// it is 180 px tall against 415 px of ledger (head · headline · one rule per
-// scored axis · verdict · the wait line and NEW RUN), so the ledger, the wait
-// line and the window's only button all render below the frame. C9 forbids
-// that ("nothing off-screen in the default layout"), u1's shipped `.tly-*`
-// skin is sized for the reference's tall sheet, and u7 may write neither CSS
-// nor inline geometry — so the band is not a fixable shape, and this file goes
-// back to the reference's own arrangement (app.js line 122):
+// THREE COLUMNS, FULL HEIGHT (T1, 08-07). The desk this file lays out has held
+// five windows, then four, and now three: u7 floated TALLY back out of the
+// column band it was parked in, U3 dissolved TALLY into the AGENT FILE and the
+// report, and T1 dissolved BLOCK STORE into REPORTS. What is left tiles without
+// a special case — LIVE FEED, REPORTS and AGENT FILE side by side, each taking
+// the whole desk height — so the arrangement below is the reference's own again
+// and the .565 split that once cut REPORTS in half is gone with the window it
+// made room for.
 //
-//   set('tally', max(20,(W-730)/2), TOP+16, 730, min(626, H-16))
-//
-// which is why the three columns take the whole desk height again. The premise
-// of u3's deviation is gone with it: TALLY boots hidden (u7 mounts it closed)
-// and comes up only at 21:04, so it buries nothing while the day is running,
-// and it is the reference's "the tally owns the screen at end of run".
+// `DESK_ORDER` below must move with these rects: the focus-order assert in
+// `e2e/a11y.spec.ts` compares tab order to them row-major.
 //
 // Floors keep every box positive below the supported 1280×800 minimum (C9):
 // out of support degrades, it never inverts.
 
-/** The four desk windows, in the order the taskbar and the registry use. */
-export const WINDOW_KEYS = ['feed', 'file', 'store', 'rep'] as const
+/** The three desk windows, in the order the taskbar and the registry use. */
+export const WINDOW_KEYS = ['feed', 'file', 'rep'] as const
 
 export type WindowKey = (typeof WINDOW_KEYS)[number]
 
 /**
  * The desk's READING order — the order the arrangement below puts the windows
- * in on screen, row by row and left to right: LIVE FEED (x14) · REPORTS (x369)
- * · AGENT FILE (x891) on the top row, BLOCK STORE under REPORTS, and the TALLY
- * sheet, which is hidden until 21:04, last.
+ * in on screen, left to right in one row: LIVE FEED · REPORTS · AGENT FILE.
  *
  * `#desktop`'s child order follows THIS, not `WINDOW_KEYS`. Tab used to walk
- * the registry order (feed · file · store · rep) while the desk was laid out
- * feed · rep · file · store, so three of the four window transitions sent focus
- * somewhere the eye did not predict — WCAG 2.4.3 Focus Order (Level A), and the
- * defect `e2e/a11y.spec.ts` quarantined under `test.fail` because u9 was not
- * allowed to touch u3's shell. The registry/taskbar order is unchanged.
+ * the registry order while the desk was laid out in another, so window
+ * transitions sent focus somewhere the eye did not predict — WCAG 2.4.3 Focus
+ * Order (Level A). `e2e/a11y.spec.ts` quarantined that defect under
+ * `test.fail` while u9 was forbidden from touching u3's shell; the quarantine
+ * is lifted and the assert compares tab order to the rects row-major, so this
+ * export drifting from the arrangement below is a real red. The
+ * registry/taskbar order is unchanged.
  */
-export const DESK_ORDER: readonly WindowKey[] = ['feed', 'rep', 'file', 'store']
+export const DESK_ORDER: readonly WindowKey[] = ['feed', 'rep', 'file']
 
 export interface Viewport {
   width: number
@@ -70,8 +63,6 @@ const GUTTER = 14
 const GAP = 16
 const COL_A_RATIO = 0.265
 const COL_B_RATIO = 0.395
-/** REPORTS' share of the middle column's height; BLOCK STORE takes the rest. */
-const REP_RATIO = 0.565
 const MIN_W = 240
 const MIN_H = 120
 
@@ -88,13 +79,10 @@ export function applyLayout(viewport: Viewport): Record<WindowKey, WinRect> {
   const colC = Math.max(MIN_W, W - xC - GUTTER)
 
   const colH = deskH
-  const hRep = px(colH * REP_RATIO)
-  const hStore = Math.max(MIN_H, colH - hRep - GUTTER)
 
   return {
     feed: { x: GUTTER, y: TOP, w: colA, h: colH },
-    rep: { x: xB, y: TOP, w: colB, h: hRep },
-    store: { x: xB, y: TOP + hRep + GUTTER, w: colB, h: hStore },
+    rep: { x: xB, y: TOP, w: colB, h: colH },
     file: { x: xC, y: TOP, w: colC, h: colH },
   }
 }

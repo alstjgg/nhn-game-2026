@@ -111,8 +111,8 @@ manual pre-merge gate.
    call · the typewriter is client-driven replay of a completed response ·
    mid-action play never blocks.
 6. **Archive segmentation** — the report archive is segmented by run/time
-   (`RUN 01 / 08:50 — 21:04`); **no gate label** appears on any player
-   surface (08-03 decision, architecture §2.1).
+   (`ECHO-1 08:50 — 21:04` — the sitting's callsign, G3); **no gate label**
+   appears on any player surface (08-03 decision, architecture §2.1).
 7. **Fixture-first** — every feature must be exercisable in fixture mode. A
    feature only demonstrable against the live proxy is review-rejected.
 8. **Style-as-data** — colors, paper stocks, type faces/sizes, spacing live
@@ -192,7 +192,7 @@ type ViewEvent =
   | { type: 'waiting';  active: boolean; for: 'judgment' | 'narration' | 'report' }
   | { type: 'fallback'; call: 1 | 2 | 3; code: string; beat: number }
   | { type: 'report';   round: number; facts: Sentence[]; report_body: Sentence[];
-                        judged?: { stance_id: string; desc: string } }
+                        judged?: { stance_id: string; desc: string; cited_ids: string[] } }
   | { type: 'score';    total: number; baseline_total: number;
                         rows: { label: string; value: string | number;
                                 baseline: string | number | null }[] }
@@ -266,7 +266,7 @@ driver, not the windows, is where that guarantee is enforced (invariant 12).
 | State | Owner | Client's part |
 |---|---|---|
 | game state (meters, gates, journal) | engine | none — not even mirrored |
-| run counter · carried blocks · report archive | run-loop manager (meta-state, `sessionStorage` — §9) | display + membrane ops against it; arrives as `meta` events |
+| run counter · carried blocks · report archive | run-loop manager (meta-state, `sessionStorage` — §9; written through, cleared at boot per §7 #8) | display + membrane ops against it; arrives as `meta` events |
 | window geometry · focus · collapsed set · archive-rail selection · animation state | **client** | in-memory only — cosmetic state legitimately resets on refresh |
 | mining/slotted marks on sentences | derived from meta-state by id | render only |
 
@@ -302,7 +302,7 @@ run known-open #4 — the wiring step).
 | `WaitingMarker` | active (diegetic phrasing) | `……무전 회신 대기 중` with breathing dots — never a spinner |
 | `ReportView` | facts (objective log) · report_body · loading-behind the terminal record | white bond paper, red margin rule on the report side |
 | `MinableSentence` | unmined · mined · previously-slotted (archive highlight) | tear: red flash, strike-through, `채굴` marginal note; card animates to store |
-| `ReportArchive` | per-run sections (run/time segmented — no gate labels) | archive rail (`RUN 01 / 08:50 — 21:04`); mined and slotted marks persist |
+| `ReportArchive` | per-run sections (run/time segmented — no gate labels) | archive rail (`ECHO-1 08:50 — 21:04`); mined and slotted marks persist |
 | `ScoreTally` | pending (absorbing report latency) · final | ruled-ledger count-up paced ~9 s; hosted in REPORTS' `.terminal-record` |
 | `FallbackNotice` | per engine §5 fallback classes | `※` feed line |
 | `WindowFrame` | focused · collapsed · closed-to-taskbar · dragging · resizing | title bar, tab, corner grip; taskbar toggles and raises |
@@ -334,8 +334,10 @@ Against `data/scenario/우는다리/`, in fixture mode, in a browser.
 6. Terminal clock reached → score renders.
 7. A forced `fallback` feed line renders per engine §5, and the run
    continues.
-8. Refresh mid-run: the multi-run meta-state (counter, archive, carried
-   blocks) survives via `sessionStorage`; closing the tab starts clean
+8. Refresh mid-run: a page load starts a NEW sitting — the run slots in
+   `sessionStorage` are cleared at boot (H2, 08-08), because a resume that
+   restores the archive rail's identities but not the report documents behind
+   them hands back a desk of empty tabs. Closing the tab starts clean
    (윤석's resolution, §9). Window geometry and other cosmetic state may
    reset.
 
@@ -391,9 +393,11 @@ slices so LLM-generated text never hits a missing glyph).
   types land in `src/shared/view-driver.ts`. The sentence-id scheme
   (engine-minted, channel-derived species, shared segmenter with golden
   test) is part of the ratification.
-- **Persistence** — `sessionStorage` for meta-state: survives refresh (the
-  multi-run loop isn't destroyed by F5), dies with the tab (every judge
-  starts clean — `localStorage` would break the run-3 demo staging). 윤석
+- **Persistence** — `sessionStorage` for meta-state, written but no longer read
+  back on load: **F5 starts a new sitting** (H2, 08-08 — the resume could not
+  restore the filed reports, so it returned an archive of empty tabs), and the
+  slot dies with the tab either way (`localStorage` would break the run-3 demo
+  staging). 윤석
   revises physical §1 and game-design §6; §7 #8 binds it here.
 - **`src/` scaffolding** — already done (physical §3.8 step 1: the four
   `src/` dirs and the `tsconfig`/`tsconfig.core` split exist). **Condition

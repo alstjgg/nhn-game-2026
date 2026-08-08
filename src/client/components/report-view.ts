@@ -25,6 +25,11 @@ export interface ReportModel {
   round: number
   facts: Sentence[]
   report_body: Sentence[]
+  /**
+   * R1 — ids in `report_body` that open a round after the sitting's first. The
+   * record breaks a line before each. Absent on a single-round document.
+   */
+  opens?: string[]
 }
 
 /** Where the replay has got to. `sentence === lengths.length` ⇒ finished. */
@@ -81,6 +86,31 @@ export function minedCount(model: ReportModel, marks: MarkSets): number {
   return [...model.facts, ...model.report_body].filter((s) => marks.mined.has(s.id)).length
 }
 
+/**
+ * W2 — a sitting plus one more round. Pure, and the ONE place the growth rule
+ * lives: both panes append in arrival order and the model's `round` becomes
+ * the latest one filed. `held === null` is the sitting's first round.
+ *
+ * Kept here rather than in `windows/reports.ts` because it is the only part of
+ * "one sitting, one record" that can be proved under vitest's node
+ * environment — the window itself needs a DOM.
+ */
+export function accumulated(held: ReportModel | null, slice: ReportModel): ReportModel {
+  if (held === null) return { round: slice.round, facts: [...slice.facts], report_body: [...slice.report_body] }
+  // R1 — the id that OPENS this round, remembered so a redraw can break before
+  // it. Omitted on the first round rather than set empty: the document a
+  // sitting starts with is the slice itself, and `(a)` in the `[w2]` block
+  // asserts exactly that identity.
+  const opening = slice.report_body[0]
+  const opens = held.opens ?? []
+  return {
+    round: slice.round,
+    facts: [...held.facts, ...slice.facts],
+    report_body: [...held.report_body, ...slice.report_body],
+    opens: opening === undefined ? [...opens] : [...opens, opening.id],
+  }
+}
+
 /* ── the DOM side ────────────────────────────────────────────────────────── */
 
 export interface RenderOptions {
@@ -95,12 +125,20 @@ export interface RenderOptions {
 }
 
 export interface ReportView {
-  /** Draws a round's two documents from scratch, replaying on first arrival. */
+  /**
+   * W2 — appends one round to the sitting already on the page. `slice` is the
+   * new round alone (it is what replays); `whole` is the sitting including it,
+   * which becomes the model the mined tally counts.
+   */
+  append(slice: ReportModel, whole: ReportModel, marks: MarkSets): void
+  /** Draws a sitting's two documents from scratch, replaying on first arrival. */
   render(model: ReportModel, marks: MarkSets, options?: RenderOptions): void
   /** Repaints every anchor's state and the mined tally, in place. */
   refresh(marks: MarkSets): void
   /** Plays the tear flash on one anchor, keyed by its authored id. */
   tear(id: string): void
+  /** W3 — nudge one sentence: the action was refused, and the desk says so. */
+  flash(id: string): void
   /** The round currently on the page, or `null` before the first report. */
   round(): number | null
   /** Re-brands the callsign surfaces — `나`'s sub and the signature (M1). */
@@ -159,7 +197,7 @@ export function createReportView(options: ReportViewOptions): ReportView {
   count.id = 'minedCount'
   const foot = el('footer', 'rep-foot')
   foot.append(
-    document.createTextNode('문장을 누르면 뜯어내 블록 보관함으로 보냅니다 · '),
+    document.createTextNode('문장을 누르면 뜯어내 요원 파일의 빈 칸에 앉힙니다 · '),
     count,
     document.createTextNode('건 채굴됨'),
   )
@@ -184,6 +222,26 @@ export function createReportView(options: ReportViewOptions): ReportView {
     })
     anchors.push({ sentence, node })
     return node
+  }
+
+  /**
+   * One 현장 기록 row: [번호] [시각] [문장].
+   *
+   * The sentence sits inside its own cell instead of BEING the third grid cell.
+   * A grid item is blockified, and `.min`'s marks are painted as backgrounds —
+   * on one block box, a `채굴` rule drawn every 1.35em drifts against a 1.62
+   * line box (≈2px per line, so line 3 is struck through) and a `배치`
+   * highlight lands on the last line alone. Wrapped in a cell, `.min` stays a
+   * real inline box and every line fragment is painted alike, exactly as the
+   * 무전 기록 pane's `.sent` already is. The wrap is load-bearing: the pane only
+   * looked right on a window wide enough to keep each sentence to one line.
+   */
+  function factRow(node: HTMLElement): HTMLLIElement {
+    const row = el('li', 'min-row')
+    const cell = el('div', 'f-s')
+    cell.append(node)
+    row.append(el('span', 'f-t'), cell)
+    return row
   }
 
   /**
@@ -241,6 +299,37 @@ export function createReportView(options: ReportViewOptions): ReportView {
   }
 
   return {
+    append(slice: ReportModel, whole: ReportModel, marks: MarkSets): void {
+      // W2 — the sitting grows. The document already on the page is NOT
+      // redrawn: the new round's rows are appended, `anchors` accumulates (so
+      // `refresh` still repaints every sentence the day has filed), `current`
+      // becomes the WHOLE sitting (so the mined tally counts all of it), and
+      // the replay runs over the new slice alone.
+      if (stopReplay !== null) stopReplay()
+      stopReplay = null
+      caret.remove()
+      current = whole
+
+      for (const sentence of slice.facts) {
+        const node = bind(sentence, marks)
+        node.textContent = sentence.text
+        facts.append(factRow(node))
+      }
+
+      // R1 — this round opens below the last one, not beside it. `append()` is
+      // only ever reached for a round that is NOT the sitting's first (the
+      // window draws whole for that one), so the break is unconditional here.
+      body.append(el('span', 'r-brk'))
+      const grown = slice.report_body.map((sentence) => {
+        const node = bind(sentence, marks)
+        body.append(node, document.createTextNode(' '))
+        return node
+      })
+
+      tally(marks)
+      replay(slice.report_body, grown, true)
+    },
+
     render(model: ReportModel, marks: MarkSets, options?: RenderOptions): void {
       if (stopReplay !== null) stopReplay()
       stopReplay = null
@@ -254,13 +343,17 @@ export function createReportView(options: ReportViewOptions): ReportView {
       for (const sentence of model.facts) {
         const node = bind(sentence, marks)
         node.textContent = sentence.text
-        const row = el('li', 'min-row')
-        row.append(el('span', 'f-t'), node)
-        facts.append(row)
+        facts.append(factRow(node))
       }
 
       body.replaceChildren()
+      const opens = new Set(model.opens ?? [])
       const bodyNodes = model.report_body.map((sentence) => {
+        // R1 — a redraw rebuilds the whole sitting from a flat list, so the
+        // round boundary has to come from the model. Appending the break only
+        // in `append()` below would lose it the first time the operator left
+        // this rail tab and came back.
+        if (opens.has(sentence.id)) body.append(el('span', 'r-brk'))
         const node = bind(sentence, marks)
         body.append(node, document.createTextNode(' '))
         return node
@@ -287,6 +380,14 @@ export function createReportView(options: ReportViewOptions): ReportView {
         },
         { once: true },
       )
+    },
+
+    flash(id: string): void {
+      const anchor = anchors.find((a) => a.sentence.id === id)
+      if (anchor === undefined) return
+      anchor.node.classList.remove('refused')
+      void anchor.node.offsetWidth
+      anchor.node.classList.add('refused')
     },
 
     round(): number | null {

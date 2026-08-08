@@ -32,7 +32,6 @@ import {
   FREE_TEXT,
   RECORD,
   REPORTS,
-  STORE,
   WIN,
   WINDOWS,
 } from './fixtures/selectors.ts'
@@ -48,7 +47,6 @@ import {
   rate,
   seedClock,
   seek,
-  slotBlock,
   tallyPhase,
   tallyState,
   watchWire,
@@ -225,19 +223,19 @@ test.describe('acceptance 1-7', () => {
     // Reduced motion: the mining click must land on a settled sentence, and the
     // desk honouring the preference is itself part of the shipped behaviour.
     // §7 #5 is the loop's own sentence — the mined sentence slots into the NEXT
-    // run's composition — so the day closes and NEW RUN opens the next one
-    // first: that is what files the report and unlocks the board.
+    // run's composition — so the day CLOSES first: that is what files the
+    // report and hands the file back. RE-AIMED (08-08, W4): this used to press
+    // NEW RUN to reach the same state, and under one-press that press is the
+    // one that COMMITS the file, so mining after it is refused by design.
     await boot(page, { reduced: true })
-    await newRun(page)
+    await drain(page)
 
     const id = await mineFirst(page)
 
     // store — the card is keyed by the sentence's own authored id.
-    await expect(page.locator(`${STORE.list} .bcard[data-block="${id}"]`)).toHaveCount(1)
     expect((await frame(page)).store.mined, 'the mined id never reached the seam').toContain(id)
 
-    // slot — the same id seats on the board.
-    await slotBlock(page, id, 0)
+    // slot — the same id seats on the board, off the same gesture (08-08).
     await expect(page.locator(`${FILE.board} [data-block-id="${id}"]`).first()).toBeVisible()
     expect(Object.values((await frame(page)).store.slots)).toContain(id)
 
@@ -300,7 +298,7 @@ test.describe('acceptance 1-7', () => {
 /* ══ persistence — §7 #8 (C4: sessionStorage, never localStorage) ══════════ */
 
 test.describe('acceptance 8', () => {
-  test('#8 meta-state survives F5 and dies with the tab', async ({ page, browser }) => {
+  test('#8 a page load starts a new sitting, and nothing crosses a tab', async ({ page, browser }) => {
     await boot(page)
     // The desk's OPENING meta — what a tab that never played would show. The
     // fixture opens mid-campaign, so "clean" means "this baseline", not "empty".
@@ -326,14 +324,21 @@ test.describe('acceptance 8', () => {
     expect(stored.session.length, 'no meta-state reached sessionStorage').toBeGreaterThan(0)
     expect(stored.local, 'localStorage is forbidden everywhere (C4)').toEqual([])
 
-    // (b) F5 — the counter, archive and carried blocks come back.
+    // (b) RE-AIMED (08-08, H2) and inverted on purpose: F5 is a RESTART.
+    // The resume restored the sitting's identities — callsign, counter, archive
+    // — and could not restore the filed report documents, which live in
+    // `windows/reports.ts` and are persisted nowhere: the desk came back as
+    // ECHO-n with n rail tabs and nothing readable in any of them. The state is
+    // still WRITTEN, which is what (a) above proves; it is no longer read back.
     await page.reload()
     await page.waitForFunction(() => Boolean((window as { __agentFile?: unknown }).__agentFile))
     const after = await meta(page)
-    expect(after.run).toBe(before.run)
-    expect(after.runs_left).toBe(before.runs_left)
-    expect(after.carried).toEqual(before.carried)
-    expect(after.archive.map((a) => a.run)).toEqual(before.archive.map((a) => a.run))
+    expect(after.run, 'F5 resumed the played-out run instead of starting a new sitting').toBe(
+      opening.run,
+    )
+    expect(after.runs_left).toBe(opening.runs_left)
+    expect(after.carried).toEqual(opening.carried)
+    expect(after.archive.map((a) => a.run)).toEqual(opening.archive.map((a) => a.run))
 
     // (c) closing the tab starts clean — sessionStorage does not cross
     // contexts, so a new tab opens on the pack's own baseline, never on the
@@ -383,7 +388,11 @@ test.describe('acceptance 9-12', () => {
     const start = (await win.boundingBox())!
     await page.locator(`${WINDOWS.rep} ${WIN.bar}`).hover()
     await page.mouse.down()
-    await page.mouse.move(start.x + 60, start.y + 40, { steps: 8 })
+    // Up, not down: REPORTS is full column height since T1, and +40 would push
+    // its corner grip below the 800px viewport — the resize drag would land on
+    // nothing and this test would report a mechanism failure that is really a
+    // geometry one.
+    await page.mouse.move(start.x + 60, start.y - 40, { steps: 8 })
     await page.mouse.up()
     const dragged = (await win.boundingBox())!
     expect(Math.abs(dragged.x - start.x) + Math.abs(dragged.y - start.y), 'the window did not drag').toBeGreaterThan(4)
@@ -425,10 +434,12 @@ test.describe('acceptance 9-12', () => {
 
   test('#10 red threads connect every filled slot by authored id and re-draw during a drag', async ({ page }) => {
     await boot(page, { reduced: true })
-    await newRun(page)
+    // RE-AIMED (08-08, W4): a thread needs a FILLED slot, and the window in
+    // which a slot can be filled is the one the close opens — the press that
+    // used to open it now commits the file instead.
+    await drain(page)
 
-    const id = await mineFirst(page)
-    await slotBlock(page, id, 0)
+    await mineFirst(page)
 
     const filled = await page.locator(FILE.filled).count()
     expect(filled, 'no slot was filled, so no thread can be measured').toBeGreaterThan(0)

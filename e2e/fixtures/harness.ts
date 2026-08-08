@@ -56,7 +56,7 @@ export async function boot(page: Page, opts: { reduced?: boolean } = {}): Promis
   if (opts.reduced) await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('./')
   await page.waitForFunction(() => Boolean((window as { __shell?: unknown }).__shell))
-  await expect(page.locator('.win')).toHaveCount(4)
+  await expect(page.locator('.win')).toHaveCount(3)
   await settled(page)
 }
 
@@ -201,6 +201,9 @@ export function sentencesOf(f: Frame): Sentence[] {
 /**
  * Clicks the first mineable sentence and answers its canonical id.
  *
+ * ONE gesture (08-08): that click both tears the sentence out and seats it in
+ * the file's first free slot, so this is the whole mine-and-slot drive.
+ *
  * `.min` is the mineable anchor (u6); the body arrives through a typewriter
  * REPLAY, so the wait is on visibility, not on presence.
  */
@@ -237,12 +240,6 @@ export async function seedClock(page: Page, at: string): Promise<void> {
     }
     handle.clock.seed(stamp)
   }, at)
-}
-
-/** Seats `blockId` in `slot` through the store card, keyboard-free. */
-export async function slotBlock(page: Page, blockId: string, slot = 0): Promise<void> {
-  await page.locator(`#w-store #storeList .bcard[data-block="${blockId}"]`).click()
-  await page.locator(`#w-file .slot[data-slot="${slot}"]`).click()
 }
 
 /* ── the wire (items 11 + preview smoke) ─────────────────────────────────── */

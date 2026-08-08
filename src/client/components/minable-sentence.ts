@@ -16,13 +16,27 @@
 // this unit runs under vitest's node environment.
 import type { FixtureStore, MembraneOp, Sentence } from '../driver/index.ts'
 
-/** The three states §6 requires to be visually distinct. */
-export type MinableState = 'unmined' | 'mined' | 'slotted'
+/**
+ * The states §6 requires to be visually distinct.
+ *
+ * `carried` split out of `slotted` (08-08 playtest): a sentence the operator
+ * deployed on an EARLIER day and one sitting in today's file are not the same
+ * fact about the desk, and the rail makes both visible at once. Today's is
+ * 배치; a previous sitting's is 과거 배치.
+ *
+ * `mined` is no longer a resting state on the main path — one activation now
+ * mines AND seats (`windows/reports.ts`). It survives for the one way back
+ * into it: 해제 frees the seat without un-mining the sentence.
+ */
+export type MinableState = 'unmined' | 'mined' | 'slotted' | 'carried'
 
 /** Everything the marks need, as id sets — never positions, never text. */
 export interface MarkSets {
   readonly mined: ReadonlySet<string>
-  readonly slottedEver: ReadonlySet<string>
+  /** Seated in TODAY's file. */
+  readonly slotted: ReadonlySet<string>
+  /** Deployed on an earlier day and carried into this one. */
+  readonly carried: ReadonlySet<string>
 }
 
 /** What a successful tear plays: the flash on the page, the card to the store. */
@@ -47,13 +61,16 @@ const BASE_CLASS = 'min sent'
 export function deriveMarks(store: FixtureStore, carried: readonly string[]): MarkSets {
   return {
     mined: new Set(store.mined),
-    slottedEver: new Set([...Object.values(store.slots), ...carried]),
+    slotted: new Set(Object.values(store.slots)),
+    carried: new Set(carried),
   }
 }
 
 /**
- * Slotted wins over mined when a sentence is both — REVERSED from [u6#c5] b
- * (08-06), which had mined win.
+ * Slotted wins over carried wins over mined — the more specific state reads
+ * first, and each implies the one below it.
+ *
+ * REVERSED from [u6#c5] b (08-06), which had mined win.
  *
  * That ordering made `'slotted'` unreachable and `.min.slotted` dead CSS. A
  * sentence cannot be slotted without being mined first — the board only seats
@@ -65,19 +82,21 @@ export function deriveMarks(store: FixtureStore, carried: readonly string[]): Ma
  * op into the new run's store.
  *
  * Slotted is the more specific state — it implies mined — so it reads first.
- * `unmined → mined → slotted` is then monotone in what the operator did with
- * the sentence, which is what §6 asks the three states to be distinct ABOUT.
+ * `unmined → slotted → carried` is then monotone in what the operator did with
+ * the sentence, which is what §6 asks the states to be distinct ABOUT.
  */
 export function sentenceState(id: string, marks: MarkSets): MinableState {
-  if (marks.slottedEver.has(id)) return 'slotted'
+  if (marks.slotted.has(id)) return 'slotted'
+  if (marks.carried.has(id)) return 'carried'
   if (marks.mined.has(id)) return 'mined'
   return 'unmined'
 }
 
-/** The class list for a state — three distinct lists, all carrying `.min`. */
+/** The class list for a state — four distinct lists, all carrying `.min`. */
 export function sentenceClass(state: MinableState): string {
   if (state === 'mined') return `${BASE_CLASS} mined`
   if (state === 'slotted') return `${BASE_CLASS} slotted`
+  if (state === 'carried') return `${BASE_CLASS} carried`
   return BASE_CLASS
 }
 
@@ -128,6 +147,9 @@ export function sentenceNode(sentence: Sentence, state: MinableState): HTMLEleme
 /** Repaints one anchor's state — class list plus the mined announcement. */
 export function applyState(node: HTMLElement, state: MinableState): void {
   node.className = sentenceClass(state)
-  if (state === 'mined') node.setAttribute('aria-disabled', 'true')
+  // A settled sentence is a dead end: it is already in a file — today's
+  // (`slotted`) or an earlier day's (`carried`). `mined` is operable again,
+  // because the only way back into it is 해제 freeing the seat.
+  if (state === 'slotted' || state === 'carried') node.setAttribute('aria-disabled', 'true')
   else node.removeAttribute('aria-disabled')
 }
