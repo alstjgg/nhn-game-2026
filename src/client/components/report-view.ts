@@ -1,9 +1,10 @@
 // [u6] ReportView — spec-client §4 REPORTS row, §3 inv 5, latency rule 4.
 //
 // Two filed documents side by side on white bond: the objective log on the left
-// and the agent's own report on the right, under the red margin rule u1's
-// `win-reports.css` paints. Ported from docs/design/phase2-ui/index.html lines
-// 176..218 and app.js `renderReport()` / `typewrite()` (lines 505, 523).
+// and the agent's own report on the right. Ported from
+// docs/design/phase2-ui/index.html lines 176..218 and app.js `renderReport()` /
+// `typewrite()` (lines 505, 523). (x6 — the ledger rule the reference drew down
+// the report side is gone; see `win-reports.css`.)
 //
 // THE TYPEWRITER IS A REPLAY, NOT A STREAM. The `report` event arrives whole —
 // one event, already complete — and this module replays it sentence by
@@ -81,6 +82,31 @@ export function typeCursor(
   return { sentence: lengths.length, chars: 0, done: true }
 }
 
+/**
+ * x6 — the three facts the 검인 chop reconciles, and the ONE rule that reads
+ * them. Pure, and kept beside `accumulated()` for the same reason: the DOM half
+ * of the chop cannot be proved under vitest's node environment, and the RULE is
+ * the part that was wrong.
+ *
+ * Everything about the defect lives in the conjunction. `sealed` and `typed`
+ * are independent and arrive in either order — the run's `score` rides the same
+ * beat as the day's last report, which at that moment is still writing itself
+ * out — so whichever lands second is the one that stamps.
+ */
+export interface ChopState {
+  /** The sitting has CLOSED: the driver's `score`, its terminal, has landed. */
+  sealed: boolean
+  /** The sitting filed something. A day that files nothing has nothing to certify. */
+  received: boolean
+  /** The replay on the page has run to its end. */
+  typed: boolean
+}
+
+/** Whether the chop is down. The single rule; `stamped()` is the single writer. */
+export function chopDown(state: ChopState): boolean {
+  return state.sealed && state.received && state.typed
+}
+
 /** How many of the active report's sentences are mined — both panes, by id. */
 export function minedCount(model: ReportModel, marks: MarkSets): number {
   return [...model.facts, ...model.report_body].filter((s) => marks.mined.has(s.id)).length
@@ -141,6 +167,16 @@ export interface ReportView {
   flash(id: string): void
   /** The round currently on the page, or `null` before the first report. */
   round(): number | null
+  /**
+   * x6 — the sitting on the page has closed, or it has not. A FACT about the
+   * day, never an instruction to paint: the chop goes down when this and the
+   * replay have both finished, in whichever order they do (`chopDown`).
+   *
+   * The window calls it on every draw and not only when a day ends, because the
+   * archive rail can put a sitting that closed hours ago back on the desk — and
+   * every sitting but the one being played has closed.
+   */
+  seal(on: boolean): void
   /**
    * Re-brands the callsign surface — the signature under 무전 기록, and since x5
    * the only one this window has (the pane's subtitle went with `documentHead`).
@@ -218,6 +254,13 @@ export function createReportView(options: ReportViewOptions): ReportView {
   // 수신-완료 mark on a blank sheet and left it there while the transmission it
   // certifies typed itself out underneath. A chop is a receipt: it goes on when
   // the thing has been received. `stamped()` below is the only writer.
+  //
+  // x6 — and a SITTING's receipt goes on when the SITTING has been received.
+  // x5 stamped at the end of the round that had just typed itself out, which is
+  // the whole document only in a stream that files one report per day. A live
+  // day files seven into this same sheet (`append()` below), so the mark went
+  // down under round 1 and stood there certifying a day while six more
+  // transmissions wrote themselves out beneath it. See `chopDown()` above.
   const stamp = el('span', 'sig-stamp')
   stamp.append(el('b', undefined, STAMP_SEAL), el('em', undefined, STAMP_RECEIVED))
   sig.append(sigLine, stamp)
@@ -226,14 +269,29 @@ export function createReportView(options: ReportViewOptions): ReportView {
   docBody.append(documentHead(BODY_TITLE), body, sig)
 
   /**
-   * The chop is down, or it is not. Driven from exactly one place — the end of
-   * `replay()` — so a frozen-animation paint, a rail re-selection and a live
-   * typewriter all reach it by the same road.
+   * The chop is down, or it is not. The ONLY writer of `.on`, and it is reached
+   * from exactly one place — `restamp()` — so a frozen-animation paint, a rail
+   * re-selection, a live typewriter and an arriving seal all take the same road.
    */
   function stamped(on: boolean): void {
     stamp.classList.toggle('on', on)
   }
-  stamped(false)
+
+  /**
+   * The three facts `chopDown()` weighs, held apart because they are written by
+   * three different things: `seal()` by the window when the day's `score`
+   * lands or when the rail hands back a day that already closed, and the other
+   * two by `replay()`.
+   */
+  let sealed = false
+  let received = false
+  let typed = false
+
+  /** Re-reads the state and lets `stamped()` write the answer. */
+  function restamp(): void {
+    stamped(chopDown({ sealed, received, typed }))
+  }
+  restamp()
 
   const grid = el('div', 'rep-grid')
   grid.append(docFacts, docBody)
@@ -324,14 +382,23 @@ export function createReportView(options: ReportViewOptions): ReportView {
     const lengths = sentences.map((s) => s.text.length)
     // An empty document is not an unstamped one that will get there — it is a
     // sitting that has filed nothing, and there is no transmission to certify.
-    const arrived = lengths.length > 0
+    //
+    // Read off the SITTING (`current`), not off `sentences`: what replays here
+    // is one round, and `append()` replays round 7 of a document that already
+    // carries six. Both callers set `current` to the whole sitting first.
+    received = (current?.report_body.length ?? 0) > 0
+    typed = false
     if (!animate || motionless()) {
       paint({ sentence: lengths.length, chars: 0, done: true }, sentences, nodes)
-      stamped(arrived)
+      // The frozen-animation / reduced-motion sheet is whole on its first paint,
+      // so it is TYPED the moment it is painted — but it is not certified until
+      // the sitting has closed. The seal rule is the same on both paths.
+      typed = true
+      restamp()
       return
     }
     paint(TYPE_START, sentences, nodes)
-    stamped(false)
+    restamp()
     let elapsed = 0
     const unregister = registerAnimation(PUMP, (realMs: number) => {
       elapsed += realMs
@@ -339,7 +406,11 @@ export function createReportView(options: ReportViewOptions): ReportView {
       paint(cursor, sentences, nodes)
       if (!cursor.done) return
       unregister()
-      stamped(arrived)
+      // The replay is over. If the day closed while it was still writing, the
+      // seal is already in hand and this is the beat the chop goes down on; if
+      // it has not closed yet, `seal()` will be.
+      typed = true
+      restamp()
       if (stopReplay === unregister) stopReplay = null
     })
     stopReplay = unregister
@@ -443,6 +514,15 @@ export function createReportView(options: ReportViewOptions): ReportView {
 
     round(): number | null {
       return current === null ? null : current.round
+    },
+
+    seal(on: boolean): void {
+      // The fact alone — whether it SHOWS is `chopDown()`'s to decide. The day
+      // whose `score` has just landed is, in the same beat, a day whose last
+      // report is mid-sentence; slamming the chop down here is exactly the
+      // paint-time mistake x5 removed, one level up.
+      sealed = on
+      restamp()
     },
 
     brand(callsign: string): void {

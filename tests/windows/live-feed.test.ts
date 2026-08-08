@@ -11,8 +11,8 @@
 // `-t 'seven kinds map 1:1'` and `-t 'no digit in npc/symptom nodes'`. Do not
 // rename a describe block without updating `.claude/super/units/u5.md`.
 //
-// SCOPE: unit-scoped. Every source scan below is bound by name to the four
-// files this unit owns (`SOURCES`), never to `src/**`.
+// SCOPE: unit-scoped. Every source scan below is bound by name to the files
+// this unit owns (`SOURCES`), never to `src/**`.
 //
 // C3: the only fixture CONTENT this file names is structural (kinds, clocks,
 // digits) — no synthetic literal is asserted, and the digit scan runs over
@@ -30,15 +30,19 @@ import {
   feedLineModel,
 } from '../../src/client/components/run-feed.ts'
 import type { FeedNode, FeedPart } from '../../src/client/components/run-feed.ts'
-import { WAIT_PHRASE, waitingModel } from '../../src/client/components/waiting-marker.ts'
 import { FALLBACK_CLASS, FALLBACK_LABEL } from '../../src/client/components/fallback-notice.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
-/** The four files this unit owns — every source scan is bound to this list. */
+/**
+ * The files this unit owns — every source scan is bound to this list.
+ *
+ * x6 — three, not four. `components/waiting-marker.ts` was deleted with the
+ * waiting marker itself (민서, 08-09); see `[u5#c1] (l)` below for the contract
+ * that replaced everything it carried.
+ */
 const SOURCES = [
   'src/client/components/run-feed.ts',
-  'src/client/components/waiting-marker.ts',
   'src/client/components/fallback-notice.ts',
   'src/client/windows/live-feed.ts',
 ] as const
@@ -79,7 +83,8 @@ const KINDS: FeedKind[] = ['event', 'radio', 'npc', 'symptom', 'wait', 'fallback
 
 /**
  * Reference marks — `docs/design/phase2-ui/app.js:405`, ported verbatim.
- * `wait` and `mark` carry no mark by design (the dots and the rule carry them).
+ * `wait` and `mark` carry no mark by design (the rule carries `mark`'s; `wait`'s
+ * was the breathing dots, and x6 removed the marker they belonged to).
  */
 const REFERENCE_MARKS: Record<FeedKind, string> = {
   event: '▸',
@@ -188,11 +193,20 @@ describe('[u5#c1] seven kinds map 1:1', () => {
     expect(nodeText(node)).toContain(line.text)
   })
 
-  it('(l) wait renders breathing dots — never a spinner, never a percentage', () => {
-    const line: FeedLine = { kind: 'wait', clock: '09:25', text: WAIT_PHRASE.judgment }
+  // x6 — this used to read 'wait renders breathing dots — never a spinner,
+  // never a percentage'. There is no marker to render any more (민서, 08-09), so
+  // what is left to pin is the half that still matters: the projection stays
+  // TOTAL over the frozen seam's every kind. `wait` is still a `FeedKind`
+  // (`shared/view-driver.ts`, held by `seam-shapes.test.ts`), so a `wait` line
+  // handed to the model must come back as an ordinary envelope rather than
+  // throwing — the dropping happens downstream, in `createRunFeed`, and (o)
+  // below is where that is pinned.
+  it('(l) wait survives the model as a plain line — the projection stays total', () => {
+    const line: FeedLine = { kind: 'wait', clock: '09:25', text: '본문' }
     const node = model(line)
-    expect(node.parts.some((p: FeedPart) => p.p === 'dots')).toBe(true)
-    expect(nodeText(node).startsWith('……')).toBe(true)
+    expect(node.kind).toBe('wait')
+    expect(nodeText(node)).toBe('본문')
+    expect(node.parts.some((p: FeedPart) => p.p === 'dots')).toBe(false)
     expect(nodeText(node)).not.toMatch(/%/)
   })
 
@@ -202,9 +216,44 @@ describe('[u5#c1] seven kinds map 1:1', () => {
     }
   })
 
-  it('(n) u1 skin selectors exist for all seven kinds — the port has somewhere to land', () => {
-    const css = read('src/client/styles/win-live-feed.css')
-    for (const kind of KINDS) expect(css).toContain(`.fl-${kind}`)
+  // x6 — SIX skins, not seven. The seventh was `.fl-wait`, and it went with the
+  // marker: the sheet is read with its comments blanked so the header's own
+  // account of the removal cannot answer this scan for it.
+  it('(n) u1 skin selectors exist for all six DRAWN kinds — the port has somewhere to land', () => {
+    const css = code('src/client/styles/win-live-feed.css')
+    for (const kind of KINDS.filter((k) => k !== 'wait')) expect(css).toContain(`.fl-${kind}`)
+    expect(css, 'the wait skin came back — nothing may carry `.fl-wait`').not.toContain('.fl-wait')
+  })
+
+  // x6 — the contract that replaced the whole waiting-marker mechanism, and the
+  // one thing that must not rot: a wait DRAWS NOTHING. Both doors are pinned,
+  // because the seam has two — a `wait` FEED LINE off the stream, and a bare
+  // `waiting` event that arrives without one. The marker used to answer both.
+  //
+  // Asserted at the source, not by counting `<li>`s: this suite is
+  // `environment: 'node'` and C2 forbids adding jsdom, so the rendered count
+  // belongs to `e2e/run-loop.spec.ts` (`latency`), which reads `#feedList` on a
+  // real desk and holds it at zero. What is provable here is that neither door
+  // reaches `append`.
+  it('(o) neither door draws a line — a `wait` line is dropped, a `waiting` event lands nothing', () => {
+    const source = code('src/client/components/run-feed.ts')
+
+    // Door 1: `appendLine` returns before it can build a node.
+    expect(source, 'the wait line no longer short-circuits before `append`').toMatch(
+      /if\s*\(\s*line\.kind\s*===\s*'wait'\s*\)\s*return/,
+    )
+
+    // Door 2: the `waiting` case is inert — it may not append, and it may not
+    // reach for a marker builder that no longer exists.
+    const waiting = /case 'waiting':([\s\S]*?)(?=\n\s{6}case |\n\s{6}default)/.exec(source)
+    expect(waiting, "the `waiting` case vanished from `apply` — it must stay, and stay empty").toBeTruthy()
+    expect((waiting?.[1] ?? '').trim()).toBe('break')
+
+    // And nothing in the unit reaches for the deleted module at all.
+    for (const file of SOURCES) {
+      expect(`${file}:${/waiting-marker|waitingModel/.test(code(file))}`).toBe(`${file}:false`)
+    }
+    expect(read('src/client/components/waiting-marker.ts')).toBe('')
   })
 })
 
@@ -250,13 +299,11 @@ describe('[u5#c3] no digit in npc/symptom nodes', () => {
     expect(nodeText(node)).toContain('(변화 없음)')
   })
 
-  it('(f) the waiting marker renders no digit for any `for` (latency is not a number)', () => {
-    for (const forWhat of ['judgment', 'narration', 'report'] as const) {
-      const node = (waitingModel as unknown as (f: string) => FeedNode)(forWhat)
-      expect(DIGIT.test(nodeText(node))).toBe(false)
-      expect(nodeText(node)).toContain(WAIT_PHRASE[forWhat])
-    }
-  })
+  // x6 — (f) was 'the waiting marker renders no digit for any `for` (latency is
+  // not a number)'. It measured the marker's three phrasings; there is no
+  // marker. The claim it defended survives without it and is stronger for it:
+  // latency is not a number because the desk shows NOTHING for a wait, so there
+  // is no surface left that could ever count one. `(o)` in `[u5#c1]` holds that.
 
   it('(g) the fallback error code never reaches a text part — it is data', () => {
     const line: FeedLine = { kind: 'fallback', clock: '17:33', text: '회신 불량.' }
@@ -266,30 +313,25 @@ describe('[u5#c3] no digit in npc/symptom nodes', () => {
   })
 })
 
-/* ══ [u5#c4/#c5] the two component state tables ═══════════════════════════ */
+/* ══ [u5#c5] the component state table ════════════════════════════════════
 
-describe('[u5#c4] waiting phrasing is picked by `waiting.for`', () => {
-  it('(a) WAIT_PHRASE has exactly the three seam `for` values', () => {
-    expect(Object.keys(WAIT_PHRASE).sort()).toEqual(['judgment', 'narration', 'report'])
-  })
+   [u5#c4] — 'waiting phrasing is picked by `waiting.for`' — is GONE, x6. It
+   pinned three diegetic phrasings (`무전 회신 대기 중` · `현장 상황 수신 대기 중`
+   · `보고서 회신 대기 중`), the `……` lead and the breathing dots, all of which
+   the marker no longer has because the marker no longer exists (민서, 08-09).
 
-  it('(b) judgment is the design README phrasing, verbatim (README 74–76)', () => {
-    expect(WAIT_PHRASE.judgment).toBe('무전 회신 대기 중')
-  })
+   What holds in its place: `waiting.for` picks NOTHING, because the client draws
+   and says nothing for a wait at all. `[u5#c1] (o)` is the guard, and it is a
+   stricter one — c4 could only ever check that the three phrasings differed,
+   while (o) checks that neither door onto the paper is open.
 
-  it('(c) the three phrasings are distinct, so the `for` is observable', () => {
-    expect(new Set(Object.values(WAIT_PHRASE)).size).toBe(3)
-  })
-
-  it('(d) the marker is diegetic — leading `……`, dots, and no spinner vocabulary', () => {
-    const node = (waitingModel as unknown as (f: string) => FeedNode)('judgment')
-    expect(node.classes).toContain('fl-wait')
-    expect(nodeText(node).startsWith('……')).toBe(true)
-    expect(node.parts.some((p: FeedPart) => p.p === 'dots')).toBe(true)
-    const source = code('src/client/components/waiting-marker.ts')
-    expect(source).not.toMatch(/spinner|progressbar|<progress/i)
-  })
-})
+   The `for` field itself is untouched on the frozen seam (`shared/view-driver.ts`,
+   `tests/driver/seam-shapes.test.ts`), and `src/driver/live-driver.ts` still
+   emits it; the ADAPTER's queue is built around the bracket. The originals that
+   asked for the phrasings — `docs/design/phase2-ui/README.md`'s latency bullet
+   and spec-client §3 inv 5, whose component table still lists a `WaitingMarker`
+   — now describe a component with no implementation.
+   ═══════════════════════════════════════════════════════════════════════ */
 
 describe('[u5#c5] fallback class comes from the event, never from the text', () => {
   it('(a) the three engine §5 calls map to the three classes', () => {
@@ -405,7 +447,7 @@ describe('[u5#c7] the feed attaches nothing a player can touch', () => {
 /* ══ [u5#c9] renders only — never derives or reformats sentence text ══════ */
 
 describe('[u5#c9] the window renders, never authors', () => {
-  it('(a) all four unit files exist', () => {
+  it('(a) every unit file exists', () => {
     for (const file of SOURCES) expect(`${file}:${read(file).length > 0}`).toBe(`${file}:true`)
   })
 
@@ -435,11 +477,17 @@ describe('[u5#c9] the window renders, never authors', () => {
     expect(hangul.filter((s) => !ALLOWED.has(s))).toEqual([])
   })
 
-  it('(d) waiting-marker.ts authors exactly the three WAIT_PHRASE values', () => {
-    const hangul = new Set(
-      literals(code('src/client/components/waiting-marker.ts')).filter((s) => HANGUL.test(s)),
-    )
-    expect([...hangul].sort()).toEqual([...Object.values(WAIT_PHRASE)].sort())
+  // x6 — (d) was 'waiting-marker.ts authors exactly the three WAIT_PHRASE
+  // values'. The file it scanned is deleted, and the contract that replaced it
+  // is that the unit authors NO wait copy at all: `(c)` above already fixes
+  // run-feed.ts's chrome literals to a closed set that no longer contains one,
+  // and the scan below says the same thing across every file the unit owns, so
+  // a phrasing cannot creep back in under a different name.
+  it('(d) no unit file authors a wait phrasing any more — the marker left no copy behind', () => {
+    for (const file of SOURCES) {
+      const said = literals(code(file)).filter((s) => /대기 중|회신 도착/.test(s))
+      expect(`${file}: ${said.join(' · ')}`).toBe(`${file}: `)
+    }
   })
 
   it('(e) fallback-notice.ts authors at most the three per-class labels', () => {
