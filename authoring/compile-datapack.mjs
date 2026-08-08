@@ -532,6 +532,13 @@ const gates = [];
       place_id,
       availability,
       scene: prose(b.lines.slice(0, fenceOpen)),
+      // 창(excerpt) — 이 갈림길에서 요원이 읽는 타임라인 행 id 목록. 카드에
+      // 없으면 `edge_predicates`처럼 `[]`로 채우지 않고 키 자체를 생략한다:
+      // 스키마가 optional + minItems 1이라 빈 배열은 "선언했는데 비어 있음"이
+      // 되어 린트 ERROR로 드러나야 하고, 선언하지 않은 갈림길은 부재가 끝까지
+      // 부재여야 엔진이 기존 `windowLines` fallback을 쓴다
+      // (planning/research/gate-excerpt-design.md §2·§4).
+      ...(card.excerpt ? { excerpt: card.excerpt } : {}),
       branch_note: prose(b.lines.slice(fenceClose + 1)),
       standard_form: card.standard_form,
       question: card.question,

@@ -206,6 +206,75 @@ for (const u of pack.score.units ?? []) {
   for (const id of u.attributed_gates) if (!gateIds.has(id)) errors.push(`score ${u.id}: attributed to unknown gate "${id}"`);
 }
 
+// ---------- E9/E10/W5 — a declared 창 shows rows that exist, are past, and are not the gate's own key ----------
+// A gate may declare `excerpt` — the timeline rows the agent reads at that
+// 갈림길 (planning/research/gate-excerpt-design.md §2). Absent means absent: the
+// engine falls back to the old `windowLines` window, and every check here is
+// simply silent.
+//
+// E9/E10 are ERRORs for the same reason the referential-integrity block above
+// is: the runtime skips an unknown id in silence (설계 기록 §4, `predicates.ts`'s
+// "nothing here throws" precedent), so a typo costs one line of the agent's
+// entire world with nothing to show for it, and authoring time is the only
+// place it is visible. A row at or after the gate's own clock is the same class
+// of defect — the window would hand the agent something that has not happened.
+//
+// W5 is the rule this whole field exists to make machine-checkable: 갈림길이
+// 자기 열쇠를 공짜로 주면 안 된다 (설계 기록 §3 — PR #214's 규칙 6, until now a
+// human read every time). If the window carries the row a key_example was mined
+// from, the answer is sitting inside the question.
+//
+// WARN, and deliberately so — the same tier and the same reason as W3/W4.
+// `mined_from` is free prose, the clock is pulled out of it by regex, and EVERY
+// row at that clock counts (the row's sub-minute `+` is ignored for the
+// comparison). Over-triggering is the design: a false positive costs one
+// rewording, a miss costs a gate that answers itself.
+//
+// It is also only PARTIAL, and that is a known hole (설계 기록 §6 리스크 2): a
+// `mined_from` with no clock in it contributes nothing at all — 전구간정상's G1
+// k1 second example ("주관 보고서 · 요원이 제연반 뒤판을 열게 한 런") is exactly
+// that shape. 규칙 6 is half machine-checked, not checked.
+
+// Minutes since midnight. A deliberate duplicate of `src/engine/beat/clock.ts`:
+// four-roots (CLAUDE.md) forbids `authoring/` importing from `src/`, and five
+// lines of arithmetic is the cheaper of the two costs. The trailing `+` the
+// schema pattern allows is a sub-minute bump AFTER the stamp — 21:04+ is after
+// 21:04 and before 21:05 — so it scores half a minute.
+const minutesOf = (stamp) => {
+  const m = /^([01][0-9]|2[0-3]):([0-5][0-9])(\+?)$/.exec(stamp ?? '');
+  return m ? Number(m[1]) * 60 + Number(m[2]) + (m[3] ? 0.5 : 0) : null;
+};
+
+const rowTime = new Map((pack.timeline.events ?? []).map((e) => [e.id, e.time]));
+for (const g of pack.gates.gates ?? []) {
+  if (!g.excerpt) continue;
+  const gateAt = minutesOf(g.clock);
+  // stamp → the condition whose example names it. First writer wins; the
+  // message only needs to point at one.
+  const minedAt = new Map();
+  for (const ex of g.key_examples ?? []) {
+    for (const [stamp] of String(ex.mined_from ?? '').matchAll(/([01][0-9]|2[0-3]):[0-5][0-9]/g)) {
+      if (!minedAt.has(stamp)) minedAt.set(stamp, ex.for);
+    }
+  }
+  for (const id of g.excerpt) {
+    if (!rowTime.has(id)) {
+      errors.push(`E9 ${g.gate} excerpt: "${id}" names no row in timeline.events — the runtime drops it in silence and the 창 is one line short`);
+      continue;
+    }
+    const at = minutesOf(rowTime.get(id));
+    // `clock: null` is a gate off the 무개입 line — it has no stamp to be before,
+    // so the ordering question does not arise and only E9/W5 apply.
+    if (gateAt !== null && at !== null && at >= gateAt) {
+      errors.push(`E10 ${g.gate} excerpt: ${id} is at ${rowTime.get(id)}, not before the gate's ${g.clock} — the 창 would show the agent a row that has not happened yet`);
+    }
+    const cond = minedAt.get(String(rowTime.get(id)).slice(0, 5));
+    if (cond !== undefined) {
+      warns.push(`W5 ${g.gate} excerpt: ${id} (${rowTime.get(id)}) sits at a clock this gate's own key_example for ${cond} is mined from — the gate hands out its own key for free (설계 기록 §3)`);
+    }
+  }
+}
+
 // ---------- attributability (WARN) — guide §5: 원인 없는 결과는 버그 ----------
 
 const attributed = new Set((pack.score.units ?? []).flatMap((u) => u.attributed_gates));
