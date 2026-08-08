@@ -86,6 +86,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
         feed.flush()
       },
       flush: () => feed.flush(),
+      following: () => feed.following(),
       rate: (to: number) => driver.clock.setRate(asRate(to)),
     }
   }
