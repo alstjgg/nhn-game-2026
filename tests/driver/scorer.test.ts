@@ -239,14 +239,30 @@ describe('a unit that is one person counts as one', () => {
   })
 
   it('(o) the untouched day is the crowd PLUS the two who are named', () => {
-    // 137 · 오세라 사망 · 차우진 사망. The pack used to call this day 137 — the
-    // crowd axis standing in for the headline, which is what let the rescue day
-    // be called "the 0 run". Both the prose and the tally say 139 now, and this
-    // holds them together: a summary that drifts back to the crowd number fails
-    // here rather than on the desk.
+    // 136 · 오세라 사망 · 차우진 사망 = 138. Two corrections meet in this
+    // number. The pack used to call this day 137 — the crowd axis standing in
+    // for the headline, which is what let the rescue day be called "the 0 run".
+    // And 차우진 rides inside u1's own 341, so the ladder now counts the OTHER
+    // 340 (137 → 136 on every branch where he does not get out); scored the old
+    // way he would be counted once by the crowd and once by name.
     const nothing: PredicateState = {}
-    expect(totalOf(scoreUnits(SHIPPED, nothing))).toBe(137 + 1 + 1)
+    expect(totalOf(scoreUnits(SHIPPED, nothing))).toBe(136 + 1 + 1)
     const summary = (SHIPPED as unknown as { baseline_summary: string }).baseline_summary
-    expect(summary).toContain('총 사망자 139명')
+    expect(summary).toContain('총 사망자 138명')
+  })
+
+  it('(p) the crowd axis never counts 차우진 — his branch is his own', () => {
+    // The double count this closes, stated as a property rather than a number:
+    // a run where he walks out and a run where he dies differ in the HEADLINE
+    // by exactly one, and the crowd value they share is identical. It is shared
+    // because u1 reads neither `pallet_named`'s survival nor `indemnified` —
+    // it counts the other 340 either way.
+    const dies: PredicateState = { vent_panel_opened: true }
+    const lives: PredicateState = { vent_panel_opened: true, indemnified: true }
+    const crowd = (s: PredicateState): unknown =>
+      new Map(scoreUnits(SHIPPED, s).map((u) => [u.id, u.value])).get('u1')
+
+    expect(crowd(dies)).toBe(crowd(lives))
+    expect(totalOf(scoreUnits(SHIPPED, dies)) - totalOf(scoreUnits(SHIPPED, lives))).toBe(1)
   })
 })
