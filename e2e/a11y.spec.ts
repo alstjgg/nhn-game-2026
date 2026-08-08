@@ -410,6 +410,24 @@ test.describe('a11y — keyboard reach', () => {
       .evaluateAll((nodes) => nodes.filter((n) => n.getAttribute('aria-hidden') === 'true').length)
     expect(hidden, 'the resize grip is hidden from assistive tech').toBe(0)
 
+    // g13-3 — the AGENT FILE is a fixed sheet, and BOTH halves are pinned here
+    // because only both together keep 2.1.1: a window that resized by pointer
+    // and not by key would be the very violation this test was added for. So
+    // the sheet must have no grip to drag, no Shift promise in the name its bar
+    // announces, and no resize when the key is actually pressed.
+    await expect(page.locator('#w-file .win-grip')).toHaveCount(0)
+    expect(
+      (await page.locator('#w-file .win-bar').getAttribute('aria-label')) ?? '',
+      'the fixed sheet advertises a resize path it does not have',
+    ).not.toMatch(/Shift/)
+    const sheetH = async (): Promise<number> =>
+      page.locator('#w-file').evaluate((n) => Math.round(n.getBoundingClientRect().height))
+    const sheetBefore = await sheetH()
+    await page.locator('#w-file .win-bar').focus()
+    await page.keyboard.press('Shift+ArrowDown')
+    await page.keyboard.press('Shift+ArrowDown')
+    expect(await sheetH(), 'Shift+ArrowDown resized the fixed sheet').toBe(sheetBefore)
+
     const bar = page.locator('#w-rep .win-bar')
     expect(
       (await bar.getAttribute('aria-label')) ?? '',
