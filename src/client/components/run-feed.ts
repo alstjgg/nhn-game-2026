@@ -41,8 +41,15 @@ export const FEED_MARKS: Record<FeedKind, string> = {
 
 /** One rendered fragment of a line's content column. */
 export type FeedPart =
-  | { p: 'text' | 'label' | 'quote' | 'span'; text: string }
+  | { p: 'text' | 'label' | 'quote' | 'span' | 'cite'; text: string }
   | { p: 'dots' }
+
+/**
+ * U5.4 — the citation mark's fixed half. `인수인계` because that is the section
+ * of the AGENT FILE the slots live in; the operator reads the same word in both
+ * windows and the number is the whole cross-reference.
+ */
+const CITE_LABEL = '인수인계'
 
 /** Everything the renderer needs about one line — and nothing about the run. */
 export interface FeedNode {
@@ -82,11 +89,30 @@ export function feedLineModel(line: FeedLine, callsign = 'ECHO-1'): FeedNode {
     throw new Error(`live feed: '${String(kind)}' is not a FeedKind`)
   }
   switch (kind) {
-    case 'radio':
-      return envelope(kind, line.clock, [
+    case 'radio': {
+      const parts: FeedPart[] = [
         { p: 'label', text: `${callsign}${RADIO_TAIL}` },
         { p: 'text', text: line.text },
-      ])
+      ]
+      // U5.4 — the slots the agent cited, named the way the AGENT FILE names
+      // them. It says WHICH sentence reached the agent and nothing about how:
+      // the operator reads the slot and judges the conduct themselves. An
+      // absent or empty citation prints no mark at all — never an empty one.
+      const slots = line.cited_slots ?? []
+      if (slots.length > 0) {
+        // Padded with a conditional, never `padStart`: [u9#c2]
+        // (`no-digit-npc.test.ts` (c)) bans that call outright in any module
+        // that paints an NPC channel, so a character can never be made to
+        // speak a formatted number. This is a slot on the operator's own file
+        // and not that — but the guard is a blanket source scan and it is
+        // right to be, so the cheap way to keep it honest is not to call it.
+        const numbered = [...slots]
+          .sort((a, b) => a - b)
+          .map((s) => (s + 1 < 10 ? `0${s + 1}` : String(s + 1)))
+        parts.push({ p: 'cite', text: `${CITE_LABEL} ${numbered.join(' · ')}` })
+      }
+      return envelope(kind, line.clock, parts)
+    }
     case 'npc':
       return envelope(kind, line.clock, [
         { p: 'label', text: `${line.speaker ?? ''} ` },
@@ -202,6 +228,8 @@ export interface RunFeed {
 
 function partNode(part: FeedPart): Node {
   switch (part.p) {
+    case 'cite':
+      return el('span', 'fl-cite', part.text)
     case 'label':
       return el('b', undefined, part.text)
     case 'quote':

@@ -86,7 +86,7 @@ const GUTTER = 14
 /** Air between two columns. */
 const GAP = 16
 /** REPORTS' share of the desk width. The right column is the remainder. */
-const COL_LEFT_RATIO = 2 / 3
+const COL_LEFT_RATIO = 0.5
 /**
  * LIVE FEED's share of the right column's height; AGENT FILE takes the rest.
  *
@@ -111,7 +111,7 @@ const COL_LEFT_RATIO = 2 / 3
  * is not a ticker. .28 restores the three lines the desk was designed to show
  * and leaves the file the same scroll it already had.
  */
-const ROW_TOP_RATIO = 0.28
+const ROW_TOP_RATIO = 0.3
 const MIN_W = 240
 const MIN_H = 120
 

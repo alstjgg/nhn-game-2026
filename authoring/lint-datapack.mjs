@@ -474,12 +474,240 @@ for (const g of pack.gates.gates ?? []) {
     }
   }
 }
+
+/* ── W-B1 — a flag set and never read (the mirror of E-P2) ───────────────── */
+
+// E-P2 asks whether a predicate names a flag nothing sets. This asks the other
+// direction: something SETS a flag no predicate names. What that costs is a
+// stance the player can pick that no later line branches on — the bucket-level
+// twin of "a gate that changes no tally is decoration" above, one level down
+// from the gate to the bucket.
+//
+// Every reader is enumerated here, not just score: a flag can legitimately be
+// read by an exposure condition, an edge predicate, a gate's availability or a
+// place's depth. Only predicates that PARSE count as readers, which is the same
+// rule E-A1 and the F4 worklist use — un-promoted prose is not yet a read.
+//
+// WARN, not ERROR, and the message splits the two cases. A bucket earns its
+// slot on meters and symptoms too, so a flag that drives only a symptom
+// sentence is doing real work on the desk even though nothing branches on it.
+// A flag with neither is unobservable, and that is the one that is almost
+// always a defect.
+const readNames = new Set();
+const readFrom = (predicate) => {
+  if (typeof predicate !== 'string' || !predicate.trim()) return;
+  if (problems(predicate).length) return;
+  for (const name of identifiers(predicate)) readNames.add(name);
+};
+for (const u of pack.score.units ?? []) for (const p of u.predicates ?? []) readFrom(p);
+for (const e of pack.timeline.events ?? []) readFrom(e.exposure?.extra_condition);
+for (const g of pack.gates.gates ?? []) {
+  readFrom(g.availability);
+  for (const p of g.edge_predicates ?? []) readFrom(p);
+}
+for (const p of pack.places.places ?? []) for (const y of p.yields ?? []) readFrom(y.depth_note);
+
+const symptomFlags = new Set(Object.keys(pack.symptoms?.flags ?? {}));
+for (const g of pack.gates.gates ?? []) {
+  for (const b of g.buckets ?? []) {
+    for (const f of Object.keys(b.flags ?? {})) {
+      if (readNames.has(f)) continue;
+      warns.push(
+        symptomFlags.has(f)
+          ? `${g.gate} bucket "${b.id}": sets "${f}", which no predicate reads — it has a symptom line, so the desk shows it, but nothing later branches on it`
+          : `${g.gate} bucket "${b.id}": sets "${f}", which no predicate reads and no symptom renders — setting it is unobservable`,
+      ); // W-B1
+    }
+  }
+}
+
+/* ── E-P5 — the first run is the worst run (guide §5, manual §5) ─────────── */
+
+// Sibling of E-P3, one step in from it. E-P3 catches a flag the fixed timeline
+// always sets; this catches a flag set by DOING NOTHING. An empty handover
+// takes `default_stance` at every gate, so whatever those buckets set is on in
+// run 1 — and a score rule reading one of them matches before the player has
+// touched the game. The unit then never resolves to its `=>` fallback on the
+// no-intervention path, which is precisely the 무개입 기준 the draft printed.
+// The symptom is quiet and expensive: the baseline column looks authored and
+// correct, and no run ever scores it.
+//
+// Only flags are checked. Meter deltas on a default bucket are fine — symptoms
+// are the surface of state, not score — and stay fine exactly because score
+// conditions read intervention flags, never scalars.
+const defaultStanceFlags = new Map();
+for (const g of pack.gates.gates ?? []) {
+  const bucket = (g.buckets ?? []).find((b) => (b.stances ?? []).includes(g.default_stance));
+  for (const f of Object.keys(bucket?.flags ?? {})) defaultStanceFlags.set(f, g.gate);
+}
+for (const u of pack.score.units ?? []) {
+  u.predicates.forEach((predicate, i) => {
+    for (const name of identifiers(predicate)) {
+      const gate = defaultStanceFlags.get(name);
+      if (gate === undefined) continue;
+      errors.push(
+        `score ${u.id} (${u.label}) predicate[${i}]: "${name}" is set by ${gate}'s default stance, so an empty handover sets it — this rule matches on run 1 and the unit can never reach its 무개입 baseline. Move the flag off the default stance, or read a different one`,
+      );
+    }
+  });
+}
+
+/* ── E-K1/E-K2 — the lock space (manual §3-5, 집필 스킬 §4-7) ─────────────── */
+
+// A key is 축 × 지목 × 인증 종, and the probe measured that a right-axis
+// sentence pointed at the wrong thing scores zero. So two axes are NOT two
+// locks — the 지목 is what keeps them apart, and a repeated triple is one lock
+// wearing two gates' clothes: the same mined sentence opens both, and the
+// second gate stops being a question. 우는다리 cuts nine conditions out of two
+// axes with no repeat, which is the standard this encodes.
+const tripleSeen = new Map();
+for (const g of pack.gates.gates ?? []) {
+  for (const k of g.key_conditions ?? []) {
+    const triple = `${k.axis} × ${k.referent} × ${k.species}`;
+    const prior = tripleSeen.get(triple);
+    if (prior) {
+      errors.push(`${g.gate} ${k.id}: key condition ${triple} repeats ${prior} — one lock on two gates. Vary the 지목`); // E-K1
+    } else tripleSeen.set(triple, `${g.gate} ${k.id}`);
+  }
+}
+
+// E-K2 — clause coverage. A clause no gate targets is a lock with no door; a
+// clause EVERY gate targets means one learned axis opens the whole scenario in
+// a single run. Only meaningful with two clauses — a one-clause 기질
+// necessarily owns every gate, and the schema permits it.
+const clauseIds = (pack.temperament.clauses ?? []).map((c) => c.id);
+if (clauseIds.length > 1) {
+  const gateCount = (pack.gates.gates ?? []).length;
+  const byClause = new Map(clauseIds.map((id) => [id, new Set()]));
+  for (const g of pack.gates.gates ?? []) {
+    for (const k of g.key_conditions ?? []) {
+      // `targets_clause` is authored prose ("기질 조건절 1 (두려움 축)") — the
+      // ordinal in it is the link, so read that rather than demanding an id.
+      const n = /(\d+)/.exec(k.targets_clause ?? '');
+      const id = n ? `cl${n[1]}` : null;
+      if (id !== null && byClause.has(id)) byClause.get(id).add(g.gate);
+    }
+  }
+  for (const [id, gates] of byClause) {
+    if (gates.size === 0) warns.push(`기질 ${id}: no gate targets this clause — a lock with no door`);
+    else if (gateCount > 1 && gates.size === gateCount) {
+      warns.push(`기질 ${id}: every gate targets this clause — one learned axis opens the whole scenario`);
+    }
+  }
+}
+
+/* ── E-V1 — 갈림길 구조가 플레이어에게 닿는 면에 (가이드 §6-9) ───────────── */
+
+// spec-client §3 invariant 6. `tests/scaffold/no-gate-vocab.test.ts` is the
+// authoritative guard: it scans every string in every published file through
+// the build plugin's own `publishedContentOf`, so it cannot pass on bytes the
+// deploy does not ship. This is NOT a second copy of that — it is the
+// WRITER-FACING subset, the authored slots a draft can put prose into that the
+// browser then downloads, checked here so the factory's compile→lint gate
+// catches a leak in round 1 instead of at `npm test` long afterwards.
+//
+// Failing safe is the point: if a strip is added later this may over-report,
+// which costs one rewording. It can never under-report into a hole, because
+// the test above is what actually holds the line.
+// Two tiers, and the split is not arbitrary.
+//
+// GATE_* is invariant 6 and nothing in the repo violates it, so it is an ERROR.
+//
+// SYSTEM_VOCAB is the wider rule the client layer has always had for UI copy
+// (`report-archive.ts`'s `REFUSED`, plan-playtest §"label guard") and the
+// scenario data layer never got: `런`, `에이전트`, `stance` and friends are
+// words for the workshop, and a reconstruction of a real afternoon does not
+// describe itself in them. It is a WARN only because 우는다리 currently trips it
+// in five slots and it is the shipped pack — this becomes an ERROR the moment
+// those are repaired, and the repair is the whole of the work.
+//
+// `런` needs an eojeol boundary or 그런/이런 match on the tail syllable; the
+// trailing exclusion keeps 런던/런닝 out. Ordinary Korean words that are also
+// design terms — 기질, 눈금, 주입, 블록 — are in the WARN tier precisely
+// because they can be diegetic, and a false positive costs one rewording.
+// 열쇠 is deliberately absent: in this pack it is a physical key on a ring.
+const GATE_VOCAB = /갈림길|게이트|\bgate\b/i;
+const GATE_REF = /\bG[1-9]\d*\b/;
+const SYSTEM_VOCAB = /(?<![가-힣])런(?![닝던])|에이전트|플레이어|조건절|기질|눈금|주입|블록|\bstance\b/i;
+const playerFacing = [];
+const say = (where, value) => {
+  if (typeof value === 'string' && value.trim()) playerFacing.push([where, value]);
+};
+say('meta.title', pack.meta.title);
+say('meta.logline', pack.meta.logline);
 for (const e of pack.timeline.events ?? []) {
-  if (e.exposure.extra_condition) flags.push(`timeline ${e.id}: exposure has free-text extra_condition — promote to a predicate`);
+  say(`timeline ${e.id} 사건`, e.text);
+  say(`timeline ${e.id} 런 깊이`, e.exposure?.extra_condition);
+}
+say('기질 기본 성향', pack.temperament.default_disposition);
+for (const c of pack.temperament.clauses ?? []) {
+  say(`기질 ${c.id} 조건절`, c.condition);
+  say(`기질 ${c.id} 패배 조건`, c.defeat_condition);
+  // The axis NAME and its vocabulary ship too — they are what the composer
+  // renders into Call 1, so an axis called `런` would reach the player.
+  say(`기질 ${c.id} 축`, c.axis);
+  for (const v of c.axis_vocabulary ?? []) say(`기질 ${c.id} 축 어휘`, v);
+}
+for (const c of pack.characters.characters ?? []) {
+  say(`${c.id} ${c.name} 이해관계`, c.interest);
+  for (const k of [...(c.knows ?? []), ...(c.doesnt_know ?? [])]) say(`${c.id} ${c.name} 아는 것`, k);
+  // `strands` is stripped at publish; `meters[].label` is not.
+  for (const m of c.meters ?? []) say(`${c.id} ${c.name} 눈금 라벨`, m.label);
+}
+for (const u of pack.score.units ?? []) say(`score ${u.id} 단위`, u.label);
+for (const g of pack.gates.gates ?? []) {
+  say(`${g.gate} 제목`, g.title);
+  say(`${g.gate} 장면`, g.scene);
+  say(`${g.gate} question`, g.question);
+  for (const s of g.stances ?? []) say(`${g.gate} stance ${s.id}`, s.desc);
+  for (const [i, f] of (g.false_leads ?? []).entries()) say(`${g.gate} false_lead[${i}]`, f);
+}
+for (const [variable, dirs] of Object.entries(pack.symptoms ?? {})) {
+  if (variable === 'flags') {
+    for (const [id, kinds] of Object.entries(dirs ?? {})) {
+      for (const kind of ['set', 'unset']) say(`symptoms flags.${id}.${kind}`, kinds?.[kind]);
+    }
+  } else {
+    for (const dir of ['up', 'down']) {
+      for (const e of dirs?.[dir] ?? []) say(`symptoms ${variable}.${dir}`, e.text);
+    }
+  }
+}
+for (const [where, value] of playerFacing) {
+  const gate = GATE_VOCAB.exec(value) ?? GATE_REF.exec(value);
+  if (gate) {
+    errors.push(`E-V1 ${where}: gate structure on a player surface — "${gate[0]}" in "${value.slice(0, 32)}…". Say what happened in the world instead (가이드 §6-9)`);
+  }
+  const system = SYSTEM_VOCAB.exec(value);
+  if (system) {
+    warns.push(`W-V2 ${where}: game-system vocabulary on a player surface — "${system[0]}" in "${value.slice(0, 32)}…". The reconstruction does not know it is being replayed (가이드 §6-9)`);
+  }
+}
+
+// `extra_condition` is a machine-read condition that SHIPS VERBATIM, so prose
+// left here is not merely un-promoted — it is authored Korean on a player
+// surface, and the only phrasings that express a gate outcome in Korean use the
+// word 런. That is why promotion is mandatory rather than aspirational: a flag
+// identifier (`roof_seen`) has no prose in it to leak. Note the asymmetry that
+// hid this — `시계 N까지 간 런에만 보임` is parsed into `visible_from` and never
+// ships, so the same word is harmless in one half of the cell and a leak in the
+// other half.
+// Flag only what does NOT parse. This asked hardening to "promote it to a
+// predicate" and then kept firing on the promoted value, because it tested for
+// non-null rather than for unreadable — so the worklist item could never be
+// closed and 집필 스킬 §7-4's exit condition was unreachable by construction.
+// `problems()` is the same reader the engine uses, so "parses" here means
+// exactly what it will mean at run time.
+for (const e of pack.timeline.events ?? []) {
+  if (e.exposure.extra_condition && problems(e.exposure.extra_condition).length > 0) {
+    flags.push(`timeline ${e.id}: exposure condition does not parse ("${e.exposure.extra_condition}") — it ships verbatim to the player, so hardening must promote it to a predicate`);
+  }
 }
 for (const p of pack.places.places ?? []) {
   for (const [i, y] of (p.yields ?? []).entries()) {
-    if (!y.clock && y.depth_note) flags.push(`${p.id} ${p.name} yield[${i}]: depth is free text ("${y.depth_note}") — promote to a predicate`);
+    if (!y.clock && y.depth_note && problems(y.depth_note).length > 0) {
+      flags.push(`${p.id} ${p.name} yield[${i}]: depth does not parse ("${y.depth_note}") — promote to a predicate`);
+    }
   }
 }
 if (!Object.keys(symptoms).length) flags.push('symptoms.json empty — authored during hardening; until then state changes have no path to the screen');

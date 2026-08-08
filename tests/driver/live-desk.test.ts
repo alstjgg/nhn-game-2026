@@ -29,6 +29,7 @@ import type { ReportGuidance } from '../../src/shared/report-guidance.ts'
 import { createLiveRunDriver } from '../../src/client/driver/live/index.ts'
 import { registerAnimation, thawAnimations } from '../../src/client/driver/test-hooks.ts'
 import { mm } from '../../src/client/driver/clock.ts'
+import { problems } from '../../src/shared/predicates.ts'
 import type { StorageLike } from '../../src/runloop/index.ts'
 import type { FeedLine, ViewEvent } from '../../src/shared/view-driver.ts'
 import { displayStamp } from '../../src/client/driver/clock.ts'
@@ -145,6 +146,51 @@ describe('(A) the live desk plays its day to the end', () => {
     expect(ledger.total).toBe(26)
     // §5.2 amendment g, on the real chain: a row's value may be a word.
     expect(ledger.rows.some((row) => typeof row.value === 'string')).toBe(true)
+  }, 120_000)
+
+  // 08-08, with `exposure.extra_condition` wired: an un-hardened condition must
+  // SHOW its line, never delete it.
+  //
+  // 우는다리 is the pack that proves it. Two of its rows carry F4 prose there —
+  // t5's 현장(관리동)을 들여다본 런에만 보임 and t11's 사무소를 들여다본 런에만
+  // — which `datapack:lint` FLAGs as hardening work and which no grammar can
+  // read. Routing those through `holds()` alone answers `false`, and this pack,
+  // which nobody edited, would quietly lose two authored events on every run.
+  // `engine/index.ts`'s `exposed()` treats "does not parse" as "no condition
+  // authored yet", exactly as `gateOpen` does for `availability`.
+  it('an exposure condition that does not parse still shows its line', async () => {
+    const timeline = PACK as unknown as {
+      timeline: { events: { text: string; exposure: { extra_condition: string | null } }[] }
+    }
+    const unreadable = timeline.timeline.events.filter(
+      (event) => (event.exposure.extra_condition ?? '') !== '' && problems(event.exposure.extra_condition!).length > 0,
+    )
+    expect(
+      unreadable.length,
+      'the pack no longer carries un-promoted exposure prose — this guard is measuring nothing',
+    ).toBeGreaterThan(0)
+
+    const adapter = createLiveAdapter({
+      first: realRun(1),
+      canOpenNext: () => true,
+      closeRun: () => {},
+      next: async () => null,
+    })
+    const events: ViewEvent[] = []
+    adapter.subscribe((event) => events.push(event))
+    adapter.start()
+    await pump(adapter, () => events.some((e) => e.type === 'run_end'))
+
+    const texts = events
+      .filter((event): event is Extract<ViewEvent, { type: 'feed' }> => event.type === 'feed')
+      .map((event) => event.line.text)
+    for (const event of unreadable) {
+      // Exact equality: `buildFeed` carries the authored text through verbatim.
+      expect(
+        texts.includes(event.text),
+        `an un-hardened condition deleted "${event.text.slice(0, 24)}…" from the run`,
+      ).toBe(true)
+    }
   }, 120_000)
 })
 

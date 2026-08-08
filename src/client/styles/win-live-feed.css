@@ -79,3 +79,10 @@
   animation:behindIn .18s cubic-bezier(.25,.9,.3,1) both}
 .feed-behind[hidden]{display:none}
 @keyframes behindIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* U5.4 — the citation mark on the agent's own line. Seal red, which on this
+   desk already means "a sentence of yours": the mined mark, the deploy stamp
+   and the red thread are all this colour. It is a READOUT, not a control —
+   no pointer affordance, no membrane op, nothing to press. */
+.fl-cite{font-family:var(--mono);font-size:var(--fs-8);letter-spacing:.1em;
+  color:var(--seal);vertical-align:super;margin-left:var(--space-6);white-space:nowrap}
