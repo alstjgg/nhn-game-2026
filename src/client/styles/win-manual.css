@@ -17,6 +17,20 @@
    hold O1 forbids duplicating. Nothing is needed to opt out of it any more:
    the hold is `body.booting .win{visibility:hidden}`, and this is not a `.win`. */
 
+/* x5c — the desk's own line does not print over the briefing.
+   `#toast` moved to the middle of the screen in x5b and this plate is centred
+   too, so the two landed on each other: the desk announces ECHO-n 교신 시작 the
+   moment the run opens behind the curtain, and that arrived across the second
+   paragraph of step 1. `signin.css` already hides the toast behind the door for
+   exactly this reason — the briefing is the other moment the operator has not
+   been handed the desk yet, so news about it is noise over the one thing they
+   are meant to be reading. The live region keeps its text either way; only the
+   painted strip is suppressed.
+
+   `:has()` rather than a body class, so it cannot fall out of step with the
+   plate — including across the 460 ms exit, where the plate is still mounted. */
+body:has(#manual) #toast{display:none}
+
 #manual{position:fixed;inset:0;z-index:480;
   display:flex;align-items:center;justify-content:center;
   /* Darker than the confirmation plate's veil. That one deliberately lets the
@@ -35,12 +49,48 @@
 @keyframes manRise{from{opacity:0;transform:translateY(22px) scale(.985);filter:blur(4px)}
   to{opacity:1;transform:none;filter:none}}
 
-/* The head has no meta line (see `MANUAL` in shell/manual.ts), so the title is
-   the whole of it and the LED keeps its own gap. */
+/* The head's meta slot carries the step counter (`1 / 3`), where the
+   confirmation plate carries 되돌릴 수 없음. Same position, same size — but not
+   the seal red, because this one is a READING of where you are in a walk, not a
+   warning about what the button does. */
 .man-plate .cf-plate-hd b{margin-right:auto}
+.man-plate .cf-plate-hd i{color:var(--txt-7);opacity:1;font-variant-numeric:tabular-nums}
+
+/* ─── the step ────────────────────────────────────────────────────────────
+   x5c — three plates, and the operator presses through them. The body is
+   rewritten in place rather than remounted (see shell/manual.ts), so the change
+   needs a mark of its own or the walk reads as a flicker: the new step arrives
+   from the right, briefly, the way a page turns.
+
+   The plate itself does NOT move. Its height changes between steps because the
+   copy does, and animating that as well would make the button walk up and down
+   the screen under the finger pressing it. */
+.man-plate .cf-body{min-height:126px}
+.man-plate .man-step{animation:manStep .34s cubic-bezier(.2,.9,.3,1) both}
+@keyframes manStep{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+
+/* The grey block is PROSE here, not a footnote.
+   `.cf-note` is tuned for the confirmation plate's one small line under the
+   question — 12.75px, tracked .12em, `--txt-7` — and that setting is unreadable
+   at six sentences: wide tracking is what makes a short caption scan and what
+   makes a paragraph fall apart. This is the one document that sets up the whole
+   game, and the operator reads it once. Tracking to near zero, a line-height
+   that lets the Korean breathe, and two steps of contrast back. It stays
+   plainly subordinate to the white lead above it, which is the point of the
+   split.
+
+   The two lines are one block, so they sit closer to each other than the first
+   of them sits to the lead. */
+.man-plate .cf-note{letter-spacing:.01em;line-height:1.85;color:var(--txt-3);
+  /* …and it wraps like Korean. Without this the browser breaks inside a word
+     — 업|무를 — which `.cf-ask` above has always guarded against and `.cf-note`
+     never needed to, being one short line on the confirmation plate. */
+  word-break:keep-all}
+.man-plate .cf-note + .cf-note{margin-top:var(--space-7)}
 
 /* One answer, so it sits alone on the right where the pair used to end. The
-   label is a phrase rather than a word — 시뮬레이션 시작 against 취소 / 파견 —
-   so the button is allowed to be as wide as it needs while keeping the height
-   every plate button now shares. */
-.man-plate .cf-btn{min-width:0;padding:0 var(--space-20)}
+   label changes length between steps — 다음, then 시뮬레이션 시작 — so the button
+   is allowed to be as wide as it needs while keeping the height every plate
+   button now shares. `min-width` stays the plate default so 다음 does not
+   collapse to a chip. */
+.man-plate .cf-btn{padding:0 var(--space-20)}
