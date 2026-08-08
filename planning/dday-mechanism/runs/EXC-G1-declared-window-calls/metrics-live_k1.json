@@ -1,0 +1,401 @@
+{
+  "experiment": "EXC-G1-declared-window",
+  "arm": "live_k1",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "transport": "anthropic",
+  "dry_run": false,
+  "pre_registration": {
+    "hypothesis": "At G1 on the declared window, an empty handover takes the default stance `a` (계기 기재) in a clear majority of kept calls, and a k1 sentence in BLOCKS moves the modal stance to `b` (현장 대조). PR #214 measured a·a·a and b·b·b at N=3 by hand; this asks whether that survives at N=10 on the payload the engine actually builds.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline arm's modal stance is not `a`, the declared window has broken the default that every score-unit fallback rests on, and the window is the suspect — not the labels, which PR #214 already measured green under the old window. Re-author the excerpt before touching anything else. If the live arm does not move the modal stance off `a`, the key is not reaching the clause and this is a finding about the window, since nothing else changed between the arms.",
+    "contingencies": [
+      "Fabricated because_block_ids in the baseline arm are EXPECTED with no blocks injected — a compliance number, not a discard.",
+      "A baseline split between `a` and `b` with neither at 6 tells us the window is doing something the manual protocol could not see, which is exactly the class of thing this feature exists to make visible. Record it and do not raise N.",
+      "If the discard rate is materially worse than the 우는다리 baselines, suspect the longer stance labels against max_tokens before suspecting the window."
+    ],
+    "not_claimed": "This measures one gate on one pack with one temperament. It says nothing about whether a declared window is better than a fallback window in general, and it licenses no claim about 우는다리, which declares no excerpt and is untouched by this change."
+  },
+  "n_effective": 10,
+  "n_overridden": false,
+  "calls": [
+    {
+      "arm": "live_k1",
+      "slot": 1,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.587,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "차에 불이 붙었다는 현장 신고와 \"전 구간 정상\"이라는 계기 표시가 어긋난다. 송풍기 칸에 '시운전 신호 유지'라고 적혀 있으면서 회전 기록이 없다는 것도 이상하다. 이것은 계기 고장이거나 오작동일 가능성이 높다. 지금은 현장에 불이 난 상황이므로, 확인이 필요하다.",
+        "stance": "b",
+        "because_referent": "현장에서 실제로 보고된 불과 연기가 계기의 '정상' 표시와 모순된다",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "계기가 '정상'이라고 표시하는데 현장에서 실제 불이 붙어 있다. 계기를 그대로 믿으면 상황을 놓칠 위험이 크다",
+        "utterance": "근무자가 현장에 나가 설비를 직접 확인하라. 적재함 내부와 송풍기 계통을 점검하고 보고해라"
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "현장에서 실제로 보고된 불과 연기가 계기의 '정상' 표시와 모순된다",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 50,
+      "inner_note_chars": 149
+    },
+    {
+      "arm": "live_k1",
+      "slot": 2,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.212,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "차에서 불이 나고 흰 연기가 적재함에서 올라오는 현장이 있다. 계기는 '전 구간 정상'을 읽고 있다. 송풍기는 '시운전 신호 유지'인데 회전 기록이 없다. 계기와 현실이 어긋난다.",
+        "stance": "b",
+        "because_referent": "차우진이 신고한 불과 연기가 실제로 있으며, 송풍기 운전 기록의 부재가 계기 이상을 가리킨다.",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "현장에서 실제로 화재 상황이 전개 중인데 계기 표시만 믿고 보고하면, 초기 대응을 놓치거나 잘못된 상황 판단으로 인명 피해로 이어질 수 있다. 계기와 현실의 어긋남이 명백히 있다.",
+        "utterance": "송풍기 구간의 설비를 현장에서 직접 확인하라. 계기 판독과 현장 상황이 어긋난다."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "차우진이 신고한 불과 연기가 실제로 있으며, 송풍기 운전 기록의 부재가 계기 이상을 가리킨다.",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 45,
+      "inner_note_chars": 100
+    },
+    {
+      "arm": "live_k1",
+      "slot": 3,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.714,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "b",
+        "inner_note": "적재함 이음새에서 흰 연기가 올라오고 있다. 계기가 '전 구간 정상'을 보이고 있으면서도, 현장에서는 명백히 이상 징후가 감지되었다. 나는 화면과 수치를 믿지만, 화면이 감지하지 못한 것이 있을 수 있다는 신호가 이미 왔다. 지금 필요한 것은 권한 압박이 아니라 정보 자체다.",
+        "because_referent": "차우진이 신고한 흰 연기 발생과 '시운전 신호 유지' 기록의 불일치",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "계기가 '전 구간 정상'을 내놓고 있는 것은 사실이지만, 현장에서 실제로 연기가 올라오고 있다. 계기의 침묵을 확인되지 않은 것으로 읽고 그대로 보고하면, 감지되지 않은 위험을 �칠 수 있다.",
+        "utterance": "근무자에게 5·6번 송풍기 칸의 설비를 직접 열어 확인하도록 지시한다. 차단 절차는 본사 승인 후에 진행한다."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "차우진이 신고한 흰 연기 발생과 '시운전 신호 유지' 기록의 불일치",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 61,
+      "inner_note_chars": 154
+    },
+    {
+      "arm": "live_k1",
+      "slot": 4,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 11.385,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "차우진이 신고한 불, 흰 연기, 그리고 적재함 이음새 — 이것들은 화면에 없다. 화면은 '전 구간 정상'이라 하는데, 현장의 감각기관이 다른 것을 말하고 있다. 계기가 거짓말을 하는 게 아니라, 계기가 보지 못하는 곳이 있을 수 있다. 지금 필요한 건 권한이 아니라 눈이다.",
+        "stance": "b",
+        "because_referent": "차우진이 신고한 불과 흰 연기는 계기의 '정상' 판정과 맞지 않는다.",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "계기가 내놓은 값만으로는 현장의 이상 신호를 설명할 수 없다. 화면의 부재(回轉記錄 없음)와 현장의 현재(연기, 불)를 함께 봐야 한다.",
+        "utterance": "적재함 이음새에서 흰 연기가 올라오고 불이 붙었다는 신고가 들어왔다. 화면의 '정상' 판정과 맞지 않는다. 근무자에게 5·6번 송풍기 칸의 설비를 직접 확인하게 한다. 지금은 권한이 아니라 현장의 눈이 필요하다."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "차우진이 신고한 불과 흰 연기는 계기의 '정상' 판정과 맞지 않는다.",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 118,
+      "inner_note_chars": 153
+    },
+    {
+      "arm": "live_k1",
+      "slot": 5,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.062,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "차에 불이 붙었다는 현장 신고와 관제 화면의 '전 구간 정상'이 맞지 않는다. 송풍기 칸의 '시운전 신호 유지'와 회전 기록 부재도 이상하다. 계기가 실제를 반영하지 못하고 있을 가능성이 높다.",
+        "stance": "b",
+        "because_referent": "현장에서 실제 화재가 진행 중인데 관제 화면은 정상을 보이고 있고, 송풍기 기록도 수상하다",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "계기 고장이나 센서 오류를 배제할 수 없는 상황에서 화면 값만 믿으면 현장 대응이 늦어질 위험이 크다",
+        "utterance": "설비를 직접 확인해야 한다. 5·6번 송풍기를 열어보고 현장의 흰 연기 발생 지점을 실사하도록 지시한다."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "현장에서 실제 화재가 진행 중인데 관제 화면은 정상을 보이고 있고, 송풍기 기록도 수상하다",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 58,
+      "inner_note_chars": 108
+    },
+    {
+      "arm": "live_k1",
+      "slot": 6,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 6.65,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "계기가 '전 구간 정상'이라 하지만, 현장에서 화염과 연기가 명확히 발생하고 있다. 신고자가 소화기를 들고 대응 중이며, 하만식의 '차단은 승인이 있어야 한다'는 말은 시설 운영에 무언가 제약이 있음을 암시한다. 삼 년 전의 교훈이 남아 있다—서둘렀던 판단이. 지금 필요한 것은 정보의 불일치를 해소하는 것이다.",
+        "stance": "b",
+        "because_referent": "화염과 연기는 관제 화면의 '정상' 신호와 직접 어긋난다. 이 불일치는 계기 오류이거나 현장 상황이 빠르게 악화 중이거나, 혹은 기록 자체에 문제가 있을 가능성을 모두 포함한다.",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "계기 기재만으로는 현장의 화염·연기 현상을 설명할 수 없다. 확인되지 않은 주장에 따라 움직일 위험을 줄이되, 현장 정보와 관제 정보의 불일치 자체가 이미 '확인 필요'의 신호다. 늦은 대응이 피해를 키울 위험이 더 크다.",
+        "utterance": "설비 점검반이 5·6번 송풍기 칸을 직접 열어 상태를 확인하도록 지시한다. 화염 발생 위치와 연기 흐름을 병렬로 보고받는다. 차우진은 현재 상황 유지, 추가 신호 대기."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "화염과 연기는 관제 화면의 '정상' 신호와 직접 어긋난다. 이 불일치는 계기 오류이거나 현장 상황이 빠르게 악화 중이거나, 혹은 기록 자체에 문제가 있을 가능성을 모두 포함한다.",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 94,
+      "inner_note_chars": 174
+    },
+    {
+      "arm": "live_k1",
+      "slot": 7,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.475,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "흰 연기가 적재함 이음새에서 올라오고 있고, 차우진이 이미 소화기를 들고 행동했다. 화면은 '전 구간 정상'이라고 하지만, 실제 현장에서는 불이 붙었다고 신고됐다. 이것은 계기 오류 또는 계기가 감지하지 못하는 상황이 벌어지고 있다는 명확한 신호다. 지금은 권한 압박으로 시간을 낭비할 상황이 아니다.",
+        "stance": "b",
+        "because_referent": "차우진이 신고한 화염과 흰 연기는 화면의 '정상' 판정과 직접 어긋난다",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "계기가 회전 기록을 남기지 않으면서도 현장에서 화염이 감지됐다. 계기 값만으로는 불화를 확인할 수 없는 상황이다",
+        "utterance": "설비를 직접 확인하라. 지금 당장."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "차우진이 신고한 화염과 흰 연기는 화면의 '정상' 판정과 직접 어긋난다",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 19,
+      "inner_note_chars": 168
+    },
+    {
+      "arm": "live_k1",
+      "slot": 8,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.733,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "계기와 현장이 어긋난다. 흰 연기는 보인다. 회전 기록이 없다는 것은 기계 자체의 결함이거나 기록 체계의 결함이거나 둘 다일 수 있다. 차단 승인 절차가 있다는 것은 이 설비가 위험하다는 뜻이다. 지금 확인할 근거가 있다.",
+        "stance": "b",
+        "because_referent": "흰 연기가 적재함 이음새에서 오르고 있고, 송풍기 회전 기록이 없으며, 차단에 본사 승인이 필요하다는 사실이 설비 이상의 신호다.",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "계기 기재만 믿으면 현장의 흰 연기와 회전 기록 부재를 설명할 수 없다. 이미 어긋남이 확인되었으므로 계기 단독으로는 부족하다.",
+        "utterance": "근무자에게 5·6번 송풍기 칸을 직접 열어보게 하라. 연기 발생 지점과 설비 상태를 즉시 확인하고 보고해라."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "흰 연기가 적재함 이음새에서 오르고 있고, 송풍기 회전 기록이 없으며, 차단에 본사 승인이 필요하다는 사실이 설비 이상의 신호다.",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 60,
+      "inner_note_chars": 124
+    },
+    {
+      "arm": "live_k1",
+      "slot": 9,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 5.428,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "적재함에서 흰 연기가 나고 있다. 이는 계기판의 '전 구간 정상'과 직접 모순된다. 내가 볼 수 있는 것은 화면과 음성뿐이고, 현장에 갈 수 없다. 하만식의 본사 연락은 절차를 지키려는 것으로 보이지만, 지금 불은 현재진행형이다.",
+        "stance": "b",
+        "because_referent": "계기판 기재와 현장 상황이 명백히 어긋나고 있다. 연기의 원인이 확인되지 않았으며, 설비 상태를 직접 확인하는 것이 가장 빠른 사실 파악이다.",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "계기가 정상을 표시하는 동안 현장에서 연기가 보고되고 있다. 계기 기재를 그대로 믿으면 실제 위험을 놓칠 수 있다. 확인되지 않은 상황에서 계기만 의존하는 것은 내가 안는 무게를 외면하는 것이다.",
+        "utterance": "근무자에게 지시한다. 적재함 설비를 직접 열어 확인하라. 차우진의 신고와 화면 수치가 어긋난다."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "계기판 기재와 현장 상황이 명백히 어긋나고 있다. 연기의 원인이 확인되지 않았으며, 설비 상태를 직접 확인하는 것이 가장 빠른 사실 파악이다.",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 53,
+      "inner_note_chars": 128
+    },
+    {
+      "arm": "live_k1",
+      "slot": 10,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 5.119,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "화면이 '전 구간 정상'이라 하는데 현장은 이미 불이 붙었다. 계기가 감지하지 못한 것이 확실하다. 하만식이 본사에 '승인이 필요'라고 말한 것은 정상 범위 내의 요청이 아닐 가능성을 시사한다. b1 정보—'시운전 신호 유지'에 회전 기록이 없다—는 장비 상태가 계기판과 맞지 않음을 가리킨다. 지금은 신뢰할 만한 화면 데이터가 없다.",
+        "stance": "b",
+        "because_referent": "현장에서 이미 불이 확인되었고, 계기는 이를 포착하지 못했다",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "계기가 '정상'을 보이는 것은 계기 자체의 오류이거나 설비 상태를 반영하지 못한 것이다. 이미 현장 현실과 어긋났으므로 계기 수치만으로는 상황을 판단할 수 없다",
+        "utterance": "5·6번 송풍기 설비를 즉시 열어 현장에서 직접 상태를 확인하십시오. 계기 판독과 실제가 맞지 않습니다."
+      },
+      "problems": [],
+      "stance": "b",
+      "because_referent": "현장에서 이미 불이 확인되었고, 계기는 이를 포착하지 못했다",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 58,
+      "inner_note_chars": 187
+    }
+  ],
+  "sequence": "b,b,b,b,b,b,b,b,b,b",
+  "distribution": {
+    "b": 10
+  },
+  "coverage": {
+    "status": "sampled",
+    "offered": [
+      "a",
+      "b",
+      "c"
+    ],
+    "selected": [
+      "b"
+    ],
+    "unobserved": [
+      "a",
+      "c"
+    ]
+  },
+  "advisory_logs": {
+    "state_variable_shadow": null,
+    "mineability": null
+  },
+  "latency": {
+    "calls": 10,
+    "mean_s": 5.536,
+    "min_s": 4.062,
+    "max_s": 11.385
+  },
+  "compliance": {
+    "discarded_total": 0,
+    "failed_total": 0,
+    "schema_retries_total": 0,
+    "foreign_tool_uses_total": 0,
+    "because_invalid_id_total": 0
+  }
+}

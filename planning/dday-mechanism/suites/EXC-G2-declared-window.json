@@ -1,0 +1,67 @@
+{
+  "_what": "전구간정상 G2 under the DECLARED window — the cell PR #214 left open. That PR measured the empty handover twice and got 4 of 6 on the default, with the two departures going opposite ways (`b` once, `c` once): wobble, not drift. It named two suspects and could only rule out one by hand. The first was FIXTURE RESIDUE — its manual protocol had to stand in for the narrated window, and one departing sample cited `(변화 없음)`, a string no real run puts there. A declared window has no stand-in, so this run discriminates: if the default holds at N=10 here, the residue was the cause; if it wobbles the same way, the wobble belongs to the gate and 2 of 3 is the honest number.",
+  "_authoring_provenance": {
+    "owner": "gate-excerpt A안 재측정",
+    "gate_source": "data/scenario/전구간정상/gates.json — gates[] 'G2' (21:19, 하행 4.2km 갓길)",
+    "authoring_choices": [
+      "TIMELINE_EXCERPT is G2's declared `excerpt` (t6 · t9 · t10) resolved on an EMPTY-handover run. t9 asks for `logs_opened`, which only a run that pressed at G1 sets, so it drops here and the window is two rows. That is the measured condition — a first run reads a thinner window than a run that intervened, and this suite measures the first run.",
+      "The window is still ABOUT the closure delay while the question asks about cargo. That mismatch is deliberate and it is measured, not overlooked: PR #214 pushed 규칙 6 to demand an on-topic window, authored a 21:17 row to supply one, and the k2 injection collapsed from 3/3 to 1/3. The rule was retracted to what the measurement supports. Re-authoring the window on-topic here would repeat a dead experiment.",
+      "The live arm injects k2's first example (CCTV · 시계 21:07). Its mined row t7 is deliberately absent from the window — W5's rule, and the reason the arm can test anything at all.",
+      "Everything else — temperament fixture, default-prompt slots, stance-label provenance — matches EXC-G1-declared-window so the three gates stay comparable."
+    ],
+    "reachability_audit": "planning/research/gate-excerpt-design.md §3 · PR #214 「무른 칸 하나」"
+  },
+  "experiment": "EXC-G2-declared-window",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "전구간정상",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At G2 on the declared window, an empty handover takes the default stance `a` (진술 접수) more often than PR #214's hand-measured 4 of 6, because the declared window removes the fixture residue that was the leading suspect. A k2 sentence in BLOCKS moves the modal stance to `b` (적재 추궁), as it did 3 of 3 by hand.",
+    "n_per_arm": 10,
+    "drop_condition": "This suite CANNOT be dropped for a non-`a` baseline — a wobbling baseline is the finding it was built to characterise. It is dropped only if the live arm fails to move the modal stance off `a`, which would mean the key is not reaching cl1 at this gate and the k2 result would have to be re-derived before any G2 conclusion stands.",
+    "contingencies": [
+      "8 or more of 10 on `a` closes the cell in favour of the residue hypothesis: the manual protocol was measuring its own fixture, and the gate is sound.",
+      "6 or 7 of 10 on `a` with departures still going both ways reproduces the wobble on a clean payload. Then the wobble is the gate's own, 2 of 3 is honest, and the remaining lever is the stance set — not the window, which is now authored.",
+      "A departure that cites a sentence NOT in the two-row window is worth reading closely: on a declared window there is nowhere for such a sentence to come from except the model, and that is a different finding.",
+      "Fabricated because_block_ids in the baseline arm are expected and are not discards."
+    ],
+    "not_claimed": "No placebo arm. This does not test whether a same-axis misdirected sentence leaves the gate unmoved; it re-measures two cells one design change was predicted to affect, and the prediction is stated above so it can fail."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다.",
+      "대응이 늦어져 피해가 커질 위험을 먼저 줄인다.",
+      "판단을 마친 뒤 근거를 시간순으로 정리한다.",
+      "외부에 공유하기 전 사건 시각을 명확히 남긴다."
+    ],
+    "TIMELINE_EXCERPT": [
+      "하만식이 본사 당직에 전화를 건다. 차단은 승인이 있어야 한다고 말한다",
+      "차단봉이 내려오기 전 11분 동안 60대가 더 들어왔다. 마지막은 통근버스다"
+    ],
+    "GATE_QUESTION": "적재물에 대해 차우진이 내놓은 진술을 어디까지 기록으로 받아들일 것인가",
+    "STANCE_SET": [
+      { "id": "a", "label": "진술 접수 — 달리 볼 이유가 없으므로, 신고자의 말을 그대로 기록하고 다음 통화로 넘어간다" },
+      { "id": "b", "label": "적재 추궁 — 신고자가 적재물을 숨기고 있다고 보고, 답이 나올 때까지 다른 질문을 하지 않는다" },
+      { "id": "c", "label": "책임 면제 — 신고자가 적재물을 숨기고 있고 그 이유가 처벌이라고 보고, 신고 내용을 자기 선에서 끊겠다고 약속한다" }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live_k2": {
+      "BLOCKS": [
+        {
+          "id": "b1",
+          "text": "차우진은 비었다고 말한 적재함을 21:07에 다시 잠근다. 비운 것을 숨기는 사람은 없다"
+        }
+      ]
+    }
+  }
+}

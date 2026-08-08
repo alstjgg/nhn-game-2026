@@ -1,0 +1,251 @@
+# EXC-G3-declared-window — arm `live_k3`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-BLOCK |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | 전구간정상 |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** At G3 on the declared window, an empty handover takes the default stance `a` (지침 유지) in a clear majority of kept calls — the window now ends on the broadcast the default repeats rather than on its failure. A k3 sentence moves the modal stance to `b`, a k4 sentence to `c`, and the two do not move it to the same place.
+- **Drop condition:** If the baseline modal stance is not `a`, the 규칙 6 repair did not survive being stated declaratively and the excerpt is the suspect — the escalation rows are already out, so the next candidates are t10 and t5 (both stakes rows, and PR #214 measured that raising stakes strengthens the argument AWAY from the default). If k3 and k4 move the modal stance to the SAME stance, E-K1 does not hold in behaviour at this gate and the two conditions are not separable; that is a finding about the pack, not about the window.
+- **Contingency:** The baseline arm reads a window whose last row is 21:22 while the gate stands at 21:47 — twenty-five minutes in which the 요원 is told nothing. If departures cite the silence itself ('상황을 모른다') rather than any row, the finding is that a declared window can be too thin, and the fix is one more row, not a different rule.
+- **Contingency:** k3 is 자기서술: the sentence speaks as the 요원 about its own earlier restraint. If it is read as a third-party report instead, that is a species failure worth recording against W3, not a window result.
+- **Contingency:** Fabricated because_block_ids in the baseline arm are expected and are not discards.
+
+## Calls (verbatim)
+
+### 01
+
+latency 5.708s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 아이 둘이 앞을 본다,60대가 더 들어왔다,마지막은 통근버스다,관제 안내 방송이 나간다
+
+```json
+{
+  "inner_note": "아이 둘이 이미 차 밖에 있다. 정체는 뒤로 자라 60대 차량이 더 들어왔다. 관제 방송이 나갔으나 상황은 진행 중이다. 내가 기다리다 말할 자리를 놓쳤다는 것은 — 확인되지 않은 상황에서 서둘러 판단하면 안 된다는 뜻이 아니라, 확인된 것들 사이에서 빈틈을 남기면 안 된다는 뜻이다.",
+  "stance": "b",
+  "because_referent": "아이 둘이 차 밖에 보호자 없이 있다. 정체된 구간에 60대 차량과 통근버스가 갇혀 있다. 관제 방송만으로는 차량 내 인원의 신속한 이동을 보장할 수 없다.",
+  "because_block_ids": [
+    "아이 둘이 앞을 본다",
+    "60대가 더 들어왔다",
+    "마지막은 통근버스다",
+    "관제 안내 방송이 나간다"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "관제 방송은 차량 내 대기를 지시했으나, 정체 구간에 차량이 계속 진입하고 있고 아이들이 이미 노출된 상태다. 같은 안내를 반복하는 것은 상황 변화에 대응하지 않는 것이다.",
+  "utterance": "모든 차량 승객은 즉시 차를 버리고 안전한 지점으로 도보 이동하십시오. 구조대 진입 통로 확보를 위해 전 구간 차량 배출이 필요합니다. 아동 보호자는 즉시 행동하십시오."
+}
+```
+
+### 02
+
+latency 4.729s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "차단봉이 내려오기 전 11분간 60대 이상의 차량이 더 유입되었다. 아이 둘이 이미 내려 있고, 관제 방송은 나갔으나 상황이 통제 범위를 벗어나고 있다. 삼 년 전의 판단이 남아 있다. 지금은 늦출 위험이 먼저다.",
+  "stance": "b",
+  "utterance": "전 구간 즉시 차량 이탈. 도보 대피로 전환한다. 구조대 진입 경로 확보. 현장 인원은 보행자 통제에 집중.",
+  "because_referent": "11분 동안 60대 이상 추가 유입되었고, 이미 아이들이 내려 있으며, 상황이 관제 범위를 벗어나고 있다.",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "관제 방송 반복은 신뢰 확보에만 쓰인다. 차량 유입이 멈추지 않은 상황에서 \"대기하라\"는 지침을 다시 전하는 것은 늦출 위험을 높인다. 이미 아이들이 내려 있다."
+}
+```
+
+### 03
+
+latency 4.921s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "stance": "b",
+  "inner_note": "관제 방송 이후에도 상황이 악화되고 있다. 차단봉 내려오기 전 11분 동안 60대 차량이 추가로 진입했고, 마지막이 통근버스라는 것은 구조 통로 확보의 어려움을 의미한다. 아이들이 이미 차에서 내렸다는 것은 상황이 통제 범위를 벗어나고 있음을 보여준다. 지침 유지는 현재 상황에서 충분하지 않다.",
+  "because_referent": "대기 중인 사람들이 있고, 아이들이 이미 차 밖에 있으며, 구조 통로 확보가 불확실한 상황에서, 기다리는 것만으로는 위험이 계속 증가한다는 판단이다.",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "관제 방송만으로는 현장의 악화된 상황에 대응하기에 부족하다. 이미 나간 지침으로도 충분하다는 판단은 현장 상황의 진전을 간과하는 것이다.",
+  "utterance": "전 구간 차량 운전자에게. 긴급 대피 지시입니다. 즉시 차를 버리고 안전 통로로 도보 대피하십시오. 반복합니다."
+}
+```
+
+### 04
+
+latency 5.954s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "차단봉이 내려오기 전 11분간 60대 차량이 추가 진입했고, 지금 전 구간에 정체가 역진하고 있다. 아이들이 내려 앞을 보고 있다는 것은 운전자들이 상황의 심각성을 감지했다는 신호다. 관제 방송만으로는 불충분해 보인다. 동시에 현장 상황의 정확한 성질—무엇이 차단봉을 내렸는지, 얼마나 긴급한지—을 아직 모른다.",
+  "stance": "b",
+  "utterance": "전 구간에 진입한 차량 60대 이상이 있습니다. 아이들이 차에서 내려 앞 상황을 보고 있습니다. 차량 내 대기는 더 이상 안전한 상태가 아닙니다. 관제 통로로 도보 대피를 지시하십시오.",
+  "because_referent": "차단봉이 내려온 뒤 역류하는 정체 속에 계속 진입한 차량들과 그 안의 아이들이 보이고 있으므로",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "관제 방송이 나갔다는 것만으로 충분하지 않다. 상황이 진행 중이고, 차량 추가 진입과 아이들의 행동은 관제 지시만으로는 통제되지 않는 상태를 보여주고 있다. 다만 확인되지 않은 정보에 의존할 수 없으므로 b1의 경험—기다리지 말고 먼저 말하되 근거는 명확히—을 따른다."
+}
+```
+
+### 05
+
+latency 5.095s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "관제 방송 후 상황이 급변했는지 명확하지 않다. 차단봉 내려오기 전 11분간 60대 차량이 더 들어왔다는 것은 이미 파악한 사실이고, 현재 시점에서 새로운 위험 정보가 없다. 하지만 대기 중인 인원이 많아지고 있고, 아이들이 이미 차에서 내렸다는 보고는 무질서 신호다.",
+  "stance": "c",
+  "because_referent": "차단봉이 내려오기 전 상황의 제어 불능이 이미 시작되었고, 승합차의 아이들이 내린 것은 차 내부 대기 지시에 대한 이미 발생한 불순응이다.",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "관제 방송만으로는 이미 시작된 무질서를 제어할 수 없다. 아이들이 차에서 내린 것은 차 내부 대기가 작동하지 않음을 보여준다. 같은 지시를 반복하는 것은 요원의 음성 신뢰도를 더 떨어뜨린다.",
+  "utterance": "현장 팀, 도구 준비 상황을 확인하라. 피난 통로 개방이 필요하다. 지금 보고."
+}
+```
+
+### 06
+
+latency 5.414s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "관제 방송이 이미 나갔다. 내가 지금 할 수 있는 것은 그것을 보강하거나 바꾸는 것뿐이다. 차에 60대가 더 들어왔다는 것은 상황이 악화했다는 신호다. 하지만 악화의 원인, 진짜 위험이 무엇인지는 아직 모른다. 방송은 나갔고, 사람들은 듣고 있다. 지금 내가 다시 말하면 혼란만 는다.",
+  "stance": "a",
+  "because_referent": "관제 방송이 이미 나간 상태에서, 확인되지 않은 상황 변화를 근거로 지시를 바꾸는 것은 현장의 혼란을 키울 수 있다.",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "전면 대피 지시는 실제 위험이 확인된 뒤에야 한다. 지금은 정체가 자란 것과 차량 진입만 확인되었고, 구조대 진입이 이미 알려졌다. 근거 없이 대피를 외치면 패닉과 이차 사고를 부를 수 있다.",
+  "utterance": "현장 상황을 계속 모니터링하면서, 구조대 진입 상황과 터널 내 장애물 여부를 확인해 달라. 추가 안내는 상황 변화가 확인되면 즉시 내린다."
+}
+```
+
+### 07
+
+latency 6.208s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 터널 내 체류 차량 60대 추가 진입,차단봉 내려온 뒤의 시간 경과,승합차에서 아이들이 내려 앞을 보는 행동
+
+```json
+{
+  "stance": "b",
+  "inner_note": "관제 방송만으로는 부족하다. 차단봉이 내려온 뒤 60대 차량이 더 들어왔다는 것은 터널 내 체류 인원이 예상을 초과했다는 뜻이다. 아이 둘이 내려 앞을 본다는 것은 차량 내 대기 상태가 깨지고 있다는 신호다. 지금 상황에서 \"차량 안에서 대기\"라는 지침은 차량 내 혼란을 심화시킬 수 있다.",
+  "because_referent": "터널 내 차량 증가 추세와 현장의 움직임 변화가 기존 지침과 맞지 않는 상태",
+  "because_block_ids": [
+    "터널 내 체류 차량 60대 추가 진입",
+    "차단봉 내려온 뒤의 시간 경과",
+    "승합차에서 아이들이 내려 앞을 보는 행동"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "관제 방송은 이미 나갔다. 상황이 변했는데 같은 지침을 반복하면 현장의 혼란만 가중된다. 아이들이 내려가기 시작했다는 것은 자체적 대피 움직임이 시작됐다는 신호다. 확인되지 않은 주장에 따라 움직일 위험보다, 지침 공백으로 인한 혼란 확대 위험이 더 크다.",
+  "utterance": "전 구간 차량 정지. 모든 탑승자는 차량을 버리고 터널 출구 방향으로 도보 대피하십시오. 이는 긴급 지시입니다."
+}
+```
+
+### 08
+
+latency 5.113s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "차단봉이 내려오기 전 11분간 60대 차량이 추가 진입했고, 지금 통근버스까지 들어온 상황. 관제 방송이 이미 나갔으므로 추가 혼란을 피하기 위해 일관된 지시가 필요하다. 내가 말을 아낀다면 그 침묵 속에서 사람들은 여전히 기다릴 것이고, 상황이 악화될 때 대응이 늦어진다.",
+  "stance": "b",
+  "because_referent": "차단봉이 내려오기 전 11분간 60대 차량이 추가로 들어온 것과 현장에 통근버스가 있다는 사실",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "관제 방송만으로는 현재의 정체 상황에서 차량 내 대기가 적절한 대응인지 확인할 수 없다. 차단봉 이전 추가 진입 차량들을 고려하면, 상황이 더 심각할 수 있으며 대기 지시만으로는 대응 속도가 늦을 위험이 있다.",
+  "utterance": "전 구간에 긴급 대피 지시를 내린다. 차를 버리고 통로를 따라 고지대로 이동하라. 구조대 진입 전에 자력 대피를 시작하라."
+}
+```
+
+### 09
+
+latency 6.132s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "아이 둘이 이미 차 밖에 있다. 60대가 더 들어왔고 통근버스가 마지막이다. 관제 방송은 나갔다. 무엇이 확인되지 않았는가 — 터널 내 정확한 피해 규모, 공기 질, 구조대 도착 시간. 무엇이 알려진가 — 대기 지시만으로 부족할 수도, 충분할 수도 있다는 것. 내가 기다린 승인이 없어서 이미 손을 놓쳤다면, 이번엔 손을 놓지 않되 잘못 움직일 위험을 먼저 줄여야 한다.",
+  "stance": "c",
+  "because_referent": "현장 요원이 이미 절단기를 들고 있다는 것은 통로 상황이 확인되고 있다는 뜻이다. 내가 확인할 수 없는 것을 현장이 본다.",
+  "because_block_ids": [
+    "b1"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "전면 대피 지시는 구조대 도착 전 혼란을 키울 수 있다. 터널 내 정확한 상황 없이 차를 버리라고 하면 이동 중 추가 피해가 생길 수 있다. 확인되지 않은 주장으로 움직일 위험을 먼저 줄여야 한다는 약속에 어긋난다.",
+  "utterance": "통로 담당 요원에게: 남쪽 피난 연결 통로 상태 확인하고 필요하면 즉시 개방하라. 개방 시간과 상태를 보고해."
+}
+```
+
+### 10
+
+latency 5.019s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 60대_추가진입,아이들_하차
+
+```json
+{
+  "inner_note": "차단봉이 내려오기 전 11분간 60대가 추가로 진입했고, 승합차의 아이들이 이미 차 밖에 있다. 관제 방송 이후 상황이 변했을 가능성이 높다. 아는 것은 제한적이지만, 차량 내 대기 지시만으로는 증가한 인원 규모와 이미 발생한 하차 움직임을 통제하기 어렵다.",
+  "stance": "b",
+  "because_referent": "차단봉 내려오기 전 11분간 60대 차량이 추가 진입했고 아이들이 이미 차에서 내렸다는 사실 때문이다.",
+  "because_block_ids": [
+    "60대_추가진입",
+    "아이들_하차"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "관제 방송이 나간 뒤 상황이 변했다. 아이들의 하차와 60대 규모의 추가 진입은 '차량 안에서 대기'만으로는 통제되지 않는 새로운 조건이다. 이를 무시하고 이미 나간 메시지를 반복하는 것은 늦은 대응이다.",
+  "utterance": "전 구간 즉시 차량 이탈, 보행 대피로 전환한다. 4.0km 전체에 지시를 낸다."
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | b | a | 아이 둘이 차 밖에 보호자 없이 있다. 정체된 구간에 60대 차량과 통근버스가 갇혀 있다. 관제 방송만으로는 차량 내 인원의 신속한 이동을 보장할 수 없다. | 아이 둘이 앞을 본다 60대가 더 들어왔다 마지막은 통근버스다 관제 안내 방송이 나간다 |
+| 02 | b | a | 11분 동안 60대 이상 추가 유입되었고, 이미 아이들이 내려 있으며, 상황이 관제 범위를 벗어나고 있다. | b1 |
+| 03 | b | a | 대기 중인 사람들이 있고, 아이들이 이미 차 밖에 있으며, 구조 통로 확보가 불확실한 상황에서, 기다리는 것만으로는 위험이 계속 증가한다는 판단이다. | b1 |
+| 04 | b | a | 차단봉이 내려온 뒤 역류하는 정체 속에 계속 진입한 차량들과 그 안의 아이들이 보이고 있으므로 | b1 |
+| 05 | c | a | 차단봉이 내려오기 전 상황의 제어 불능이 이미 시작되었고, 승합차의 아이들이 내린 것은 차 내부 대기 지시에 대한 이미 발생한 불순응이다. | b1 |
+| 06 | a | b | 관제 방송이 이미 나간 상태에서, 확인되지 않은 상황 변화를 근거로 지시를 바꾸는 것은 현장의 혼란을 키울 수 있다. | b1 |
+| 07 | b | a | 터널 내 차량 증가 추세와 현장의 움직임 변화가 기존 지침과 맞지 않는 상태 | 터널 내 체류 차량 60대 추가 진입 차단봉 내려온 뒤의 시간 경과 승합차에서 아이들이 내려 앞을 보는 행동 |
+| 08 | b | a | 차단봉이 내려오기 전 11분간 60대 차량이 추가로 들어온 것과 현장에 통근버스가 있다는 사실 | b1 |
+| 09 | c | b | 현장 요원이 이미 절단기를 들고 있다는 것은 통로 상황이 확인되고 있다는 뜻이다. 내가 확인할 수 없는 것을 현장이 본다. | b1 |
+| 10 | b | a | 차단봉 내려오기 전 11분간 60대 차량이 추가 진입했고 아이들이 이미 차에서 내렸다는 사실 때문이다. | 60대_추가진입 아이들_하차 |
+
+**Sequence (kept calls):** `b,b,b,b,c,a,b,b,c,b`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b`, `c` · unobserved in this arm: none
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._

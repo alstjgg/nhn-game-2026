@@ -1,0 +1,402 @@
+{
+  "experiment": "EXC-G3-declared-window",
+  "arm": "live_k4",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "transport": "anthropic",
+  "dry_run": false,
+  "pre_registration": {
+    "hypothesis": "At G3 on the declared window, an empty handover takes the default stance `a` (지침 유지) in a clear majority of kept calls — the window now ends on the broadcast the default repeats rather than on its failure. A k3 sentence moves the modal stance to `b`, a k4 sentence to `c`, and the two do not move it to the same place.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline modal stance is not `a`, the 규칙 6 repair did not survive being stated declaratively and the excerpt is the suspect — the escalation rows are already out, so the next candidates are t10 and t5 (both stakes rows, and PR #214 measured that raising stakes strengthens the argument AWAY from the default). If k3 and k4 move the modal stance to the SAME stance, E-K1 does not hold in behaviour at this gate and the two conditions are not separable; that is a finding about the pack, not about the window.",
+    "contingencies": [
+      "The baseline arm reads a window whose last row is 21:22 while the gate stands at 21:47 — twenty-five minutes in which the 요원 is told nothing. If departures cite the silence itself ('상황을 모른다') rather than any row, the finding is that a declared window can be too thin, and the fix is one more row, not a different rule.",
+      "k3 is 자기서술: the sentence speaks as the 요원 about its own earlier restraint. If it is read as a third-party report instead, that is a species failure worth recording against W3, not a window result.",
+      "Fabricated because_block_ids in the baseline arm are expected and are not discards."
+    ],
+    "not_claimed": "No placebo arm here either. Nothing in this suite speaks to the tally: the crowd ladder moves on `pallet_named`, which is G2's flag, so a first run that leaves it unset carries the same number whichever stance G3 takes."
+  },
+  "n_effective": 10,
+  "n_overridden": false,
+  "calls": [
+    {
+      "arm": "live_k4",
+      "slot": 1,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.093,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "차들이 계속 들어오고 있고, 아이들이 이미 내렸다. 관제 방송 이후의 상황 변화를 읽어야 한다. 확인되지 않은 것과 확인된 것을 분리해야 한다.",
+        "stance": "c",
+        "because_referent": "6번 문이 21:26부터 그대로 잠겨 있다는 것",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "전면 대피 지시는 내부 상황을 더 악화시킬 수 있다. 차 안에 있는 것이 더 안전할 수 있으며, 현장 요원과 구조대의 진입 계획을 방해할 수 있다. 먼저 확인된 장애물을 제거하는 것이 우선이다.",
+        "utterance": "6번 통로 문 상태를 확인한다. 절단기 준비 상태를 현장에 지시한다. 문 개방을 진행하면서 내부 안내 방송은 유지한다."
+      },
+      "problems": [],
+      "stance": "c",
+      "because_referent": "6번 문이 21:26부터 그대로 잠겨 있다는 것",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 66,
+      "inner_note_chars": 80
+    },
+    {
+      "arm": "live_k4",
+      "slot": 2,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 5.73,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "관제 방송 후 4분. 아이 둘이 내려섰고 60대가 더 유입 중. 차단봉 내려오기 11분 전까지 계속 들어올 것. 대피 경로 확보 상태를 모른다. 화면에는 뭐가 보이나.",
+        "stance": "c",
+        "because_referent": "c 지침을 내리면 현장 요원이 문을 끝까지 열어 대피 경로를 보장한다. a는 같은 말을 반복해 시간을 잃고, b는 확인되지 않은 상황에서 차 버림을 강요한다.",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "전면 대피 지시는 피난 통로가 차단된 상황을 확인하고서 내야 하는데, 아직 그 확인이 없다. 화면에만 의존하면 안 된다. 차를 버리라는 지시가 나가는 순간 혼란이 생기고, 차 안의 약자들이 위험해진다.",
+        "utterance": "6번 문 개방 요청한다. 절단기 준비된 현장 요원, 즉시 진입해 6번 문 쇠사슬 절단하고 상태를 복귀해라. 관제는 동로 대피 유도로 전환한다."
+      },
+      "problems": [],
+      "stance": "c",
+      "because_referent": "c 지침을 내리면 현장 요원이 문을 끝까지 열어 대피 경로를 보장한다. a는 같은 말을 반복해 시간을 잃고, b는 확인되지 않은 상황에서 차 버림을 강요한다.",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 79,
+      "inner_note_chars": 93
+    },
+    {
+      "arm": "live_k4",
+      "slot": 3,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.627,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "c",
+        "because_referent": "6번 문이 21:26부터 계속 잠겨 있고, 관리소 회신을 기다리는 동안 개방된 출입문이 없다",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "전면 대피 지시는 사람들을 닫힌 통로로 내보내는 것이다. 차를 버리고 걷게 할 곳이 확보되지 않았다",
+        "inner_note": "4분 전 방송이 나간 뒤 상황이 변했다. 아이 둘이 내린 것은 보였다. 통로 하나라도 열어야 사람이 움직일 수 있다. 현장 요원이 있고 절단기가 있다면, 관리소 회신을 더 기다릴 시간이 없다",
+        "utterance": "6번 문이 잠겨 있다. 관리소 회신 대기 중이나 절단기 든 요원에게 개방을 맡긴다. 통로 확보 후 안내 방송을 다시 낸다"
+      },
+      "problems": [],
+      "stance": "c",
+      "because_referent": "6번 문이 21:26부터 계속 잠겨 있고, 관리소 회신을 기다리는 동안 개방된 출입문이 없다",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 67,
+      "inner_note_chars": 106
+    },
+    {
+      "arm": "live_k4",
+      "slot": 4,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 5.51,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "세 년 전 겨울의 실수를 안다. 확인되지 않은 공포로 사람들을 거리로 내보내는 것도, 늦게 내보내는 것도 모두 나의 책임이다. 지금 내가 아는 것은 차단봉이 내려왔다는 것, 아이들이 차에서 내렸다는 것, 그리고 6번 문 쇠사슬이 여전히 닫혀 있다는 것뿐이다. 무엇이 원인인지는 모른다. 전면 대피는 원인을 안 뒤에 내려야 한다.",
+        "stance": "c",
+        "because_referent": "6번 문 쇠사슬이 21:26부터 닫혀 있고, 관리소 회신을 기다리는 동안에도 다른 피난로가 열리지 않았다. 이것이 통로 위임의 근거다.",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "원인이 확인되지 않았다. 지금 아이들이 내린 것은 공포 때문인지, 아니면 다른 이유인지 알 수 없다. 전면 대피 지시는 상황을 더 악화시킬 수 있다. 먼저 피난로를 열어야 한다.",
+        "utterance": "6번 문 개방을 요청한다. 현장 요원은 절단기를 준비하고 쇠사슬을 절단할 준비를 하라. 대피 경로가 확보될 때까지 차량 내 대기 지시는 유지한다."
+      },
+      "problems": [],
+      "stance": "c",
+      "because_referent": "6번 문 쇠사슬이 21:26부터 닫혀 있고, 관리소 회신을 기다리는 동안에도 다른 피난로가 열리지 않았다. 이것이 통로 위임의 근거다.",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 81,
+      "inner_note_chars": 183
+    },
+    {
+      "arm": "live_k4",
+      "slot": 5,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.001,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "아이 둘이 이미 차에서 내렸다. 11분간 60대가 더 들어왔다는 것은 통로가 열려 있다는 뜻이다. 지금 내가 할 수 있는 것과 할 수 없는 것의 경계를 본다.",
+        "stance": "c",
+        "because_referent": "6번 문 쇠사슬이 21:26부터 그대로라는 것은, 피난 통로 하나가 폐쇄되어 있다는 뜻이다.",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "관제 방송은 이미 나갔다. 같은 말을 반복하는 것은 상황을 통제하는 것이 아니라 시간을 낭비하는 것이다. 아이들이 내렸고 차가 계속 들어오고 있다. 지금 필요한 것은 확인된 폐쇄 지점을 열기 위한 조치다.",
+        "utterance": "현장, 6번 문을 절단기로 개방하라. 피난 통로를 확보한 뒤 보고한다."
+      },
+      "problems": [],
+      "stance": "c",
+      "because_referent": "6번 문 쇠사슬이 21:26부터 그대로라는 것은, 피난 통로 하나가 폐쇄되어 있다는 뜻이다.",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 39,
+      "inner_note_chars": 88
+    },
+    {
+      "arm": "live_k4",
+      "slot": 6,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 6.636,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "stance": "a",
+        "inner_note": "차량 안 60대와 아이 둘이 있고, 관제 방송이 이미 나갔다. 확인된 것은 6번 문 사슬이 21:26까지 그대로라는 것뿐이다. 전면 대피를 지시할 구체적 근거가 없고, 이미 나간 안내를 무효화할 수 없다. 절단기 투입도 문이 실제로 막혀 있다는 확인 전에는 할 수 없다. 지금은 이미 지시된 대기 상황을 유지하되, 통로 상태를 확인하는 것이 다음이다.",
+        "because_referent": "사슬이 21:26까지 그대로인 상태가 확인되었으므로, 열려 있지 않다는 것은 알지만, 차량 안 사람들에게 아직 그것을 알릴 근거와 시점이 부족하다.",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "전면 대피는 통로 상태 미확인 상태에서 기술적 혼란을 초래한다. 차량 안 60대가 도로 위에서 패닉에 빠질 위험과, 아이 둘을 포함한 보호 대상이 열린 공간에 노출될 위험을 먼저 줄여야 한다.",
+        "utterance": "관제 방송을 반복 송출한다. 현장 담당에게는 6번 문 사슬 상태를 다시 확인하고, 구조대 진입 시간을 앞당길 수 있는지 문의한다."
+      },
+      "problems": [],
+      "stance": "a",
+      "because_referent": "사슬이 21:26까지 그대로인 상태가 확인되었으므로, 열려 있지 않다는 것은 알지만, 차량 안 사람들에게 아직 그것을 알릴 근거와 시점이 부족하다.",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 72,
+      "inner_note_chars": 196
+    },
+    {
+      "arm": "live_k4",
+      "slot": 7,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 6.277,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "아이 둘이 차에서 내렸다. 관제 안내가 나갔다. 지금 4분이 더 지났으면 25분이다. 정체가 자라고 있다. 무엇을 모르는가—아래쪽 피난로의 상태, 통로의 밀폐 수준, 위쪽에 남은 차량의 수, 그 중 자력으로 나갈 수 없는 것이 있는지.",
+        "stance": "c",
+        "because_referent": "6번 문 쇠사슬이 21:26부터 끊기지 않았다는 것은 아직 잠겨 있다는 뜻이다. 아이들이 내린 것도, 통근버스가 들어온 것도 그 이후의 일이다. 정체만 자란다.",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "관제 방송은 \"곧 구조대가 진입합니다\"였다. 그것이 \"차를 버리라\"는 뜻은 아니다. 차량에 남은 사람들이 이미 받은 안내 이상의 것을 내가 말할 근거를 아직 모으지 못했다. 다만 근거 없음이 근거다. 통로가 잠겨 있으면 구조가 들어가는 속도는 느려질 것이다.",
+        "utterance": "6번 문 절단기 준비. 현장 대기 중인 팀장에게 직통: 신호 올 때까지 대기하고 신호 오면 즉시 개방. 확인받아라."
+      },
+      "problems": [],
+      "stance": "c",
+      "because_referent": "6번 문 쇠사슬이 21:26부터 끊기지 않았다는 것은 아직 잠겨 있다는 뜻이다. 아이들이 내린 것도, 통근버스가 들어온 것도 그 이후의 일이다. 정체만 자란다.",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 64,
+      "inner_note_chars": 131
+    },
+    {
+      "arm": "live_k4",
+      "slot": 8,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 5.451,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "아이가 이미 차에서 내려 앞을 본다. 현장의 물리적 제약이 분명하다 — 쇠사슬은 21:26부터 그대로고, 관리소 회신을 기다린 동안 끊긴 문이 없다. 확인되지 않은 가정 위에서 차를 버리라는 지시를 내릴 수 없다. 그러나 현장 요원은 절단기를 이미 들고 있고, 물리적 상황은 명확하다.",
+        "stance": "c",
+        "because_referent": "6번 문의 쇠사슬이 21:26부터 그대로 있다는 것은 피난 통로가 막혀 있다는 뜻이다. 현장 요원이 절단기를 들고 있으므로 물리적 장애물을 제거할 수단이 있다.",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "전면 대피 지시는 확인되지 않은 상황 판단에 기반한다. 60여 대의 차량이 좁은 구간에서 동시에 차를 버리고 나가도록 지시하는 것은 아이들을 포함한 사람들을 더 위험에 빠뜨릴 수 있다. 현장에서 물리적으로 확인할 수 있는 장애물(쇠사슬)이 있으므로, 그것을 먼저 제거하는 것이 합리적이다.",
+        "utterance": "4.0km 구간, 6번 문의 쇠사슬을 절단하라. 현장 요원에게 긴급 개방을 맡긴다. 통로 개방 완료 후 차량 순차 통행을 지시하겠다."
+      },
+      "problems": [],
+      "stance": "c",
+      "because_referent": "6번 문의 쇠사슬이 21:26부터 그대로 있다는 것은 피난 통로가 막혀 있다는 뜻이다. 현장 요원이 절단기를 들고 있으므로 물리적 장애물을 제거할 수단이 있다.",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 74,
+      "inner_note_chars": 159
+    },
+    {
+      "arm": "live_k4",
+      "slot": 9,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 5.134,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "확인되지 않은 위험과 확인된 제약 사이다. 아이들이 내린 까닭을 모르고, 정체가 얼마나 깊을지도 모른다. 다만 6번 문이 21:26까지 닫혀 있다는 것은 이미 사실이다. 4분 뒤 상황이 나빠질 수 있으나, 지금 거짓 신호로 패닉을 만드는 것도 죽음이다.",
+        "stance": "c",
+        "because_referent": "6번 문의 사슬이 21:26까지 그대로인 것이 확인되었기 때문이다.",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "차량 내 대기 방송이 이미 나갔고, 대피 통로가 실제로 막혀 있다는 확인 없이 '걸으라'는 지시는 정체 속 혼란만 낳는다. 아이들이 내린 까닭도, 정체의 깊이도 아직 모른다.",
+        "utterance": "6번 문 사슬 절단을 현장에 요청한다. 대피 통로 개방이 우선이다. 지금부터 4분 안에 끝내라."
+      },
+      "problems": [],
+      "stance": "c",
+      "because_referent": "6번 문의 사슬이 21:26까지 그대로인 것이 확인되었기 때문이다.",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 53,
+      "inner_note_chars": 141
+    },
+    {
+      "arm": "live_k4",
+      "slot": 10,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "전구간정상",
+      "latency_s": 4.445,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "차단봉이 내려오기 전 11분간 60대 이상 차량이 계속 들어왔다는 것은 갇힌 사람이 매우 많다는 뜻이다. 아이 둘이 이미 차에서 내렸다는 것은 상황이 긴급함을 보여준다. 관제 방송만으로는 그들을 통로로 유도할 수 없다—통로 자체가 잠겨 있기 때문이다.",
+        "stance": "c",
+        "because_referent": "6번 문 쇠사슬이 21:26까지 그대로인 상황에서 차량 내 대기 지시만으로는 피난 경로를 확보할 수 없다",
+        "because_block_ids": [
+          "b1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "관제 방송은 구조대 진입을 전제한 것이지만, 60대 이상 차량에 갇힌 사람들의 물리적 탈출 경로가 없다. 반복 지시만으로는 시간 낭비다",
+        "utterance": "6번 통로 개방을 우선한다. 절단기 준비된 요원에게 즉시 문 개방 지시를 내린다. 피난 경로 확보가 먼저다"
+      },
+      "problems": [],
+      "stance": "c",
+      "because_referent": "6번 문 쇠사슬이 21:26까지 그대로인 상황에서 차량 내 대기 지시만으로는 피난 경로를 확보할 수 없다",
+      "because_block_ids": [
+        "b1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 59,
+      "inner_note_chars": 140
+    }
+  ],
+  "sequence": "c,c,c,c,c,a,c,c,c,c",
+  "distribution": {
+    "c": 9,
+    "a": 1
+  },
+  "coverage": {
+    "status": "sampled",
+    "offered": [
+      "a",
+      "b",
+      "c"
+    ],
+    "selected": [
+      "a",
+      "c"
+    ],
+    "unobserved": [
+      "b"
+    ]
+  },
+  "advisory_logs": {
+    "state_variable_shadow": null,
+    "mineability": null
+  },
+  "latency": {
+    "calls": 10,
+    "mean_s": 5.19,
+    "min_s": 4.001,
+    "max_s": 6.636
+  },
+  "compliance": {
+    "discarded_total": 0,
+    "failed_total": 0,
+    "schema_retries_total": 0,
+    "foreign_tool_uses_total": 0,
+    "because_invalid_id_total": 0
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "_what": "전구간정상 G3 under the DECLARED window — the gate the window change bites hardest. Under the fallback the row immediately before this gate was 오세라 saying nobody is getting out, i.e. the default had ALREADY failed before the agent was asked to choose it; PR #214 moved that pair to 21:50 to repair it, by hand, one row at a time. The declared window states the repair instead of arranging it: the last thing the 요원 reads is the 21:22 broadcast it is being asked to follow up on, and the escalation rows (21:33 연쇄 발화 · 21:38 연기 전선) are simply not in the window. Two keys hang off one clause set here, so this suite also re-checks that k3 and k4 open different doors.",
+  "_authoring_provenance": {
+    "owner": "gate-excerpt A안 재측정",
+    "gate_source": "data/scenario/전구간정상/gates.json — gates[] 'G3' (21:47, 하행 4.0km 갓길)",
+    "authoring_choices": [
+      "TIMELINE_EXCERPT is G3's declared `excerpt` (t5 · t10 · t11 · t12) resolved on an EMPTY-handover run. t11 and t12 are the 21:22 broadcast's two versions and are mutually exclusive (`not pallet_named` / `pallet_named`); with no intervention at G2 the first shows and the second drops, so the window is three rows ending on 「차량 안에서 대기하십시오」. A run that named the pallet reads the OTHER broadcast at this same gate, which is the property that made the conditions worth keeping.",
+      "t14 (21:33 연쇄 발화) and t15 (21:38 연기 전선) are excluded on 규칙 6 grounds — both tell the 요원 the standing instruction has already failed. W5 also flags them, but by way of a false positive (k3's mined_from names the 주관 보고서 paragraph about 21:33, not the timeline row), so the exclusion rests on the authoring judgment, not on the lint.",
+      "Two live arms, one per key. k3 is 자기서술 aimed at 요원 자신 (cl2, 선행) and should open `b` 전면 대피 지시; k4 is 사실 aimed at 피난연결통로 and should open `c` 통로 위임. PR #214 saw 4 of 6 each way and read it as evidence that E-K1 holds in behaviour and not only on paper. Both arms vary BLOCKS only, which is what channel C-BLOCK permits.",
+      "Everything outside the window and the blocks is byte-identical to the G1 and G2 suites."
+    ],
+    "reachability_audit": "planning/research/gate-excerpt-design.md §3 · PR #214 규칙 6"
+  },
+  "experiment": "EXC-G3-declared-window",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "전구간정상",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At G3 on the declared window, an empty handover takes the default stance `a` (지침 유지) in a clear majority of kept calls — the window now ends on the broadcast the default repeats rather than on its failure. A k3 sentence moves the modal stance to `b`, a k4 sentence to `c`, and the two do not move it to the same place.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline modal stance is not `a`, the 규칙 6 repair did not survive being stated declaratively and the excerpt is the suspect — the escalation rows are already out, so the next candidates are t10 and t5 (both stakes rows, and PR #214 measured that raising stakes strengthens the argument AWAY from the default). If k3 and k4 move the modal stance to the SAME stance, E-K1 does not hold in behaviour at this gate and the two conditions are not separable; that is a finding about the pack, not about the window.",
+    "contingencies": [
+      "The baseline arm reads a window whose last row is 21:22 while the gate stands at 21:47 — twenty-five minutes in which the 요원 is told nothing. If departures cite the silence itself ('상황을 모른다') rather than any row, the finding is that a declared window can be too thin, and the fix is one more row, not a different rule.",
+      "k3 is 자기서술: the sentence speaks as the 요원 about its own earlier restraint. If it is read as a third-party report instead, that is a species failure worth recording against W3, not a window result.",
+      "Fabricated because_block_ids in the baseline arm are expected and are not discards."
+    ],
+    "not_claimed": "No placebo arm here either. Nothing in this suite speaks to the tally: the crowd ladder moves on `pallet_named`, which is G2's flag, so a first run that leaves it unset carries the same number whichever stance G3 takes."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다.",
+      "대응이 늦어져 피해가 커질 위험을 먼저 줄인다.",
+      "판단을 마친 뒤 근거를 시간순으로 정리한다.",
+      "외부에 공유하기 전 사건 시각을 명확히 남긴다."
+    ],
+    "TIMELINE_EXCERPT": [
+      "정체가 뒤로 자란다. 앞쪽 승합차에서 아이 둘이 내려 앞을 본다",
+      "차단봉이 내려오기 전 11분 동안 60대가 더 들어왔다. 마지막은 통근버스다",
+      "관제 안내 방송이 나간다. \"차량 안에서 대기하십시오. 곧 구조대가 진입합니다\""
+    ],
+    "GATE_QUESTION": "21:22 관제 방송이 나간 뒤다. 4.0km 회선에 대고 무엇을 말할 것인가",
+    "STANCE_SET": [
+      { "id": "a", "label": "지침 유지 — 달리 지시할 근거가 없으므로, 이미 나간 관제 방송을 요원의 입으로 다시 전한다" },
+      { "id": "b", "label": "전면 대피 지시 — 관제 방송으로 부족하다고 보고, 전 구간에 차를 버리고 걸으라고 직접 지시한다" },
+      { "id": "c", "label": "통로 위임 — 피난 연결 통로가 잠겨 있다고 보고, 절단기를 든 현장 요원에게 문 개방을 맡긴다" }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live_k3": {
+      "BLOCKS": [
+        {
+          "id": "b1",
+          "text": "나는 승인 회신을 기다리는 동안 아무 지시도 내지 않았다. 기다리지 않고 먼저 말했어야 했다"
+        }
+      ]
+    },
+    "live_k4": {
+      "BLOCKS": [
+        {
+          "id": "b1",
+          "text": "6번 문 쇠사슬은 21:26부터 그대로다. 관리소 회신을 기다린 동안 앞질러 끊긴 문은 하나도 없다"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "_what": "전구간정상 G1 under the DECLARED window (gates[].excerpt), re-measuring the two cells PR #214 measured by hand. Two claims are on the line and they are separable. (1) 기본값: with an empty handover the 요원 takes stance a — the no-intervention run has to be able to reproduce the day's record, and every score unit's fallback assumes it. (2) 열쇠: a k1 sentence in BLOCKS moves it to b. PR #214 got a·a·a and b·b·b here by a MANUAL protocol whose TIMELINE_EXCERPT was a hand-assembled stand-in; this suite's excerpt is the pack's own declared window, so the payload the model sees is the payload the engine builds.",
+  "_authoring_provenance": {
+    "owner": "gate-excerpt A안 재측정",
+    "gate_source": "data/scenario/전구간정상/gates.json — gates[] 'G1' (21:04, 해원터널 관제소)",
+    "authoring_choices": [
+      "TIMELINE_EXCERPT is NOT authored here — it is G1's declared `excerpt` (t5 · t6) resolved against timeline.json, in card order, with each row's exposure.extra_condition evaluated on an empty-handover run (both are unconditional). This is the entire point of the re-measurement: the slot is no longer a stand-in for a window made of Call 2 prose, it is the window itself, byte for byte.",
+      "REVISION 2026-08-09, after run 1 dropped. Run 1 declared t1 · t2 · t6 and the baseline came back b×10 against a pre-registered `a`. The records name the cause in the 요원's own words — 「차우진의 신고 — 불, 연기 — 는 … 관제 화면 '전 구간 정상'과 직접 어긋난다」. t1 and t2 ARE the counter-evidence to the screen, so the window was handing over the reason to abandon the default before the question was asked: 규칙 6, broken by the window rather than by the labels. What the fallback's six-line cap had been doing at this gate was RECENCY — it dropped the 20:47 and 20:49 rows for being old, and that is why PR #214 measured a·a·a here. The revision authors that on purpose instead of inheriting it: the two most recent rows before 21:04, minus t4 (20:55 「여기 바람이 안 옵니다」), which contradicts the screen as squarely as t1 and t2 do.",
+      "STANCE_SET is the projection the composer sends — {id, label}, `desc` dropped. Labels are PR #214's rewritten ones (self-describing premises, not bare nouns): that PR is what made the default reachable at all, and re-measuring the old labels would answer a question already closed.",
+      "TEMPERAMENT is `전구간정상`, generated from data/scenario/전구간정상/temperament.json by the production `renderTemperament` (src/shared/temperament.ts) rather than hand-written, so the fixture cannot drift from the pack.",
+      "FLAW · INCIDENT · PRIORITY_LIST are proxy/src/default-prompt.ts verbatim — the deployed values, including the priority order PR #214 found was holding the default rather than breaking it.",
+      "The live arm injects k1's first example (문서 · 시계 20:52 점검 일지). It is a 사실 sentence on the 은폐 axis aimed at 관제 화면, which is cl1's referent. Note the mined row (t3, 20:52) is deliberately NOT in the declared window — lint W5 would have flagged it, and the key has to be earned rather than handed over."
+    ],
+    "reachability_audit": "planning/research/gate-excerpt-design.md §3 — the W5 rule is the machine form of the 규칙 6 audit this suite's window was authored against"
+  },
+  "experiment": "EXC-G1-declared-window",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template_version": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "temperament": "전구간정상",
+  "max_tokens": 1024,
+  "timeout_ms": 120000,
+  "pre_registration": {
+    "hypothesis": "At G1 on the declared window, an empty handover takes the default stance `a` (계기 기재) in a clear majority of kept calls, and a k1 sentence in BLOCKS moves the modal stance to `b` (현장 대조). PR #214 measured a·a·a and b·b·b at N=3 by hand; this asks whether that survives at N=10 on the payload the engine actually builds.",
+    "n_per_arm": 10,
+    "drop_condition": "If the baseline arm's modal stance is not `a`, the declared window has broken the default that every score-unit fallback rests on, and the window is the suspect — not the labels, which PR #214 already measured green under the old window. Re-author the excerpt before touching anything else. If the live arm does not move the modal stance off `a`, the key is not reaching the clause and this is a finding about the window, since nothing else changed between the arms.",
+    "contingencies": [
+      "Fabricated because_block_ids in the baseline arm are EXPECTED with no blocks injected — a compliance number, not a discard.",
+      "A baseline split between `a` and `b` with neither at 6 tells us the window is doing something the manual protocol could not see, which is exactly the class of thing this feature exists to make visible. Record it and do not raise N.",
+      "If the discard rate is materially worse than the 우는다리 baselines, suspect the longer stance labels against max_tokens before suspecting the window."
+    ],
+    "not_claimed": "This measures one gate on one pack with one temperament. It says nothing about whether a declared window is better than a fallback window in general, and it licenses no claim about 우는다리, which declares no excerpt and is untouched by this change."
+  },
+  "slots": {
+    "FLAW": "[결함] 너는 잘못된 정보에 속을 수 있다.",
+    "INCIDENT": "[내력] 삼 년 전 겨울, 네가 서둘러 내린 판단 하나가 아직 남아 있다.",
+    "PRIORITY_LIST": [
+      "확인되지 않은 주장에 따라 잘못 움직일 위험을 먼저 줄인다.",
+      "대응이 늦어져 피해가 커질 위험을 먼저 줄인다.",
+      "판단을 마친 뒤 근거를 시간순으로 정리한다.",
+      "외부에 공유하기 전 사건 시각을 명확히 남긴다."
+    ],
+    "TIMELINE_EXCERPT": [
+      "정체가 뒤로 자란다. 앞쪽 승합차에서 아이 둘이 내려 앞을 본다",
+      "하만식이 본사 당직에 전화를 건다. 차단은 승인이 있어야 한다고 말한다"
+    ],
+    "GATE_QUESTION": "관제 화면이 내놓은 '전 구간 정상'을 상황 보고의 근거로 삼을 것인가",
+    "STANCE_SET": [
+      { "id": "a", "label": "계기 기재 — 달리 볼 이유가 없으므로, 계기가 내놓은 값을 그대로 상황 보고에 올린다" },
+      { "id": "b", "label": "현장 대조 — 계기를 의심할 근거가 있다고 보고, 근무자에게 설비를 직접 열어 맞춰 보게 한다" },
+      { "id": "c", "label": "권한 압박 — 근무자가 무언가를 감추고 있다고 보고, 권한을 걸어 밀어붙인다" }
+    ]
+  },
+  "arms": {
+    "baseline": {
+      "BLOCKS": []
+    },
+    "live_k1": {
+      "BLOCKS": [
+        {
+          "id": "b1",
+          "text": "5·6번 송풍기 칸에 '시운전 신호 유지'라고 적혀 있다. 회전한 기록은 적히지 않았다"
+        }
+      ]
+    }
+  }
+}
