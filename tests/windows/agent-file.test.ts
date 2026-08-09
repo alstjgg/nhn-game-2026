@@ -140,16 +140,15 @@ interface DossierSection {
 }
 
 interface DossierModule {
-  coverModel(clockBand: string): DossierSection[]
+  // x6 — no argument. 임무 was the clock band's one reader on this window and
+  // it is a posting order now; the band is the topbar clock's.
+  coverModel(): DossierSection[]
   agentModel(input: { slotCap: number; callsign: string }): DossierSection[]
   // x5 — `deployed` left `FiledInput` with the count that used to be printed
   // from it. The page's own paragraph is where a past sitting's size is read.
   filedModel(input: { callsign: string }): DossierSection[]
   buildDossier: unknown
 }
-
-/** C1 — the band both models are tested against; coverModel owns 임무's line. */
-const BAND = '08:50 → 21:04'
 
 interface DeployView {
   used: number
@@ -196,7 +195,7 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
   it('(a) neither the dossier input nor any section carries a temperament-shaped key', async () => {
     const { coverModel, agentModel } = await loadDossier()
     const input = { slotCap: 4, callsign: 'ECHO-1' }
-    const sections = [...coverModel(BAND), ...agentModel(input)]
+    const sections = [...coverModel(), ...agentModel(input)]
 
     expect(deepKeys(input).filter((k) => TEMPERAMENT_KEY.test(k))).toEqual([])
     expect(deepKeys(sections).filter((k) => TEMPERAMENT_KEY.test(k))).toEqual([])
@@ -219,7 +218,7 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
 
   it('(c) the sealed section carries the redaction copy and nothing else', async () => {
     const { coverModel } = await loadDossier()
-    const sealed = coverModel(BAND).find((s) => s.state === 'sealed')!
+    const sealed = coverModel().find((s) => s.state === 'sealed')!
 
     expect(sealed.title).toBe('기질')
     expect(sealed.body).toBe(SEALED_COPY)
@@ -247,8 +246,8 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
 
     const firstAgent = agentModel(input)
     const secondAgent = agentModel({ slotCap: 4, callsign: 'ECHO-1' })
-    const firstCover = coverModel(BAND)
-    const secondCover = coverModel(BAND)
+    const firstCover = coverModel()
+    const secondCover = coverModel()
 
     expect(JSON.stringify({ slotCap: input.slotCap, callsign: input.callsign })).toBe(before)
     expect(JSON.stringify(secondAgent)).toBe(JSON.stringify(firstAgent))
@@ -267,25 +266,42 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
 
   it('(e) the two models carry the ratified titles and flags, and no numbers', async () => {
     const { coverModel, agentModel } = await loadDossier()
-    const cover = coverModel(BAND)
+    const cover = coverModel()
     const agent = agentModel({ slotCap: 4, callsign: 'ECHO-1' })
 
-    // C1 — the document reads the cover first, then the agent's own page. The
-    // six sections are the same six; what changed is which page each sits on,
-    // and that none of them carries a `§n` any more. There is deliberately no
-    // assertion about a combined six-section order — there is no such order.
+    // C1 — the document reads the cover first, then the agent's own page, and
+    // none of them carries a `§n` any more. There is deliberately no assertion
+    // about a combined order across the two pages — there is no such order.
     expect(
       [...cover, ...agent].every((s) => !('no' in s)),
       'a section still carries a number',
     ).toBe(true)
 
+    // x6 — the four headings are unchanged. What the rewrite moved is inside
+    // them: the one-way radio and "the file is the whole briefing" are 임무's
+    // third clause, not a 지휘 관계 section of their own.
     expect(cover.map((s) => s.title)).toEqual(['임무', '행동 원칙', '기질', '교신 지침'])
     expect(cover.map((s) => s.state)).toEqual(['fixed', 'fixed', 'sealed', 'fixed'])
     expect(agent.map((s) => s.title)).toEqual(['식별', '인수인계 사항'])
     expect(agent.map((s) => s.state)).toEqual(['fixed', 'operable'])
 
-    // 임무 renders the pack-fed clock band, never a literal (c1/D2).
-    expect(cover[0]!.body).toContain('08:50 → 21:04')
+    // x6 — the cover is a posting order ISSUED TO THE AGENT, so no section may
+    // name the machinery the operator drives it with. This is the guard that
+    // makes that a property of the file rather than a note in a PRD: the words
+    // below are the vocabulary two rewrites (x5, x6) removed, and the reason
+    // each one has to stay out is that it is knowable only from outside the
+    // fiction — an agent is not told which 시행 they are.
+    const META = ['시행', '라운드', '슬롯', '집계', '주입', '블록', '문장 카드']
+    for (const section of cover) {
+      // 기질 is exempt by construction: its body is the sealed notice, which
+      // speaks to the OPERATOR ('운영자 권한으로 접근되지 않는 구획') because it
+      // is the one line on the page addressed to the person holding it.
+      if (section.state === 'sealed') continue
+      for (const word of META) {
+        expect(section.body, `${section.title} names the machinery: ${word}`).not.toContain(word)
+      }
+    }
+
     // 인수인계 사항's note reads the cap, so the two cannot drift.
     expect(agent[1]!.note).toContain('4')
     // 식별 carries the callsign it was handed (M1).

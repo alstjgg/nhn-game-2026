@@ -33,8 +33,14 @@
   border:1px solid var(--sh-3);color:var(--faded)}
 .sect.fixed .sect-flag{background:var(--sh-055)}
 .sect.operable .sect-flag{border-color:var(--seal);color:var(--seal-2);background:var(--seal-wash)}
+/* x6 — `pre-line`, so the cover's sections keep their authored line breaks.
+   임무 and 교신 지침 are a posting order's clauses, one per line, and
+   `components/dossier.ts` writes them with `\n` between. Collapsed
+   into one justified block they read as a manual again, which is the exact
+   failure x6 exists to undo. Wrapping inside a clause still justifies; a line
+   ended by the authored break is a last line and is not stretched. */
 .sect-body{font-family:var(--myeong);font-size:var(--fs-11-5);line-height:1.72;color:var(--pap-3);
-  padding-left:var(--space-2);text-align:justify}
+  padding-left:var(--space-2);text-align:justify;white-space:pre-line}
 .sect.fixed .sect-body{color:var(--pap-4)}
 .sect-rows{display:grid;grid-template-columns:96px 1fr;gap:var(--space-2) var(--space-10);
   font-size:var(--fs-10-5);line-height:1.6}

@@ -89,14 +89,23 @@ describe('[u2f#c4] no digit for NPC state (inv 2)', () => {
 })
 
 describe('[u2f#c4] stream well-formedness', () => {
+  // x6 — this used to be checked against a stream where every open sat right
+  // behind a `wait` FEED LINE. The marker went (민서, 08-09) and the six lines
+  // with it; the BRACKET stayed, because it is what the live driver emits and
+  // what the live adapter's queue is built around, and it now hangs off the row
+  // that placed the call (`woodari-run03.ts`'s `call: true`). So this guard is
+  // load-bearing in a way it was not before: with nothing drawn for a wait, a
+  // dropped close is invisible on the paper and only this would catch it.
   it('(k) every `waiting` open is closed, and the stream ends unblocked', () => {
     let open = 0
+    let opened = 0
     const bad: string[] = []
     for (const e of events()) {
       if (e.type !== 'waiting') continue
       if (e.active) {
         if (open > 0) bad.push(`nested waiting(${e.for})`)
         open += 1
+        opened += 1
       } else {
         if (open === 0) bad.push(`waiting(${e.for}) closed while none open`)
         else open -= 1
@@ -104,6 +113,10 @@ describe('[u2f#c4] stream well-formedness', () => {
     }
     expect(bad).toEqual([])
     expect(open).toBe(0)
+    // Non-vacuity, added x6: a balanced stream with no wait in it at all would
+    // have passed everything above, which is exactly how the bracket could go
+    // missing now that nothing draws it.
+    expect(opened, 'the fixture opens no waiting window — the seam path is unexercised').toBeGreaterThan(0)
   })
 
   it('(l) the canned op set answers every player op the driver may issue', () => {

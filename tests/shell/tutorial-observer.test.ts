@@ -247,11 +247,13 @@ describe('[x3] the mark cannot come between the operator and the desk', () => {
     ] as const) {
       expect(coach, `#coach is not above ${selector}`).toBeGreaterThan(zIndexOf(sheet, selector))
     }
-    // Over the mark: the door, the film, and above all the question.
+    // Over the mark: the door, the film, the question — and the ENDING, which is
+    // the last thing the sitting has to say and must not have onboarding over it.
     for (const [sheet, selector] of [
       [path.join(CLIENT, 'styles/signin.css'), '#signin'],
       [shell, '#grain'],
       [path.join(CLIENT, 'styles/confirm.css'), '#confirm'],
+      [path.join(CLIENT, 'styles/win-ending.css'), '#ending'],
     ] as const) {
       expect(coach, `#coach is not below ${selector}`).toBeLessThan(zIndexOf(sheet, selector))
     }

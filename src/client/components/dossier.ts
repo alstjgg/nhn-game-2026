@@ -4,8 +4,10 @@
 //
 // The copy is DOCUMENT ART, not pack data: the pack carries no callsign and no
 // standing orders. What IS pack-fed arrives as the models' own arguments — the
-// clock band to `coverModel`, the callsign and slot cap to `agentModel`
-// (u4 D2/D4).
+// callsign and slot cap to `agentModel` (u4 D2/D4). The cover takes none: x6's
+// 임무 is a posting order, and a posting order does not print the shift's hours.
+// The window's pack-fed value is its doc number (`windows/agent-file.ts`, off
+// the fetched slug), which is what `e2e/agent-file.spec.ts` (d) guards.
 //
 // 기질 is SEALED BY CONSTRUCTION (spec-client §3 inv 4 / I13): `SealedSection`
 // has no field an agent's inner disposition could be written into, so no such
@@ -62,7 +64,7 @@ const SEALED_BARS: readonly number[] = [58, 34, 71]
 /** Reference stagger between bars (`app.js` 226); pinned to one frame when frozen. */
 const BAR_STEP = 45
 
-/** What one agent's page needs. The cover takes the clock band and nothing else. */
+/** What one agent's page needs. The cover takes nothing — its copy is standing. */
 export interface AgentInput {
   /** 인수인계 사항's cap — read from `SLOT_CAP`, so note and board cannot drift (D3). */
   slotCap: number
@@ -80,7 +82,59 @@ export interface FiledInput {
 const FILED_NOTE = '파견 종료. 열람 전용'
 
 /**
- * 교신 지침's standing orders (민서's own words, x5).
+ * THE COVER'S FOUR UNSEALED SECTIONS (민서's own words, x6).
+ *
+ * One rule governs all four: **the file is issued TO the agent**, so every line
+ * is something a dispatcher writes to a person being posted, never something
+ * the game says about itself. That is why none of them names a run, a slot, a
+ * round or a tally — the operator learns what they may do by reading what the
+ * agent was told, and a word that only makes sense from outside the fiction
+ * breaks the one surface that has to be believed.
+ *
+ * **The `\n`s are load-bearing.** These read as a posting order's numbered
+ * clauses, one per line, not as justified prose; `win-agent-file.css` gives
+ * `.sect-body` `white-space: pre-line` and the newlines survive to the page.
+ *
+ * Kept at module scope rather than inline in `coverModel` so the model half
+ * stays a value, which `agent-file.test.ts (d)` reads the source of.
+ */
+/**
+ * 임무 — three clauses: the posting, what it is for, and how far the radio
+ * reaches back.
+ *
+ * The third clause is the one that makes the loop legible. Nothing on the desk
+ * said the operator cannot reach the agent once the file is committed; the
+ * player had to infer it from the DEPLOY button going quiet. Said in the
+ * agent's own orders it costs no meta-language at all — the radio is one-way,
+ * and the file IS the briefing.
+ *
+ * It sits INSIDE 임무 rather than in a 지휘 관계 section of its own (which x6
+ * drafted and 민서 folded back): the posting and the silence that follows it
+ * are one fact, and a fifth heading bought a second scroll on the cover to say
+ * so twice.
+ *
+ * 파견되었다, not 파견된다 — the file is read by someone already posted.
+ */
+const MISSION =
+  '긴급 상황 신고에 따라 현장 위기 대응실에 파견되었다.\n' +
+  '비공개 직통 회선을 받으며 회선 너머의 발신자가 말하는 긴급 상황의 정체를 확인하고, 인명 피해를 줄여야 한다.\n' +
+  '본부는 요원의 교신을 받으나, 회신하지 않는다. 파견 시각 이후 하달되는 지시는 없다. 이 파일에 적힌 것이 요원이 받은 지시의 전부다.'
+
+/**
+ * 행동 원칙 — G4's person, keeping her voice.
+ *
+ * G4 rewrote this section as someone speaking rather than a manual, and x6 does
+ * not take that back. What changes is where the judgment GOES: it is sent to
+ * 본부, which is the operator's only sight of it. The closing clause answers
+ * 식별's own `권한 — 청취 · 조회 · 요청. 집행권 없음` in the agent's words, and
+ * it is one line — 임무 carries three now, and a conduct that ran as long
+ * stopped reading as the one thing the agent is meant to hold on to.
+ */
+const CONDUCT =
+  '확인되지 않은 것을 단정하지 않으며, 자체 판단 시 해당 내용을 본부에 송신한다. 집행은 요원의 일이 아니지만, 판단은 요원의 일이다.'
+
+/**
+ * 교신 지침's standing orders (민서's own words, x5; x6 names the recipient).
  *
  * The line it replaces was an AGENT'S PROMPT wearing a dossier's clothes: it
  * named the round loop and the seam's own per-round budget ('라운드 종료 시
@@ -91,12 +145,15 @@ const FILED_NOTE = '파견 종료. 열람 전용'
  *
  * The replacement says what a real comms instruction would — and it hands the
  * one-sentence-per-line rule the one thing it never had: a reason a field agent
- * would accept for writing that way. Kept at module scope rather than inline in
- * `coverModel` so the model half stays a value, which `agent-file.test.ts (d)`
- * reads the source of.
+ * would accept for writing that way.
+ *
+ * x6 — 본부 is named (it is now a place 임무's third clause has established) and
+ * the signal 약해질, not 약할: it degrades over the day rather than being poor
+ * from the start, which is what the agent is being warned about.
  */
 const COMMS_ORDERS =
-  '회선이 열려 있는 동안 수시로 상황을 보고한다. 관측한 것과 판단한 것을 구분하여 송신하며, 수신 신호가 약할 수 있으니 문장을 짧게 끝맺는다.'
+  '회선이 열려 있는 동안 수시로 본부에 상황을 보고한다.\n' +
+  '관측한 것과 판단한 것을 구분하여 송신하며, 수신 신호가 약해질 수 있으니 문장을 짧게 끝맺는다.'
 
 interface SectionHead {
   title: string
@@ -167,31 +224,27 @@ const FLAG: Readonly<Record<DossierSection['state'], string>> = {
   filed: '열람',
 }
 
-/** 임무's mission line: the band is the pack's, the sentence is the design target's. */
-function missionBody(clockBand: string): string {
-  const day = clockBand.length > 0 ? `고정 하루(${clockBand})` : '고정 하루'
-  return `${day} 안에서, 회선 너머의 발신자가 말하는 재앙의 정체를 확인하고 인명 피해를 줄인다. 요원은 상황실을 벗어나지 않는다.`
-}
-
-/** Pure: the cover's sections — everything true of every agent, in order. */
-export function coverModel(clockBand: string): DossierSection[] {
+/**
+ * Pure: the cover's sections — everything true of every agent, in order.
+ *
+ * x6 — the four headings are unchanged, and the order is the order a posting
+ * order is read in: where you are sent and how far the radio reaches back
+ * (임무), how you decide inside that (행동 원칙), what nobody may look at
+ * (기질), and what you send back (교신 지침).
+ *
+ * It takes no argument. 임무 used to print the pack's clock band; a posting
+ * order does not print the shift's hours, the topbar clock does
+ * (`components/game-clock.ts`), and the window's pack-fed value is its doc
+ * number.
+ */
+export function coverModel(): DossierSection[] {
   return [
-    { title: '임무', slug: 'mission', state: 'fixed', body: missionBody(clockBand) },
-    {
-      title: '행동 원칙',
-      slug: 'conduct',
-      state: 'fixed',
-      body: '확인되지 않은 것을 단정하지 않는다. 판단이 필요한 순간에는 판단하고, 왜 그랬는지 남긴다.',
-    },
+    { title: '임무', slug: 'mission', state: 'fixed', body: MISSION },
+    { title: '행동 원칙', slug: 'conduct', state: 'fixed', body: CONDUCT },
     // No `slug`, and the omission is the seal: this is the one section whose
     // field set is pinned (see `SectionHead.slug`). Nothing points at it.
     { title: '기질', state: 'sealed', body: SEALED_COPY, bars: [...SEALED_BARS] },
-    {
-      title: '교신 지침',
-      slug: 'comms',
-      state: 'fixed',
-      body: COMMS_ORDERS,
-    },
+    { title: '교신 지침', slug: 'comms', state: 'fixed', body: COMMS_ORDERS },
   ]
 }
 

@@ -7,11 +7,23 @@
 // This module is what the channel carries.
 //
 // What it announces is the state an operator cannot afford to miss and cannot
-// infer from a document they are already reading: a new day opening, a wait
-// opening and resolving, a fallback degrading the round, the report landing,
-// the day closing onto the tally. The FEED itself is not routed through here —
-// it is a running log, and a log belongs in `role="log"` on its own list
-// (`components/run-feed.ts`), not re-read as a toast.
+// infer from a document they are already reading: a new day opening, a fallback
+// degrading the round, the report landing, the day closing onto the tally. The
+// FEED itself is not routed through here — it is a running log, and a log
+// belongs in `role="log"` on its own list (`components/run-feed.ts`), not
+// re-read as a toast.
+//
+// x6 — a WAIT is no longer on that list (민서, 08-09). `무전 회신 대기 중` and
+// `무전 회신 도착` used to bracket every model call in flight, here and on the
+// fanfold's own marker (`components/waiting-marker.ts`, deleted with them). A
+// day is seven rounds of three calls, so the two of them were most of what this
+// channel ever said — and both say only that the desk is still working, which
+// the next announcement proves a beat later with content. The seam still carries
+// `waiting` and the live driver still emits it; the toast says nothing for it,
+// and the wait is heard as the pause it is. The design note that asked for the
+// marker is `docs/design/phase2-ui/README.md`'s latency bullet and the spec's is
+// spec-client §3 inv 5 (its component table still lists a `WaitingMarker`);
+// both now describe a thing no client draws or says.
 //
 // Everything below is driven off the §5.2 stream. The one exception is
 // `announce()`, which the deploy control calls with the membrane's own answer:
@@ -21,12 +33,9 @@
 import type { FixtureDriver, ViewEvent } from '../driver/index.ts'
 import { callsignOf } from '../components/dossier.ts'
 
-/** How long a line stays on the visible toast; the live region keeps its text. */
-const SHOW_MS = 4000
-
+// x6b — `SHOW_MS` (4 s) went with the visible panel. It timed how long a line
+// stayed on screen; there is no screen now, and a live region does not expire.
 const RUN_OPENED = (run: number) => `${callsignOf(run)} 교신 시작`
-const WAIT_OPEN = '무전 회신 대기 중'
-const WAIT_DONE = '무전 회신 도착'
 const FALLBACK: Record<1 | 2 | 3, string> = {
   1: '회신 불량',
   2: '네트워크 지연 중',
@@ -36,7 +45,6 @@ const REPORT_FILED = '보고서가 부검 창에 도착했습니다'
 const RUN_CLOSED = '시뮬레이션 종료 — 결과는 현장 기록으로'
 
 let region: HTMLElement | null = null
-let hide: ReturnType<typeof setTimeout> | null = null
 
 /**
  * Says `text` on the desk's live region. A no-op before the shell has bound one,
@@ -48,11 +56,10 @@ export function announce(text: string): void {
   // speaks a CHANGE. A zero-width reset makes a repeat land as one.
   if (region.textContent === text) region.textContent = ''
   region.textContent = text
-  region.classList.add('on')
-  if (hide !== null) clearTimeout(hide)
-  hide = setTimeout(() => {
-    region?.classList.remove('on')
-  }, SHOW_MS)
+  // x6b — nothing is shown, so nothing has to be hidden again. The `.on` class
+  // and the timer that removed it drove a visible panel; the region is clipped
+  // out of the viewport now (`styles/shell.css`) and only assistive tech reads
+  // it, for which the last line standing is correct rather than stale.
 }
 
 /** The line an event is worth saying out loud, or `null` for the ones that are not. */
@@ -60,8 +67,11 @@ export function announcementOf(event: ViewEvent): string | null {
   switch (event.type) {
     case 'meta':
       return RUN_OPENED(event.run)
+    // x6 — spelled out rather than left to the default, so a reader who comes
+    // here looking for the wait announcement finds the decision instead of a
+    // gap: a wait is SAID nothing at all. See the header.
     case 'waiting':
-      return event.active ? WAIT_OPEN : WAIT_DONE
+      return null
     case 'fallback':
       return FALLBACK[event.call]
     case 'report':

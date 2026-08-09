@@ -40,6 +40,26 @@ const PORTED_DEVIATIONS = [
 ] as const
 
 /**
+ * Reference rows the port no longer carries AT ALL. `PORTED_DEVIATIONS` is a
+ * substitution valve; this is a removal, and it needs one of its own for exactly
+ * the same reason — `docs/design/` is frozen ([u2f#c10] in `dev-only.test.ts`),
+ * so a mechanism the client dropped cannot be edited out of the target.
+ *
+ * x6 (민서, 08-09): the waiting marker was removed outright — no feed line, no
+ * screen-reader toast, no CSS, and `components/waiting-marker.ts` deleted. The
+ * target's six `wait` rows (`무전 회신 대기 중`, app.js:428's `……` + breathing
+ * dots) were the whole of its content, so the port drops them and the paper
+ * shows nothing for a call in flight.
+ *
+ * What is NOT dropped is the seam's `waiting` bracket: `shared/view-driver.ts`
+ * is frozen, `driver/live-driver.ts` still emits it and the live adapter's queue
+ * is built around it, so `woodari-run03.ts` still opens and closes one — off the
+ * row that placed the call (`call: true`) now that there is no marker line to
+ * hang it on. `feed-shape.test.ts` (k) is what holds that.
+ */
+const DROPPED_KINDS = new Set<string>(['wait'])
+
+/**
  * Non-FEED copy revisions that supersede design-target vocabulary (the target
  * is frozen — see PORTED_DEVIATIONS above). These feed the trace haystack for
  * (b)/(d) only; they are not feed lines, so (g)/(h) do not read them.
@@ -123,12 +143,24 @@ describe('[u2f#c1] the stream IS the design target RUN 03 material', () => {
   })
 
   it('(g) the feed lines are the reference FEED rows, in order, kind and clock intact', () => {
-    const expected = designTarget().FEED.map((r) => ({
-      kind: r.kind,
-      clock: r.t,
-      text: nfc(ported(r.text)),
-      speaker: r.who ?? undefined,
-    }))
+    const reference = designTarget().FEED
+    // Non-vacuity for the valve: if the target ever stops carrying a dropped
+    // kind, the exclusion is dead and must come out rather than sit here
+    // silently widening what this guard will accept.
+    for (const kind of DROPPED_KINDS) {
+      expect(
+        reference.some((r) => r.kind === kind),
+        `DROPPED_KINDS excludes '${kind}', which the design target no longer has`,
+      ).toBe(true)
+    }
+    const expected = reference
+      .filter((r) => !DROPPED_KINDS.has(r.kind))
+      .map((r) => ({
+        kind: r.kind,
+        clock: r.t,
+        text: nfc(ported(r.text)),
+        speaker: r.who ?? undefined,
+      }))
     const actual = feedLines(woodariRun03.events).map((l) => ({
       kind: l.kind,
       clock: l.clock,

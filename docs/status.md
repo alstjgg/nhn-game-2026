@@ -28,6 +28,28 @@ when the operator presses the very thing the mark names, so a layer that ate tha
 press would deadlock its own walk. `e2e/tutorial.spec.ts (f)`/`(g)` prove the
 press lands in a browser; the source guard proves the declaration it rests on.
 
+**NOTHING INTERRUPTS THE DAY** (민서, 08-09). While the simulation is running the
+operator is reading the LIVE FEED, and the walk does not talk over it. Plates 5
+through 8 hang off a single gate — the day being over with both documents filed —
+and the run of them is a debrief: the REPORTS window, its two columns, and the
+gesture that moves a sentence out of them.
+
+The plate that broke this was the REPORTS one. The flow as first written asked for
+it "when the first REPORTS start coming in", and on this desk that lands mid-shift
+— a live day files seven reports across the day — so the walk raised a plate and
+dimmed the desk in the middle of the one stretch of the game the player is meant
+to be watching, one plate after having told them to watch it. `report` is no
+longer subscribed to at all; the record's own DOM is what says the day produced
+something, which is also the only thing those four plates need to be true.
+
+`e2e/tutorial.spec.ts (m)` is the guard, and it earns its 82 seconds: it arms a
+MutationObserver inside the page, sits through a **full real-time shift**, and
+asserts no plate was mounted at any point while the run phase was live. Sampling
+for a mid-day instant was tried first and is a race — the fixture files its one
+report a few seconds before 21:04, so a polling loop steps straight over the
+window it is trying to measure. Watching cannot miss it, and it proves the
+stronger claim.
+
 **Three defects were found and fixed at the source rather than worked around.**
 
 - **`.pg-turn:not([disabled])` was never a name for 다음 장.** It isolates the
@@ -48,31 +70,38 @@ press lands in a browser; the source guard proves the declaration it rests on.
   empty section. A keyboard mine raises no click at all, since a sentence is a
   `role="button"` span. The gate reads the mine's *outcome*, `#w-file .slot.filled`.
 
-**And one the desk could only show by being looked at.** `#coach` sat at z-index
-690, below `#toast` (950) — which is centred at 50%/50%, exactly where plate 1
-lands beside the AGENT FILE's head line on a wide desk. The opening announcement
-covered the tail of the first instruction the player ever reads and half of its
-button, and it recurs, because a toast fires on every `meta` and `run_end`. The
-coach is at **955** now: above the toast (a `pointer-events:none` reading that is
-gone in 2.6 s, and unaffected for a screen reader either way), above the grain the
-way `#confirm` already is, and still below the skip link (960) and the
-confirmation plate (970) — a mark must never be the thing on top of the
-irreversible question. `tests/shell/tutorial-observer.test.ts` now reads that
-whole ladder out of the other sheets, so the claim cannot go stale in a comment.
+**A toast collision was reported here and it is WITHDRAWN.** The branch was cut at
+#218 and the walk was reviewed against that base, where `#toast` was still a
+painted panel centred at 50%/50% — which is where plate 1 lands, so the opening
+announcement covered the first instruction the player ever reads. `#coach` was
+raised to 955 to get out from under it. That whole fix was unnecessary: x6b (#221)
+had already taken the toast's visible panel away and left a 1×1 live region, so on
+`main` the collision cannot happen. `main` is merged in (#221 · #222 · #223), the
+z-index is back at **690**, and the ladder claim is asserted rather than commented
+— `tests/shell/tutorial-observer.test.ts` reads `#topbar` / `#threads` / `#manual`
+/ `#signin` / `#grain` / `#confirm` / `#ending` out of their own sheets, and pins
+`#toast` as still being the 1×1 region, so a re-painted toast lands here as a
+failure instead of as an announcement across a plate. The grain falling across the
+plate is deliberate at 690: the mark is furniture on this desk, and a plate the
+film does not touch would read as pasted on from outside the fiction.
 
-**Verified:** `npm run check` green · 1648 unit tests · 206 e2e (chromium lane) ·
-7 preview-smoke on the real production artefact, load budget included ·
-`e2e/tutorial.spec.ts` 12 tests, run twice for flake · the eleven plates walked
-and screenshotted on both the fixture host and `npm run preview`, plus
-1280×800 and `prefers-reduced-motion`. `is-lit` appears nowhere in the bundle.
-The re-aim is logged in `DISCOVERY.md` per `[u11#c6] (l)`.
+**Merging `main` also brought the ending sequence** (`shell/ending.ts`, `#ending`
+at z-index 990) under the walk, and the conflicts in `dossier.ts` (x6 rewrote
+`coverModel` to take no argument) and `index.css` (the new `win-ending.css`
+import) are resolved keeping both sides: main's copy and structure, the branch's
+section slugs.
+
+**Verified after the merge:** `npm run check` green · **1677** unit tests ·
+**206** e2e (chromium lane) · 7 preview-smoke on the real production artefact,
+load budget included · `e2e/tutorial.spec.ts` **13** tests · the eleven plates
+walked and screenshotted on both the fixture host and `npm run preview`, plus
+1280×800 and `prefers-reduced-motion`. `is-lit` appears nowhere in the bundle. The
+re-aim is logged in `DISCOVERY.md` per `[u11#c6] (l)`.
 
 **Not done, deliberately:** the walk puts no plate on the 배치 확인 modal and does
 not re-show plate 3 if the operator answers 취소 (민서's call). Nothing stalls —
 plate 4 is armed on the simulation starting, so it appears whenever they do
-commit; they simply lose that one hint. Note also that in the FIXTURE lane the
-demo day files its one report at ~78 s, so plate 4 sits alone for most of a
-minute; a live day files seven across the shift and does not have that gap.
+commit; they simply lose that one hint.
 
 ## Status (2026-08-08) — the loop the player operates, and two regressions only the live path could show
 

@@ -9,9 +9,9 @@
 //    every line arrives on the DRIVER's event stream and lands only when the
 //    driver's clock releases it ([u5#c6]). This module owns no timer, no clock
 //    and no wall-clock read — its only inputs are `subscribe` and `frame`.
-//  * the reference closed an open wait whenever any non-wait line was pushed;
-//    the seam states it outright (`waiting active:false`), so that event is the
-//    only thing that resolves a marker here ([u5#c4]).
+//  * the reference printed a waiting marker for every call in flight and closed
+//    it when the answer landed. x6 removed the marker outright, so there is no
+//    wait to resolve and `waiting` draws nothing at all — see `appendLine`.
 //
 // The line MODEL is kept apart from the DOM on purpose: `feedLineModel` is
 // pure, so inv 2's digit scan ([u5#c3]) runs in `environment: 'node'`.
@@ -21,10 +21,10 @@
 import type { FeedKind, FeedLine, FixtureDriver, ViewEvent } from '../driver/index.ts'
 import { animationsFrozen, displayStamp, registerAnimation } from '../driver/index.ts'
 import { el } from '../shell/dom.ts'
+import { publishFeedStamp } from '../shell/feed-clock.ts'
 import { FALLBACK_CLASS, fallbackNoticeLine } from './fallback-notice.ts'
 import type { FallbackClass } from './fallback-notice.ts'
 import { tallyLineText } from './tally-line.ts'
-import { waitingModel } from './waiting-marker.ts'
 
 /* ── the model ───────────────────────────────────────────────────────────── */
 
@@ -120,8 +120,12 @@ export function feedLineModel(line: FeedLine, callsign = 'ECHO-1'): FeedNode {
       ])
     case 'mark':
       return envelope(kind, line.clock, [{ p: 'span', text: line.text }])
+    // x6 — `wait` survives here because it is the SEAM's kind and the seam is
+    // frozen (`shared/view-driver.ts`, guarded by `seam-shapes.test.ts`), not
+    // because anything prints one: `createRunFeed` drops wait lines before they
+    // reach the DOM and the waiting markers are gone (see `appendLine`). The
+    // case stays so the projection is total for every kind the seam can send.
     case 'wait':
-      return waitingModel(line)
     case 'event':
     case 'symptom':
     case 'fallback':
@@ -215,10 +219,15 @@ const FOLLOW_SLACK_RATIO = 0.25
  * scrollbar the operator just used to leave it, and the window goes on printing
  * `열람 전용 — 이 창은 조작되지 않습니다` without lying.
  *
- * `미열람` rather than anything from the 회신 family — `무전 회신 대기 중`,
- * `무전 회신 도착`, `회신 불량` each already name one specific event, and this
- * counts every kind the run prints. It is the window's own word (`열람 전용`)
- * turned back on the reader: what the paper holds that they have not read yet.
+ * `미열람` rather than anything from the 회신 family — `회신 불량` and the rest
+ * each already name one specific event, and this counts every kind the run
+ * prints. It is the window's own word (`열람 전용`) turned back on the reader:
+ * what the paper holds that they have not read yet.
+ *
+ * x6 — the family this was chosen against is two members smaller now: the wait
+ * pair (`무전 회신 대기 중` / `무전 회신 도착`) went with the markers and the toast
+ * that said them. The reasoning is unchanged, which is the point of recording
+ * it against a FAMILY rather than against a list.
  */
 const behindLabel = (missed: number): string => `▾ 미열람 ${missed}줄`
 
@@ -313,11 +322,8 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   let band = false
   let symptoms = 0
   let stamp = ''
-  let answered = false
   let callsign = 'ECHO-1'
   let pending: { cls: FallbackClass; code: string } | null = null
-
-  const openWait = (): Element | null => list.querySelector('li.fl-wait:not(.resolved)')
 
   const motionless = (): boolean => {
     if (animationsFrozen()) return true
@@ -414,7 +420,15 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
 
     if (node.kind === 'event' || node.kind === 'npc') band = !band
     list.append(lineElement(node, (node.kind === 'event' || node.kind === 'npc') && band))
-    if (node.stamp !== null && node.stamp !== '') stamp = node.stamp
+    if (node.stamp !== null && node.stamp !== '') {
+      stamp = node.stamp
+      // x6 — the top bar's clock is THIS stamp, published as the line lands in
+      // the DOM rather than as the event arrives. The reveal queue below holds
+      // lines back (and holds harder on a report), so publishing from `receive`
+      // would put the chrome ahead of the paper again — which is the mismatch
+      // the whole slot exists to close (`shell/feed-clock.ts`).
+      publishFeedStamp(node.stamp)
+    }
     if (!attached) {
       missed += 1
       paintBehind()
@@ -423,16 +437,18 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   }
 
   const appendLine = (line: FeedLine): void => {
-    // The seam declares the wait over (`waiting active:false`) one event BEFORE
-    // the answer itself — same minute, but the paper is still blank. The marker
-    // stands in for the missing answer, so it comes down when the answer lands,
-    // not a beat earlier; the seam event is still the only thing that ends it.
-    if (answered) {
-      for (const marker of list.querySelectorAll('li.fl-wait:not(.resolved)')) {
-        marker.classList.add('resolved')
-      }
-      answered = false
-    }
+    // x6 — a wait line is not printed at all (민서, 08-09). The fanfold used to
+    // carry a `……무전 회신 대기 중 ● ● ●` marker for every call in flight, put up
+    // on the seam's `waiting active:true` and struck out on the answer. It was
+    // latency told diegetically, and on a day of seven rounds it was also the
+    // most frequent thing on the paper: three markers a beat, each one saying
+    // only that the desk was still working. The answer itself already says that,
+    // a beat later, with content. The markers are gone and nothing replaces
+    // them — a wait now reads as the pause it is.
+    //
+    // Dropped HERE rather than at the model, because `feedLineModel` is the pure
+    // projection the seam's every kind must survive (see its `wait` case).
+    if (line.kind === 'wait') return
     if (pending !== null && line.kind !== 'fallback') {
       append(feedLineModel(fallbackNoticeLine(pending.cls, line.clock)))
       pending = null
@@ -470,12 +486,11 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
         // notice of its own, so a fallback is never silent.
         pending = { cls: FALLBACK_CLASS[event.call], code: event.code }
         break
+      // `waiting` is still on the seam and the live driver still emits it
+      // (`driver/live-driver.ts`), because it is what the ADAPTER's own queue is
+      // built around. The fanfold simply no longer draws anything for it — x6,
+      // and see `appendLine` for why.
       case 'waiting':
-        if (!event.active) {
-          answered = true
-        } else if (openWait() === null) {
-          append({ ...waitingModel(event.for), stamp })
-        }
         break
       case 'score':
         // The day's count, from the ledger the run actually scored — see

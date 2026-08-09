@@ -52,12 +52,11 @@ export const FEED = {
 /** `(변화 없음)` — the empty symptom set's own copy (§7 #2), not fixture text. */
 export const EMPTY_SYMPTOM = '(변화 없음)'
 
-/** The three diegetic wait phrasings by `waiting.for` (design README 74–76). */
-export const WAIT_PHRASE = {
-  judgment: '무전 회신 대기 중',
-  narration: '현장 상황 수신 대기 중',
-  report: '보고서 회신 대기 중',
-} as const
+/* x6 — `WAIT_PHRASE` and the wait selector are gone (민서, 08-09). There is no
+   wait phrasing left to name and no `.fl-wait` node to select: the waiting
+   marker was removed outright and a wait now draws nothing at all. `waiting` is
+   still on the seam, so a suite that wants to observe one reads it back off the
+   stream through `window.__shell.frame().events` — never off the DOM. */
 
 /* ── reports + mining (items 4, 5) ───────────────────────────────────────── */
 export const REPORTS = {

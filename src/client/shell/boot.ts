@@ -16,6 +16,7 @@ import { installAudio } from '../audio/index.ts'
 import { createAnnouncer } from './announcer.ts'
 import { bindRadioSfx, sfxHandOver } from './radio-sfx.ts'
 import { must } from './dom.ts'
+import { installEnding } from './ending.ts'
 import { openManual } from './manual.ts'
 import { openSignIn, signInSkipped } from './sign-in.ts'
 import { installTutorial } from './tutorial.ts'
@@ -126,7 +127,14 @@ function renderIdentity(): void {
 const HIDDEN_PUMP_MS = 250
 
 /**
- * Pumps real elapsed milliseconds into the driver and repaints the clock.
+ * Pumps real elapsed milliseconds into the driver. That is the whole job.
+ *
+ * x6 — it used to repaint the top bar's clock as well, from `driver.clock.at()`.
+ * The digits now read the LIVE FEED's latest printed stamp instead
+ * (`shell/feed-clock.ts`), so the pump has nothing left to paint and the `paint`
+ * parameter is dropped rather than handed a no-op: a callback nobody passes is
+ * an invitation to start feeding this view again from the sim clock, which is
+ * exactly the disagreement the seam was built to close.
  *
  * TWO PUMPS, ONE TIMELINE. A frame callback does not fire in a hidden document
  * — a background tab, a minimised window, a window another app fully covers —
@@ -148,7 +156,7 @@ const HIDDEN_PUMP_MS = 250
  * with and the one that keeps running while hidden, so `previous` carries
  * across a swap with no seam: no minute is double-counted and none is dropped.
  */
-function runPump(driver: FixtureDriver, paint: (at: string, minute: number) => void): void {
+function runPump(driver: FixtureDriver): void {
   let previous: number | null = null
   let frame: number | null = null
   let timer: number | null = null
@@ -156,7 +164,6 @@ function runPump(driver: FixtureDriver, paint: (at: string, minute: number) => v
   const pump = (now: number): void => {
     if (previous !== null) driver.advance(now - previous)
     previous = now
-    paint(driver.clock.at(), driver.clock.minute)
   }
 
   const step = (now: number): void => {
@@ -228,11 +235,17 @@ export async function bootShell(): Promise<void> {
       : ((await openLiveDesk(identity)) ??
         createRunLoopDriver([placeholderBootRun(identity)]))
 
-  // 3 — the chrome the driver feeds.
-  const clock = createGameClock({
+  // 3 — the chrome. The run counter is driver-fed; the clock is not any more.
+  //
+  // x6 — the clock takes the pack's opening stamp and then follows the LIVE
+  // FEED's own printed stamps (`shell/feed-clock.ts`), so it is wired here
+  // without the driver and without `identity.end`. The terminal stamp was the
+  // right end of a progress bar that no longer exists; the pack still carries it
+  // and the driver still ends the run on it — the chrome simply stopped printing
+  // a second, faster time next to the one the operator can read off the paper.
+  createGameClock({
     root: must('#clockUnit'),
     start: identity.start,
-    end: identity.end,
   })
   const runs = createRunCounter(must('#ddayUnit'))
   driver.subscribe((event) => {
@@ -323,7 +336,7 @@ export async function bootShell(): Promise<void> {
     }
   }
 
-  runPump(driver, clock.paint)
+  runPump(driver)
   desk.focus('feed')
 
   // 6 — the hand-over. Signed in, the operator gets one thing on the desk: the
@@ -353,4 +366,14 @@ export async function bootShell(): Promise<void> {
   // `visibility:hidden` by `body.booting`. The eye needs the curtain up; the
   // ear does not.
   installTutorial(window, { driver, deskReady: revealed })
+
+  // 8 — the two endings (x6). Mounted on the same terms as the walk above it,
+  // for the same reason: it is an observer over the §5.2 stream and the DOM, it
+  // sends no op, and nothing in this file knows what it decides. What it waits
+  // for is a day CLOSING — either on one death, or with the allotment spent —
+  // and it may wait the whole sitting, so it is not awaited either.
+  //
+  // It waits on `revealed` rather than `atTheDesk` for the walk's own reason:
+  // the curtain it eventually raises is measured against a desk that is up.
+  installEnding(window, { driver, deskReady: revealed })
 }

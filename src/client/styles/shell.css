@@ -108,7 +108,16 @@
 .tb-case b{font-family:var(--myeong);font-weight:700;font-size:var(--fs-12);color:var(--txt)}
 
 /* clock */
-.tb-clock{display:flex;flex-direction:column;justify-content:center;gap:var(--space-3);
+/* x6 — ONE ROW, not a stack of three. The unit was face / bar / rate stacked in
+   a column, and the bar is gone: it drew `driver.clock`'s own minute against the
+   band while the digits beside it now read the LIVE FEED's printed stamp
+   (`shell/feed-clock.ts`), so it was a second and faster clock in the same box.
+   With it went the reason for the column — a lone `.clk-face` centred over an
+   empty `.clk-rate` reads as a dropped element, so the mute toggle comes up onto
+   the digits' own line and the unit becomes what it now is: SIM · time · sound.
+   The 405px column and the two hairline dividers are untouched — they are what
+   holds the top bar's three-part balance, not anything the bar needed. */
+.tb-clock{display:flex;align-items:center;justify-content:center;gap:var(--space-14);
   padding:0 var(--space-18);width:405px;flex:0 0 auto;position:relative}
 .tb-clock::before,.tb-clock::after{content:'';position:absolute;top:14px;bottom:14px;width:1px;background:var(--ink-line)}
 .tb-clock::before{left:0}.tb-clock::after{right:0}
@@ -118,12 +127,11 @@
   font-variant-numeric:tabular-nums;text-shadow:0 0 14px var(--glow-clk)}
 .clk-digits.tick{animation:tickFlash .18s ease-out}
 @keyframes tickFlash{0%{color:var(--txt-max);text-shadow:0 0 20px var(--glow-tick)}100%{}}
-.clk-term{font-size:var(--fs-9-5);color:var(--seal);letter-spacing:.1em;font-weight:600}
-.clk-bar{position:relative;height:5px;background:var(--track);overflow:hidden}
-.clk-bar i{position:absolute;inset:0 auto 0 0;width:0%;
-  background:linear-gradient(90deg,var(--gauge-1),var(--gauge-2));transition:width .25s linear}
-.clk-bar u{position:absolute;right:0;top:0;bottom:0;width:3px;background:var(--seal)}
-.clk-rate{display:flex;gap:var(--space-3);justify-content:center}
+/* x6 — `.clk-term` (`→ 23:12`) and the whole `.clk-bar` are deleted, not hidden:
+   the gutter was the bar's right END and states a minute the pack already ends
+   the run on, and the fill was the sim clock drawn as geometry. Both are the
+   time the chrome no longer claims to know. */
+.clk-rate{display:flex;align-items:center;gap:var(--space-3);justify-content:center}
 /* `.snd-btn` is the audio mute toggle — the only control left in this row.
    W4 retired `.rate-btn` (×1 / ×4 / pause) along with the transport itself. */
 .snd-btn{font-size:var(--fs-8);letter-spacing:.08em;color:var(--txt-6);
@@ -135,7 +143,20 @@
 /* d-day */
 .tb-dday{display:flex;flex-direction:column;justify-content:center;gap:0;
   padding-left:var(--space-16);text-align:right;width:198px;flex:0 0 auto}
+/* x6 — the tracking survives the language swap, measured rather than assumed.
+   `REMAINING ATTEMPTS` is 18 monospaced characters: 18 × (9px × .6 advance +
+   9px × .24 tracking) ≈ 136px against the 182px this unit has inside its
+   16px pad. It fits with room, so .24em stays — it is what makes this line read
+   as the same rail as OPERATOR / CASE rather than as a word. A longer label
+   than this one does NOT fit: tighten here before lengthening the copy. */
 .dd-label{font-size:var(--fs-7-5);letter-spacing:.24em;color:var(--txt-7);line-height:1.5}
+/* x6 — this line reads 잔여 시행 now, and the inherited face already carries it:
+   `--mono` is 'IBM Plex Mono','Nanum Gothic Coding',… and Plex has no Hangul, so
+   the four syllables fall through to Nanum, which IS vendored at 700
+   (`public/assets/fonts/nanum-gothic-coding/700/`) — real bold, not a synthesised
+   one, and the same face every Korean surface on this desk renders in. No
+   font-family declared here on purpose: naming one would be a fourth answer to a
+   question `tokens.css` has already answered twice. */
 .dd-value{font-size:var(--fs-15);font-weight:700;letter-spacing:.09em;color:var(--seal);
   line-height:1.25;font-variant-numeric:tabular-nums}
 .dd-value.bump{animation:ddBump .6s cubic-bezier(.3,1.6,.4,1)}
@@ -229,19 +250,34 @@ body.booting .win{visibility:hidden}
 .win-grip::after{content:'';position:absolute;right:5px;bottom:5px;width:12px;height:12px;
   border-right:1px solid var(--sh-35);border-bottom:1px solid var(--sh-35)}
 
-/* ═══ TOAST ═══════════════════════════════════════════════════════════════ */
-/* x5b — the desk's own line moved to the MIDDLE of the screen.
-   It sat at the foot of the viewport, which is where a web page puts a toast
-   and where nobody watching a radio feed is looking: '무전 회신 대기 중' is the
-   desk telling the operator the day has stopped for a moment, and it was
-   arriving in the one band of the screen the three windows do not occupy.
-   Centred, it lands in the eyeline. Still `role="status" aria-live="polite"`,
-   still `pointer-events:none`, still gone in 2.6 s — a reading, never a
-   control, so it never stands between the operator and a window. */
-#toast{position:fixed;left:50%;top:50%;transform:translate(-50%,calc(-50% + 20px));z-index:950;
-  padding:var(--space-8) var(--space-18);background:var(--chrome-hi);border:1px solid var(--ink-line);
-  border-left:2px solid var(--seal);
-  font-family:var(--myeong);font-size:var(--fs-11-5);color:var(--txt);letter-spacing:.02em;
-  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
-  box-shadow:0 14px 30px -12px var(--sh-9)}
-#toast.on{opacity:1;transform:translate(-50%,-50%)}
+/* ═══ THE LIVE REGION — heard, never seen (x6b) ═══════════════════════════
+   This was a toast, and x5b had moved it to the MIDDLE of the screen on the
+   reasoning that the foot of the viewport is where a web page puts one and
+   where nobody watching a radio feed is looking. The centre fixed that and
+   bought the opposite problem: a panel over the desk, in the eyeline, on every
+   run open, every fallback, all seven reports of a day and every slot press.
+   The desk was narrating itself to an operator who was already reading the
+   window the news came from (민서, 08-09, playtest).
+
+   So it is not drawn at all any more. It is NOT `display:none` and NOT
+   `visibility:hidden` — either would take it out of the accessibility tree and
+   silence the eleven lines it carries, which is the one audience that has no
+   window to read them in. The clip pattern below leaves it in the tree, in the
+   layout, and off the screen: `role="status" aria-live="polite"` still speaks,
+   and nothing above the desk ever paints.
+
+   `#toast.on` went with the panel — there is no shown state left to toggle, so
+   `shell/announcer.ts` no longer sets the class or holds the 4 s timer that
+   cleared it. The region simply keeps its last line, which is what a live
+   region is for.
+
+   The 1px box is deliberate and is NOT `width:0`: a zero-area element is
+   dropped from the accessibility tree by some engines, which would silence the
+   region as surely as `display:none`. The usual sr-only recipe pairs that box
+   with `margin:-1px` to keep it out of the flow — dropped here, because
+   `position:fixed` already takes it out of the flow and `margin` is on the
+   token lint's property list (`tests/styles/token-lint.test.ts`, and inv 8's
+   wider scan), where a raw `-1px` is an offender. `width`/`height`/`clip-path`
+   are structural properties and take literals by that same rule.             */
+#toast{position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;
+  overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none}

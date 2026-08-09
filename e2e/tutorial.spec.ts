@@ -26,7 +26,7 @@
 // old walk's eight-second hold is gone and plates advance on presses.
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
-import { confirmDeploy, drain, settled } from './fixtures/harness.ts'
+import { confirmDeploy, drain, settled, tallyPhase } from './fixtures/harness.ts'
 
 const WALK = './?tutorial=show'
 
@@ -211,7 +211,7 @@ test.describe('[x3] the walk is opt-in for every lane but its own', () => {
 /* ══ the plates, in order ════════════════════════════════════════════════ */
 
 test.describe('[x3] the walk says what the operator needs next', () => {
-  test.setTimeout(180_000)
+  test.setTimeout(240_000)
 
   test('[x3] (d) the desk is uncovered BEFORE the first plate lands', async ({ page }) => {
     // The regression this pins, carried over from the walk this replaces: the
@@ -369,6 +369,75 @@ test.describe('[x3] the walk says what the operator needs next', () => {
     await page.locator(OK).click()
     await expect(page.locator(PLATE)).toHaveCount(0)
     await expect(page.locator(LAYER)).toHaveCount(0)
+  })
+
+  test('[x3] (m) NOTHING interrupts the day — the walk is silent while the sim runs', async ({ page }) => {
+    // 민서's rule, 08-09, and the reason plates 5–8 were moved off the day's
+    // first `report` and onto its close: while the simulation is running the
+    // operator is reading the LIVE FEED, and the walk does not talk over it.
+    //
+    // The plate that USED to break this is the REPORTS one. A live day files
+    // seven reports across the shift, so gating on the first of them raised a
+    // plate and dimmed the desk mid-day — one plate after having told the
+    // operator to watch the feed.
+    await atTheDesk(page)
+    await walkTo(page, SAID[3]!)
+    // The operator reads the LIVE FEED plate, dismisses it, and settles in.
+    await page.locator(OK).click()
+    await expect(page.locator(PLATE)).toHaveCount(0)
+
+    // Now run the day forward on the SIM clock rather than the wall clock, in
+    // steps, and stop as soon as it has filed a report. `__shell.clock.advance`
+    // drains the stream once the clock ends, so the loop has to stop short of
+    // 21:04 for this to be a mid-day measurement at all. The fixture's report
+    // lands ~4.6 s of real time before the close, so a 2 s step cannot straddle
+    // both events — it is guaranteed to land inside that window.
+    // WATCHED, not sampled. Polling for a mid-day moment is a race here: the
+    // fixture files its one report a few seconds before 21:04, so a sampling loop
+    // can step straight over the window it is trying to measure. An observer
+    // inside the page cannot miss it — and it proves the stronger claim anyway,
+    // which is that no plate was mounted at ANY point while the run was live,
+    // rather than that none was up at one sampled instant.
+    //
+    // The run's own phase is the guard on the recorder, read from the AGENT
+    // FILE's dev handle: `'tally'` is the day being over, so a plate seen while
+    // the phase is anything else is the walk talking over the simulation. That
+    // also removes the race at the other end — plate 5 is SUPPOSED to arrive
+    // once the phase turns, and it must not be recorded as a violation.
+    await page.evaluate(() => {
+      const w = window as unknown as {
+        __sawPlate?: boolean
+        __plateObs?: MutationObserver
+        __agentFile?: { phase(): string }
+      }
+      w.__sawPlate = false
+      w.__plateObs = new MutationObserver(() => {
+        if (w.__agentFile?.phase() === 'tally') return
+        if (document.querySelector('.coach-plate')) w.__sawPlate = true
+      })
+      w.__plateObs.observe(document.body, { childList: true, subtree: true })
+    })
+
+    // Let the shift run its full length, in real time, exactly as a player would
+    // sit through it. ~82 s: 784 sim minutes at MS_PER_SIM_MIN.
+    await expect
+      .poll(() => tallyPhase(page), { timeout: 150_000, intervals: [1_000] })
+      .toBe('tally')
+
+    const sawPlate = await page.evaluate(() => {
+      const w = window as unknown as { __sawPlate?: boolean; __plateObs?: MutationObserver }
+      w.__plateObs?.disconnect()
+      return w.__sawPlate === true
+    })
+    expect(sawPlate, 'the walk raised a plate while the simulation was still running').toBe(false)
+
+    // The day really did produce a report on the way past — otherwise there was
+    // nothing for the old gate to have fired on and this proves nothing.
+    await expect(page.locator(`${REP_WIN} .doc-facts [data-sentence-id]`).first()).toBeVisible({
+      timeout: DAY_MS,
+    })
+    // And now that it is over, the walk picks back up.
+    await plate(page, SAID[4]!, DAY_MS)
   })
 })
 

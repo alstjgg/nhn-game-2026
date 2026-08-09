@@ -72,6 +72,22 @@ function sourceOf(file: string): string {
 }
 
 /**
+ * Comment bodies replaced by spaces — the prose goes, the newlines stay so any
+ * line number a failure reports still points at the right line.
+ *
+ * x6b — needed because this suite asserts the ABSENCE of a string now, and the
+ * modules that removed one quote it in the comment that records the removal.
+ * Same trick as `tests/windows/live-feed.test.ts`'s `blank()`; kept local
+ * rather than shared, since neither suite imports the other.
+ */
+function blankComments(text: string): string {
+  const keep = (s: string): string => s.replace(/[^\n]/g, ' ')
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, keep)
+    .replace(/(^|[^:])\/\/[^\n]*/g, (m, p1: string) => p1 + keep(m.slice(p1.length)))
+}
+
+/**
  * Every string/template literal in `text` (regex-level, good enough for a lint).
  *
  * U3 (playtest g3-1) — the template-literal alternative now treats a `${…}`
@@ -472,9 +488,22 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
     )
   })
 
-  it('(i) source: no spinner — the wait is diegetic (design D2)', () => {
+  it('(i) source: no spinner — and, since x6b, no wait line either', () => {
+    // The first half is unchanged and still the point: whatever the desk does
+    // while the hold runs, it may not be a machine measuring itself.
     expect(offenders(/spinner|loading|is-busy|throbber/i)).toEqual([])
-    expect(sourceOf(AGENT_FILE_TS)).toContain('……보고서 정리 중')
+
+    // The second half INVERTED. It used to require `……보고서 정리 중` to be in
+    // this file — the diegetic wait line design D2 asked for instead of a
+    // spinner. The line is gone (민서, 08-09, playtest): it was the fanfold's
+    // removed marker mechanism wearing the same `……` leader, mounted in the
+    // AGENT FILE, and the note is blank across the hold now.
+    //
+    // Read with comments blanked, because the header of `windows/agent-file.ts`
+    // quotes the deleted literal to record where it went — a scan that counted
+    // that would be answered by the very prose explaining the removal.
+    const literal = blankComments(sourceOf(AGENT_FILE_TS))
+    expect(literal, 'a `……` wait line is authored in the AGENT FILE again').not.toMatch(/……/)
   })
 
   // R4 on score-tally.ts:258 (round 1): the count-up may not ANNOUNCE a
