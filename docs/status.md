@@ -224,7 +224,9 @@ own opening) and the place has to match `places.json`, the symptoms, the timelin
 every line the feed prints. They were changed ahead of the sports-dome pack landing, so
 if the desk clock does not open on 18:38 it is probably this file that is wrong. The
 endings still name 해원터널 (and 갱구, and 341명) — deliberately out of scope, handled by
-the deploy that is landing the pack.
+the deploy that is landing the pack. **[Closed — that deploy is #230, one entry down. It
+merged before this one, so by the time you read this the endings name the dome. The
+agreement this paragraph asks for holds: `meta.json`'s `start` is 18:38.]**
 
 **THE ROOM IS ALREADY THERE WHEN THE OPERATOR SIGNS IN.** `openTheRoom()` moved off
 `deskReady` and onto the audio `unlock()`, reversing its own recorded ruling that "the
@@ -295,6 +297,126 @@ the file is untouched by x10. That is structurally the same family as the four
 wall-clock-coupled e2e assertions that took the `desk` required check offline on
 08-09 — a unit suite is supposed to be the fast deterministic gate, and this one has
 a production build in it.
+
+## Status (2026-08-10) — the desk plays a different disaster, and the agent it plays against was re-measured
+
+PR #230, merged before x10 above. The scenario-drafting skill and the generation
+guide had stopped tracking the concept several changes ago, so the model was rebuilt
+from scratch without consulting either, a writing brief was derived from it, and one
+pack was authored through that brief and shipped. **`PACK_SLUG` is now 멈춘회전문.**
+
+**THE ORDER OF AUTHORING INVERTED.** Endings → routes → gates → the knowledge each
+gate needs → and the timeline written last, carrying only rows that deliver that
+knowledge. Four things follow. A failure is not where the run stops but where the
+agent's hands stop reaching — the clock keeps running, reports keep arriving, and
+that tail is the next attempt's briefing, which is the only place keys come from. The
+first attempt passes exactly one gate and then fails, because the knowledge the
+remaining edges demand does not exist until the disaster is over, which makes the
+no-intervention default a matter of structure rather than probability. The tally is
+decided by the last node reached. And temperament conditional clauses are **gone** —
+the lock existed to manufacture failure in a scenario that had none of its own, and
+the graph does that job now. The decisions record is `planning/scenario-model.md`;
+the brief is `planning/scenario-writer-brief.md`.
+
+**멈춘회전문.** An air-supported dome under heavy snow: the roof sags, and the people
+inside leave through a revolving door that turns two at a time. The way out and the
+force holding the roof up are the same variable, so opening a door is the same act as
+bringing the roof down. Three gates, two winning routes, three characters, seventeen
+timeline rows, 18:38–21:35, nineteen beats. The ladder, verified against the engine's
+own scorer — monotone, and the floor is the record, not an invention:
+
+    F1  no intervention   207   185 · 21 · 문세라 dies
+    F2  +headcount         57    44 · 12 · 문세라 dies
+    F3  +west sleeve       12     9 ·  3 · 문세라 lives
+    WIN_A +vent restored    0     표기웅 charged, the sign-off investigated
+    WIN_B +north door       0     표기웅 charged, 문세라 fractures an ankle
+
+**TWO GATES ARE MEASURED AND ONE IS NOT, AND THE FAILURE IS ON THE RECORD.** 36 arms,
+360 calls through `tools/probe`, every one pre-registered with an arm diff and a
+placebo. G1: baseline 10/10 on the default, key 10/10 to the non-default, placebo
+10/10 back on the default. G2: baseline 10/10, key moved 7/10, placebo 9/10. Both
+pass their pre-registered drop conditions. **G3 was repaired six times and failed six
+times** — three label rewrites, one addition to world physics, one cost-symmetry
+rewrite, one temperament change — and the baseline never moved. The diagnosis is the
+position, not the wording: at 19:58 opening the emergency door is the correct act, and
+no key gates a correct act. It routes cleanly to `WIN_B`; what the player hands over
+just does not decide it. Records in `planning/dday-mechanism/runs/DOME-*`, failures
+included, and the brief's §5 carries the rules the probes bought.
+
+**THE AGENT WE MEASURED WAS NOT THE AGENT WE DEPLOYED, in two places.** This is the
+part worth carrying forward: gate numbers describe a *prompt*, and they describe the
+*game* only if the game sends that prompt. (1) The three DOME suites carried their own
+`FLAW` · `INCIDENT` · `PRIORITY_LIST`; the proxy shipped four different values
+globally. `default-prompt.ts` had predicted this in its own header — "if a second
+scenario wants a different flaw, this becomes a lookup keyed by pack, and the payload
+has to name the pack" — so `DEFAULT_PROMPTS` is now keyed by slug and `CallRequest`
+carries `pack`. The slug travels as a NAME, never as values: the client may ask for an
+agent and still cannot author one, so the refusal in call contracts §6 is untouched.
+An unknown slug falls back to the incumbent rather than 400ing, because the two tiers
+deploy on separate triggers and a client can outrun its proxy — rejecting would turn
+that window into "every Call 1 fails and every gate takes its default stance". (2) The
+probe fixture ADDRESSES the agent (너는 회선 저쪽이…) and the pack DESCRIBED it
+(요원은…), with `renderTemperament` passing that straight through. The pack now carries
+the fixture's wording and the renderer no longer inserts a blank line under its header,
+which none of the three fixtures have either. **What stops both from rotting is
+`tests/shared/default-prompt-coverage.test.ts`**: it fails when `PACK_SLUG` has no
+entry, and it reads the suite JSON to check each entry still matches the suite that
+measured it, slot for slot. A literal copied into the test would have drifted in
+exactly the silence it exists to break. Wire shape amended in `contract-calls.md`
+§10/§11.
+
+**THE ENDING WAS NOT A ONE-LINE SWITCH, and one constant decided whether the game
+works.** `RESCUE_TOTAL` was 1 — 전구간정상's rescue left 오세라 inside the ninth door.
+Both of this pack's winning routes close on **0** and no run closes on 1, so leaving it
+alone would have made the good ending unreachable: the player wins and sees nothing.
+`TUNNEL_OCCUPANTS` 341 → `SITE_OCCUPANTS` 736. One FACT changed with it: 오세라 walked
+into the tunnel and was never one of its 341, so her death was held out of the crowd
+arithmetic and the plate's two numbers deliberately did not sum; 문세라 is inside the
+dome from the first minute, so here they do. The hold-out mechanism is kept rather than
+inlined — a future pack whose named person stands outside the crowd needs it back
+without a rewrite — and the test says plainly that on this pack that branch is untested
+by construction. **One guard was lost and is recorded as lost:** the old test asserted
+"total 0 is NOT the good ending", which also stood watch over a short or unscored
+ledger reading as a perfect day. Here 0 IS the win, so the two are no longer
+distinguishable at that seam; the real defence was always upstream (`scoreRecord`
+returns null, not 0, when no unit resolved) and the inverted test now says so. Copy
+re-authored for the dome by 민서, three beats and the shared sentence kept.
+
+**AUTHORING TOOLS RELAXED, AND A FROZEN PATH RELEASED.** The graph-first method uses
+neither temperament clauses nor key conditions, and the schemas made all three
+mandatory — so `key_conditions` and `key_examples` left `required` and `clauses.minItems`
+went 1 → 0. Every edit is a WIDENING: nothing changed type, nothing changed shape, and
+전구간정상 and 우는다리 still lint at ERROR 0. That put the work under
+`data/scenario/_schema/`, which the two frozen-input guards hold, so both now release
+it — and the release note separates the two claims that kept it frozen. The freeze's own
+premise died at #110 with the rest. What kept it frozen past that was the second claim,
+that §3.6's grammar was sized so hardening would never need the schemas, and that held
+only for packs authored the way 우는다리 was.
+
+**THE LINT FLAG LIST IS NOT A WORKLIST.** Six FLAGs: three `edge_predicates empty`,
+which is dead wiring (compiled, returned as `nextNode` from `submitStance`, consumed by
+nothing in `src`), and three second-meter-unbound, which is the idiom in every pack
+here. For scale: 멈춘회전문 6, 전구간정상 9, 우는다리 26. This pack is cleaner than what
+already shipped.
+
+**IT DEPLOYED, AND THAT WAS CHECKED RATHER THAN ASSUMED.** All three workflows green on
+the merge commit — CI, Pages, and Proxy deploy, the last of which health-checks the
+stack and then makes a real model call asserting `x-llm-fallback: false`. Live: the page
+title reads 멈춘 회전문, `data/scenario/멈춘회전문/meta.json` serves off the deployed
+base, and `/dday/health` answers `{"ok":true,…"calls":true}` on haiku-4-5. `desk` went
+3-for-3 green across the PR at ~13 min a run, which is NOT evidence its four flaky
+assertions were fixed — they were never touched — and it is still not a required
+context on ruleset 19214918.
+
+**WHAT IS NOT SETTLED.** The probes went over the Anthropic API and the game calls
+Bedrock through the proxy: same model, different serving path and tool-call envelope,
+so the post-deploy call proves the tier answers and does not re-measure the gates.
+10/10 is not p = 1 — ten samples per arm on a pinned model bound a drop condition and
+nothing more. `proxy/events/call.json` still carries no `pack`, so the post-deploy smoke
+exercises the fallback rather than the lookup. And nobody has sat four attempts through;
+the suite plays the pack in a real browser, which is not the same thing. One stale
+sentence above, in x10's wallpaper paragraph: "the shipped pack is a tunnel" was true
+when written and is not now.
 
 ## Status (2026-08-09) — the desk gets a room, and it costs 27.6 kB
 
