@@ -34,16 +34,21 @@ export interface ScenarioIdentity {
 // derives every expectation from that pack's own files, so switching the slug
 // moves the coverage with it rather than leaving it aimed at a pack the deploy
 // no longer carries.
-export const PACK_SLUG = '전구간정상'
+export const PACK_SLUG = '멈춘회전문'
 
 /**
  * The same case, spelled for a reader instead of for a filesystem.
  *
  * x2 (08-08) — the chrome was printing `PACK_SLUG` straight into `#caseName`,
  * so the desk named its own case 전구간정상: one run-on word, which is what a
- * directory name has to be and not what a control room writes. The pack's own
- * logline already spells it 전 구간 정상 in prose, so this is the pack agreeing
- * with itself rather than a new name.
+ * directory name has to be and not what a control room writes. That pack's own
+ * logline already spelled it 전 구간 정상 in prose, so the display name was the
+ * pack agreeing with itself rather than a new name.
+ *
+ * 멈춘회전문 (08-10) does not name itself in its logline, so the spacing here is
+ * the only place the two words come apart. 멈춘 · 회전문 is the segmentation any
+ * reader makes and none of this code could — which is the same reason the field
+ * is authored rather than derived.
  *
  * DELIBERATELY not derived from `PACK_SLUG` — there is no rule that puts the
  * spaces back (전/구간/정상 is not a segmentation any code here could know), and
@@ -54,7 +59,7 @@ export const PACK_SLUG = '전구간정상'
  * numbers, which are catalogue numbers a reader is meant to quote back, not
  * prose. Only the places that read as a name take this.
  */
-export const PACK_DISPLAY_NAME = '전 구간 정상'
+export const PACK_DISPLAY_NAME = '멈춘 회전문'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
