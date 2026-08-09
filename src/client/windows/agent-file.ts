@@ -393,11 +393,25 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    * own — and both this and `sync()`'s repaint read `docText()`, so no two of
    * them can print different numbers.
    */
-  function buildHead(): HTMLElement {
+  function buildHead(options: { skip?: boolean } = {}): HTMLElement {
     const head = el('div', 'file-head')
     const left = el('div', 'fh-left')
     left.append(el('div', 'fh-doc', docText()), el('div', 'fh-title', FILE_TITLE))
     head.append(left)
+    // x7 — 건너뛰기 rides IN the head, in its right-hand corner (민서, 08-09).
+    //
+    // It was a block of its own between the head and the dossier, and the head
+    // is the only thing on this page that does not move while the cover prints.
+    // But a row of its own is a row that GOES: the control removes itself when
+    // the reveal lands, its block collapsed, and the whole document jumped up a
+    // line at the exact moment the reader reached the end of it.
+    //
+    // Inside the head it costs no row at all. `.file-head` is already a
+    // `space-between` flex with `align-items:flex-end`, so the button lands
+    // opposite 문서번호 · 현장 요원 운용 파일 and sits on the same baseline band;
+    // when it goes, the head keeps its height because `.fh-left` — the taller
+    // child — is what sets it. Nothing below it moves by a pixel.
+    if (options.skip === true) head.append(buildCoverSkip())
     return head
   }
 
@@ -776,17 +790,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     // 문서번호, no 현장 요원 운용 파일, nothing saying which file the page they
     // are reading belongs to. `buildHead()` is a builder for exactly this
     // reason — see its note on the node that a single head would have been.
+    // …and the cover's head carries 건너뛰기 in its corner while there is
+    // something to skip. In the head rather than under it, so that landing the
+    // reveal costs no row and the document does not jump — see `buildHead`.
     const cover = el('div', 'file-page')
-    cover.append(buildHead())
-    // …and the skip goes ABOVE the text, not under it, for two reasons that
-    // point the same way. It is where the reader's eye already is when the page
-    // is still blank, so the way out is offered before the wait rather than at
-    // the end of it — and, decisively, it is the only place on this page that
-    // DOES NOT MOVE: the cover grows downward as it prints, so a control below
-    // the text drifts under the cursor for the whole reveal, and a pointer
-    // (or an e2e click, which waits for a stable box) would be chasing it.
-    // It is on the page only while there is something to skip.
-    if (!coverDone && !motionless()) cover.append(buildCoverSkip())
+    cover.append(buildHead({ skip: !coverDone && !motionless() }))
     cover.append(buildDossier(coverModel(), board.root))
 
     const past: HTMLElement[] = []

@@ -216,11 +216,18 @@
    prints, so anything below the text drifts for the whole reveal. Right, not
    centred — centred under the head it read as a caption belonging to the
    document, and it is the opposite of that. */
-.cover-skip{display:block;margin:0 0 var(--space-10) auto;
-  padding:var(--space-2) var(--space-6);background:transparent;border:0;
+/* x7 — IN the head's right corner, not in a row of its own (민서, 08-09). A row
+   of its own is a row that goes: the control removes itself when the reveal
+   lands, and the document jumped up a line at the moment the reader reached the
+   end of it. `.file-head` is a `space-between` flex with `align-items:flex-end`,
+   so no margin is needed to place this — it lands opposite the title block on
+   the same baseline band, and the head keeps its height from `.fh-left` when the
+   button goes. */
+.cover-skip{padding:var(--space-2) 0 var(--space-2) var(--space-6);
+  background:transparent;border:0;
   font-size:var(--fs-8-5);letter-spacing:.16em;color:var(--faded);
   text-decoration:underline;text-underline-offset:.3em;cursor:pointer;
-  transition:color .14s}
+  transition:color .14s;white-space:nowrap}
 .cover-skip:hover{color:var(--seal-2)}
 
 /* U5.3 — a finished sitting's page: nothing to press, and no `data-block-id`,
