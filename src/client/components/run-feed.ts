@@ -22,6 +22,7 @@ import type { FeedKind, FeedLine, FixtureDriver, ViewEvent } from '../driver/ind
 import { animationsFrozen, displayStamp, registerAnimation } from '../driver/index.ts'
 import { el } from '../shell/dom.ts'
 import { publishFeedStamp } from '../shell/feed-clock.ts'
+import { callsignOf } from './dossier.ts'
 import { FALLBACK_CLASS, fallbackNoticeLine } from './fallback-notice.ts'
 import type { FallbackClass } from './fallback-notice.ts'
 import { tallyLineText } from './tally-line.ts'
@@ -64,7 +65,21 @@ export interface FeedNode {
   data: Readonly<Record<string, string>>
 }
 
-/** The radio label's fixed half — the callsign half arrives per sitting (M1). */
+/**
+ * The radio label's fixed half — the callsign half arrives per sitting (M1).
+ *
+ * x7 — AND THIS MODULE MINTS NO PART OF THAT HALF ANY MORE. It used to spell
+ * the series three times over: `` `ECHO-${Math.max(1, event.run)}` `` on the
+ * `meta` case and `'ECHO-1'` twice as a default. That is `components/dossier.ts`
+ * `callsignOf` copied out by hand into a window that only ever READS the name —
+ * and a copy of an art decision is a way for two surfaces to disagree about who
+ * the operator is watching. It is not hypothetical: the day the series was
+ * renumbered so the unshaped first agent is plain `ECHO`, 식별 on the AGENT FILE
+ * said `ECHO` and the radio label here would have gone on saying `ECHO-1` — the
+ * same agent, the same desk, the same minute, two names. The pack carries no
+ * callsign at all (D4), so there is exactly one owner of the name and this
+ * window borrows it.
+ */
 const RADIO_TAIL = ' · 무전'
 /** A beat that produced no symptom still prints one line (spec-client §7 #2). */
 const EMPTY_SYMPTOM = '(변화 없음)'
@@ -82,8 +97,14 @@ const envelope = (kind: FeedKind, clock: string, parts: FeedPart[]): FeedNode =>
 /**
  * The projection every line goes through. An unknown kind is refused here and
  * is a type error at the call site — there is no fallback render.
+ *
+ * x7 — the default is `callsignOf(1)` and not a literal. The parameter is
+ * optional so the PURE model can be projected without a sitting to name (that
+ * is how `live-feed.test.ts` calls it, in `environment: 'node'`), and what a
+ * line should say when no `meta` has landed is whatever the DOCUMENT calls the
+ * first agent — a question `callsignOf` answers and this module does not.
  */
-export function feedLineModel(line: FeedLine, callsign = 'ECHO-1'): FeedNode {
+export function feedLineModel(line: FeedLine, callsign = callsignOf(1)): FeedNode {
   const kind = line.kind
   if (!Object.prototype.hasOwnProperty.call(FEED_MARKS, kind)) {
     throw new Error(`live feed: '${String(kind)}' is not a FeedKind`)
@@ -322,7 +343,9 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   let band = false
   let symptoms = 0
   let stamp = ''
-  let callsign = 'ECHO-1'
+  // x7 — the first agent, until `meta` names the sitting. Same reasoning as
+  // `feedLineModel`'s default above: the boot state is a DOCUMENT question.
+  let callsign = callsignOf(1)
   let pending: { cls: FallbackClass; code: string } | null = null
 
   const motionless = (): boolean => {
@@ -466,7 +489,11 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   const apply = (event: ViewEvent): void => {
     switch (event.type) {
       case 'meta':
-        callsign = `ECHO-${Math.max(1, event.run)}`
+        // x7 — the run is still the seam's (C3); the NAME for it is not this
+        // window's to compose. The `Math.max(1, …)` that used to guard run 0 off
+        // `ECHO-0` went with the literal: `callsignOf` answers a pre-first-press
+        // run itself, and one guard is one place that can drift.
+        callsign = callsignOf(event.run)
         stock.textContent = HEAD_STOCK + HEAD_SEP + callsign
         break
       case 'beat_start':

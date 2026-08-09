@@ -136,12 +136,39 @@ function metaOf(f: Frame): MetaEvent | null {
   return metas.length > 0 ? metas[metas.length - 1]! : null
 }
 
-/** The run the rail says is selected right now. */
+/**
+ * x7 — THE ONE PLACE THIS SUITE STILL SPELLS THE ECHO SERIES, and it is a
+ * declared MIRROR of `src/client/components/dossier.ts` `callsignOf`, not a
+ * second opinion.
+ *
+ * Why it cannot just import that function: a spec in `e2e/` drives the SHIPPED
+ * page through a browser and reads the desk only through the DOM and
+ * `window.__shell` — no file under `e2e/` imports anything out of `src/`, and
+ * this one is not the place to start. And the rail's tabs carry the callsign as
+ * text and nothing else (no `data-run`), so a spec that has to say "the tab
+ * belonging to run 3" has no choice but to know how run 3 is named.
+ *
+ * Kept to ONE function, both directions, so the mirror is a single fact to
+ * re-check rather than a family. It is also why `activeRun` below stopped
+ * pulling digits out of the label: `/\d+/` was this same mapping written down
+ * without admitting it, and it was the OLD one — it read `ECHO-3` as run 3, so
+ * the renumbering (run 1 is plain `ECHO`, run 2 is `ECHO-1`) made it one short
+ * everywhere and made run 1 unreadable outright, there being no digits in
+ * `ECHO` at all. If the rail ever carries its run as an attribute, delete this.
+ */
+const callsign = (run: number): string => (run <= 1 ? 'ECHO' : `ECHO-${run - 1}`)
+
+/** The tab for one sitting. Anchored — `ECHO` is a prefix of every other name. */
+const tabFor = (page: Page, run: number): Locator =>
+  page.locator(OPTION).filter({ hasText: new RegExp(`^\\s*${callsign(run)}\\s*$`) }).first()
+
+/** The run the rail says is selected right now — `callsign` read backwards. */
 async function activeRun(page: Page): Promise<number> {
-  const label = await page.locator(`${OPTION}[aria-selected="true"]`).first().innerText()
-  const digits = label.match(/\d+/)
-  expect(digits, `the selected archive option carries no RUN number: ${label}`).not.toBeNull()
-  return Number(digits![0])
+  const label = (await page.locator(`${OPTION}[aria-selected="true"]`).first().innerText()).trim()
+  const named = /^ECHO(?:-(\d+))?$/.exec(label)
+  expect(named, `the selected archive option is not a callsign: ${label}`).not.toBeNull()
+  const numbered = named![1]
+  return numbered === undefined ? 1 : Number(numbered) + 1
 }
 
 async function reportForActiveRun(page: Page): Promise<ReportEvent> {
@@ -525,7 +552,13 @@ test.describe('archive segmentation and highlight marks', () => {
     // `RUN 03 / 08:50 — 21:04` from the fixture loop, `전구간정상-r3` from the live
     // adapter. Neither is something this rail promises to render.
     for (const [i, entry] of meta!.archive.entries()) {
-      expect(labels[i]).toMatch(new RegExp(`ECHO-${entry.run}\\b`))
+      // x7 — through `callsign` rather than an inline `ECHO-${entry.run}`. The
+      // claim is that the tab reads exactly what the AGENT FILE calls that
+      // sitting's agent; an inline literal made it a claim about the numbering
+      // instead, and went red the day the numbering moved while the two
+      // surfaces still agreed. `toBe`, not `toMatch`: since x5 the tab is the
+      // callsign ALONE, which is the whole point of the span check below.
+      expect(labels[i]).toBe(callsign(entry.run))
       const span = entry.label.replace(/^\s*RUN\s*\d+\s*[/·]\s*/i, '').trim()
       expect(span.length, 'the fixture label is empty — this check is vacuous').toBeGreaterThan(0)
       expect(labels[i]!.replace(/\s+/g, ' ')).not.toContain(span.replace(/\s+/g, ' '))
@@ -576,7 +609,7 @@ test.describe('archive segmentation and highlight marks', () => {
     expect(rounds.length, 'the stream carries fewer than two runs — the switch is untestable').toBeGreaterThan(1)
 
     for (const round of rounds) {
-      await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${round}\\b`) }).first().click()
+      await tabFor(page, round).click()
       await expect(page.locator(`${OPTION}[aria-selected="true"]`)).toHaveCount(1)
       expect(await activeRun(page)).toBe(round)
 
@@ -600,7 +633,7 @@ test.describe('archive segmentation and highlight marks', () => {
     const away = rounds[0]!
     const target = reports.filter((r) => r.round === home).pop()!.report_body[0]!
 
-    await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${home}\\b`) }).first().click()
+    await tabFor(page, home).click()
     // One gesture (08-08): the click tears the sentence out AND seats it, so
     // the mark it leaves is `slotted`. The mine op still reaches the seam —
     // which is what this test is about.
@@ -617,11 +650,11 @@ test.describe('archive segmentation and highlight marks', () => {
     // across runs)". So the switch is proved where it is unambiguous — the
     // rail's own selection and a re-rendered body — and the id-keyed mark, which
     // is what this test is actually about, is still asserted below.
-    await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${away}\\b`) }).first().click()
+    await tabFor(page, away).click()
     expect(await activeRun(page), 'the rail did not switch to the other run').toBe(away)
     await expect(page.locator(`${BODY} .sent`), 'the away document rendered nothing').not.toHaveCount(0)
 
-    await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${home}\\b`) }).first().click()
+    await tabFor(page, home).click()
     await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bslotted\b/)
 
     // Every mark on screen is a mark the STORE holds — nothing positional.

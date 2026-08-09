@@ -18,6 +18,7 @@
 import { animationsFrozen, registerAnimation } from '../driver/index.ts'
 import type { Sentence } from '../driver/index.ts'
 import { el } from '../shell/dom.ts'
+import { callsignOf } from './dossier.ts'
 import type { MarkSets } from './minable-sentence.ts'
 import { applyState, isMineKey, sentenceNode, sentenceState } from './minable-sentence.ts'
 
@@ -214,7 +215,22 @@ export function createReportView(options: ReportViewOptions): ReportView {
 
   const sig = el('div', 'sig')
   sig.setAttribute('aria-hidden', 'true')
-  const sigLine = el('span', 'sig-line', 'ECHO-1')
+  // x7 — the signature opens on `callsignOf(1)`, not on a literal `'ECHO-1'`.
+  //
+  // `brand()` is the real writer and it runs first thing in `drawDocument()`
+  // (`windows/reports.ts`), so every document that reaches this sheet arrives
+  // already signed and nothing below is ever read off a drawn page. What stands
+  // here is the BLANK sheet's signature — the window mounts before the first
+  // sitting is active and `drawDocument` returns early until it is — so it is
+  // seen, briefly, at boot.
+  //
+  // Either way it may not be minted here. A second place that spells a callsign
+  // by hand is a second place that can disagree with the AGENT FILE about who
+  // the operator is watching, and the series has been renumbered under exactly
+  // that assumption once already (see `components/dossier.ts`). The name has one
+  // owner (D4 — the pack carries none); this window borrows it, unsigned sheet
+  // included.
+  const sigLine = el('span', 'sig-line', callsignOf(1))
   // x5 — the 검인 chop is two lines and it lands on ARRIVAL, not on paint.
   //
   // It used to be printed the moment the window was built, which put a

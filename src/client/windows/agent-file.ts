@@ -208,7 +208,18 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    */
   let settleNote = ''
 
-  const docLine = el('div', 'fh-doc')
+  /**
+   * The document's number, as EVERY page prints it.
+   *
+   * C1 — one document across every agent, so the number names the document and
+   * not the run. The run used to be its last segment.
+   *
+   * x7 — a function, not the one `.fh-doc` element it used to be. See
+   * `buildHead` below for why the head had to stop being a single node, and why
+   * this is the one place its text is composed: two heads printing two
+   * different numbers is the failure a second literal would buy.
+   */
+  const docText = (): string => `${DOC_CAPTION}${PORTAL.portalCode}/AF/${slug}`
 
   const board = createSlotBoard({
     emit: (op) => driver.send(op).ok,
@@ -235,9 +246,16 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   let currentView = deployView({ slots: board.cells(), deployed: false, run, at: opensAt })
 
   function sync(): void {
-    // C1 — one document across every agent, so the number names the document
-    // and not the run. The run used to be its last segment.
-    docLine.textContent = `${DOC_CAPTION}${PORTAL.portalCode}/AF/${slug}`
+    // x7 — the head is on every page now, so the doc number is repainted on
+    // whichever page is MOUNTED rather than written into one long-lived
+    // element. It has to be repainted here and not left to `turn()`: `sync()`
+    // runs from triggers `turn()` does not (the board's own `onChange`, the
+    // store subscription, `sendNewRun`), and the pack identity that fills the
+    // slug in resolves asynchronously (`fetchScenarioIdentity` at the foot of
+    // this file) — a page mounted with an unresolved slug would keep printing
+    // `…/AF/` for ever if only a rebuild could correct it.
+    const doc = sheet.querySelector<HTMLElement>('.fh-doc')
+    if (doc !== null) doc.textContent = docText()
     const view = deployView({
       slots: board.cells(),
       deployed: board.isLocked(),
@@ -363,10 +381,25 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   // page, which is where the DEPLOY control lives — the last page is the agent
   // who has not gone out yet. U5.3 appends a page per agent after this one; the
   // only thing this unit owes it is that `pages` is a list.
-  const head = el('div', 'file-head')
-  const left = el('div', 'fh-left')
-  left.append(docLine, el('div', 'fh-title', FILE_TITLE))
-  head.append(left)
+  /**
+   * A FRESH file head — the document's number, then the form's own name.
+   *
+   * x7 — a builder, and that is the whole point of it. The head was ONE element
+   * built once in this closure and appended to the cover, and a node has one
+   * parent: appending it to the filed pages and the agent's page as well would
+   * have MOVED it each time, so the last page `pages()` happened to build would
+   * take the head and every page before it would silently lose the one it had
+   * a moment ago. A document is headed on every page, so every page builds its
+   * own — and both this and `sync()`'s repaint read `docText()`, so no two of
+   * them can print different numbers.
+   */
+  function buildHead(): HTMLElement {
+    const head = el('div', 'file-head')
+    const left = el('div', 'fh-left')
+    left.append(el('div', 'fh-doc', docText()), el('div', 'fh-title', FILE_TITLE))
+    head.append(left)
+    return head
+  }
 
   const sheet = el('div', 'file-sheet')
   const pgPrev = button('pg-turn', '이전 장', '‹')
@@ -413,6 +446,252 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     return host
   }
 
+  /* ══ x7 — THE COVER TYPES ITSELF OUT ═══════════════════════════════════ */
+
+  /**
+   * THE COVER IS READ, NOT SKIMMED (민서, 08-09).
+   *
+   * The cover carries the agent's whole posting order and it is the only page
+   * that explains the loop the operator is standing in — and it arrived WHOLE,
+   * a block of prose the eye slides off in the second before the hand reaches
+   * the page turn. Printed a character at a time it is paced like something
+   * being dictated down a line: short beat between words, longer between lines,
+   * and the operator reads it because for that stretch there is nothing else on
+   * the page to do.
+   *
+   * ONCE PER SESSION, on first arrival at the cover (민서's ruling). Turning
+   * away and back shows it whole and instant — `turn()` lands it the moment
+   * another page is mounted, because a reveal that resumed mid-sentence on the
+   * way back would be a document that had un-printed itself. A new day or a new
+   * agent does not re-type it either: the cover is the same page all sitting.
+   *
+   * The title block never types. 문서번호 and 현장 요원 운용 파일 are printed on
+   * the form before anyone fills it in, so they are simply there — `collectCover`
+   * walks the dossier alone and never the head.
+   *
+   * NOTHING WAITS ON IT. The DEPLOY control is on the LAST page, so a reveal
+   * running on page 1 gates no op the operator could want. That is the licence
+   * `typeCallsign` below does NOT have (it precedes an op, and its note is the
+   * fuller telling of why that matters).
+   */
+
+  /**
+   * The cover's own pace — DELIBERATELY not `components/typewriter.ts`'s.
+   *
+   * The shared arithmetic is the desk's READING pace (`MS_PER_CHAR` 11, one
+   * `MS_BETWEEN` pause per sentence) and it is tuned for a feed the operator is
+   * watching arrive at the speed a radio delivers it. The cover is the opposite
+   * job — a document the operator is being made to slow down over — and it
+   * wants a beat the shared model has no term for at all: a short one between
+   * WORDS. So the numbers are local, exactly as `CALLSIGN_MS_PER_CHAR` above is
+   * local and for the same kind of reason. This is not a second typewriter on
+   * the desk: nothing else on the cover types, and the two surfaces never share
+   * a screen.
+   *
+   * It sums to roughly a quarter-minute for the whole cover. That is deliberate
+   * and it is also exactly why 건너뛰기 exists.
+   */
+  const COVER_MS_PER_CHAR = 22
+  const COVER_MS_WORD = 45
+  const COVER_MS_LINE = 340
+  /** A beat before the first character, so the page is seen blank first. */
+  const COVER_LEAD_MS = 420
+  /** How often the reveal re-asks whether the boot sweep has let go. */
+  const COVER_SWEEP_STEP = 120
+
+  /** The control that lands the reveal, and the name it announces itself by. */
+  const COVER_SKIP = '건너뛰기'
+  const COVER_SKIP_LABEL = '문서 표시를 건너뛰고 전문을 인쇄합니다'
+
+  /** One LINE of the cover, and the text node it is printed into. */
+  interface CoverLine {
+    node: Text
+    text: string
+  }
+
+  /** The mounted cover's lines, in reading order — empty on every other page. */
+  let coverLines: CoverLine[] = []
+  /** Where the reveal has got to: the line being printed, and how much of it. */
+  let coverLine = 0
+  let coverChars = 0
+  /** Spent — the cover prints whole from here on, this session. */
+  let coverDone = false
+  let coverTimer: ReturnType<typeof setTimeout> | null = null
+
+  /**
+   * The cover's lines, in reading order: every text node under the dossier,
+   * split again on any authored `\n`.
+   *
+   * Read off the BUILT PAGE rather than off `coverModel()`, so this window
+   * holds no copy of the sibling's copy and no assumption about its markup —
+   * whatever `components/dossier.ts` prints (a title, its flag, a body line,
+   * the red note) is a line here, and a rewrite of the cover changes nothing on
+   * this side. The `\n` split is what keeps that true both ways: the cover's
+   * clauses are one element per line, and a section ever written instead as one
+   * body with newlines in it still gets its pause BETWEEN the clauses rather
+   * than only at the end of the block.
+   *
+   * The whitespace-only nodes are skipped, not typed: they are the separators
+   * `components/dossier.ts` writes between its elements (see `spaced` there),
+   * they carry no reading, and blanking them would close the gaps the document
+   * is spaced with.
+   */
+  function collectCover(page: HTMLElement): CoverLine[] {
+    const dossier = page.querySelector<HTMLElement>('#dossier')
+    if (dossier === null) return []
+    const walker = document.createTreeWalker(dossier, NodeFilter.SHOW_TEXT)
+    const found: CoverLine[] = []
+    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+      const value = node.nodeValue ?? ''
+      if (value.trim().length === 0) continue
+      const parts = value.split('\n')
+      for (const [index, part] of parts.entries()) {
+        const last = index === parts.length - 1
+        found.push({ node: node as Text, text: last ? part : `${part}\n` })
+      }
+    }
+    return found
+  }
+
+  /**
+   * Prints the cover as far as the reveal has got — the ONE writer of it.
+   *
+   * Written per NODE rather than per line, because a line is not always a whole
+   * node: `collectCover` may split one text node into several lines, and
+   * assigning each of them separately would leave a node holding only its last
+   * line. The value is composed and then assigned once.
+   */
+  function paintCover(): void {
+    const value = new Map<Text, string>()
+    for (const [index, line] of coverLines.entries()) {
+      const shown =
+        coverDone || index < coverLine
+          ? line.text
+          : index > coverLine
+            ? ''
+            : line.text.slice(0, coverChars)
+      value.set(line.node, `${value.get(line.node) ?? ''}${shown}`)
+    }
+    for (const [node, text] of value) node.nodeValue = text
+  }
+
+  /**
+   * Prints the rest of the cover at once and retires the control.
+   *
+   * Three callers, and they are the three ways a reveal ends: the 건너뛰기
+   * press, the last character, and the operator turning off the cover (the
+   * reveal is per session, so leaving the page spends it).
+   *
+   * The control is REMOVED rather than disabled, and not only because a dead
+   * button is nothing to leave on a page: `tally.test.ts` (g) reads the FIRST
+   * `disabled = true` in this file and requires it to be the one that closes
+   * the DEPLOY control before `new_run` leaves, so a `disabled` written up here
+   * would silently take that guard's meaning away.
+   */
+  function landCover(): void {
+    if (coverTimer !== null) {
+      clearTimeout(coverTimer)
+      coverTimer = null
+    }
+    coverDone = true
+    paintCover()
+    sheet.querySelector<HTMLElement>('.cover-skip')?.remove()
+  }
+
+  /** One character — or, at the end of a line, the beat before the next one. */
+  function stepCover(): void {
+    coverTimer = null
+    const line = coverLines[coverLine]
+    if (line === undefined) {
+      landCover()
+      return
+    }
+    const printed = line.text[coverChars] ?? ''
+    const typed = coverChars + 1
+    let wait = COVER_MS_PER_CHAR
+    if (typed >= line.text.length) {
+      coverLine += 1
+      coverChars = 0
+      wait = COVER_MS_LINE
+    } else {
+      coverChars = typed
+      // A word ends where its space was just printed. 한국어 breaks by 어절 and
+      // the spaces are where the reader's eye already stops, so this is the
+      // pause the prose itself asks for rather than one imposed on it.
+      if (printed === ' ') wait = COVER_MS_WORD
+    }
+    paintCover()
+    if (coverLine >= coverLines.length) {
+      landCover()
+      return
+    }
+    coverTimer = setTimeout(stepCover, wait)
+  }
+
+  /**
+   * Starts the reveal ON A TIMER — never on the driver's animation pump.
+   *
+   * `registerAnimation`/`tickAnimations` fire only while the driver's clock is
+   * RUNNING or ENDED (`driver/fixture-driver.ts`), and at boot it is NEITHER:
+   * W4 holds the day until the file is committed, so the clock sits at rate 0
+   * from the first paint until DEPLOY. A cover riding that pump would never
+   * receive a tick and would sit BLANK for the whole of the build phase — the
+   * page the operator is meant to read before pressing anything, permanently
+   * empty. It is the same trap that soft-locked the DEPLOY press this morning;
+   * `typeCallsign` below carries the full telling and this is the second
+   * surface it has now saved. `setTimeout` survives a stopped clock.
+   *
+   * It waits the boot sweep out first. `components/desktop-dressing.ts` holds
+   * every window `visibility:hidden` until the door, the manual and the entry
+   * animations are done with the screen, and a cover that typed itself behind
+   * that curtain would be half over before anybody saw a character of it.
+   */
+  function startCover(): void {
+    if (coverDone || coverTimer !== null || motionless()) return
+    if (document.body.classList.contains('booting')) {
+      coverTimer = setTimeout(startCover, COVER_SWEEP_STEP)
+      return
+    }
+    coverTimer = setTimeout(stepCover, COVER_LEAD_MS)
+  }
+
+  /**
+   * Re-aims the reveal at the cover that is actually on the sheet.
+   *
+   * `turn()` rebuilds every page from scratch, so the nodes the reveal was
+   * printing into are thrown away by the identity fetch's own `turn()`, by each
+   * `meta`, and by every page turn. The reveal therefore keeps no DOM across a
+   * build — it keeps a POSITION, and the freshly built cover is re-collected
+   * and re-printed to that position here. Same discipline as `typeCallsign`,
+   * which repaints through `turn` rather than holding on to a row.
+   */
+  function mountCover(page: HTMLElement): void {
+    // The two contracts that are NOT skips, and the reason they are checked
+    // here rather than at the press: an operator who asked for no motion, and
+    // the e2e determinism gate, both get the document whole and never see a
+    // character of it typed. `motionless()` answers for both.
+    if (motionless()) coverDone = true
+    coverLines = collectCover(page)
+    paintCover()
+    startCover()
+  }
+
+  /**
+   * 건너뛰기 — the ONE gesture that lands the reveal.
+   *
+   * Only this press skips it. A click anywhere else on the page must not, or a
+   * reader who clicks to raise the window loses the document they were reading
+   * (민서). A real `<button>`, so it is a tab stop and answers Enter and Space
+   * without a line of key handling: the desk's a11y census fails a div with a
+   * click handler on it outright, and rightly.
+   */
+  function buildCoverSkip(): HTMLButtonElement {
+    const node = button('cover-skip', COVER_SKIP_LABEL, COVER_SKIP)
+    node.id = 'coverSkip'
+    node.addEventListener('click', () => landCover())
+    return node
+  }
+
   /**
    * The document, in order: the cover, then a page per finished agent, then the
    * agent on the desk.
@@ -425,20 +704,37 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    * its own page stays live to the end of the sitting.
    */
   function pages(): HTMLElement[] {
+    // x7 — EVERY page is headed. It is one document with a number on it, and a
+    // reader who turned past the cover was holding unheaded sheets: no
+    // 문서번호, no 현장 요원 운용 파일, nothing saying which file the page they
+    // are reading belongs to. `buildHead()` is a builder for exactly this
+    // reason — see its note on the node that a single head would have been.
     const cover = el('div', 'file-page')
-    cover.append(head, buildDossier(coverModel(), board.root))
+    cover.append(buildHead())
+    // …and the skip goes ABOVE the text, not under it, for two reasons that
+    // point the same way. It is where the reader's eye already is when the page
+    // is still blank, so the way out is offered before the wait rather than at
+    // the end of it — and, decisively, it is the only place on this page that
+    // DOES NOT MOVE: the cover grows downward as it prints, so a control below
+    // the text drifts under the cursor for the whole reveal, and a pointer
+    // (or an e2e click, which waits for a stable box) would be chasing it.
+    // It is on the page only while there is something to skip.
+    if (!coverDone && !motionless()) cover.append(buildCoverSkip())
+    cover.append(buildDossier(coverModel(), board.root))
 
     const past: HTMLElement[] = []
     for (const flown of [...filed.keys()].sort((a, b) => a - b)) {
       const ids = filed.get(flown) ?? []
       const page = el('div', 'file-page')
       page.append(
+        buildHead(),
         buildDossier(filedModel({ callsign: callsignOf(flown) }), filedHost(ids)),
       )
       past.push(page)
     }
 
     const agent = el('div', 'file-page')
+    agent.append(buildHead())
     agent.append(buildDossier(agentModel({ slotCap: SLOT_CAP, callsign: onDesk() }), board.root))
     agent.append(zone.root)
 
@@ -462,6 +758,17 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     const clamped = viewing < 0 ? 0 : viewing > last ? last : viewing
     viewing = clamped
     sheet.replaceChildren(built[clamped]!)
+    // x7 — the reveal lives on the MOUNTED cover and nowhere else. Page 0 is
+    // handed the freshly built one to go on printing into; every other page
+    // lands it, which is the whole of "turning away and back shows it whole".
+    // `coverLines` is cleared first so a timer still in flight cannot paint
+    // into a cover that was thrown away with the last build.
+    if (clamped === 0) {
+      mountCover(built[clamped]!)
+    } else {
+      coverLines = []
+      landCover()
+    }
     // x1 — a turned page opens at its head. The sheet scrolls now (1.5× type in
     // a third-width column: `win-agent-file.css`), and `replaceChildren` leaves
     // the scroll offset where the last page left it, so turning onto a page
