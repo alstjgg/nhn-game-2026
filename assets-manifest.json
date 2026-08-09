@@ -212,13 +212,15 @@
       "note": "Korean monospace for LIVE FEED radio lines. THE DESIGN REFERENCE'S OWN RUNTIME LOAD, restored 08-05 — this row was re-pointed at the self-hosted copy when the client vendored the family, which left docs/design/phase2-ui/index.html:7-9 (a read-only binding reference, still live in this repo) with no manifest entry at all. CLAUDE.md rule 5 admits no exceptions. The PLAYER build is unaffected: it resolves this family from public/assets/fonts/** and makes no third-party request (spec-client §3 inv 10)."
     },
     {
-      "file": "public/assets/audio/amb-room-tone.m4a",
-      "tool": "tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)",
+      "file": "public/assets/audio/amb-office-tone.m4a",
+      "source": "richwise — https://freesound.org/people/richwise/sounds/456207/",
+      "derived_from": [
+        "456207_1481531-hq.mp3",
+        "456207_1481531-hq.mp3"
+      ],
+      "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "generated for this project",
-      "generated": [
-        "amb-room-tone"
-      ]
+      "license": "CC0-1.0"
     },
     {
       "file": "public/assets/audio/amb-watch-drone.m4a",
@@ -358,6 +360,56 @@
       "generated": [
         "npc-handset"
       ]
+    },
+    {
+      "file": "public/assets/audio/office-keys-1.m4a",
+      "source": "Fupicat — https://freesound.org/people/Fupicat/sounds/534123/",
+      "derived_from": [
+        "534123_7724198-hq.mp3"
+      ],
+      "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
+      "prompt": null,
+      "license": "CC0-1.0"
+    },
+    {
+      "file": "public/assets/audio/office-keys-2.m4a",
+      "source": "Fupicat — https://freesound.org/people/Fupicat/sounds/534123/",
+      "derived_from": [
+        "534123_7724198-hq.mp3"
+      ],
+      "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
+      "prompt": null,
+      "license": "CC0-1.0"
+    },
+    {
+      "file": "public/assets/audio/office-keys-3.m4a",
+      "source": "Fupicat — https://freesound.org/people/Fupicat/sounds/534123/",
+      "derived_from": [
+        "534123_7724198-hq.mp3"
+      ],
+      "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
+      "prompt": null,
+      "license": "CC0-1.0"
+    },
+    {
+      "file": "public/assets/audio/office-phone.m4a",
+      "source": "Fupicat — https://freesound.org/people/Fupicat/sounds/534123/",
+      "derived_from": [
+        "534123_7724198-hq.mp3"
+      ],
+      "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
+      "prompt": null,
+      "license": "CC0-1.0"
+    },
+    {
+      "file": "public/assets/audio/office-printer.m4a",
+      "source": "Fupicat — https://freesound.org/people/Fupicat/sounds/534123/",
+      "derived_from": [
+        "534123_7724198-hq.mp3"
+      ],
+      "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
+      "prompt": null,
+      "license": "CC0-1.0"
     },
     {
       "file": "public/assets/audio/paper-slide.m4a",
