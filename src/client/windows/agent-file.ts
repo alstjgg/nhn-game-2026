@@ -99,7 +99,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   let run = 0
   let slug = ''
   let opensAt = driver.clock.at()
-  let band = ''
   let committedRun: number | null = null
   let committedAt: string | null = null
 
@@ -315,7 +314,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    */
   function pages(): HTMLElement[] {
     const cover = el('div', 'file-page')
-    cover.append(head, buildDossier(coverModel(band), board.root))
+    cover.append(head, buildDossier(coverModel(), board.root))
 
     const past: HTMLElement[] = []
     for (const flown of [...filed.keys()].sort((a, b) => a - b)) {
@@ -533,11 +532,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   // D2 — identity is pack-fed, never a literal. The structure is already up;
   // this re-prints it with the two fields the pack owns. A pack the shell has
   // already read cannot fail here, and if it did the head simply stays unnamed.
+  //
+  // x6 — the clock band left with 임무's old body (a posting order does not
+  // print the shift's hours), so what the cover reads from the pack now is the
+  // doc number alone. `identity.end` is no longer used here; the topbar clock
+  // is where the day's terminal time is printed.
   void fetchScenarioIdentity()
     .then((identity) => {
       slug = identity.slug
       opensAt = identity.start
-      band = `${identity.start} → ${identity.end}`
       turn()
       sync()
     })

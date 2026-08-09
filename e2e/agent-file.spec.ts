@@ -128,17 +128,6 @@ async function packSlug(page: Page): Promise<string> {
   return decodeURIComponent(found![1]!)
 }
 
-/** The pack's own clock band — the source §1 and the topbar both read. */
-async function packClock(page: Page): Promise<{ start: string; end: string }> {
-  const slug = await packSlug(page)
-  return page.evaluate(async (name: string) => {
-    const url = new URL(`data/scenario/${name}/meta.json`, document.baseURI)
-    const raw = (await (await fetch(url)).json()) as { clock: { start: string; end: string } }
-    const strip = (s: string): string => s.replace(/\+$/, '')
-    return { start: strip(raw.clock.start), end: strip(raw.clock.end) }
-  }, slug)
-}
-
 /**
  * Every pinned `data-block-id` the file currently shows, in DOM order — one per
  * filled slot.
@@ -275,16 +264,26 @@ test.describe('dossier sections', () => {
     await expect(identity.locator('dd').first()).toHaveText('ECHO-3')
   })
 
-  test('[u4#c1] (e) 임무 prints the pack\'s own clock band', async ({ page }) => {
+  // x6 — RE-AIMED. This used to assert that 임무 printed the pack's clock band;
+  // 임무 is a posting order now and a posting order does not print the shift's
+  // hours (the topbar clock does, and `(d)` above still holds the window to a
+  // pack-fed value — its doc number). What replaced it is the property the
+  // rewrite actually depends on and that no unit test can see: the cover's
+  // clauses are authored one per line, and they reach the page that way.
+  test('[u4#c1] (e) the cover keeps its authored line breaks', async ({ page }) => {
     await boot(page)
-    const { start, end } = await packClock(page)
-    expect(start).toMatch(/^\d{2}:\d{2}$/)
-    expect(end).toMatch(/^\d{2}:\d{2}$/)
     // C1 — 임무 opens the cover, so it is index 0. It was index 1 while 식별
     // sat above it in one scrolling dossier; 식별 is on the agent's page now.
-    await expect(page.locator(`${FILE} .sect`).nth(0).locator('.sect-body')).toContainText(
-      `${start} → ${end}`,
-    )
+    const mission = page.locator(`${FILE} .sect`).nth(0).locator('.sect-body')
+    // The break survives to the DOM…
+    expect(await mission.evaluate((node) => node.textContent ?? '')).toContain('\n')
+    // …and the sheet is what lets it print. Collapsed to `normal`, three clauses
+    // run together into justified prose and the section reads as a manual again.
+    expect(await mission.evaluate((node) => getComputedStyle(node).whiteSpace)).toBe('pre-line')
+    // A clause per line means the block is taller than a single line of it.
+    const box = await mission.boundingBox()
+    const line = await mission.evaluate((node) => parseFloat(getComputedStyle(node).lineHeight))
+    expect(box!.height).toBeGreaterThan(line * 2)
   })
 
   test('[u4#c1] (f) 기질 is a redaction — bars and the sealed note, no temperament text', async ({ page }) => {
