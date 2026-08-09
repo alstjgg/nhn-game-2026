@@ -1,11 +1,26 @@
 // WindowFrame — the chrome every desk window reuses (spec-client §6).
 //
 // Ported from docs/design/phase2-ui/index.html lines 105..120 + 146..148: the
-// file tab, the title bar (dot ·名 · controls), the body and the corner grip,
-// on u1's `.win / .win-tab / .win-bar / .win-ctl / .win-body / .win-grip`
-// selectors. The reference pinned each window's geometry in the markup; here
-// the frame is built with no geometry at all — applyLayout writes `--x/--y/
-// --w/--h` and the manager writes `--z`, so nothing is hard-positioned.
+// title bar (dot ·名 · controls), the body and the corner grip, on u1's
+// `.win / .win-bar / .win-ctl / .win-body / .win-grip` selectors. The reference
+// pinned each window's geometry in the markup; here the frame is built with no
+// geometry at all — applyLayout writes `--x/--y/--w/--h` and the manager writes
+// `--z`, so nothing is hard-positioned.
+//
+// x10 — THE FILE TAB IS GONE. It was the frame's first child,
+// `el('div', 'win-tab', def.tab)`: a clipped trapezoid sitting 23 px above the
+// title bar with a two-letter code in it — `LF` on the LIVE FEED, `AF` on the
+// AGENT FILE, `RP` on REPORTS. 민서 (08-10): 제목 위의 RP · LF · AF 태그를
+// 없애고, 창 위치는 그대로 둘 것.
+//
+// The reference's tabs carried INDEXED codes — `AF-03`, `LF-03`, `RP-02`,
+// `TL-03`, `BS` across five windows — so a tab said something the title bar did
+// not. Ours had shrunk to the initials of the name printed 23 px below it,
+// which is x5's argument again (`ko` and `sub` left the registry for it): three
+// windows on one desk do not need the same three things named twice, once in a
+// shorter alphabet. `def.tab` went with the element — it had no other reader,
+// so keeping the field would have left a required label on the registry that
+// nothing renders.
 //
 // A11y ([u3#c5]): the frame is a named region, the title bar is a focusable
 // move handle, and both controls are real buttons with accessible names.
@@ -31,8 +46,6 @@ export function buildWindowFrame(def: WindowDef): WindowFrame {
   // name is three clauses long is one an assistive-tech user has to sit through
   // on every window cycle.
   root.setAttribute('aria-label', def.en)
-
-  const tab = el('div', 'win-tab', def.tab)
 
   const bar = el('header', 'win-bar')
   bar.tabIndex = 0
@@ -78,6 +91,6 @@ export function buildWindowFrame(def: WindowDef): WindowFrame {
   const grip = def.resizable === false ? null : button('win-grip', `${def.en} 창 크기 조절 — 제목 표시줄에서 Shift+방향키`, '')
   if (grip) grip.tabIndex = -1
 
-  root.append(tab, bar, body, ...(grip ? [grip] : []))
+  root.append(bar, body, ...(grip ? [grip] : []))
   return { def, root, bar, body, grip, collapse, close }
 }

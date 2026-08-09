@@ -16,6 +16,9 @@
       topbar 56..104, overlays 279..284); the third-party webfont links are
       dropped (inv 10 — u10 self-hosts) and the window markup is built at
       runtime because its geometry comes from applyLayout, never from markup.
+      The wallpaper is no longer a VERBATIM port of 14..55 — x10 dropped the
+      blueprint's four text labels, for the reason recorded on the `.bp` group
+      below. The design file keeps them; it is history, not the target.
     -->
     <div id="app">
       <a class="skip-link" href="#desktop">본문(데스크)으로 건너뛰기</a>
@@ -33,7 +36,36 @@
           </defs>
           <rect width="1600" height="900" fill="url(#gridfine)" opacity=".3" />
           <rect width="1600" height="900" fill="url(#grid)" opacity=".5" />
-          <!-- 윤슬교 종단면 -->
+          <!-- A structural elevation — a long span on two towers, drawn as
+               dressing and nothing else. It names no place, no contractor and
+               no defect, which is the whole point of it: it is the paper the
+               desk happens to be standing on, not a document in the case.
+
+               x10 (민서, 08-10) — it USED to name all three. Four
+               `<text class="bplabel">` nodes rode this group: two callouts on
+               the deck naming a span and an anchorage each, a title block up
+               at the tower line carrying the structure's name, its scale and
+               its contractor, and a red warning beside the `.mark` circle
+               naming the failure. Every word of it belonged to the FIRST
+               scenario concept — the bridge — which the project dropped for
+               the pack it actually ships (`PACK_SLUG` in `shell/pack.ts`; the
+               case is a tunnel). A wallpaper that captions a case the desk is
+               not running is worse than an unlabelled one, and it is also the
+               shell standing in for something the scenario pack owns, which
+               this block's opening line says nothing here does.
+
+               So the labels are gone and the DRAWING is untouched: every path,
+               both grid patterns, both `<rect>` fills and the pulsing `.mark`
+               circle stay exactly as they were. 민서 asked for the text
+               stripped and the screen otherwise left alone, and chose the
+               option that keeps the circle — it is drawing, not text, and it
+               is now the only thing on the wallpaper that points at anything.
+               `.bplabel` / `.bplabel.warn` went with the nodes in
+               `styles/shell.css`, and `[u3#c9] (f)` in
+               `tests/shell/shell-source.test.ts` holds the line — which is why
+               the dropped strings are DESCRIBED above and quoted nowhere: (f)
+               scans this file's comments too, on purpose. The verbatim four are
+               in the design file and in git. -->
           <g class="bp" transform="translate(0,120)">
             <path d="M60 560 L1540 560" />
             <path d="M60 566 L1540 566" class="thin" />
@@ -49,11 +81,7 @@
             </g>
             <path d="M60 620 H1540" class="dim" />
             <path d="M60 610 V630 M800 610 V630 M1540 610 V630" class="dim" />
-            <text x="420" y="606" class="bplabel">경간 A · 정착부 N-3</text>
-            <text x="1150" y="606" class="bplabel">경간 B · 정착부 S-3</text>
-            <text x="60" y="270" class="bplabel">윤슬교 종단면 · 축척 1:400 · 세명건설</text>
             <circle cx="800" cy="560" r="26" class="mark" />
-            <text x="836" y="565" class="bplabel warn">정착부 — 소선 파단</text>
           </g>
         </svg>
         <div id="horizon"></div>

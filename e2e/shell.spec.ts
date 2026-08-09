@@ -137,7 +137,21 @@ test.describe('window ops', () => {
   test('window ops — every window carries the WindowFrame chrome', async ({ page }) => {
     for (const w of WINDOWS) {
       const node = win(page, w.id)
-      await expect(node.locator('.win-tab')).toHaveCount(1)
+      // RE-AIMED (C17, x10 08-10), never deleted — 1 → 0, and it is still an
+      // assert about this window's chrome. The frame used to print a `.win-tab`
+      // above every title bar: a clipped trapezoid with a two-letter code in it
+      // (`LF` · `AF` · `RP`). 민서 asked for those off the windows (08-10) — the
+      // code had shrunk to the initials of the name printed 23 px below it, so
+      // the tab named the window a second time in a shorter alphabet, which is
+      // x5's argument against `ko`/`sub` over again. `.win-tab` and
+      // `WindowDef.tab` are both gone.
+      //
+      // The count is PINNED, not dropped. "Every window carries the frame's
+      // chrome" is a claim about the exact set, and an absent item is as much
+      // part of that set as a present one — the same reason `.win-grip` is
+      // counted per window below rather than summed. Dropping the line would
+      // leave nothing to notice a tab quietly coming back on one window.
+      await expect(node.locator('.win-tab')).toHaveCount(0)
       await expect(node.locator('.win-bar')).toHaveCount(1)
       await expect(node.locator('.win-bar h2')).toHaveCount(1)
       await expect(node.locator('.win-ctl .wc-min')).toHaveCount(1)

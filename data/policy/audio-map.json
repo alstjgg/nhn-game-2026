@@ -4,10 +4,10 @@
   "base": "assets/audio/",
   "ext": ".m4a",
 
-  "$buses": "Two, independently mutable. `ambience` sits far under `sfx` on purpose — plan-audio §2 rule 3: the bed must never be the reason a line is missed. The pack is foley under a reading surface, so both sit well below the level that feels right while auditing one cue at a time.",
+  "$buses": "Two, independently mutable. `ambience` sits far under `sfx` on purpose — plan-audio §2 rule 3: the bed must never be the reason a line is missed. The pack is foley under a reading surface, so both sit well below the level that feels right while auditing one cue at a time. x10 (08-10, 민서: '소리를 좀 조용하게') — ambience 0.15 → 0.1 → 0.05, in two passes: 0.1 was still not quiet enough on the running desk, and 0.05 is where 민서 set it. That is -26.0 dB on the bus, -9.5 dB below the level the complaint was about, and it puts the bed at -39.5 LUFS. ONE KNOB ON PURPOSE: bed (gain 1) and office (gain 0.8) both ride this bus, so the ~10 dB gap between them — the thing §4.4 calls the whole effect — is bus-invariant and the room recedes as a whole instead of deforming. NO CUE GAIN MOVED, and that was asked for explicitly: at 0.1 the office one-shots landed 21.9 dB under their raw cuts, past the 20.9 dB §4.4's tuning history rejected as reading like an EMPTY office, and the standing advice here was to answer that with `office.gain` 0.8 → 1.0 rather than with the bus. 민서 ruled otherwise — 'the office.gain is fine' — and took the bus down again instead, so the one-shots now sit 28.0 dB under their cuts and are expected to be at or past the edge of audible. THAT IS THE INSTRUCTION, not an oversight: the room is a bed with events in it that may or may not be caught, rather than a room asserting itself. Do not 'fix' the one-shots by raising `office.gain` without asking.",
   "buses": {
     "sfx": 0.5,
-    "ambience": 0.15
+    "ambience": 0.05
   },
 
   "$preload": "Fetched and decoded before everything else — the only cues reachable before the desk exists, O1's door and its controls. `ready` resolves on this list alone, so the door's controls answer without waiting for the whole pack.",
@@ -118,7 +118,7 @@
     "ending:collapse": null
   },
 
-  "$ambience": "The two beds want opposite things, and `deskHolds` is what splits them. The Watch drone is still an OPENING: `playForMs` retires it that many ms after the desk opens and `beat_start` cannot bring it back, because a drone under a screen the player reads for minutes is pressure that never lets up. The desk bed is a ROOM, and a room that switches off after ten seconds was never a room — with `deskHolds` true it and its sparse events hold for the session. `null` on a slot is silence, and that is a real choice too: the Autopsy screen is meant to be quiet.",
+  "$ambience": "The two beds want opposite things, and `deskHolds` is what splits them. The Watch drone is still an OPENING: `playForMs` retires it that many ms after the desk opens and `beat_start` cannot bring it back, because a drone under a screen the player reads for minutes is pressure that never lets up. The desk bed is a ROOM, and a room that switches off after ten seconds was never a room — with `deskHolds` true it and its sparse events hold for the session. `null` on a slot is silence, and that is a real choice too: the Autopsy screen is meant to be quiet. x10 (08-10, 민서) — THE ROOM NOW OPENS AT THE DOOR, on the first keystroke of the sign-in card (the gesture that unlocks the audio context; nothing can sound before one). Only the drone's `playForMs` window is still anchored to the desk — 10 s that started at the login screen would be spent before the operator got through it. These two numbers did not change and their meaning did not either: `playForMs` is measured from each bed's own opening, which is now a different moment for each. See src/client/audio/index.ts `openTheRoom`.",
   "ambience": {
     "desk": "bed",
     "watch": "watch",

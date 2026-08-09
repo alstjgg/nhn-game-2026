@@ -144,12 +144,60 @@ export function sentenceNode(sentence: Sentence, state: MinableState): HTMLEleme
   return node
 }
 
-/** Repaints one anchor's state — class list plus the mined announcement. */
-export function applyState(node: HTMLElement, state: MinableState): void {
+/**
+ * Repaints one anchor's state — class list plus the mined announcement.
+ *
+ * `held` is the DESK's answer rather than the sentence's: the tear is
+ * unavailable to every sentence at once, for as long as the previous ECHO's
+ * 인수인계 사항 is typing itself onto the incoming page (x10, 민서 08-10 —
+ * `components/slot-board.ts`'s `isRevealing()`). It is a separate argument and
+ * not a fifth `MinableState` because it is not a fact about the sentence: the
+ * state is what the operator has DONE with it, it survives the day and it is
+ * what the marks are painted from, whereas this passes in a second and leaves
+ * the sentence exactly as it found it.
+ *
+ * Both reasons write the same attribute, which is the point — `aria-disabled` is
+ * written HERE and nowhere else on the desk's sentences, so there is one answer
+ * to "is this control operable" however many reasons it may have.
+ */
+export function applyState(node: HTMLElement, state: MinableState, held = false): void {
   node.className = sentenceClass(state)
   // A settled sentence is a dead end: it is already in a file — today's
   // (`slotted`) or an earlier day's (`carried`). `mined` is operable again,
   // because the only way back into it is 해제 freeing the seat.
-  if (state === 'slotted' || state === 'carried') node.setAttribute('aria-disabled', 'true')
+  const settled = state === 'slotted' || state === 'carried'
+  // Recomputed WHOLE on every call, both ways round. A repaint that only ever
+  // added the attribute would need somebody to remember to take it off again;
+  // this one cannot leave a sentence disabled once `held` is false, because it
+  // does not read what the node already says.
+  if (settled || held) node.setAttribute('aria-disabled', 'true')
   else node.removeAttribute('aria-disabled')
+}
+
+/**
+ * The `mine` anchors under `host` — the membrane marker `sentenceAttrs` writes.
+ *
+ * Read off the DOM rather than off a list, because the list belongs to
+ * `components/report-view.ts` (its `anchors`) and this is the one repaint that
+ * has to reach every sentence on the page whoever built it.
+ */
+const MINE_ANCHOR = '[data-op="mine"]'
+
+/**
+ * Repaints every sentence under `host` from the marks and the desk's hold.
+ *
+ * x10 — the gate's TELLING. `windows/reports.ts` refuses a held tear in
+ * `onMine`, which is what actually stops the op; a control that merely ignored
+ * presses would leave an operator on assistive tech pressing a thing that looks
+ * live, so the same fact is painted here as `aria-disabled` on every anchor.
+ *
+ * TOTAL, and that is what makes the release safe: each node's attribute is
+ * derived afresh from `marks` and `held`, so the call that lifts the hold
+ * restores each sentence's own state in the same pass — there is no undo step to
+ * skip. Identity is the authored id off the anchor, never its text (I1).
+ */
+export function repaintMines(host: ParentNode, marks: MarkSets, held: boolean): void {
+  for (const node of host.querySelectorAll<HTMLElement>(MINE_ANCHOR)) {
+    applyState(node, sentenceState(node.dataset.sentenceId ?? '', marks), held)
+  }
 }

@@ -757,6 +757,82 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   anywhere under `src/client/**` — but `driver/seam-guard.ts:11` names that key
   in `BANNED_EXACT` in order to REJECT any event carrying it (inv 12); the scan
   now skips that one named file, with the reason in the source.
+- [x10] **A guard that pinned a SCOPE, re-aimed onto the RULE (08-10).**
+  `tests/shell/manual.test.ts [x10] (a)` asserted `.man-plate .cf-ask` was
+  `var(--mono)` while `confirm.css`'s stayed `var(--myeong)` — the briefing had one
+  face, the confirmation and the endings kept the serif. 민서 overruled the scope the
+  same day (명조 leaves the alert plates entirely), which left the guard pinning two
+  things that must now be false: a per-family override that must NOT exist, and a
+  `--myeong` that was the whole point of removing. Re-aimed UP to the ruling itself
+  and it is stronger for it: the face is declared exactly once on the shared
+  `.cf-ask`, and none of the three alert sheets may name `--myeong` anywhere. Both
+  halves verified red (restoring the serif fails the first; appending a redundant
+  `.man-plate .cf-ask` fails the second). **The transferable part**: the original
+  asserted per-family values, so a re-scope had to find and edit three assertions and
+  could leave one behind; the re-aimed form asserts "declared once, nowhere else",
+  which survives the next re-scope untouched. When a decision is about SCOPE, pin the
+  invariant, not the current distribution. Comments are stripped before the
+  `--myeong` scan — all three sheets discuss the face at length, because the argument
+  it replaced was a real reading and is kept on the record, and a guard reading prose
+  would fire on the reasoning instead of on a declaration · x10.
+- [x10] **`reuseExistingServer` lets one worktree's e2e run assert against ANOTHER
+  worktree's build, and it reports green or red without ever saying so (08-10).**
+  `playwright.config.ts` sets `reuseExistingServer: !process.env.CI` on all three
+  lanes, and the lane ports are hard-coded (`UNIT_PORT = 5174`, 5175, 5176) with no
+  env override. So a local `PW_LANE=unit npx playwright test` does not check whether
+  the listener on 5174 is ITS OWN — it finds something answering and skips the
+  `--outDir dist-e2e` build entirely. Observed here: 32 failures that looked exactly
+  like a code regression (`.win-tab` count 1 where this branch had just removed it,
+  `#caseName` reading `멈춘 회전문` where `PACK_SLUG` is `전구간정상`), all because a
+  concurrent run in the sibling `.claude/worktrees/scenario-model` had bound 5174
+  first. The false direction is the dangerous one: the same mechanism will report
+  **green** when the foreign build happens to satisfy the assertions, so a run can
+  pass without the tree under test ever having been compiled.
+  **This repo is unusually exposed** — CLAUDE.md's development method is parallel
+  agents in git worktrees, all of which share these three ports and most of which
+  symlink one `node_modules`. Two mitigations, in order of cost: run local e2e as
+  `CI=1 …` (`reuseExistingServer` becomes false, `--strictPort` then fails loudly on
+  a busy port instead of borrowing), and longer-term let the three ports be read
+  from env so worktrees can be isolated rather than serialised. Diagnostic that
+  identifies it in one command:
+  `lsof -ti tcp:5174 | xargs ps -o command=` — if the path is not this worktree's,
+  every result from that run is void · x10.
+- [x10] **The C17 re-aim log has a blind spot: it cannot see `e2e/` (08-10).**
+  `e2e/shell.spec.ts`'s *"every window carries the WindowFrame chrome"* asserted
+  `.win-tab` count 1 per window. 민서 had the RP / LF / AF tags removed, so the
+  assert is RE-AIMED to `toHaveCount(0)` — pinned rather than dropped, because "the
+  frame's chrome" is a claim about an exact SET and an absent item belongs to that
+  set as much as a present one; deleting the line would leave nothing to notice a
+  tab coming back on one window. It is annotated `RE-AIMED (C17, x10 08-10)` at the
+  site, and it is logged here **by policy and not because anything demanded it**:
+  `tests/acceptance/discovery-and-frozen-guard.test.ts (l)`'s `reAimedTestFiles()`
+  walks `path.join(REPO, 'tests')` and filters `*.test.ts`, so every re-aim under
+  `e2e/` is invisible to it and stays green unlogged. That is the finding worth
+  keeping — the guard that enforces this log covers the unit suite only, and the
+  browser suite is where the assertions about SURFACES live, which is exactly where
+  a removed element gets re-aimed. Widening `(l)` to `e2e/**/*.spec.ts` is a
+  one-line change and is not made here only because it would go red on re-aims
+  already in that tree that predate the rule · x10.
+- [x10] **A guard that derived a WRAP, and got it backwards (08-10).**
+  `tests/shell/manual.test.ts [x10] (c)` floors the onboarding plate's body at its
+  taller step so the one button on it cannot move between the two presses. It
+  derived that floor from the type tokens and the line counts, and it counted step
+  2's lead as TWO lines — the reasoning being that moving `.cf-ask` to `--mono`
+  (x10 sets the briefing's lead in the desk's fixed face) would push
+  실제 상황 투입에 앞서 모의 과정을 실시합니다. onto a second line. It does not: 21
+  syllables at 1.2em of 18px is ~454px inside 468px of measure, so the derivation
+  was one wrap away from right and picked the wrong side. The sheet took the number
+  it produced, and `min-height:226px` shipped 31px of dead air on BOTH plates —
+  which is the same defect as the stale `126px` it replaced, pointing the other
+  way, and on a plate whose whole brief was to move the eye off the furniture and
+  onto the middle text. Measured on the built page at 1280×800 with the floor
+  lifted: step 1's natural body is 142px, step 2's is 195px. The floor is 195 and
+  the derivation now counts one line. **The claim was not weakened** — both bounds
+  still bite (226 fails `< tallest + 12` at 206.84, verified) and the literal was
+  deliberately NOT inlined, because the derivation is what makes the sheet's number
+  go red when the type tokens move under it. The general finding is the one worth
+  keeping: a node-env guard can check every input to a wrap and never the wrap, so
+  a figure that turns on one belongs in a browser · x10.
 - [x9] **A third re-aim in the same file, at the `ui/tutorial-coach` merge
   (08-09).** `tests/windows/agent-file.test.ts [u4#c2] (d)` asserted
   `String(coverModel)).not.toMatch(/document/)` — and `String(fn)` returns the

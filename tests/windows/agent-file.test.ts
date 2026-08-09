@@ -4,6 +4,16 @@
 // (`components/{block-card,slot-board,dossier,deploy-button}.ts` +
 // `windows/agent-file.ts`) plus repo-level guards C2/C13 that name them.
 //
+// x10 widens that by exactly one file: `styles/win-agent-file.css`, the window's
+// own sheet, read as TEXT off disk and never imported (the
+// `tests/shell/sign-in.test.ts` idiom — that suite reads `signin.css` for the
+// same kind of claim). It is here because x10's DEPLOY cue is a contract split
+// across the two: the sheet decides which half of the cycle the animation ends
+// on, and under `prefers-reduced-motion` that keyframe is the only state a
+// reduced-motion operator ever sees. A node-env run cannot watch it blink, but it
+// can prove the declaration that decides what the blink settles as — which is the
+// half that can silently ship a DEPLOY button that looks dead.
+//
 // The suite runs under vitest `environment: 'node'` (u3/u9d precedent, u4 D1):
 // **no DOM assert lives here** — every one of those is in `e2e/agent-file.spec.ts`.
 // Each component therefore splits `pure model → DOM builder`, and only the model
@@ -98,6 +108,13 @@ interface SlotBoardModule {
    * it (asserted by source-scan below), so the DOM half owns no second rule set.
    */
   planOps(state: { slots: readonly (string | null)[]; deployed: boolean }, action: SlotAction): OpPlan
+  /**
+   * x10's pure core for the mining hold: whether a handover of these sentences
+   * types at all. `revealHandover`'s early return IS this call, so the two paths
+   * that paint no character (an empty file, a desk asking for no motion) are the
+   * paths on which nothing can be held.
+   */
+  handoverTypes(texts: readonly string[], motionless: boolean): boolean
   createSlotBoard: unknown
   getSlotBoard: unknown
 }
@@ -908,5 +925,662 @@ describe('[U5.3] filedModel is the same document, closed', () => {
     expect(JSON.stringify({ callsign: input.callsign })).toBe(before)
     expect(JSON.stringify(second)).toBe(JSON.stringify(first))
     expect(String(filedModel)).not.toMatch(/document/)
+  })
+})
+
+/* ══ x10 — the cue on the second page's DEPLOY, and the cover's own pace ═══ */
+
+const WIN_FILE_CSS = path.join(CLIENT, 'styles/win-agent-file.css')
+
+/** The window's sheet: comments out, whitespace flattened. */
+function sheet(): string {
+  return stripComments(read(WIN_FILE_CSS)).replace(/\s+/g, ' ')
+}
+
+/** The window's source, comments out — the same text every scan above reads. */
+function windowSource(): string {
+  return stripComments(read(AGENT_FILE_TS))
+}
+
+/** One rule's declaration block, by literal selector (regex-escaped by the caller). */
+function ruleBody(css: string, selector: string): string {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`${escaped}\\{([^}]*)\\}`).exec(css)?.[1] ?? ''
+}
+
+/**
+ * The DURATION out of an `animation:` shorthand — the first time-valued token.
+ *
+ * Positional and not named, because that is how the shorthand works: the first
+ * `<time>` is the duration and the second, if any, is the delay. Nothing else in
+ * either cue's shorthand (`dzCue`/`pgCue`, `linear`, `infinite`, `both`) can be
+ * mistaken for one, so this is exact rather than approximate.
+ */
+function cueDuration(rule: string): string {
+  const animation = /animation:\s*([^;}]+)/.exec(rule)?.[1] ?? ''
+  return animation.trim().split(/\s+/).find((p) => /^-?(?:\d+(?:\.\d+)?|\.\d+)m?s$/.test(p)) ?? ''
+}
+
+/** One `@keyframes` block's steps, in declared order. */
+function keyframeSteps(css: string, name: string): { sel: string; decl: string }[] {
+  const block = new RegExp(`@keyframes\\s+${name}\\s*\\{((?:[^{}]*\\{[^{}]*\\})*)\\s*\\}`).exec(css)
+  if (block === null) return []
+  return [...block[1]!.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
+    sel: m[1]!.trim(),
+    decl: m[2]!.trim(),
+  }))
+}
+
+describe('[x10] the DEPLOY cue is one 1 s cycle and it ends ACTIVATED', () => {
+  it('(a) the blink is one 1 s pass, looping, filled, and never alternating', () => {
+    const rule = /\.btn-deploy\.is-cued\{([^}]*)\}/.exec(sheet())?.[1] ?? ''
+    expect(rule, 'win-agent-file.css no longer cues the control at all').not.toBe('')
+    const animation = /animation:\s*([^;}]+)/.exec(rule)?.[1] ?? ''
+
+    expect(animation).toMatch(/\bdzCue\b/)
+    // 1 s IS THE WHOLE CYCLE — there and back inside 1000 ms (민서, 08-10). A VALUE
+    // CHANGE AND NOT A RE-AIM: this shipped at `.5s`, 민서 read the built page and
+    // ruled it too fast, and the claim being made is the one it always was — the
+    // DECLARED duration is the whole cycle they asked for, not half of one. The
+    // absence of `alternate` is still asserted and not assumed, because `1s …
+    // infinite alternate` is a TWO-second round trip wearing a 1 s number, exactly
+    // as `.5s … alternate` was a 1 s round trip wearing a 0.5 s one. It is the shape
+    // anyone reaching for a two-state pulse writes first, at any duration.
+    expect(animation, 'the cue is no longer a one-second cycle').toMatch(/(^|\s)1s(\s|$)/)
+    expect(animation, 'an alternating cue is a 2 s round trip wearing a 1 s number').not.toMatch(
+      /alternate/,
+    )
+    expect(animation, 'a cue that does not loop is not a cue').toMatch(/\binfinite\b/)
+    // FILLED, and this is the other half of the reduced-motion contract. `base.css`
+    // collapses every animation to a single 1 ms pass, and an UNFILLED cue would
+    // then hand `background` back to the cascade — to `.btn-deploy`'s own
+    // graphite, the DEACTIVATED look — leaving a live DEPLOY button that reads as
+    // dead for exactly the operator who asked for less movement. `signin.css`'s
+    // `siBlink` needs the opposite keyword for the same reason (its element's own
+    // value is the LIT one); both comments say so, and both are guarded.
+    expect(animation, 'an unfilled cue settles on the deactivated background').toMatch(
+      /\b(both|forwards)\b/,
+    )
+  })
+
+  it('(b) the keyframes end on the ACTIVATED look and start on the deactivated one', () => {
+    const css = sheet()
+    const steps = keyframeSteps(css, 'dzCue')
+    // Two states, held flat — not a walk through intermediate colours. A third
+    // step would mean the cue had become a gradient, and a signal lamp is not one.
+    expect(steps.map((s) => s.sel), 'the cue is no longer two flat halves').toEqual([
+      '0%,49.9%',
+      '50%,100%',
+    ])
+
+    // THE ORDERING IS THE CONTRACT. Under the reduced-motion collapse the element
+    // lands on its 100% keyframe and stays there, so 100% must be the activated
+    // state. Reversing these two for symmetry is the one edit this guard exists to
+    // catch — it would look like tidying and would ship a dead-looking control.
+    const last = steps[steps.length - 1]
+    expect(last?.sel, 'the last keyframe is not the one at 100%').toContain('100%')
+
+    // …and "activated" / "deactivated" are pinned to the rules that DEFINE them,
+    // never to a token spelled twice: the lit half is the background `:hover`
+    // paints, the dark half is the one `.btn-deploy` itself declares. Re-skin the
+    // button and this guard follows it.
+    const activated = /\.btn-deploy:hover:not\(:disabled\)\{[^}]*background:(var\(--[\w-]+\))/.exec(css)?.[1]
+    const deactivated = /\.btn-deploy\{[^}]*background:(var\(--[\w-]+\))/.exec(css)?.[1]
+    expect(activated, 'the control has no hover background to call its activated look').toBeTruthy()
+    expect(deactivated, 'the control has no resting background to call its deactivated look').toBeTruthy()
+    expect(last?.decl, 'the cue does not end on the activated look').toContain(`background:${activated}`)
+    expect(steps[0]?.decl, 'the cue does not start on the deactivated look').toContain(
+      `background:${deactivated}`,
+    )
+  })
+
+  it('(c) the page condition and the latch live in the window, never in the pure view', () => {
+    const win = windowSource()
+
+    // D1 — `deployView` stays pure and page-blind. Whether the mounted page is
+    // page 2 of 2 is the document's geometry, and a view model that learned it to
+    // decide a colour would be deciding layout from state it has no business
+    // holding. So the condition is computed in `turn()`, where both numbers are.
+    expect(
+      stripComments(read(DEPLOY_BUTTON_TS)),
+      'the pure view model learned the document’s page geometry',
+    ).not.toMatch(/is-cued|SecondPage|cueSpent/)
+    expect(win).toMatch(/classList\.toggle\('is-cued'/)
+    expect(win, 'the cue no longer rides page index 1 of 2').toMatch(
+      /liveOnSecondPage\s*=\s*clamped === 1 && clamped === last/,
+    )
+
+    // Every clause of the cue, named. Each one is a way for the blink to be
+    // wrong rather than merely misplaced: on a page it is not on, after the press
+    // that spent it, on a day in flight (`settling` / `next` / `spent`), or on a
+    // control that cannot be pressed at all.
+    const body = /function paintCue\(\)[^{]*\{([\s\S]*?)\n {2}\}/.exec(win)?.[1] ?? ''
+    expect(body, 'paintCue is gone — some other writer owns the class now').not.toBe('')
+    for (const clause of ['liveOnSecondPage', '!cueSpent', "mode === 'deploy'", '!deployBtn.disabled']) {
+      expect(body, `the cue no longer gates on ${clause}`).toContain(clause)
+    }
+  })
+
+  it('(d) the press latch is a latch — set once, never re-armed', () => {
+    const win = windowSource()
+    expect(win, 'nothing spends the cue any more').toMatch(/cueSpent\s*=\s*true/)
+    // The ONLY `= false` is the declaration. 민서, 08-10: the press ends the blink
+    // and the 배치 확인 plate it raises may be answered 취소 — a cue recomputed
+    // from live state would come back the moment the question came down, which is
+    // the desk repeating a request it already had an answer to.
+    const cleared = [...win.matchAll(/cueSpent\s*=\s*false/g)]
+    expect(cleared, 'the latch is re-armed somewhere — the cue must not return this session').toHaveLength(1)
+    expect(win).toMatch(/let cueSpent = false/)
+  })
+})
+
+/* ══ x10 — the cue on the page turn ═══════════════════════════════════════════
+ *
+ * 민서, 08-10: *"After the cover typing is finished, wait 1 second. If the user
+ * does not click the next page button during that 1 second, blink a transparent
+ * box with a red borderline around the next page button. Same cycle as the DEPLOY
+ * button blink (1 second)."*
+ *
+ * The same split as the DEPLOY cue, so the same two halves are guarded: the sheet
+ * decides what the box IS and which half of the cycle it settles on, and the window
+ * decides WHEN — and both halves can ship a silent failure a node-env run is the
+ * only cheap place to catch. The one that would hurt most is the reduced-motion
+ * collapse landing on the invisible keyframe: the mark would simply not exist for
+ * the operator who has already had the whole reveal taken away from them.
+ */
+describe('[x10] the page-turn cue marks the way out of the cover', () => {
+  it('(a) the two cues share one cycle — the arrow blinks at the DEPLOY rate', () => {
+    const css = sheet()
+    const deploy = cueDuration(ruleBody(css, '.btn-deploy.is-cued'))
+    const turn = cueDuration(ruleBody(css, '.pg-next.is-cued::after'))
+
+    expect(deploy, 'the DEPLOY cue has no duration to compare against').not.toBe('')
+    expect(turn, 'win-agent-file.css no longer cues the page turn at all').not.toBe('')
+    // "SAME CYCLE AS THE DEPLOY BUTTON BLINK" was the request, so the two are
+    // compared to each other and not both to a literal: 민서 has already moved this
+    // number once (0.5 s → 1 s, same day), and the thing that must survive the next
+    // move is that the desk blinks at ONE rate. Two surfaces cueing at two speeds is
+    // a desk with two pulses, which reads as two unrelated alarms.
+    expect(turn, 'the two cues no longer share a cycle').toBe(deploy)
+    expect(turn, 'the shared cycle is no longer the 1 s 민서 ruled').toBe('1s')
+
+    const rule = ruleBody(css, '.pg-next.is-cued::after')
+    expect(rule).toMatch(/\bpgCue\b/)
+    expect(rule, 'an alternating cue is a 2 s round trip wearing a 1 s number').not.toMatch(
+      /alternate/,
+    )
+    expect(rule, 'a cue that does not loop is not a cue').toMatch(/\binfinite\b/)
+    expect(rule, 'an unfilled cue hands the mark back to the cascade').toMatch(/\b(both|forwards)\b/)
+  })
+
+  it('(b) the keyframes end on the VISIBLE state, so reduced motion leaves a static mark', () => {
+    const steps = keyframeSteps(sheet(), 'pgCue')
+    // Two states held flat, the same hard cut `dzCue` makes — a third step would
+    // mean the box had started fading in and out, and a mark is not a breath.
+    expect(steps.map((s) => s.sel), 'the cue is no longer two flat halves').toEqual([
+      '0%,49.9%',
+      '50%,100%',
+    ])
+    // THE ORDERING IS THE CONTRACT, exactly as it is for `dzCue`. `base.css`
+    // collapses every animation to one 1 ms pass with `animation-iteration-count:1`,
+    // which lands the element on its 100% keyframe and leaves it there. So 100% must
+    // be the DRAWN state: reversed for symmetry with anything, a reduced-motion
+    // operator would get no mark at all — and that is the operator who never saw the
+    // cover type itself out either, so the arrow is the only thing left telling them
+    // the document continues.
+    expect(steps.at(-1)?.sel, 'the last keyframe is not the one at 100%').toContain('100%')
+    expect(steps.at(-1)?.decl, 'the cue settles INVISIBLE under reduced motion').toMatch(
+      /opacity:\s*1\b/,
+    )
+    expect(steps[0]?.decl, 'the cue no longer starts unmarked').toMatch(/opacity:\s*0\b/)
+  })
+
+  it('(c) it is a transparent box around the arrow, and it borrows neither the focus channel nor the layout', () => {
+    const css = sheet()
+    const box = ruleBody(css, '.pg-next.is-cued::after')
+
+    // A BOX, drawn AROUND the button: a border and no fill, so the arrow's own face
+    // shows through unchanged. `background` here would make it a plate over the
+    // control rather than a mark around it.
+    expect(box).toMatch(/\bborder:[^;]*var\(--seal-2\)/)
+    expect(box, 'the cue paints a fill — the arrow must show through').not.toMatch(/background/)
+    expect(box).toMatch(/content:''/)
+
+    // NOT `outline`, and this is the whole reason the cue is a pseudo-element.
+    // `.pg-turn` is a focusable control and the desk's focus channel IS `outline`
+    // wherever it is drawn by hand (`confirm.css`, `signin.css`, `coach.css`);
+    // `.pg-turn` takes the UA's. A cue in that channel makes a focused arrow and a
+    // hinted arrow the same object — and worse, an ANIMATED property outranks every
+    // author declaration, so the cue would SUPPRESS the focus ring for its whole run.
+    for (const rule of [box, ruleBody(css, '.pg-next')]) {
+      expect(rule, 'the cue borrows the focus channel').not.toMatch(/outline/)
+    }
+
+    // IT CANNOT MOVE ANYTHING. Out of flow, so neither the arrow's box nor
+    // `.pg-nav`'s row can feel it; `pointer-events:none` so the 2 px of overhang
+    // does not widen what the operator can click or reach over `.pg-count`.
+    expect(box).toMatch(/position:absolute/)
+    expect(box).toMatch(/pointer-events:none/)
+    // …and the containing block is the ONLY thing added to the button itself. A
+    // second declaration here is a live control being re-styled by a hint.
+    expect(ruleBody(css, '.pg-next').replace(/\s+/g, ''), '.pg-next gained a declaration beyond its containing block').toBe(
+      'position:relative',
+    )
+    // The cue is on the pseudo-element and nowhere else: no rule paints the BUTTON
+    // when it is cued, which is what keeps every one of its own properties — border,
+    // background, transform, outline — with the cascade.
+    expect(css, 'a rule cues the button itself, not the box around it').not.toMatch(
+      /\.pg-next\.is-cued\{/,
+    )
+  })
+
+  it('(d) the wait, the arm and the paint are one each, and the arm declines the third landing', () => {
+    const win = windowSource()
+
+    // ONE WAIT, named, and it is a constant rather than a literal in a `setTimeout`.
+    expect(win, 'the 1 s wait before the cue is gone or is no longer a bare number').toMatch(
+      /const PG_CUE_ARM_MS = 1000/,
+    )
+
+    // ONE WRITER of the class, and it is not the DEPLOY cue's. Both toggles exist,
+    // each exactly once, each on its own control — a single writer for both would
+    // have to know two page geometries and two latches.
+    expect([...win.matchAll(/pgNext\.classList\.toggle\('is-cued'/g)]).toHaveLength(1)
+    expect([...win.matchAll(/deployBtn\.classList\.toggle\('is-cued'/g)]).toHaveLength(1)
+
+    // Every clause of the paint, named. Each is a way for the mark to be wrong
+    // rather than merely misplaced: over a reveal that is still printing, on a page
+    // that is not the cover, after the press that spent it, or on an arrow that
+    // cannot be pressed at all.
+    const paint = /function paintPgCue\(\)[^{]*\{([\s\S]*?)\n {2}\}/.exec(win)?.[1] ?? ''
+    expect(paint, 'paintPgCue is gone — some other writer owns the class now').not.toBe('')
+    for (const clause of ['pgCueArmed', '!pgCueSpent', 'coverDone', 'viewing === 0', '!pgNext.disabled']) {
+      expect(paint, `the page-turn cue no longer gates on ${clause}`).toContain(clause)
+    }
+
+    // ONE ARM, and it is reached from exactly the two places the cover becomes
+    // readable — `landCover()` and `mountCover()`. Three occurrences: the
+    // declaration and those two calls.
+    const arm = /function armPgCue\(\)[^{]*\{([\s\S]*?)\n {2}\}/.exec(win)?.[1] ?? ''
+    expect(arm, 'armPgCue is gone — the wait is armed somewhere else now').not.toBe('')
+    expect([...win.matchAll(/\barmPgCue\b/g)], 'the arm gained or lost a call site').toHaveLength(3)
+    expect(win).toMatch(/function landCover\(\)[^{]*\{[\s\S]*?armPgCue\(\)/)
+    expect(win).toMatch(/function mountCover\(page: HTMLElement\)[^{]*\{[\s\S]*?armPgCue\(\)/)
+
+    // …AND IT DECLINES `landCover`'s THIRD CALLER. `turn()` lands the reveal
+    // whenever a page other than the cover is mounted, and that operator has already
+    // made the gesture the cue would be asking for. `turn()` assigns `viewing`
+    // before it reaches that branch, so the page test inside the arm is what refuses
+    // it — this is the guard that keeps the cue off a desk whose page is turned.
+    expect(arm, 'the arm no longer refuses a landing made on another page').toContain('viewing !== 0')
+    expect(arm, 'the arm no longer refuses a reveal that is still printing').toContain('!coverDone')
+    // Idempotent: both call sites can fire repeatedly (every mount of the cover is
+    // one), so the wait must not be restartable and the latches must be honoured.
+    for (const clause of ['pgCueArmed', 'pgCueSpent', 'pgCueTimer !== null']) {
+      expect(arm, `the arm no longer refuses on ${clause}`).toContain(clause)
+    }
+    expect([...win.matchAll(/pgCueArmed\s*=\s*true/g)], 'the wait ends in more than one place').toHaveLength(1)
+  })
+
+  it('(e) the two cues are spent by two different presses, and neither latch re-arms', () => {
+    const win = windowSource()
+
+    // TWO LATCHES, DECLARED SEPARATELY. Overloading `cueSpent` would mean the page
+    // turn retired the DEPLOY cue — and the turn is what MOUNTS the page that cue
+    // lives on, so following the first hint would take the second one away.
+    expect(win).toMatch(/let cueSpent = false/)
+    expect(win).toMatch(/let pgCueSpent = false/)
+
+    // Each is set exactly once, and the only `= false` is its declaration: a cue
+    // recomputed from live state comes back the moment the state does, which is the
+    // desk repeating a request it already had an answer to (민서, 08-10).
+    expect([...win.matchAll(/pgCueSpent\s*=\s*true/g)]).toHaveLength(1)
+    expect(
+      [...win.matchAll(/pgCueSpent\s*=\s*false/g)],
+      'the page-turn latch is re-armed somewhere — the cue must not return this session',
+    ).toHaveLength(1)
+
+    // …and they are spent by the two presses that own them. The regions are the two
+    // handlers, sliced out of the source so that "the DEPLOY press spends the DEPLOY
+    // cue" is a fact about where the line sits and not about how many of each string
+    // the file contains.
+    const nextAt = win.indexOf("pgNext.addEventListener('click'")
+    // The mount of the window's three children, which is the next statement after
+    // the two arrow listeners. Named in full because a bare `host.append(` also
+    // matches `filedHost`'s own local `host`, several hundred lines earlier.
+    const appendAt = win.indexOf('host.append(stamp.root')
+    expect(nextAt, 'the page-turn handler is gone').toBeGreaterThan(-1)
+    expect(appendAt, 'the window no longer mounts its own nav').toBeGreaterThan(nextAt)
+    const turnPress = win.slice(nextAt, appendAt)
+    expect(turnPress, 'the page turn no longer spends its own cue').toContain('pgCueSpent = true')
+    // Case is what separates the two names — `pgCueSpent` carries a capital `C`, so
+    // a lower-case `cueSpent` here would be the DEPLOY latch and nothing else.
+    expect(turnPress, 'the page turn spends the DEPLOY cue as well').not.toContain('cueSpent')
+
+    const zoneAt = win.indexOf('buildDeployZone(')
+    const stampAt = win.indexOf('buildDeployStamp()')
+    expect(zoneAt, 'the deploy handler is gone').toBeGreaterThan(-1)
+    expect(stampAt).toBeGreaterThan(zoneAt)
+    const deployPress = win.slice(zoneAt, stampAt)
+    expect(deployPress, 'the DEPLOY press no longer spends its own cue').toContain('cueSpent = true')
+    expect(deployPress, 'the DEPLOY press spends the page-turn cue as well').not.toContain('pgCueSpent')
+  })
+})
+
+describe('[x10] the cover’s own pace', () => {
+  /** One of the reveal's four local constants. */
+  function beat(name: string): number {
+    const m = new RegExp(`const ${name}\\s*=\\s*(\\d+)`).exec(windowSource())
+    return m === null ? Number.NaN : Number(m[1])
+  }
+
+  it('(a) a character is quicker than a word, a word than a line, and the lead beat leads', () => {
+    // NOT the numbers themselves — they have moved twice in two days (22 → 45 → 36
+    // per character) and `e2e/agent-file.spec.ts` deliberately asserts "the shape
+    // of it and not its pace" for the same reason. What must hold whatever the
+    // rates are is the ORDER: the reveal reads as dictation because the pause
+    // after a word is longer than the one after a character and the pause after a
+    // line is longer again, and the lead is longer than any of them because it is
+    // staging rather than a rate — it is what makes the page be seen blank first.
+    const perChar = beat('COVER_MS_PER_CHAR')
+    const word = beat('COVER_MS_WORD')
+    const line = beat('COVER_MS_LINE')
+    const lead = beat('COVER_LEAD_MS')
+    for (const [name, value] of [
+      ['COVER_MS_PER_CHAR', perChar],
+      ['COVER_MS_WORD', word],
+      ['COVER_MS_LINE', line],
+      ['COVER_LEAD_MS', lead],
+    ] as const) {
+      expect(Number.isFinite(value), `${name} is gone or is no longer a bare number`).toBe(true)
+    }
+    expect(perChar).toBeLessThan(word)
+    expect(word).toBeLessThan(line)
+    expect(line).toBeLessThan(lead)
+    // …and the desk's own READING pace is still the faster of the two models: the
+    // cover is a document the operator is being slowed down over, the feed is a
+    // radio arriving at reading speed (`components/typewriter.ts`, 11 ms).
+    expect(perChar).toBeGreaterThan(11)
+  })
+
+  it('(b) the series name in the cover’s prose is machine print, and only there', () => {
+    // x10, 민서 — ECHO is a callsign, which on this desk is a FIXED value the
+    // form prints, so it takes `--mono` like the 호출부호 row does and not the
+    // 명조 of the sentence around it. A bare `var()`, per inv 8.
+    expect(sheet(), 'the cover’s ECHO is back in the body’s serif').toMatch(
+      /\.rd-echo\{[^}]*font-family:var\(--mono\)/,
+    )
+    // …and the swap reaches exactly one surface, which is what made it safe to
+    // declare on the class rather than scoped to the cover: `callsignMarked` in
+    // dossier.ts is the only emitter of `rd-echo` in the unit.
+    const emitters = u4Sources().filter((s) => /'rd-echo'/.test(s.text)).map((s) => s.file)
+    expect(emitters, 'a second surface emits rd-echo — scope the face to the cover').toEqual([
+      rel(DOSSIER_TS),
+    ])
+  })
+})
+
+/* ══ x10 — the handover reveal: its own pace, and the mining hold ═════════ */
+//
+// Two rulings from 민서 on 08-10, both about the same reveal:
+//
+//   "Mining should be disabled when the previous ECHO's 인수인계 사항 is being
+//    typed out."
+//   "let's speed up the type speed of this one."
+//
+// The second is the delicate one. `components/typewriter.ts` is SHARED — the
+// REPORT body replay types on the same arithmetic — so a faster handover had to
+// become a parameter rather than new constants, and what the block below pins is
+// that the parameter did its job: the handover moved, the report did not, and
+// there is still exactly one typewriter on the desk. REPORTS' side of the hold
+// (the refusal, and the `aria-disabled` that announces it) is asserted in
+// `tests/windows/reports.test.ts` under the same `[x10]` heading.
+
+const TYPEWRITER_TS = path.join(COMPONENTS, 'typewriter.ts')
+const WOODARI_REPORTS_TS = path.join(CLIENT, 'driver/fixtures/woodari-reports.ts')
+
+interface TypePace {
+  msPerChar: number
+  msBetween: number
+}
+
+interface TypewriterModule {
+  READING_PACE: TypePace
+  TYPE_START: { sentence: number; chars: number; done: boolean }
+  typeCursor(
+    state: { sentence: number; chars: number; done: boolean },
+    elapsedMs: number,
+    lengths: readonly number[],
+    pace?: TypePace,
+  ): { sentence: number; chars: number; done: boolean }
+  typeDuration(lengths: readonly number[], pace?: TypePace): number
+}
+
+interface WoodariReports {
+  reportOf(run: 1 | 2 | 3): { facts: Sentence[]; report_body: Sentence[] }
+}
+
+const loadTypewriter = async (): Promise<TypewriterModule> =>
+  (await import(importable(TYPEWRITER_TS))) as unknown as TypewriterModule
+
+/** The board's source, comments out — the same text every u4 scan reads. */
+function boardSource(): string {
+  return stripComments(read(SLOT_BOARD_TS))
+}
+
+/** The handover's two numbers, read off the board rather than restated here. */
+function handoverPace(): TypePace {
+  const m = /const HANDOVER_PACE:\s*TypePace\s*=\s*\{\s*msPerChar:\s*(\d+),\s*msBetween:\s*(\d+)\s*\}/.exec(
+    boardSource(),
+  )
+  return { msPerChar: m === null ? Number.NaN : Number(m[1]), msBetween: m === null ? Number.NaN : Number(m[2]) }
+}
+
+/**
+ * The median length of a report sentence in the shipped pack fixture.
+ *
+ * Read, never authored (C3): what the assertions below use it for is a RATIO and
+ * a check that the board's own comment still states the total its constants
+ * produce — neither of which pins what the fixture says.
+ */
+async function medianSentenceLength(): Promise<number> {
+  const pack = (await import(importable(WOODARI_REPORTS_TS))) as unknown as WoodariReports
+  const lengths: number[] = []
+  for (const run of [1, 2, 3] as const) {
+    const report = pack.reportOf(run)
+    for (const s of [...report.facts, ...report.report_body]) lengths.push(s.text.length)
+  }
+  expect(lengths.length, 'no fixture report sentence to measure — the scan is vacuous').toBeGreaterThan(20)
+  lengths.sort((a, b) => a - b)
+  return lengths[Math.floor(lengths.length / 2)]!
+}
+
+describe('[x10] the handover types at its own pace', () => {
+  it('(a) the pace is an ARGUMENT — the same cursor, run at two rates', async () => {
+    const t = await loadTypewriter()
+    const fast = handoverPace()
+    const lengths = [34, 34, 34, 34]
+
+    expect(Number.isFinite(fast.msPerChar), 'HANDOVER_PACE is gone or no longer two bare numbers').toBe(true)
+    expect(Number.isFinite(fast.msBetween)).toBe(true)
+
+    // Faster on both axes, and faster at every point of the replay — not merely
+    // shorter overall, which a bigger between-sentence pause could still be.
+    expect(fast.msPerChar).toBeLessThan(t.READING_PACE.msPerChar)
+    expect(fast.msBetween).toBeLessThan(t.READING_PACE.msBetween)
+    for (const elapsed of [60, 200, 700, 1_500]) {
+      const slow = t.typeCursor(t.TYPE_START, elapsed, lengths)
+      const quick = t.typeCursor(t.TYPE_START, elapsed, lengths, fast)
+      const at = (c: { sentence: number; chars: number }): number => c.sentence * 1_000 + c.chars
+      expect(at(quick), `the handover is not ahead of the report at ${elapsed} ms`).toBeGreaterThan(at(slow))
+    }
+
+    // …and it is the SAME machine: it still settles on `done` instead of running
+    // off the end, at the new rate as at the old one ([u6#c2]).
+    const end = t.typeCursor(t.TYPE_START, 60_000, lengths, fast)
+    expect(end.done).toBe(true)
+    expect(t.typeCursor(end, 60_000, lengths, fast)).toEqual(end)
+    expect(t.typeCursor(t.TYPE_START, 0, [], fast).done).toBe(true)
+  })
+
+  it('(b) roughly HALF the reading pace — and the board’s note still states the total it produces', async () => {
+    const t = await loadTypewriter()
+    const fast = handoverPace()
+    const median = await medianSentenceLength()
+    const four = [median, median, median, median]
+    const before = t.typeDuration(four)
+    const after = t.typeDuration(four, fast)
+
+    // 민서 asked for "roughly half"; the band is what "roughly" is allowed to
+    // mean, and it is deliberately wide enough that the next reading of the pace
+    // does not have to be exactly 0.5 to be honest.
+    expect(after / before).toBeGreaterThan(0.45)
+    expect(after / before).toBeLessThan(0.6)
+
+    // THE NOTE IS PINNED TO THE ARITHMETIC. `windows/agent-file.ts`'s cover pace
+    // carries the argument in full: a comment stating a total is a function of the
+    // constants beside it, and the cover's went stale for two days claiming
+    // fifteen seconds for a page that took 22.5. If this fails, recompute the two
+    // figures in `HANDOVER_PACE`'s note — do not delete them.
+    const note = read(SLOT_BOARD_TS)
+    const claimed = (re: RegExp): number => {
+      const m = re.exec(note)
+      return m === null ? Number.NaN : Number(m[1])
+    }
+    expect(claimed(/median (\d+)/), 'the note’s median is not the fixture’s any more').toBe(median)
+    expect(claimed(/cost (\d+) ms at the reading pace/), 'the note’s BEFORE total is stale').toBe(before)
+    expect(claimed(/and (\d+) ms at this one/), 'the note’s AFTER total is stale').toBe(after)
+  })
+
+  it('(c) the SHAPE survives the speed-up: the pause is still worth about a dozen characters', async () => {
+    const t = await loadTypewriter()
+    const fast = handoverPace()
+    // A rate halved with the pause left where it was turns every row boundary
+    // into a stop. The two numbers move together, so the pause stays worth the
+    // same reading — a dozen characters of the rate beside it, within a couple.
+    const chars = (p: TypePace): number => p.msBetween / p.msPerChar
+    expect(Math.abs(chars(fast) - chars(t.READING_PACE))).toBeLessThan(2)
+    // …and it is still a pause at all, which is what makes four sentences read as
+    // four rather than as one long string.
+    expect(fast.msBetween).toBeGreaterThan(fast.msPerChar)
+  })
+
+  it('(d) ONE typewriter: the board names a pace, it does not fork the arithmetic', () => {
+    const board = boardSource()
+    // The call is the shared one, three arguments plus the pace.
+    expect(board, 'the reveal no longer runs the shared cursor').toMatch(
+      /typeCursor\(\s*TYPE_START,\s*elapsed,\s*lengths,\s*HANDOVER_PACE\s*\)/,
+    )
+    expect(board, 'the board imports the typewriter').toMatch(/from '\.\/typewriter\.ts'/)
+    // And it holds no second copy of the model: no cursor arithmetic of its own,
+    // no per-character reduction, no rival constants.
+    expect(board, 'the board mints a rival pace constant').not.toMatch(/MS_PER_CHAR|MS_BETWEEN/)
+    expect(board, 'the board does its own per-character arithmetic').not.toMatch(
+      /msPerChar\s*[*+]|Math\.floor\([^)]*msPerChar/,
+    )
+    // The one pace in the file is the one the reveal passes.
+    expect((board.match(/HANDOVER_PACE/g) ?? []).length, 'HANDOVER_PACE is declared and used exactly once').toBe(2)
+  })
+
+  it('(e) the watchdog counts frames since the last TICK — the pace cannot destabilise it', () => {
+    const board = boardSource()
+    expect(board).toMatch(/const WATCHDOG_FRAMES\s*=\s*(\d+)/)
+    // It is not derived from the reveal's duration, so a faster reveal leaves it
+    // exactly where it was: the pump resets the counter on every tick and the rAF
+    // chain raises it, which is the same fact ("nothing is pumping this") at any
+    // rate. A watchdog scaled off the pace would have to move with every reading
+    // of it, and would still be measuring the wrong thing.
+    expect(board, 'the pump no longer resets the watchdog').toMatch(/sinceTick = 0/)
+    expect(board, 'the watchdog no longer counts frames').toMatch(/sinceTick \+= 1/)
+    const watchAt = board.indexOf('const watch =')
+    expect(watchAt).toBeGreaterThan(-1)
+    expect(board.slice(watchAt), 'the watchdog is derived from the pace').not.toMatch(
+      /HANDOVER_PACE|typeDuration/,
+    )
+  })
+})
+
+describe('[x10] the reveal holds the tear, and cannot hold it for ever', () => {
+  it('(a) handoverTypes is the reveal’s own early return — an empty or motionless handover types nothing', async () => {
+    const { handoverTypes } = await loadSlotBoard()
+    const texts = ['첫 문장.', '둘째 문장.']
+    expect(handoverTypes(texts, false)).toBe(true)
+    // The two paths that return before a character is ever painted. Nothing is
+    // typing on either, so nothing may be held on either.
+    expect(handoverTypes([], false), 'an empty file is handed on empty').toBe(false)
+    expect(handoverTypes(texts, true), 'reduced motion / the determinism gate').toBe(false)
+    expect(handoverTypes([], true)).toBe(false)
+  })
+
+  it('(b) …and the reveal has no second copy of that condition', () => {
+    const board = boardSource()
+    const revealAt = board.indexOf('function revealHandover(')
+    expect(revealAt, 'revealHandover is gone').toBeGreaterThan(-1)
+    const body = board.slice(revealAt)
+    const guardAt = body.indexOf('handoverTypes(')
+    const armedAt = body.indexOf('reveal = { row: 0')
+    expect(guardAt, 'revealHandover no longer asks handoverTypes').toBeGreaterThan(-1)
+    expect(armedAt, 'the reveal no longer arms its cursor').toBeGreaterThan(-1)
+    // The cursor is armed AFTER the predicate, so `reveal` — and therefore the
+    // hold — is null on both early-return paths by construction.
+    expect(guardAt).toBeLessThan(armedAt)
+    expect(body.slice(0, armedAt), 'the early return re-states the condition instead of calling it').not.toMatch(
+      /texts\.length === 0 \|\| motionless\(\)/,
+    )
+  })
+
+  it('(c) the hold IS the reveal’s cursor — there is no latch to leave switched on', () => {
+    const board = boardSource()
+    // Derived, in one expression. A stored boolean would need an exit for every
+    // way a reveal can end, and a gate stuck ON leaves the operator unable to
+    // mine for the rest of the sitting.
+    expect(board, 'isRevealing is no longer derived from the reveal cursor').toMatch(
+      /isRevealing:\s*\(\)\s*=>\s*reveal !== null/,
+    )
+    expect(board, 'a second piece of state answers the hold').not.toMatch(
+      /\b(?:revealing|holding|gated)\s*=\s*(?:true|false)/,
+    )
+    // Every end of a reveal runs `endReveal()`, and `endReveal` is the only place
+    // the cursor is cleared: the last character and the watchdog both land through
+    // `land()`, and a replaced reveal clears the old one on the way in.
+    expect(board).toMatch(/function endReveal\(\)[\s\S]{0,200}reveal = null/)
+    expect((board.match(/reveal = null/g) ?? []).length, 'the cursor is cleared outside endReveal()').toBe(1)
+    expect(board).toMatch(/const land = \(\)[\s\S]{0,120}endReveal\(\)/)
+    expect(board).toMatch(/function revealHandover\([\s\S]{0,80}?\{\s*endReveal\(\)/)
+    // The watchdog's own exit is `land()` — the case where the driver's pump is
+    // not running at all, and the one that must not be able to strand the hold.
+    const watchAt = board.indexOf('const watch =')
+    expect(board.slice(watchAt), 'the watchdog no longer lands the reveal').toMatch(/sinceTick > WATCHDOG_FRAMES[\s\S]{0,80}land\(\)/)
+  })
+
+  it('(d) the hold publishes ONE BIT — the reveal’s progress is still nobody’s business', async () => {
+    const { planOps, SLOT_CAP } = await loadSlotBoard()
+    const board = boardSource()
+    // `isRevealing()` answers a boolean and nothing else: no row, no character
+    // count, no percentage. The reveal is DRAWING state (see the note on `reveal`),
+    // and the file holds what it holds throughout — which is why DEPLOY is not
+    // gated and `cells()` is untouched.
+    expect(board, 'cells() no longer answers the whole handover').toMatch(/cells:\s*\(\)\s*=>\s*\[\.\.\.slots\]/)
+    expect(board, 'the board publishes the reveal’s progress').not.toMatch(
+      /(?:revealRow|revealChars|revealProgress|isRevealing:\s*\(\)\s*=>\s*reveal[.?])/,
+    )
+    // …and no op reads it: the planner is pure and knows nothing of a reveal, so a
+    // `deploy` mid-type still commits the whole file (u4 D1).
+    expect(String(planOps)).not.toMatch(/reveal/)
+    const plan = planOps({ slots: ['b-r2-f03', null, null, null], deployed: false }, { kind: 'deploy' })
+    expect(plan.ops).toEqual([{ op: 'deploy', blocks: ['b-r2-f03'] }])
+    expect(plan.slots).toHaveLength(SLOT_CAP)
+  })
+
+  it('(e) the AGENT FILE pushes nothing and waits on nothing — the reveal stays a drawing', () => {
+    const win = windowSource()
+    const at = win.indexOf('board.revealHandover()')
+    expect(at, 'the settle no longer reveals the handover').toBeGreaterThan(-1)
+    // No continuation: `revealHandover(onDone)` is deliberately un-passed here, so
+    // nothing in the run loop is hostage to an animation (`typeCallsign`'s note).
+    expect(win, 'the settle now waits on the reveal').not.toMatch(/board\.revealHandover\(\s*\(\)/)
+    // And the window does not reach into REPORTS to tell it about the hold: the
+    // board is asked, never told (C8).
+    expect(win, 'the AGENT FILE pushes the hold at a sibling window').not.toMatch(/repaintMines|windows\/reports/)
   })
 })

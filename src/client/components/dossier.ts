@@ -152,17 +152,35 @@ const FILED_NOTE = '파견 종료. 열람 전용'
  * 사건 개요 — the three-line incident record the whole file hangs off.
  *
  * The date is written 20XX년 XX월 XX일 on purpose. A real date would place the
- * game in a year and invite the reader to check it against a tunnel that does
+ * game in a year and invite the reader to check it against a venue that does
  * not exist; the redacted form is what a declassified incident summary looks
  * like, and it dates the file without dating the world. The TIME is exact
- * (20시 47분) because a minute is what an incident log actually pins.
+ * (18시 38분) because a minute is what an incident log actually pins.
  *
  * It names 요원 ECHO in prose. That is the same agent `callsignOf(1)` mints —
  * see the note there; the two are one fact written twice and must not drift.
+ *
+ * x10 (민서, 08-10) — THE INCIDENT IS THE SPORTS DOME NOW. The first two lines
+ * read 20시 47분 / 해원터널 하행 4.2km 지점에서 흰 연기가 보인다는 신고 until this
+ * change. The third is untouched: who 본부 sent is a fact about the AGENT
+ * PROGRAMME, not about which building it was.
+ *
+ * THESE TWO LINES ARE THE PACK'S, NOT THIS MODULE'S, and that is the standing
+ * hazard here. The time has to agree with `data/scenario/<slug>/meta.json`'s
+ * `start` — which is what the desk clock opens on — and the place has to agree
+ * with the pack's `places.json`, its symptoms, its timeline and every line the
+ * feed prints. They are written as literals because the cover is authored copy
+ * (the redacted date is a piece of writing, not data), so nothing checks the
+ * agreement for us: `PACK_SLUG` in `shell/pack.ts` selects the pack, and this
+ * string is trusted to describe it. When these two were written for 해원터널 they
+ * matched a pack whose `start` was `20:47`. They were changed ahead of the
+ * sports-dome pack landing (민서: "the pack is being deployed right now"), so
+ * **if the desk clock does not open on 18:38, one of the two is wrong and it is
+ * probably this file.** Check `meta.json`'s `start` before believing this line.
  */
 const INCIDENT =
-  '20XX년 XX월 XX일 20시 47분,\n' +
-  '해원터널 하행 4.2km 지점에서 흰 연기가 보인다는 신고가 접수된다.\n' +
+  '20XX년 XX월 XX일 18시 38분,\n' +
+  '한내시립스포츠돔에서 천장 가운데가 처진다는 신고가 접수된다.\n' +
   '긴급상황대응실 본부는 즉시 현장에 요원 ECHO를 파견하여 상황 파악을 시작했다.'
 
 /**

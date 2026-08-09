@@ -25,11 +25,20 @@ body.signin #topbar{animation:none;transform:translateY(-100%);pointer-events:no
 body.signin .skip-link{display:none}
 body.signin #toast{display:none}
 
-/* The 윤슬교 longitudinal section is the door's backdrop, not the desk's
-   leftover: with no windows on the screen there is finally room to read the
-   bridge this whole simulation is about, so it is lit up while the door is
-   open. `filter`, not `opacity` — `bpIn` is an `animation … both` and a filled
-   animation outranks a plain declaration. */
+/* The blueprint is the door's backdrop, not the desk's leftover: with no
+   windows on the screen there is finally room to see the drawing at all, so it
+   is lit up while the door is open. `filter`, not `opacity` — `bpIn` is an
+   `animation … both` and a filled animation outranks a plain declaration.
+
+   x10 (민서, 08-10) — this comment used to name the drawing and call it "the
+   bridge this whole simulation is about", and it was wrong twice over. The
+   shipped case is a tunnel (`PACK_SLUG`, `shell/pack.ts`), and the wallpaper
+   now carries no name at all: its four `<text>` labels named the dropped first
+   concept and are gone (see the `.bp` group in index.html). This rule is
+   unchanged and still earns its keep — the door is the ONE screen with nothing
+   over the wallpaper, so it is the only place the drawing is worth lighting.
+   What it lights is dressing now, and the four corner marks below are the only
+   text on this screen. */
 body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
 
 /* ═══ THE LAYER ═══════════════════════════════════════════════════════════

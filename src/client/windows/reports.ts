@@ -19,7 +19,7 @@
 // children, so the record survives every repaint as a sibling article.
 import type { FixtureDriver, ViewEvent } from '../driver/index.ts'
 import { callsignOf } from '../components/dossier.ts'
-import { deriveMarks, mine, sentenceState } from '../components/minable-sentence.ts'
+import { deriveMarks, mine, repaintMines, sentenceState } from '../components/minable-sentence.ts'
 import type { MarkSets } from '../components/minable-sentence.ts'
 import { createArchiveRail } from '../components/report-archive.ts'
 import type { ArchiveEntry } from '../components/report-archive.ts'
@@ -85,6 +85,30 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
 
   const marks = (): MarkSets => deriveMarks(driver.store(), carried)
 
+  /**
+   * Is the desk holding the tear right now?
+   *
+   * x10 (민서, 08-10) — mining is unavailable while the previous ECHO's 인수인계
+   * 사항 is typing itself onto the incoming agent's page. The reveal happens in
+   * the AGENT FILE and mining happens here, so the fact has to cross a window
+   * boundary; it crosses the way this window ALREADY reaches the board a dozen
+   * lines below, through `getSlotBoard()`'s singleton.
+   *
+   * That idiom rather than a `<body>` class or a new module of shared state:
+   * `onMine` already asks the board `isLocked()`, which is the same kind of
+   * question about the same object, and the board is the only thing on the desk
+   * that knows a reveal is running. A body class would be a SECOND copy of that
+   * knowledge, written by a component that writes no body classes today, and a
+   * copy is exactly what can be left behind — a class nobody removed is a desk
+   * where mining never comes back. Read straight off the owner, the hold cannot
+   * outlive the thing it is about. (C8 is not bent by this: no window reaches
+   * into a sibling window. The board is a `components/` module with a published
+   * surface, and this window has consumed it since u6.)
+   *
+   * `null` — no board mounted — is not a hold. Nothing is drawing.
+   */
+  const mineHeld = (): boolean => getSlotBoard()?.isRevealing() ?? false
+
   const rail = createArchiveRail({
     onSelect: (run: number) => {
       active = run
@@ -107,6 +131,23 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       // into it. `slot-board.ts` stays the only membrane owner (`place()` runs
       // planOps); a refusal is SHOWN, never swallowed.
       const board = getSlotBoard()
+
+      // x10 — …and HELD while the handover is still arriving (민서, 08-10). The
+      // gesture stops HERE, above the seat arithmetic and above `mine()`, which
+      // is what makes the hold airtight rather than decorative: this is the only
+      // path on the desk that reaches the `mine` op, both the click and the
+      // keydown come through it (`components/report-view.ts` binds both to this
+      // one callback), and the op cannot be reached by any gesture that does not.
+      //
+      // Silent, exactly as the `slotted`/`carried` line above is silent, and for
+      // the same reason: those are the states that paint `aria-disabled`, this is
+      // the third, and a control that says it is unavailable owes no flash when
+      // it is pressed anyway. `view.flash` is kept for the REFUSALS below, which
+      // are cases the sentence looked live for.
+      //
+      // Read at the moment of the gesture, never a stored copy — see `mineHeld`.
+      if (board !== null && board.isRevealing()) return
+
       const slots = driver.store().slots
       const seat = [...Array(SLOT_CAP).keys()].find((i) => slots[i] === undefined)
       if (board === null || seat === undefined || board.isLocked()) {
@@ -120,7 +161,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
         const outcome = mine(id, m)
         const landed = outcome.ops.every((op) => driver.send(op).ok)
         if (!landed) {
-          view.refresh(marks())
+          paintMarks()
           view.flash(id)
           return
         }
@@ -128,10 +169,25 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       }
 
       board.place(id, seat)
-      view.refresh(marks())
+      paintMarks()
       if (board.cells()[seat] !== id) view.flash(id)
     },
   })
+
+  /**
+   * The marks on the page, plus whether the tear is available at all.
+   *
+   * The ONE repaint path in this window, so there is no way to refresh the marks
+   * and leave the hold behind: `view.refresh` writes each sentence's own state,
+   * `repaintMines` writes the desk's answer over the top, and both read the same
+   * `marks()` snapshot taken here. Called on a mine, on a refused mine, and on
+   * every frame the watcher at the foot of this file sees a change.
+   */
+  function paintMarks(): void {
+    const m = marks()
+    view.refresh(m)
+    repaintMines(host, m, mineHeld())
+  }
 
   /**
    * The selected run's filed report, or an empty document when none exists.
@@ -367,16 +423,25 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   // is left. `stamp` guards it: nothing repaints on a frame that changed no
   // mark, and `refresh()` walks the anchors, so an unguarded call every frame
   // would be a per-frame DOM walk over the whole document.
+  //
+  // x10 — the HOLD rides the same stamp, and it has to: the reveal is not an
+  // event either, and both of its edges have to reach the page. Its start is what
+  // marks every sentence `aria-disabled`, and its end is what takes that back —
+  // including the ends nothing else on the desk hears about, the watchdog's and
+  // an interrupted reveal's, because the stamp is asking the board what is true
+  // now rather than being told what happened. This is also why a stuck gate is
+  // not reachable from here: the watcher runs for the life of the window, so the
+  // frame after `isRevealing()` goes false is a frame that repaints.
   const slotStamp = (): string => {
     const store = driver.store()
-    return `${Object.values(store.slots).join(',')}|${store.mined.join(',')}|${carried.join(',')}`
+    return `${Object.values(store.slots).join(',')}|${store.mined.join(',')}|${carried.join(',')}|${mineHeld()}`
   }
   let marked = slotStamp()
   const watch = (): void => {
     const next = slotStamp()
     if (next !== marked) {
       marked = next
-      view.refresh(marks())
+      paintMarks()
     }
     requestAnimationFrame(watch)
   }
