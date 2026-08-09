@@ -88,16 +88,37 @@ type Outcome = Awaited<ReturnType<CoachHandle['show']>>
 
 /* ── the plate's fixed copy ──────────────────────────────────────────────── */
 
-// The step's own line is the ONLY thing that varies between plates. `안내` is
-// the terminal's own label for the band above it, in the register the desk's
-// other plates use for theirs (배치 확인 · 인수인계 사항); it names what the
-// plate is, and every plate is the same thing.
-const HEAD = '안내'
-const OK = '확인했습니다'
-const SKIP = '튜토리얼 건너뛰기'
+// x8 — THE PLATE CARRIES THE LESSON AND NOTHING ELSE (민서, 08-09).
+//
+// It had a header band reading `안내` and two worded buttons, 확인했습니다 and
+// 튜토리얼 건너뛰기. All three are gone. Every one of them was the terminal
+// talking about itself: `안내` labelled a plate whose only content is already an
+// instruction, and the two labels spent a whole row spelling out what a check and
+// a fast-forward say on their own. On a bar that is trying to teach four gestures
+// inside the first minute, a word that is not the lesson is in the way of it.
+//
+// So the words survive only as ACCESSIBLE NAMES. A control whose face is a glyph
+// still has to answer "what is this" to anyone not looking at it, and these two
+// are the same two answers they always were.
+const OK_LABEL = '확인했습니다'
+const SKIP_LABEL = '튜토리얼 건너뛰기'
 
-/** Referenced by `aria-labelledby` / `aria-describedby` — one plate at a time. */
-const HEAD_ID = 'coachHead'
+/**
+ * The two faces.
+ *
+ * ▶▶ AND NOT ⏩, which is what was asked for and is the one place this deviates.
+ * U+23E9 is emoji-presentation by default: the platform paints it as a colour
+ * glyph, blue-black on every desktop this ships to, and the brief for the button
+ * is a white/grey mark on a dark box. A colour emoji cannot be white or grey —
+ * it ignores `color` entirely — so the one property the design actually asks for
+ * is the one property that glyph cannot have. Two U+25B6 triangles read as
+ * fast-forward, inherit `currentColor`, and match the desk's monochrome-plus-red
+ * palette. One constant if the literal emoji is wanted anyway.
+ */
+const OK_GLYPH = '✓'
+const SKIP_GLYPH = '▶▶'
+
+/** Referenced by `aria-labelledby` — one plate at a time. */
 const SAYS_ID = 'coachSays'
 
 /* ── geometry ────────────────────────────────────────────────────────────── */
@@ -341,7 +362,7 @@ interface Plate {
  *
  * Rebuilt rather than re-filled, for two reasons that both matter: a
  * screen reader announces a dialog that ARRIVES, and would say nothing at all
- * if the same node quietly swapped its sentence eleven times; and the entrance
+ * if the same node quietly swapped its sentence eight times; and the entrance
  * belongs to the plate, so a new plate replays it and a moved plate does not.
  *
  * THE MEMBRANE HOLDS HERE TOO (spec-client §3 invariant 1, and
@@ -356,28 +377,28 @@ function buildPlate(says: string): Plate {
   // screen reader about the only thing that matters here — that the thing the
   // plate is pointing at can still be pressed.
   root.setAttribute('role', 'dialog')
-  root.setAttribute('aria-labelledby', HEAD_ID)
-  root.setAttribute('aria-describedby', SAYS_ID)
-
-  const led = el('span', 'coach-led')
-  led.setAttribute('aria-hidden', 'true')
-  const label = el('b', undefined, HEAD)
-  label.id = HEAD_ID
-  const head = el('div', 'coach-hd')
-  head.append(led, label)
+  // The step's own line IS the accessible name now, and `aria-describedby` goes
+  // with the header that used to hold it: naming the dialog and then describing
+  // it with the same sentence would read the instruction out twice.
+  root.setAttribute('aria-labelledby', SAYS_ID)
 
   const line = el('p', 'coach-says', says)
   line.id = SAYS_ID
 
-  // 건너뛰기 first in the DOM, so the tab order reaches the quiet answer before
-  // the loud one and the sheet does not have to reorder anything to put the
-  // primary on the right.
-  const skip = button('coach-skip', SKIP, SKIP)
-  const ok = button('coach-ok', OK, OK)
-  const foot = el('div', 'coach-foot')
-  foot.append(skip, ok)
+  // ONE ROW, in reading order: the sentence, the way past it, the way through
+  // it. 건너뛰기 is to the LEFT of the check, so the DOM order below is also the
+  // visual order and also the tab order — the quiet answer is reached first,
+  // which is the property the old two-button footer had for the same reason.
+  //
+  // `button()` writes the label to `title`, which AT treats as a last-resort
+  // fallback. A control whose text content is `✓` needs an actual name, so the
+  // `aria-label` is set on top of it rather than left to the tooltip.
+  const skip = button('coach-skip', SKIP_LABEL, SKIP_GLYPH)
+  skip.setAttribute('aria-label', SKIP_LABEL)
+  const ok = button('coach-ok', OK_LABEL, OK_GLYPH)
+  ok.setAttribute('aria-label', OK_LABEL)
 
-  root.append(head, line, foot)
+  root.append(line, skip, ok)
   return { root, ok, skip }
 }
 

@@ -7,21 +7,30 @@
    plate to the target, and a SCRIM over the rest of the desk with a hole cut
    where the target is.
 
-   THE PLATE IS THE PORTAL'S OWN PLATE. `signin.css` cut the original — the LED,
-   the chrome head band, the sealed red rule beneath it — and `confirm.css`
-   re-cut it as a free-standing centred panel. This is the same object at the
-   size of a sentence, with one difference: where those two carry chrome under
-   their header, this carries a slip of bond paper (`--bond`, the REPORTS stock,
-   painted from paper.css's own recipe). What the terminal has to say here is a
-   line of printed instruction — the thing this desk prints on paper — not a
-   question about its own hardware.
+   THE PLATE IS ONE ROW OF CHROME (x8, 민서 08-09). It was a paper slip with a
+   head band reading `안내` and two worded buttons under a rule — the door's plate
+   at the size of a sentence. That is three rows to say one line, and none of the
+   furniture was carrying the lesson: the band labelled a plate whose whole
+   content is already an instruction, and the labels spelled out what a check and
+   a fast-forward say by themselves.
+
+   What is left is a single dark bar, sized to its own sentence: the line, then
+   ▶▶ to leave the walk, then a red square with a check to take the step. It reads
+   as part of the DESK's chrome rather than as paper on top of it — `--mono` and
+   `--chrome-*`, the vocabulary the topbar and the window titles already speak,
+   because a control bar is hardware and only the documents here are paper.
+
+   IT NEVER WRAPS. `white-space:nowrap` and `width:max-content`: the box grows
+   with its text and a long step is a long bar, never a second line. Two lines
+   would make the bar a paragraph, and a paragraph is something the operator
+   stops and reads instead of glancing at.
 
    NOTHING PULSES, and that is a decision rather than an omission. `is-lit` ran
    a 1.6 s outline pulse and the two plates' LEDs run `livePulse` forever; the
    pulse is exactly what was taken out of this mark, because a throbbing red ring
-   reads as an alarm on a desk where red means 관인. `.coach-led` is a lamp that
-   is simply on, the hole's thin red stroke is the "here", and the leader is the
-   "which".
+   reads as an alarm on a desk where red means 관인. The hole's thin red stroke is
+   the "here", the leader is the "which", and the one red thing on the bar is the
+   button that agrees with it.
 
    POINTER-TRANSPARENT WHERE IT COUNTS. `#coach` and the SVG inside it are
    `pointer-events:none`; only `.coach-plate` takes them back. The desk stays
@@ -69,63 +78,67 @@
    pass; the defaults here are what the plate would sit at if it were ever
    painted before its first frame, and they exist so this sheet declares every
    custom property it spends. */
+/* ONE ROW. `max-content` is what makes the box its own sentence's length, and it
+   is why `width` is not a number here — the bar is as long as the step is, and
+   the only ceiling is the viewport. `align-items:center` rather than `stretch`:
+   the two controls are fixed squares, not columns that grow with the text. */
 .coach-plate{--coach-x:0px;--coach-y:0px;
   position:fixed;left:var(--coach-x);top:var(--coach-y);
-  width:296px;max-width:calc(100% - var(--space-32));
+  display:flex;align-items:center;gap:var(--space-5);
+  width:max-content;max-width:calc(100% - var(--space-24));
+  padding:var(--space-6) var(--space-6) var(--space-6) var(--space-12);
   pointer-events:auto;
-  background:linear-gradient(to bottom,var(--chrome-hi),var(--chrome-lo));
+  background:linear-gradient(to bottom,var(--chrome-raise-2),var(--chrome-hi));
   border:1px solid var(--edge);box-shadow:var(--shadow-win);
   animation:coachRise .22s cubic-bezier(.16,.9,.2,1) both}
 @keyframes coachRise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* The chrome's own top highlight, the one every raised surface on this desk has.
+   `inset` so it cannot add to the measured box — `shell/coach.ts` places the bar
+   off `getBoundingClientRect`, and an outer ring would move it by its own width. */
 .coach-plate::before{content:'';position:absolute;inset:0;pointer-events:none;
   box-shadow:inset 0 1px 0 var(--sheen-05)}
 
-/* ─── the head — the door's `.si-plate-hd`, same hardware, one size down ─── */
-.coach-hd{display:flex;align-items:center;gap:var(--space-8);height:26px;
-  padding:0 var(--space-11);background:var(--chrome-deep);
-  border-bottom:1px solid var(--edge);position:relative}
-.coach-hd::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;
-  background:linear-gradient(90deg,var(--seal),transparent 62%);opacity:.7}
-.coach-led{width:6px;height:6px;flex:0 0 auto;background:var(--seal)}
-.coach-hd b{font-size:var(--fs-8-5);font-weight:600;letter-spacing:.22em;color:var(--txt-2)}
+/* ─── the line ───────────────────────────────────────────────────────────── */
+/* `--mono` and not 명조: the bar is chrome now, and chrome on this desk is set in
+   the same face as the topbar and the window titles. Nanum Gothic Coding carries
+   the Korean. `nowrap` is the design rule, not an optimisation — see the header. */
+.coach-says{flex:0 1 auto;
+  font-family:var(--mono);font-size:var(--fs-10-5);line-height:1.45;
+  letter-spacing:.01em;color:var(--txt-hi);white-space:nowrap}
 
-/* ─── the one line, on bond ──────────────────────────────────────────────── */
-/* 명조, at the confirmation plate's `.cf-ask` weight and one step down in size,
-   because it is the same act: the terminal saying a whole sentence to the
-   operator. `--mono` is for the fixed values the desk PRINTS as labels, and a
-   sentence is not a label. `keep-all` because Korean breaks anywhere by default
-   and a two-clause instruction split mid-word reads as a rendering fault. */
-.coach-says{padding:var(--space-14) var(--space-16) var(--space-13);
-  background:linear-gradient(180deg,var(--sheen-5),transparent 30%),var(--bond);
-  box-shadow:inset 0 1px 0 var(--sh-3);
-  font-family:var(--myeong);font-size:var(--fs-13);line-height:1.7;
-  letter-spacing:.01em;color:var(--pap-max);word-break:keep-all}
+/* ─── the two controls ───────────────────────────────────────────────────── */
+/* Almost square, and the same size as each other: they are two answers to the
+   same plate, so neither is allowed to look like the bigger gesture. What tells
+   them apart is FILL — the seal's red carries the step, the outline merely offers
+   the exit — which is the same split `confirm.css` argues between 파견 and 취소.
+   The generous left margin on 건너뛰기 is the "padding after the text": it keeps
+   the pair as one cluster at the end of the bar rather than crowding the sentence. */
+.coach-plate button{flex:0 0 auto;width:23px;height:20px;
+  display:grid;place-items:center;line-height:1}
+.coach-skip{margin-left:var(--space-10);
+  background:transparent;border:1px solid var(--txt-6);color:var(--txt-3);
+  font-size:var(--fs-8-5);letter-spacing:-.08em;text-indent:-.08em;
+  transition:color .18s,border-color .18s}
+.coach-skip:hover{color:var(--txt-hi);border-color:var(--txt-3)}
 
-/* ─── the two answers, on the tear-off strip ─────────────────────────────── */
-/* One loud, one quiet, and the split is the same one `confirm.css` argues: the
-   fill carries the emphasis, so the primary needs no border, and the secondary
-   is not a button-shaped thing at all — 튜토리얼 건너뛰기 ends the whole walk,
-   and an affordance that ends something should not be the same size and shape
-   as the one that continues it. The dashed rule is the perforation of a slip
-   whose bottom strip you keep. */
-.coach-foot{display:flex;align-items:center;justify-content:space-between;
-  gap:var(--space-10);
-  padding:var(--space-9) var(--space-12) var(--space-11);
-  background:var(--bond-2);border-top:1px dashed var(--sh-25)}
-.coach-plate button:focus-visible{outline:2px solid var(--pap-max);outline-offset:2px}
-
-.coach-ok{min-width:76px;height:29px;
-  background:linear-gradient(to bottom,var(--seal),var(--seal-2));color:var(--txt-max);
-  font-size:var(--fs-9);font-weight:700;letter-spacing:.2em;text-indent:.2em;
-  box-shadow:inset 0 1px 0 var(--sheen-25), 0 6px 18px -10px var(--sh-9);
-  transition:filter .18s, transform .12s}
-.coach-ok:hover{filter:brightness(1.12)}
+.coach-ok{background:var(--seal);border:1px solid var(--seal-2);color:var(--txt-max);
+  font-size:var(--fs-11);font-weight:700;
+  box-shadow:inset 0 1px 0 var(--sheen-25);
+  transition:filter .18s,transform .12s}
+.coach-ok:hover{filter:brightness(1.14)}
 .coach-ok:active{transform:translateY(1px)}
 
-.coach-skip{font-size:var(--fs-8-5);letter-spacing:.12em;color:var(--pap-4);
-  text-decoration:underline dotted;text-underline-offset:3px;
-  transition:color .18s}
-.coach-skip:hover{color:var(--pap-max)}
+/* Light, because the bar is dark — `--pap-max` was the focus ring when this sat
+   on paper, and on chrome it would be invisible against the seal.
+   HAIRLINE, and that is about consistency rather than taste. The layer focuses
+   ✓ as each plate opens (so Enter advances the walk), and `:focus-visible` fires
+   for that on a fresh load but not once the operator has started clicking — so
+   at 2px with a 2px offset the FIRST plate wore a heavy white slab around its red
+   square and every plate after it wore nothing. Two plates of the same walk must
+   not look like two different controls. At 1px the ring still reads as focus on
+   both the seal and the outline, and the difference between the two states stops
+   being the loudest thing on the bar. */
+.coach-plate button:focus-visible{outline:1px solid var(--txt-hi);outline-offset:1px}
 
 /* ═══ REDUCED MOTION ══════════════════════════════════════════════════════
    `base.css` collapses every animation to a single 1 ms pass, which lands it on

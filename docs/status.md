@@ -5,20 +5,44 @@
 
 ## Status (2026-08-09) — the onboarding walk speaks (branch `ui/tutorial-coach`)
 
-**The tutorial was a silent red ring and now it is eleven plates that say one
-line each.** `x3` shipped the walk as twelve pulses of `.is-lit` with no copy
-anywhere on the screen, on the argument that a coach mark is a product-tour
-bubble and an overlay must not sit on the controls it points at. The argument
-was sound and it lost to the requirement: a window glowing red reads as *something
-is wrong*, not *turn the page*, and the desk has roughly sixty seconds to teach
-three windows, a page turn, a commit and a mine. `shell/coach.ts` +
-`styles/coach.css` are the plate, a red leader line and a scrim holed over the
-target; `styles/tutorial.css` is deleted. The walk is driven entirely by what the
-operator does — every stopwatch is gone, including the eight-second hold on the
-file and the ten-second ceiling on 해제 — and every plate carries
-튜토리얼 건너뛰기, which ends the walk rather than the step. The gating is
-unchanged: `?tutorial=show` / `?tutorial=skip`, off under `navigator.webdriver`,
-so every e2e lane but `e2e/tutorial.spec.ts` still sees no walk at all.
+**The tutorial was a silent red ring and now it is eight plates that say one line
+each.** `x3` shipped the walk as twelve pulses of `.is-lit` with no copy anywhere
+on the screen, on the argument that a coach mark is a product-tour bubble and an
+overlay must not sit on the controls it points at. The argument was sound and it
+lost to the requirement: a window glowing red reads as *something is wrong*, not
+*read this*, and the desk has roughly sixty seconds to carry a judge.
+`shell/coach.ts` + `styles/coach.css` are the plate, a red leader line and a scrim
+holed over the target; `styles/tutorial.css` is deleted. The walk is driven
+entirely by what the operator does — every stopwatch is gone, including the
+eight-second hold on the file and the ten-second ceiling on 해제 — and every plate
+carries a way out of the whole walk. The gating is unchanged:
+`?tutorial=show` / `?tutorial=skip`, off under `navigator.webdriver`, so every e2e
+lane but `e2e/tutorial.spec.ts` still sees no walk at all.
+
+**THE PLATE IS ONE ROW OF CHROME** (x8, 민서 08-09). It was a paper slip with an
+`안내` header band and two worded buttons under a rule — three rows to say one
+line, and none of the furniture carried the lesson. What is left is a single dark
+bar sized to its own sentence: `--mono` at 12.6px in `--txt-hi` on the desk's own
+`--chrome-*` gradient, then `▶▶` outlined to leave the walk, then a red 23×20
+square with a `✓` to take the step. `white-space:nowrap` + `width:max-content`, so
+a long step is a long bar and never a second line (measured: 249px shortest, 412px
+longest, 34px tall in both). The two words survive only as `aria-label`s. `▶▶`
+rather than the requested `⏩` because U+23E9 is emoji-presentation and ignores
+`color` — a colour glyph cannot be the white/grey mark the design asks for.
+
+**THE BUILD PHASE IS UNNARRATED** (x8). Three plates opened this walk and all
+three are cut: the file's head line, the page control, and the commit. Every one
+pointed into the AGENT FILE before the day had started, and the AGENT FILE is the
+one window that now introduces *itself* — x7's cover types its incident brief out
+on arrival, the handover rows materialise one at a time, and the press names the
+agent and then stamps the chop as two beats. A plate narrating a document in the
+middle of performing its own opening is a second voice over the first.
+
+Stated rather than discovered: the operator is no longer told to turn the page or
+to press DEPLOY, and the walk cannot say a word until they have worked out both —
+`simStarted` is chained off the press. The walk is strictly the debrief now. Note
+this branch is still based on pre-x7 `main`, where the cover does *not* type
+itself out, so the silence is more total here than it will be after the re-aim.
 
 **The layer is non-blocking by construction, and that is load-bearing rather
 than polite.** The scrim and the leader are one `pointer-events:none` SVG whose
@@ -29,8 +53,8 @@ press would deadlock its own walk. `e2e/tutorial.spec.ts (f)`/`(g)` prove the
 press lands in a browser; the source guard proves the declaration it rests on.
 
 **NOTHING INTERRUPTS THE DAY** (민서, 08-09). While the simulation is running the
-operator is reading the LIVE FEED, and the walk does not talk over it. Plates 5
-through 8 hang off a single gate — the day being over with both documents filed —
+operator is reading the LIVE FEED, and the walk does not talk over it. Plates 2
+through 5 hang off a single gate — the day being over with both documents filed —
 and the run of them is a debrief: the REPORTS window, its two columns, and the
 gesture that moves a sentence out of them.
 
@@ -72,8 +96,9 @@ stronger claim.
 
 **A toast collision was reported here and it is WITHDRAWN.** The branch was cut at
 #218 and the walk was reviewed against that base, where `#toast` was still a
-painted panel centred at 50%/50% — which is where plate 1 lands, so the opening
-announcement covered the first instruction the player ever reads. `#coach` was
+painted panel centred at 50%/50% — which is where the file-title plate landed
+(x8 has since cut it), so the opening announcement covered what was then the first
+instruction the player ever read. `#coach` was
 raised to 955 to get out from under it. That whole fix was unnecessary: x6b (#221)
 had already taken the toast's visible panel away and left a 1×1 live region, so on
 `main` the collision cannot happen. `main` is merged in (#221 · #222 · #223), the
@@ -91,12 +116,24 @@ at z-index 990) under the walk, and the conflicts in `dossier.ts` (x6 rewrote
 import) are resolved keeping both sides: main's copy and structure, the branch's
 section slugs.
 
-**Verified after the merge:** `npm run check` green · **1677** unit tests ·
-**206** e2e (chromium lane) · 7 preview-smoke on the real production artefact,
-load budget included · `e2e/tutorial.spec.ts` **13** tests · the eleven plates
-walked and screenshotted on both the fixture host and `npm run preview`, plus
-1280×800 and `prefers-reduced-motion`. `is-lit` appears nowhere in the bundle. The
-re-aim is logged in `DISCOVERY.md` per `[u11#c6] (l)`.
+**Verified:** `npm run check` green · **1677** unit tests · **205** e2e (chromium
+lane — x6b retired two waiting-marker specs, this branch adds one) · 7
+preview-smoke on the real production artefact, load budget included ·
+`e2e/tutorial.spec.ts` **13** tests · the plates walked and screenshotted on both
+the fixture host and `npm run preview`, plus 1280×800 and
+`prefers-reduced-motion`. `is-lit` appears nowhere in the bundle. The re-aim is
+logged in `DISCOVERY.md` per `[u11#c6] (l)`.
+
+**What the three cut plates cost the suite, and how it was paid.** Four tests were
+pinned to them. `(e)` is now an assertion of ABSENCE — it walks the whole build
+phase and proves no plate follows the page turn, none follows the DEPLOY press,
+and none lands on the 배치 확인 modal, which is the only kind of test that proves a
+cut landed. `(f)`, the "scrim does not swallow the press it points at" test, was
+proved on the page-turn plate and is re-aimed onto the MINE, the earliest
+surviving plate that still ends on a press; `(g)` does the same for 해제. `(d)`
+keeps its regression (the old infinite pulse stalling `revealDesk`) but asserts
+the property that is left: the curtain comes up on its own and the desk is
+operable with no plate to guide it.
 
 **Not done, deliberately:** the walk puts no plate on the 배치 확인 modal and does
 not re-show plate 3 if the operator answers 취소 (민서's call). Nothing stalls —
