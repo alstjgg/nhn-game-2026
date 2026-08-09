@@ -40,10 +40,17 @@ export const FEED_MARKS: Record<FeedKind, string> = {
   mark: '',
 }
 
-/** One rendered fragment of a line's content column. */
-export type FeedPart =
-  | { p: 'text' | 'label' | 'quote' | 'span' | 'cite'; text: string }
-  | { p: 'dots' }
+/**
+ * One rendered fragment of a line's content column.
+ *
+ * x7 — the `{ p: 'dots' }` variant is deleted. It rendered the three breathing
+ * dots of the waiting marker, and x6 removed the marker: nothing has
+ * constructed a dots part since, so `partNode`'s arm for it was unreachable
+ * code kept alive only by the type that allowed it. The CSS went with the
+ * marker on the same day (`styles/win-live-feed.css`), so a part that somehow
+ * reached the DOM would have painted three unstyled empty spans.
+ */
+export type FeedPart = { p: 'text' | 'label' | 'quote' | 'span' | 'cite'; text: string }
 
 /**
  * U5.4 — the citation mark's fixed half. `인수인계` because that is the section
@@ -273,15 +280,16 @@ function partNode(part: FeedPart): Node {
       return el('q', undefined, part.text)
     case 'span':
       return el('span', undefined, part.text)
-    case 'dots': {
-      const dots = el('span', 'dots')
-      dots.append(el('i'), el('i'), el('i'))
-      return dots
-    }
     case 'text':
       return document.createTextNode(part.text)
     default: {
-      const unhandled: never = part
+      // x7 — exhaustive on `part.p`, not on `part`. `FeedPart` is one object
+      // type with a union-typed tag now that the `dots` member is gone, and a
+      // single-member "union" never narrows to `never` — so the old
+      // `const unhandled: never = part` stopped compiling. The tag still
+      // narrows, and the tag is what this switch is on, so the guard is
+      // unchanged in what it catches: a new `p` value with no arm above.
+      const unhandled: never = part.p
       throw new Error(`live feed: unhandled feed part ${String(unhandled)}`)
     }
   }

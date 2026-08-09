@@ -155,38 +155,30 @@ function metaOf(f: Frame): MetaEvent | null {
 }
 
 /**
- * x7 — THE ONE PLACE THIS SUITE STILL SPELLS THE ECHO SERIES, and it is a
- * declared MIRROR of `src/client/components/dossier.ts` `callsignOf`, not a
- * second opinion.
+ * x7 — THE SUITE NO LONGER SPELLS THE ECHO SERIES AT ALL.
  *
- * Why it cannot just import that function: a spec in `e2e/` drives the SHIPPED
- * page through a browser and reads the desk only through the DOM and
- * `window.__shell` — no file under `e2e/` imports anything out of `src/`, and
- * this one is not the place to start. And the rail's tabs carry the callsign as
- * text and nothing else (no `data-run`), so a spec that has to say "the tab
- * belonging to run 3" has no choice but to know how run 3 is named.
+ * It used to. A declared mirror of `components/dossier.ts`'s `callsignOf` sat
+ * here, because a spec that has to say "the tab belonging to run 3" needs to
+ * know something about run 3, and the rail carried the callsign as text and
+ * nothing else. A second copy read it BACKWARDS out of the label, and that one
+ * encoded the OLD numbering: it read every sitting one short after the series
+ * renumbered, and could not read run 1 at all — plain `ECHO` has no digits in
+ * it. Two mirrors of one rule, and the reverse one silently wrong.
  *
- * Kept to ONE function, both directions, so the mirror is a single fact to
- * re-check rather than a family. It is also why `activeRun` below stopped
- * pulling digits out of the label: `/\d+/` was this same mapping written down
- * without admitting it, and it was the OLD one — it read `ECHO-3` as run 3, so
- * the renumbering (run 1 is plain `ECHO`, run 2 is `ECHO-1`) made it one short
- * everywhere and made run 1 unreadable outright, there being no digits in
- * `ECHO` at all. If the rail ever carries its run as an attribute, delete this.
+ * The rail publishes `data-run` now (`components/report-archive.ts`) — the
+ * number the seam always had. Both directions read that, so how a sitting is
+ * NAMED is entirely `dossier.ts`’s business and this suite is renumber-proof:
+ * nothing here would notice the series being spelled differently tomorrow.
  */
-const callsign = (run: number): string => (run <= 1 ? 'ECHO' : `ECHO-${run - 1}`)
-
-/** The tab for one sitting. Anchored — `ECHO` is a prefix of every other name. */
 const tabFor = (page: Page, run: number): Locator =>
-  page.locator(OPTION).filter({ hasText: new RegExp(`^\\s*${callsign(run)}\\s*$`) }).first()
+  page.locator(`${OPTION}[data-run="${run}"]`).first()
 
-/** The run the rail says is selected right now — `callsign` read backwards. */
+/** The run the rail says is selected — read off the tab, not out of its text. */
 async function activeRun(page: Page): Promise<number> {
-  const label = (await page.locator(`${OPTION}[aria-selected="true"]`).first().innerText()).trim()
-  const named = /^ECHO(?:-(\d+))?$/.exec(label)
-  expect(named, `the selected archive option is not a callsign: ${label}`).not.toBeNull()
-  const numbered = named![1]
-  return numbered === undefined ? 1 : Number(numbered) + 1
+  const tab = page.locator(`${OPTION}[aria-selected="true"]`).first()
+  const run = await tab.getAttribute('data-run')
+  expect(run, 'the selected archive option carries no data-run').not.toBeNull()
+  return Number(run)
 }
 
 async function reportForActiveRun(page: Page): Promise<ReportEvent> {
@@ -569,14 +561,23 @@ test.describe('archive segmentation and highlight marks', () => {
     // authority's, and what it holds depends on which authority is driving —
     // `RUN 03 / 08:50 — 21:04` from the fixture loop, `전구간정상-r3` from the live
     // adapter. Neither is something this rail promises to render.
+    // x7 — the tabs are DISTINCT and carry none of the seam's label. What they
+    // are is no longer spelled here.
+    //
+    // This compared each tab to a locally-computed callsign, which is the
+    // mirror this file no longer keeps (see `tabFor` above). The exact naming
+    // is pinned where importing `components/dossier.ts` is legal —
+    // `tests/windows/reports.test.ts` compares `runLabel` against the real
+    // `callsignOf` — so asserting it a second time here bought nothing except a
+    // copy of the rule that could go stale on its own, and did.
+    //
+    // What only THIS lane can prove is the negative below: whatever the tab
+    // says, no part of the authority's `label` reaches it. That field holds
+    // `RUN 03 / 08:50 — 21:04` under the fixture loop and `전구간정상-r3` under the
+    // live adapter, and neither is something the rail promises to render.
+    expect(new Set(labels).size, 'two sittings share a tab label').toBe(labels.length)
     for (const [i, entry] of meta!.archive.entries()) {
-      // x7 — through `callsign` rather than an inline `ECHO-${entry.run}`. The
-      // claim is that the tab reads exactly what the AGENT FILE calls that
-      // sitting's agent; an inline literal made it a claim about the numbering
-      // instead, and went red the day the numbering moved while the two
-      // surfaces still agreed. `toBe`, not `toMatch`: since x5 the tab is the
-      // callsign ALONE, which is the whole point of the span check below.
-      expect(labels[i]).toBe(callsign(entry.run))
+      expect(labels[i]!.trim().length, 'a tab rendered no name at all').toBeGreaterThan(0)
       const span = entry.label.replace(/^\s*RUN\s*\d+\s*[/·]\s*/i, '').trim()
       expect(span.length, 'the fixture label is empty — this check is vacuous').toBeGreaterThan(0)
       expect(labels[i]!.replace(/\s+/g, ' ')).not.toContain(span.replace(/\s+/g, ' '))
