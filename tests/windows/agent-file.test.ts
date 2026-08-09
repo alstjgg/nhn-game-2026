@@ -285,8 +285,21 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
     expect(JSON.stringify({ slotCap: input.slotCap, callsign: input.callsign })).toBe(before)
     expect(JSON.stringify(secondAgent)).toBe(JSON.stringify(firstAgent))
     expect(JSON.stringify(secondCover)).toBe(JSON.stringify(firstCover))
-    expect(String(agentModel)).not.toMatch(/document/)
-    expect(String(coverModel)).not.toMatch(/document/)
+    // C17 — RE-AIMED (08-09), never deleted. These two read `String(fn)` raw,
+    // which includes the function's own COMMENTS, so the guard failed the moment
+    // `coverModel` grew a comment using the word "document" in its ordinary
+    // sense — the note recording why the cover carries no slugs, which says a
+    // plate must not narrate a document mid-performance. That is prose about a
+    // paper document; the claim being made here is that neither model touches
+    // `window.document`. Stripped, these measure code, which is what they meant.
+    //
+    // They are the weaker half of a check this test already makes properly four
+    // lines down — that scan strips comments, covers the whole model half of the
+    // file rather than two functions, and matches `\bdocument\b` on a word
+    // boundary. These are kept because a closure that captured a DOM node from
+    // an enclosing scope would show up in `String(fn)` and not in a source slice.
+    expect(stripComments(String(agentModel))).not.toMatch(/\bdocument\b/)
+    expect(stripComments(String(coverModel))).not.toMatch(/\bdocument\b/)
 
     // The model half of the file precedes the builder half: no `document.` may
     // appear before `buildDossier` is declared.

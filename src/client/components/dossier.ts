@@ -216,6 +216,32 @@ const COMMS_ORDERS =
 
 interface SectionHead {
   title: string
+  /**
+   * The section's stable ASCII name, printed as `data-sect` by the builder.
+   *
+   * It exists for callers OUTSIDE this window that have to point at one
+   * section: the coach-mark walk anchors a plate on 인수인계 사항, and that
+   * section is `.sect.operable` on the live agent's page and `.sect.filed` on a
+   * past one. Those are two STATES of one section, not two sections, and
+   * `.sect.fixed` covers four unrelated ones — so state cannot serve as a name.
+   * The slug is what does not move when the state does.
+   *
+   * It is NOT the title, and it is never derived from one. The Korean titles are
+   * document art this module owns, exactly as the row key is (see `CALLSIGN_KEY`
+   * above, which is the same ruling in the same file): a selector that spelled
+   * `인수인계 사항` would have a stylesheet or a tutorial reading copy it does not
+   * own, and x5 reworded half of this page's copy without touching a single
+   * section's identity — which is the property the slug preserves.
+   *
+   * OPTIONAL, and the cover uses none. A slug is earned by being pointed at from
+   * outside, so the rule is "name what someone else has to find", not "name
+   * everything": today that is `identity` and `handover` on the agent's page and
+   * its filed copies, and nothing at all on the cover. `ui/tutorial-coach` did
+   * slug the cover's three sections, for three plates x8 then cut — see the note
+   * at `coverModel`. A slug with no caller is a selector nobody is holding, which
+   * is worse than no selector: it reads as a contract when it is a leftover.
+   */
+  slug?: string
 }
 
 export interface RowsSection extends SectionHead {
@@ -284,6 +310,13 @@ export type DossierSection = RowsSection | FixedSection | OperableSection | File
  */
 export function coverModel(): DossierSection[] {
   return [
+    // No slugs on the cover, and that is a decision the merge made rather than
+    // inherited. `ui/tutorial-coach` slugged all three of these (`mission`,
+    // `conduct`, `comms`) back when three of the walk's plates opened ON the
+    // cover; x8 cut those plates — the cover types its own incident brief now,
+    // and a plate narrating a document mid-performance is a second voice over
+    // the first. Nothing outside this window points here any more, so nothing
+    // here needs a name. `handover` below is the one slug still earning its keep.
     { title: '사건 개요', state: 'fixed', body: INCIDENT, note: INCIDENT_NOTE },
     { title: '현장 요원 임무', state: 'fixed', body: MISSION },
     { title: '현장 요원 교신 지침', state: 'fixed', body: COMMS_ORDERS },
@@ -295,6 +328,7 @@ export function agentModel(input: AgentInput): DossierSection[] {
   return [
     {
       title: '식별',
+      slug: 'identity',
       state: 'fixed',
       rows: [
         ['호출부호', input.callsign],
@@ -308,6 +342,11 @@ export function agentModel(input: AgentInput): DossierSection[] {
       // next. The cap still comes from `slotCap` and not from a literal (D3), so
       // the note and the board it sits above cannot drift.
       title: '인수인계 사항',
+      // …and the SAME slug the past-page version below carries. That sameness is
+      // the whole point of having a slug at all: the live sheet and every filed
+      // sheet are one section in two states, so whatever points at the handover
+      // finds it on either page.
+      slug: 'handover',
       state: 'operable',
       note: `요원에게 최대 ${input.slotCap}가지 주요 사항을 전달하십시오`,
     },
@@ -326,6 +365,7 @@ export function filedModel(input: FiledInput): DossierSection[] {
   return [
     {
       title: '식별',
+      slug: 'identity',
       state: 'fixed',
       rows: [
         ['호출부호', input.callsign],
@@ -339,6 +379,9 @@ export function filedModel(input: FiledInput): DossierSection[] {
       // below), so the note said out loud what the reader can see, and 배치 is
       // the vocabulary the confirmation plate retired in favour of 파견.
       title: '인수인계 사항',
+      // The live page's slug, unchanged — see `agentModel`. `state` is what says
+      // the sitting is over; the name says which section it is.
+      slug: 'handover',
       state: 'filed',
       note: FILED_NOTE,
     },
@@ -407,6 +450,12 @@ function spaced(...nodes: Node[]): Node[] {
 
 function buildSection(section: DossierSection, slotHost: HTMLElement): HTMLElement {
   const node = el('div', `sect ${section.state}`)
+  // The state is a CLASS and the name is a DATA ATTRIBUTE, on purpose: the sheet
+  // paints states (`.sect.operable .sect-flag`) and never asks which section it
+  // has, while everything that asks which section it has (the coach-mark walk)
+  // never paints. Two readers, two channels, and neither can be mistaken for the
+  // other the way a second class in `sect ${state}` could be.
+  if (section.slug !== undefined) node.dataset.sect = section.slug
   const head = el('div', 'sect-hd')
   // C1 — no `§n`. The titles are distinct words and carry the document on
   // their own; a number that has to be kept in step with a page order is one

@@ -441,8 +441,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   }
 
   const sheet = el('div', 'file-sheet')
-  const pgPrev = button('pg-turn', '이전 장', '‹')
-  const pgNext = button('pg-turn', '다음 장', '›')
+  // Each leaf keeps `pg-turn` — that is the skin both share and what the sheet
+  // paints — and gains a name of its own, because DIRECTION is not a thing
+  // `disabled` can be read for. Both leaves are `pg-turn`, so the only way to
+  // tell them apart used to be which one was disabled, and that inverts as the
+  // reader moves: on the cover it is ‹ that is out, on the last page it is ›.
+  // Anything pointing at "the next leaf" from outside this window (the tutorial
+  // does) would therefore have pointed at ‹ half the time.
+  const pgPrev = button('pg-turn pg-prev', '이전 장', '‹')
+  const pgNext = button('pg-turn pg-next', '다음 장', '›')
   const pgCount = el('span', 'pg-count')
   const nav = el('div', 'pg-nav')
   nav.append(pgPrev, pgCount, pgNext)
