@@ -144,6 +144,27 @@
     },
     {
       "id": "t8",
+      "time": "19:55",
+      "surface": "call",
+      "place_id": "p5",
+      "text": "표기웅에게 북측 비상 개방문이 있느냐고 물었습니다. 있다고 했고, 열 수 있느냐고 묻자 대답이 늦게 돌아왔습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t9",
       "time": "20:04",
       "surface": "onsite",
       "place_id": "p3",
@@ -164,7 +185,7 @@
       ]
     },
     {
-      "id": "t9",
+      "id": "t10",
       "time": "20:05",
       "surface": "call",
       "place_id": null,
@@ -185,7 +206,7 @@
       ]
     },
     {
-      "id": "t10",
+      "id": "t11",
       "time": "20:11",
       "surface": "onsite",
       "place_id": "p4",
@@ -206,7 +227,7 @@
       ]
     },
     {
-      "id": "t11",
+      "id": "t12",
       "time": "20:14",
       "surface": "call",
       "place_id": null,
@@ -231,7 +252,7 @@
       ]
     },
     {
-      "id": "t12",
+      "id": "t13",
       "time": "20:16",
       "surface": "onsite",
       "place_id": "p5",
@@ -247,7 +268,7 @@
       "present": []
     },
     {
-      "id": "t13",
+      "id": "t14",
       "time": "20:19",
       "surface": "onsite",
       "place_id": "p3",
@@ -263,7 +284,7 @@
       "present": []
     },
     {
-      "id": "t14",
+      "id": "t15",
       "time": "20:41",
       "surface": "call",
       "place_id": "p2",
@@ -279,7 +300,7 @@
       "present": []
     },
     {
-      "id": "t15",
+      "id": "t16",
       "time": "21:02",
       "surface": "call",
       "place_id": null,
@@ -295,7 +316,7 @@
       "present": []
     },
     {
-      "id": "t16",
+      "id": "t17",
       "time": "21:35",
       "surface": "call",
       "place_id": null,
