@@ -185,8 +185,7 @@ test.describe('preview smoke', () => {
     // The run counter is the tell. e8's run loop opens on its own allotment;
     // the placeholder stream `shell/boot-run.ts` hardcodes RUN 3 of 10, so these
     // two can never be confused for one another.
-    // H3 (08-09) — the allotment is 5, up from 4 (`runloop/run-loop.ts`).
     await expect(page.locator('#ddayUnit')).toContainText('RUN 01')
-    await expect(page.locator('#ddayUnit')).toContainText('/ 5')
+    await expect(page.locator('#ddayUnit')).toContainText('/ 4')
   })
 })

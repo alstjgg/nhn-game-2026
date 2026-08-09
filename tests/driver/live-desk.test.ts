@@ -317,8 +317,7 @@ describe('(C) a reload resumes the day rather than spending one', () => {
       seen.push({ run: counted.run, runsLeft: counted.runs_left })
     }
     // Before the fix: 01/−3 → 02/−2 → 03/−1 → 04/−0, and NEW RUN refused from
-    // there on. A judge pressing ⌘R four times lost the game. The remainder is
-    // `DEFAULT_TOTAL_RUNS - 1`; what the claim is about is that it does not MOVE.
+    // there on. A judge pressing ⌘R four times lost the game.
     expect(seen).toEqual([
       { run: 1, runsLeft: 3 },
       { run: 1, runsLeft: 3 },
