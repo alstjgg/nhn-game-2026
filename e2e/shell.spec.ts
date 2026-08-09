@@ -418,8 +418,12 @@ test.describe('topbar', () => {
     for (const id of ['#portalName', '#portalCode', '#opName', '#caseName']) {
       await expect(bar.locator(id)).not.toBeEmpty()
     }
-    // The case comes from the shipped scenario pack, not from a fixture.
-    await expect(bar.locator('#caseName')).toContainText('전 구간 정상')
+    // The case comes from the shipped scenario pack, not from a fixture. A
+    // literal, not an import: nothing under `e2e/` reaches into `src/`, and the
+    // point of this line is that the CHROME printed the pack's name — reading
+    // the name out of the module the chrome reads it from would assert nothing.
+    // It goes stale loudly on a pack switch, which is the intended failure.
+    await expect(bar.locator('#caseName')).toContainText('멈춘 회전문')
   })
 
   test('topbar — the clock reads HH:MM', async ({ page }) => {
