@@ -77,14 +77,21 @@ const renderLines = (v: unknown): string =>
   Array.isArray(v) ? v.map(str).join("\n") : str(v);
 
 // NPCs render grouped by `side` when the payload marks it. The grouping is not
-// cosmetic: room-side characters kept stepping into the controller's seat and
+// cosmetic: room-side characters kept stepping into the agent's seat and
 // addressing the person on the line, and a prose rule alone did not stop it —
 // the model had to infer the two sides from names. Naming the sides in the
 // payload makes the boundary structural. The labels carry the rule, not just the
 // grouping; stating it in the distant constraint list left a residual leak.
+//
+// The labels moved with the fiction (prompts v0.5/v0.4): the agent is a field
+// officer at the site's crisis post, not a night controller in a regional
+// situation room. `room` is now "beside the agent", which is what every
+// room-side row in the shipped packs already meant — 우는다리 calls the place
+// 위기 대응실 in its own draft. The MECHANISM is untouched; only the name of the
+// place the two sides sit in.
 const SIDE_LABELS: Record<string, string> = {
-  line: "회선 너머 — 통제관에게만 말한다",
-  room: "상황실 안 — 서로에게만 말한다. 회선 저쪽에는 말을 걸지 않는다",
+  line: "회선 너머 — 요원에게만 말한다",
+  room: "요원 곁 — 서로에게만 말한다. 회선 저쪽에는 말을 걸지 않는다",
 };
 
 const renderNpcs = (v: unknown): string => {

@@ -241,6 +241,49 @@ const COVERAGE: Array<{
       PRESENT_NPCS: [{ id: "n1", name: "발신자" }],
     },
   },
+  // THE CURRENT VERSIONS. Prompt versions are additive (handoff §5), so a new
+  // pair lands with nothing rendering it — every fixture above pins an older
+  // version, and a mistyped slot marker in a fresh template would first surface
+  // in production. These three are the fiction-reset set (요원 ECHO, not
+  // 통제관): judgment v0.5, narration v0.4, reporter v0.4.
+  {
+    call: "judgment",
+    version: "v0.5",
+    label: "current",
+    slots: {
+      TIMELINE_EXCERPT: ["18:38 회선 A 착신."],
+      BLOCKS: [{ id: "f1", text: "천장 가운데가 처진다." }],
+      GATE_QUESTION: "첫 마디로 무엇을 하는가?",
+      STANCE_SET: [
+        { id: "a", label: "듣는다" },
+        { id: "b", label: "확인한다" },
+      ],
+    },
+  },
+  {
+    call: "narration",
+    version: "v0.4",
+    label: "current",
+    slots: {
+      TIMELINE_TAIL: ["18:40 요원: 천천히 말해."],
+      AGENT_UTTERANCE: "천천히 말해.",
+      FIXED_NPC_ACTION: "표기웅이 수화기를 고쳐 쥔다.",
+      SCENE_SYMPTOMS: ["숨이 가빠졌다."],
+      PRESENT_NPCS: [
+        { id: "n1", name: "표기웅", side: "line" },
+        { id: "n2", name: "보조", side: "room" },
+      ],
+    },
+  },
+  {
+    call: "reporter",
+    version: "v0.4",
+    label: "current",
+    slots: {
+      EXPERIENCED: ["18:38 회선 A 착신.", "18:40 요원이 청취를 택했다."],
+      REPORT_GUIDANCE: "보고서 본문은 20~30문장.",
+    },
+  },
 ];
 
 describe("renderer coverage — every RENDERERS entry, not just what suites use", () => {

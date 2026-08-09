@@ -303,8 +303,8 @@ check('PRESENT_NPCS renders grouped by side, with the role rule on the label', (
   const side = { caller_a: 'line', hbr: 'room' };
   s.slots.PRESENT_NPCS = s.slots.PRESENT_NPCS.map((p) => ({ ...p, side: side[p.id] }));
   const { user } = composeArm(s, 'baseline', opts);
-  assert.match(user, /\[회선 너머 — 통제관에게만 말한다\]\ncaller_a/);
-  assert.match(user, /\[상황실 안 — 서로에게만 말한다\. 회선 저쪽에는 말을 걸지 않는다\]\nhbr/);
+  assert.match(user, /\[회선 너머 — 요원에게만 말한다\]\ncaller_a/);
+  assert.match(user, /\[요원 곁 — 서로에게만 말한다\. 회선 저쪽에는 말을 걸지 않는다\]\nhbr/);
 });
 
 check('PRESENT_NPCS without side stays flat — existing suites unaffected', () => {
