@@ -296,7 +296,7 @@ const CUES = {
   // Five one-shots cut out of a 24 s office loop that is far too busy to lay
   // down whole — it rings a phone every 6 s. What the desk wants is the same
   // room heard occasionally, so the events are extracted and re-sown on a
-  // 10–20 s timer (`ambience.sparse`) instead.
+  // 5–10 s timer (`ambience.sparse`) instead.
   //
   // `highpass=150,lowpass=3500` on every one of them is not tone-shaping, it is
   // DISTANCE: these must read as somebody else's desk across the room. A crisp

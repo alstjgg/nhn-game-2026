@@ -7,7 +7,7 @@
 
 **The bed is an office now, and it holds.** A real recording of an empty office
 (CC0, Freesound) loops under the desk for the whole session, with one distant
-one-shot — keys, a phone, a printer — sown beneath it every 10–20 s. plan-audio
+one-shot — keys, a phone, a printer — sown beneath it every 5–10 s. plan-audio
 §2's "no melodic BGM" survives untouched and is now stated properly: the bar was
 never *quiet*, it is **made of objects**, which a drone fails and a fan passes.
 
@@ -20,7 +20,7 @@ re-rolls its interval after every play, and it is deliberately **outside
 and nothing in the game happens when a phone rings two desks away.
 
 **Measured, not guessed.** Bed asset at -13.5 LUFS → **-30.0 LUFS** out through
-`gain: 1` × the 0.15 ambience bus; the one-shots sit 16 dB under it, and that
+`gain: 1` × the 0.15 ambience bus; the one-shots sit ~10 dB under it, and that
 gap is the whole effect. Every office cue is cut `highpass=150,lowpass=3500` —
 distance, not tone-shaping: a crisp keystroke at this level is
 indistinguishable from the report window typing, which is a cue that carries

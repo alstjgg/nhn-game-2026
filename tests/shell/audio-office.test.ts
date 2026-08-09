@@ -5,8 +5,8 @@
 // was structural — `e2e/` drives the DEV fixture loop, so anything whose whole
 // behaviour lives on the live path is untested there by construction. The
 // office is exactly that shape. It is armed once, at `openTheRoom`, from data
-// that only the live boot reads, and it then does nothing at all for ten
-// seconds. A browser suite would watch it do nothing and pass.
+// that only the live boot reads, and it then does nothing at all until its
+// first interval elapses. A browser suite would watch it do nothing and pass.
 //
 // So what is proved here is the seam, not the sound:
 //
@@ -51,12 +51,12 @@ describe('the shipped audio map', () => {
     expect(ambience.playForMs).toBe(10000)
   })
 
-  it('sows the office every 10–20 s', () => {
+  it('sows the office every 5–10 s', () => {
     const { ambience } = parsed()
     expect(ambience.sparse).not.toBeNull()
     expect(ambience.sparse?.cues).toEqual(['office'])
-    expect(ambience.sparse?.minMs).toBe(10000)
-    expect(ambience.sparse?.maxMs).toBe(20000)
+    expect(ambience.sparse?.minMs).toBe(5000)
+    expect(ambience.sparse?.maxMs).toBe(10000)
   })
 
   it('carries five office files on one cue, so pick() does the variation', () => {

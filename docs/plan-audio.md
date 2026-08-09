@@ -41,7 +41,7 @@ safe to cut under deadline pressure.
   document the player reads for minutes reads as a menu screen and competes with
   the deduction the game is made of, so there is no score, no theme and no
   underscore, at any level. What there *is*, since 08-09, is an office: a room
-  tone that holds for the session and one distant one-shot every 10–20 s. The
+  tone that holds for the session and one distant one-shot every 5–10 s. The
   test a bed has to pass is not "is it quiet" but "**is it made of objects**" —
   the next rule, applied to the room instead of the desk. A drone would fail it;
   a fan and somebody else's phone do not.
@@ -275,7 +275,7 @@ Two mechanisms exist for that door, kept live for a rebind:
 | Cue | When | Length |
 |---|---|---|
 | `bed` | from the desk opening, **for the session** | 30 s seamless stereo loop |
-| `office` | every **10–20 s** while `bed` holds | 5 one-shots, 0.6–1.0 s |
+| `office` | every **5–10 s** while `bed` holds | 5 one-shots, 0.6–1.0 s |
 | `watch` | `beat_start`, within the window below | 40 s seamless stereo loop |
 | — | after **10 s** | `watch` retires and never returns |
 
@@ -306,9 +306,14 @@ to sound like they are happening to somebody else.
 **Levels, measured rather than guessed.** The bed asset is written at **-13.5
 LUFS** so that `gain: 1` on the `ambience` bus (0.15) lands it at **-30.0 LUFS**
 — roughly 8 dB under where game music would normally sit, because this one plays
-under a reading surface. The office cues are 24 dB below their raw cuts
-(`gain: 0.42` × the same bus), which puts them ~16 dB under the bed. That gap is
-the effect; louder and it stops being another room.
+under a reading surface. The office cues are 18.4 dB below their raw cuts
+(`gain: 0.8` × the same bus), which puts them ~10 dB under the bed. That gap is
+the effect, and it is the first number to reach for when the room feels wrong.
+It was tuned on the running desk and it moved twice, both times up: -24 dB
+(`gain: 0.42`) read as an empty office, and -20.9 dB (`0.6`) still did. **0.8 is
+not headroom.** It is near the top of the usable range — past it the one-shots
+stop being somewhere else and start being cues on this desk, which is exactly
+the confusion the 3.5 kHz cut above exists to prevent.
 
 **The loop closes on a crossfade, and its seam is noise-masked rather than
 silent.** Head and tail are 2 s of the same fan recording summed against each

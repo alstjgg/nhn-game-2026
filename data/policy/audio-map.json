@@ -62,8 +62,8 @@
     "bed": { "files": ["amb-office-tone"], "bus": "ambience", "gain": 1.0, "loop": true },
     "watch": { "files": ["amb-watch-drone"], "bus": "ambience", "gain": 0.75, "loop": true },
 
-    "$office": "The office beyond the desk — see `ambience.sparse`. One cue id, five files, so the not-twice-running variation rule in mixer.pick() does the work and the scheduler only has to decide WHEN. gain 0.42 on the ambience bus is -24 dB from the raw cuts, which is the level these were auditioned at; the bed sits 16 dB above them and that gap is the whole effect. Louder and it stops being another room.",
-    "office": { "files": ["office-keys-1", "office-keys-2", "office-keys-3", "office-phone", "office-printer"], "bus": "ambience", "gain": 0.42 }
+    "$office": "The office beyond the desk — see `ambience.sparse`. One cue id, five files, so the not-twice-running variation rule in mixer.pick() does the work and the scheduler only has to decide WHEN. gain 0.8 on the ambience bus is -18.4 dB from the raw cuts, leaving the bed about 10 dB above them. That gap is the whole effect and this is the number to reach for first when the room feels wrong. Tuned on the running desk, downward twice: -24 dB (0.42) read as an empty office and -20.9 dB (0.6) still did. Do not read 0.8 as headroom — it is near the top of the range, and past it the one-shots stop being somewhere else and start being cues on this desk, which is the confusion the 3.5 kHz cut exists to prevent.",
+    "office": { "files": ["office-keys-1", "office-keys-2", "office-keys-3", "office-phone", "office-printer"], "bus": "ambience", "gain": 0.8 }
   },
 
   "$bindings": "trigger → cue id, or null for a cue that is deliberately silent. `feed:*` fire when a line is REVEALED, not when its event arrives.",
@@ -124,11 +124,11 @@
     "watch": "watch",
     "playForMs": 10000,
     "deskHolds": true,
-    "$sparse": "Somebody else's desk, across the room, every 10–20 s. The interval is re-rolled after each play — a fixed period is audible as a metronome inside three cycles. These are NOT triggers: `TRIGGERS` in map.ts is the closed set of moments the game can sound, and nothing in the game happens when a phone rings two desks away.",
+    "$sparse": "Somebody else's desk, across the room, every 5–10 s. The interval is re-rolled after each play — a fixed period is audible as a metronome inside three cycles. These are NOT triggers: `TRIGGERS` in map.ts is the closed set of moments the game can sound, and nothing in the game happens when a phone rings two desks away.",
     "sparse": {
       "cues": ["office"],
-      "minMs": 10000,
-      "maxMs": 20000
+      "minMs": 5000,
+      "maxMs": 10000
     }
   },
 
