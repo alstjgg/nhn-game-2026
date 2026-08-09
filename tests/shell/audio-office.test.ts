@@ -98,6 +98,18 @@ describe('validateAudioMap — the sparse block', () => {
     expect(checked).toHaveProperty('error')
   })
 
+  it('refuses a block that is present but not an object — degrading it would delete the office silently', () => {
+    expect(validateAudioMap(withSparse('office'))).toHaveProperty('error')
+    expect(validateAudioMap(withSparse(5000))).toHaveProperty('error')
+    expect(validateAudioMap(withSparse(['office']))).toHaveProperty('error')
+  })
+
+  it('treats an explicit null as "no office", the same as absence', () => {
+    const checked = validateAudioMap(withSparse(null))
+    expect(checked).not.toHaveProperty('error')
+    if ('map' in checked) expect(checked.map.ambience.sparse).toBeNull()
+  })
+
   it('treats an absent block as "no office", not as an error', () => {
     const map = raw() as Record<string, unknown>
     const ambience = { ...(map.ambience as Record<string, unknown>) }

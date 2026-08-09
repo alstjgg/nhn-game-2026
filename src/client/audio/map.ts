@@ -157,6 +157,12 @@ export function validateAudioMap(raw: unknown): { map: AudioMap } | { error: str
   }
 
   let sparse: AudioMap['ambience']['sparse'] = null
+  // Present-but-malformed must refuse, not degrade: a typo here would delete
+  // the whole office silently, which is exactly the failure this validator
+  // exists to make loud. Absent and `null` both mean "no office" and are fine.
+  if (amb.sparse !== undefined && amb.sparse !== null && !isRecord(amb.sparse)) {
+    return { error: 'ambience.sparse is not an object' }
+  }
   if (isRecord(amb.sparse)) {
     const list = amb.sparse.cues
     if (!Array.isArray(list) || !list.every((id) => typeof id === 'string')) {
