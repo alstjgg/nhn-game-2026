@@ -32,8 +32,25 @@ import { buildDeployStamp, buildDeployZone, deployView } from '../components/dep
 import type { DeployMode } from '../components/deploy-button.ts'
 import { PACE, settleRelease } from '../components/score-tally.ts'
 
-/** The wait line, verbatim from `windows/tally.ts` — diegetic, never a spinner. */
-const WAITING = '……보고서 정리 중'
+// x6b — THE LAST PRINTED WAIT LINE (민서, 08-09, playtest).
+//
+// `const WAITING = '……보고서 정리 중'` stood here, and its own comment gave it
+// away: "verbatim from `windows/tally.ts` — diegetic, never a spinner". It was
+// the mechanism x6 removed from the fanfold, wearing the same `……` leader,
+// mounted in a different window — which is why a sweep of the feed did not find
+// it. It printed under the DEPLOY control for the length of the settle hold.
+//
+// The note is BLANK across the hold now, and nothing the operator could act on
+// went with it: the control is disabled for that whole stretch whatever the
+// line says, and the moment the release lands the note becomes the one thing
+// in the loop worth reading — FILED_NOTE's instruction, LAPSED_TAIL's degraded
+// day, or SPENT. A wait line reports that the desk is still working; a release
+// reports what happened. Only the second is news.
+//
+// `SAY_HOLD_TAIL` below survives on purpose. It is not drawn either (the live
+// region is clipped off-screen since x6b) and it is the one channel where the
+// hold is worth saying: a screen-reader operator cannot see that the button is
+// disabled, so silence there would be a dead control with no explanation.
 /**
  * The line the control settles on once the run's report is on the desk.
  *
@@ -113,8 +130,9 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   let hold: ReturnType<typeof setTimeout> | null = null
   let countTimer: ReturnType<typeof setTimeout> | null = null
   /**
-   * The control's note while the day is closed (WAITING/FILED_TAIL/
-   * LAPSED_TAIL/SPENT) — `deployView` cannot derive it purely (design #5), so
+   * The control's note while the day is closed — blank across the hold since
+   * x6b, then FILED_NOTE/LAPSED_TAIL/SPENT on the release. `deployView` cannot
+   * derive it purely (design #5), so
    * `sync()` re-applies it on every render instead of relying on caller order.
    * `sync()` runs from more triggers than the settle wiring alone (the
    * identity fetch's own `.then()` below is one), and any of them landing
@@ -439,7 +457,8 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       spent = false
       scoreSeen = false
       armHold()
-      settleNote = WAITING
+      // x6b — blank, not a wait line. See the note at the head of this file.
+      settleNote = ''
       sync()
       // The stream's own close line lands in the SAME tick this fires
       // (`shell/announcer.ts`'s `run_end` handler) — a second write here would

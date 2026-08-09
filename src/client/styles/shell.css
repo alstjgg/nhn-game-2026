@@ -250,21 +250,34 @@ body.booting .win{visibility:hidden}
 .win-grip::after{content:'';position:absolute;right:5px;bottom:5px;width:12px;height:12px;
   border-right:1px solid var(--sh-35);border-bottom:1px solid var(--sh-35)}
 
-/* ═══ TOAST ═══════════════════════════════════════════════════════════════ */
-/* x5b — the desk's own line moved to the MIDDLE of the screen.
-   It sat at the foot of the viewport, which is where a web page puts a toast
-   and where nobody watching a radio feed is looking: 'ECHO-3 교신 시작' is the
-   desk telling the operator a new day has opened under them, and it was
-   arriving in the one band of the screen the three windows do not occupy.
-   (x6 — the example used to be '무전 회신 대기 중', which the toast no longer
-   says at all; `shell/announcer.ts` returns null for a wait now.)
-   Centred, it lands in the eyeline. Still `role="status" aria-live="polite"`,
-   still `pointer-events:none`, still gone in 2.6 s — a reading, never a
-   control, so it never stands between the operator and a window. */
-#toast{position:fixed;left:50%;top:50%;transform:translate(-50%,calc(-50% + 20px));z-index:950;
-  padding:var(--space-8) var(--space-18);background:var(--chrome-hi);border:1px solid var(--ink-line);
-  border-left:2px solid var(--seal);
-  font-family:var(--myeong);font-size:var(--fs-11-5);color:var(--txt);letter-spacing:.02em;
-  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
-  box-shadow:0 14px 30px -12px var(--sh-9)}
-#toast.on{opacity:1;transform:translate(-50%,-50%)}
+/* ═══ THE LIVE REGION — heard, never seen (x6b) ═══════════════════════════
+   This was a toast, and x5b had moved it to the MIDDLE of the screen on the
+   reasoning that the foot of the viewport is where a web page puts one and
+   where nobody watching a radio feed is looking. The centre fixed that and
+   bought the opposite problem: a panel over the desk, in the eyeline, on every
+   run open, every fallback, all seven reports of a day and every slot press.
+   The desk was narrating itself to an operator who was already reading the
+   window the news came from (민서, 08-09, playtest).
+
+   So it is not drawn at all any more. It is NOT `display:none` and NOT
+   `visibility:hidden` — either would take it out of the accessibility tree and
+   silence the eleven lines it carries, which is the one audience that has no
+   window to read them in. The clip pattern below leaves it in the tree, in the
+   layout, and off the screen: `role="status" aria-live="polite"` still speaks,
+   and nothing above the desk ever paints.
+
+   `#toast.on` went with the panel — there is no shown state left to toggle, so
+   `shell/announcer.ts` no longer sets the class or holds the 4 s timer that
+   cleared it. The region simply keeps its last line, which is what a live
+   region is for.
+
+   The 1px box is deliberate and is NOT `width:0`: a zero-area element is
+   dropped from the accessibility tree by some engines, which would silence the
+   region as surely as `display:none`. The usual sr-only recipe pairs that box
+   with `margin:-1px` to keep it out of the flow — dropped here, because
+   `position:fixed` already takes it out of the flow and `margin` is on the
+   token lint's property list (`tests/styles/token-lint.test.ts`, and inv 8's
+   wider scan), where a raw `-1px` is an offender. `width`/`height`/`clip-path`
+   are structural properties and take literals by that same rule.             */
+#toast{position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;
+  overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none}

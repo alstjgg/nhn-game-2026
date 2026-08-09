@@ -303,11 +303,16 @@ test.describe('a11y — landmarks and roles', () => {
     // `drain` waits it out to `final`.
     await drain(page)
 
-    // (1) the hold is a fact an operator can HEAR, not only a line on the control.
+    // (1) the hold is a fact an operator can HEAR — and, since x6b, ONLY hear.
+    // The control's printed wait line is gone (it was the fanfold's removed
+    // marker mechanism mounted in this window), so the live region is no longer
+    // the redundant half of the pair: it is the only channel that carries the
+    // hold at all. That makes this assertion load-bearing rather than belt-and-
+    // braces, which is why the empty-note check sits right under it.
     await expect(toast, 'the desk closed the run and held it in silence').toContainText('보고서 정리 중', {
       timeout: 20_000,
     })
-    await expect(wait).toHaveText('……보고서 정리 중')
+    await expect(wait, 'the control printed a wait line again').toHaveText('')
     await expect(newRun, 'NEW RUN is offered while the hold is still up').toBeDisabled()
 
     // (2) …and so is the release. The control's note changing to the opposite
