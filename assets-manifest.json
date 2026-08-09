@@ -5,226 +5,265 @@
       "file": "demos/apothecary/assets/bg-shop.png",
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Wide interior scene: a small back-alley Korean apothecary shop seen from the shopkeeper's side, wooden counter along the bottom edge, shelves of labeled jars and bundles of dried herbs hanging above, entrance door centered in the back wall, warm lantern light, dusk visible through the window. No people, no text.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/apothecary/assets/ui-bubble.png",
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. A single empty speech bubble for a retro game dialogue UI: rounded rectangle with a small tail pointing down-left, thick dark outline of even width on all sides (suitable for 9-slice scaling), plain parchment-colored fill. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/apothecary/assets/ui-shelf.png",
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. A wooden apothecary shelf panel with two rows of empty slots and small drawers below, front view, warm dark wood with brass handles, designed as a UI backdrop panel for item slots. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/apothecary/assets/ingredients-1.png",
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Item sprite sheet: a 4x3 grid of small glass apothecary jars. Each COLUMN is one herbal ingredient — column 1: sliced licorice root (감초, pale yellow slices); column 2: dried red jujube dates (대추); column 3: fresh ginger root pieces (생강); column 4: dried yellow chrysanthemum flowers (국화). Each ROW is a fill state — top row: jar full; middle row: jar half full; bottom row: jar nearly empty with only scraps. Identical jar shape, size and position in every cell. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/apothecary/assets/ingredients-2.png",
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Item sprite sheet: a 4x3 grid of small glass apothecary jars. Each COLUMN is one herbal ingredient — column 1: dried white balloon-flower roots (도라지); column 2: chalky white poria mushroom chunks (백복령); column 3: small glossy brown jujube seeds (산조인); column 4: fresh green mint leaves (박하). Each ROW is a fill state — top row: jar full; middle row: jar half full; bottom row: jar nearly empty with only scraps. Identical jar shape, size and position in every cell. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/apothecary/assets/equip-teapot.png",
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Sprite sheet: a 2x2 grid of the same small round clay teapot used for steeping herbal tea. Top-left: idle, lid closed, no steam. Top-right: steeping frame 1, a faint steam wisp. Bottom-left: steeping frame 2, two steam wisps rising. Bottom-right: steeping frame 3, strong curling steam and a soft warm glow. Identical teapot position and scale in all four cells. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/apothecary/assets/equip-pot.png",
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Sprite sheet: a 2x2 grid of the same traditional dark earthenware medicine-brewing pot (약탕관) sitting over a small flame, used for decocting herbs. Top-left: idle, no flame, lid on. Top-right: decocting frame 1, small flame, first bubbles. Bottom-left: decocting frame 2, steady flame, bubbling liquid visible at the rim. Bottom-right: decocting frame 3, strong flame, rolling boil with steam. Identical pot position and scale in all four cells. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/apothecary/assets/equip-mortar.png",
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Sprite sheet: a 2x2 grid of the same heavy stone mortar with a wooden pestle, used for grinding herbs. Top-left: idle, pestle resting inside the mortar. Top-right: grinding frame 1, pestle lifted high. Bottom-left: grinding frame 2, pestle striking down into the mortar. Bottom-right: grinding frame 3, pestle down with a small puff of herb powder rising. Identical mortar position and scale in all four cells. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/apothecary/assets/potions.png",
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Item sprite sheet: a 3x2 grid of the same small corked glass medicine bottle. Top-left: empty bottle. Top-middle: filled with a calm pale-green remedy. Top-right: filled with a deep brown herbal decoction. Bottom-left: filled with a strange glowing violet experimental brew with tiny sparkles. Bottom-middle: filled with a murky grey-brown failed sludge. Bottom-right: the bottle wrapped in cloth and twine as a finished package. Identical bottle shape, size and position in every cell. Every object centered with clear margins on a flat solid magenta background (#FF00FF), nothing touching the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/apothecary/assets/fallback-portrait-1.png",
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Character sheet: a 4x2 grid of eight bust portraits of the SAME person, identical framing, scale and head position in every cell, shoulders-up, facing the viewer. Four columns, one expression per column — column 1: calm and neutral; column 2: indifferent, losing interest; column 3: irritated, frowning; column 4: fed up, about to walk out. Two rows: the top row has eyes open; the bottom row repeats the exact same portrait as the cell above but with eyes closed mid-blink, everything else identical. Flat single-color background in all cells. No gridlines, no borders, no text, no labels. A stout middle-aged merchant man with a tired smile, short beard, worn travel coat and a shoulder bag.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/apothecary/assets/fallback-portrait-2.png",
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Character sheet: a 4x2 grid of eight bust portraits of the SAME person, identical framing, scale and head position in every cell, shoulders-up, facing the viewer. Four columns, one expression per column — column 1: calm and neutral; column 2: indifferent, losing interest; column 3: irritated, frowning; column 4: fed up, about to walk out. Two rows: the top row has eyes open; the bottom row repeats the exact same portrait as the cell above but with eyes closed mid-blink, everything else identical. Flat single-color background in all cells. No gridlines, no borders, no text, no labels. An elderly woman with a kind wrinkled face, grey hair in a neat bun, dark shawl over a hanbok-style jacket.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/A.png",
       "tool": "gpt-image-1 + sharp",
       "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate A for the original full prompt.",
-      "license": "generated for this project; review-only snapshot"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/B.png",
       "tool": "gpt-image-1 + sharp",
       "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate B for the original full prompt.",
-      "license": "generated for this project; review-only snapshot"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/C.png",
       "tool": "gpt-image-1 + sharp",
       "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate C for the original full prompt.",
-      "license": "generated for this project; review-only snapshot"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/tools/asset-gen/review/initial-prompt/D.png",
       "tool": "gpt-image-1 + sharp",
       "prompt": "See demos/darkest-context/tools/asset-gen/review/initial-prompt/summary.md candidate D for the original full prompt.",
-      "license": "generated for this project; review-only snapshot"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/tools/asset-gen/review/revised-pipeline/A.png",
       "tool": "gpt-image-1 + sharp",
       "prompt": "See demos/darkest-context/tools/asset-gen/review/revised-pipeline/summary.md candidate A for the revised full prompt.",
-      "license": "generated for this project; review-only snapshot"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/tools/asset-gen/review/revised-pipeline/B.png",
       "tool": "gpt-image-1 + sharp",
       "prompt": "See demos/darkest-context/tools/asset-gen/review/revised-pipeline/summary.md candidate B for the revised full prompt.",
-      "license": "generated for this project; review-only snapshot"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/tools/asset-gen/review/revised-pipeline/C.png",
       "tool": "gpt-image-1 + sharp",
       "prompt": "See demos/darkest-context/tools/asset-gen/review/revised-pipeline/summary.md candidate C for the revised full prompt.",
-      "license": "generated for this project; review-only snapshot"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/tools/asset-gen/review/revised-pipeline/D.png",
       "tool": "gpt-image-1 + sharp",
       "prompt": "See demos/darkest-context/tools/asset-gen/review/revised-pipeline/summary.md candidate D for the revised full prompt.",
-      "license": "generated for this project; review-only snapshot"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/assets/bg-dungeon.png",
       "tool": "gpt-image-1",
       "prompt": "Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Side-view dungeon corridor background for a walking scene: rough stone block walls, sparse burning torches, hanging chains, scattered bones and patches of moss, long horizontal composition with an even floor line near the bottom edge. The left and right edges must continue each other exactly so the image tiles seamlessly when repeated horizontally. No creatures, no people, no text.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/assets/hero-garrett.png",
       "tool": "gpt-image-1",
       "prompt": "The magenta background is a technical chroma-key layer, not part of the palette — never use magenta, pink, or purple on the subject itself. This technical rule overrides every artistic palette instruction. MANDATORY LAYOUT: render exactly twelve separate full-body sprites as four columns by three rows, one sprite centered in each invisible cell. Reserve the top, middle, and bottom third of the canvas for one complete row each. Make the sprites small enough that all twelve fit with wide empty magenta gutters. Never omit or crop the third row. Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Sprite sheet: a 4x3 grid of twelve cells, the SAME character in every cell — a broad, middle-aged shield knight in dented steel plate armor carrying a massive tower shield and a short sword, full body, side view facing right, identical scale and ground line in every cell. Top row: four unmistakably different phases of one walk cycle — contact, down, passing, up. Keep torso, pelvis, scale, ground line, and position pixel-perfect identical across all four cells; move only arms, legs, shield, and sword. Do not repeat an idle pose. Middle row: four exaggerated standing poses showing sharply rising mental strain, readable at tiny sprite size — cell 1: calm upright posture, healthy warm skin; cell 2: uneasy hunch, tense hands, noticeably pale skin; cell 3: at his limit, doubled over and clutching his head, ashen skin and deep shadowed eyes; cell 4: completely broken, wild defensive crouch, sickly grey skin, frantic eyes. Preserve the same face, clothes, and identity while changing posture and skin tone. Bottom row: four strongly distinct action silhouettes — cell 1: a heavy short-sword strike from behind the shield; cell 2: planting the tower shield as a full wall in front of him; cell 3: recoiling backward from a hit; cell 4: fully collapsed on the ground. Fill every negative-space background pixel with one exact, flat, fully opaque color: #FF00FF. Draw no floor, ground shadow, platform, glow, texture, gradient, vignette, or lighting in the background. Leave exact #FF00FF directly beneath every subject; do not draw a colored base or contact shadow. Nothing touches the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/assets/hero-fiona.png",
       "tool": "gpt-image-1",
       "prompt": "The magenta background is a technical chroma-key layer, not part of the palette — never use magenta, pink, or purple on the subject itself. This technical rule overrides every artistic palette instruction. MANDATORY LAYOUT: render exactly twelve separate full-body sprites as four columns by three rows, one sprite centered in each invisible cell. Reserve the top, middle, and bottom third of the canvas for one complete row each. Make the sprites small enough that all twelve fit with wide empty magenta gutters. Never omit or crop the third row. Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Sprite sheet: a 4x3 grid of twelve cells, the SAME character in every cell — a young pilgrim priestess in a hooded travel robe with a small mace and a wooden rosary charm, full body, side view facing right, identical scale and ground line in every cell. Top row: four unmistakably different phases of one walk cycle — contact, down, passing, up. Keep torso, pelvis, scale, ground line, and position pixel-perfect identical across all four cells; move only arms, legs, robe hem, mace, and rosary. Do not repeat an idle pose. Middle row: four exaggerated standing poses showing sharply rising mental strain, readable at tiny sprite size — cell 1: calm upright posture, healthy warm skin; cell 2: uneasy hunch, tense hands, noticeably pale skin; cell 3: at her limit, doubled over and clutching her head, ashen skin and deep shadowed eyes; cell 4: completely broken, wild defensive crouch, sickly grey skin, frantic eyes. Preserve the same face, clothes, and identity while changing posture and skin tone. Bottom row: four strongly distinct action silhouettes — cell 1: a wide mace strike; cell 2: an unmistakable guard with both raised arms forming a barrier; cell 3: recoiling backward from a hit; cell 4: fully collapsed on the ground. Fill every negative-space background pixel with one exact, flat, fully opaque color: #FF00FF. Draw no floor, ground shadow, platform, glow, texture, gradient, vignette, or lighting in the background. Leave exact #FF00FF directly beneath every subject; do not draw a colored base or contact shadow. Nothing touches the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/assets/hero-selene.png",
       "tool": "gpt-image-1",
       "prompt": "The magenta background is a technical chroma-key layer, not part of the palette — never use magenta, pink, or purple on the subject itself. This technical rule overrides every artistic palette instruction. MANDATORY LAYOUT: render exactly twelve separate full-body sprites as four columns by three rows, one sprite centered in each invisible cell. Reserve the top, middle, and bottom third of the canvas for one complete row each. Make the sprites small enough that all twelve fit with wide empty magenta gutters. Never omit or crop the third row. Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Sprite sheet: a 4x3 grid of twelve cells, the SAME character in every cell — a sly middle-aged retired con-artist woman in a worn hooded traveler's coat holding a short dagger and a fan of playing cards, full body, side view facing right, identical scale and ground line in every cell. Top row: four unmistakably different phases of one walk cycle — contact, down, passing, up. Keep torso, pelvis, scale, ground line, and position pixel-perfect identical across all four cells; move only arms, legs, coat hem, dagger, and cards. Do not repeat an idle pose. Middle row: four exaggerated standing poses showing sharply rising mental strain, readable at tiny sprite size — cell 1: calm upright posture, healthy warm skin; cell 2: uneasy hunch, tense hands, noticeably pale skin; cell 3: at her limit, doubled over and clutching her head, ashen skin and deep shadowed eyes; cell 4: completely broken, wild defensive crouch, sickly grey skin, frantic eyes. Preserve the same face, clothes, and identity while changing posture and skin tone. Bottom row: four strongly distinct action silhouettes — cell 1: a quick low dagger thrust; cell 2: a sideways evasive lean behind her raised coat sleeve; cell 3: recoiling backward from a hit; cell 4: fully collapsed on the ground. Fill every negative-space background pixel with one exact, flat, fully opaque color: #FF00FF. Draw no floor, ground shadow, platform, glow, texture, gradient, vignette, or lighting in the background. Leave exact #FF00FF directly beneath every subject; do not draw a colored base or contact shadow. Nothing touches the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/assets/mob-spam-golem.png",
       "tool": "gpt-image-1",
       "prompt": "The magenta background is a technical chroma-key layer, not part of the palette — never use magenta, pink, or purple on the subject itself. This technical rule overrides every artistic palette instruction. MANDATORY LAYOUT: render exactly six separate sprites as three columns by two rows, one sprite centered in each invisible cell, with wide empty magenta gutters. Never omit a cell. Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Sprite sheet: a 3x2 grid of six cells, the SAME creature in every cell — a hulking clumsy golem stitched together from crumpled paper letters, bulging envelopes and wax seals, with a blank postage stamp for a face, side view facing left, identical scale and ground line in every cell. Top row, three cells — cell 1: idle stance; cell 2: recoiling from a hit; cell 3: destroyed, collapsed into inert remains. Bottom row: three consecutive frames of one attack — winding up and slamming both paper fists down. Keep body position identical across the three attack cells; move only the attacking part. Fill every negative-space background pixel with one exact, flat, fully opaque color: #FF00FF. Draw no floor, ground shadow, platform, glow, texture, gradient, vignette, or lighting in the background. Leave exact #FF00FF directly beneath every subject; do not draw a colored base or contact shadow. Nothing touches the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/assets/mob-halluc-wisp.png",
       "tool": "gpt-image-1",
       "prompt": "The magenta background is a technical chroma-key layer, not part of the palette — never use magenta, pink, or purple on the subject itself. This technical rule overrides every artistic palette instruction. MANDATORY LAYOUT: render exactly six separate sprites as three columns by two rows, one sprite centered in each invisible cell, with wide empty magenta gutters. Never omit a cell. Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Sprite sheet: a 3x2 grid of six cells, the SAME creature in every cell — a small floating hallucination spirit made of curling pale-green smoke with three mismatched glowing yellow eyes, rendered as a solid opaque sprite, side view facing left, identical scale and hover height in every cell. Top row, three cells — cell 1: idle stance; cell 2: recoiling from a hit; cell 3: destroyed, collapsed into inert remains. Bottom row: three consecutive frames of one attack — three poses of the complete spirit conjuring energy without releasing a projectile — frame 1: a faint glow held close to its face; frame 2: a brighter glow held close to its face; frame 3: an intense flare still attached to its face. The complete spirit must be the largest object and remain fully visible and centered in every attack cell. No detached projectile, no standalone orb, and no cell containing only an effect. Keep body position identical across the three attack cells; move only the attacking part. Fill every negative-space background pixel with one exact, flat, fully opaque color: #FF00FF. Draw no floor, ground shadow, platform, glow, texture, gradient, vignette, or lighting in the background. Leave exact #FF00FF directly beneath every subject; do not draw a colored base or contact shadow. Nothing touches the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/assets/ui-bubble.png",
       "tool": "gpt-image-1",
       "prompt": "The magenta background is a technical chroma-key layer, not part of the palette — never use magenta, pink, or purple on the subject itself. This technical rule overrides every artistic palette instruction. Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. A single empty speech bubble for a retro game dialogue UI: rounded rectangle with a small tail pointing down-left, thick pale outline of even width on all sides (suitable for 9-slice scaling), plain dark aged-parchment fill. Fill every negative-space background pixel with one exact, flat, fully opaque color: #FF00FF. Draw no floor, ground shadow, platform, glow, texture, gradient, vignette, or lighting in the background. Leave exact #FF00FF directly beneath every subject; do not draw a colored base or contact shadow. Nothing touches the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/assets/ui-card-frame.png",
       "tool": "gpt-image-1",
       "prompt": "The magenta background is a technical chroma-key layer, not part of the palette — never use magenta, pink, or purple on the subject itself. This technical rule overrides every artistic palette instruction. Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. An empty ornate game card frame: vertical rounded rectangle with an even-width dark iron border decorated with subtle gothic filigree (suitable for 9-slice scaling), plain dark parchment fill, no artwork inside. Fill every negative-space background pixel with one exact, flat, fully opaque color: #FF00FF. Draw no floor, ground shadow, platform, glow, texture, gradient, vignette, or lighting in the background. Leave exact #FF00FF directly beneath every subject; do not draw a colored base or contact shadow. Nothing touches the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/assets/card-icons.png",
       "tool": "gpt-image-1",
       "prompt": "The magenta background is a technical chroma-key layer, not part of the palette — never use magenta, pink, or purple on the subject itself. This technical rule overrides every artistic palette instruction. MANDATORY LAYOUT: render exactly twelve separate emblems as four columns by three rows, one emblem centered in each invisible cell, identical scale and framing in every cell, with wide empty magenta gutters. Never omit a cell. Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Icon sheet: a 4x3 grid of twelve simple game-card emblems, flat bold shapes readable at small size, no letters or digits. Top row — cell 1: a fearless raised fist; cell 2: a dark cracked heart pierced by a nail; cell 3: one shield held protectively over two smaller figures; cell 4: a pair of thrown dice. Middle row — cell 1: an open hand offering a small flower; cell 2: two crossed slashing sword arcs; cell 3: a jeering horned mask with its tongue out; cell 4: a burning unrolled scroll. Bottom row — cell 1: a round potion flask marked with a cross; cell 2: a polished mirror-faced shield; cell 3: a magnifying lens over rune marks; cell 4: an ornate card-back pattern with a single closed eye. Fill every negative-space background pixel with one exact, flat, fully opaque color: #FF00FF. Draw no floor, ground shadow, platform, glow, texture, gradient, vignette, or lighting in the background. Leave exact #FF00FF directly beneath every subject; do not draw a colored base or contact shadow. Nothing touches the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "demos/darkest-context/assets/ui-vial.png",
       "tool": "gpt-image-1",
       "prompt": "The magenta background is a technical chroma-key layer, not part of the palette — never use magenta, pink, or purple on the subject itself. This technical rule overrides every artistic palette instruction. Low-resolution 16-bit era pixel art, strict pixel grid, limited palette, clean readable silhouette. Item sprite sheet: four states of the SAME corked glass vial in a single row of four cells, identical vial shape, size and position in every cell — cell 1: nearly empty, a calm pale-blue liquid at the bottom; cell 2: half full, faintly swirling teal liquid; cell 3: nearly full, agitated bubbling orange liquid; cell 4: completely full and boiling over, black-red liquid with glowing cracks in the glass. Fill every negative-space background pixel with one exact, flat, fully opaque color: #FF00FF. Draw no floor, ground shadow, platform, glow, texture, gradient, vignette, or lighting in the background. Leave exact #FF00FF directly beneath every subject; do not draw a colored base or contact shadow. Nothing touches the image edges. No gridlines, no borders, no text, no labels.",
-      "license": "generated for this project"
+      "license": "출력물은 고객 소유 — OpenAI 서비스 계약 §4.1(b): 「고객이 모든 출력물을 소유합니다. OpenAI는 출력물에 대한 OpenAI의 모든 권리, 소유권 및 이익(있는 경우)을 고객에게 양도합니다.」 §9.1(a)는 OpenAI가 고객 콘텐츠에 대한 지식재산권을 취득하지 않음을 확인. 제한: §3.3(e) 경쟁 AI 모델 개발에 출력물 사용 금지. 단서: §4.4 출력물은 고유하지 않을 수 있으며 타 사용자의 출력물은 포함되지 않음.",
+      "license_source": "https://openai.com/ko-KR/policies/services-agreement/ §4.1, §4.4, §3.3(e), §9.1 — OpenAI 서비스 계약 (Updated 2025-12-01, 효력 발생일 2026-01-01; checked 2026-08-08)"
     },
     {
       "file": "public/assets/fonts/ibm-plex-mono/",
       "source": "Google Fonts webfont API (css2) — WOFF2 per-unicode-range slices, vendored into the repo by tools/fonts/vendor-google-webfonts.mjs",
       "license": "SIL Open Font License 1.1",
-      "note": "Self-hosted 'IBM Plex Mono' — machine chrome (top bar, taskbar, window titles, labels, teleprinter feed). 6 faces (300/400/500/600/700 + 400 italic) x 5 latin/cyrillic subsets, declared by src/client/styles/fonts.css. Self-hosting is an acceptance item (spec-client §3 inv 10): the client makes no third-party request."
+      "note": "Self-hosted 'IBM Plex Mono' — machine chrome (top bar, taskbar, window titles, labels, teleprinter feed). 6 faces (300/400/500/600/700 + 400 italic) x 5 latin/cyrillic subsets, declared by src/client/styles/fonts.css. Self-hosting is an acceptance item (spec-client §3 inv 10): the client makes no third-party request.",
+      "license_source": "https://github.com/google/fonts/blob/main/ofl/ibmplexmono/OFL.txt — 'Copyright © 2017 IBM Corp. with Reserved Font Name \"Plex\"', 'SIL Open Font License, Version 1.1' (checked 2026-08-08)"
     },
     {
       "file": "public/assets/fonts/nanum-myeongjo/",
       "source": "Google Fonts webfont API (css2) — WOFF2 per-unicode-range slices, vendored into the repo by tools/fonts/vendor-google-webfonts.mjs",
       "license": "SIL Open Font License 1.1",
-      "note": "Self-hosted 'Nanum Myeongjo' — Korean document bodies (dossier, reports, block cards, tally). 3 weights (400/700/800), each sliced per unicode-range as upstream slices it, so a page pulls only the syllable blocks it renders (spec-client §9)."
+      "note": "Self-hosted 'Nanum Myeongjo' — Korean document bodies (dossier, reports, block cards, tally). 3 weights (400/700/800), each sliced per unicode-range as upstream slices it, so a page pulls only the syllable blocks it renders (spec-client §9).",
+      "license_source": "https://github.com/google/fonts/blob/main/ofl/nanummyeongjo/OFL.txt — 'Copyright (c) 2010, NHN Corporation (http://www.nhncorp.com), with Reserved Font Name Nanum …', 'SIL Open Font License, Version 1.1' (2007-02-26) (checked 2026-08-08)"
     },
     {
       "file": "public/assets/fonts/nanum-gothic-coding/",
       "source": "Google Fonts webfont API (css2) — WOFF2 per-unicode-range slices, vendored into the repo by tools/fonts/vendor-google-webfonts.mjs",
       "license": "SIL Open Font License 1.1",
-      "note": "Self-hosted 'Nanum Gothic Coding' — Korean monospace for LIVE FEED radio lines. 2 weights (400/700), sliced per unicode-range like the other Korean family."
+      "note": "Self-hosted 'Nanum Gothic Coding' — Korean monospace for LIVE FEED radio lines. 2 weights (400/700), sliced per unicode-range like the other Korean family.",
+      "license_source": "https://github.com/google/fonts/blob/main/ofl/nanumgothiccoding/OFL.txt — 'Copyright (c) 2010, NHN Corporation (http://www.nhncorp.com), with Reserved Font Name Nanum …', 'SIL Open Font License, Version 1.1' (2007-02-26) (checked 2026-08-08)"
     },
     {
       "file": "docs/design/phase2-ui/index.html — webfont 'IBM Plex Mono'",
       "source": "Google Fonts (fonts.googleapis.com), loaded at runtime; not vendored into the repo",
       "license": "SIL Open Font License 1.1",
-      "note": "Machine chrome (top bar, taskbar, window titles, labels, teleprinter feed). THE DESIGN REFERENCE'S OWN RUNTIME LOAD, restored 08-05 — this row was re-pointed at the self-hosted copy when the client vendored the family, which left docs/design/phase2-ui/index.html:7-9 (a read-only binding reference, still live in this repo) with no manifest entry at all. CLAUDE.md rule 5 admits no exceptions. The PLAYER build is unaffected: it resolves this family from public/assets/fonts/** and makes no third-party request (spec-client §3 inv 10)."
+      "note": "Machine chrome (top bar, taskbar, window titles, labels, teleprinter feed). THE DESIGN REFERENCE'S OWN RUNTIME LOAD, restored 08-05 — this row was re-pointed at the self-hosted copy when the client vendored the family, which left docs/design/phase2-ui/index.html:7-9 (a read-only binding reference, still live in this repo) with no manifest entry at all. CLAUDE.md rule 5 admits no exceptions. The PLAYER build is unaffected: it resolves this family from public/assets/fonts/** and makes no third-party request (spec-client §3 inv 10).",
+      "license_source": "https://github.com/google/fonts/blob/main/ofl/ibmplexmono/OFL.txt — 'Copyright © 2017 IBM Corp. with Reserved Font Name \"Plex\"', 'SIL Open Font License, Version 1.1' (checked 2026-08-08)"
     },
     {
       "file": "docs/design/phase2-ui/index.html — webfont 'Nanum Myeongjo'",
       "source": "Google Fonts (fonts.googleapis.com), loaded at runtime; not vendored into the repo",
       "license": "SIL Open Font License 1.1",
-      "note": "Korean document bodies (dossier, reports, block cards, tally). THE DESIGN REFERENCE'S OWN RUNTIME LOAD, restored 08-05 — this row was re-pointed at the self-hosted copy when the client vendored the family, which left docs/design/phase2-ui/index.html:7-9 (a read-only binding reference, still live in this repo) with no manifest entry at all. CLAUDE.md rule 5 admits no exceptions. The PLAYER build is unaffected: it resolves this family from public/assets/fonts/** and makes no third-party request (spec-client §3 inv 10)."
+      "note": "Korean document bodies (dossier, reports, block cards, tally). THE DESIGN REFERENCE'S OWN RUNTIME LOAD, restored 08-05 — this row was re-pointed at the self-hosted copy when the client vendored the family, which left docs/design/phase2-ui/index.html:7-9 (a read-only binding reference, still live in this repo) with no manifest entry at all. CLAUDE.md rule 5 admits no exceptions. The PLAYER build is unaffected: it resolves this family from public/assets/fonts/** and makes no third-party request (spec-client §3 inv 10).",
+      "license_source": "https://github.com/google/fonts/blob/main/ofl/nanummyeongjo/OFL.txt — 'Copyright (c) 2010, NHN Corporation (http://www.nhncorp.com), with Reserved Font Name Nanum …', 'SIL Open Font License, Version 1.1' (2007-02-26) (checked 2026-08-08)"
     },
     {
       "file": "docs/design/phase2-ui/index.html — webfont 'Nanum Gothic Coding'",
       "source": "Google Fonts (fonts.googleapis.com), loaded at runtime; not vendored into the repo",
       "license": "SIL Open Font License 1.1",
-      "note": "Korean monospace for LIVE FEED radio lines. THE DESIGN REFERENCE'S OWN RUNTIME LOAD, restored 08-05 — this row was re-pointed at the self-hosted copy when the client vendored the family, which left docs/design/phase2-ui/index.html:7-9 (a read-only binding reference, still live in this repo) with no manifest entry at all. CLAUDE.md rule 5 admits no exceptions. The PLAYER build is unaffected: it resolves this family from public/assets/fonts/** and makes no third-party request (spec-client §3 inv 10)."
+      "note": "Korean monospace for LIVE FEED radio lines. THE DESIGN REFERENCE'S OWN RUNTIME LOAD, restored 08-05 — this row was re-pointed at the self-hosted copy when the client vendored the family, which left docs/design/phase2-ui/index.html:7-9 (a read-only binding reference, still live in this repo) with no manifest entry at all. CLAUDE.md rule 5 admits no exceptions. The PLAYER build is unaffected: it resolves this family from public/assets/fonts/** and makes no third-party request (spec-client §3 inv 10).",
+      "license_source": "https://github.com/google/fonts/blob/main/ofl/nanumgothiccoding/OFL.txt — 'Copyright (c) 2010, NHN Corporation (http://www.nhncorp.com), with Reserved Font Name Nanum …', 'SIL Open Font License, Version 1.1' (2007-02-26) (checked 2026-08-08)"
     },
     {
-      "file": "public/assets/audio/amb-room-tone.m4a",
-      "tool": "tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)",
+      "file": "public/assets/audio/amb-office-tone.m4a",
+      "source": "richwise — https://freesound.org/people/richwise/sounds/456207/",
+      "derived_from": [
+        "456207_1481531-hq.mp3",
+        "456207_1481531-hq.mp3"
+      ],
+      "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "generated for this project",
-      "generated": [
-        "amb-room-tone"
-      ]
+      "license": "CC0-1.0",
+      "license_source": "https://freesound.org/people/richwise/sounds/456207/ — the sound page's own licence block: 'Creative Commons 0' — 'You can copy, modify, distribute and perform the sound, even for commercial purposes, all without asking permission.' The URL fetched is that upload's own -hq preview render, so it carries the upload's dedication. (checked 2026-08-09)"
     },
     {
       "file": "public/assets/audio/amb-watch-drone.m4a",
       "tool": "tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)",
       "prompt": null,
       "license": "generated for this project",
+      "license_source": "tools/audio/synth.mjs in this repository — the waveform is computed by our own code, not returned by a model and not derived from a recording, so no third-party grant applies. The generator is seeded and byte-reproducible; re-running it reproduces this file.",
       "generated": [
         "amb-watch-drone"
       ]
@@ -238,7 +277,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://opengameart.org/content/typewriter-sounds — the submission page's own Licenses field reads CC0 (checked 2026-08-08) | https://commons.wikimedia.org/wiki/File:406243_stubb_typewriter-ding-near-mono.wav — the file page's licence box: CC0 / Creative Commons Zero, Public Domain Dedication (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/clock-loop.m4a",
@@ -248,13 +288,15 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "public-domain"
+      "license": "public-domain",
+      "license_source": "https://commons.wikimedia.org/wiki/File:Clock_ticking.ogg — the file page's licence box: Public domain (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/collapse.m4a",
       "tool": "tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)",
       "prompt": null,
       "license": "generated for this project",
+      "license_source": "tools/audio/synth.mjs in this repository — the waveform is computed by our own code, not returned by a model and not derived from a recording, so no third-party grant applies. The generator is seeded and byte-reproducible; re-running it reproduces this file.",
       "generated": [
         "collapse"
       ]
@@ -267,7 +309,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/interface-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/deploy.m4a",
@@ -280,7 +323,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/interface-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/drag-drop.m4a",
@@ -290,7 +334,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/interface-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/drag-start.m4a",
@@ -300,7 +345,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/interface-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/drawer-close.m4a",
@@ -310,7 +356,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://opengameart.org/content/100-cc0-metal-and-wood-sfx — the submission page's own Licenses field reads CC0 (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/drawer-open.m4a",
@@ -320,13 +367,15 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://opengameart.org/content/100-cc0-sfx — the submission page's own Licenses field reads CC0 (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/fallback-burst.m4a",
       "tool": "tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)",
       "prompt": null,
       "license": "generated for this project",
+      "license_source": "tools/audio/synth.mjs in this repository — the waveform is computed by our own code, not returned by a model and not derived from a recording, so no third-party grant applies. The generator is seeded and byte-reproducible; re-running it reproduces this file.",
       "generated": [
         "fallback-burst"
       ]
@@ -336,6 +385,7 @@
       "tool": "tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)",
       "prompt": null,
       "license": "generated for this project",
+      "license_source": "tools/audio/synth.mjs in this repository — the waveform is computed by our own code, not returned by a model and not derived from a recording, so no third-party grant applies. The generator is seeded and byte-reproducible; re-running it reproduces this file.",
       "generated": [
         "judgment-heartbeat"
       ]
@@ -348,16 +398,73 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/impact-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/npc-handset.m4a",
       "tool": "tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)",
       "prompt": null,
       "license": "generated for this project",
+      "license_source": "tools/audio/synth.mjs in this repository — the waveform is computed by our own code, not returned by a model and not derived from a recording, so no third-party grant applies. The generator is seeded and byte-reproducible; re-running it reproduces this file.",
       "generated": [
         "npc-handset"
       ]
+    },
+    {
+      "file": "public/assets/audio/office-keys-1.m4a",
+      "source": "Fupicat — https://freesound.org/people/Fupicat/sounds/534123/",
+      "derived_from": [
+        "534123_7724198-hq.mp3"
+      ],
+      "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
+      "prompt": null,
+      "license": "CC0-1.0",
+      "license_source": "https://freesound.org/people/Fupicat/sounds/534123/ — the sound page's own licence block: 'Creative Commons 0' — 'You can copy, modify, distribute and perform the sound, even for commercial purposes, all without asking permission.' The uploader states the sound is itself composed of CC0 Freesound material. The URL fetched is that upload's own -hq preview render, so it carries the upload's dedication. (checked 2026-08-09)"
+    },
+    {
+      "file": "public/assets/audio/office-keys-2.m4a",
+      "source": "Fupicat — https://freesound.org/people/Fupicat/sounds/534123/",
+      "derived_from": [
+        "534123_7724198-hq.mp3"
+      ],
+      "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
+      "prompt": null,
+      "license": "CC0-1.0",
+      "license_source": "https://freesound.org/people/Fupicat/sounds/534123/ — the sound page's own licence block: 'Creative Commons 0' — 'You can copy, modify, distribute and perform the sound, even for commercial purposes, all without asking permission.' The uploader states the sound is itself composed of CC0 Freesound material. The URL fetched is that upload's own -hq preview render, so it carries the upload's dedication. (checked 2026-08-09)"
+    },
+    {
+      "file": "public/assets/audio/office-keys-3.m4a",
+      "source": "Fupicat — https://freesound.org/people/Fupicat/sounds/534123/",
+      "derived_from": [
+        "534123_7724198-hq.mp3"
+      ],
+      "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
+      "prompt": null,
+      "license": "CC0-1.0",
+      "license_source": "https://freesound.org/people/Fupicat/sounds/534123/ — the sound page's own licence block: 'Creative Commons 0' — 'You can copy, modify, distribute and perform the sound, even for commercial purposes, all without asking permission.' The uploader states the sound is itself composed of CC0 Freesound material. The URL fetched is that upload's own -hq preview render, so it carries the upload's dedication. (checked 2026-08-09)"
+    },
+    {
+      "file": "public/assets/audio/office-phone.m4a",
+      "source": "Fupicat — https://freesound.org/people/Fupicat/sounds/534123/",
+      "derived_from": [
+        "534123_7724198-hq.mp3"
+      ],
+      "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
+      "prompt": null,
+      "license": "CC0-1.0",
+      "license_source": "https://freesound.org/people/Fupicat/sounds/534123/ — the sound page's own licence block: 'Creative Commons 0' — 'You can copy, modify, distribute and perform the sound, even for commercial purposes, all without asking permission.' The uploader states the sound is itself composed of CC0 Freesound material. The URL fetched is that upload's own -hq preview render, so it carries the upload's dedication. (checked 2026-08-09)"
+    },
+    {
+      "file": "public/assets/audio/office-printer.m4a",
+      "source": "Fupicat — https://freesound.org/people/Fupicat/sounds/534123/",
+      "derived_from": [
+        "534123_7724198-hq.mp3"
+      ],
+      "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
+      "prompt": null,
+      "license": "CC0-1.0",
+      "license_source": "https://freesound.org/people/Fupicat/sounds/534123/ — the sound page's own licence block: 'Creative Commons 0' — 'You can copy, modify, distribute and perform the sound, even for commercial purposes, all without asking permission.' The uploader states the sound is itself composed of CC0 Freesound material. The URL fetched is that upload's own -hq preview render, so it carries the upload's dedication. (checked 2026-08-09)"
     },
     {
       "file": "public/assets/audio/paper-slide.m4a",
@@ -367,7 +474,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://opengameart.org/content/various-paper-sound-effects — the submission page's own Licenses field reads CC0 (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/paper-tear.m4a",
@@ -377,7 +485,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://opengameart.org/content/various-paper-sound-effects — the submission page's own Licenses field reads CC0 (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/pen-mark.m4a",
@@ -387,13 +496,15 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/interface-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/radio-squelch-close.m4a",
       "tool": "tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)",
       "prompt": null,
       "license": "generated for this project",
+      "license_source": "tools/audio/synth.mjs in this repository — the waveform is computed by our own code, not returned by a model and not derived from a recording, so no third-party grant applies. The generator is seeded and byte-reproducible; re-running it reproduces this file.",
       "generated": [
         "radio-squelch-close"
       ]
@@ -403,6 +514,7 @@
       "tool": "tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)",
       "prompt": null,
       "license": "generated for this project",
+      "license_source": "tools/audio/synth.mjs in this repository — the waveform is computed by our own code, not returned by a model and not derived from a recording, so no third-party grant applies. The generator is seeded and byte-reproducible; re-running it reproduces this file.",
       "generated": [
         "radio-squelch-open"
       ]
@@ -415,7 +527,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/interface-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/score-tick-up.m4a",
@@ -425,7 +538,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/interface-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/stamp-heavy.m4a",
@@ -436,7 +550,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/impact-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08) | https://opengameart.org/content/100-cc0-sfx — the submission page's own Licenses field reads CC0 (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/stamp.m4a",
@@ -447,13 +562,15 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/impact-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/stinger.m4a",
       "tool": "tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)",
       "prompt": null,
       "license": "generated for this project",
+      "license_source": "tools/audio/synth.mjs in this repository — the waveform is computed by our own code, not returned by a model and not derived from a recording, so no third-party grant applies. The generator is seeded and byte-reproducible; re-running it reproduces this file.",
       "generated": [
         "stinger"
       ]
@@ -463,6 +580,7 @@
       "tool": "tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)",
       "prompt": null,
       "license": "generated for this project",
+      "license_source": "tools/audio/synth.mjs in this repository — the waveform is computed by our own code, not returned by a model and not derived from a recording, so no third-party grant applies. The generator is seeded and byte-reproducible; re-running it reproduces this file.",
       "generated": [
         "symptom-chime"
       ]
@@ -475,7 +593,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://opengameart.org/content/typewriter-sounds — the submission page's own Licenses field reads CC0 (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/type-2.m4a",
@@ -485,7 +604,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://opengameart.org/content/typewriter-sounds — the submission page's own Licenses field reads CC0 (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/type-3.m4a",
@@ -495,7 +615,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://opengameart.org/content/typewriter-sounds — the submission page's own Licenses field reads CC0 (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/type-4.m4a",
@@ -505,7 +626,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://opengameart.org/content/typewriter-sounds — the submission page's own Licenses field reads CC0 (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/type-5.m4a",
@@ -515,7 +637,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://opengameart.org/content/typewriter-sounds — the submission page's own Licenses field reads CC0 (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/ui-click.m4a",
@@ -525,7 +648,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/interface-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/ui-error.m4a",
@@ -535,7 +659,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/interface-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08)"
     },
     {
       "file": "public/assets/audio/ui-hover.m4a",
@@ -545,7 +670,8 @@
       ],
       "recipe": "tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)",
       "prompt": null,
-      "license": "CC0-1.0"
+      "license": "CC0-1.0",
+      "license_source": "https://kenney.nl/assets/interface-sounds — License.txt inside the pack: 'License: (Creative Commons Zero, CC0)' (checked 2026-08-08)"
     }
   ]
 }

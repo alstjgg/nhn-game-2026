@@ -102,9 +102,14 @@ manual pre-merge gate.
 3. **I1** — mining hands over the **authored sentence id**, never screen
    text. Card ↔ sentence matching (store, slots, archive highlight, red
    thread) is by id.
-4. **I13** — temperament never reaches the view. The dossier's §3 기질 block
-   renders as sealed redaction *by construction* (no temperament data is in
-   any client input).
+4. **I13** — temperament never reaches the view, *by construction*: no client
+   input has a field one could be written into. (x7, 08-09 — the invariant is
+   unchanged and is what it always was. What changed is that it is no longer
+   ILLUSTRATED: the dossier's 기질 block, which rendered as a sealed redaction,
+   left the cover and the cover was the only page it appeared on. The bars were
+   art on top of the guarantee, never the guarantee itself;
+   `tests/windows/agent-file.test.ts [u4#c2](a)` holds it on its own by scanning
+   every model for a temperament-shaped key or value.)
 5. **Latency rules 1–6** ([architecture §4](./spec-architecture.md)) bind
    every waiting surface: deterministic lines render instantly · waiting is
    diegetic, never a spinner · the tally count-up absorbs the whole report
@@ -146,7 +151,7 @@ routing. Desktop only; minimum viewport bound in the PRD.
 | Region | Loop role | Holds |
 |---|---|---|
 | **Chrome** (persistent top bar) | orientation | portal identity (portal name · operator · case) · game clock → 21:04 with progress bar and rate control (×1/×4/pause) · D-DAY counter + run pips · taskbar |
-| **AGENT FILE** | Build | the dossier: §0–§2 fixed sections · §3 기질 sealed (invariant 4) · §4 known-blocks slots (cap: dev value 4 — §9) · deploy control (also carries the day's turn once the run closes — merged NEW RUN) |
+| **AGENT FILE** | Build | a paged document, every page headed 문서번호 · 현장 요원 운용 파일. Cover: 사건 개요 · 현장 요원 임무 · 현장 요원 교신 지침, revealed a character at a time on first arrival with a 건너뛰기 control (x7). Agent page: 식별 · 인수인계 사항 slots (cap: dev value 4 — §9) · deploy control (also carries the day's turn once the run closes — merged NEW RUN). One page per finished agent behind it. |
 | **BLOCK STORE** | Build | mined sentences as cards (authored id + species/axis tags) · species filter |
 | **LIVE FEED** | Watch | the run feed in seven line kinds (§6 `RunFeed`) · diegetic waiting marker; untouchable during a run |
 | **REPORTS** | Autopsy | two documents side by side: facts (objective log) · report_body (typewriter replay) · sentence mining (click → store) · **archive rail** — every past report readable, previously-slotted sentences highlighted (invariant 6) · at run end, a terminal record inside the facts document: score count-up (absorbs the report call; paced ~9 s) · run summary |

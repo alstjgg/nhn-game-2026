@@ -11,6 +11,8 @@
 // Every op leaves through `emit()`, which treats a throwing or refusing seam as
 // a rejection and keeps the board's state untouched (R4).
 import type { MembraneOp, Sentence } from '../driver/index.ts'
+import { animationsFrozen, registerAnimation } from '../driver/index.ts'
+import { TYPE_START, typeCursor } from './typewriter.ts'
 import { announce } from '../shell/announcer.ts'
 import { button, el } from '../shell/dom.ts'
 import { blockCardModel, buildBlockCard, pad2, pickedBlockId, setPickedBlockId } from './block-card.ts'
@@ -144,7 +146,32 @@ export interface SlotBoard {
   isLocked(): boolean
   cells(): (string | null)[]
   render(): void
+  /**
+   * H3 — type the handover onto the page it was handed to, row by row.
+   *
+   * The board's CONTENT is untouched by this: the handover is already seated
+   * (it survives `unlock()`, which is the whole point of the file being handed
+   * on rather than rebuilt), so a reveal is a way of DRAWING what is already
+   * there. Nothing here places, clears or emits, and the membrane never sees it.
+   *
+   * `onDone` fires when the last character lands — or immediately, on a desk
+   * that has asked for no motion, where the rows are simply on the page.
+   */
+  revealHandover(onDone?: () => void): void
 }
+
+/** The reveal's pump registration — one handover typing at a time (D7). */
+const REVEAL_PUMP = 'agent-file/handover'
+
+/**
+ * Frames the reveal may go without a driver tick before it lands itself.
+ *
+ * Generous on purpose: a tick is expected every frame, so this only fires when
+ * the pump is genuinely not running rather than when it is merely slow. A
+ * throttled background tab is the case it must NOT misread — there rAF stops
+ * too, so the counter stops with it and the reveal waits, which is right.
+ */
+const WATCHDOG_FRAMES = 20
 
 let mounted: SlotBoard | null = null
 
@@ -210,7 +237,7 @@ export function createSlotBoard(options: SlotBoardOptions): SlotBoard {
    * control), because the thread layer, the membrane census and the tutorial
    * all reach for them by name.
    */
-  function buildSeat(cell: SlotCell, blockId: string): HTMLElement {
+  function buildSeat(cell: SlotCell, blockId: string, chars?: number): HTMLElement {
     const node = el('span', 'slot filled')
     const no = pad2(cell.slot + 1)
     node.dataset.slot = String(cell.slot)
@@ -220,7 +247,21 @@ export function createSlotBoard(options: SlotBoardOptions): SlotBoard {
     node.dataset.blockId = blockId
     if (deployed) node.classList.add('locked')
 
-    node.append(buildBlockCard(blockCardModel(blockId, options.resolve(blockId)), { inSlot: true }))
+    // H3 — `chars` is the reveal's cursor: the row is mid-type, so it shows
+    // that many characters and NOT its release control or its thread anchor.
+    // A 해제 the operator can press on a sentence that has not finished arriving
+    // is a control offered for a thing that is not there yet, and the pin would
+    // have `shell/thread-layer.ts` drawing a red thread to a half-written line.
+    // Both arrive with the last character (see `render`).
+    const typing = chars !== undefined
+    const model = blockCardModel(blockId, options.resolve(blockId))
+    node.append(
+      buildBlockCard(typing ? { ...model, text: model.text.slice(0, chars) } : model, { inSlot: true }),
+    )
+    if (typing) {
+      node.classList.add('typing')
+      return node
+    }
 
     if (!deployed) {
       const unset = button('slot-unset', `슬롯 ${no} 해제`, '해제')
@@ -301,8 +342,19 @@ export function createSlotBoard(options: SlotBoardOptions): SlotBoard {
 
   function render(): void {
     root.dataset.state = boardState(slots, deployed)
-    const seated = slotCells(slots).flatMap((cell) =>
-      cell.blockId === null ? [] : [buildSeat(cell, cell.blockId)],
+    const filled = slotCells(slots).flatMap((cell) =>
+      cell.blockId === null ? [] : [{ cell, blockId: cell.blockId }],
+    )
+    // H3 — mid-reveal, the page carries the rows that have landed and the one
+    // being typed, and nothing past it. `reveal.row` indexes the FILLED rows in
+    // page order, not the slot numbers: a handover of two sentences seated in
+    // slots 1 and 3 types as row 0 then row 1, and each keeps its own `01`/`03`.
+    const seated = (
+      reveal === null ? filled : filled.slice(0, reveal.row + 1)
+    ).map(({ cell, blockId }, index) =>
+      reveal !== null && index === reveal.row
+        ? buildSeat(cell, blockId, reveal.chars)
+        : buildSeat(cell, blockId),
     )
     // Built element by element, the runs would abut with no separator and the
     // paragraph would read `…앉힙니다해제02…`. The same whitespace-text-node
@@ -313,10 +365,97 @@ export function createSlotBoard(options: SlotBoardOptions): SlotBoard {
     root.replaceChildren(...(seated.length === 0 ? [buildBlank()] : flow))
   }
 
+  /**
+   * H3 — the reveal's own state, and it is DRAWING state, never membrane state.
+   * `slots` is what the file holds; this is only how much of it is on the page
+   * yet. `cells()` therefore answers the whole handover throughout a reveal, so
+   * a `deploy` that lands mid-type commits the file the operator was handed and
+   * not the fraction that happens to be painted.
+   */
+  let reveal: { row: number; chars: number } | null = null
+  let stopReveal: (() => void) | null = null
+
+  /** The operator asked for no motion, or the determinism gate is closed. */
+  function motionless(): boolean {
+    if (animationsFrozen()) return true
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }
+
+  function endReveal(): void {
+    if (stopReveal !== null) stopReveal()
+    stopReveal = null
+    reveal = null
+  }
+
+  function revealHandover(onDone?: () => void): void {
+    endReveal()
+    const texts = slotCells(slots).flatMap((cell) =>
+      cell.blockId === null ? [] : [blockCardModel(cell.blockId, options.resolve(cell.blockId)).text],
+    )
+    // An empty file is handed on empty. There is nothing to type and the page
+    // is already correct, so the caller's continuation runs now rather than
+    // after a zero-length animation that would still cost it a frame.
+    if (texts.length === 0 || motionless()) {
+      render()
+      onDone?.()
+      return
+    }
+
+    const lengths = texts.map((text) => text.length)
+    let elapsed = 0
+    reveal = { row: 0, chars: 0 }
+    render()
+
+    const land = (): void => {
+      endReveal()
+      render()
+      onDone?.()
+    }
+
+    let sinceTick = 0
+    const unregister = registerAnimation(REVEAL_PUMP, (realMs: number) => {
+      elapsed += realMs
+      sinceTick = 0
+      const cursor = typeCursor(TYPE_START, elapsed, lengths)
+      if (cursor.done) {
+        land()
+        return
+      }
+      reveal = { row: cursor.sentence, chars: cursor.chars }
+      render()
+    })
+    stopReveal = unregister
+
+    // THE WATCHDOG, and it is not belt-and-braces.
+    //
+    // The pump only ticks while the driver's clock is running or has ENDED
+    // (`driver/fixture-driver.ts`), and a reveal that starts on a clock in
+    // neither state would strand the handover mid-character — a file the
+    // operator is meant to revise, frozen half-written, with no way to finish
+    // it. In a played day the clock has ended by 21:04 and this never arms;
+    // `window.__shell.drain()` is the case that reaches it, because it flushes
+    // the stream without ever advancing the clock to the terminal minute.
+    //
+    // Same shape as `components/run-feed.ts`'s settle watchdog and for the same
+    // reason: rides rAF rather than the driver, so it is alive exactly when the
+    // driver is not.
+    const watch = (): void => {
+      if (reveal === null) return
+      sinceTick += 1
+      if (sinceTick > WATCHDOG_FRAMES) {
+        land()
+        return
+      }
+      requestAnimationFrame(watch)
+    }
+    requestAnimationFrame(watch)
+  }
+
   const board: SlotBoard = {
     root,
     place: (blockId, slot) => apply({ kind: 'place', blockId, slot }),
     clear: (slot) => apply({ kind: 'clear', slot }),
+    revealHandover,
     deploy: () => apply({ kind: 'deploy' }),
     unlock: () => {
       if (!deployed) return

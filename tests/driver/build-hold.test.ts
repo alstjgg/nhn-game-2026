@@ -6,7 +6,7 @@
 // boots. That release also let out everything else stamped at the opening
 // minute, and on the demo run that is the case's first script event and 서지형's
 // first line. So the LIVE FEED printed the day's opening while the AGENT FILE
-// was still empty and ECHO-1 had not gone in — the operator watched the run
+// was still empty and ECHO had not gone in — the operator watched the run
 // begin before they were given anything to begin it with.
 //
 // On the LIVE path it cost more than a line. `kick()` steps the next beat as

@@ -185,7 +185,24 @@ test.describe('preview smoke', () => {
     // The run counter is the tell. e8's run loop opens on its own allotment;
     // the placeholder stream `shell/boot-run.ts` hardcodes RUN 3 of 10, so these
     // two can never be confused for one another.
+    //
+    // RE-AIMED (08-09). This used to pin the allotment — `toContainText('/ 5')`
+    // — which is not what the test is about and is not this file's number to
+    // know. H3 moved the allotment 4 → 5 and then back to 4; the second half
+    // updated `runloop/meta-event.test.ts` and `driver/live-desk.test.ts`, which
+    // name the constant, and missed this line, which spells the digit. CI runs
+    // the preview lane and only the preview lane, so the one place the drift
+    // could not be seen locally is the one place it broke (#224 → red `main`).
+    //
+    // The claim is LIVE-versus-PLACEHOLDER, so that is what is asserted now: the
+    // live loop opens on its first run, and the placeholder's `RUN 03 / 10` is
+    // absent. Both survive any future change to the allotment, because neither
+    // is about it. `runloop/meta-event.test.ts` (g) remains the ONE place the
+    // shipped number is pinned, deliberately as a literal.
     await expect(page.locator('#ddayUnit')).toContainText('RUN 01')
-    await expect(page.locator('#ddayUnit')).toContainText('/ 4')
+    await expect(
+      page.locator('#ddayUnit'),
+      'the player build booted the placeholder run, not the live loop',
+    ).not.toContainText('/ 10')
   })
 })

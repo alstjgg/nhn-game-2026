@@ -18,6 +18,7 @@
 // no sibling window import, nothing from engine or composer (C8 / inv 12), and
 // no fixture module — carried ids resolve through the report index (D13).
 import type { FixtureDriver, Sentence } from '../driver/index.ts'
+import { animationsFrozen } from '../driver/index.ts'
 import { button, el, must } from '../shell/dom.ts'
 import { deployCopy, openConfirm } from '../shell/confirm.ts'
 import { announce } from '../shell/announcer.ts'
@@ -26,7 +27,14 @@ import { PORTAL } from '../shell/portal-identity.ts'
 import { createRunState, hasFiledReport } from '../shell/run-state.ts'
 import type { RunPhase, RunState } from '../shell/run-state.ts'
 import { blockCardModel, setPickedBlockId } from '../components/block-card.ts'
-import { agentModel, buildDossier, callsignOf, coverModel, filedModel } from '../components/dossier.ts'
+import {
+  agentModel,
+  buildDossier,
+  callsignOf,
+  coverModel,
+  filedModel,
+  nextCallsignOf,
+} from '../components/dossier.ts'
 import { SLOT_CAP, createSlotBoard, usedIds } from '../components/slot-board.ts'
 import { buildDeployStamp, buildDeployZone, deployView } from '../components/deploy-button.ts'
 import type { DeployMode } from '../components/deploy-button.ts'
@@ -118,6 +126,74 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   let opensAt = driver.clock.at()
   let committedRun: number | null = null
   let committedAt: string | null = null
+  let committedIncoming = false
+  /**
+   * H3 — the file on the desk belongs to the agent AFTER `run`.
+   *
+   * True from the moment the day closes until the `meta` that opens the next
+   * one, and false the rest of the time. The desk knows this before the run
+   * loop does, because 21:04 is when the operator gets the file back: what they
+   * mine into it from then on is the NEXT agent's handover, and heading that
+   * page with the callsign of the agent who has just come home is what made a
+   * sitting read as ECHO-1, ECHO-1, ECHO-2, ECHO-3.
+   *
+   * `runs_left` gates it (see the `'tally'` branch): on the last day of an
+   * allotment there is no next agent, so the page stays the one that flew.
+   */
+  let incoming = false
+
+  /**
+   * `ECHO-n` for the agent this file is being built for — or `''` while the
+   * page is waiting for one.
+   *
+   * H3 (08-09, 민서) — the incoming page opens UNNAMED. It briefly opened
+   * headed `nextCallsignOf(run)`, which is a name the run loop has not issued:
+   * true by arithmetic, and a promise the desk has no authority to make. The
+   * blank says the honest thing — this file is for whoever is sent next, and
+   * nobody has been sent yet — and the press is what fills it in
+   * (`typeCallsign`, from `sendNewRun`). `nextCallsignOf` is still what answers
+   * it there, at the one moment the operator has committed to the send.
+   */
+  const onDesk = (): string => (incoming ? typedCallsign : callsignOf(run))
+
+  /**
+   * What the incoming page's 호출부호 row currently shows — `''` until the
+   * press, then the new callsign one character at a time. Drawing state only:
+   * nothing downstream reads it, and `committedRun` (not this) is what dates
+   * the chop.
+   */
+  let typedCallsign = ''
+
+  /**
+   * H3 — the run whose page is owed a filing, held from the close until the
+   * settle. `null` means nothing is owed: either no day has closed, or the day
+   * that closed was the last of the allotment and has no successor to hand to.
+   */
+  let closingRun: number | null = null
+
+  /**
+   * The naming's own pace — DELIBERATELY not the typewriter's 11 ms.
+   *
+   * A callsign is six characters. At the reading pace `components/typewriter.ts`
+   * sets for prose it lands in 66 ms, which is not a reveal — it is a repaint
+   * with extra steps, and measured on the desk it read as the name simply
+   * appearing. The handover types at prose pace because it IS prose and the
+   * operator is reading it; this is a single short token doing one job, which is
+   * to be WATCHED arriving on a page that has been blank since 21:04. So it gets
+   * a pace of its own rather than a share of one tuned for sentences.
+   */
+  const CALLSIGN_MS_PER_CHAR = 80
+
+  /**
+   * The beat between the agent being NAMED and the file being chopped shut
+   * (x7, 민서 08-09). Long enough for the finished name to register as its own
+   * event; short enough that the press still feels like one gesture.
+   */
+  const NAMED_TO_CHOP_MS = 700
+
+  /** The operator asked for no motion, or the determinism gate is closed. */
+  const motionless = (): boolean =>
+    animationsFrozen() || window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   // U3 — the merged control's own turn state, ported from `windows/tally.ts`.
   let closed = false
@@ -139,7 +215,18 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    */
   let settleNote = ''
 
-  const docLine = el('div', 'fh-doc')
+  /**
+   * The document's number, as EVERY page prints it.
+   *
+   * C1 — one document across every agent, so the number names the document and
+   * not the run. The run used to be its last segment.
+   *
+   * x7 — a function, not the one `.fh-doc` element it used to be. See
+   * `buildHead` below for why the head had to stop being a single node, and why
+   * this is the one place its text is composed: two heads printing two
+   * different numbers is the failure a second literal would buy.
+   */
+  const docText = (): string => `${DOC_CAPTION}${PORTAL.portalCode}/AF/${slug}`
 
   const board = createSlotBoard({
     emit: (op) => driver.send(op).ok,
@@ -149,10 +236,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       if (board.isLocked() && committedRun === null) {
         committedRun = run
         committedAt = opensAt
+        // H3 — …and it is stamped for whoever the file was being built for. A
+        // press made after 21:04 commits the INCOMING agent's file, and the
+        // chop has to name them and not the agent whose day has just ended.
+        committedIncoming = incoming
       }
       if (!board.isLocked()) {
         committedRun = null
         committedAt = null
+        committedIncoming = false
       }
       sync()
     },
@@ -161,13 +253,21 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   let currentView = deployView({ slots: board.cells(), deployed: false, run, at: opensAt })
 
   function sync(): void {
-    // C1 — one document across every agent, so the number names the document
-    // and not the run. The run used to be its last segment.
-    docLine.textContent = `${DOC_CAPTION}${PORTAL.portalCode}/AF/${slug}`
+    // x7 — the head is on every page now, so the doc number is repainted on
+    // whichever page is MOUNTED rather than written into one long-lived
+    // element. It has to be repainted here and not left to `turn()`: `sync()`
+    // runs from triggers `turn()` does not (the board's own `onChange`, the
+    // store subscription, `sendNewRun`), and the pack identity that fills the
+    // slug in resolves asynchronously (`fetchScenarioIdentity` at the foot of
+    // this file) — a page mounted with an unresolved slug would keep printing
+    // `…/AF/` for ever if only a rebuild could correct it.
+    const doc = sheet.querySelector<HTMLElement>('.fh-doc')
+    if (doc !== null) doc.textContent = docText()
     const view = deployView({
       slots: board.cells(),
       deployed: board.isLocked(),
       run: committedRun ?? run,
+      incoming: committedRun === null ? incoming : committedIncoming,
       at: committedAt ?? opensAt,
       closed,
       releasable: settled,
@@ -218,25 +318,56 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     //
     // Nothing can escape in the gap: a running clock releases nothing while the
     // hold is on, and the hold only comes off on the op.
-    startDay()
     if (mode === 'next') {
+      // H3 — the press plays out in order: the agent is NAMED, then the chop
+      // lands on the file, then the day starts. The page has been blank since
+      // the settle and this is the moment it gets an occupant, so the naming
+      // goes first; a chop on an unnamed file would be a receipt for nobody.
+      //
       // W4 — ONE press, TWO ops, and the order is load-bearing. `deploy` must
       // reach the CLOSING run's membrane, because that is what the live
       // adapter harvests into `carried` (`live/adapter.ts` `closingState()`);
       // sent after `new_run` it would name the new day and the file the
       // operator just built would never carry. `board.deploy()` is also the
       // only module allowed to mint the op literal.
-      board.deploy()
-      sendNewRun()
+      typeCallsign(() => {
+        // x7 — A BEAT BETWEEN THE NAMING AND THE CHOP (민서, 08-09).
+        //
+        // The name finished typing and the stamp landed in the same frame, so
+        // the two read as one event and the naming — the thing the operator has
+        // been waiting the whole hold for — was over before it registered. The
+        // pause lets the filled-in name be seen on its own page before the file
+        // is closed over it. Order of operations, not decoration: 파견 완료 is a
+        // receipt for a file made out to somebody, so the somebody goes first.
+        //
+        // `setTimeout` and not the animation pump, for the reason this file has
+        // now recorded twice: at this moment the day is over and the driver's
+        // clock is neither running nor ended, so a pump-driven continuation
+        // never fires and the press silently does nothing.
+        window.setTimeout(() => {
+          board.deploy()
+          // …and the clock starts before the op, still. The adapter bypasses
+          // the feed's reveal queue whenever the sim is paused, so releasing
+          // the opening minute against a stopped clock slaps it onto the
+          // fanfold in one frame. Nothing escapes in the gap: a running clock
+          // releases nothing while the hold is on, and the hold only comes off
+          // on the op.
+          startDay()
+          sendNewRun()
+        }, NAMED_TO_CHOP_MS)
+      })
       return
     }
+    startDay()
     board.deploy()
-    // U5.3 — write site 1: the OPENING commit, which belongs to the agent on
-    // the desk right now. In practice this is ECHO-1's alone — after a
-    // `new_run` the file arrives already committed and this mode never comes
-    // round again — and without it the first sitting would never get a page,
-    // which is the first comparison the operator would reach for.
-    filed.set(run, usedIds(board.cells()))
+    // H3 — the press records NOTHING any more. A page is a sitting that is
+    // OVER, and the two writes that used to happen here and on the next `meta`
+    // both ran a press too late: the record of what ECHO-1 flew appeared only
+    // once ECHO-2's day had opened, so between 21:04 and the press the desk
+    // held no page for the day it had just played and headed the file the
+    // operator was mining into with the callsign of the agent who had already
+    // come home. Both are now written where they are true — the close (see the
+    // `'tally'` branch below).
   }
 
   const zone = buildDeployZone(() => {
@@ -250,10 +381,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     // question in front of ECHO-1 and nobody after — from day 2 the commit
     // arrives in `next` mode, and that is the press that carries a file the
     // operator has actually revised.
-    // x5 — the plate names the agent it is about to send out. `run` is the
-    // sitting on the desk, which is exactly the agent the last page carries and
-    // whose file this press commits.
-    void openConfirm(must('#app'), deployCopy(callsignOf(run))).then((confirmed) => {
+    // x7 — the plate names NO agent, so `onDesk()` no longer reaches it.
+    //
+    // x5 had it name the one it was about to send, and H3 pointed that at the
+    // INCOMING agent so the question and the page could not name two different
+    // ones. Both were right about the risk and it is simply gone: the page is
+    // blank until the press names it, so on the first press there was no name
+    // to agree with. The question asks whether the HANDOVER is finished; the
+    // file is what says who carries it.
+    void openConfirm(must('#app'), deployCopy()).then((confirmed) => {
       if (confirmed) commitFile(mode)
     })
   })
@@ -270,14 +406,50 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   // page, which is where the DEPLOY control lives — the last page is the agent
   // who has not gone out yet. U5.3 appends a page per agent after this one; the
   // only thing this unit owes it is that `pages` is a list.
-  const head = el('div', 'file-head')
-  const left = el('div', 'fh-left')
-  left.append(docLine, el('div', 'fh-title', FILE_TITLE))
-  head.append(left)
+  /**
+   * A FRESH file head — the document's number, then the form's own name.
+   *
+   * x7 — a builder, and that is the whole point of it. The head was ONE element
+   * built once in this closure and appended to the cover, and a node has one
+   * parent: appending it to the filed pages and the agent's page as well would
+   * have MOVED it each time, so the last page `pages()` happened to build would
+   * take the head and every page before it would silently lose the one it had
+   * a moment ago. A document is headed on every page, so every page builds its
+   * own — and both this and `sync()`'s repaint read `docText()`, so no two of
+   * them can print different numbers.
+   */
+  function buildHead(options: { skip?: boolean } = {}): HTMLElement {
+    const head = el('div', 'file-head')
+    const left = el('div', 'fh-left')
+    left.append(el('div', 'fh-doc', docText()), el('div', 'fh-title', FILE_TITLE))
+    head.append(left)
+    // x7 — 건너뛰기 rides IN the head, in its right-hand corner (민서, 08-09).
+    //
+    // It was a block of its own between the head and the dossier, and the head
+    // is the only thing on this page that does not move while the cover prints.
+    // But a row of its own is a row that GOES: the control removes itself when
+    // the reveal lands, its block collapsed, and the whole document jumped up a
+    // line at the exact moment the reader reached the end of it.
+    //
+    // Inside the head it costs no row at all. `.file-head` is already a
+    // `space-between` flex with `align-items:flex-end`, so the button lands
+    // opposite 문서번호 · 현장 요원 운용 파일 and sits on the same baseline band;
+    // when it goes, the head keeps its height because `.fh-left` — the taller
+    // child — is what sets it. Nothing below it moves by a pixel.
+    if (options.skip === true) head.append(buildCoverSkip())
+    return head
+  }
 
   const sheet = el('div', 'file-sheet')
-  const pgPrev = button('pg-turn', '이전 장', '‹')
-  const pgNext = button('pg-turn', '다음 장', '›')
+  // Each leaf keeps `pg-turn` — that is the skin both share and what the sheet
+  // paints — and gains a name of its own, because DIRECTION is not a thing
+  // `disabled` can be read for. Both leaves are `pg-turn`, so the only way to
+  // tell them apart used to be which one was disabled, and that inverts as the
+  // reader moves: on the cover it is ‹ that is out, on the last page it is ›.
+  // Anything pointing at "the next leaf" from outside this window (the tutorial
+  // does) would therefore have pointed at ‹ half the time.
+  const pgPrev = button('pg-turn pg-prev', '이전 장', '‹')
+  const pgNext = button('pg-turn pg-next', '다음 장', '›')
   const pgCount = el('span', 'pg-count')
   const nav = el('div', 'pg-nav')
   nav.append(pgPrev, pgCount, pgNext)
@@ -320,33 +492,357 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     return host
   }
 
+  /* ══ x7 — THE COVER TYPES ITSELF OUT ═══════════════════════════════════ */
+
+  /**
+   * THE COVER IS READ, NOT SKIMMED (민서, 08-09).
+   *
+   * The cover carries the agent's whole posting order and it is the only page
+   * that explains the loop the operator is standing in — and it arrived WHOLE,
+   * a block of prose the eye slides off in the second before the hand reaches
+   * the page turn. Printed a character at a time it is paced like something
+   * being dictated down a line: short beat between words, longer between lines,
+   * and the operator reads it because for that stretch there is nothing else on
+   * the page to do.
+   *
+   * ONCE PER SESSION, on first arrival at the cover (민서's ruling). Turning
+   * away and back shows it whole and instant — `turn()` lands it the moment
+   * another page is mounted, because a reveal that resumed mid-sentence on the
+   * way back would be a document that had un-printed itself. A new day or a new
+   * agent does not re-type it either: the cover is the same page all sitting.
+   *
+   * The title block never types. 문서번호 and 현장 요원 운용 파일 are printed on
+   * the form before anyone fills it in, so they are simply there — `collectCover`
+   * walks the dossier alone and never the head.
+   *
+   * NOTHING WAITS ON IT. The DEPLOY control is on the LAST page, so a reveal
+   * running on page 1 gates no op the operator could want. That is the licence
+   * `typeCallsign` below does NOT have (it precedes an op, and its note is the
+   * fuller telling of why that matters).
+   */
+
+  /**
+   * The cover's own pace — DELIBERATELY not `components/typewriter.ts`'s.
+   *
+   * The shared arithmetic is the desk's READING pace (`MS_PER_CHAR` 11, one
+   * `MS_BETWEEN` pause per sentence) and it is tuned for a feed the operator is
+   * watching arrive at the speed a radio delivers it. The cover is the opposite
+   * job — a document the operator is being made to slow down over — and it
+   * wants a beat the shared model has no term for at all: a short one between
+   * WORDS. So the numbers are local, exactly as `CALLSIGN_MS_PER_CHAR` above is
+   * local and for the same kind of reason. This is not a second typewriter on
+   * the desk: nothing else on the cover types, and the two surfaces never share
+   * a screen.
+   *
+   * It sums to roughly a quarter-minute for the whole cover. That is deliberate
+   * and it is also exactly why 건너뛰기 exists.
+   */
+  // SLOWED (x7, 민서 08-09, measured on the built page): 22 → 45 per character
+  // and 45 → 130 per word. At 22 ms a clause fanned out faster than it could be
+  // read — the eye arrived after the sentence had, which defeats the whole
+  // reason the cover types at all. The between-lines pause was right at 340 and
+  // is untouched; what was wrong was the rate WITHIN a line, so that is the only
+  // thing that moved. The word pause had to move with it: at 45 it was barely
+  // two characters' worth and did not read as a pause once the characters
+  // themselves cost 45.
+  const COVER_MS_PER_CHAR = 45
+  const COVER_MS_WORD = 130
+  const COVER_MS_LINE = 340
+  /** A beat before the first character, so the page is seen blank first. */
+  const COVER_LEAD_MS = 420
+  /** How often the reveal re-asks whether the boot sweep has let go. */
+  const COVER_SWEEP_STEP = 120
+
+  /** The control that lands the reveal, and the name it announces itself by. */
+  const COVER_SKIP = '건너뛰기'
+  const COVER_SKIP_LABEL = '문서 표시를 건너뛰고 전문을 인쇄합니다'
+
+  /** One LINE of the cover, and the text node it is printed into. */
+  interface CoverLine {
+    node: Text
+    text: string
+    /**
+     * Whether a ROW ends here — the only place the long between-lines pause is
+     * owed (x7, 08-09).
+     *
+     * A row is not a text node. `.sect-line` holds one now, but the moment any
+     * of it carries inline markup — `<b>ECHO</b>` in 사건 개요 — the same
+     * sentence arrives as three nodes, and a reveal that paused at every node
+     * boundary would stop dead twice in the middle of a sentence. So the pause
+     * is keyed to the ROW the node sits in, not to the node.
+     */
+    breaks: boolean
+  }
+
+  /** The block a run of text belongs to — one ROW of the printed cover. */
+  const COVER_ROW = '.sect-line, .sect-note, .sect-hd h4, .sect-rows dt, .sect-rows dd'
+
+  /** The mounted cover's lines, in reading order — empty on every other page. */
+  let coverLines: CoverLine[] = []
+  /** Where the reveal has got to: the line being printed, and how much of it. */
+  let coverLine = 0
+  let coverChars = 0
+  /** Spent — the cover prints whole from here on, this session. */
+  let coverDone = false
+  let coverTimer: ReturnType<typeof setTimeout> | null = null
+
+  /**
+   * The cover's lines, in reading order: every text node under the dossier,
+   * split again on any authored `\n`.
+   *
+   * Read off the BUILT PAGE rather than off `coverModel()`, so this window
+   * holds no copy of the sibling's copy and no assumption about its markup —
+   * whatever `components/dossier.ts` prints (a title, its flag, a body line,
+   * the red note) is a line here, and a rewrite of the cover changes nothing on
+   * this side. The `\n` split is what keeps that true both ways: the cover's
+   * clauses are one element per line, and a section ever written instead as one
+   * body with newlines in it still gets its pause BETWEEN the clauses rather
+   * than only at the end of the block.
+   *
+   * The whitespace-only nodes are skipped, not typed: they are the separators
+   * `components/dossier.ts` writes between its elements (see `spaced` there),
+   * they carry no reading, and blanking them would close the gaps the document
+   * is spaced with.
+   */
+  function collectCover(page: HTMLElement): CoverLine[] {
+    const dossier = page.querySelector<HTMLElement>('#dossier')
+    if (dossier === null) return []
+    const walker = document.createTreeWalker(dossier, NodeFilter.SHOW_TEXT)
+    const texts: Text[] = []
+    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+      const value = node.nodeValue ?? ''
+      if (value.trim().length === 0) continue
+      // x7 — a `.sect-flag` skip stood here. The badges typed along with the
+      // prose, so their text blanked while the bordered box stayed painted and
+      // the cover showed empty rectangles in the right margin for the length of
+      // the reveal (민서, screenshot 08-09). Excluding them fixed that; then the
+      // badges themselves were removed outright, so there is nothing left to
+      // exclude. Kept as a note because "the reveal must not blank form
+      // furniture" is the rule, and the next thing printed beside a heading
+      // will meet it again.
+      texts.push(node as Text)
+    }
+
+    const found: CoverLine[] = []
+    for (const [index, node] of texts.entries()) {
+      // The row this run belongs to, and whether it is the LAST run in it —
+      // the two facts the between-lines pause is owed to. A node with no row
+      // ancestor stands alone and therefore ends its own row.
+      const row = node.parentElement?.closest(COVER_ROW) ?? null
+      const next = texts[index + 1] ?? null
+      const nextRow = next?.parentElement?.closest(COVER_ROW) ?? null
+      const lastInRow = row === null || nextRow !== row
+
+      const parts = (node.nodeValue ?? '').split('\n')
+      for (const [part, text] of parts.entries()) {
+        const last = part === parts.length - 1
+        // An authored `\n` always breaks; the final run of a row breaks because
+        // the row does. Everything else is mid-sentence and pauses per word.
+        found.push({ node, text: last ? text : `${text}\n`, breaks: last ? lastInRow : true })
+      }
+    }
+    return found
+  }
+
+  /**
+   * Prints the cover as far as the reveal has got — the ONE writer of it.
+   *
+   * Written per NODE rather than per line, because a line is not always a whole
+   * node: `collectCover` may split one text node into several lines, and
+   * assigning each of them separately would leave a node holding only its last
+   * line. The value is composed and then assigned once.
+   */
+  function paintCover(): void {
+    const value = new Map<Text, string>()
+    for (const [index, line] of coverLines.entries()) {
+      const shown =
+        coverDone || index < coverLine
+          ? line.text
+          : index > coverLine
+            ? ''
+            : line.text.slice(0, coverChars)
+      value.set(line.node, `${value.get(line.node) ?? ''}${shown}`)
+    }
+    for (const [node, text] of value) node.nodeValue = text
+  }
+
+  /**
+   * Prints the rest of the cover at once and retires the control.
+   *
+   * Three callers, and they are the three ways a reveal ends: the 건너뛰기
+   * press, the last character, and the operator turning off the cover (the
+   * reveal is per session, so leaving the page spends it).
+   *
+   * The control is REMOVED rather than disabled, and not only because a dead
+   * button is nothing to leave on a page: `tally.test.ts` (g) reads the FIRST
+   * `disabled = true` in this file and requires it to be the one that closes
+   * the DEPLOY control before `new_run` leaves, so a `disabled` written up here
+   * would silently take that guard's meaning away.
+   */
+  function landCover(): void {
+    if (coverTimer !== null) {
+      clearTimeout(coverTimer)
+      coverTimer = null
+    }
+    coverDone = true
+    paintCover()
+    sheet.querySelector<HTMLElement>('.cover-skip')?.remove()
+  }
+
+  /** One character — or, at the end of a line, the beat before the next one. */
+  function stepCover(): void {
+    coverTimer = null
+    const line = coverLines[coverLine]
+    if (line === undefined) {
+      landCover()
+      return
+    }
+    const printed = line.text[coverChars] ?? ''
+    const typed = coverChars + 1
+    let wait = COVER_MS_PER_CHAR
+    if (typed >= line.text.length) {
+      coverLine += 1
+      coverChars = 0
+      // x7 — the long pause is owed to a ROW's end, not a node's. A sentence
+      // carrying inline markup is several nodes and must read as one line.
+      if (line.breaks) wait = COVER_MS_LINE
+    } else {
+      coverChars = typed
+      // A word ends where its space was just printed. 한국어 breaks by 어절 and
+      // the spaces are where the reader's eye already stops, so this is the
+      // pause the prose itself asks for rather than one imposed on it.
+      if (printed === ' ') wait = COVER_MS_WORD
+    }
+    paintCover()
+    if (coverLine >= coverLines.length) {
+      landCover()
+      return
+    }
+    coverTimer = setTimeout(stepCover, wait)
+  }
+
+  /**
+   * Starts the reveal ON A TIMER — never on the driver's animation pump.
+   *
+   * `registerAnimation`/`tickAnimations` fire only while the driver's clock is
+   * RUNNING or ENDED (`driver/fixture-driver.ts`), and at boot it is NEITHER:
+   * W4 holds the day until the file is committed, so the clock sits at rate 0
+   * from the first paint until DEPLOY. A cover riding that pump would never
+   * receive a tick and would sit BLANK for the whole of the build phase — the
+   * page the operator is meant to read before pressing anything, permanently
+   * empty. It is the same trap that soft-locked the DEPLOY press this morning;
+   * `typeCallsign` below carries the full telling and this is the second
+   * surface it has now saved. `setTimeout` survives a stopped clock.
+   *
+   * It waits the boot sweep out first. `components/desktop-dressing.ts` holds
+   * every window `visibility:hidden` until the door, the manual and the entry
+   * animations are done with the screen, and a cover that typed itself behind
+   * that curtain would be half over before anybody saw a character of it.
+   */
+  function startCover(): void {
+    if (coverDone || coverTimer !== null || motionless()) return
+    if (document.body.classList.contains('booting')) {
+      // THE RETRY MUST RELEASE THE LATCH IT SET (x7, fixed 08-09).
+      //
+      // This armed `startCover` directly, and the guard above rejects a call
+      // while `coverTimer` is non-null. So the retry fired, re-entered, found
+      // its OWN timer id still stored, and returned — the reveal died after
+      // exactly one attempt and the cover sat BLANK for the whole session. Not
+      // "did not type": empty, because `paintCover()` had already printed zero
+      // characters over it.
+      //
+      // The e2e suite could not see it. `boot()` presses 건너뛰기 before every
+      // test, which lands the document whole, so every spec in the file was
+      // reading a cover the reveal had never touched. It took opening the built
+      // page in a browser. `stepCover` clears the latch on entry for this same
+      // reason; the retry now does too.
+      coverTimer = setTimeout(() => {
+        coverTimer = null
+        startCover()
+      }, COVER_SWEEP_STEP)
+      return
+    }
+    coverTimer = setTimeout(() => {
+      coverTimer = null
+      stepCover()
+    }, COVER_LEAD_MS)
+  }
+
+  /**
+   * Re-aims the reveal at the cover that is actually on the sheet.
+   *
+   * `turn()` rebuilds every page from scratch, so the nodes the reveal was
+   * printing into are thrown away by the identity fetch's own `turn()`, by each
+   * `meta`, and by every page turn. The reveal therefore keeps no DOM across a
+   * build — it keeps a POSITION, and the freshly built cover is re-collected
+   * and re-printed to that position here. Same discipline as `typeCallsign`,
+   * which repaints through `turn` rather than holding on to a row.
+   */
+  function mountCover(page: HTMLElement): void {
+    // The two contracts that are NOT skips, and the reason they are checked
+    // here rather than at the press: an operator who asked for no motion, and
+    // the e2e determinism gate, both get the document whole and never see a
+    // character of it typed. `motionless()` answers for both.
+    if (motionless()) coverDone = true
+    coverLines = collectCover(page)
+    paintCover()
+    startCover()
+  }
+
+  /**
+   * 건너뛰기 — the ONE gesture that lands the reveal.
+   *
+   * Only this press skips it. A click anywhere else on the page must not, or a
+   * reader who clicks to raise the window loses the document they were reading
+   * (민서). A real `<button>`, so it is a tab stop and answers Enter and Space
+   * without a line of key handling: the desk's a11y census fails a div with a
+   * click handler on it outright, and rightly.
+   */
+  function buildCoverSkip(): HTMLButtonElement {
+    const node = button('cover-skip', COVER_SKIP_LABEL, COVER_SKIP)
+    node.id = 'coverSkip'
+    node.addEventListener('click', () => landCover())
+    return node
+  }
+
   /**
    * The document, in order: the cover, then a page per finished agent, then the
    * agent on the desk.
    *
-   * U5.3 — a record is shown as a PAST page only while its sitting is behind
-   * the current one. The current agent's own file is recorded the moment it is
-   * committed (it has to be — that is when it is knowable), and it is the live
-   * page until the run moves on, so `flown >= run` is what keeps it from
-   * appearing twice.
+   * U5.3 · H3 — a record is a sitting that is OVER, and `filed` holds nothing
+   * else: the entry is written at 21:04 (the `'tally'` branch below) and the
+   * live page moves on to the incoming agent in the same breath. So there is no
+   * `flown >= run` filter to apply any more — the last day of an allotment
+   * files no entry at all, because it has no successor to hand the page to, and
+   * its own page stays live to the end of the sitting.
    */
   function pages(): HTMLElement[] {
+    // x7 — EVERY page is headed. It is one document with a number on it, and a
+    // reader who turned past the cover was holding unheaded sheets: no
+    // 문서번호, no 현장 요원 운용 파일, nothing saying which file the page they
+    // are reading belongs to. `buildHead()` is a builder for exactly this
+    // reason — see its note on the node that a single head would have been.
+    // …and the cover's head carries 건너뛰기 in its corner while there is
+    // something to skip. In the head rather than under it, so that landing the
+    // reveal costs no row and the document does not jump — see `buildHead`.
     const cover = el('div', 'file-page')
-    cover.append(head, buildDossier(coverModel(), board.root))
+    cover.append(buildHead({ skip: !coverDone && !motionless() }))
+    cover.append(buildDossier(coverModel(), board.root))
 
     const past: HTMLElement[] = []
     for (const flown of [...filed.keys()].sort((a, b) => a - b)) {
-      if (flown >= run) continue
       const ids = filed.get(flown) ?? []
       const page = el('div', 'file-page')
       page.append(
+        buildHead(),
         buildDossier(filedModel({ callsign: callsignOf(flown) }), filedHost(ids)),
       )
       past.push(page)
     }
 
     const agent = el('div', 'file-page')
-    agent.append(buildDossier(agentModel({ slotCap: SLOT_CAP, callsign: callsignOf(run) }), board.root))
+    agent.append(buildHead())
+    agent.append(buildDossier(agentModel({ slotCap: SLOT_CAP, callsign: onDesk() }), board.root))
     agent.append(zone.root)
 
     return [cover, ...past, agent]
@@ -369,6 +865,17 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     const clamped = viewing < 0 ? 0 : viewing > last ? last : viewing
     viewing = clamped
     sheet.replaceChildren(built[clamped]!)
+    // x7 — the reveal lives on the MOUNTED cover and nowhere else. Page 0 is
+    // handed the freshly built one to go on printing into; every other page
+    // lands it, which is the whole of "turning away and back shows it whole".
+    // `coverLines` is cleared first so a timer still in flight cannot paint
+    // into a cover that was thrown away with the last build.
+    if (clamped === 0) {
+      mountCover(built[clamped]!)
+    } else {
+      coverLines = []
+      landCover()
+    }
     // x1 — a turned page opens at its head. The sheet scrolls now (1.5× type in
     // a third-width column: `win-agent-file.css`), and `replaceChildren` leaves
     // the scroll offset where the last page left it, so turning onto a page
@@ -411,6 +918,30 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (release === 'hold') return
     settled = true
     dropHold()
+    // H3 — THE PAGE TURNS HERE, and this is the whole of the fix.
+    //
+    // The day is over AND it has finished reporting: the record is final and
+    // the report is in, which is exactly what `settleRelease` above decides. So
+    // the agent who flew it becomes a record — their page written with the file
+    // they actually went out with — and the operator is handed the next agent's
+    // page, blank, with the handover typing itself on (`board.revealHandover`).
+    //
+    // Blank is the point. The page is headed for an agent the run loop has not
+    // named yet, and `onDesk()` answers `''` until the press names them, so the
+    // desk never puts a callsign on a file it cannot yet promise to send. The
+    // press types it (`sendNewRun`).
+    //
+    // `closingRun` is null on the last day of an allotment: no page is filed
+    // and none is opened, because there is no agent after this one and a page
+    // headed for someone who can never be sent is a promise the desk cannot
+    // keep. That agent's own page simply stays live to the end of the sitting.
+    if (closingRun !== null) {
+      filed.set(closingRun, usedIds(board.cells()))
+      closingRun = null
+      incoming = true
+      turn('last')
+      board.revealHandover()
+    }
     const who = callsignOf(store.get().meta.run)
     if (release === 'filed') {
       settleNote = FILED_NOTE
@@ -423,6 +954,63 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       sync()
       announce(`${who}${SAY_LAPSED_TAIL}`)
     }
+  }
+
+  /**
+   * H3 — the press names the agent, on the page it has been holding blank.
+   *
+   * `nextCallsignOf(run)` is safe HERE in a way it was not on the settle: the
+   * operator has committed the file and the op is going out, so the agent this
+   * types is the one being sent. It is document art either way (the pack
+   * carries no callsign — D4), so no number of the authority's is derived; the
+   * seam's own `meta` arrives moments later and `callsignOf(run)` takes over
+   * with the identical string, which is why the row does not flicker across it.
+   *
+   * The row is already red — `.rd-code` is `--seal-2` on every page — so the
+   * red the operator sees is the callsign's own ink arriving, not a highlight.
+   */
+  function typeCallsign(onDone: () => void): void {
+    const full = nextCallsignOf(run)
+    if (motionless()) {
+      typedCallsign = full
+      turn('last')
+      onDone()
+      return
+    }
+    // ON A TIMER, NOT ON THE ANIMATION PUMP — and this is the important line in
+    // the function (08-09).
+    //
+    // It rode `registerAnimation` first, which was wrong in a way that only the
+    // desk lane could show: that pump ticks only while the driver's clock is
+    // RUNNING or ENDED (`driver/fixture-driver.ts`), and at the moment of this
+    // press the day is over. In a played day the clock has ended and it ticks;
+    // under `window.__shell.drain()` — which flushes the stream without ever
+    // advancing the clock to the terminal minute — it does not, so the
+    // continuation below never ran, `sendNewRun()` was never called, and the
+    // desk sat in `tally` for ever. Eight `run-loop.spec.ts` tests, and a press
+    // that silently does nothing is the worst failure this control has.
+    //
+    // The lesson generalises past the bug: THE PROGRESSION MAY NOT BE HOSTAGE TO
+    // AN ANIMATION. A reveal is allowed to be skipped, slowed or frozen; the op
+    // it precedes has to leave regardless. `setTimeout` is the guarantee — it
+    // survives a stopped clock and it still fires in a hidden tab (throttled,
+    // which only makes the naming slower, never lost). The handover's reveal can
+    // ride the pump precisely because nothing waits on it.
+    let chars = 0
+    const step = (): void => {
+      chars += 1
+      typedCallsign = chars >= full.length ? full : full.slice(0, chars)
+      // The dossier is rebuilt to repaint one row, exactly as every other
+      // change to this page is painted — `turn` is the window's only renderer
+      // and a second path into the sheet is how two of them drift apart.
+      turn('last')
+      if (chars < full.length) {
+        window.setTimeout(step, CALLSIGN_MS_PER_CHAR)
+        return
+      }
+      onDone()
+    }
+    window.setTimeout(step, CALLSIGN_MS_PER_CHAR)
   }
 
   function sendNewRun(): void {
@@ -445,6 +1033,32 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   store.subscribe((state: RunState) => {
     if (state.phase === 'tally' && !closed) {
       closed = true
+      // H3 — THE PAGE TURNS HERE, and this is the whole of the fix.
+      //
+      // The day is over, so the agent who flew it is a record: their page is
+      // written with the file they actually went out with, and the file the
+      // operator gets back is the next agent's, opened on a page of their own
+      // and already holding the handover — the board keeps its sentences
+      // through the unlock below, which is exactly what the operator is meant
+      // to revise. The press that follows commits it and turns nothing.
+      //
+      // `runsLeft` is the seam's own word for "this is the last day" (it is
+      // `totalRuns - run_count`, so it reads 0 there and nowhere else — the
+      // audio's ending cue hangs off the same field). On that day no page is
+      // filed and none is opened: there is no agent after this one, and a page
+      // headed for someone who can never be sent is a promise the desk cannot
+      // keep. The last agent's own page simply stays live.
+      // H3 (08-09, 민서) — the page does NOT turn here any more.
+      //
+      // It used to turn at 21:04, on the same event that closes the day. That
+      // put the new page up while the terminal record was still counting itself
+      // out beside it, so two surfaces were resolving at once and the operator
+      // was handed a file to revise before the day they were revising had
+      // finished reporting. The turn now waits for the settle — the record
+      // final, the report in — which is `settle()` below. `closingRun` is what
+      // carries the day's identity across that gap, because by then `run` may
+      // already have moved on.
+      closingRun = state.meta.runsLeft > 0 ? run : null
       // W4 — the close is what hands the file back. Until now the file stayed
       // locked until NEW RUN, so the day's report could not be mined into the
       // day it was written for; the operator had to open tomorrow before
@@ -458,6 +1072,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       armHold()
       // x6b — blank, not a wait line. See the note at the head of this file.
       settleNote = ''
+      // H3 — …and the desk turns to it. The document grew a page a moment ago
+      // and the DEPLOY control went with it, so a file left on the page it was
+      // on would leave the operator holding a read-only record with nothing to
+      // press. This is the jump the `meta` handler used to make on the press.
+      if (incoming) turn('last')
       sync()
       // The stream's own close line lands in the SAME tick this fires
       // (`shell/announcer.ts`'s `run_end` handler) — a second write here would
@@ -530,14 +1149,25 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (changedRun && board.isLocked()) {
       committedRun = event.run
       committedAt = opensAt
-      // U5.3 — write site 2. The file committed at the close reached the
-      // CLOSING run's membrane (W4's op order), but what it carries is the
-      // file the operator built after 21:04 — the INCOMING agent's. So it is
-      // filed under `event.run`, which is the same re-pointing the stamp does
-      // on the two lines above: page inventory and stamp date cannot disagree,
-      // because one branch decides both.
-      filed.set(event.run, usedIds(board.cells()))
+      // H3 — and the agent this stamp names is no longer an incoming one: the
+      // run loop has just named them, so `run` alone says who they are. The
+      // chop's text does not change across this line — that is the point, the
+      // page and the stamp read the same before and after the press — only the
+      // way it is derived does.
+      committedIncoming = false
     }
+    // H3 — the file that was the NEXT agent's is now the agent's. Cleared here
+    // rather than where `closed` is (the `'tally'` branch's own reset above),
+    // because that branch runs on the same `meta` and runs FIRST — `run` is
+    // still the closing day's there, and clearing it a tick early would head
+    // the live page with the agent who has already come home for exactly one
+    // render.
+    if (changedRun) incoming = false
+    // H3 — and the typed name is spent with it. `onDesk()` reads `callsignOf`
+    // once `incoming` is false, so this only matters for the NEXT close: a
+    // blank page that opened holding the last press's string would show it for
+    // one render before the reveal overwrote it.
+    if (changedRun) typedCallsign = ''
     // M1 — §0's callsign is per sitting, so only a changed run re-prints the
     // dossier; an archive-only `meta` must not re-parent the live slot board.
     // U5.3 — …and a NEW sitting opens on its own page. The jump is conditional

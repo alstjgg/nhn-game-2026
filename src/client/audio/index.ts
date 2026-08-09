@@ -136,6 +136,39 @@ export function installAudio(deps: AudioDeps): AudioHandle {
     mixer.hold(slot, cue)
   }
 
+  /**
+   * The office beyond the desk: one one-shot every `minMs`–`maxMs`, forever.
+   *
+   * The interval is re-rolled after each play rather than fixed, because a
+   * keystroke burst landing on a metronome is the one thing that would give the
+   * whole layer away — the ear finds a 14 s period inside about three cycles.
+   * Same reason the cue is picked with a not-twice-running rule: three keyboard
+   * variants heard back-to-back read as one keyboard with a stutter.
+   *
+   * Returns its own stop. Firing nothing (`sparse` null, or an empty list) is a
+   * legal map, so the caller never has to check.
+   */
+  const startSparse = (sparse: AudioMap['ambience']['sparse']): (() => void) => {
+    if (sparse === null || sparse.cues.length === 0) return () => {}
+    const { cues, minMs, maxMs } = sparse
+    let timer: ReturnType<typeof setTimeout> | null = null
+    let previous = -1
+    const wait = (): number => minMs + Math.random() * (maxMs - minMs)
+    const tick = (): void => {
+      let index = Math.floor(Math.random() * cues.length)
+      if (index === previous && cues.length > 1) index = (index + 1) % cues.length
+      previous = index
+      const cue = cues[index]
+      if (cue !== undefined) mixer?.play(cue)
+      timer = setTimeout(tick, wait())
+    }
+    timer = setTimeout(tick, wait())
+    return () => {
+      if (timer !== null) clearTimeout(timer)
+      timer = null
+    }
+  }
+
   /* ── the §5.2 stream ───────────────────────────────────────────────────── */
 
   // NOTE — `feed` is deliberately absent from this switch. U1's reveal queue
@@ -465,12 +498,22 @@ export function installAudio(deps: AudioDeps): AudioHandle {
       if (map === null || mixer === null) return
       bedsLive = true
       if (map.ambience.desk !== null) mixer.hold('bed', map.ambience.desk)
+      const stopSparse = startSparse(map.ambience.sparse)
+      teardown.push(stopSparse)
       const retireAfter = map.ambience.playForMs
       if (retireAfter === null) return
+      const holds = map.ambience.deskHolds
       const timer = setTimeout(() => {
         bedsLive = false
-        mixer?.hold('bed', null)
+        // The Watch drone always goes; the desk bed goes only if the map has
+        // not asked it to stay. When it stays, so does the office around it —
+        // a room that keeps humming while everybody in it stops moving is a
+        // worse artefact than either half alone.
         mixer?.hold('watch', null)
+        if (!holds) {
+          mixer?.hold('bed', null)
+          stopSparse()
+        }
       }, retireAfter)
       teardown.push(() => clearTimeout(timer))
     }

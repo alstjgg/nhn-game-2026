@@ -17,7 +17,7 @@
 // spent note text (WAITING/FILED_TAIL/LAPSED_TAIL/SPENT) is not decided here
 // — it is written directly by `windows/agent-file.ts`'s ported hold/settle
 // wiring, the same way `windows/tally.ts` once owned its wait line outright.
-import { callsignOf } from './dossier.ts'
+import { callsignOf, nextCallsignOf } from './dossier.ts'
 import { boardState, SLOT_CAP, usedIds } from './slot-board.ts'
 import type { BoardState } from './slot-board.ts'
 import { button, el } from '../shell/dom.ts'
@@ -73,6 +73,16 @@ export interface DeployState {
   deployed: boolean
   /** The run the file deployed for (`meta`), never a literal. */
   run: number
+  /**
+   * H3 — the file belongs to the agent AFTER `run`, not to `run` itself.
+   *
+   * True only between a day's close and the `meta` that opens the next one: the
+   * day is over, the file has been handed back, and what the operator commits
+   * next goes out with the agent the run loop has yet to name. The stamp has to
+   * agree with the page it sits under (`windows/agent-file.ts`), and this is the
+   * one bit that tells it which agent that is. Absent means false.
+   */
+  incoming?: boolean
   /** `"HH:MM"` the run opens on — the pack's own stamp. */
   at: string
   /** The day has closed (run-state's `'tally'` phase) — absent means false. */
@@ -100,7 +110,7 @@ export function deployView(state: DeployState): DeployView {
     count: `${used} / ${SLOT_CAP}`,
     note: mode === 'deploy' ? (state.deployed ? NOTE_LOCKED : used > 0 ? NOTE_PARTIAL : NOTE_EMPTY) : '',
     stampOn: state.deployed,
-    stampLine: `${callsignOf(state.run)} · ${state.at}`,
+    stampLine: `${(state.incoming ?? false) ? nextCallsignOf(state.run) : callsignOf(state.run)} · ${state.at}`,
     boardState: boardState(state.slots, state.deployed),
     buttonState: state.deployed ? 'deployed' : 'ready',
     mode,

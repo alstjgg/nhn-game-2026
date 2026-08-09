@@ -12,7 +12,7 @@
    consumer, gone with it) and the `.resolved{display:none}` strike-out. The
    design note that asked for them is `docs/design/phase2-ui/README.md`'s latency
    bullet, and the spec's is spec-client §3 inv 5; both still describe a marker.
-   `--feed-wait` in `tokens.css` is left declared and now has no consumer.
+   `--feed-wait` went with them from `tokens.css` (x7) — it had no consumer left.
    =========================================================================== */
 
 .win-feed{--delay:.14s}

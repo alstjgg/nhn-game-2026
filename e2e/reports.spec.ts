@@ -127,6 +127,24 @@ async function fileAnotherRun(page: Page): Promise<void> {
   await expect(newRun, 'the day never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
   await newRun.click()
   await confirmDeploy(page)
+  // WAIT FOR THE OP TO ACTUALLY LEAVE (x7, 08-09).
+  //
+  // This drained straight after the confirm, which held only while the press
+  // and its `new_run` were the same tick. They are not any more: the press
+  // types the incoming agent's callsign onto the page and then waits a beat
+  // before the chop and the op (`windows/agent-file.ts`'s NAMED_TO_CHOP_MS), so
+  // a drain here flushed the day that had ALREADY ended and returned before the
+  // next one existed. Both switch tests then found one run in the stream and
+  // failed as "the stream carries fewer than two runs", which reads as a driver
+  // fault and is a helper racing an animation.
+  //
+  // The control's own `data-op` is the honest signal — it returns to `deploy`
+  // when the new run's `meta` lands, which is the thing this helper is waiting
+  // for. `fixtures/harness.ts`'s `newRun()` already waited on exactly this; the
+  // local helper simply never did.
+  await expect(newRun, 'the press never opened the next run').toHaveAttribute('data-op', 'deploy', {
+    timeout: 30_000,
+  })
   await drain(page)
   await page.locator(`${REP} .win-bar`).click()
 }
@@ -136,12 +154,31 @@ function metaOf(f: Frame): MetaEvent | null {
   return metas.length > 0 ? metas[metas.length - 1]! : null
 }
 
-/** The run the rail says is selected right now. */
+/**
+ * x7 — THE SUITE NO LONGER SPELLS THE ECHO SERIES AT ALL.
+ *
+ * It used to. A declared mirror of `components/dossier.ts`'s `callsignOf` sat
+ * here, because a spec that has to say "the tab belonging to run 3" needs to
+ * know something about run 3, and the rail carried the callsign as text and
+ * nothing else. A second copy read it BACKWARDS out of the label, and that one
+ * encoded the OLD numbering: it read every sitting one short after the series
+ * renumbered, and could not read run 1 at all — plain `ECHO` has no digits in
+ * it. Two mirrors of one rule, and the reverse one silently wrong.
+ *
+ * The rail publishes `data-run` now (`components/report-archive.ts`) — the
+ * number the seam always had. Both directions read that, so how a sitting is
+ * NAMED is entirely `dossier.ts`’s business and this suite is renumber-proof:
+ * nothing here would notice the series being spelled differently tomorrow.
+ */
+const tabFor = (page: Page, run: number): Locator =>
+  page.locator(`${OPTION}[data-run="${run}"]`).first()
+
+/** The run the rail says is selected — read off the tab, not out of its text. */
 async function activeRun(page: Page): Promise<number> {
-  const label = await page.locator(`${OPTION}[aria-selected="true"]`).first().innerText()
-  const digits = label.match(/\d+/)
-  expect(digits, `the selected archive option carries no RUN number: ${label}`).not.toBeNull()
-  return Number(digits![0])
+  const tab = page.locator(`${OPTION}[aria-selected="true"]`).first()
+  const run = await tab.getAttribute('data-run')
+  expect(run, 'the selected archive option carries no data-run').not.toBeNull()
+  return Number(run)
 }
 
 async function reportForActiveRun(page: Page): Promise<ReportEvent> {
@@ -524,8 +561,23 @@ test.describe('archive segmentation and highlight marks', () => {
     // authority's, and what it holds depends on which authority is driving —
     // `RUN 03 / 08:50 — 21:04` from the fixture loop, `전구간정상-r3` from the live
     // adapter. Neither is something this rail promises to render.
+    // x7 — the tabs are DISTINCT and carry none of the seam's label. What they
+    // are is no longer spelled here.
+    //
+    // This compared each tab to a locally-computed callsign, which is the
+    // mirror this file no longer keeps (see `tabFor` above). The exact naming
+    // is pinned where importing `components/dossier.ts` is legal —
+    // `tests/windows/reports.test.ts` compares `runLabel` against the real
+    // `callsignOf` — so asserting it a second time here bought nothing except a
+    // copy of the rule that could go stale on its own, and did.
+    //
+    // What only THIS lane can prove is the negative below: whatever the tab
+    // says, no part of the authority's `label` reaches it. That field holds
+    // `RUN 03 / 08:50 — 21:04` under the fixture loop and `전구간정상-r3` under the
+    // live adapter, and neither is something the rail promises to render.
+    expect(new Set(labels).size, 'two sittings share a tab label').toBe(labels.length)
     for (const [i, entry] of meta!.archive.entries()) {
-      expect(labels[i]).toMatch(new RegExp(`ECHO-${entry.run}\\b`))
+      expect(labels[i]!.trim().length, 'a tab rendered no name at all').toBeGreaterThan(0)
       const span = entry.label.replace(/^\s*RUN\s*\d+\s*[/·]\s*/i, '').trim()
       expect(span.length, 'the fixture label is empty — this check is vacuous').toBeGreaterThan(0)
       expect(labels[i]!.replace(/\s+/g, ' ')).not.toContain(span.replace(/\s+/g, ' '))
@@ -576,7 +628,7 @@ test.describe('archive segmentation and highlight marks', () => {
     expect(rounds.length, 'the stream carries fewer than two runs — the switch is untestable').toBeGreaterThan(1)
 
     for (const round of rounds) {
-      await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${round}\\b`) }).first().click()
+      await tabFor(page, round).click()
       await expect(page.locator(`${OPTION}[aria-selected="true"]`)).toHaveCount(1)
       expect(await activeRun(page)).toBe(round)
 
@@ -600,7 +652,7 @@ test.describe('archive segmentation and highlight marks', () => {
     const away = rounds[0]!
     const target = reports.filter((r) => r.round === home).pop()!.report_body[0]!
 
-    await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${home}\\b`) }).first().click()
+    await tabFor(page, home).click()
     // One gesture (08-08): the click tears the sentence out AND seats it, so
     // the mark it leaves is `slotted`. The mine op still reaches the seam —
     // which is what this test is about.
@@ -617,11 +669,11 @@ test.describe('archive segmentation and highlight marks', () => {
     // across runs)". So the switch is proved where it is unambiguous — the
     // rail's own selection and a re-rendered body — and the id-keyed mark, which
     // is what this test is actually about, is still asserted below.
-    await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${away}\\b`) }).first().click()
+    await tabFor(page, away).click()
     expect(await activeRun(page), 'the rail did not switch to the other run').toBe(away)
     await expect(page.locator(`${BODY} .sent`), 'the away document rendered nothing').not.toHaveCount(0)
 
-    await page.locator(OPTION).filter({ hasText: new RegExp(`ECHO-${home}\\b`) }).first().click()
+    await tabFor(page, home).click()
     await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bslotted\b/)
 
     // Every mark on screen is a mark the STORE holds — nothing positional.

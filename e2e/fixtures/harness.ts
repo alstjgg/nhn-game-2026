@@ -11,7 +11,7 @@
 //   • `window.__agentFile` u4 — `{ slots(), place(), clear(), deployed(), phase(), meta(), … }`.
 //   • `window.__threads`   u8 — `{ redraw(), count(), destroy() }`.
 //   • `window.__debug`     u9d — `{ noteOp(op), refresh() }` (flag-on only).
-import { expect } from 'playwright/test'
+import { expect, test } from 'playwright/test'
 import type { Page, Request } from 'playwright/test'
 
 /* ── the seam shapes this suite reads back (C3: never fixture CONTENT) ───── */
@@ -124,6 +124,21 @@ export async function frame(page: Page): Promise<Frame> {
  * straight off the `score` event with no reveal gate in between.
  */
 export async function awaitRecordFinal(page: Page): Promise<void> {
+  // THE BUDGET IS DECLARED HERE BECAUSE THE WAIT IS DECLARED HERE (08-09).
+  //
+  // This asked for 40 s inside tests that had Playwright's default 30 s, so the
+  // TEST budget always expired first and the assertion could never spend the
+  // time it asked for. On an idle machine the record reaches `final` in ~9 s and
+  // nobody noticed; under a loaded run it went over 30 s and the failure read as
+  // "record stuck at counting", which looks like a product bug and is not one.
+  //
+  // A helper that knows it may wait 40 s is the only thing that knows what
+  // budget its caller needs, so it says so rather than leaving every caller to
+  // remember. `setTimeout` here extends the CURRENT test only, and raising it is
+  // safe in a way shortening the assertion is not: the count-up cadence is real
+  // wall-clock time (`components/score-tally.ts`'s PACE), so a tighter assertion
+  // would just move the flake rather than remove it.
+  test.setTimeout(90_000)
   await expect(page.locator('#w-rep .terminal-record')).toHaveAttribute('data-tally-state', 'final', {
     timeout: 40_000,
   })

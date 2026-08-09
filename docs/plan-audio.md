@@ -37,9 +37,14 @@ npm run audio:manifest   # regenerate the licence rows
 Three rules. They decide every cue in §4 and they are what makes the whole layer
 safe to cut under deadline pressure.
 
-- **No melodic BGM.** Room tone and a drone, and only for the opening. A melody
-  under a document the player reads for minutes reads as a menu screen and
-  competes with the deduction the game is made of.
+- **No melodic BGM — but the room is allowed to be a room.** A melody under a
+  document the player reads for minutes reads as a menu screen and competes with
+  the deduction the game is made of, so there is no score, no theme and no
+  underscore, at any level. What there *is*, since 08-09, is an office: a room
+  tone that holds for the session and one distant one-shot every 5–10 s. The
+  test a bed has to pass is not "is it quiet" but "**is it made of objects**" —
+  the next rule, applied to the room instead of the desk. A drone would fail it;
+  a fan and somebody else's phone do not.
 - **Every sound is a prop.** Paper, typewriter, stamp, drawer, radio squelch,
   clock, bell. A cue that cannot be traced to an object on the desk does not
   belong.
@@ -147,7 +152,7 @@ nothing prints as *silent* rather than going missing.
 
 | | Cue | Asset | Length | Gain |
 |---|---|---|---|---|
-| ambience `desk` | `bed` | `amb-room-tone` | 30.00 s | 1 |
+| ambience `desk` | `bed` | `amb-office-tone` | 30.00 s | 1 |
 | ambience `watch` | `watch` | `amb-watch-drone` | 40.00 s | 0.75 |
 | report typewriter, every 2 chars | `type` | `type-1` · `type-2` · `type-3` · `type-4` · `type-5` | 0.04 s | 0.3 |
 
@@ -269,17 +274,53 @@ Two mechanisms exist for that door, kept live for a rebind:
 
 | Cue | When | Length |
 |---|---|---|
-| `bed` | from the desk opening | 30 s seamless stereo loop |
+| `bed` | from the desk opening, **for the session** | 30 s seamless stereo loop |
+| `office` | every **5–10 s** while `bed` holds | 5 one-shots, 0.6–1.0 s |
 | `watch` | `beat_start`, within the window below | 40 s seamless stereo loop |
-| — | after **10 s** | both retire and never return |
+| — | after **10 s** | `watch` retires and never returns |
 
-**The beds are an opening, not a bed.** Room tone and a drone are broadband
-noise, and held under a screen the player reads for minutes they stop
-registering as atmosphere and start registering as fatigue.
-`ambience.playForMs` retires both; a latch keeps a later `beat_start` from
-bringing the drone back, and `hold(slot, null)` fades over 0.6 s so the room
-recedes rather than vanishing. Setting `playForMs` to `null` restores
-session-long beds. The Autopsy screen has no bed at all.
+**The two beds want opposite things, and `ambience.deskHolds` is what splits
+them.** The Watch drone is still an opening: a drone under a screen the player
+reads for minutes stops registering as atmosphere and starts registering as
+fatigue, so `ambience.playForMs` retires it and a latch keeps a later
+`beat_start` from bringing it back. The desk bed is the opposite case — it is a
+*room*, and a room that switches itself off after ten seconds was never one. It
+and its sparse events now hold for the whole session. `hold(slot, null)` still
+fades over 0.6 s, so what retires recedes rather than vanishing. The Autopsy
+screen has no bed at all.
+
+**The office is a timer, not a trigger.** `ambience.sparse` names cue ids, a
+minimum and a maximum, and `index.ts` re-rolls the interval after every play —
+a fixed period is audible as a metronome inside three cycles. It is deliberately
+outside `TRIGGERS`: that set is the closed vocabulary of moments the *game* can
+sound, and nothing in the game happens when a phone rings two desks away. One
+cue id (`office`) holds all five files, so `mixer.pick`'s never-twice-running
+rule does the variation and the scheduler only decides when.
+
+**Distance is the whole trick.** Every office one-shot is cut with
+`highpass=150,lowpass=3500`. That is not tone-shaping — a crisp keystroke at
+this level is indistinguishable from the report window typing, which is a cue
+that carries meaning, and §2 rule 3 does not survive that confusion. They have
+to sound like they are happening to somebody else.
+
+**Levels, measured rather than guessed.** The bed asset is written at **-13.5
+LUFS** so that `gain: 1` on the `ambience` bus (0.15) lands it at **-30.0 LUFS**
+— roughly 8 dB under where game music would normally sit, because this one plays
+under a reading surface. The office cues are 18.4 dB below their raw cuts
+(`gain: 0.8` × the same bus), which puts them ~10 dB under the bed. That gap is
+the effect, and it is the first number to reach for when the room feels wrong.
+It was tuned on the running desk and it moved twice, both times up: -24 dB
+(`gain: 0.42`) read as an empty office, and -20.9 dB (`0.6`) still did. **0.8 is
+not headroom.** It is near the top of the usable range — past it the one-shots
+stop being somewhere else and start being cues on this desk, which is exactly
+the confusion the 3.5 kHz cut above exists to prevent.
+
+**The loop closes on a crossfade, and its seam is noise-masked rather than
+silent.** Head and tail are 2 s of the same fan recording summed against each
+other, so RMS is continuous across the wrap (5463 / 5722 / 5133 for head /
+tail / middle). The waveform step at the wrap is ~4200 against a signal whose
+RMS is ~5500 — a discontinuity smaller than the noise it lands in, which is why
+looping broadband noise gets away with what a tone could not.
 
 ### 4.5 Coexistence with O3 (`shell/radio-sfx.ts`)
 
@@ -314,11 +355,22 @@ attribution. Two upstreams ask for credit as a courtesy and get it in §8.
 | [rubberduck — 100 CC0 SFX](https://opengameart.org/content/100-cc0-sfx) · [metal and wood](https://opengameart.org/content/100-cc0-metal-and-wood-sfx) | CC0-1.0 | drawers, the folder |
 | [\_stubb — typewriter ding](https://commons.wikimedia.org/wiki/File:406243_stubb_typewriter-ding-near-mono.wav) (Commons) | CC0-1.0 | the bell on the carriage return |
 | [Natalie — Clock ticking](https://commons.wikimedia.org/wiki/File:Clock_ticking.ogg) (Commons) | public domain | the waiting loop |
-| `tools/audio/synth.mjs` | generated for this project | room tone, drone, squelch, heartbeat, symptom chime, handset, fallback burst, collapse, stinger, the deploy swell |
+| [richwise — Empty Office Room Tone](https://freesound.org/people/richwise/sounds/456207/) (Freesound) | CC0-1.0 | the desk bed |
+| [Fupicat — Busy Office No People Loop](https://freesound.org/people/Fupicat/sounds/534123/) (Freesound) | CC0-1.0 | the five office one-shots |
+| `tools/audio/synth.mjs` | generated for this project | drone, squelch, heartbeat, symptom chime, handset, fallback burst, collapse, stinger, the deploy swell |
 
 Each licence is read from the upstream's own licence field, not inferred from a
-search filter. `freesound.org` is not usable here: downloads need an OAuth
-token, which a reproducible build script cannot hold.
+search filter.
+
+**Freesound, without an account.** An earlier revision of this document said
+`freesound.org` was unusable because downloads need an OAuth token. That is true
+of the *originals* and false of the site's own `-hq` preview renders, which are
+plain public CDN URLs — 128 kbps MP3, no auth, stable. Both office sources are
+fetched that way, which is what keeps `audio:build` runnable on the other
+member's laptop with no credentials. The transcode is inaudible where it lands:
+one source is stationary fan noise and the other is low-passed at 3.5 kHz before
+it is ever heard. Anyone with a Freesound account can swap in the originals by
+editing the two URLs in `SOURCES` and rebuilding.
 
 **Why half of it is synthesised.** The generated cues are the ones a CC0 library
 is worst at — they are specified by their *function* (a chime pitched to sit
@@ -335,10 +387,18 @@ what would make the seam audible.
 
 | | Format | Files | Size |
 |---|---|---|---|
-| SFX | AAC-LC mono — 22.05 kHz / 48 kbps, or **44.1 kHz / 96 kbps** for the six textured and tonal cues | 32 | **141.0 kB** |
-| Ambience | AAC-LC, stereo 44.1 kHz, 56 kbps | 2 | **494.4 kB** |
+| SFX | AAC-LC mono — 22.05 kHz / 48 kbps, or **44.1 kHz / 96 kbps** for the six textured and tonal cues | 32 | **144.3 kB** |
+| The office one-shots | as SFX (mono, 48 kbps) — they are ambience by role, but they are short, distant and low-passed, and stereo would buy nothing | 5 | **27.6 kB** |
+| Ambience | AAC-LC, stereo 44.1 kHz, 56 kbps | 2 | **505.9 kB** |
 | The map | JSON | 1 | ~7 kB |
 | **Before the first gesture** | | | **0 bytes** |
+
+**What the office cost.** +27.6 kB, all of it in the second load wave. The bed
+itself is free: `amb-office-tone` replaced the synthesised `amb-room-tone` at
+almost exactly its size, which is why the ambience wave did not move. Shipping
+both would have put that wave 100 kB over budget for a file nothing referenced,
+so the synth room tone is retired — `synth.mjs` keeps the generator, and
+restoring it is one line in `CUES` plus a rebuild.
 
 **AAC in MP4, not Vorbis.** Compatibility: `decodeAudioData` takes AAC in every
 desktop browser shipping today, including Safari, where Ogg support is recent

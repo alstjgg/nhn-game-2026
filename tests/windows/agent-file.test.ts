@@ -132,11 +132,16 @@ interface DossierSection {
   title: string
   // U5.3 — `'filed'` is the fourth state. This mirror is what `tsc` reads and
   // `vitest` does not (§5.3), so it goes out of step silently if left.
-  state: 'fixed' | 'sealed' | 'operable' | 'filed'
+  // x7 — `'sealed'` is gone: the cover was the only section that ever carried
+  // it and the cover no longer has it (see the describe below). `bars?` went
+  // with it — nothing in the union has a redaction strip any more.
+  state: 'fixed' | 'operable' | 'filed'
   rows?: [string, string][]
   body?: string
+  // x7 — on a fixed section this is 사건 개요's red `.sect-note`; on an
+  // operable/filed one it is 인수인계 사항's standing instruction. Two meanings,
+  // one field, told apart by `state` (see `FixedSection` in dossier.ts).
   note?: string
-  bars?: number[]
 }
 
 interface DossierModule {
@@ -147,6 +152,11 @@ interface DossierModule {
   // x5 — `deployed` left `FiledInput` with the count that used to be printed
   // from it. The page's own paragraph is where a past sitting's size is read.
   filedModel(input: { callsign: string }): DossierSection[]
+  // x7 — the ECHO series is document art this module mints (D4). `deploy-button`,
+  // `report-archive`, `reports` and `announcer` all read it, so the mapping is
+  // pinned here, at its one source, rather than in each caller's suite.
+  callsignOf(run: number): string
+  nextCallsignOf(run: number): string
   buildDossier: unknown
 }
 
@@ -178,7 +188,6 @@ const loadDeployButton = async (): Promise<DeployButtonModule> =>
 
 /* ══ [u4#c2] spec-client §3 inv 4 (I13) ══════════════════════════════════ */
 
-const SEALED_COPY = '열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)'
 /** Anything shaped like temperament data, in either vocabulary. */
 const TEMPERAMENT_KEY = /temper|trait|성향|disposition|기질값|기질_/i
 
@@ -191,18 +200,50 @@ function deepKeys(value: unknown, seen = new Set<unknown>()): string[] {
   return Object.keys(record).flatMap((k) => [k, ...deepKeys(record[k], seen)])
 }
 
+/*
+ * x7 — THE DESCRIBE KEPT ITS TITLE AND LOST ITS SECTION.
+ *
+ * 기질 was a sealed block on the AGENT FILE's cover; x7's rewrite replaced the
+ * cover's sections outright (사건 개요 · 현장 요원 임무 · 현장 요원 교신 지침)
+ * and the cover was the only place 기질 appeared, so the sealed section has left
+ * the product. 민서 made that call on 08-09 with the consequence stated.
+ *
+ * The CLAIM survives that intact, because the claim was never "a black bar is
+ * drawn". I13 / spec-client §3 inv 4 is that no temperament-shaped DATA reaches
+ * the view, and the two things that made it true are still here: (a) scans every
+ * model this window renders and finds no such key or value, and (b) scans every
+ * client source and finds nothing that even names the pack files. The bars were
+ * art on top of that; (c), which pinned the bars and the sealed copy, is deleted
+ * — see the marker where it stood.
+ *
+ * The title stays literally as-is because `.claude/super/units/u4.md` filters
+ * this suite with `-t 'sealed by construction'` (see the header note).
+ */
 describe('[u4#c2] §3 기질 is sealed by construction', () => {
   it('(a) neither the dossier input nor any section carries a temperament-shaped key', async () => {
-    const { coverModel, agentModel } = await loadDossier()
+    const { coverModel, agentModel, filedModel } = await loadDossier()
     const input = { slotCap: 4, callsign: 'ECHO-1' }
-    const sections = [...coverModel(), ...agentModel(input)]
+    const sections = [...coverModel(), ...agentModel(input), ...filedModel({ callsign: 'ECHO' })]
+    const keys = deepKeys(sections)
+
+    // x7 — THE VACUITY GUARD, and it is why this test needed touching at all.
+    // The claim used to end by asserting the sealed section's exact key set,
+    // which incidentally proved `deepKeys` had walked something real. With that
+    // section gone, a `coverModel` that returned `[]` — or a `deepKeys` that
+    // silently stopped recursing — would satisfy every `toEqual([])` below while
+    // checking nothing at all. So the walk is proved before it is trusted.
+    expect(sections.length, 'the models must render sections to scan').toBeGreaterThan(0)
+    expect(keys, 'deepKeys must actually reach section fields').toContain('title')
+    expect(keys).toContain('state')
 
     expect(deepKeys(input).filter((k) => TEMPERAMENT_KEY.test(k))).toEqual([])
-    expect(deepKeys(sections).filter((k) => TEMPERAMENT_KEY.test(k))).toEqual([])
+    expect(keys.filter((k) => TEMPERAMENT_KEY.test(k))).toEqual([])
 
-    const sealed = sections.find((s) => s.state === 'sealed')
-    expect(sealed, '기질 must be modelled as a sealed section').toBeTruthy()
-    expect(Object.keys(sealed!).sort()).toEqual(['bars', 'body', 'state', 'title'])
+    // …and no VALUE either. A key scan alone would pass a disposition smuggled
+    // through as document copy, and copy is exactly what this window prints.
+    expect(TEMPERAMENT_KEY.test(JSON.stringify(sections)), 'a section prints temperament vocabulary').toBe(
+      false,
+    )
   })
 
   it('(b) no client source names temperament, truths or gates data', () => {
@@ -216,28 +257,20 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
     expect(hits).toEqual([])
   })
 
-  it('(c) the sealed section carries the redaction copy and nothing else', async () => {
-    const { coverModel } = await loadDossier()
-    const sealed = coverModel().find((s) => s.state === 'sealed')!
-
-    expect(sealed.title).toBe('기질')
-    expect(sealed.body).toBe(SEALED_COPY)
-    // Every string the section holds is one of the four sanctioned ones.
-    const strings = Object.values(sealed).filter((v): v is string => typeof v === 'string')
-    expect(strings.sort()).toEqual(['sealed', SEALED_COPY, '기질'].sort())
-
-    expect(Array.isArray(sealed.bars)).toBe(true)
-    // x5 — TWO LINES of redaction, not six. The count is the art's own and the
-    // test does not pin it; what it pins is that the bars are RATIOS of the
-    // strip (0 < n < 100), which is inv 8's requirement and the thing that would
-    // actually break if someone re-vendored the reference's pixel widths.
-    expect(sealed.bars!.length).toBeGreaterThan(0)
-    for (const bar of sealed.bars!) {
-      expect(typeof bar).toBe('number')
-      expect(bar).toBeGreaterThan(0)
-      expect(bar).toBeLessThan(100)
-    }
-  })
+  // x7 — (c) IS DELETED, NOT MOVED. It read `the sealed section carries the
+  // redaction copy and nothing else`: it pinned `SEALED_COPY`, the `기질`
+  // heading, and that every bar width was a ratio rather than a pixel (inv 8).
+  //
+  // There is nowhere for it to go. The sealed section is out of the product
+  // (see the describe's note), so `SEALED_COPY`, `SEALED_BARS` and
+  // `buildRedaction` were deleted from `components/dossier.ts` with it, and a
+  // test of a deleted constant is not a weaker test — it is a test of nothing.
+  // What (c) uniquely protected beyond that was inv 8 on those bar widths, and
+  // that survives repo-wide in `[u4#c9](e)` below, which fails any px literal
+  // in a u4 source. Nothing was lost by deleting it.
+  //
+  // Its DOM twin, `e2e/agent-file.spec.ts [u4#c1](f)`, is owned by another lane
+  // and still asserts `.sect.sealed`; that suite is not this file's to edit.
 
   it('(d) both models are pure — frozen input in, deep-equal input out, no document', async () => {
     const { coverModel, agentModel } = await loadDossier()
@@ -252,8 +285,21 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
     expect(JSON.stringify({ slotCap: input.slotCap, callsign: input.callsign })).toBe(before)
     expect(JSON.stringify(secondAgent)).toBe(JSON.stringify(firstAgent))
     expect(JSON.stringify(secondCover)).toBe(JSON.stringify(firstCover))
-    expect(String(agentModel)).not.toMatch(/document/)
-    expect(String(coverModel)).not.toMatch(/document/)
+    // C17 — RE-AIMED (08-09), never deleted. These two read `String(fn)` raw,
+    // which includes the function's own COMMENTS, so the guard failed the moment
+    // `coverModel` grew a comment using the word "document" in its ordinary
+    // sense — the note recording why the cover carries no slugs, which says a
+    // plate must not narrate a document mid-performance. That is prose about a
+    // paper document; the claim being made here is that neither model touches
+    // `window.document`. Stripped, these measure code, which is what they meant.
+    //
+    // They are the weaker half of a check this test already makes properly four
+    // lines down — that scan strips comments, covers the whole model half of the
+    // file rather than two functions, and matches `\bdocument\b` on a word
+    // boundary. These are kept because a closure that captured a DOM node from
+    // an enclosing scope would show up in `String(fn)` and not in a source slice.
+    expect(stripComments(String(agentModel))).not.toMatch(/\bdocument\b/)
+    expect(stripComments(String(coverModel))).not.toMatch(/\bdocument\b/)
 
     // The model half of the file precedes the builder half: no `document.` may
     // appear before `buildDossier` is declared.
@@ -277,13 +323,31 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
       'a section still carries a number',
     ).toBe(true)
 
-    // x6 — the four headings are unchanged. What the rewrite moved is inside
-    // them: the one-way radio and "the file is the whole briefing" are 임무's
-    // third clause, not a 지휘 관계 section of their own.
-    expect(cover.map((s) => s.title)).toEqual(['임무', '행동 원칙', '기질', '교신 지침'])
-    expect(cover.map((s) => s.state)).toEqual(['fixed', 'fixed', 'sealed', 'fixed'])
+    // x7 — THREE headings, replacing x6's four (임무 · 행동 원칙 · 기질 · 교신
+    // 지침). The cover leads with the incident now instead of with orders, and
+    // 행동 원칙 left with the sealed 기질: a principle the operator cannot act on
+    // was a screenful between the incident and the radio. Every section is
+    // `fixed` — the cover is standing document art and nothing on it is
+    // operable, which is what makes `agentModel` the only page with a board.
+    expect(cover.map((s) => s.title)).toEqual(['사건 개요', '현장 요원 임무', '현장 요원 교신 지침'])
+    expect(cover.map((s) => s.state)).toEqual(['fixed', 'fixed', 'fixed'])
     expect(agent.map((s) => s.title)).toEqual(['식별', '인수인계 사항'])
     expect(agent.map((s) => s.state)).toEqual(['fixed', 'operable'])
+
+    // x7 — 사건 개요 is the ONE section with a red footnote, and it must be its
+    // own field rather than a fourth line of the body: `buildDossier` renders it
+    // as a `.sect-note` element that the sheet paints red and the cover's reveal
+    // times as its own beat. Folded back into `body` it would print as a fourth
+    // incident clause in the incident's own voice, which is the opposite of what
+    // it says (that the incident is being reconstructed).
+    expect(cover[0]!.note, '사건 개요 must carry the reconstruction note').toBeTruthy()
+    expect(cover[0]!.body).not.toContain('시뮬레이션')
+    expect(cover.slice(1).map((s) => s.note)).toEqual([undefined, undefined])
+
+    // The bodies are `\n`-joined clauses and `buildDossier` splits on that, so a
+    // section that lost its breaks would silently become one run-on element.
+    expect(cover[0]!.body!.split('\n')).toHaveLength(3)
+    expect(cover[2]!.body!.split('\n')).toHaveLength(2)
 
     // x6 — the cover is a posting order ISSUED TO THE AGENT, so no section may
     // name the machinery the operator drives it with. This is the guard that
@@ -291,14 +355,14 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
     // below are the vocabulary two rewrites (x5, x6) removed, and the reason
     // each one has to stay out is that it is knowable only from outside the
     // fiction — an agent is not told which 시행 they are.
+    // x7 — the sealed section's exemption is gone with the section, so the loop
+    // has no `continue` and every string on the cover is scanned, notes as well
+    // as bodies. That is stricter than x6's guard, not looser.
     const META = ['시행', '라운드', '슬롯', '집계', '주입', '블록', '문장 카드']
     for (const section of cover) {
-      // 기질 is exempt by construction: its body is the sealed notice, which
-      // speaks to the OPERATOR ('운영자 권한으로 접근되지 않는 구획') because it
-      // is the one line on the page addressed to the person holding it.
-      if (section.state === 'sealed') continue
       for (const word of META) {
         expect(section.body, `${section.title} names the machinery: ${word}`).not.toContain(word)
+        expect(section.note ?? '', `${section.title}'s note names the machinery: ${word}`).not.toContain(word)
       }
     }
 
@@ -306,6 +370,47 @@ describe('[u4#c2] §3 기질 is sealed by construction', () => {
     expect(agent[1]!.note).toContain('4')
     // 식별 carries the callsign it was handed (M1).
     expect(JSON.stringify(agent[0]!.rows)).toContain('ECHO-1')
+  })
+
+  /*
+   * x7 — THE ECHO SERIES STARTS UNNUMBERED, and these two tests are the whole
+   * record of it. It was `ECHO-${Math.max(1, run)}`, so run 1 flew as ECHO-1 and
+   * the bare name `ECHO` was spent on nothing. The first deploy is the DEFAULT
+   * one — the operator has handed nothing over yet — so its agent is just ECHO,
+   * and the numbering begins with the second, the first the operator shaped.
+   */
+  it('(f) callsignOf mints ECHO first and numbers from the second sitting', async () => {
+    const { callsignOf } = await loadDossier()
+
+    expect(callsignOf(1)).toBe('ECHO')
+    expect(callsignOf(2)).toBe('ECHO-1')
+    expect(callsignOf(3)).toBe('ECHO-2')
+    expect(callsignOf(4)).toBe('ECHO-3')
+
+    // The pre-first-press desk sits at run 0 (`windows/agent-file.ts` boots held
+    // there). It used to be caught by a `Math.max(1, run)` fallback that existed
+    // only to keep `ECHO-0` off the page; the unnumbered first name answers it
+    // now, and there is no second spelling of "not yet shaped" left to drift.
+    expect(callsignOf(0)).toBe('ECHO')
+
+    // No number is ever suffixed to the first agent, and none is ever 0.
+    expect(callsignOf(1)).not.toMatch(/-/)
+    for (const run of [1, 2, 3, 4, 10, 99]) expect(callsignOf(run)).not.toBe('ECHO-0')
+  })
+
+  it('(g) nextCallsignOf composes across the ECHO → ECHO-1 boundary', async () => {
+    const { callsignOf, nextCallsignOf } = await loadDossier()
+
+    // THE ONE PLACE AN OFF-BY-ONE HIDES. Everywhere else `nextCallsignOf` walks
+    // n → n+1 inside the numbered run and a stray ±1 shows up as an obviously
+    // wrong number; at the boundary a wrong answer is still a well-formed
+    // callsign. After ECHO comes ECHO-1 — not ECHO-2, and not ECHO again.
+    expect(nextCallsignOf(1)).toBe('ECHO-1')
+    expect(nextCallsignOf(0)).toBe('ECHO')
+
+    // And it stays a COMPOSITION, never a second copy of the arithmetic: if
+    // someone re-derives the suffix inside `nextCallsignOf` this diverges.
+    for (const run of [0, 1, 2, 3, 9, 41]) expect(nextCallsignOf(run)).toBe(callsignOf(run + 1))
   })
 })
 
@@ -615,14 +720,20 @@ describe('[u4#c4] deployView states — empty · partial · full · locked', () 
     expect(v.buttonState).toBe('deployed')
     expect(v.note).toBe('배치됨 — 이번 시행에서 잠김')
     expect(v.stampOn).toBe(true)
-    expect(v.stampLine).toBe('ECHO-3 · 08:50')
+    // x7 — run 3 stamps ECHO-2, was ECHO-3: the series starts unnumbered, so a
+    // run's number and its agent's number are off by one on purpose ((f) above).
+    expect(v.stampLine).toBe('ECHO-2 · 08:50')
     expect(v.stampLine).toMatch(/^ECHO-\d+ · \d{2}:\d{2}$/)
   })
 
   it('(e) the stamp names the sitting, unpadded, whatever the run', async () => {
     const { deployView } = await loadDeployButton()
-    expect(deployView({ slots: [], deployed: true, run: 1, at: '13:05' }).stampLine).toBe('ECHO-1 · 13:05')
-    expect(deployView({ slots: [], deployed: true, run: 10, at: '13:05' }).stampLine).toBe('ECHO-10 · 13:05')
+    // x7 — the FIRST sitting stamps a bare `ECHO` with no suffix at all, which
+    // is the case a `/ECHO-\d+/` stamp regex would have missed. The stamp reads
+    // the same `callsignOf` the file's own 식별 row does, so the plate on the
+    // deploy zone and the name at the top of the page cannot disagree.
+    expect(deployView({ slots: [], deployed: true, run: 1, at: '13:05' }).stampLine).toBe('ECHO · 13:05')
+    expect(deployView({ slots: [], deployed: true, run: 10, at: '13:05' }).stampLine).toBe('ECHO-9 · 13:05')
   })
 })
 

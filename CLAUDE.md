@@ -18,9 +18,17 @@ transitions (planning → demo → production).
 
 ## Hard rules
 
-1. **Git identity:** commits must be attributed to personal accounts (repo owner: `alstjgg`),
-   never corporate identities. Check `git config user.email` (repo-local) before committing — it
-   should resolve to the `alstjgg` account (e.g. its GitHub noreply address), not a corporate one.
+1. **Git identity — personal only, and no corporate trace.** Commits must be attributed to
+   personal accounts (repo owner: `alstjgg`), never corporate identities. Check
+   `git config user.email` (repo-local) before committing — it should resolve to the `alstjgg`
+   account (e.g. its GitHub noreply address), not a corporate one.
+   A session may *run* on a corporate Claude subscription when personal token limits require it.
+   That is a billing fact, and **it must leave no trace in the repo.** No corporate account name,
+   username, email, domain, hostname, machine name, ticket id, or internal-tool reference in any
+   commit message, trailer, document, PR or issue body, or review comment — and `gh` must act on
+   `github.com` as `alstjgg`, never through a corporate host. Grep the staged diff before
+   committing: once it is on `main`, rule 2 means it cannot be taken back. (Discussing the rule —
+   the word "corporate" itself — is fine; a corporate *identifier* is not.)
 2. **Never rewrite `main` history.** Commit history is a competition deliverable. No force-push,
    no rebase of pushed commits, no history rewrites.
 3. **`main` stays deployable.** Every merge to `main` triggers the GitHub Pages deploy
