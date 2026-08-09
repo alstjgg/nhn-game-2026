@@ -1,0 +1,146 @@
+/* ===========================================================================
+   coach.css — the onboarding coach mark (shell/coach.ts).
+
+   Replaces `tutorial.css`, which painted ONE class, `is-lit`, on whatever the
+   silent walk was pointing at. The walk speaks now, so the mark is three things
+   instead of one: a PLATE that prints the step's line, a red LEADER from the
+   plate to the target, and a SCRIM over the rest of the desk with a hole cut
+   where the target is.
+
+   THE PLATE IS THE PORTAL'S OWN PLATE. `signin.css` cut the original — the LED,
+   the chrome head band, the sealed red rule beneath it — and `confirm.css`
+   re-cut it as a free-standing centred panel. This is the same object at the
+   size of a sentence, with one difference: where those two carry chrome under
+   their header, this carries a slip of bond paper (`--bond`, the REPORTS stock,
+   painted from paper.css's own recipe). What the terminal has to say here is a
+   line of printed instruction — the thing this desk prints on paper — not a
+   question about its own hardware.
+
+   NOTHING PULSES, and that is a decision rather than an omission. `is-lit` ran
+   a 1.6 s outline pulse and the two plates' LEDs run `livePulse` forever; the
+   pulse is exactly what was taken out of this mark, because a throbbing red ring
+   reads as an alarm on a desk where red means 관인. `.coach-led` is a lamp that
+   is simply on, the hole's thin red stroke is the "here", and the leader is the
+   "which".
+
+   POINTER-TRANSPARENT WHERE IT COUNTS. `#coach` and the SVG inside it are
+   `pointer-events:none`; only `.coach-plate` takes them back. The desk stays
+   fully operable under a mark, which is what lets a step come down when the
+   operator presses the thing the mark points at.
+
+   Z-ORDER 690: above the top bar (500), the thread layer (460), the manual (480)
+   and every window (`--z`, which starts at 30); below the door (700), the grain
+   and vignette (900/901) and the confirmation plate (970). A mark must never be
+   the thing on top of an irreversible question.
+
+   The grain falling across the plate is deliberate at this height, not tolerated:
+   the mark is furniture on this desk and the film is on the desk, so a plate the
+   grain does NOT touch would read as pasted on from outside the fiction. `#toast`
+   is above this (950) and cannot collide with anything — x6b took its visible
+   panel away and left a 1×1 live region, so the only thing up there is a string
+   for a screen reader.
+   =========================================================================== */
+
+#coach{position:fixed;inset:0;z-index:690;pointer-events:none}
+/* Idle is GONE, not transparent: a layer with a stale scrim path in it would
+   still be painting a hole over a desk nobody is being taught about. */
+#coach:not(.coach-up){display:none}
+
+/* ─── the scrim and the leader — one SVG, two paths and a stroke ─────────── */
+/* `width`/`height` as well as `inset`, unlike `#threads`: an outermost `<svg>`
+   is a replaced element, and a fixed box with `inset:0` and auto sizing leaves
+   its extent to the intrinsic-ratio rules. The viewBox is written per frame from
+   the real viewport, so the element it maps onto must be the whole viewport and
+   not nearly. */
+.coach-cut{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+/* Even-odd is what makes the second subpath a HOLE rather than a second box:
+   the viewport rect is filled, the target's rect is cut back out of it. */
+.coach-scrim{fill:var(--sh-5);fill-rule:evenodd}
+/* The hole's own edge. `crispEdges` because these four lines are axis-aligned
+   hairlines on integer coordinates — antialiasing would smear each of them over
+   two device pixels and the mark would read as a soft glow, which is the thing
+   that was removed. */
+.coach-edge{fill:none;stroke:var(--seal);stroke-width:1;shape-rendering:crispEdges;opacity:.9}
+/* The leader is diagonal as often as not, so it keeps its antialiasing. */
+.coach-lead{fill:none;stroke:var(--seal);stroke-width:1.2;stroke-linecap:square;opacity:.85}
+
+/* ─── the plate ──────────────────────────────────────────────────────────── */
+/* `--coach-x` / `--coach-y` are written by `shell/coach.ts` on every measure
+   pass; the defaults here are what the plate would sit at if it were ever
+   painted before its first frame, and they exist so this sheet declares every
+   custom property it spends. */
+.coach-plate{--coach-x:0px;--coach-y:0px;
+  position:fixed;left:var(--coach-x);top:var(--coach-y);
+  width:296px;max-width:calc(100% - var(--space-32));
+  pointer-events:auto;
+  background:linear-gradient(to bottom,var(--chrome-hi),var(--chrome-lo));
+  border:1px solid var(--edge);box-shadow:var(--shadow-win);
+  animation:coachRise .22s cubic-bezier(.16,.9,.2,1) both}
+@keyframes coachRise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.coach-plate::before{content:'';position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 1px 0 var(--sheen-05)}
+
+/* ─── the head — the door's `.si-plate-hd`, same hardware, one size down ─── */
+.coach-hd{display:flex;align-items:center;gap:var(--space-8);height:26px;
+  padding:0 var(--space-11);background:var(--chrome-deep);
+  border-bottom:1px solid var(--edge);position:relative}
+.coach-hd::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,var(--seal),transparent 62%);opacity:.7}
+.coach-led{width:6px;height:6px;flex:0 0 auto;background:var(--seal)}
+.coach-hd b{font-size:var(--fs-8-5);font-weight:600;letter-spacing:.22em;color:var(--txt-2)}
+
+/* ─── the one line, on bond ──────────────────────────────────────────────── */
+/* 명조, at the confirmation plate's `.cf-ask` weight and one step down in size,
+   because it is the same act: the terminal saying a whole sentence to the
+   operator. `--mono` is for the fixed values the desk PRINTS as labels, and a
+   sentence is not a label. `keep-all` because Korean breaks anywhere by default
+   and a two-clause instruction split mid-word reads as a rendering fault. */
+.coach-says{padding:var(--space-14) var(--space-16) var(--space-13);
+  background:linear-gradient(180deg,var(--sheen-5),transparent 30%),var(--bond);
+  box-shadow:inset 0 1px 0 var(--sh-3);
+  font-family:var(--myeong);font-size:var(--fs-13);line-height:1.7;
+  letter-spacing:.01em;color:var(--pap-max);word-break:keep-all}
+
+/* ─── the two answers, on the tear-off strip ─────────────────────────────── */
+/* One loud, one quiet, and the split is the same one `confirm.css` argues: the
+   fill carries the emphasis, so the primary needs no border, and the secondary
+   is not a button-shaped thing at all — 튜토리얼 건너뛰기 ends the whole walk,
+   and an affordance that ends something should not be the same size and shape
+   as the one that continues it. The dashed rule is the perforation of a slip
+   whose bottom strip you keep. */
+.coach-foot{display:flex;align-items:center;justify-content:space-between;
+  gap:var(--space-10);
+  padding:var(--space-9) var(--space-12) var(--space-11);
+  background:var(--bond-2);border-top:1px dashed var(--sh-25)}
+.coach-plate button:focus-visible{outline:2px solid var(--pap-max);outline-offset:2px}
+
+.coach-ok{min-width:76px;height:29px;
+  background:linear-gradient(to bottom,var(--seal),var(--seal-2));color:var(--txt-max);
+  font-size:var(--fs-9);font-weight:700;letter-spacing:.2em;text-indent:.2em;
+  box-shadow:inset 0 1px 0 var(--sheen-25), 0 6px 18px -10px var(--sh-9);
+  transition:filter .18s, transform .12s}
+.coach-ok:hover{filter:brightness(1.12)}
+.coach-ok:active{transform:translateY(1px)}
+
+.coach-skip{font-size:var(--fs-8-5);letter-spacing:.12em;color:var(--pap-4);
+  text-decoration:underline dotted;text-underline-offset:3px;
+  transition:color .18s}
+.coach-skip:hover{color:var(--pap-max)}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════════════════
+   `base.css` collapses every animation to a single 1 ms pass, which lands it on
+   its END keyframe. That is precisely what broke the sheet this one replaces:
+   `litPulse`'s end keyframe was its DIMMEST, so a reduced-motion operator got a
+   mark that read as unmarked, and `tutorial.css` had to restate the lit state by
+   hand to undo it.
+
+   Nothing here loops, so nothing here can settle on the wrong half of a cycle —
+   `coachRise` ends on exactly the state the plate then holds, and the collapse
+   would be harmless. It is still turned off rather than trusted: a 1 ms
+   opacity-and-slide on a plate that is simultaneously taking focus is a flash,
+   and a flash is the thing this query is asking us not to do. The plate simply
+   appears, already where it belongs.
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce){
+  .coach-plate{animation:none}
+}

@@ -3,6 +3,77 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-09) — the onboarding walk speaks (branch `ui/tutorial-coach`)
+
+**The tutorial was a silent red ring and now it is eleven plates that say one
+line each.** `x3` shipped the walk as twelve pulses of `.is-lit` with no copy
+anywhere on the screen, on the argument that a coach mark is a product-tour
+bubble and an overlay must not sit on the controls it points at. The argument
+was sound and it lost to the requirement: a window glowing red reads as *something
+is wrong*, not *turn the page*, and the desk has roughly sixty seconds to teach
+three windows, a page turn, a commit and a mine. `shell/coach.ts` +
+`styles/coach.css` are the plate, a red leader line and a scrim holed over the
+target; `styles/tutorial.css` is deleted. The walk is driven entirely by what the
+operator does — every stopwatch is gone, including the eight-second hold on the
+file and the ten-second ceiling on 해제 — and every plate carries
+튜토리얼 건너뛰기, which ends the walk rather than the step. The gating is
+unchanged: `?tutorial=show` / `?tutorial=skip`, off under `navigator.webdriver`,
+so every e2e lane but `e2e/tutorial.spec.ts` still sees no walk at all.
+
+**The layer is non-blocking by construction, and that is load-bearing rather
+than polite.** The scrim and the leader are one `pointer-events:none` SVG whose
+hole is cut with `fill-rule:evenodd`, so the target reads at full brightness and
+*every pixel of the desk stays pressable, dimmed or not*. Most plates come down
+when the operator presses the very thing the mark names, so a layer that ate that
+press would deadlock its own walk. `e2e/tutorial.spec.ts (f)`/`(g)` prove the
+press lands in a browser; the source guard proves the declaration it rests on.
+
+**Three defects were found and fixed at the source rather than worked around.**
+
+- **`.pg-turn:not([disabled])` was never a name for 다음 장.** It isolates the
+  forward leaf on the *cover* alone, because that is the one page where 이전 장 is
+  the disabled one; on the agent's page it points at 이전 장, and once a past page
+  exists (U5.3 files one per closed day) **both** leaves are enabled and it
+  resolves to two elements. `windows/agent-file.ts` classes them `pg-prev` /
+  `pg-next`. `pg-turn` stays on both, so all 25 existing e2e call sites and both
+  CSS rules are untouched.
+- **인수인계 사항 was addressed by a STATE, not a name.** `.sect.operable` is
+  what the same section stops being when a past page renders it `filed`.
+  `components/dossier.ts` slugs its sections and the plate points at
+  `[data-sect="handover"]`. 기질 deliberately carries no slug — `[u4#c2]` pins the
+  sealed section's key set to exactly four fields.
+- **The mine gate latched on the wrong event.** Mining is *refused* while the day
+  runs (`windows/reports.ts` bails on `board.isLocked()`), so a mid-day click on
+  a sentence seats nothing — and would have raised the 인수인계 plate over an
+  empty section. A keyboard mine raises no click at all, since a sentence is a
+  `role="button"` span. The gate reads the mine's *outcome*, `#w-file .slot.filled`.
+
+**And one the desk could only show by being looked at.** `#coach` sat at z-index
+690, below `#toast` (950) — which is centred at 50%/50%, exactly where plate 1
+lands beside the AGENT FILE's head line on a wide desk. The opening announcement
+covered the tail of the first instruction the player ever reads and half of its
+button, and it recurs, because a toast fires on every `meta` and `run_end`. The
+coach is at **955** now: above the toast (a `pointer-events:none` reading that is
+gone in 2.6 s, and unaffected for a screen reader either way), above the grain the
+way `#confirm` already is, and still below the skip link (960) and the
+confirmation plate (970) — a mark must never be the thing on top of the
+irreversible question. `tests/shell/tutorial-observer.test.ts` now reads that
+whole ladder out of the other sheets, so the claim cannot go stale in a comment.
+
+**Verified:** `npm run check` green · 1648 unit tests · 206 e2e (chromium lane) ·
+7 preview-smoke on the real production artefact, load budget included ·
+`e2e/tutorial.spec.ts` 12 tests, run twice for flake · the eleven plates walked
+and screenshotted on both the fixture host and `npm run preview`, plus
+1280×800 and `prefers-reduced-motion`. `is-lit` appears nowhere in the bundle.
+The re-aim is logged in `DISCOVERY.md` per `[u11#c6] (l)`.
+
+**Not done, deliberately:** the walk puts no plate on the 배치 확인 modal and does
+not re-show plate 3 if the operator answers 취소 (민서's call). Nothing stalls —
+plate 4 is armed on the simulation starting, so it appears whenever they do
+commit; they simply lose that one hint. Note also that in the FIXTURE lane the
+demo day files its one report at ~78 s, so plate 4 sits alone for most of a
+minute; a live day files seven across the shift and does not have that gap.
+
 ## Status (2026-08-08) — the loop the player operates, and two regressions only the live path could show
 
 **The day now runs hands-off, and the operator's turn is at the close.** Four

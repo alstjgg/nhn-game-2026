@@ -27,9 +27,12 @@
    load-bearing: every rule in it is an override. */
 @import './win-manual.css';
 
-/* x3 — the onboarding mark. Last: it decorates whatever the sheets above
-   painted, and it must win against their own outlines. */
-@import './tutorial.css';
+/* x3 — the onboarding coach mark. Last, and for a different reason than the
+   sheet it replaces: `tutorial.css` was a ring drawn ON the sheets above and had
+   to out-specify their own outlines, while this one mounts a plate and a scrim
+   OVER them and has to be read against everything they paint. Either way it is
+   the last word on the desk. */
+@import './coach.css';
 
 /* u10 — the self-hosted @font-face set. Appended, so u1's four core sheets keep
    the first four slots; @font-face is order-independent. */
