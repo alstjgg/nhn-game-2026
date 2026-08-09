@@ -31,6 +31,9 @@ const REPO = path.resolve(HERE, '../..')
 const OUT = path.join(REPO, 'public/assets/audio')
 const CACHE = path.join(HERE, '.cache')
 
+/** The day every `license_at` in SOURCES was last read from upstream. */
+const CHECKED = '2026-08-08'
+
 /* ── where every recording came from ─────────────────────────────────────── */
 
 /**
@@ -44,50 +47,59 @@ const SOURCES = {
     page: 'https://kenney.nl/assets/interface-sounds',
     url: 'https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip',
     zip: true, license: 'CC0-1.0', author: 'Kenney', attribution: null,
+    license_at: "License.txt inside the pack: 'License: (Creative Commons Zero, CC0)'",
   },
   'kenney-impact': {
     page: 'https://kenney.nl/assets/impact-sounds',
     url: 'https://kenney.nl/media/pages/assets/impact-sounds/87b4ddecda-1677589768/kenney_impact-sounds.zip',
     zip: true, license: 'CC0-1.0', author: 'Kenney', attribution: null,
+    license_at: "License.txt inside the pack: 'License: (Creative Commons Zero, CC0)'",
   },
   'oga-paper': {
     page: 'https://opengameart.org/content/various-paper-sound-effects',
     url: 'https://opengameart.org/sites/default/files/',
     files: ['paper_ripped_-_1.mp3', 'paper_sound_-_1.mp3'],
     license: 'CC0-1.0', author: 'Luckius', attribution: null,
+      license_at: "the submission page's own Licenses field reads CC0",
   },
   'oga-typewriter': {
     page: 'https://opengameart.org/content/typewriter-sounds',
     url: 'https://opengameart.org/sites/default/files/',
     files: ['typewriter1.wav', 'typewriter2.wav'],
     license: 'CC0-1.0', author: 'Cassie-OrbitGames', attribution: null,
+      license_at: "the submission page's own Licenses field reads CC0",
   },
   'oga-bookflips': {
     page: 'https://opengameart.org/content/10-book-page-flips',
     url: 'https://opengameart.org/sites/default/files/book_flips_-_starninjas.zip',
     zip: true, license: 'CC0-1.0', author: 'StarNinjas', attribution: null,
+      license_at: "the submission page's own Licenses field reads CC0",
   },
   'oga-100sfx': {
     page: 'https://opengameart.org/content/100-cc0-sfx',
     url: 'https://opengameart.org/sites/default/files/100-CC0-SFX_0.zip',
     zip: true, license: 'CC0-1.0', author: 'rubberduck', attribution: null,
+      license_at: "the submission page's own Licenses field reads CC0",
   },
   'oga-woodmetal': {
     page: 'https://opengameart.org/content/100-cc0-metal-and-wood-sfx',
     url: 'https://opengameart.org/sites/default/files/100-CC0-wood-metal-SFX.zip',
     zip: true, license: 'CC0-1.0', author: 'rubberduck', attribution: null,
+      license_at: "the submission page's own Licenses field reads CC0",
   },
   'commons-ding': {
     page: 'https://commons.wikimedia.org/wiki/File:406243_stubb_typewriter-ding-near-mono.wav',
     url: 'https://upload.wikimedia.org/wikipedia/commons/9/9f/406243_stubb_typewriter-ding-near-mono.wav',
     files: ['406243_stubb_typewriter-ding-near-mono.wav'],
     license: 'CC0-1.0', author: '_stubb', attribution: null, direct: true,
+      license_at: "the file page's licence box: CC0 / Creative Commons Zero, Public Domain Dedication",
   },
   'commons-clock': {
     page: 'https://commons.wikimedia.org/wiki/File:Clock_ticking.ogg',
     url: 'https://upload.wikimedia.org/wikipedia/commons/5/56/Clock_ticking.ogg',
     files: ['Clock_ticking.ogg'],
     license: 'public-domain', author: 'Natalie', attribution: null, direct: true,
+      license_at: "the file page's licence box: Public domain",
   },
 }
 
@@ -382,6 +394,10 @@ function writeManifest() {
         tool: 'tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)',
         prompt: null,
         license: 'generated for this project',
+        license_source:
+          'tools/audio/synth.mjs in this repository — the waveform is computed by our own code, '
+          + 'not returned by a model and not derived from a recording, so no third-party grant applies. '
+          + 'The generator is seeded and byte-reproducible; re-running it reproduces this file.',
         generated: synths,
       })
       continue
@@ -397,6 +413,11 @@ function writeManifest() {
       recipe: 'tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)',
       prompt: null,
       license: licenses.length === 1 ? licenses[0] : licenses.join(' + '),
+      // Where the claim was READ, per upstream — a licence name with no citation
+      // is the defect this field exists to close.
+      license_source: packs
+        .map((k) => `${SOURCES[k].page} — ${SOURCES[k].license_at} (checked ${CHECKED})`)
+        .join(' | '),
     })
   }
 
