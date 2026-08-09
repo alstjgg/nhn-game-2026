@@ -64,7 +64,7 @@ export function createMemoryMetaStore(seed?: MetaState): MetaStore {
  * W1 — `stamp` is the sitting's identity (the client passes its build stamp).
  * A stored state is honoured only while the stamp saved beside it matches:
  * state left by another build reads as absent and both slots are dropped, so
- * a fresh visit is ECHO-1 and only a genuine same-build reload resumes. No
+ * a fresh visit is ECHO and only a genuine same-build reload resumes. No
  * stamp (the headless path) keeps the old behaviour.
  */
 export function createWebStorageMetaStore(

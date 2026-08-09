@@ -458,9 +458,14 @@ test.describe('endpoints track windows during drag', () => {
     await page.mouse.move(start.x + dx / 3, start.y + dy / 3)
     await page.mouse.move(start.x + (dx * 2) / 3, start.y + (dy * 2) / 3)
     await page.mouse.move(start.x + dx, start.y + dy)
-    await page.waitForTimeout(50)
-
+    // POLLED, NOT SLEPT (08-09) — see the note on the REPORTS-grip test at the
+    // foot of this describe. `toHaveClass` retries on its own; the endpoint read
+    // below did not, so a 50 ms sleep was the only thing standing between the
+    // pointer move and the overlay's next frame.
     await expect(page.locator(FILE)).toHaveClass(/\bdragging\b/)
+    await expect
+      .poll(async () => (await box(page, FILE)).x !== windowBefore.x, { timeout: 5_000 })
+      .toBe(true)
     const during = await slotEndpoint(page)
     // C17 / [u11#c12] — RE-AIMED (08-04), never deleted: the endpoint is
     // compared to what the WINDOW did, not to what the pointer asked for. u3's
@@ -502,7 +507,18 @@ test.describe('endpoints track windows during drag', () => {
     await page.mouse.down()
     await page.mouse.move(start.x, start.y + dy / 2)
     await page.mouse.move(start.x, start.y + dy)
-    await page.waitForTimeout(50)
+    // POLLED, NOT SLEPT (08-09) — same race as the two tests below. Waits for
+    // the overlay to have redrawn AT ALL, then measures it precisely: the
+    // tolerance check is the claim, and it may not be the thing racing a frame.
+    await expect
+      .poll(
+        async () => {
+          const [moved] = endpointsOf(await threadPath(page))
+          return moved[1] !== before[1]
+        },
+        { timeout: 5_000 },
+      )
+      .toBe(true)
 
     const [during] = endpointsOf(await threadPath(page))
     near(during[1] - before[1], dy)
@@ -572,9 +588,22 @@ test.describe('endpoints track windows during drag', () => {
     await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2)
     await page.mouse.down()
     await page.mouse.move(grip.x + 120, grip.y + grip.height / 2)
-    await page.waitForTimeout(50)
-    const [during] = endpointsOf(await threadPath(page))
-    expect(before[0] !== during[0] || before[1] !== during[1]).toBe(true)
+    // POLLED, NOT SLEPT (08-09). This was `waitForTimeout(50)` and then one
+    // read, which is a fixed sleep racing a rAF redraw: the overlay re-draws on
+    // the next frame after the resize, and 50 ms is ~3 frames on the machine
+    // this was written on and can be under one on a loaded CI runner. It passed
+    // 201/201 locally and failed on `desk`'s first outing — the flake was always
+    // there, and turning the lane on is what made it visible.
+    //
+    // Polling asserts the same claim and states it better: the endpoint moves
+    // WHILE the button is still down. It also gets faster on a quick machine
+    // rather than always paying the 50 ms.
+    await expect
+      .poll(async () => {
+        const [during] = endpointsOf(await threadPath(page))
+        return before[0] !== during[0] || before[1] !== during[1]
+      }, { timeout: 5_000 })
+      .toBe(true)
     await page.mouse.up()
   })
 })

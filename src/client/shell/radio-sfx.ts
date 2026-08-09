@@ -1,5 +1,5 @@
 /**
- * O3 — the desk's three radio cues, synthesised in place (WebAudio, no
+ * O3 — the desk's four radio cues, synthesised in place (WebAudio, no
  * assets). Procedural on purpose: no binary ships, so assets-manifest.json
  * (hard rule 5 covers external/AI-generated FILES) stays untouched and the
  * third-party guard has nothing to scan. The cues are radio texture, not
@@ -71,6 +71,30 @@ function staticBurst(at: AudioContext, ms: number, peak: number, hz: number): vo
   gain.connect(at.destination)
   source.start(t0)
   source.stop(t0 + seconds)
+}
+
+/**
+ * x9 — one keystroke at the door (`shell/sign-in.ts`).
+ *
+ * The one cue on this desk that answers the PLAYER's hand rather than the
+ * stream, and the only reason it exists: the door now asks for fifteen presses,
+ * and fifteen presses into a silent machine feel like a machine that is not
+ * listening. Short, dry and high — 26 ms of narrow noise reads as a key bottoming
+ * out, where the other three cues are all radio carrier and last a second or
+ * more. Quiet on purpose (0.035 against LOGIN's 0.05): this fires fifteen times
+ * in a row, and anything that carries at that repetition becomes a rattle.
+ *
+ * The first tick is usually silent, and that is the same tax `bindRadioSfx`'s
+ * unlock pays — a context built inside the gesture that built it is still
+ * resuming when this returns. `context()` answers `null` until it is running, so
+ * press one is dropped and press two onward are heard. The alternative is
+ * scheduling press one late, and a keystroke that clicks after its character has
+ * already appeared is worse than a keystroke that does not click at all.
+ */
+export function sfxKeyTick(): void {
+  const at = context()
+  if (at === null) return
+  staticBurst(at, 26, 0.035, 3200)
 }
 
 /** LOGIN — the auth readout rides on carrier static for its whole runway. */

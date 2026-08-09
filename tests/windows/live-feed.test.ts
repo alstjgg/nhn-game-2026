@@ -206,7 +206,12 @@ describe('[u5#c1] seven kinds map 1:1', () => {
     const node = model(line)
     expect(node.kind).toBe('wait')
     expect(nodeText(node)).toBe('본문')
-    expect(node.parts.some((p: FeedPart) => p.p === 'dots')).toBe(false)
+    // x7 — the `dots` PART TYPE is gone, not merely unused, so this can no
+    // longer be a value check: `p.p === 'dots'` is now a type error, which is a
+    // stronger guarantee than the runtime assertion it replaces. What is left
+    // to assert is that a wait line projects to ordinary text parts and nothing
+    // else — no marker machinery survives anywhere in the projection.
+    expect(node.parts.every((p: FeedPart) => p.p === 'text')).toBe(true)
     expect(nodeText(node)).not.toMatch(/%/)
   })
 

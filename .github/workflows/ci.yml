@@ -64,17 +64,11 @@ jobs:
       - run: npm run build
       - run: npm run probe:selftest
 
-  # Preview smoke only — the FULL Playwright suite stays manual (민서's call on
-  # PR #116). This job builds the production bundle, serves it, and runs
-  # `e2e/preview-smoke.spec.ts` against it: the one check that the artifact the
-  # judges load actually boots. It is short, and it does not carry the desk's
-  # window-stacking races.
+  # Preview smoke: the production bundle, served, with `preview-smoke.spec.ts`
+  # run against it — the one check that the artifact the judges load boots.
+  # Short, and it carries none of the desk's window-stacking races.
   #
-  # Worth knowing while the rest stays manual: no workflow ran Playwright at all
-  # before this, which is how `e2e/captures.spec.ts` came to depend on a
-  # gitignored directory and stay broken for everyone but the machine that ran
-  # the pipeline. The reference side is tracked at `e2e/reference-shots/` now, so
-  # a manual run works anywhere — but nothing automated is watching it.
+  # It is no longer the ONLY Playwright job; see `desk` below.
   preview-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -97,6 +91,51 @@ jobs:
         if: always()
         with:
           name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # THE DESK — the ~200 chromium tests, and the reason this job exists (08-09).
+  #
+  # The full suite was manual by 민서's call on #116, on the reasoning that the
+  # preview smoke covers the artifact and the rest carries window-stacking
+  # races. What that left is a green tick that says nothing about the desk: in
+  # one week `main` went red twice and stayed red, both times in tests no
+  # workflow ran. #219 landed a test asserting the fanfold has printed at boot
+  # while #218 had just made it empty until DEPLOY — each branch green alone,
+  # neither re-run against the other. Then #224 moved the allotment 5 → 4 and
+  # missed a literal in a spec, which the preview lane happened to catch only
+  # because the drift was in ITS file. A suite nobody runs is a suite that
+  # documents intentions rather than behaviour.
+  #
+  # It is a SEPARATE job on purpose. It shares nothing with `preview-smoke`, so
+  # the artifact check still reports in ~1m whatever the desk does, and a desk
+  # failure never masks a bundle failure. `PW_LANE=unit` keeps it to the one
+  # lane it needs — the config boots every webServer entry otherwise.
+  #
+  # Two things had to be true before this could be turned on, and both now are:
+  # `e2e/fixtures/harness.ts`'s `awaitRecordFinal` no longer asks for 40 s inside
+  # a 30 s test budget (it declares its own), and `preview-smoke.spec.ts` no
+  # longer pins the allotment it was never testing.
+  desk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --project=chromium
+        env:
+          CI: '1'
+          PW_LANE: unit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-desk
           path: |
             playwright-report/
             test-results/

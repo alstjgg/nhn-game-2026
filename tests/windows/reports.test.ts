@@ -33,6 +33,16 @@ const ARCHIVE_TS = path.join(CLIENT, 'components/report-archive.ts')
 const VIEW_TS = path.join(CLIENT, 'components/report-view.ts')
 const REPORTS_TS = path.join(CLIENT, 'windows/reports.ts')
 const UNIT_FILES = [MINABLE_TS, ARCHIVE_TS, VIEW_TS, REPORTS_TS] as const
+/**
+ * NOT a unit file — u4's, and deliberately outside every scan above.
+ *
+ * x7 — the rail's tab is a CALLSIGN, and the callsign has one owner
+ * (`callsignOf`, D4: the pack carries none, so the whole series is document
+ * art). This file used to pin the strings that owner happened to return, which
+ * proved only that the assertion and the mint were written on the same day; see
+ * `[u6#c4] (b)` for what it costs.
+ */
+const DOSSIER_TS = path.join(CLIENT, 'components/dossier.ts')
 const FIXTURES_DIR = path.join(CLIENT, 'driver/fixtures')
 
 interface Source {
@@ -106,6 +116,11 @@ interface ArchiveModule {
   railKeyIndex(count: number, current: number, key: string): number | null
 }
 
+/** u4's — the one mint of the ECHO series. See `DOSSIER_TS`. */
+interface DossierModule {
+  callsignOf(run: number): string
+}
+
 interface TypeState {
   sentence: number
   chars: number
@@ -139,6 +154,10 @@ async function minable(): Promise<MinableModule> {
 
 async function archive(): Promise<ArchiveModule> {
   return (await import(importable(ARCHIVE_TS))) as unknown as ArchiveModule
+}
+
+async function dossier(): Promise<DossierModule> {
+  return (await import(importable(DOSSIER_TS))) as unknown as DossierModule
 }
 
 async function view(): Promise<ViewModule> {
@@ -461,6 +480,7 @@ describe('[u6#c4] archive segmentation is pure and gate-free', () => {
 
   it("(b) the run label is the sitting's callsign, derived from the number", async () => {
     const a = await archive()
+    const { callsignOf } = await dossier()
     const segments = a.archiveSegments(
       [
         { run: 1, label: '08:50 — 21:04' },
@@ -468,8 +488,21 @@ describe('[u6#c4] archive segmentation is pure and gate-free', () => {
       ],
       1,
     )
-    expect(segments[0]!.runLabel).toBe('ECHO-1')
-    expect(segments[1]!.runLabel).toBe('ECHO-12')
+    // x7 — asserted against `callsignOf`, not against the two strings it
+    // happened to return the day this was written (`'ECHO-1'` / `'ECHO-12'`).
+    // What the rail promises is that the tab is THE SAME NAME the AGENT FILE
+    // prints for that sitting; a literal here proved that only by coincidence,
+    // and when the series was renumbered (the unshaped first agent is plain
+    // `ECHO` now) it was this assertion that went red while the two surfaces it
+    // guards still agreed perfectly.
+    expect(segments[0]!.runLabel).toBe(callsignOf(1))
+    expect(segments[1]!.runLabel).toBe(callsignOf(12))
+    // …and not vacuously: a callsign in shape, DELIBERATELY LITERAL on `ECHO`
+    // because that is the shipped name of the series and nothing else here says
+    // it out loud — renaming it should not be able to pass in silence. The
+    // number is the part that may move.
+    expect(segments[0]!.runLabel).toMatch(/^ECHO(?:-\d+)?$/)
+    expect(segments[1]!.runLabel).not.toBe(segments[0]!.runLabel)
   })
 
   /**
@@ -485,6 +518,7 @@ describe('[u6#c4] archive segmentation is pure and gate-free', () => {
    */
   it('(c) no part of the seam label reaches a segment — the tab is the callsign alone', async () => {
     const a = await archive()
+    const { callsignOf } = await dossier()
     const segments = a.archiveSegments(
       [
         { run: 1, label: 'RUN 01 / 08:50 — 21:04' },
@@ -495,7 +529,10 @@ describe('[u6#c4] archive segmentation is pure and gate-free', () => {
     const printed = segments.map((s) => JSON.stringify(s))
     expect(printed[0]).not.toMatch(/08:50|21:04|RUN\s*01/)
     expect(printed[1]).not.toMatch(/전구간정상|-r2/)
-    expect(segments.map((s) => s.runLabel)).toEqual(['ECHO-1', 'ECHO-2'])
+    // x7 — same substitution as (b): what is left on the tab after the seam's
+    // label has been refused is the callsign, whatever `callsignOf` currently
+    // makes of a run. This case is about what did NOT reach the tab.
+    expect(segments.map((s) => s.runLabel)).toEqual([callsignOf(1), callsignOf(2)])
   })
 
   it('(d) exactly one segment is selected — the active run', async () => {

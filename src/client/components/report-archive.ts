@@ -156,6 +156,19 @@ export function createArchiveRail(options: ArchiveRailOptions): ArchiveRail {
         const node = el('button', 'arch')
         node.type = 'button'
         node.setAttribute('role', 'option')
+        // x7 — the tab says WHICH SITTING it is, in a form nothing has to parse.
+        //
+        // Its only identity was `runLabel`, the callsign — so a caller that
+        // wanted "the tab for run 3" had to know how run 3 is NAMED. `e2e/
+        // reports.spec.ts` carried a copy of `callsignOf` for exactly that, and
+        // a second copy read backwards (`label.match(/\d+/)`) to answer the
+        // reverse. The backwards one encoded the OLD rule and broke outright
+        // when x7 renumbered the series: it read every sitting one short and
+        // could not read run 1 at all, whose name has no digits in it.
+        //
+        // A run is a NUMBER the seam already carries. Publishing it is what lets
+        // the naming stay entirely `components/dossier.ts`'s business.
+        node.dataset.run = String(segment.run)
         node.append(el('span', undefined, segment.runLabel))
         node.addEventListener('click', () => {
           choose(segment.run)

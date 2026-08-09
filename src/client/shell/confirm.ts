@@ -55,11 +55,25 @@ export interface ConfirmCopy {
  * A function, not a constant: the body names the agent, and the agent is
  * `windows/agent-file.ts`'s to know (M1 — the callsign is per sitting).
  */
-export function deployCopy(callsign: string): ConfirmCopy {
+/**
+ * x7 — THE PLATE NAMES NO AGENT (민서, 08-09).
+ *
+ * It read `${callsign}에 대한 인수 인계를 완료하여 현장에 파견합니다.`, and the
+ * callsign was the wrong half of it twice over. On the first press there is no
+ * agent to name — the page is deliberately blank until this press names it, so
+ * the plate was announcing a name the file itself had not printed yet. And on
+ * every later press it repeated a word the operator had just spent a day
+ * reading. What the question is actually asking is whether the HANDOVER is
+ * finished; who carries it is the file's business, and the file says so.
+ *
+ * The parameter went with it rather than being ignored: a callsign argument
+ * that no longer reaches the copy is an invitation to put it back.
+ */
+export function deployCopy(): ConfirmCopy {
   return {
     head: '배치 확인',
     meta: '되돌릴 수 없음',
-    body: `${callsign}에 대한 인수 인계를 완료하여 현장에 파견합니다.`,
+    body: '인수 인계를 완료하여 현장에 파견합니다.',
     note: '현장 파견 시 더 이상 요원과 소통할 수 없습니다.',
     yes: '파견',
     no: '취소',

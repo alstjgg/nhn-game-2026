@@ -277,6 +277,28 @@ test.describe('captures', () => {
         ).toEqual([])
       }
 
+      // x7 — LAND THE COVER BEFORE FRAMING IT.
+      //
+      // The AGENT FILE's cover types itself out now (`windows/agent-file.ts`),
+      // and a capture installs a VIRTUAL clock, which virtualises the timers the
+      // reveal steps on. `runToMount` then advances it by however much the mount
+      // happened to cost, so `win-agent-file` — which frames `#w-file` on its
+      // cover, since only `threaded` shots turn to the agent's page — would pair
+      // its reference against a half-printed page, at a different fraction every
+      // run. Nothing would FAIL (this suite pairs names and sizes, not pixels),
+      // which is what makes it worth guarding: the shots are a competition
+      // artifact and a silently wrong one is the bad case.
+      //
+      // Pressing the operator's own control rather than reaching into the
+      // window: `#coverSkip` is the 건너뛰기 button, and it is removed once the
+      // reveal has landed, so the `count()` guard covers both "already whole"
+      // and "this shot is not on the cover". `underSweep` is exempt — that shot
+      // IS the boot sweep and the desk has not been handed over yet.
+      if (!shot.underSweep) {
+        const skip = page.locator('#coverSkip')
+        if ((await skip.count()) > 0) await skip.click()
+      }
+
       if (shot.seedAt) {
         await seedClock(page, shot.seedAt)
         await advance(page, mode, shot.holdMs ?? 1000)
