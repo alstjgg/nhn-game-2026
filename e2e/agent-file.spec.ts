@@ -222,12 +222,15 @@ test.describe('dossier sections', () => {
     await expect(sects).toHaveCount(3)
     await expect(sects.locator('h4')).toHaveText(['사건 개요', '현장 요원 임무', '현장 요원 교신 지침'])
     await expect(page.locator(`${FILE} .sect-no`)).toHaveCount(0)
-    await expect(sects.locator('.sect-flag')).toHaveText(['고정', '고정', '고정'])
+    // x7 — the section flags are deleted (민서, 08-09), so there is no badge to
+    // read. The census that replaced them is the count-0 below plus the headings
+    // above: what a section IS is now carried by its heading and its ink.
+    await expect(page.locator(`${FILE} .sect-flag`)).toHaveCount(0)
     await expect(page.locator(`${FILE} .sect.sealed`)).toHaveCount(0)
     await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await expect(sects).toHaveCount(2)
     await expect(sects.locator('h4')).toHaveText(['식별', '인수인계 사항'])
-    await expect(sects.locator('.sect-flag')).toHaveText(['고정', '조작 가능'])
+    await expect(page.locator(`${FILE} .sect-flag`)).toHaveCount(0)
   })
 
   test('[u4#c1] (b) 식별 is a three-row identity table', async ({ page }) => {
@@ -736,7 +739,9 @@ test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
     await page.locator(`${FILE} .pg-nav .pg-turn`).first().click()
     await expect(page.locator(`${FILE} .pg-count`)).toHaveText('2 / 3')
     await expect(page.locator(`${FILE} .sect`).nth(0).locator('dd').first()).toHaveText(flying!)
-    await expect(page.locator(`${FILE} .sect`).nth(1).locator('.sect-flag')).toHaveText('열람')
+    // x7 — a filed page no longer wears a 열람 badge; that it is READ-ONLY is
+    // asserted by the absence of slot controls, which is the fact that matters.
+    await expect(page.locator(`${FILE} .sect`).nth(1).locator('.slot-unset')).toHaveCount(0)
     // x5 — one paragraph, not two bordered cells. The claim is unchanged: the
     // page holds exactly what that sitting flew, in order, and it reads the
     // sentences themselves rather than an id or a placeholder. Both spans are

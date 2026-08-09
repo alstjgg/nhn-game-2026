@@ -249,15 +249,19 @@ export interface FiledSection extends SectionHead {
 
 export type DossierSection = RowsSection | FixedSection | OperableSection | FiledSection
 
-// x7 — `sealed: '봉인'` is gone with the section that was the only thing ever
-// flagged with it. This map is keyed by the state union, so a stale entry would
-// not have been a dead string, it would have been a compile error the day the
-// union lost the member — which is why the union is the source and not a list.
-const FLAG: Readonly<Record<DossierSection['state'], string>> = {
-  fixed: '고정',
-  operable: '조작 가능',
-  filed: '열람',
-}
+// x7 — THE SECTION FLAGS ARE GONE (민서, 08-09). `고정` · `조작 가능` · `열람`
+// were a badge in the corner of every section head on every page, and earlier
+// the same day `봉인` left with the sealed section.
+//
+// They were the form telling the operator what kind of field it was about to
+// show them, next to a heading that already says it: 인수인계 사항 is the only
+// thing on the desk that can be operated, and it is operable because it has
+// slots in it, not because a chip says so. What is left is the heading and its
+// rule, which is what the page was always read by.
+//
+// `state` survives on the model and on the element's class — the sheet still
+// paints `.sect.fixed .sect-body` a shade down from the operable one, so the
+// distinction is carried by the ink rather than announced by a label.
 
 /**
  * Pure: the cover's sections — everything true of every agent, in order.
@@ -357,6 +361,42 @@ export function buildDossier(model: readonly DossierSection[], slotHost: HTMLEle
  * collapses spaces (so a space-only node yields no box) but PRESERVES newlines
  * — a `\n` separator would print a blank line between every clause.
  */
+/**
+ * The series name, set apart where a section's BODY says it (x7, 민서 08-09).
+ *
+ * Bodies only. The red note is already set entirely in the seal's red, so a
+ * bold inside it would be emphasis with nothing to contrast against — it is
+ * rendered as plain text and left alone.
+ *
+ * 사건 개요 names the agent the file is about, and that name is the one word on
+ * the page the operator will be reading for the rest of the sitting — on the
+ * dossier's own 호출부호 row, on the report's signature, on every rail tab. The
+ * sheet paints `.rd-echo` in the seal's red and bold, the same ink `.rd-code`
+ * already gives the callsign row, so the brief and the identity agree.
+ *
+ * `ECHO` and not `callsignOf(...)`: this is the SERIES, not a sitting. The
+ * incident summary is about the agent programme, and the run it is eventually
+ * read beside may be ECHO-2. A literal is the honest thing here, and it is the
+ * one place the bare series name is set in prose rather than minted.
+ *
+ * Returns nodes rather than markup so the caller keeps control of the row, and
+ * so the cover's reveal still sees plain text runs it can print into — the
+ * `<b>` simply makes the sentence three text nodes instead of one, which
+ * `collectCover` handles by keying its line pause to the ROW.
+ */
+const CALLSIGN_SERIES = 'ECHO'
+
+function callsignMarked(line: string): Node[] {
+  const parts = line.split(CALLSIGN_SERIES)
+  if (parts.length === 1) return [document.createTextNode(line)]
+  const out: Node[] = []
+  for (const [index, part] of parts.entries()) {
+    if (index > 0) out.push(el('b', 'rd-echo', CALLSIGN_SERIES))
+    if (part.length > 0) out.push(document.createTextNode(part))
+  }
+  return out
+}
+
 function spaced(...nodes: Node[]): Node[] {
   return nodes.flatMap((node, index) => (index === 0 ? [node] : [document.createTextNode(' '), node]))
 }
@@ -367,9 +407,7 @@ function buildSection(section: DossierSection, slotHost: HTMLElement): HTMLEleme
   // C1 — no `§n`. The titles are distinct words and carry the document on
   // their own; a number that has to be kept in step with a page order is one
   // more thing that can contradict the page it is printed on.
-  head.append(
-    ...spaced(el('h4', undefined, section.title), el('span', 'sect-flag', FLAG[section.state])),
-  )
+  head.append(el('h4', undefined, section.title))
 
   if ('rows' in section) {
     const rows = el('dl', 'sect-rows')
@@ -398,7 +436,15 @@ function buildSection(section: DossierSection, slotHost: HTMLElement): HTMLEleme
   // address. `.sect-body` stays the one wrapper (e2e reads its text as a whole)
   // and the lines are `.sect-line` children of it.
   const body = el('div', 'sect-body')
-  body.append(...spaced(...section.body.split('\n').map((line) => el('div', 'sect-line', line))))
+  body.append(
+    ...spaced(
+      ...section.body.split('\n').map((line) => {
+        const row = el('div', 'sect-line')
+        row.append(...callsignMarked(line))
+        return row
+      }),
+    ),
+  )
 
   // The note is a SIBLING of the body, never a span inside its last line: the
   // sheet paints it small and red and the reveal treats it as its own beat.

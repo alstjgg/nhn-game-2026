@@ -491,8 +491,16 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    * It sums to roughly a quarter-minute for the whole cover. That is deliberate
    * and it is also exactly why 건너뛰기 exists.
    */
-  const COVER_MS_PER_CHAR = 22
-  const COVER_MS_WORD = 45
+  // SLOWED (x7, 민서 08-09, measured on the built page): 22 → 45 per character
+  // and 45 → 130 per word. At 22 ms a clause fanned out faster than it could be
+  // read — the eye arrived after the sentence had, which defeats the whole
+  // reason the cover types at all. The between-lines pause was right at 340 and
+  // is untouched; what was wrong was the rate WITHIN a line, so that is the only
+  // thing that moved. The word pause had to move with it: at 45 it was barely
+  // two characters' worth and did not read as a pause once the characters
+  // themselves cost 45.
+  const COVER_MS_PER_CHAR = 45
+  const COVER_MS_WORD = 130
   const COVER_MS_LINE = 340
   /** A beat before the first character, so the page is seen blank first. */
   const COVER_LEAD_MS = 420
@@ -507,7 +515,21 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   interface CoverLine {
     node: Text
     text: string
+    /**
+     * Whether a ROW ends here — the only place the long between-lines pause is
+     * owed (x7, 08-09).
+     *
+     * A row is not a text node. `.sect-line` holds one now, but the moment any
+     * of it carries inline markup — `<b>ECHO</b>` in 사건 개요 — the same
+     * sentence arrives as three nodes, and a reveal that paused at every node
+     * boundary would stop dead twice in the middle of a sentence. So the pause
+     * is keyed to the ROW the node sits in, not to the node.
+     */
+    breaks: boolean
   }
+
+  /** The block a run of text belongs to — one ROW of the printed cover. */
+  const COVER_ROW = '.sect-line, .sect-note, .sect-hd h4, .sect-rows dt, .sect-rows dd'
 
   /** The mounted cover's lines, in reading order — empty on every other page. */
   let coverLines: CoverLine[] = []
@@ -540,14 +562,37 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     const dossier = page.querySelector<HTMLElement>('#dossier')
     if (dossier === null) return []
     const walker = document.createTreeWalker(dossier, NodeFilter.SHOW_TEXT)
-    const found: CoverLine[] = []
+    const texts: Text[] = []
     for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
       const value = node.nodeValue ?? ''
       if (value.trim().length === 0) continue
-      const parts = value.split('\n')
-      for (const [index, part] of parts.entries()) {
-        const last = index === parts.length - 1
-        found.push({ node: node as Text, text: last ? part : `${part}\n` })
+      // x7 — a `.sect-flag` skip stood here. The badges typed along with the
+      // prose, so their text blanked while the bordered box stayed painted and
+      // the cover showed empty rectangles in the right margin for the length of
+      // the reveal (민서, screenshot 08-09). Excluding them fixed that; then the
+      // badges themselves were removed outright, so there is nothing left to
+      // exclude. Kept as a note because "the reveal must not blank form
+      // furniture" is the rule, and the next thing printed beside a heading
+      // will meet it again.
+      texts.push(node as Text)
+    }
+
+    const found: CoverLine[] = []
+    for (const [index, node] of texts.entries()) {
+      // The row this run belongs to, and whether it is the LAST run in it —
+      // the two facts the between-lines pause is owed to. A node with no row
+      // ancestor stands alone and therefore ends its own row.
+      const row = node.parentElement?.closest(COVER_ROW) ?? null
+      const next = texts[index + 1] ?? null
+      const nextRow = next?.parentElement?.closest(COVER_ROW) ?? null
+      const lastInRow = row === null || nextRow !== row
+
+      const parts = (node.nodeValue ?? '').split('\n')
+      for (const [part, text] of parts.entries()) {
+        const last = part === parts.length - 1
+        // An authored `\n` always breaks; the final run of a row breaks because
+        // the row does. Everything else is mid-sentence and pauses per word.
+        found.push({ node, text: last ? text : `${text}\n`, breaks: last ? lastInRow : true })
       }
     }
     return found
@@ -612,7 +657,9 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (typed >= line.text.length) {
       coverLine += 1
       coverChars = 0
-      wait = COVER_MS_LINE
+      // x7 — the long pause is owed to a ROW's end, not a node's. A sentence
+      // carrying inline markup is several nodes and must read as one line.
+      if (line.breaks) wait = COVER_MS_LINE
     } else {
       coverChars = typed
       // A word ends where its space was just printed. 한국어 breaks by 어절 and
