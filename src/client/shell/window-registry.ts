@@ -26,10 +26,17 @@ export interface WindowDef {
    * need six names for three things, and the subtitles were the desk explaining
    * itself to a reader who is already looking at the window — the LIVE FEED
    * announcing it is 열람 전용 above a pane with nothing to press in it.
+   *
+   * x10 (민서, 08-10) finished that cut on the third label. `tab` — the
+   * two-letter code the frame printed on a trapezoid above the title bar, `LF` /
+   * `AF` / `RP` — is gone with `.win-tab` itself: 제목 위의 RP · LF · AF 태그를
+   * 없애고, 창 위치는 그대로 둘 것. It was never read anywhere else (the taskbar
+   * chips print `en`), so once the element went the field was a REQUIRED label on
+   * the registry that nothing rendered, which is worse than an absent one — a
+   * fourth window would have had to invent a code for a surface that does not
+   * exist. `en` is now the one and only name a window carries.
    */
   en: string
-  /** The file-tab code above the frame. */
-  tab: string
   /** The paper stock this window's body is printed on (u1's `paper.css`). */
   stock: string
   /** Whether the window carries the live dot (LIVE FEED does). */
@@ -46,7 +53,7 @@ export interface WindowDef {
 }
 
 export const WINDOW_REGISTRY: readonly WindowDef[] = [
-  { key: 'feed', id: 'w-feed', en: 'LIVE FEED', tab: 'LF', stock: 'fanfold', live: true, mount: mountLiveFeed },
-  { key: 'file', id: 'w-file', en: 'AGENT FILE', tab: 'AF', stock: 'paper kraft', resizable: false, mount: mountAgentFile },
-  { key: 'rep', id: 'w-rep', en: 'REPORTS', tab: 'RP', stock: 'paper bond', mount: mountReports },
+  { key: 'feed', id: 'w-feed', en: 'LIVE FEED', stock: 'fanfold', live: true, mount: mountLiveFeed },
+  { key: 'file', id: 'w-file', en: 'AGENT FILE', stock: 'paper kraft', resizable: false, mount: mountAgentFile },
+  { key: 'rep', id: 'w-rep', en: 'REPORTS', stock: 'paper bond', mount: mountReports },
 ]

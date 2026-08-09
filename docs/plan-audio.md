@@ -81,12 +81,20 @@ Four properties worth knowing before editing:
   owner of typing cadence — this module holds no copy of `MS_PER_CHAR`. The
   observer skips `article.terminal-record`: the ledger's count-up rewrites text
   the same way and has its own row ticks.
-- **It unlocks at the door; the ambience waits for the desk.** O1's sign-in
-  plate and manual sheet stand in front of the desk and have controls of their
-  own, so `installAudio` unlocks on the first gesture wherever it lands. A
-  `deskReady` promise (resolved by `boot.ts` after `revealDesk`) gates **only**
-  the beds and their `playForMs` window, so the opening plays where the player
-  can hear it.
+- **It unlocks at the door, and since x10 the ROOM opens there too.** O1's
+  sign-in plate and manual sheet stand in front of the desk and have controls of
+  their own, so `installAudio` unlocks on the first gesture wherever it lands —
+  at the door that is the first of the fifteen keystrokes the sign-in card asks
+  for. 민서 (08-10) moved the desk bed and its office onto that unlock: a room
+  that holds for the whole session was already there before the operator signed
+  in, and waiting for the hand-over meant the fan started a minute into the
+  sitting. **This is as early as sound can possibly be** — a browser suspends an
+  AudioContext built outside a user gesture, so the first painted frame is
+  silent for every layer by construction. The `deskReady` promise (resolved by
+  `boot.ts` at the hand-over, on the door path *and* the skip paths) now gates
+  **only** the Watch drone's `playForMs` window: ten seconds that started at the
+  login screen would be spent before the desk existed, so that one opening is
+  still spent where the player can hear it.
 
 The trigger vocabulary is **closed**: `TRIGGERS` in `src/client/audio/map.ts`. A
 map that binds a trigger outside it, or points at a cue that does not exist,
@@ -95,7 +103,8 @@ fails validation at boot and the desk stays silent rather than half-wired.
 ## 4. The cue list
 
 34 files. Levels are linear gain against the bus; "gap" is the minimum interval
-between two plays of that cue. The buses are `sfx` 0.5 and `ambience` 0.15.
+between two plays of that cue. The buses are `sfx` 0.5 and `ambience` **0.1**
+(0.15 until x10, 08-10 — 민서 asked for a quieter room; see §4.4).
 
 ### 4.0 The binding table — which sound plays when
 
@@ -156,7 +165,7 @@ nothing prints as *silent* rather than going missing.
 | ambience `watch` | `watch` | `amb-watch-drone` | 40.00 s | 0.75 |
 | report typewriter, every 2 chars | `type` | `type-1` · `type-2` · `type-3` · `type-4` · `type-5` | 0.04 s | 0.3 |
 
-Buses: `sfx` 0.5 · `ambience` 0.15. Ambience retires 10000 ms after the desk opens. Preloaded: `click` · `hover` · `window-open` · `window-close`.
+Buses: `sfx` 0.5 · `ambience` 0.1. Ambience retires 10000 ms after the desk opens. Preloaded: `click` · `hover` · `window-open` · `window-close`.
 
 <!-- audio:bindings:end -->
 
@@ -274,10 +283,27 @@ Two mechanisms exist for that door, kept live for a rebind:
 
 | Cue | When | Length |
 |---|---|---|
-| `bed` | from the desk opening, **for the session** | 30 s seamless stereo loop |
+| `bed` | from the **first gesture**, wherever it lands — the door — **for the session** | 30 s seamless stereo loop |
 | `office` | every **5–10 s** while `bed` holds | 5 one-shots, 0.6–1.0 s |
 | `watch` | `beat_start`, within the window below | 40 s seamless stereo loop |
-| — | after **10 s** | `watch` retires and never returns |
+| — | **10 s** after the desk opens | `watch` retires and never returns |
+
+**x10 (08-10, 민서) — the room is already there when the operator signs in.**
+The desk bed and its office used to wait for `deskReady`, on the reasoning §3
+records: an opening that establishes and expires behind a curtain is an opening
+nobody hears. That reasoning did not survive `deskHolds`. Once the bed stopped
+being an opening and became a room that holds for the session, waiting behind
+the sign-in plate and the manual sheet was not protecting an opening, it was
+starting the fan a minute late. So the room comes up on the unlocking gesture —
+at the door, the first of the fifteen keystrokes the sign-in card asks for, under
+`shell/radio-sfx.ts`'s own key tick. What the operator hears: **nothing on load**
+(no AudioContext may exist yet), **the room fading in from the first keystroke**
+(the bed is in the last load wave, so it is the mixer's `reHold` pass that
+actually starts it when the bytes land), and **the same room, unbroken, at the
+desk**. The Watch drone did not move: its window is ten seconds, and ten seconds
+that begin at the login screen are spent before the operator is through it, so
+`deskReady` still gates that one — `playForMs` is measured from each bed's own
+opening, and those are now two different moments.
 
 **The two beds want opposite things, and `ambience.deskHolds` is what splits
 them.** The Watch drone is still an opening: a drone under a screen the player
@@ -304,16 +330,29 @@ that carries meaning, and §2 rule 3 does not survive that confusion. They have
 to sound like they are happening to somebody else.
 
 **Levels, measured rather than guessed.** The bed asset is written at **-13.5
-LUFS** so that `gain: 1` on the `ambience` bus (0.15) lands it at **-30.0 LUFS**
-— roughly 8 dB under where game music would normally sit, because this one plays
-under a reading surface. The office cues are 18.4 dB below their raw cuts
-(`gain: 0.8` × the same bus), which puts them ~10 dB under the bed. That gap is
-the effect, and it is the first number to reach for when the room feels wrong.
-It was tuned on the running desk and it moved twice, both times up: -24 dB
-(`gain: 0.42`) read as an empty office, and -20.9 dB (`0.6`) still did. **0.8 is
-not headroom.** It is near the top of the usable range — past it the one-shots
-stop being somewhere else and start being cues on this desk, which is exactly
-the confusion the 3.5 kHz cut above exists to prevent.
+LUFS** so that `gain: 1` on the `ambience` bus (**0.1** since x10) lands it at
+**-33.5 LUFS** — roughly 11.5 dB under where game music would normally sit,
+because this one plays under a reading surface. The office cues are 21.9 dB below
+their raw cuts (`gain: 0.8` × the same bus), which puts them ~10 dB under the
+bed. That gap is the effect, and it is the first number to reach for when the
+room feels wrong. It was tuned on the running desk and it moved twice, both times
+up: -24 dB (`gain: 0.42`) read as an empty office, and -20.9 dB (`0.6`) still
+did. **0.8 is not headroom.** It is near the top of the usable range — past it
+the one-shots stop being somewhere else and start being cues on this desk, which
+is exactly the confusion the 3.5 kHz cut above exists to prevent.
+
+**x10 (08-10, 민서) — the bus went 0.15 → 0.1, and the tuning history above is
+the thing to watch.** The request was simply a quieter room, and the cut is made
+on the BUS and nowhere else: bed and office ride the same one, so the ~10 dB gap
+between them — the whole effect — is bus-invariant and the room recedes as a
+whole rather than deforming. No cue gain moved. But the office one-shots are
+tuned in ABSOLUTE terms, and -3.5 dB puts them at **-21.9 dB from their raw
+cuts**, i.e. back inside the range the two rejected settings above sat in
+(-20.9 dB "still read as an empty office"). The bed is the thing that was too
+loud, so this is the right first move; if the office has gone under with it, the
+one-knob answer is `office.gain` 0.8 → 1.0 — which restores -20.0 dB absolute at
+the cost of about 2 dB of the gap — and **not** the bus, which is the level the
+room was asked to sit at.
 
 **The loop closes on a crossfade, and its seam is noise-masked rather than
 silent.** Head and tail are 2 s of the same fan recording summed against each

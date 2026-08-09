@@ -136,15 +136,47 @@ body:has(#ending) #toast{display:none}
    browser stops breaking inside a word — 기록|은. The two paragraphs are one
    block, so they sit closer to each other than the first sits to the lead.
    Colour is NOT set here: the ash the bad ending reads in is one of the things
-   that separates the two, so it lives in the blocks below. */
+   that separates the two, so it lives in the blocks below.
+
+   x10 (08-10) — THE TWO SHEETS PARTED ON SIZE, AND NOT ON FACE. The header's claim
+   that this one "is `win-manual.css` again … the prose treatment of `.cf-note`" is
+   true of the argument and no longer of every value: the briefing took its prose to
+   `--fs-10-5` (12.6px) and this sheet keeps 10.2px, because the briefing is read
+   once, cold, before anything has happened, while these plates land on an operator
+   who has just watched a day end. Do not "restore consistency" on the SIZE — that
+   divergence is the statement.
+
+   ON FACE THERE IS NOTHING LEFT TO DIVERGE ABOUT. This paragraph used to end "and
+   keeps `.cf-ask` in `--myeong`, deliberately … a verdict belongs in the face this
+   desk reserves for what a person said". 민서 overruled that the same day: 명조
+   leaves the alert plates entirely, so `.cf-ask` is `--mono` on the shared template
+   in `confirm.css` and every plate family inherits it, this one included. The
+   argument it replaces is worth keeping visible because it was a real reading and
+   losing it is a real cost — an ending IS the closest thing on this desk to someone
+   speaking to the operator directly. What the desk says instead, now, is that a
+   verdict is something the TERMINAL computed and printed; the people on this desk
+   speak in the two REPORTS bodies and in the feed, and those keep the serif. This
+   sheet sets no `font-family` at all, which is how it should have been stated in
+   the first place — the plate's face is the template's business. */
 .end-plate .cf-note{letter-spacing:.01em;line-height:1.85;word-break:keep-all}
 .end-plate .cf-note + .cf-note{margin-top:var(--space-7)}
 
 /* One answer, so it sits alone on the right where a confirmation's pair ends.
    The label changes length across the walk — 다음, then 시뮬레이션 종료 — so the
    button may be as wide as it needs while keeping the height every plate button
-   on this desk shares. */
-.end-plate .cf-btn{padding:0 var(--space-20)}
+   on this desk shares.
+
+   x10 (08-10) — 20 → 12px a side, following `.man-plate .cf-btn` rather than
+   diverging from it. THIS is one of the two rules that does track the briefing,
+   and the paragraph above about not "restoring consistency" is not in tension with
+   that: what the two sheets keep apart is the TYPE, because a verdict and a notice
+   are different kinds of utterance. The optical inset of a button is not — 민서's
+   note ("버튼 안쪽 폭은 너무 넓고") was about the control, and a control that reads
+   as loose on the briefing reads as loose here for the same reason. 시뮬레이션 종료
+   is the same 7 syllables and 1 space as the briefing's 시뮬레이션 시작, so the two
+   plates' buttons stay the same size as each other, which they should: it is the
+   same press ending the same session. */
+.end-plate .cf-btn{padding:0 var(--space-12)}
 
 /* ═══ GOOD — 사망 1명 ══════════════════════════════════════════════════════
    A pass, not a celebration. The plate is a terminal confirming a record, and

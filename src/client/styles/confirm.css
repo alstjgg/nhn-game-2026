@@ -42,9 +42,39 @@
 .cf-plate-hd i{margin-left:auto;font-style:normal;font-size:var(--fs-8);
   letter-spacing:.2em;color:var(--seal);opacity:.85}
 
-/* ─── the question ───────────────────────────────────────────────────────── */
+/* ─── the question ───────────────────────────────────────────────────────────
+   x10 (08-10) — NO PLATE ON THIS DESK IS SET IN 명조. 민서: alert 화면의 어떤
+   텍스트도 --myeong이면 안 된다.
+
+   This declaration was `var(--myeong)` and it was the LAST one. The ruling arrived
+   in two steps and the second overturned the first: x10 began by putting only the
+   briefing's lead into `--mono` so it would match the prose under it
+   (`win-manual.css`), on the reading that the confirmation's question and the two
+   endings' verdicts are somebody SPEAKING and belong in the face `tokens.css`
+   reserves for what a person said or wrote. 민서 looked at it and reversed the
+   scope: the serif goes from the plates entirely, so it moves here — one
+   declaration on the shared template, inherited by `#confirm`, `.man-plate` and
+   `.end-plate` alike, rather than three sheets each holding an opinion.
+
+   WHAT THE READING BECOMES, because this is not only a font swap. `--myeong` on a
+   plate said a person was addressing the operator. `--mono` says the TERMINAL is:
+   every one of these plates is the portal issuing something — a briefing, a
+   confirmation it needs, a verdict it has computed — and none of them is a voice
+   from the field. The people on this desk speak in the two REPORTS bodies and in
+   the feed, and those keep the serif untouched (`win-agent-file.css`'s
+   `.sect-body`, `win-reports.css`). The plates handing it over do not. That is a
+   cleaner line than the one x10 drew first, and it is the reason this reads as a
+   simplification rather than as a reversal: the sheet now makes ONE claim about
+   plate type instead of three.
+
+   `win-manual.css` HAS NO `.cf-ask` RULE ANY MORE — it was `font-family:var(--mono)`
+   and this line makes it a no-op. A redundant override is a claim that the plate
+   needs a face of its own, and it would go stale silently the day this one moved.
+   `tests/shell/manual.test.ts [x10] (a)` is re-aimed onto the durable form of the
+   rule: no alert sheet may name `--myeong` at all.
+   ─────────────────────────────────────────────────────────────────────────── */
 .cf-body{padding:var(--space-26) var(--space-26) var(--space-20)}
-.cf-ask{font-family:var(--myeong);font-size:var(--fs-15);line-height:1.7;
+.cf-ask{font-family:var(--mono);font-size:var(--fs-15);line-height:1.7;
   color:var(--txt-hi);letter-spacing:.01em;word-break:keep-all}
 .cf-note{margin-top:var(--space-11);font-size:var(--fs-8-5);letter-spacing:.12em;
   color:var(--txt-7);line-height:1.6}
@@ -56,7 +86,8 @@
    the two answers were the loudest thing on a plate whose whole job is the
    sentence above them. Dropped to `--fs-9-5`, the plate's own header size and
    plainly body copy next to the `--fs-15` ask, and the box follows the type
-   down to 88×35: a third off both dimensions.
+   down to 88×35 (x10 has since taken it to 60×18 — see below): a third off
+   both dimensions.
 
    The primary carries NO border. It had a black hairline from `.cf-btn`, which
    around a solid seal-red fill reads as an outline drawn on top of a colour
@@ -64,11 +95,89 @@
    secondary keeps its line, because a flat chrome panel with no edge is not a
    button at all — that line is what makes 취소 legible AS a choice, and it is
    `--ink-line`, never red.
+
+   ─── x10 (08-10) — THE FOOT IS SHORTER THAN THE HEAD ───────────────────────
+
+   민서: 하단 버튼 영역이 제목 영역보다 낮아야 한다. 시선은 가운데 본문에 가야 한다.
+   버튼 글자가 작아지는 위험은 감수한다. — and this is the SHARED template, so it
+   lands on all three plate families at once: the 파견 confirmation (`#confirm`),
+   the onboarding walk (`.man-plate`) and both endings (`.end-plate`). No
+   per-family opt-out was asked for and none is given.
+
+   The foot used to be TALLER than the head, which is the whole of the defect:
+   11 + 35 + 18 + the 1px rule = 65px of ANSWER under a 42px title, with the
+   sentence the plate exists for sitting between them. The eye reads the
+   heaviest band first, and the heaviest band was the one carrying the least.
+
+   FIRST CUT WAS 6 + 24 + 6 + 1 = 37px, and it got the band height right and the
+   BUTTON wrong. 민서, second pass: 버튼 글자를 줄이고 버튼 높이를 낮춰서 하단 영역에
+   여백이 생기게 하라. 버튼 안쪽 폭은 너무 넓고 바깥쪽 높이는 여백이 없다.
+
+   That is one complaint about two axes and they pull opposite ways. The first cut
+   kept `--fs-9-5` and a 24px box — a proof that the type COULD survive the shorter
+   band — and spent the whole saving on the band, leaving 6px above and below a
+   box that filled it. The button was no smaller than before; only its room was.
+   Meanwhile `min-width:88px` was sized for a 35px button set in `--fs-13`, so at
+   two Korean syllables it was mostly empty: ~29px of type in an 88px box is 30px
+   of dead air inside each answer, on the same plate that has none around them.
+
+   Re-cut to 9 + 18 + 9 + 1 = 37px. The BAND is the same height — it was already
+   right, five under the 42px `.cf-plate-hd` — and every term inside it moved:
+
+     THE BUTTON IS 18px, down from 24, and the 6px it gives up goes straight to
+     the padding: 9/9, half again the air it had. `.win-tab` was cited here as the
+     precedent for 24; that element is gone this same round (민서 asked for the
+     RP / LF / AF tags off the windows), so the citation would have gone stale
+     even if the number had stayed.
+
+     THE TYPE SHRINKS TO `--fs-8-5` (10.2px), which is the risk 민서 accepted at
+     the first pass and has now asked for outright. It is one step below
+     `--fs-9-5` and it is the same size as `.cf-note`, the caption under the
+     question — the objection the first cut raised against exactly this value. The
+     objection is overruled rather than forgotten: at `font-weight:700` on a solid
+     seal-red fill, next to `.cf-note`'s 400 in `--txt-7`, the answer is not the
+     quieter of the two at equal size. Weight and ground carry the emphasis, which
+     is what the paragraph on the primary's missing border already argues.
+
+     MIN-WIDTH DROPS 88 → 56px. It is a floor against 취소 collapsing to a chip,
+     not a target: at 10.2px two syllables plus `.24em` of tracking is ~29px of
+     type, so 56px still leaves ~15px each side, and on the two one-button feet the
+     56 is finally what binds — see `win-manual.css`, whose inline padding went
+     20 → 12px a side in the same pass because THAT is what sized those two. The tracking itself is untouched —
+     `.24em` letter-spacing with a matching `text-indent` is the desk's own
+     small-caps signature (`.bd-main`, `.dd-label`), and narrowing the box is what
+     was asked for, not loosening the letters.
+
+     THE 1px RULE STAYS. It is what makes the foot a foot rather than the last
+     paragraph of the body.
+
+   THE FOCUS RING FITS WITH ROOM NOW. `:focus-visible` draws 2px at
+   `outline-offset:3px`, so it reaches 5px past the box against 9px of padding —
+   4px of clearance where the first cut had 1. Nothing in this stack sets
+   `overflow:hidden` (`#confirm`, `#manual`, `#ending` and `.cf-plate` are all
+   visible), so the ring was never at risk of being CLIPPED at any height; what
+   the padding buys is that it does not print ON the rule above, which reads as a
+   rendering fault rather than as focus. Do not take the padding below 5 without
+   taking the offset down with it.
+
+   THE TWO PER-FAMILY OVERRIDES INHERIT ALL OF THIS — checked, not assumed.
+   `win-manual.css`'s `.man-plate .cf-btn` and `win-ending.css`'s
+   `.end-plate .cf-btn` declare INLINE PADDING and nothing else, so the one-button
+   feet take the new height, type and floor along with the pair.
+
+   Their padding is not decoration, and on those two plates it is what actually
+   sets the width: at 2×20px a side, 다음 (25px of glyphs) sat in a 68px box and
+   `min-width` never bound at all. Both went 20 → 12 in this same pass, which is
+   what lets the 56px floor do its job — the numbers are worked through in
+   `win-manual.css`. 시뮬레이션 시작 / 시뮬레이션 종료 are ~97px of glyphs and clear
+   the floor on their own, which is what a floor is for.
+   `tests/shell/manual.test.ts [x10] (c)` enumerates both rules' declared
+   properties and fails if either grows a second one.
    ─────────────────────────────────────────────────────────────────────────── */
 .cf-foot{display:flex;gap:var(--space-8);justify-content:flex-end;
-  padding:var(--space-11) var(--space-26) var(--space-18);
+  padding:var(--space-9) var(--space-26);
   border-top:1px solid var(--ink-line)}
-.cf-btn{min-width:88px;height:35px;font-size:var(--fs-9-5);font-weight:700;
+.cf-btn{min-width:56px;height:18px;font-size:var(--fs-8-5);font-weight:700;
   letter-spacing:.24em;text-indent:.24em;border:0;
   transition:transform .12s, box-shadow .18s, filter .18s, background .18s}
 .cf-btn:focus-visible{outline:2px solid var(--txt-4);outline-offset:3px}

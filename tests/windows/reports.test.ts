@@ -99,6 +99,14 @@ interface MinableModule {
   sentenceAttrs(sentence: Sentence): Readonly<Record<string, string>>
   mine(id: string, marks: MarkSets): MineOutcome
   isMineKey(key: string): boolean
+  /**
+   * x10 — the DOM half's two repaints, typed against `unknown` nodes so the
+   * node-env suite can hand them a stub. Neither reads anything off an element
+   * but `dataset.sentenceId`, which is what makes that honest (see `[x10]` at
+   * the foot of this file).
+   */
+  applyState(node: unknown, state: MinableState, held?: boolean): void
+  repaintMines(host: unknown, marks: MarkSets, held: boolean): void
 }
 
 interface ArchiveSegment {
@@ -836,5 +844,211 @@ describe('[x6] the 검인 chop goes down when the sitting has been received', ()
     // loop lists the run just opened in its own archive
     // (`driver/fixtures/run-loop.ts` — `archiveThrough` walks `RUN..run`).
     expect(win!.text, 'the seal is seeded from the archive').not.toMatch(/scored\.add[^\n]*(?:archive|entry)/)
+  })
+})
+
+/* ══ [x10] the tear is HELD while the handover types itself out ══════════ */
+//
+// 민서 (08-10): mining is disabled while the previous ECHO's 인수인계 사항 is
+// being typed out. The REVEAL is the AGENT FILE's (`components/slot-board.ts`,
+// and u4's suite holds that half); what is asserted here is REPORTS' side of it
+// — that the gesture cannot reach the `mine` op while the board says it is
+// drawing, that the sentences SAY they are unavailable rather than silently
+// ignoring a press, and that saying so is undone by a repaint rather than by an
+// undo step somebody has to remember.
+//
+// The DOM half is exercised with a STUB node, not with jsdom (C6 — vitest is
+// node-env only). That is honest here and only here: `applyState` and
+// `repaintMines` touch `className`, `setAttribute`/`removeAttribute` and
+// `dataset.sentenceId`, which the stub implements completely. The rendered
+// article is `e2e/reports.spec.ts`'s.
+
+const TYPEWRITER_TS = path.join(CLIENT, 'components/typewriter.ts')
+
+interface TypePace {
+  msPerChar: number
+  msBetween: number
+}
+
+interface TypewriterModule {
+  MS_PER_CHAR: number
+  MS_BETWEEN: number
+  READING_PACE: TypePace
+  TYPE_START: TypeState
+  typeCursor(state: TypeState, elapsedMs: number, lengths: readonly number[], pace?: TypePace): TypeState
+  typeDuration(lengths: readonly number[], pace?: TypePace): number
+}
+
+async function typewriter(): Promise<TypewriterModule> {
+  return (await import(importable(TYPEWRITER_TS))) as unknown as TypewriterModule
+}
+
+/** Everything `applyState` and `repaintMines` actually touch on an anchor. */
+interface StubNode {
+  className: string
+  dataset: { sentenceId: string }
+  attrs: Map<string, string>
+  setAttribute(name: string, value: string): void
+  removeAttribute(name: string): void
+}
+
+function stubNode(id: string): StubNode {
+  const attrs = new Map<string, string>()
+  return {
+    className: '',
+    dataset: { sentenceId: id },
+    attrs,
+    setAttribute(name: string, value: string): void {
+      attrs.set(name, value)
+    },
+    removeAttribute(name: string): void {
+      attrs.delete(name)
+    },
+  }
+}
+
+/** A page of anchors, as `repaintMines` reads one. */
+function stubHost(nodes: readonly StubNode[]): unknown {
+  return { querySelectorAll: (): readonly StubNode[] => nodes }
+}
+
+const disabled = (node: StubNode): string | undefined => node.attrs.get('aria-disabled')
+
+describe('[x10] mining is held while the handover is typing itself out', () => {
+  it('(a) the two-argument call is unchanged — a settled sentence is unavailable, an operable one is not', async () => {
+    const m = await minable()
+    const slotted = stubNode('id-slotted')
+    const unmined = stubNode('id-plain')
+    // Exactly as `components/report-view.ts` calls it: two arguments, no hold.
+    // The third argument defaults, so x10 changed nothing for the caller that
+    // did not ask for it.
+    m.applyState(slotted, 'slotted')
+    m.applyState(unmined, 'unmined')
+    expect(disabled(slotted)).toBe('true')
+    expect(disabled(unmined)).toBeUndefined()
+  })
+
+  it('(b) a held tear SAYS so, and the release takes it back on the same node', async () => {
+    const m = await minable()
+    const node = stubNode('id-plain')
+
+    m.applyState(node, 'unmined', true)
+    expect(disabled(node), 'a held sentence must announce that it is unavailable').toBe('true')
+
+    // The release is a REPAINT, not an undo: the same call with the hold down
+    // clears the attribute, because the attribute is derived from the arguments
+    // and never read back off the node.
+    m.applyState(node, 'unmined', false)
+    expect(disabled(node), 'the hold stuck ON — the operator cannot mine for the rest of the sitting').toBeUndefined()
+
+    // …and it survives being held twice and released once, which is the shape a
+    // second settle in one sitting would produce.
+    m.applyState(node, 'unmined', true)
+    m.applyState(node, 'unmined', true)
+    m.applyState(node, 'unmined', false)
+    expect(disabled(node)).toBeUndefined()
+  })
+
+  it('(c) the hold reaches every sentence, and the release gives each one its OWN state back', async () => {
+    const m = await minable()
+    const marks = m.deriveMarks(store({ mined: ['id-mined', 'id-slotted'], slots: { 0: 'id-slotted' } }), ['id-carried'])
+    const nodes = ['id-plain', 'id-mined', 'id-slotted', 'id-carried'].map(stubNode)
+    const host = stubHost(nodes)
+
+    m.repaintMines(host, marks, true)
+    expect(nodes.map(disabled), 'the hold must reach every anchor on the page').toEqual([
+      'true',
+      'true',
+      'true',
+      'true',
+    ])
+
+    m.repaintMines(host, marks, false)
+    // Unconditional AND total: the release does not blanket-clear, it recomputes
+    // — the two settled sentences are still dead ends, the other two are live.
+    expect(nodes.map(disabled)).toEqual([undefined, undefined, 'true', 'true'])
+    // The class list is repainted from the marks in the same pass, so the two
+    // repaints cannot disagree about what a sentence is.
+    expect(nodes.map((n) => n.className)).toEqual([
+      m.sentenceClass('unmined'),
+      m.sentenceClass('mined'),
+      m.sentenceClass('slotted'),
+      m.sentenceClass('carried'),
+    ])
+  })
+
+  it('(d) source: a held gesture stops above the op — no `mine` is minted, nothing reaches the seam', () => {
+    const win = scannedSources().find((s) => s.file.endsWith('windows/reports.ts'))
+    expect(win, 'the REPORTS window is not in the scanned set').toBeTruthy()
+    const text = win!.text
+    const held = text.indexOf('isRevealing()')
+    const minted = text.indexOf('mine(id, m)')
+    const sent = text.indexOf('driver.send(')
+    const placed = text.indexOf('board.place(')
+    expect(held, 'the window no longer asks the board whether it is drawing').toBeGreaterThan(-1)
+    for (const [what, at] of [
+      ['the mine reducer', minted],
+      ['the seam', sent],
+      ['the seat', placed],
+    ] as const) {
+      expect(at, `${what} is gone from onMine`).toBeGreaterThan(-1)
+      expect(held, `a held tear can still reach ${what}`).toBeLessThan(at)
+    }
+    // …and it is a REFUSAL, not a deferral: nothing queues the gesture to be
+    // replayed when the reveal lands.
+    expect(text, 'a held gesture is remembered instead of refused').not.toMatch(/setTimeout[^\n]*onMine|pendingMine/)
+  })
+
+  it('(e) source: the hold is READ off the board — no body class, no second copy of the fact', () => {
+    const win = scannedSources().find((s) => s.file.endsWith('windows/reports.ts'))
+    const text = win!.text
+    // The idiom this window already uses for "ask the board" (it reads
+    // `isLocked()` in the same handler), and deliberately not a `<body>` class or
+    // a module-level flag: a copy of the fact is what can be left behind, and a
+    // hold nobody cleared is a desk where mining never comes back.
+    expect(text, 'the hold is not derived from the board').toMatch(/getSlotBoard\(\)\?\.isRevealing\(\)/)
+    expect(text, 'the window writes a body class').not.toMatch(/document\.body|classList\.(?:add|remove|toggle)/)
+    expect(text, 'the hold is stored rather than asked for').not.toMatch(
+      /\blet\s+(?:held|mineHeld|revealing|gated)\b/,
+    )
+  })
+
+  it('(f) source: ONE repaint path, so no refresh can forget the hold', () => {
+    const win = scannedSources().find((s) => s.file.endsWith('windows/reports.ts'))
+    const text = win!.text
+    // Every mark repaint in this window goes through `paintMarks()`, which is the
+    // only caller of `view.refresh` and always follows it with the hold.
+    expect(text.match(/view\.refresh\(/g) ?? [], 'a second repaint path can leave the hold unpainted').toHaveLength(1)
+    expect(text).toMatch(/function paintMarks\(\)[\s\S]{0,200}view\.refresh\([\s\S]{0,120}repaintMines\(/)
+    expect((text.match(/paintMarks\(\)/g) ?? []).length, 'nothing calls the one repaint path').toBeGreaterThan(2)
+    // The watcher is what carries BOTH edges of the reveal onto the page — the
+    // reveal is no more an event than slotting is — so the hold has to be in the
+    // stamp it compares.
+    expect(text, 'the frame stamp does not watch the hold').toMatch(/slotStamp[\s\S]{0,400}mineHeld\(\)/)
+  })
+
+  it('(g) the REPORT body replay is untouched: its pace is the default, and it names none', async () => {
+    const t = await typewriter()
+    // The desk's reading pace, pinned. It is what `report-view.ts` types at and
+    // 민서 asked for the HANDOVER to be quicker, not the report.
+    expect(t.MS_PER_CHAR).toBe(11)
+    expect(t.MS_BETWEEN).toBe(130)
+    expect(t.READING_PACE).toEqual({ msPerChar: 11, msBetween: 130 })
+
+    const lengths = [34, 34, 34]
+    for (const elapsed of [0, 90, 400, 1_500, 60_000]) {
+      expect(
+        t.typeCursor(t.TYPE_START, elapsed, lengths),
+        'the default pace has drifted from the desk’s reading pace',
+      ).toEqual(t.typeCursor(t.TYPE_START, elapsed, lengths, t.READING_PACE))
+    }
+    expect(t.typeDuration(lengths)).toBe(t.typeDuration(lengths, t.READING_PACE))
+
+    // …and the caller says nothing, so it cannot drift even if a default did.
+    const src = scannedSources().find((s) => s.file.endsWith('components/report-view.ts'))
+    expect(src!.text, 'the REPORT replay now names a pace of its own').toMatch(
+      /typeCursor\(\s*TYPE_START,\s*elapsed,\s*lengths\s*\)/,
+    )
+    expect(src!.text, 'the REPORT replay carries pace numbers').not.toMatch(/msPerChar|msBetween|PACE\b/)
   })
 })

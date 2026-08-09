@@ -76,7 +76,16 @@ export interface AudioMap {
   ambience: {
     desk: string | null
     watch: string | null
-    /** How long any bed may play, from unlock. `null` = for the whole session. */
+    /**
+     * How long a bed may play, measured from the moment THAT bed started.
+     * `null` = for the whole session.
+     *
+     * x10 (08-10) — the two anchors parted when the two beds did. The Watch
+     * drone's window opens at the desk, because that is where the drone starts;
+     * the desk bed's (only reachable with `deskHolds` false) runs from the
+     * unlock, because since x10 that is where the room starts. Neither is "from
+     * the desk" for its own sake — each is from its own opening.
+     */
     playForMs: number | null
     /**
      * The desk bed ignores `playForMs` and holds for the session.

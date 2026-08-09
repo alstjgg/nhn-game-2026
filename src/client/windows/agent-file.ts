@@ -252,6 +252,84 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
 
   let currentView = deployView({ slots: board.cells(), deployed: false, run, at: opensAt })
 
+  /* ══ x10 — THE CUE ON THE SECOND PAGE'S DEPLOY ═══════════════════════════ */
+
+  /**
+   * Whether the MOUNTED page is the live page AND the live page is page 2 of 2
+   * — the only geometry the blink is allowed to run in (민서, 08-10).
+   *
+   * Written by `turn()` alone, because `turn()` is the only place both numbers
+   * exist: `viewing` after its clamp, and `pages().length`. `deployView` is NOT
+   * asked (D1 keeps it pure — a view model that took a page index would be
+   * learning the document's shape to decide a colour), and the stylesheet cannot
+   * ask either. So the condition is computed where it is known and handed on as
+   * a class.
+   *
+   * "The second page" is a real condition and not a shorthand for "the live
+   * page". The live page is always the last one, but its INDEX is 1 only during
+   * the first sitting — `filed` is empty, so `pages()` returns [cover, live].
+   * The moment a run files a record the live page becomes index 2, then 3, and
+   * the cue is over for the rest of the session even without the latch below.
+   * That is the requirement as asked, and it is also the honest reading of it:
+   * the cue exists because the FIRST press is the one nothing on the desk tells
+   * the operator to make (see the note in `styles/win-agent-file.css`). By day
+   * two they have made it once, and a control that kept blinking after that
+   * would be a desk nagging someone who has already learned the gesture.
+   */
+  let liveOnSecondPage = false
+
+  /**
+   * The cue is SPENT — a latch, and it never re-arms this session.
+   *
+   * Set by the press itself (see `buildDeployZone`'s handler below), before the
+   * 배치 확인 plate goes up and regardless of how that question is answered.
+   * 민서, 08-10, asked what "if toggled" leaves behind and the answer settles
+   * both halves: *"Press stops it, but I don't know if it stays red, because it
+   * brings up an alert screen. Follow what color it becomes normally."* So the
+   * press ends the blink and nothing here paints anything afterwards — the
+   * control goes back to wearing whatever state it would have worn, which after
+   * a committed file is `.btn-deploy:disabled`'s `opacity:.3`.
+   *
+   * A LATCH AND NOT A RECOMPUTATION, and that is the load-bearing word. Every
+   * other condition in `paintCue` is derived state that can come back: the plate
+   * is answered 취소, the file is never committed, the mode is still `deploy`,
+   * the page is still page 2 of 2 — and a cue recomputed from those facts would
+   * resume the instant the question came down, which is a button that argues with
+   * a press it already received. The press spent the cue. It was one gesture's
+   * worth of attention and it has been paid.
+   */
+  let cueSpent = false
+
+  /**
+   * Paints the cue, and it is the ONE writer of that class.
+   *
+   * Called from both renderers (`turn()` and `sync()`) rather than from one,
+   * because neither knows everything on its own and they run in either order:
+   * `turn()` owns the page geometry, `sync()` is what re-renders the control's
+   * mode and `disabled`, and each fires from triggers the other does not (see
+   * `sync()`'s own note on how many callers it has).
+   *
+   * `mode === 'deploy'` is what keeps it off a day in flight — `settling`,
+   * `next` and `spent` are the three other faces the merged control wears
+   * (`components/deploy-button.ts`), and a blink on any of them would be the desk
+   * inviting a press it is about to refuse. `!disabled` is not redundant with it:
+   * inside `deploy` the control is disabled the moment the file is committed, and
+   * `sendNewRun()` writes `disabled` directly without going through a render at
+   * all. The rule is simply "never blink a button that cannot be pressed", and it
+   * is cheaper to read the attribute than to re-derive the reasons for it.
+   *
+   * It reads `deployBtn`, which is `const` and declared BELOW this function — safe
+   * because both renderers only run once the control exists (every caller of
+   * `turn()` and `sync()` is a listener, a subscription or the final `sync()` at
+   * the foot of `mount`, all of them after the zone is built). Written as a
+   * function rather than inlined into the two renderers for that reason as much as
+   * for brevity: one condition, one writer, and no second copy of it to drift.
+   */
+  function paintCue(): void {
+    const cued = liveOnSecondPage && !cueSpent && currentView.mode === 'deploy' && !deployBtn.disabled
+    deployBtn.classList.toggle('is-cued', cued)
+  }
+
   function sync(): void {
     // x7 — the head is on every page now, so the doc number is repainted on
     // whichever page is MOUNTED rather than written into one long-lived
@@ -281,6 +359,9 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     // blank once the day is closed, so this is what actually carries the
     // settle text, immune to how many other things call `sync()` meanwhile.
     if (closed) noteEl.textContent = settleNote
+    // x10 — …and after it for the same reason: `zone.render()` is what sets the
+    // control's `disabled`, and the cue reads that.
+    paintCue()
   }
 
   /**
@@ -371,6 +452,18 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   }
 
   const zone = buildDeployZone(() => {
+    // x10 — THE PRESS SPENDS THE CUE, and it spends it HERE: on the press, not on
+    // the commit. What follows this line is a question (배치 확인) and the answer
+    // may be 취소, but the blink was asking for a press and it got one — resuming
+    // it behind the plate, or bringing it back when the plate comes down, would
+    // both be the desk repeating a request the operator has already answered.
+    // Painted in the same tick, so the cue is off before the plate is up.
+    //
+    // Unconditional, above the mode gate below: a disabled button raises no click
+    // at all, so every press that reaches this line is one the control was
+    // offering — and the cue only ever runs on the one that is.
+    cueSpent = true
+    paintCue()
     const mode = currentView.mode
     // 'settling' / 'spent': the control is disabled — a click cannot land.
     if (mode !== 'deploy' && mode !== 'next') return
@@ -456,6 +549,125 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
 
   let viewing = 0
 
+  /* ══ x10 — THE CUE ON THE PAGE TURN ══════════════════════════════════════ */
+
+  /**
+   * How long the desk stays quiet after the cover is readable before it points at
+   * the way out (민서, 08-10): *"After the cover typing is finished, wait 1 second.
+   * If the user does not click the next page button during that 1 second, blink a
+   * transparent box with a red borderline around the next page button."*
+   *
+   * The wait is the design and not a debounce. An operator who reaches for `›`
+   * the moment they finish reading never sees the cue at all, which is the desk
+   * letting them act first; the second is what tells the two apart. It is
+   * deliberately the same figure as the blink's own cycle (`pgCue`,
+   * `styles/win-agent-file.css`) because 민서 gave both as one second in one
+   * breath, but they are not the same number in the same sense — this one is a
+   * silence, that one is a rate — so it is declared here and the cycle is declared
+   * in the sheet, and neither is derived from the other.
+   */
+  const PG_CUE_ARM_MS = 1000
+
+  /**
+   * The wait is over: the cover has been readable for `PG_CUE_ARM_MS` and nobody
+   * turned the page. One-way — see `armPgCue` for why nothing disarms it.
+   */
+  let pgCueArmed = false
+
+  /**
+   * The turn is SPENT — a latch, and it never re-arms this session.
+   *
+   * ITS OWN LATCH, not a second reader of `cueSpent`. The two cues answer two
+   * different gestures and are spent by two different presses: `cueSpent` is spent
+   * by DEPLOY, this by `›`. Sharing one flag would mean the DEPLOY press retired a
+   * hint for a control it is not on, and — the direction that actually bites — the
+   * page turn would retire the DEPLOY cue that the turn is what mounts. The cue on
+   * the arrow exists precisely to produce that press; if it also cancelled the next
+   * one, following the first hint would take the second away.
+   *
+   * Set by the press itself, unconditionally, exactly as `cueSpent` is: a disabled
+   * button raises no click, so every press that reaches the handler is one the arrow
+   * was offering, and the cue only ever runs on an arrow that is.
+   */
+  let pgCueSpent = false
+
+  /** The pending 1 s wait, or `null`. Cleared on entry, like `coverTimer`. */
+  let pgCueTimer: ReturnType<typeof setTimeout> | null = null
+
+  /**
+   * Starts the 1 s wait — the ONE place the cue is armed.
+   *
+   * TWO CALLERS AND THEY ARE THE TWO WAYS THE COVER BECOMES READABLE: `landCover()`
+   * (the reveal ran to its last character, or 건너뛰기 landed it), and
+   * `mountCover()` (the cover arrived whole with nothing to land).
+   *
+   * `viewing !== 0` IS THE GUARD THAT MATTERS, and it exists for `landCover`'s
+   * THIRD caller. `turn()` lands the reveal whenever any page other than the cover
+   * is mounted — that is the whole of "turning away and back shows it whole" — and
+   * that call must not arm anything: the operator who has turned the page has
+   * already done the thing this cue would be asking for, so hinting at `›` there
+   * would be the desk pointing at a gesture it just watched. `turn()` assigns
+   * `viewing = clamped` before it reaches that branch, so reading `viewing` here
+   * answers it without `landCover` needing a parameter or the callers needing to
+   * agree on one. The cover is always page 0 (`pages()` builds it first), so
+   * `viewing === 0` is exactly "the cover is the mounted page".
+   *
+   * `!coverDone` keeps it off a reveal that is still printing. Both callers set or
+   * check that first, so this is belt-and-braces — kept because it makes "the cue
+   * cannot run over the typing" a property readable at this one site rather than
+   * one traced through two callers.
+   *
+   * `motionless()` is NOT consulted, and that is a decision rather than an
+   * omission (민서, 08-10 — the intent is "once the cover is readable, point at the
+   * way out"). Under `prefers-reduced-motion` `mountCover` sets `coverDone` with no
+   * typing at all, so the cover is readable the instant it is mounted, and that is
+   * the operator who most needs the mark: they got no reveal, no 건너뛰기, no beat
+   * of motion to tell them the document had finished — just a page of prose and no
+   * indication that there is anything after it. The BLINK degrades to a static red
+   * box under the same media query (`@keyframes pgCue` ends at `opacity:1`), so
+   * what they get is a still mark and not a flashing one, which is the honest
+   * reading of both requests at once. It arms in the e2e lane too, where
+   * `motionless()` is the determinism gate — harmless, because `harness.ts`'s
+   * `boot()` clicks `›` at once and spends the latch a second before the wait ends.
+   *
+   * NOTHING DISARMS IT. If the operator leaves the cover inside the second the
+   * timer still fires and `pgCueArmed` still latches — `paintPgCue` is the
+   * authority on whether that means anything, and it answers no while another page
+   * is mounted. One writer decides; the arm only says the wait is over.
+   */
+  function armPgCue(): void {
+    if (!coverDone || viewing !== 0 || pgCueArmed || pgCueSpent || pgCueTimer !== null) return
+    pgCueTimer = setTimeout(() => {
+      pgCueTimer = null
+      pgCueArmed = true
+      paintPgCue()
+    }, PG_CUE_ARM_MS)
+  }
+
+  /**
+   * Paints the page-turn cue, and it is the ONE writer of that class.
+   *
+   * Same discipline as `paintCue` above and for the same reason: the answer is a
+   * conjunction of facts that change from different places, so it is computed in
+   * one function called from each of them rather than added and removed at every
+   * trigger. Three callers — the wait's own timer (`pgCueArmed` flips), the `›`
+   * press (`pgCueSpent` flips), and `turn()`'s tail (the mounted page and the
+   * arrow's `disabled` both change there).
+   *
+   * `!pgNext.disabled` is the same rule the DEPLOY cue keeps — never blink a
+   * control that cannot be pressed. It cannot fire today (`pages()` always returns
+   * at least the cover and the agent's page, so the cover is never the last one and
+   * `›` is never out on it), and it is asserted rather than reasoned about because
+   * a document that ever had one page would otherwise hint at a dead arrow.
+   *
+   * Reads `pgNext`, declared above; safe for the reason `paintCue`'s note gives —
+   * every caller is a listener or a timer, all of them after the nav is built.
+   */
+  function paintPgCue(): void {
+    const cued = pgCueArmed && !pgCueSpent && coverDone && viewing === 0 && !pgNext.disabled
+    pgNext.classList.toggle('is-cued', cued)
+  }
+
   /**
    * A finished sitting's file — what went out with them, as ONE PARAGRAPH.
    *
@@ -534,8 +746,19 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    * the desk: nothing else on the cover types, and the two surfaces never share
    * a screen.
    *
-   * It sums to roughly a quarter-minute for the whole cover. That is deliberate
-   * and it is also exactly why 건너뛰기 exists.
+   * It sums to 18.7 s for the whole cover — 18,696 ms of scheduled waits, over
+   * the 308 characters (67 of them spaces) that `components/dossier.ts`'s
+   * `coverModel()` prints as 12 text runs across 10 rows. That is deliberate and
+   * it is also exactly why 건너뛰기 exists.
+   *
+   * x10 — THE FIGURE IS RECOMPUTED, because it had gone stale and a stale total
+   * is worse than none. This paragraph said "roughly a quarter-minute", which
+   * was true of the rates it was written against (11.6 s at 22/45) and stopped
+   * being true the moment x7 doubled them — at 45/130 the same page took 22.5 s
+   * and the comment still claimed fifteen. So the rule this leaves behind: a
+   * comment that states a TOTAL is a function of the constants under it and has
+   * to be recomputed with them, or it becomes a number the next reader trusts
+   * and measures nothing against.
    */
   // SLOWED (x7, 민서 08-09, measured on the built page): 22 → 45 per character
   // and 45 → 130 per word. At 22 ms a clause fanned out faster than it could be
@@ -545,8 +768,30 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   // thing that moved. The word pause had to move with it: at 45 it was barely
   // two characters' worth and did not read as a pause once the characters
   // themselves cost 45.
-  const COVER_MS_PER_CHAR = 45
-  const COVER_MS_WORD = 130
+  //
+  // …AND EASED BACK ~20% (x10, 민서 08-10): 45 → 36 per character, 130 → 104 per
+  // word. Two adjustments to the same two numbers in two days, so the reading is
+  // written down rather than left to be inferred from the arithmetic: 22 was too
+  // fast and 45 OVERSHOT. 민서's words for the current pace are "just a little
+  // bit slow" — not wrong, not unreadable, a beat longer than the reading it is
+  // pacing, which is what an overcorrection feels like from the other side. x7
+  // fixed a real failure and went past the middle doing it; 36 is the middle it
+  // was reaching for (22 → 45 → 36), and it keeps the thing x7 bought, because a
+  // clause still lands behind the eye rather than ahead of it.
+  //
+  // The two rates moved TOGETHER and by the same fraction, for x7's own reason
+  // above: the word pause only reads as a pause while it is worth about three
+  // characters of the rate beside it, so 130 left against 36 would have started
+  // to read as a stop between 어절 rather than a breath. 104 is 130 × 0.8, which
+  // holds the ratio x7 chose (2.9×) rather than inventing a new one.
+  //
+  // COVER_MS_LINE and COVER_LEAD_MS are deliberately untouched. The 340 between
+  // lines was ruled correct at x7 and nothing has happened to it since; the 420
+  // lead is not a rate at all but staging — it is what makes the page be SEEN
+  // blank before the first character lands, and shortening it would take the
+  // reveal's opening away without making the reveal faster to read.
+  const COVER_MS_PER_CHAR = 36
+  const COVER_MS_WORD = 104
   const COVER_MS_LINE = 340
   /** A beat before the first character, so the page is seen blank first. */
   const COVER_LEAD_MS = 420
@@ -687,6 +932,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     coverDone = true
     paintCover()
     sheet.querySelector<HTMLElement>('.cover-skip')?.remove()
+    // x10 — the cover is readable, so the wait before the page-turn cue starts
+    // here. Two of this function's three callers are the reveal ENDING on the
+    // mounted cover; the third is `turn()` landing it on the way to another page,
+    // and `armPgCue` declines that one itself by reading `viewing`. See its note.
+    armPgCue()
   }
 
   /** One character — or, at the end of a line, the beat before the next one. */
@@ -787,6 +1037,14 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     coverLines = collectCover(page)
     paintCover()
     startCover()
+    // x10 — the OTHER way the cover becomes readable, and the reason this call is
+    // here as well as in `landCover`: on the motionless path `coverDone` is set two
+    // lines up and `landCover` is never reached at all, so a cue armed only from
+    // there would never arm for a reduced-motion operator — the one who has had no
+    // reveal, no 건너뛰기 and no beat of motion to say the document is finished.
+    // `armPgCue` is self-guarding (`coverDone`, `viewing`, the two latches, its own
+    // pending timer), so calling it on every mount of the cover is idempotent.
+    armPgCue()
   }
 
   /**
@@ -864,6 +1122,12 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (to === 'last') viewing = last
     const clamped = viewing < 0 ? 0 : viewing > last ? last : viewing
     viewing = clamped
+    // x10 — the cue's page condition, decided here because this is the only
+    // place that holds both numbers. Two comparisons and no arithmetic, so the
+    // `Math.max` ban (see above) is not even in reach: the mounted page is the
+    // LAST one (which is where `zone.root` is appended — `pages()`), and the last
+    // one is index 1, which is only true while no run has filed a record.
+    liveOnSecondPage = clamped === 1 && clamped === last
     sheet.replaceChildren(built[clamped]!)
     // x7 — the reveal lives on the MOUNTED cover and nowhere else. Page 0 is
     // handed the freshly built one to go on printing into; every other page
@@ -884,6 +1148,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     pgCount.textContent = `${clamped + 1} / ${built.length}`
     pgPrev.disabled = clamped === 0
     pgNext.disabled = clamped === built.length - 1
+    // x10 — the page has moved, so the cue is re-asked. `turn()` runs from
+    // triggers `sync()` does not (both page arrows, the identity fetch, every
+    // `turn('last')`), which is why both renderers call it.
+    paintCue()
+    // …and the page-turn cue with it, for the two facts this function is the only
+    // one to change: which page is mounted, and whether `›` is out on it (both
+    // written a few lines up). `sync()` deliberately does NOT call this one — the
+    // deploy zone's mode and `disabled` say nothing about the cover.
+    paintPgCue()
   }
 
   pgPrev.addEventListener('click', () => {
@@ -891,6 +1164,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     turn()
   })
   pgNext.addEventListener('click', () => {
+    // x10 — THE PRESS SPENDS THE CUE, permanently, for the session. The blink was
+    // asking for exactly this gesture and it got it; bringing it back on any later
+    // return to the cover would be the desk repeating a request it has an answer
+    // to. Set before `turn()` so the single writer at that function's tail sees the
+    // latch already down and takes the class off in the same frame as the turn.
+    //
+    // Unconditional, like the DEPLOY press's own latch: a disabled `›` raises no
+    // click, so every press that lands here is one the arrow was offering.
+    pgCueSpent = true
     viewing += 1
     turn()
   })
@@ -940,6 +1222,13 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       closingRun = null
       incoming = true
       turn('last')
+      // x10 (민서, 08-10) — and REPORTS holds the tear while this types. The
+      // reveal is the operator being read their inheritance; a sentence torn out
+      // of the record and seated into a file that is still arriving would land in
+      // a paragraph the page has not finished drawing. The signal is the board's
+      // own `isRevealing()`, read by `windows/reports.ts`'s `onMine` — nothing is
+      // pushed from here, and nothing here waits on it either (the note above on
+      // `typeCallsign` is why: the progression is never hostage to an animation).
       board.revealHandover()
     }
     const who = callsignOf(store.get().meta.run)

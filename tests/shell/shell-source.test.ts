@@ -11,6 +11,7 @@ import {
   CLIENT,
   COMPONENTS_DIR,
   INDEX_HTML,
+  REPO,
   SHELL_DIR,
   WINDOWS_DIR,
   clientSources,
@@ -60,6 +61,59 @@ describe('[u3#c9] index.html carries the shell containers and nothing more', () 
   it('(e) it inlines no script and no style block', () => {
     expect(html()).not.toMatch(/<script(?![^>]*\bsrc=)[^>]*>[\s\S]*?<\/script>/)
     expect(html()).not.toMatch(/<style\b/)
+  })
+
+  /**
+   * (f) — ADDED x10 (민서, 08-10), and it closes the exact hole that let a
+   * dropped concept ship for two months.
+   *
+   * The blueprint wallpaper carried four `<text class="bplabel">` labels:
+   * `경간 A · 정착부 N-3`, `경간 B · 정착부 S-3`,
+   * `윤슬교 종단면 · 축척 1:400 · 세명건설`, and a red `정착부 — 소선 파단`.
+   * That is the vocabulary of the FIRST scenario concept — the bridge — which
+   * the project dropped for the pack it actually ships (`PACK_SLUG` in
+   * `shell/pack.ts` is `전구간정상`, a tunnel). Nothing in the suite said a
+   * word about the wallpaper's text, so a concept change swept the driver, the
+   * data packs and the copy and left the markup captioning a case that no
+   * longer exists.
+   *
+   * This is not a new claim, it is THIS describe's own claim finally measured:
+   * the block comment at the top of index.html says nothing in the file
+   * "stands in for something the driver or the scenario pack owns", and a
+   * bridge's span numbers are as owned by a pack as a character's name is.
+   * Hence (f) here rather than a suite of its own — the shell markup may not
+   * hard-code scenario vocabulary, whichever scenario it belongs to.
+   *
+   * Scoped to `index.html` DELIBERATELY. These needles are live, correct
+   * content elsewhere: `data/scenario/우는다리/` is a real pack we keep, and
+   * `driver/fixtures/woodari-*.ts` are its fixtures. The offence is a shell
+   * container speaking a pack's language, not the words existing in the repo.
+   * Comments are scanned too — a label moved into a comment is still the
+   * dropped concept's name sitting in the shipped markup, which is why the
+   * `.bp` group's note above spells its history in prose and quotes the
+   * dropped strings nowhere.
+   */
+  it('(f) it hard-codes no scenario vocabulary — not even the dropped concept`s', () => {
+    // The bridge concept's fingerprints: place + contractor, the two structural
+    // nouns its labels were built from, the failure mode, and the title block's
+    // scale. Any one of them in index.html means a pack's words are back in the
+    // shell — extend the list, never trim it.
+    const DROPPED = ['윤슬', '세명건설', '경간', '정착부', '소선', '축척', '1:400']
+    const doc = html()
+    const found = DROPPED.filter((needle) => doc.includes(needle))
+    expect(found, 'index.html names the dropped bridge concept again').toEqual([])
+  })
+
+  it('(g) the guard above is not vacuous — it can see the labels it bans', () => {
+    // (f) reads the tree, so it passes for free the day someone breaks how it
+    // reads. Pinned against the vendored design file, which still carries all
+    // four labels on purpose (it is the port source, and history): if the same
+    // needles stop firing there, (f) has stopped being a scan.
+    const DROPPED = ['윤슬', '세명건설', '경간', '정착부', '소선', '축척', '1:400']
+    const design = read(path.join(REPO, 'docs/design/phase2-ui/index.html'))
+    expect(design.length, 'the design fixture is gone — re-aim (f)`s teeth').toBeGreaterThan(0)
+    const seen = DROPPED.filter((needle) => design.includes(needle))
+    expect(seen.sort()).toEqual([...DROPPED].sort())
   })
 })
 

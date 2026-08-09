@@ -73,14 +73,15 @@ export interface AudioDeps {
    * Resolves when the desk is what the player is looking at — after O1's
    * sign-in door and manual sheet have both been dismissed.
    *
-   * It gates the AMBIENCE ONLY. Unlocking happens on the very first gesture,
-   * wherever that lands, so the door's own controls can click; but the beds and
-   * their `playForMs` window wait for this, because a room tone that
-   * establishes and expires behind a curtain is a room tone the player never
-   * hears. Keeping the two separate is what lets the door have sound without
-   * costing the opening.
+   * x10 (08-10, 민서) — it gates THE WATCH DRONE'S WINDOW, and nothing else. It
+   * used to gate the whole ambience, on the reasoning that an opening which
+   * establishes and expires behind a curtain is an opening the player never
+   * hears. That is still exactly right about the drone, whose ten seconds would
+   * be spent before the operator finished typing their card in — and still wrong
+   * about the room now that the room holds for the session, so the room opens on
+   * the unlock instead. See `openTheRoom` in the unlock below.
    *
-   * Omit it to start the beds on unlock.
+   * Omit it to open the drone's window on unlock too.
    */
   deskReady?: Promise<void>
 }
@@ -92,18 +93,26 @@ export function installAudio(deps: AudioDeps): AudioHandle {
   const teardown: (() => void)[] = []
 
   /**
-   * The beds are an OPENING, not a bed.
+   * The Watch drone's window — the one bed that is still an OPENING.
    *
-   * Room tone and a drone are broadband noise held under a screen the player
-   * reads for minutes at a time, and * `ambience.playForMs` retires both a fixed time after the desk opens — they
-   * establish the room, then get out of the way.
+   * A drone is broadband noise held under a screen the player reads for minutes
+   * at a time, which stops registering as atmosphere and starts registering as
+   * pressure that never lets up. So `ambience.playForMs` gives it a window: it
+   * establishes the run and then gets out of the way.
    *
-   * This flag is true only between those two moments, and `beat_start` is gated
-   * on it at BOTH ends: before, so the Watch drone cannot start while the
-   * player is still at the door (the run opens behind the curtain, and its
-   * first beat lands there); after, so a later beat cannot bring it back.
+   * This flag is true only inside that window, and `beat_start` is gated on it
+   * at BOTH ends: before, so the drone cannot start while the player is still at
+   * the door (the run opens behind the curtain, and its first beat lands there);
+   * after, so a later beat cannot bring it back.
+   *
+   * x10 (08-10, 민서) — it was `bedsLive` and it governed BOTH beds, because both
+   * of them came up together at the desk. The room (the desk bed and the office
+   * around it) now comes up at the door, on the unlock itself, and it holds for
+   * the whole session — so it has no window and needs no latch, and this flag
+   * narrowed to the one bed that still has both. See `openTheRoom` below for the
+   * ruling that moved.
    */
-  let bedsLive = false
+  let watchLive = false
 
   /** `meta.runs_left` — 0 on the final day. `null` until the first `meta`. */
   let runsLeft: number | null = null
@@ -219,7 +228,7 @@ export function installAudio(deps: AudioDeps): AudioHandle {
       // day starts moving and goes down when the day closes onto the tally,
       // which is exactly the stretch plan-audio §4.4 describes as "tension".
       case 'beat_start':
-        if (map !== null && bedsLive) mixer?.hold('watch', map.ambience.watch)
+        if (map !== null && watchLive) mixer?.hold('watch', map.ambience.watch)
         break
       case 'score': {
         // The client cannot know a unit's polarity — fewer dead is better, more
@@ -489,36 +498,93 @@ export function installAudio(deps: AudioDeps): AudioHandle {
       fire(pendingPress)
       pendingPress = null
     }
-    // The bed comes up once, and — unless the map says otherwise — comes back
-    // down on a timer. `hold(slot, null)` fades rather than cuts, so the room
-    // does not vanish; it recedes. Both wait for the desk (`deskReady`): the
-    // unlock above may have happened at the door, and the opening belongs to
-    // the desk.
+    /**
+     * The room: the desk bed, and the office sowing one-shots under it.
+     *
+     * x10 (08-10, 민서) — THIS NO LONGER WAITS FOR THE DESK, and the ruling it
+     * reverses was written on this very line. It used to read: *"Both wait for
+     * the desk (`deskReady`): the unlock above may have happened at the door,
+     * and the opening belongs to the desk."* That was sound while the bed was an
+     * OPENING — a thing that establishes, expires, and is therefore worth
+     * spending where the player can hear it. 08-09's `deskHolds` made the desk
+     * bed a ROOM that holds for the whole session instead, and a room the
+     * operator signs into was already there before they arrived. Holding it
+     * behind the sign-in plate and the manual sheet meant the first thing this
+     * layer did with the room was start the fan a minute into the sitting.
+     * 민서's call: the room is there from the login screen.
+     *
+     * "From the login screen" can only mean FROM THE FIRST GESTURE THERE. A
+     * browser suspends an AudioContext built outside a user gesture, so there is
+     * no sound on the first painted frame for any layer to ask for — which is
+     * why this hangs off `unlock()` (the gesture) rather than off a timer, a
+     * promise or a bare call at boot. The door is a good place for it: it asks
+     * for fifteen keystrokes (`shell/sign-in.ts`) and sounds its own
+     * `sfxKeyTick` on each, so the room comes up under the card the operator is
+     * typing rather than out of nowhere.
+     *
+     * The bed is also ~490 kB and in the mixer's LAST load wave, so at the door
+     * it is usually still in flight. `hold` remembers the intent and the
+     * ambience pass honours it when the bytes land (`mixer.ts` `reHold`), so an
+     * early open fades in late rather than being dropped.
+     */
     const openTheRoom = (): void => {
       if (map === null || mixer === null) return
-      bedsLive = true
       if (map.ambience.desk !== null) mixer.hold('bed', map.ambience.desk)
       const stopSparse = startSparse(map.ambience.sparse)
       teardown.push(stopSparse)
+      // A room that switches itself off after ten seconds was never a room,
+      // which is what `deskHolds` says and why this is normally the end of it.
+      // When the map says otherwise the bed and its office still retire on
+      // `playForMs`, measured from HERE — the moment this bed started, which is
+      // what `map.ts` has always said that window means ("how long any bed may
+      // play, from unlock"). The drone's window is measured from the desk
+      // instead, for the same reason: that is where the drone starts.
       const retireAfter = map.ambience.playForMs
-      if (retireAfter === null) return
-      const holds = map.ambience.deskHolds
+      if (map.ambience.deskHolds || retireAfter === null) return
       const timer = setTimeout(() => {
-        bedsLive = false
-        // The Watch drone always goes; the desk bed goes only if the map has
-        // not asked it to stay. When it stays, so does the office around it —
-        // a room that keeps humming while everybody in it stops moving is a
-        // worse artefact than either half alone.
-        mixer?.hold('watch', null)
-        if (!holds) {
-          mixer?.hold('bed', null)
-          stopSparse()
-        }
+        // `hold(slot, null)` fades over 0.6 s, so what retires recedes rather
+        // than vanishing. The office goes with the bed — a room that keeps
+        // humming while everybody in it stops moving is a worse artefact than
+        // either half alone.
+        mixer?.hold('bed', null)
+        stopSparse()
       }, retireAfter)
       teardown.push(() => clearTimeout(timer))
     }
-    if (deps.deskReady === undefined) openTheRoom()
-    else void deps.deskReady.then(openTheRoom)
+
+    /**
+     * The Watch drone's window: it may come up on a `beat_start` from here until
+     * `playForMs` is spent, and never again.
+     *
+     * This half still waits for the desk, and 민서's reversal above does not
+     * reach it. Two things about the door would break it. Its life is ten
+     * seconds, and ten seconds that start at the login screen are gone before
+     * the operator has typed their card in — the drone would retire before the
+     * desk it plays over exists, so the map's window would silence the cue
+     * instead of shaping it. And the run opens behind the curtain: `boot.ts`
+     * releases what is due at the opening minute, so a `beat_start` can land
+     * while the door is still up, and an ungated latch would raise a drone under
+     * the sign-in plate — the one place plan-audio §4.4 says a drone must not be.
+     */
+    const openTheWatchWindow = (): void => {
+      if (map === null || mixer === null) return
+      watchLive = true
+      const retireAfter = map.ambience.playForMs
+      if (retireAfter === null) return
+      const timer = setTimeout(() => {
+        watchLive = false
+        mixer?.hold('watch', null)
+      }, retireAfter)
+      teardown.push(() => clearTimeout(timer))
+    }
+
+    // The room opens on the gesture that just unlocked the context — on every
+    // path, with a door or without one, because the unlock is the only moment
+    // both paths share. The drone's window waits for the desk when the caller
+    // says where the desk is.
+    openTheRoom()
+    if (deps.deskReady === undefined) openTheWatchWindow()
+    else void deps.deskReady.then(openTheWatchWindow)
     const reports = deps.root.querySelector('#w-rep .rep-grid')
     if (reports !== null) typing.observe(reports, { subtree: true, characterData: true })
   }
