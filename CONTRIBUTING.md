@@ -15,6 +15,13 @@ After your first push, open the commit on github.com and confirm it's attributed
 account. If it shows a corporate account or "unknown", fix the local `user.email` and amend before
 continuing.
 
+**Attribution is the floor, not the whole rule.** A session may run on a corporate AI subscription
+when personal token limits require it — but nothing that lands in the repo may reveal it. Before
+committing, grep the staged diff for corporate identifiers (account name, username, email, domain,
+hostname, machine name, ticket id, internal tool names) and drop any that appear, in prose as well
+as in metadata. Push and open PRs through `github.com` only, never a corporate git host. Once a
+trace reaches `main` it is permanent — see "Commit history is a competition deliverable" below.
+
 ## Branching & PRs
 
 - **Trunk-based.** `main` is always deployable — every push to `main` deploys to GitHub Pages.
