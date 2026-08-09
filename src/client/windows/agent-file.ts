@@ -18,6 +18,7 @@
 // no sibling window import, nothing from engine or composer (C8 / inv 12), and
 // no fixture module — carried ids resolve through the report index (D13).
 import type { FixtureDriver, Sentence } from '../driver/index.ts'
+import { animationsFrozen, registerAnimation } from '../driver/index.ts'
 import { button, el, must } from '../shell/dom.ts'
 import { deployCopy, openConfirm } from '../shell/confirm.ts'
 import { announce } from '../shell/announcer.ts'
@@ -26,7 +27,14 @@ import { PORTAL } from '../shell/portal-identity.ts'
 import { createRunState, hasFiledReport } from '../shell/run-state.ts'
 import type { RunPhase, RunState } from '../shell/run-state.ts'
 import { blockCardModel, setPickedBlockId } from '../components/block-card.ts'
-import { agentModel, buildDossier, callsignOf, coverModel, filedModel } from '../components/dossier.ts'
+import {
+  agentModel,
+  buildDossier,
+  callsignOf,
+  coverModel,
+  filedModel,
+  nextCallsignOf,
+} from '../components/dossier.ts'
 import { SLOT_CAP, createSlotBoard, usedIds } from '../components/slot-board.ts'
 import { buildDeployStamp, buildDeployZone, deployView } from '../components/deploy-button.ts'
 import type { DeployMode } from '../components/deploy-button.ts'
@@ -118,6 +126,70 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   let opensAt = driver.clock.at()
   let committedRun: number | null = null
   let committedAt: string | null = null
+  let committedIncoming = false
+  /**
+   * H3 — the file on the desk belongs to the agent AFTER `run`.
+   *
+   * True from the moment the day closes until the `meta` that opens the next
+   * one, and false the rest of the time. The desk knows this before the run
+   * loop does, because 21:04 is when the operator gets the file back: what they
+   * mine into it from then on is the NEXT agent's handover, and heading that
+   * page with the callsign of the agent who has just come home is what made a
+   * sitting read as ECHO-1, ECHO-1, ECHO-2, ECHO-3.
+   *
+   * `runs_left` gates it (see the `'tally'` branch): on the last day of an
+   * allotment there is no next agent, so the page stays the one that flew.
+   */
+  let incoming = false
+
+  /**
+   * `ECHO-n` for the agent this file is being built for — or `''` while the
+   * page is waiting for one.
+   *
+   * H3 (08-09, 민서) — the incoming page opens UNNAMED. It briefly opened
+   * headed `nextCallsignOf(run)`, which is a name the run loop has not issued:
+   * true by arithmetic, and a promise the desk has no authority to make. The
+   * blank says the honest thing — this file is for whoever is sent next, and
+   * nobody has been sent yet — and the press is what fills it in
+   * (`typeCallsign`, from `sendNewRun`). `nextCallsignOf` is still what answers
+   * it there, at the one moment the operator has committed to the send.
+   */
+  const onDesk = (): string => (incoming ? typedCallsign : callsignOf(run))
+
+  /**
+   * What the incoming page's 호출부호 row currently shows — `''` until the
+   * press, then the new callsign one character at a time. Drawing state only:
+   * nothing downstream reads it, and `committedRun` (not this) is what dates
+   * the chop.
+   */
+  let typedCallsign = ''
+
+  /**
+   * H3 — the run whose page is owed a filing, held from the close until the
+   * settle. `null` means nothing is owed: either no day has closed, or the day
+   * that closed was the last of the allotment and has no successor to hand to.
+   */
+  let closingRun: number | null = null
+
+  /** The callsign reveal's pump — one naming at a time, per window (D7). */
+  const CALLSIGN_PUMP = 'agent-file/callsign'
+
+  /**
+   * The naming's own pace — DELIBERATELY not the typewriter's 11 ms.
+   *
+   * A callsign is six characters. At the reading pace `components/typewriter.ts`
+   * sets for prose it lands in 66 ms, which is not a reveal — it is a repaint
+   * with extra steps, and measured on the desk it read as the name simply
+   * appearing. The handover types at prose pace because it IS prose and the
+   * operator is reading it; this is a single short token doing one job, which is
+   * to be WATCHED arriving on a page that has been blank since 21:04. So it gets
+   * a pace of its own rather than a share of one tuned for sentences.
+   */
+  const CALLSIGN_MS_PER_CHAR = 80
+
+  /** The operator asked for no motion, or the determinism gate is closed. */
+  const motionless = (): boolean =>
+    animationsFrozen() || window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   // U3 — the merged control's own turn state, ported from `windows/tally.ts`.
   let closed = false
@@ -149,10 +221,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       if (board.isLocked() && committedRun === null) {
         committedRun = run
         committedAt = opensAt
+        // H3 — …and it is stamped for whoever the file was being built for. A
+        // press made after 21:04 commits the INCOMING agent's file, and the
+        // chop has to name them and not the agent whose day has just ended.
+        committedIncoming = incoming
       }
       if (!board.isLocked()) {
         committedRun = null
         committedAt = null
+        committedIncoming = false
       }
       sync()
     },
@@ -168,6 +245,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       slots: board.cells(),
       deployed: board.isLocked(),
       run: committedRun ?? run,
+      incoming: committedRun === null ? incoming : committedIncoming,
       at: committedAt ?? opensAt,
       closed,
       releasable: settled,
@@ -218,25 +296,40 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     //
     // Nothing can escape in the gap: a running clock releases nothing while the
     // hold is on, and the hold only comes off on the op.
-    startDay()
     if (mode === 'next') {
+      // H3 — the press plays out in order: the agent is NAMED, then the chop
+      // lands on the file, then the day starts. The page has been blank since
+      // the settle and this is the moment it gets an occupant, so the naming
+      // goes first; a chop on an unnamed file would be a receipt for nobody.
+      //
       // W4 — ONE press, TWO ops, and the order is load-bearing. `deploy` must
       // reach the CLOSING run's membrane, because that is what the live
       // adapter harvests into `carried` (`live/adapter.ts` `closingState()`);
       // sent after `new_run` it would name the new day and the file the
       // operator just built would never carry. `board.deploy()` is also the
       // only module allowed to mint the op literal.
-      board.deploy()
-      sendNewRun()
+      typeCallsign(() => {
+        board.deploy()
+        // …and the clock starts before the op, still. The adapter bypasses the
+        // feed's reveal queue whenever the sim is paused, so releasing the
+        // opening minute against a stopped clock slaps it onto the fanfold in
+        // one frame. Nothing escapes in the gap: a running clock releases
+        // nothing while the hold is on, and the hold only comes off on the op.
+        startDay()
+        sendNewRun()
+      })
       return
     }
+    startDay()
     board.deploy()
-    // U5.3 — write site 1: the OPENING commit, which belongs to the agent on
-    // the desk right now. In practice this is ECHO-1's alone — after a
-    // `new_run` the file arrives already committed and this mode never comes
-    // round again — and without it the first sitting would never get a page,
-    // which is the first comparison the operator would reach for.
-    filed.set(run, usedIds(board.cells()))
+    // H3 — the press records NOTHING any more. A page is a sitting that is
+    // OVER, and the two writes that used to happen here and on the next `meta`
+    // both ran a press too late: the record of what ECHO-1 flew appeared only
+    // once ECHO-2's day had opened, so between 21:04 and the press the desk
+    // held no page for the day it had just played and headed the file the
+    // operator was mining into with the callsign of the agent who had already
+    // come home. Both are now written where they are true — the close (see the
+    // `'tally'` branch below).
   }
 
   const zone = buildDeployZone(() => {
@@ -250,10 +343,13 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     // question in front of ECHO-1 and nobody after — from day 2 the commit
     // arrives in `next` mode, and that is the press that carries a file the
     // operator has actually revised.
-    // x5 — the plate names the agent it is about to send out. `run` is the
-    // sitting on the desk, which is exactly the agent the last page carries and
-    // whose file this press commits.
-    void openConfirm(must('#app'), deployCopy(callsignOf(run))).then((confirmed) => {
+    // x5 — the plate names the agent it is about to send out.
+    // H3 — which is the agent the last page carries, and after 21:04 that is
+    // the INCOMING one: the press in `next` mode commits the file the operator
+    // has just built out of the day's report, and it flies with the agent who
+    // has not gone out yet. `onDesk()` is the same string the page is headed
+    // with, so the question and the page cannot name two different agents.
+    void openConfirm(must('#app'), deployCopy(onDesk())).then((confirmed) => {
       if (confirmed) commitFile(mode)
     })
   })
@@ -324,11 +420,12 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    * The document, in order: the cover, then a page per finished agent, then the
    * agent on the desk.
    *
-   * U5.3 — a record is shown as a PAST page only while its sitting is behind
-   * the current one. The current agent's own file is recorded the moment it is
-   * committed (it has to be — that is when it is knowable), and it is the live
-   * page until the run moves on, so `flown >= run` is what keeps it from
-   * appearing twice.
+   * U5.3 · H3 — a record is a sitting that is OVER, and `filed` holds nothing
+   * else: the entry is written at 21:04 (the `'tally'` branch below) and the
+   * live page moves on to the incoming agent in the same breath. So there is no
+   * `flown >= run` filter to apply any more — the last day of an allotment
+   * files no entry at all, because it has no successor to hand the page to, and
+   * its own page stays live to the end of the sitting.
    */
   function pages(): HTMLElement[] {
     const cover = el('div', 'file-page')
@@ -336,7 +433,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
 
     const past: HTMLElement[] = []
     for (const flown of [...filed.keys()].sort((a, b) => a - b)) {
-      if (flown >= run) continue
       const ids = filed.get(flown) ?? []
       const page = el('div', 'file-page')
       page.append(
@@ -346,7 +442,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     }
 
     const agent = el('div', 'file-page')
-    agent.append(buildDossier(agentModel({ slotCap: SLOT_CAP, callsign: callsignOf(run) }), board.root))
+    agent.append(buildDossier(agentModel({ slotCap: SLOT_CAP, callsign: onDesk() }), board.root))
     agent.append(zone.root)
 
     return [cover, ...past, agent]
@@ -411,6 +507,30 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (release === 'hold') return
     settled = true
     dropHold()
+    // H3 — THE PAGE TURNS HERE, and this is the whole of the fix.
+    //
+    // The day is over AND it has finished reporting: the record is final and
+    // the report is in, which is exactly what `settleRelease` above decides. So
+    // the agent who flew it becomes a record — their page written with the file
+    // they actually went out with — and the operator is handed the next agent's
+    // page, blank, with the handover typing itself on (`board.revealHandover`).
+    //
+    // Blank is the point. The page is headed for an agent the run loop has not
+    // named yet, and `onDesk()` answers `''` until the press names them, so the
+    // desk never puts a callsign on a file it cannot yet promise to send. The
+    // press types it (`sendNewRun`).
+    //
+    // `closingRun` is null on the last day of an allotment: no page is filed
+    // and none is opened, because there is no agent after this one and a page
+    // headed for someone who can never be sent is a promise the desk cannot
+    // keep. That agent's own page simply stays live to the end of the sitting.
+    if (closingRun !== null) {
+      filed.set(closingRun, usedIds(board.cells()))
+      closingRun = null
+      incoming = true
+      turn('last')
+      board.revealHandover()
+    }
     const who = callsignOf(store.get().meta.run)
     if (release === 'filed') {
       settleNote = FILED_NOTE
@@ -423,6 +543,43 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       sync()
       announce(`${who}${SAY_LAPSED_TAIL}`)
     }
+  }
+
+  /**
+   * H3 — the press names the agent, on the page it has been holding blank.
+   *
+   * `nextCallsignOf(run)` is safe HERE in a way it was not on the settle: the
+   * operator has committed the file and the op is going out, so the agent this
+   * types is the one being sent. It is document art either way (the pack
+   * carries no callsign — D4), so no number of the authority's is derived; the
+   * seam's own `meta` arrives moments later and `callsignOf(run)` takes over
+   * with the identical string, which is why the row does not flicker across it.
+   *
+   * The row is already red — `.rd-code` is `--seal-2` on every page — so the
+   * red the operator sees is the callsign's own ink arriving, not a highlight.
+   */
+  function typeCallsign(onDone: () => void): void {
+    const full = nextCallsignOf(run)
+    if (motionless()) {
+      typedCallsign = full
+      turn('last')
+      onDone()
+      return
+    }
+    let elapsed = 0
+    const unregister = registerAnimation(CALLSIGN_PUMP, (realMs: number) => {
+      elapsed += realMs
+      const chars = Math.floor(elapsed / CALLSIGN_MS_PER_CHAR)
+      const cursor = { chars, done: chars >= full.length }
+      typedCallsign = cursor.done ? full : full.slice(0, cursor.chars)
+      // The dossier is rebuilt to repaint one row, exactly as every other
+      // change to this page is painted — `turn` is the window's only renderer
+      // and a second path into the sheet is how two of them drift apart.
+      turn('last')
+      if (!cursor.done) return
+      unregister()
+      onDone()
+    })
   }
 
   function sendNewRun(): void {
@@ -445,6 +602,32 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   store.subscribe((state: RunState) => {
     if (state.phase === 'tally' && !closed) {
       closed = true
+      // H3 — THE PAGE TURNS HERE, and this is the whole of the fix.
+      //
+      // The day is over, so the agent who flew it is a record: their page is
+      // written with the file they actually went out with, and the file the
+      // operator gets back is the next agent's, opened on a page of their own
+      // and already holding the handover — the board keeps its sentences
+      // through the unlock below, which is exactly what the operator is meant
+      // to revise. The press that follows commits it and turns nothing.
+      //
+      // `runsLeft` is the seam's own word for "this is the last day" (it is
+      // `totalRuns - run_count`, so it reads 0 there and nowhere else — the
+      // audio's ending cue hangs off the same field). On that day no page is
+      // filed and none is opened: there is no agent after this one, and a page
+      // headed for someone who can never be sent is a promise the desk cannot
+      // keep. The last agent's own page simply stays live.
+      // H3 (08-09, 민서) — the page does NOT turn here any more.
+      //
+      // It used to turn at 21:04, on the same event that closes the day. That
+      // put the new page up while the terminal record was still counting itself
+      // out beside it, so two surfaces were resolving at once and the operator
+      // was handed a file to revise before the day they were revising had
+      // finished reporting. The turn now waits for the settle — the record
+      // final, the report in — which is `settle()` below. `closingRun` is what
+      // carries the day's identity across that gap, because by then `run` may
+      // already have moved on.
+      closingRun = state.meta.runsLeft > 0 ? run : null
       // W4 — the close is what hands the file back. Until now the file stayed
       // locked until NEW RUN, so the day's report could not be mined into the
       // day it was written for; the operator had to open tomorrow before
@@ -458,6 +641,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       armHold()
       // x6b — blank, not a wait line. See the note at the head of this file.
       settleNote = ''
+      // H3 — …and the desk turns to it. The document grew a page a moment ago
+      // and the DEPLOY control went with it, so a file left on the page it was
+      // on would leave the operator holding a read-only record with nothing to
+      // press. This is the jump the `meta` handler used to make on the press.
+      if (incoming) turn('last')
       sync()
       // The stream's own close line lands in the SAME tick this fires
       // (`shell/announcer.ts`'s `run_end` handler) — a second write here would
@@ -530,14 +718,25 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (changedRun && board.isLocked()) {
       committedRun = event.run
       committedAt = opensAt
-      // U5.3 — write site 2. The file committed at the close reached the
-      // CLOSING run's membrane (W4's op order), but what it carries is the
-      // file the operator built after 21:04 — the INCOMING agent's. So it is
-      // filed under `event.run`, which is the same re-pointing the stamp does
-      // on the two lines above: page inventory and stamp date cannot disagree,
-      // because one branch decides both.
-      filed.set(event.run, usedIds(board.cells()))
+      // H3 — and the agent this stamp names is no longer an incoming one: the
+      // run loop has just named them, so `run` alone says who they are. The
+      // chop's text does not change across this line — that is the point, the
+      // page and the stamp read the same before and after the press — only the
+      // way it is derived does.
+      committedIncoming = false
     }
+    // H3 — the file that was the NEXT agent's is now the agent's. Cleared here
+    // rather than where `closed` is (the `'tally'` branch's own reset above),
+    // because that branch runs on the same `meta` and runs FIRST — `run` is
+    // still the closing day's there, and clearing it a tick early would head
+    // the live page with the agent who has already come home for exactly one
+    // render.
+    if (changedRun) incoming = false
+    // H3 — and the typed name is spent with it. `onDesk()` reads `callsignOf`
+    // once `incoming` is false, so this only matters for the NEXT close: a
+    // blank page that opened holding the last press's string would show it for
+    // one render before the reveal overwrote it.
+    if (changedRun) typedCallsign = ''
     // M1 — §0's callsign is per sitting, so only a changed run re-prints the
     // dossier; an archive-only `meta` must not re-parent the live slot board.
     // U5.3 — …and a NEW sitting opens on its own page. The jump is conditional

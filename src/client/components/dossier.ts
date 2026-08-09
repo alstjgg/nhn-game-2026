@@ -23,6 +23,32 @@ export function callsignOf(run: number): string {
   return `ECHO-${Math.max(1, run)}`
 }
 
+/**
+ * The agent AFTER the one `run` sent out — the file's next page (H3, 08-09).
+ *
+ * WHY IT LIVES HERE. At 21:04 the day is over and the file the operator starts
+ * mining into belongs to the agent who has not gone out yet — but the run loop
+ * does not name that agent until the press opens their day, so between the
+ * close and the press the desk has to head a page for someone the authority has
+ * not announced. [u7#c3] forbids the WINDOW doing that arithmetic on the
+ * authority's numbers, and rightly: `run`, `runs_left`, `carried` and `archive`
+ * are the run loop's and the client mirrors them.
+ *
+ * A callsign is not one of those numbers. The ECHO series is document art this
+ * module already mints (`callsignOf` above — the pack carries no callsign at
+ * all, D4), so "who comes after ECHO-3" is a question about the DOCUMENT's own
+ * numbering and this is where it is answered. Nothing here reaches the seam,
+ * decides a run, or survives into a `meta` field; the window still owns only
+ * the choice of WHICH agent a page is about, which is a choice and not a sum.
+ *
+ * The desk never offers this page on the last day of an allotment — `runs_left`
+ * is 0 there and `windows/agent-file.ts` reads it before turning — so no agent
+ * is ever named who cannot be sent.
+ */
+export function nextCallsignOf(run: number): string {
+  return callsignOf(run + 1)
+}
+
 export const SEALED_COPY = '열람 불가 — 운영자 권한으로 접근되지 않는 구획입니다. (봉인 I13)'
 
 /**
