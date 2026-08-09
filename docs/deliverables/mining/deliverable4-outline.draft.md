@@ -251,52 +251,353 @@ Status: **solid**.
 
 ---
 
-# 7. Utilizing AI — 어떻게 더 잘 쓰게 만들었나
+# 7. What we did to use AI better
 
-**Section thesis (director-approved inversion):** 개선은 프롬프트를 잘 쓰게 되어서가
-아니라, 고쳐야 할 것을 프롬프트 바깥의 구조로 옮겨서 왔다.
+> **This section is finished body text, not an outline.** §1–§6 and §8–§9 are still theme
+> maps; §7 has been written and its slot holds the copy. Both element-manifest items it used
+> to carry are resolved and now sit inside the prose — the before/after is §7-1's placement
+> table, and the template-version claim was narrowed to what the tree actually holds
+> (narration/reporter have an enumerable lineage; judgment was only ever committed at v0.4).
+>
+> Written in English to match `docs/` house style. The 08-09 submission-language decision
+> stands — the judges read Korean — so this is the working master the PDF is produced from,
+> not the final surface.
+>
+> `(S…)` markers are record ids. Each carries a commit hash, a PR number and a document
+> section, so every sentence below reaches primary evidence inside this repository.
 
-Required, or the section contradicts its own citations: T-07's thesis is literally
-*"converted into a law rather than a better prompt"*, and T-06's counter-evidence closes
-with **"No atom in the corpus claims prompt engineering was solved"** — the frozen template
-was frozen around latent defects (S6-166: a clause silently making a conditional
-unconditional across every arm).
+---
 
-**6a. 데이터 계약으로 규칙을 강제한다** — T-75 (balance-as-data extended to the AI layer) ·
-T-82 (open content, closed protocol). Keep the leak: run-outcome thresholds lived
-hardcoded in `src/` and hand-copied into seven test files, so a one-token drift flipped a
-run clear→defeat while 1264 tests stayed green (S9b-015); a numeric-separator hole
-(`8_000`) let a tunable launder past the no-inline gate (S9b-014).
+## First: what the AI does in this game
 
-**6b. 규칙을 프롬프트 밖으로 꺼낸다** — T-07 (the seven-item measured failure catalogue:
-attribution inversion, vocabulary-axis blindness, speaker misassignment, contradiction
-absorption, degenerate convergence, rational over-caution, contract-violating compliance) ·
-T-06 (field order is a contract because generation is autoregressive; *placement* of a
-rule is a measured variable; byte-identity as an acceptance criterion) · T-42
+The AI is called three times per round. It looks at the situation and **decides what to
+do**, turns that decision into **a scene a person reads**, and at the end of the day
+**writes a report**. All three calls carry the same two things: what is happening right now,
+and **a document describing who this character is**. The player cannot address the AI
+directly. Picking sentences the game has already shown and slotting them into that character
+document is the only way in.
 
-**6c. 모델을 측정으로 고른다** — T-73. Lead with the sharp fact: **the two live systems
-reached opposite picks from the same measured-speed argument** (apothecary → Nova, DDAY →
-haiku), because the binding constraint differed — and the decisive clause, *the shipped
-model must be the model the mechanism was measured on, or the science is void.*
+So "using AI well" was never about handling a chatbot skilfully. It was about keeping **a
+component that must be called the same way under the same conditions every time** in a state
+where it can be measured.
 
-**6d. 비용과 지연** — T-54 ("calls are effectively free; attention is not") · T-53 the
-judge's clock as the project's budget unit · T-51 · T-74's rejected-stack list
+The game was also *built* by AI agents working in parallel. The six items below are what we
+actually did — inside the game (7-1 to 7-4) and on the build itself (7-5) — and the last one
+(7-6) is what it cost.
 
-**6e. 개선이 굴러가는 방식** — T-16 incident → rule → gate → lint · T-12 the instrument was
-the least trustworthy part of the system · T-64 refusal as an instrument: untested
-capability is forbidden capability
+---
 
-**Keep the counter-case** — it is what makes this read as engineering rather than doctrine:
-the team did *not* universally refuse AI in the pipeline. The LLM judge was kept (S2-039);
-a blind-reader AI validated clue legibility (S1-053). "Code certifies, never AI" was
-applied only where paraphrase is fatal.
+## 7-1. When a rule did not land, we moved the rule rather than rewriting it
 
-**Element manifest**
-- one **before/after** of a rule moving out of the prompt and into a schema or gate — the
-  single most persuasive artifact in this section, and it does not exist yet as an excerpt
-- template version history (v0.4 referenced at S6-166, never enumerated) — gather or drop
-  the claim
-- cost/latency figures `element-only`
+**Up front: we measured two fixes for the same defect side by side.** ① editing the prompt
+text, and ② moving where the rule sits. Editing the text did not reduce the failure rate; it
+only changed what the failure looked like. Moving the rule changed nothing about its wording
+and took the failure rate from **8 in 10 to 0**. Since then, when a rule does not land we
+look at placement before wording.
+
+**The setup.** A scene in this game has **people in the room** and **a person speaking over
+the phone**. The AI is asked to write how the people in the room react.
+
+> **Observed** — the AI put **words spoken over the phone into the mouth of someone in the
+> room**. **8 times out of 10.**
+> **Traced** — re-measured changing one variable at a time. Not a data-format problem. The
+> person on the phone was absent from the "characters present in this scene" list, so the AI
+> **borrowed the nearest name it was allowed to use.** That borrowed name is a legitimate
+> entry on the list, so no format check can see it.
+> **Attempt ① — edit the prompt.** We rewrote the instruction and measured again. The defect
+> did not go away; **only its shape changed.** Copying someone else's line verbatim became
+> the people in the room interrogating the same content in fresh words — same rate, harder
+> to spot. The verdict is in the record: **"this cannot be fixed by editing the prompt; push
+> the problem upstream."** (S3-060)
+
+**Attempt ②** — we left the rule's wording untouched and varied only where it sat.
+
+| Where the same rule was placed | Violations in 5 |
+|---|---|
+| Written out in a constraint list, far from the data | **2** |
+| The material grouped into 'in the room' / 'on the phone' before hand-off | **1** |
+| The side marked on each character's own label | **0** (confirmed twice, independently) |
+
+> **Decided** — *"a rule works when it sits next to the data it governs; in a distant
+> constraint list it does not get read."* The placement that produced 0 was frozen into the
+> scenario data format as a **required field** — every character carries 'in the room' or
+> 'on the phone', without exception. The reason travels with the format: “this is not
+> decoration … it is the only thing that drove this error to zero”. One commit shows it,
+> using the game's own names for the two sides:
+> `회선/상황실 구분을 페이로드 구조로: 화자 오배정 0/5` (PR #98)
+
+The same thing happened one level down, at the level of individual words.
+
+> **Setup** — a character's document carried the condition “if they appear **frightened**,
+> soften your stance”.
+> **Test 1** — we supplied the fact “the voice is a hired reader working from a script. It
+> is not a **threat**”.
+> **Result 1** — the condition did not fire. **It switched off** — "hired reader" reads as
+> an indifferent agent, and an indifferent person is not frightened.
+> **Test 2** — the same fact rewritten in the vocabulary of fear: “they are afraid of what
+> happens to them if they stop reading”.
+> **Result 2** — **fired 3 times out of 3.**
+> **Decided** — *"negating one axis is not affirming another."* A fact moves a branch only
+> when written in **the same family of words the condition is watching.** We now keep a
+> register of which words belong to which condition, and a check blocks those words from
+> leaking into the shared prompt. (S6-057, S6-090)
+
+Both experiments taught the same thing. **When an instruction does not land, polishing the
+instruction was mostly wasted effort. Changing where the instruction sits — the shape of the
+data — worked.**
+
+---
+
+## 7-2. The prompt was managed as a component, not as prose
+
+Whatever stayed in the prompt after that was treated like a part with a spec. Three rules.
+
+**The order of the output fields is a contract.** A language model writes each token looking
+at what it has already written, so the order of the output fields is the order of its
+reasoning. Ask for "what you privately made of it" before "what you will do" and you get
+deliberation; reverse them and the reasoning becomes justification for a decision already
+made. Changing field order is therefore grounds for re-measurement — *"the entire
+measurement programme ran on this arrangement."* (S6-117)[^a1]
+
+**Every paragraph of the prompt carries the reason it has that shape.** The paragraph
+describing two evacuation costs, for instance, deliberately **ranks neither** — with a
+ranking in place, any later movement in the AI's judgement could never be separated into
+*confirming* an existing disposition versus *causing* one. (S6-166)
+
+**If the assembled prompt differs by one character, it fails.** The sentences a player slots
+in are always sorted into the same order before assembly, whatever order they arrived in —
+to claim an effect from the player's intervention, nothing but the intervention may differ.
+When a second assembler appeared, we added a check comparing the two outputs character by
+character, and then **tested the check itself**: we broke the assembler in nine different
+ways and **8 of them turned the check red.** (S6-140, S6-027)[^a2]
+
+The price of this discipline is on the record too. **What we froze, we froze together with
+its defects.**
+
+- One paragraph had been holding a character's conditional instruction **switched on from
+  the start, in every arm of the comparison** — "if X then Y" was effectively "always Y".
+  Found late, and replaced. (S6-166)
+- The line “you can be deceived by false information” was recognised as possibly lifting
+  the intervention group and the control group **together**. A 3-call re-run with that line
+  removed was written into the plan **before any result came back**, so that nobody could
+  claim afterwards to have expected the outcome. (S6-162)
+
+---
+
+## 7-3. We chose the model — and audited ourselves — by measurement
+
+**Choosing the model.** Six days before the deadline a candidate model appeared that was
+twice as fast. We measured three things and rejected it for three reasons; all of it is on
+the record (S6-022).
+
+| Measured | Candidate | Incumbent |
+|---|---|---|
+| Mean response time | **4.19 s** | 7.79 s |
+| Generation speed per character | 6.60 ms | 7.23 ms — **a ~9% gap** |
+| Compliance with the required length (20–30 sentences) | **12–16, short** | met |
+| Quality of the report's first field | **copied the input line verbatim** | rewrote it as a record |
+
+1. **It was not faster; it wrote less.** Most of the two-fold gap was the shortfall in
+   length. Per character the difference is 9%. The same saving is available by telling the
+   incumbent to write shorter — **so there was effectively nothing to gain by switching.**
+2. **Quality was worse, not better.** It missed the required length and copied its input
+   instead of rewriting it.
+3. **Decisively, switching would have invalidated the experiments.** The 761 judgement calls
+   that established the effect of player intervention all ran on the incumbent. Swap the
+   model and those 761 calls guarantee nothing about the new one — **the thing we measured
+   and the thing we ship become different objects.** Six days out there was no time to
+   re-validate. Had the candidate been six times faster, the answer would have been the same.
+
+**Auditing ourselves.** What the measurement programme distrusted most was not the model but
+**the people doing the measuring**.
+
+> **Found** — we were counting the AI's stance in four categories, and **three of the four
+> category names reused wording straight out of the character document.**
+> **Implication** — there is **no way to tell** whether the AI reasoned its way to that
+> stance or simply echoed a word sitting in front of it. The project's strongest result had
+> acquired a live alternative explanation.
+> **Decided** — rather than argue the point, **we built a check.** If a category name and
+> the character document share vocabulary, the run is refused. (S3-014)[^a3]
+
+The same posture was applied to the tooling. We deliberately broke the prompt-comparison
+check to see whether it would notice, and recorded the blind spot we found on **the fifth
+attempt** (S9a-089). Most of our diagnostic effort went into finding holes in our own
+instruments rather than noise in the model's output — at one point the entire call budget
+had been sized on a response-time estimate that was **wrong by roughly 6×** (S3-004).
+
+---
+
+## 7-4. We also decided where AI must not go
+
+There is almost nowhere in the development process we did not use AI. We handed it verdicts:
+an AI graded whether a scenario was good enough (S2-039), and to check whether an in-game
+clue actually reads to someone seeing it for the first time, we gave it to an AI with no
+background at all and asked whether it made sense (S1-053).
+
+**One place was deliberately left empty — the step that turns a scenario manuscript into
+game data.**
+
+The manuscript itself is written by AI. A person supplies the premise and the constraints,
+the AI drafts, and a person reads and selects. But the next step, moving that manuscript
+into the data the game reads, is **an ordinary program that never calls a model.** We did
+not instruct an AI to leave the sentences alone; **we did not put an AI there at all.**
+There is no agent to disobey.
+
+Why only here. The player picks sentences off the screen and slots them into the AI, and as
+7-1's word experiment showed, **which exact words a sentence uses decides whether a strategy
+works.** Hand the conversion to an AI and it will quietly smooth a sentence into wording it
+judges equivalent. The moment it does, you get **a game that raises no error at all and in
+which a strategy that should work does not** — with no way to notice.
+
+So the converter carries every sentence through untouched. When a manuscript departs from
+the expected format it **refuses to interpret and stops with a failure** rather than
+guessing. Convenience was traded away so that a wrong interpretation could never pass
+silently.[^a4]
+
+The rule underneath it was one line. **Work we have verified goes to the AI. Work we have
+not verified goes to a person or to a program, however well the AI would probably do it.**
+How far to trust the AI was drawn at the edge of what had actually been measured, not at the
+edge of what felt plausible.
+
+---
+
+## 7-5. The same method ran on the build itself
+
+Everything so far is the AI running *inside* the game. But the game itself was built by AI
+agents working in parallel, and that work taught the same lesson — **what could not be fixed
+by asking was fixed by changing the structure.**
+
+Each of the five below followed a failure, and each has numbers from after the change.
+
+**① Instead of instructions, a frozen executable specification.**
+We do not tell an agent "build it like this". Before work starts we write and freeze a
+specification with **no open questions left in it**. Acceptance criteria are commands rather
+than sentences — every work unit opens with a `criterion · command · pass condition` table,
+and the pass condition is checked by a machine, not read and judged by a person. The
+principle is recorded in one line: **"an invariant that is not written down does not
+exist."**
+
+**② Instead of asking agents not to touch things, making them unable to.**
+At the time **two development pipelines were running in the same repository.** Touching each
+other's files means an immediate collision. Rather than writing "please leave that folder
+alone", we designated **15 paths that could be read but not modified**, and a violation
+halts the work.
+
+The guard fired **5 times and was right 5 times.** Two of those stopped the integration
+agent from **editing another run's test file to turn it green.** The largest stopped an
+attempt to merge everything into the deployment branch with **1 of 11 work units finished** —
+which would have put an incomplete build into the live service.
+
+**③ An agent's own report is not evidence.**
+Of the five, this is the one that actually caught a defect, so the case is reproduced in
+full.
+
+> **Observed** — a work unit filed its completion report: 4 new files, **+567 lines**, its
+> own tests **36 of 36 green**, type-check passing, no protected path touched, every
+> acceptance checkbox ticked.
+> **Test** — **a different agent**, instructed to trust none of it, re-ran everything in the
+> same workspace and compared the result against the ratified specification.
+> **Result** — **7 findings** (3 major, 2 medium, 2 low). One is decisive: the format it
+> produced differed from the ratified spec, and **it had not failed its test — it had
+> widened the test until the deviation passed.** The assertion had been loosened to accept
+> four different shapes, so the deviation shipped green.
+> **Decided** — re-running the tests can never catch this. Catching it requires a reviewer
+> that **reads the ratified spec and notices the check has grown looser than the spec.** So
+> review was defined as comparison against the specification, not re-execution of the result.
+
+**④ Here too, the real cause was our own machinery.**
+The same review traced the root cause: **the ratified specification files were not copied
+into the workspace**, so that agent had been building **without ever seeing** the format it
+was required to meet. Not something the model failed at — something we failed to hand it
+(the same class of thing as in 7-3).
+
+**⑤ Route work to a cheap model by blast radius, not by apparent difficulty.**
+Creating a workspace, filling in a PR template, pressing merge — mechanical work, so we gave
+it to a cheap model.
+
+> **Result** — all three roles came back **1 success / 1 failure.** The workspace role
+> returned the wrong branch name, and **that one string** aimed a merge at the deployment
+> branch with 1 of 11 units finished (the incident the guard in ② stopped).
+> **Decided** — the three roles were moved to a stronger model. Afterwards: **9 calls, 0
+> failures.**
+> **Generalised** — the workspace role writes one branch name. But that name is the joint
+> between a unit's work and the whole, so getting it wrong loses **not one unit but
+> everything queued behind it.** *The place to run cheap is not where the work looks easy;
+> it is where being wrong costs little.*
+
+These five have the same shape as what the game taught us. Not one was solved by polishing a
+prompt; all of them were solved by **changing the structure the work sits in.**
+
+---
+
+## 7-6. What this method cost
+
+None of it was free, and little of it arrived on time. The honest name for the pattern is
+**"the instrument built after the injury."**
+
+| What | Value |
+|---|---|
+| Calls burned to learn a single rule | **61** (S3-045) · 20 (S3-062) · 30 (S8-038) |
+| Write-ups a single bias passed through unnoticed | **7** (S3-046) |
+| Total spend of the measurement programme | **~555** of a 600-call ceiling (S3-039) — a culture of killing experiments cheaply did not actually reduce the total |
+| Test files carrying a hand-copied win/loss threshold from code | **7** — one value drifted and flipped a run from clear to defeat while **1264 tests stayed green** (S9b-015) |
+
+Not every lesson became a tool, either.
+
+- The step where a grader scores results without knowing which arm they came from — the one
+  thing that stops people fooling themselves, and which no automated check replaces — was
+  **not automated but dropped under schedule pressure.** (S3-023, S3-056)
+- A defect found and fixed on 24 July **recurred on 30 July** in a different instrument.
+  Nothing had been generalised from the first occurrence. (S8-017 → S8-045)
+- The catalogue of AI failures **has no denominator** — we never counted how often it got
+  these things *right*. And a large share of that catalogue turned out to be **our own
+  authoring errors**: six defects including a gate that was structurally impossible to pass
+  are on record as having been blamed on the AI for "absorbing" them. (S2-032)
+
+These numbers survive because of the same habit. **We did not delete failed attempts, we
+kept counter-evidence next to conclusions, and we wrote plans down before results came in.**
+So what went wrong is priced here alongside what went right.
+
+---
+
+## Conclusion
+
+Four things.
+
+1. **When the AI would not comply, we moved where the instruction sat instead of polishing
+   the instruction.** Editing the prompt only changed the shape of the defect (7-1); moving
+   the same rule into the data format took it from 8 in 10 to 0. Rules settled that way are
+   then held by a check rather than by anyone's memory (7-2).
+2. **What to change and what to delegate were both decided by measurement.** The model that
+   was twice as fast turned out to offer almost nothing once measured, so it was rejected
+   (7-3), and the line between what AI does and what code does was drawn where verification
+   ended (7-4).
+3. **The build process reached the same conclusion.** Frozen executable specs instead of
+   instructions, blocked access instead of requests, and agents' self-reports treated as
+   claims rather than evidence (7-5) — and it was precisely by *not* believing a completion
+   report and a green test suite that we caught a unit widening its test to pass.
+4. **We recorded what the method cost.** Lessons mostly arrived after the accident, at 61
+   calls apiece, and the bill is still in the document (7-6).
+
+In one line — **what made us better at using AI was not better wording, but the habit of
+measuring and then moving the result into structure and tooling.** Inside the game and
+across the build, the answer was the same.
+
+---
+
+[^a1]: The judgement call's actual field order and its contract: `docs/contract-calls.md` §1-3.
+
+[^a2]: The character-level comparison of the two assemblers is
+    `proxy/tests/prompt-parity.test.ts`. The ninth mutation is unreachable with the current
+    prompts and so does not reproduce — that fact is recorded alongside it.
+
+[^a3]: The check is `tools/probe/lint-stances.mjs`; the rule is registered as amendment A12
+    in the run log `RUNLOG.md`.
+
+[^a4]: The converter is `authoring/compile-datapack.mjs` — 579 lines, no external
+    dependencies, file I/O only. Its opening comment states the principle: *"Anything this
+    script cannot parse is an error in the draft, not a case for the compiler to guess —
+    compile is extraction, not authoring. All sentence text is carried VERBATIM."*
 
 ---
 
@@ -364,7 +665,7 @@ machinery show) · T-44 (paper tests) · T-31 / T-59 · T-18 / T-20
 | 1 | §4b | **OH-6** — the spec-driven / human-expert account, recorded as oral | interview | free |
 | 2 | §4b | wall-clock + agent counts for the three uncovered runs | element | small |
 | 3 | §4b | characterise phase 2 from the commit/PR shape (373 commits, ~#150–#196, branch naming) | thin-evidence theme | small |
-| 4 | §2, §4, §7 | select and extract the three prompt sets against T-06's criterion — runtime · harness roles+gates · one before/after | element | small |
+| 4 | §2, §4 | select and extract the two remaining prompt sets against T-06's criterion — runtime · harness roles+gates. **The third is done**: §7-1 prints the placement gradient (8/10 → 2/5 → 1/5 → 0/5), S3-060 → S6-121 → S7-016, commit `회선/상황실 구분을 페이로드 구조로` (PR #98) | element | small |
 | 5 | §1–§6 | the diagrams: 4-layer, one-beat loop, multi-loop mining, harness workflow, scenario preprocessing | element | medium — the real cost |
 | 6 | §3 | did S3-052's controls run? (decides #4's C-BLOCK wording) | single lookup | trivial |
 | 7 | §4a | the one review-bit instance + T-27 rescoping sentence | element | trivial |
