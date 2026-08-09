@@ -604,7 +604,34 @@ test.describe('latency', () => {
     // The paper is not blank — the run printed up to the call — and the wait
     // itself put nothing on it.
     const lines = page.locator('#w-feed #feedList .fl')
-    const before = await lines.count()
+    // LET THE PAPER SETTLE BEFORE TAKING THE BASELINE (08-09).
+    //
+    // Stopping the clock does not freeze the fanfold — it FLUSHES it. The
+    // reveal queue's pump rides the driver (`run-feed.ts`), so its settle
+    // watchdog drains whatever is still buffered the moment the clock stops,
+    // deliberately: lines queued against a clock that never runs again would
+    // otherwise be stranded for ever. So the instant after `holdRate(0)` the
+    // paper is still growing, and a count taken there is a count taken
+    // mid-flush.
+    //
+    // It read 7 locally and 9 on a CI runner, and the test then blamed the held
+    // desk for printing two lines the flush had already owed it. The claim this
+    // test owns is that the WAIT draws nothing while the sim is held — not that
+    // the queue is empty at an arbitrary instant — so the baseline waits for the
+    // flush to finish rather than racing it.
+    let seen = -1
+    await expect
+      .poll(
+        async () => {
+          const now = await lines.count()
+          const stable = now === seen
+          seen = now
+          return stable
+        },
+        { timeout: 15_000 },
+      )
+      .toBe(true)
+    const before = seen
     expect(before, 'the desk printed nothing at all — this guard is measuring an empty window').toBeGreaterThan(0)
     await expect(page.locator(WAIT_NODE), 'a wait marker came back onto the paper').toHaveCount(0)
 
