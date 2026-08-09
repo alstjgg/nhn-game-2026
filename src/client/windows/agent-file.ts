@@ -18,7 +18,7 @@
 // no sibling window import, nothing from engine or composer (C8 / inv 12), and
 // no fixture module — carried ids resolve through the report index (D13).
 import type { FixtureDriver, Sentence } from '../driver/index.ts'
-import { animationsFrozen, registerAnimation } from '../driver/index.ts'
+import { animationsFrozen } from '../driver/index.ts'
 import { button, el, must } from '../shell/dom.ts'
 import { deployCopy, openConfirm } from '../shell/confirm.ts'
 import { announce } from '../shell/announcer.ts'
@@ -170,9 +170,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    * that closed was the last of the allotment and has no successor to hand to.
    */
   let closingRun: number | null = null
-
-  /** The callsign reveal's pump — one naming at a time, per window (D7). */
-  const CALLSIGN_PUMP = 'agent-file/callsign'
 
   /**
    * The naming's own pace — DELIBERATELY not the typewriter's 11 ms.
@@ -566,20 +563,40 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       onDone()
       return
     }
-    let elapsed = 0
-    const unregister = registerAnimation(CALLSIGN_PUMP, (realMs: number) => {
-      elapsed += realMs
-      const chars = Math.floor(elapsed / CALLSIGN_MS_PER_CHAR)
-      const cursor = { chars, done: chars >= full.length }
-      typedCallsign = cursor.done ? full : full.slice(0, cursor.chars)
+    // ON A TIMER, NOT ON THE ANIMATION PUMP — and this is the important line in
+    // the function (08-09).
+    //
+    // It rode `registerAnimation` first, which was wrong in a way that only the
+    // desk lane could show: that pump ticks only while the driver's clock is
+    // RUNNING or ENDED (`driver/fixture-driver.ts`), and at the moment of this
+    // press the day is over. In a played day the clock has ended and it ticks;
+    // under `window.__shell.drain()` — which flushes the stream without ever
+    // advancing the clock to the terminal minute — it does not, so the
+    // continuation below never ran, `sendNewRun()` was never called, and the
+    // desk sat in `tally` for ever. Eight `run-loop.spec.ts` tests, and a press
+    // that silently does nothing is the worst failure this control has.
+    //
+    // The lesson generalises past the bug: THE PROGRESSION MAY NOT BE HOSTAGE TO
+    // AN ANIMATION. A reveal is allowed to be skipped, slowed or frozen; the op
+    // it precedes has to leave regardless. `setTimeout` is the guarantee — it
+    // survives a stopped clock and it still fires in a hidden tab (throttled,
+    // which only makes the naming slower, never lost). The handover's reveal can
+    // ride the pump precisely because nothing waits on it.
+    let chars = 0
+    const step = (): void => {
+      chars += 1
+      typedCallsign = chars >= full.length ? full : full.slice(0, chars)
       // The dossier is rebuilt to repaint one row, exactly as every other
       // change to this page is painted — `turn` is the window's only renderer
       // and a second path into the sheet is how two of them drift apart.
       turn('last')
-      if (!cursor.done) return
-      unregister()
+      if (chars < full.length) {
+        window.setTimeout(step, CALLSIGN_MS_PER_CHAR)
+        return
+      }
       onDone()
-    })
+    }
+    window.setTimeout(step, CALLSIGN_MS_PER_CHAR)
   }
 
   function sendNewRun(): void {
