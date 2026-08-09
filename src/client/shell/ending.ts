@@ -236,7 +236,7 @@ interface PlateCopy {
 const GOOD_COPY: readonly PlateCopy[] = [
   {
     head: '시뮬레이션 종료',
-    lead: '736명이 눈밭으로 걸어 나왔습니다.',
+    lead: '736명이 무사히 눈밭으로 걸어 나왔습니다.',
     body: [
       '문세라는 코트에 남은 아이들을 마지막까지 세었고, 살아서 나왔습니다.',
       '사망 0명 — 지금까지 확인된 최선의 기록입니다.',
@@ -251,7 +251,7 @@ const GOOD_COPY: readonly PlateCopy[] = [
     ],
   },
   {
-    head: '임용 확정',
+    head: '모의 과정 완료',
     lead: '평가를 통과하셨습니다.',
     body: [
       '본 단말의 모의 과정은 여기서 종료됩니다. 기록은 귀하의 인사 자료에 편입됩니다.',
@@ -274,10 +274,10 @@ const GOOD_COPY: readonly PlateCopy[] = [
 const BAD_COPY: readonly PlateCopy[] = [
   {
     head: '시뮬레이션 종료',
-    lead: '{walkedOut}명이 눈밭으로 걸어 나왔습니다.',
+    lead: '{deaths}명이 한내돔을 탈출하지 못하여 사망했습니다.',
     body: [
-      '나머지는 회전문 앞에 선 채, 문이 한 번에 두 사람씩 도는 것을 보고 있었습니다.',
-      '사망 {deaths}명 — 시행 횟수가 모두 소진되었습니다.',
+      '집결지에서 센 수는 끝내 맞지 않았고, 회전문이 천천히 도는 사이 지붕은 점점 내려앉았습니다.',
+      '시행 횟수가 모두 소진되었습니다.',
     ],
   },
   {
@@ -289,7 +289,7 @@ const BAD_COPY: readonly PlateCopy[] = [
     ],
   },
   {
-    head: '평가 보류',
+    head: '모의 과정 완료',
     lead: '평가가 보류되었습니다.',
     body: [
       '본 단말의 모의 과정은 여기서 종료됩니다. 동일 사건으로 재평가가 편성됩니다.',

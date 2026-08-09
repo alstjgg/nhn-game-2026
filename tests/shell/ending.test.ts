@@ -257,7 +257,7 @@ describe('[x6] the plates', () => {
       {
         head: '시뮬레이션 종료',
         corner: '1 / 3',
-        lead: '736명이 눈밭으로 걸어 나왔습니다.',
+        lead: '736명이 무사히 눈밭으로 걸어 나왔습니다.',
         body: [
           '문세라는 코트에 남은 아이들을 마지막까지 세었고, 살아서 나왔습니다.',
           '사망 0명 — 지금까지 확인된 최선의 기록입니다.',
@@ -273,7 +273,7 @@ describe('[x6] the plates', () => {
         ],
       },
       {
-        head: '임용 확정',
+        head: '모의 과정 완료',
         corner: '3 / 3',
         lead: '평가를 통과하셨습니다.',
         body: [
@@ -289,10 +289,10 @@ describe('[x6] the plates', () => {
       {
         head: '시뮬레이션 종료',
         corner: '1 / 3',
-        lead: '529명이 눈밭으로 걸어 나왔습니다.',
+        lead: '207명이 한내돔을 탈출하지 못하여 사망했습니다.',
         body: [
-          '나머지는 회전문 앞에 선 채, 문이 한 번에 두 사람씩 도는 것을 보고 있었습니다.',
-          '사망 207명 — 시행 횟수가 모두 소진되었습니다.',
+          '집결지에서 센 수는 끝내 맞지 않았고, 회전문이 천천히 도는 사이 지붕은 점점 내려앉았습니다.',
+          '시행 횟수가 모두 소진되었습니다.',
         ],
       },
       {
@@ -305,7 +305,7 @@ describe('[x6] the plates', () => {
         ],
       },
       {
-        head: '평가 보류',
+        head: '모의 과정 완료',
         corner: '3 / 3',
         lead: '평가가 보류되었습니다.',
         body: [
@@ -316,12 +316,18 @@ describe('[x6] the plates', () => {
     ])
   })
 
-  it('(e) the bad ending`s numbers actually follow the day', () => {
-    // (d) pins the shape; this pins that the two slots are SUBSTITUTED and not
-    // authored into the string. A hard-coded 529/207 passes (d) forever.
+  it('(e) the bad ending`s number actually follows the day', () => {
+    // (d) pins the shape; this pins that the slot is SUBSTITUTED and not
+    // authored into the string. A hard-coded 207 passes (d) forever.
+    //
+    // ONE slot now, not two. The plate used to open on the survivors and carry
+    // the toll underneath; it opens on the toll, so `{walkedOut}` no longer
+    // appears in any authored line. `numbersOf` still computes it — see the
+    // note on `SITE_OCCUPANTS` — but nothing prints it, and this test is the
+    // place that would have noticed if something did.
     const plates = endingPlates('bad', other)
-    expect(plates[0]!.lead).toBe('679명이 눈밭으로 걸어 나왔습니다.')
-    expect(plates[0]!.body[1]).toBe('사망 57명 — 시행 횟수가 모두 소진되었습니다.')
+    expect(plates[0]!.lead).toBe('57명이 한내돔을 탈출하지 못하여 사망했습니다.')
+    expect(plates[0]!.body[1]).toBe('시행 횟수가 모두 소진되었습니다.')
   })
 
   it('(f) the good ending`s copy is fixed and reads no number off the day', () => {
