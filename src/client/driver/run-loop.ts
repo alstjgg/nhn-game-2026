@@ -67,7 +67,7 @@ export function createRunLoopDriver(
      release also carried everything else stamped at the opening minute, which
      on the demo run is the first script event and 서지형's first line: the
      LIVE FEED printed the case's opening while the file was still empty and
-     ECHO-1 had not gone in. The run-state reducer already refused to leave
+     ECHO had not gone in. The run-state reducer already refused to leave
      BUILD for that batch (`shell/run-state.ts`) — the paper just never got the
      same rule.
 

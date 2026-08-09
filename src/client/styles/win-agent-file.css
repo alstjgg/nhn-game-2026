@@ -28,20 +28,42 @@
    인수인계 사항 are the form's headings, printed on it before anyone filled it in. */
 .sect-hd h4{font-family:var(--mono);font-size:var(--fs-12);font-weight:700;
   letter-spacing:.08em;color:var(--pap-1)}
-.sect-flag{margin-left:auto;font-size:var(--fs-7-5);letter-spacing:.2em;
-  padding:var(--space-1) var(--space-6);
-  border:1px solid var(--sh-3);color:var(--faded)}
-.sect.fixed .sect-flag{background:var(--sh-055)}
-.sect.operable .sect-flag{border-color:var(--seal);color:var(--seal-2);background:var(--seal-wash)}
+/* x7 — `.sect-flag` and its two state skins are DELETED (민서, 08-09). The badge
+   said 고정 / 조작 가능 / 열람 in the corner of every section head on every page,
+   which is the form naming the kind of field beside a heading that already
+   names it. `components/dossier.ts` no longer emits the element.
+   `.sect.fixed .sect-body` below still carries the distinction in ink, which is
+   why the state class survives on the section. */
 /* x6 — `pre-line`, so the cover's sections keep their authored line breaks.
    임무 and 교신 지침 are a posting order's clauses, one per line, and
    `components/dossier.ts` writes them with `\n` between. Collapsed
    into one justified block they read as a manual again, which is the exact
    failure x6 exists to undo. Wrapping inside a clause still justifies; a line
    ended by the authored break is a last line and is not stretched. */
+/* x7 — `padding-left:var(--space-2)` removed (민서, 08-09). It read on the page
+   as a space before every body line: the heading above and the red note below
+   are both flush at the section's own left edge, and 2px of inset was enough to
+   make the prose between them look indented against them. Measured before and
+   after — heading, body and note now share one left edge. */
 .sect-body{font-family:var(--myeong);font-size:var(--fs-11-5);line-height:1.72;color:var(--pap-3);
-  padding-left:var(--space-2);text-align:justify;white-space:pre-line}
+  text-align:justify;white-space:pre-line}
 .sect.fixed .sect-body{color:var(--pap-4)}
+/* x7 — the cover's red note: the one line in a section that is not the order
+   itself but a warning about it, so it is set apart from the body it follows
+   the way the sealed notice used to be — the seal's own red, small, and at a
+   letter-spacing that reads as stamped rather than written. It is a separate
+   element (`components/dossier.ts` emits it as one) precisely so it can carry
+   its own ink without the body having to be marked up mid-sentence. */
+.sect-note{font-size:var(--fs-8-5);line-height:1.7;letter-spacing:.12em;
+  color:var(--seal-2);margin-top:var(--space-6);word-break:keep-all}
+/* x7 — the series name where the cover says it in BODY prose. The same ink the
+   호출부호 row already wears (`.rd-code` below), so the incident summary and the
+   identity it hands to agree on which word is the agent. `components/dossier.ts`
+   wraps it; nothing here decides where.
+   The red note is deliberately NOT marked up: it is already set entirely in this
+   red, so a bold inside it would be emphasis on emphasis with nothing to
+   contrast against. Only 사건 개요's body carries the mark (민서's request). */
+.rd-echo{color:var(--seal-2);font-weight:800;letter-spacing:.06em}
 .sect-rows{display:grid;grid-template-columns:96px 1fr;gap:var(--space-2) var(--space-10);
   font-size:var(--fs-10-5);line-height:1.6}
 .sect-rows dt{color:var(--faded);letter-spacing:.06em}
@@ -56,15 +78,21 @@
    class — the sheet never spells the Korean key. */
 .sect-rows dd.rd-code{color:var(--seal-2);font-weight:800;letter-spacing:.08em}
 
-/* §3 기질 — redacted */
-.sect.sealed .sect-body{position:relative;color:transparent;user-select:none}
-.redact{display:flex;flex-wrap:wrap;gap:var(--space-4) var(--space-5);margin-top:var(--space-2)}
-.redact i{display:block;height:18px;background:var(--redact);
-  box-shadow:0 1px 0 var(--sheen-25);animation:redactIn .5s ease-out both}
-@keyframes redactIn{from{transform:scaleX(0);transform-origin:left}to{transform:none}}
-.sealed-note{font-size:var(--fs-8-5);letter-spacing:.14em;color:var(--seal-2);margin-top:var(--space-6);
-  display:flex;align-items:center;gap:var(--space-6)}
-.sealed-note::before{content:'✕';font-size:var(--fs-9)}
+/* §3 기질's redaction lived here and is DELETED (x7, 민서 08-09).
+   `.sect.sealed .sect-body`, `.redact`, `.redact i`, `@keyframes redactIn` and
+   `.sealed-note` — the transparent text, the black bars that scaled in from the
+   left, and the ✕ notice under them.
+
+   Kept for one round out of caution ("unstyled bars are worse than unused
+   rules") and now removed, because the caution no longer applies: the sealed
+   ARM of `buildSection` is gone with `SealedSection`, `SEALED_COPY` and
+   `SEALED_BARS`, so no code path can emit a `.sect.sealed` node to be left
+   unstyled. `e2e/agent-file.spec.ts` asserts `.sect.sealed` count 0, which is
+   what would catch a section arriving here again without its skin.
+
+   `--redact` in `tokens.css` may now be dead — it is a token, not a rule, and
+   `tests/styles/token-lint.test.ts` only checks used→declared, so it will not
+   fail either way. Left for a token pass to decide. */
 
 /* 인수인계 사항 — a paragraph, not four boxes (x4).
 
@@ -176,6 +204,36 @@
   border:1px solid var(--sh-28);border-radius:2px;padding:var(--space-1) var(--space-8);cursor:pointer}
 .pg-turn:disabled{opacity:.35;cursor:default}
 .pg-count{font-size:var(--fs-8-5);letter-spacing:.16em;color:var(--faded)}
+
+/* x7 — 건너뛰기, the one gesture that lands the cover's reveal.
+
+   UNDERLINED AND NOTHING ELSE (민서). Everything the operator can press on this
+   sheet is a printed thing — a stamped DEPLOY plate, a bracketed 해제, a ruled
+   page arrow — and an escape from a reveal is none of those: it is not part of
+   the document, it is a way out of watching it print. So it wears the one
+   affordance no form on this desk uses, sits under the last section rather than
+   over the page, and goes to the seal's red only on hover. It leaves the DOM
+   the moment the reveal lands (`windows/agent-file.ts`, `landCover`), so there
+   is never a spent control on the page and never a dead tab stop.
+
+   It sits in the band under the ruled head, hard right, and it is the one
+   element on this page whose box never moves: the cover grows downward as it
+   prints, so anything below the text drifts for the whole reveal. Right, not
+   centred — centred under the head it read as a caption belonging to the
+   document, and it is the opposite of that. */
+/* x7 — IN the head's right corner, not in a row of its own (민서, 08-09). A row
+   of its own is a row that goes: the control removes itself when the reveal
+   lands, and the document jumped up a line at the moment the reader reached the
+   end of it. `.file-head` is a `space-between` flex with `align-items:flex-end`,
+   so no margin is needed to place this — it lands opposite the title block on
+   the same baseline band, and the head keeps its height from `.fh-left` when the
+   button goes. */
+.cover-skip{padding:var(--space-2) 0 var(--space-2) var(--space-6);
+  background:transparent;border:0;
+  font-size:var(--fs-8-5);letter-spacing:.16em;color:var(--faded);
+  text-decoration:underline;text-underline-offset:.3em;cursor:pointer;
+  transition:color .14s;white-space:nowrap}
+.cover-skip:hover{color:var(--seal-2)}
 
 /* U5.3 — a finished sitting's page: nothing to press, and no `data-block-id`,
    so no red thread reaches back into a page whose run is over.
