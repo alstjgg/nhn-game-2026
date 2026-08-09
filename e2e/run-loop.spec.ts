@@ -304,7 +304,12 @@ test.describe('count-up pacing absorbs the report call', () => {
     expect(['pending', 'counting'], `the record reached ${early} before the cadence ran`).toContain(early)
     await expect(page.locator(NEW_RUN)).toBeDisabled()
 
-    await expect(page.locator(WAIT)).toHaveText('……보고서 정리 중')
+    // x6b — the note is BLANK across the hold, where it used to print
+    // `……보고서 정리 중`. The claim underneath is unchanged and is the one that
+    // always mattered: the desk does not report its own latency as machinery.
+    // It just no longer reports it at all — the settle is silent on this
+    // surface, and the release is what writes here (asserted below).
+    await expect(page.locator(WAIT)).toHaveText('')
     await expect(page.locator(`${FILE} .spinner, ${FILE} .loading, ${FILE} progress`)).toHaveCount(0)
 
     await expect(page.locator(LEDGER)).toHaveAttribute('data-tally-state', 'final', { timeout: 20_000 })

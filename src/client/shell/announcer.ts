@@ -33,9 +33,8 @@
 import type { FixtureDriver, ViewEvent } from '../driver/index.ts'
 import { callsignOf } from '../components/dossier.ts'
 
-/** How long a line stays on the visible toast; the live region keeps its text. */
-const SHOW_MS = 4000
-
+// x6b — `SHOW_MS` (4 s) went with the visible panel. It timed how long a line
+// stayed on screen; there is no screen now, and a live region does not expire.
 const RUN_OPENED = (run: number) => `${callsignOf(run)} 교신 시작`
 const FALLBACK: Record<1 | 2 | 3, string> = {
   1: '회신 불량',
@@ -46,7 +45,6 @@ const REPORT_FILED = '보고서가 부검 창에 도착했습니다'
 const RUN_CLOSED = '시뮬레이션 종료 — 결과는 현장 기록으로'
 
 let region: HTMLElement | null = null
-let hide: ReturnType<typeof setTimeout> | null = null
 
 /**
  * Says `text` on the desk's live region. A no-op before the shell has bound one,
@@ -58,11 +56,10 @@ export function announce(text: string): void {
   // speaks a CHANGE. A zero-width reset makes a repeat land as one.
   if (region.textContent === text) region.textContent = ''
   region.textContent = text
-  region.classList.add('on')
-  if (hide !== null) clearTimeout(hide)
-  hide = setTimeout(() => {
-    region?.classList.remove('on')
-  }, SHOW_MS)
+  // x6b — nothing is shown, so nothing has to be hidden again. The `.on` class
+  // and the timer that removed it drove a visible panel; the region is clipped
+  // out of the viewport now (`styles/shell.css`) and only assistive tech reads
+  // it, for which the last line standing is correct rather than stale.
 }
 
 /** The line an event is worth saying out loud, or `null` for the ones that are not. */

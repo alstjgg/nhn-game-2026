@@ -440,21 +440,40 @@ test.describe('topbar', () => {
   //
   // The half that always mattered survives whole: the view still computes no
   // time, it is handed one. Only the source moved — from the clock to the paper.
+  // RE-AIMED AGAIN (08-09, x6b). The version above was written on a branch cut
+  // before #218 and merged after it, so nothing failed until both were on main:
+  // #218 holds the day until the file is committed (`the day opens on the press`
+  // in `e2e/live-feed.spec.ts`), and this test opened by requiring the fanfold to
+  // have ALREADY printed. It asserted a boot state that no longer exists — a
+  // semantic conflict two green branches produced between them, which is worth
+  // recording because neither PR could have caught it alone.
+  //
+  // The claim is unchanged and is now checked across the edge that #218 created:
+  // BEFORE the press the paper is blank and the chrome shows the pack's opening
+  // stamp (the prefill `components/game-clock.ts` paints from `options.start`),
+  // and AFTER it every stamp the chrome shows is one the paper printed.
   test('topbar — the clock time is feed-fed, never view-computed', async ({ page }) => {
-    // Held at boot (rate 0), so nothing lands between the two reads below and
-    // the opening fanout has already printed.
+    // Held at boot (rate 0), so nothing lands between the reads below.
     expect((await frame(page)).rate, 'the desk booted already running').toBe(0)
 
+    // (1) Blank paper, and the chrome is NOT blank with it. The prefill is the
+    // one time the digits are not a printed stamp, and it is not a computed one
+    // either — it is the pack's own opening stamp, handed over at construction.
+    const held = await chromeVsPaper(page)
+    expect(held.lines, 'the day printed before it was opened (#218)').toBe(0)
+    expect(held.digits, 'the held desk shows no opening stamp').toMatch(/^\d{2}:\d{2}$/)
+
+    // (2) The press opens the day. As soon as the paper carries a stamp, the
+    // chrome must be showing that stamp and no other.
+    await page.locator('#w-file #btnDeploy').click()
+    await confirmDeploy(page)
+    await expect.poll(async () => (await chromeVsPaper(page)).lines, { timeout: 30_000 }).toBeGreaterThan(0)
+
     const opening = await chromeVsPaper(page)
-    expect(opening.lines, 'the fanfold printed no stamped line to follow').toBeGreaterThan(0)
     expect(opening.digits).toMatch(/^\d{2}:\d{2}$/)
     expect(opening.digits, 'the top bar is not showing the stamp the fanfold printed').toBe(opening.printed)
 
-    // …and it keeps following once the day runs. Only a committed file starts
-    // it, so DEPLOY first, then wait for the paper to move past its opening
-    // minute and read both surfaces again.
-    await page.locator('#w-file #btnDeploy').click()
-    await confirmDeploy(page)
+    // (3) …and it keeps following as the day runs — not just on the first line.
     await expect
       .poll(async () => (await chromeVsPaper(page)).printed, { timeout: 30_000 })
       .not.toBe(opening.printed)
