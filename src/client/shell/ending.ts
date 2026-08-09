@@ -41,6 +41,7 @@
 // under it are pure functions, so the whole of what this module SAYS is
 // testable without a desk to say it on.
 import type { FixtureDriver, ViewEvent } from '../driver/index.ts'
+import { deathsOf } from '../../shared/predicates.ts'
 import { button, el, must } from './dom.ts'
 
 /* ── the numbers the copy is written against ─────────────────────────────── */
@@ -57,6 +58,27 @@ import { button, el, must } from './dom.ts'
 export const TUNNEL_OCCUPANTS = 341
 
 /**
+ * The scored units who were never among those 341.
+ *
+ * 오세라 is `터널 점검 용역 반장` (`characters.json` c3) — she walks INTO the
+ * tunnel to open the sixth through ninth doors, she is not sitting in a car in
+ * it. `score.json`'s u1 says so in as many words while explaining its own
+ * denominator: 터널 안 탑승자 341명 … (점검 용역 인원은 별도 단위). And the
+ * variance note for the rescue run puts it beyond argument —
+ * `341명이 다 건너간 뒤에도 오세라만 건너오지 않는다`.
+ *
+ * Which is why the good ending's plate reads 341명이 걸어 나왔습니다 AND
+ * 사망 1명 with no contradiction: the one death was never in the 341. The bad
+ * ending has to do the same arithmetic in reverse — see `numbersOf`.
+ *
+ * A label list, because that is what the seam carries: §5.2's `score` row has a
+ * `label` and a value and no id (the id half goes to the run record instead —
+ * `driver/scorer.ts` explains the split). Pack-specific, like every other
+ * sentence in this module.
+ */
+const OUTSIDE_THE_TUNNEL: readonly string[] = ['오세라']
+
+/**
  * The death toll that means the tunnel was emptied — `score.json`'s u1 ladder
  * bottoms out at 0 with 오세라 still lost inside, so the best reachable day
  * closes on exactly one.
@@ -64,15 +86,27 @@ export const TUNNEL_OCCUPANTS = 341
 const RESCUE_TOTAL = 1
 
 /**
- * What the preview lanes count as the day's toll.
+ * What the preview lanes count as the day, tally and all.
  *
- * `?ending=bad` opens the walk with no day behind it, so its two numbers have
- * to come from somewhere: this is the untouched day's toll, the one
- * `score.json`'s `baseline_summary` calls 총 사망자 138명 — 그날의 기록. A
- * preview of the losing ending showing the number the real event produced is
- * the most honest placeholder available, and it is never used on a real run.
+ * `?ending=bad` opens the walk with no day behind it, so its numbers have to
+ * come from somewhere: this is the UNTOUCHED day, the one `score.json`'s
+ * `baseline_summary` calls 총 사망자 138명 — 그날의 기록. A preview of the losing
+ * ending showing the toll the real event produced is the most honest
+ * placeholder available, and it is never used on a real run.
+ *
+ * It carries 오세라's row because `numbersOf` reads it — the point of the
+ * preview is to show the plate the arithmetic actually produces, and a stand-in
+ * that skipped the row would quietly show a different number than the game
+ * does. The value is her baseline outcome, verbatim from `score.json` u2.
  */
-const PREVIEW_DEATHS = 138
+const PREVIEW_SCORE: { total: number; rows: readonly ScoredRow[] } = {
+  total: 138,
+  rows: [
+    { label: '터널에서 나오지 못한 사람', value: 136 },
+    { label: '오세라', value: '사망 · 아홉 번째 문 앞, 쇠사슬을 손으로 흔든 자세' },
+    { label: '차우진', value: '사망 · 하행 사점이 킬로 갓길' },
+  ],
+}
 
 /** The one control's two labels: the plates that advance, and the one that ends. */
 export const ENDING_NEXT = '다음'
@@ -134,14 +168,51 @@ export function endingKindOf(input: { total: number; runsLeft: number }): Ending
   return null
 }
 
+/** One row of the closing tally, as §5.2's `score` event carries it. */
+export interface ScoredRow {
+  label: string
+  value: string | number
+}
+
 /**
- * Survivors from the day's deaths — everyone the tunnel held, less the toll.
+ * The two numbers the bad ending prints, from the day's own tally.
  *
- * Clamped at zero: the arithmetic is the ending's, not the seam's, and a
- * negative crowd is a sentence the plate must never print.
+ * `deaths` is the seam's `total` UNCHANGED — the headline the operator watched
+ * the ledger roll to seconds earlier, 총 사망자 수 138명. An ending that quietly
+ * printed a different toll than the record it is closing would be the one lie
+ * on the plate.
+ *
+ * `walkedOut` is NOT `341 - total`, and the difference is a real person. The
+ * 341 are the tunnel's OCCUPANTS; `total` also counts 오세라, who was never one
+ * of them (`OUTSIDE_THE_TUNNEL`). Subtracting the whole toll therefore charges
+ * the crowd for a death that did not happen in it, and reports one fewer
+ * survivor than the pack's own arithmetic on every day she is lost — which is
+ * every day but the one where the tunnel is emptied out of the adit. On the
+ * untouched day: 341 − (138 − 1) = 204, the number `score.json` reaches as
+ * 340 − 136 crowd − 차우진.
+ *
+ * The two printed numbers consequently do not sum to 341, exactly as the good
+ * ending's 341 and 사망 1명 do not, and for the identical reason. The plate is
+ * counting the tunnel and then counting everyone.
+ *
+ * `deathsOf` is the pack's own rule, borrowed rather than restated
+ * (`shared/predicates.ts`, and `components/tally-line.ts` reads the same tally
+ * through it): a value counts one death when its outcome word is 사망, so
+ * `사망 · 아홉 번째 문 안쪽` counts and `생존 · 갱구 밖 집결지` does not. Writing
+ * a second copy of that test here is how the desk's two readings of one row
+ * would eventually disagree.
+ *
+ * Clamped at both ends: the arithmetic is the ending's, not the seam's, and
+ * neither a negative crowd nor a negative toll is a sentence the plate may
+ * print.
  */
-export function numbersOf(deaths: number): EndingNumbers {
-  return { walkedOut: Math.max(0, TUNNEL_OCCUPANTS - deaths), deaths }
+export function numbersOf(score: { total: number; rows: readonly ScoredRow[] }): EndingNumbers {
+  let outside = 0
+  for (const row of score.rows) {
+    if (OUTSIDE_THE_TUNNEL.includes(row.label)) outside += deathsOf(row.value)
+  }
+  const inside = Math.max(0, score.total - outside)
+  return { walkedOut: Math.max(0, TUNNEL_OCCUPANTS - inside), deaths: score.total }
 }
 
 /* ── the copy ────────────────────────────────────────────────────────────── */
@@ -470,7 +541,9 @@ function earned(driver: FixtureDriver): Promise<{ kind: EndingKind; numbers: End
       const kind = endingKindOf({ total: event.total, runsLeft: runsLeft ?? Number.POSITIVE_INFINITY })
       if (kind === null) return
       done = true
-      resolve({ kind, numbers: numbersOf(event.total) })
+      // The whole event, not just its total: `numbersOf` has to see which of
+      // the scored units was standing outside the 341 to begin with.
+      resolve({ kind, numbers: numbersOf({ total: event.total, rows: event.rows }) })
     })
   })
 }
@@ -594,7 +667,7 @@ async function walkEnding(host: Window, ports: EndingPorts): Promise<void> {
   const forced = endingForced(host)
   if (forced !== null) {
     await deskReady
-    await raise(host, driver, forced, numbersOf(PREVIEW_DEATHS))
+    await raise(host, driver, forced, numbersOf(PREVIEW_SCORE))
     return
   }
 

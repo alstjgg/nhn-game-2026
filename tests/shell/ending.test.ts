@@ -121,30 +121,116 @@ describe('[x6] the trigger', () => {
 /* ══ 2 — the numbers the bad ending prints ════════════════════════════════ */
 
 describe('[x6] the numbers', () => {
+  /** 오세라's two authored outcomes, verbatim from `score.json` u2. */
+  const OSERA_DEAD = '사망 · 아홉 번째 문 앞, 쇠사슬을 손으로 흔든 자세'
+  const OSERA_ALIVE = '생존 · 갱구 밖 집결지에서 발견된다'
+
+  /** A `score` event's numbers, as `numbersOf` takes them. */
+  const day = (total: number, crowd: number, osera: string, chu: string) => ({
+    total,
+    rows: [
+      { label: '터널에서 나오지 못한 사람', value: crowd },
+      { label: '오세라', value: osera },
+      { label: '차우진', value: chu },
+    ],
+  })
+
   it('(a) the tunnel holds the pack`s own figure', () => {
     // `data/scenario/전구간정상/meta.json`'s logline — "터널에 갇힌 341명" —
     // and `score.json` u1's `tallies`, which counts the other 340 around 차우진.
     expect(TUNNEL_OCCUPANTS).toBe(341)
   })
 
-  it('(b) the survivors are what the tunnel had less the day`s dead', () => {
-    expect(numbersOf(137)).toEqual({ walkedOut: 204, deaths: 137 })
-    expect(numbersOf(138)).toEqual({ walkedOut: 203, deaths: 138 })
-    expect(numbersOf(1)).toEqual({ walkedOut: 340, deaths: 1 })
+  it('(b) the toll printed is the toll the ledger closed on', () => {
+    // Never recomputed. The operator watched 총 사망자 수 roll to this number
+    // seconds before the veil; a plate that printed a different one would be
+    // the single lie on it.
+    expect(numbersOf(day(138, 136, OSERA_DEAD, '사망 · 하행 사점이 킬로 갓길')).deaths).toBe(138)
   })
 
-  it('(c) a total past the tunnel`s own count never prints a negative', () => {
+  it('(c) the survivors exclude a death that was never in the tunnel', () => {
+    // THE REGRESSION. `341 - total` looks right and is wrong by one person:
+    // 오세라 is 터널 점검 용역 반장, not an occupant (`score.json` u1 —
+    // "점검 용역 인원은 별도 단위"), so charging the crowd for her death
+    // reports one fewer survivor than the pack's own arithmetic. The untouched
+    // day is 341 − 136 crowd − 차우진 = 204, and it is 204 that the ending
+    // must print, not 203.
+    const baseline = numbersOf(day(138, 136, OSERA_DEAD, '사망 · 하행 사점이 킬로 갓길'))
+    expect(baseline).toEqual({ walkedOut: 204, deaths: 138 })
+  })
+
+  it('(d) …and the two numbers are not meant to sum to the tunnel', () => {
+    // The consequence of (c), stated so nobody "fixes" it back. The plate
+    // counts the tunnel and then counts everyone — which is exactly what the
+    // good ending does when it reads 341명이 걸어 나왔습니다 above 사망 1명.
+    const baseline = numbersOf(day(138, 136, OSERA_DEAD, '사망 · 하행 사점이 킬로 갓길'))
+    expect(baseline.walkedOut + baseline.deaths).toBe(TUNNEL_OCCUPANTS + 1)
+  })
+
+  it('(e) a day 오세라 walks out of charges the crowd for all of it', () => {
+    // The 41 run — `score.json`: "41은 (G1 대조 · G2 추궁 · G3 호령) … 오세라는
+    // 맨 뒤에서 걸어 나온다", and 차우진 lives too. Every death that day is an
+    // occupant's, so nothing is subtracted and 341 − 41 = 300 walk out.
+    expect(numbersOf(day(41, 41, OSERA_ALIVE, '생존 · 입건'))).toEqual({ walkedOut: 300, deaths: 41 })
+  })
+
+  it('(f) an unscored day prints no negative anywhere', () => {
     // Not reachable off a linted pack — the ladder tops out at 138 — but the
-    // seam carries a number, not a promise about its range, and "−7명이 갱구
-    // 밖으로 걸어 나왔습니다" is the one failure the operator would remember.
-    expect(numbersOf(400).walkedOut).toBe(0)
+    // seam carries numbers, not a promise about their range, and "−7명이 갱구
+    // 밖으로 걸어 나왔습니다" is the one failure an operator would remember.
+    expect(numbersOf(day(400, 400, OSERA_DEAD, '사망 · 하행 사점이 킬로 갓길')).walkedOut).toBe(0)
+    // A toll SMALLER than what stands outside the tunnel: the subtraction must
+    // floor rather than wrap round into more survivors than there were people.
+    expect(numbersOf({ total: 0, rows: [{ label: '오세라', value: OSERA_DEAD }] })).toEqual({
+      walkedOut: TUNNEL_OCCUPANTS,
+      deaths: 0,
+    })
+  })
+
+  it('(g) it reads 사망 off the pack`s own word, not a second copy of the rule', () => {
+    // `deathsOf` (`shared/predicates.ts`) is what `components/tally-line.ts`
+    // sums the same rows with. A private restatement here is how the desk's two
+    // readings of one row eventually disagree — so the outcome token is tested
+    // through a value that only that rule gets right: 생존 leading, 사망 later
+    // in the same string, which a naive `includes('사망')` would miscount.
+    const tricky = numbersOf({
+      total: 5,
+      rows: [{ label: '오세라', value: '생존 · 사망자 수습을 돕는다' }],
+    })
+    expect(tricky.walkedOut).toBe(TUNNEL_OCCUPANTS - 5)
   })
 })
 
 /* ══ 3 — the copy ═════════════════════════════════════════════════════════ */
 
 describe('[x6] the plates', () => {
-  const numbers = numbersOf(137)
+  /**
+   * The untouched day — `score.json`'s `baseline_summary`: 총 사망자 138명, of
+   * which 136 are the crowd, one is 차우진 beside his own truck, and one is
+   * 오세라 in front of the ninth door. 204 occupants walk out.
+   */
+  const numbers = numbersOf({
+    total: 138,
+    rows: [
+      { label: '터널에서 나오지 못한 사람', value: 136 },
+      { label: '오세라', value: '사망 · 아홉 번째 문 앞, 쇠사슬을 손으로 흔든 자세' },
+      { label: '차우진', value: '사망 · 하행 사점이 킬로 갓길' },
+    ],
+  })
+
+  /**
+   * A day the operator dug the cargo out of — `score.json`: 96 on the crowd
+   * side, and 차우진 lives because his load was named, so the closing line
+   * reads 97. 245 walk out.
+   */
+  const other = numbersOf({
+    total: 97,
+    rows: [
+      { label: '터널에서 나오지 못한 사람', value: 96 },
+      { label: '오세라', value: '사망 · 아홉 번째 문 안쪽' },
+      { label: '차우진', value: '생존 · 입건 · 개요서 적재물 칸이 채워진다' },
+    ],
+  })
 
   it('(a) each ending is three plates, counted in the head`s meta slot', () => {
     for (const kind of ['good', 'bad'] as const) {
@@ -203,7 +289,7 @@ describe('[x6] the plates', () => {
         lead: '204명이 갱구 밖으로 걸어 나왔습니다.',
         body: [
           '나머지는 차량 안에 앉은 채, 안내 방송을 기다리고 있었습니다.',
-          '사망 137명 — 시행 횟수가 모두 소진되었습니다.',
+          '사망 138명 — 시행 횟수가 모두 소진되었습니다.',
         ],
       },
       {
@@ -229,17 +315,17 @@ describe('[x6] the plates', () => {
 
   it('(e) the bad ending`s numbers actually follow the day', () => {
     // (d) pins the shape; this pins that the two slots are SUBSTITUTED and not
-    // authored into the string. A hard-coded 204/137 passes (d) forever.
-    const other = endingPlates('bad', numbersOf(62))
-    expect(other[0]!.lead).toBe('279명이 갱구 밖으로 걸어 나왔습니다.')
-    expect(other[0]!.body[1]).toBe('사망 62명 — 시행 횟수가 모두 소진되었습니다.')
+    // authored into the string. A hard-coded 204/138 passes (d) forever.
+    const plates = endingPlates('bad', other)
+    expect(plates[0]!.lead).toBe('245명이 갱구 밖으로 걸어 나왔습니다.')
+    expect(plates[0]!.body[1]).toBe('사망 97명 — 시행 횟수가 모두 소진되었습니다.')
   })
 
   it('(f) the good ending`s copy is fixed and reads no number off the day', () => {
     // It is the ONE outcome the pack authored end to end — 341 out, 오세라
     // inside the ninth door, 사망 1명 — so it must not drift with whatever the
     // seam happened to send.
-    expect(endingPlates('good', numbersOf(62))).toEqual(endingPlates('good', numbersOf(137)))
+    expect(endingPlates('good', other)).toEqual(endingPlates('good', numbers))
   })
 
   it('(g) the walk`s two button labels', () => {
