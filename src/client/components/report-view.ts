@@ -33,54 +33,21 @@ export interface ReportModel {
   opens?: string[]
 }
 
-/** Where the replay has got to. `sentence === lengths.length` ⇒ finished. */
-export interface TypeState {
-  sentence: number
-  chars: number
-  done: boolean
-}
-
-/** The replay's opening position — nothing painted yet. */
-export const TYPE_START: TypeState = { sentence: 0, chars: 0, done: false }
-
-/** Real milliseconds per character, and the pause between sentences. */
-const MS_PER_CHAR = 11
-const MS_BETWEEN = 130
+// H3 (08-09) — the typewriter itself moved to `components/typewriter.ts`. It
+// was this module's outright while REPORTS was the only surface that typed;
+// the AGENT FILE's handover now reveals at the same pace, and one desk may not
+// have two typewriters running at two speeds. Re-exported here because
+// `TypeState` and `TYPE_START` are part of this module's own published surface
+// (`tests/windows/reports.test.ts` and the frozen-animation paths read them),
+// and moving a definition is not a reason to move its callers.
+import { TYPE_START, typeCursor } from './typewriter.ts'
+import type { TypeState } from './typewriter.ts'
+export type { TypeState }
+export { TYPE_START, typeCursor }
 
 /** The pump registration name — one replay at a time, per window. */
 const PUMP = 'reports/typewriter'
 
-/** How much elapsed time a cursor position already represents. */
-function costOf(state: TypeState, lengths: readonly number[]): number {
-  let ms = 0
-  for (let i = 0; i < state.sentence && i < lengths.length; i += 1) {
-    ms += (lengths[i] ?? 0) * MS_PER_CHAR + MS_BETWEEN
-  }
-  return ms + state.chars * MS_PER_CHAR
-}
-
-/**
- * Advances the replay cursor by `elapsedMs`. Deterministic, monotonic, and it
- * settles on `done` instead of running past the last sentence ([u6#c2]).
- */
-export function typeCursor(
-  state: TypeState,
-  elapsedMs: number,
-  lengths: readonly number[],
-): TypeState {
-  if (state.done) return state
-  if (lengths.length === 0) return { sentence: 0, chars: 0, done: true }
-
-  let rest = costOf(state, lengths) + Math.max(0, elapsedMs)
-  for (let i = 0; i < lengths.length; i += 1) {
-    const width = (lengths[i] ?? 0) * MS_PER_CHAR
-    if (rest < width) return { sentence: i, chars: Math.floor(rest / MS_PER_CHAR), done: false }
-    rest -= width
-    if (rest < MS_BETWEEN) return { sentence: i, chars: lengths[i] ?? 0, done: false }
-    rest -= MS_BETWEEN
-  }
-  return { sentence: lengths.length, chars: 0, done: true }
-}
 
 /**
  * x6 — the three facts the 검인 chop reconciles, and the ONE rule that reads

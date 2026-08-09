@@ -122,13 +122,18 @@ describe('[e8#A9] metaEvent() is a ViewEvent `meta` member', () => {
     expect(rl.metaEvent().run).toBe(3)
   })
 
-  // H3 (08-09) — the default is 5, up from 4. Still a LITERAL and deliberately
-  // not `DEFAULT_TOTAL_RUNS - 1`: this is the one place the shipped allotment is
+  // The default is 4, and this is a LITERAL on purpose — deliberately not
+  // `DEFAULT_TOTAL_RUNS - 1`. This is the one place the shipped allotment is
   // pinned, and a test that reads the constant it is pinning cannot fail.
-  it('(g) totalRuns defaults to 5 when the caller omits it (spec assumption 1)', () => {
+  //
+  // H3 (08-09) briefly moved it to 5 and moved it back. The bump was covering
+  // for the page-turn defect this branch fixes — see `runloop/run-loop.ts`'s
+  // own note — so the literal is 4 again, and the reason it is 4 is now that
+  // four agents is the allotment rather than that nobody has counted.
+  it('(g) totalRuns defaults to 4 when the caller omits it (spec assumption 1)', () => {
     const rl = loop()
     rl.startRun()
-    expect(rl.metaEvent().runs_left).toBe(4)
+    expect(rl.metaEvent().runs_left).toBe(3)
   })
 
   it('(h) totalRuns is config, never persisted — it stays out of the meta-state', () => {

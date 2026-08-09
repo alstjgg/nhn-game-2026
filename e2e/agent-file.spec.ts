@@ -692,7 +692,7 @@ test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
    * press, the day that ended is a record and the file in hand is the next
    * agent's.
    */
-  test('[H3] (b) the page turns at 21:04, and the press turns nothing', async ({ page }) => {
+  test('[H3] (b) the page turns when the day settles, and the press names it', async ({ page }) => {
     await boot(page)
     await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
     await seed(page)
@@ -717,9 +717,11 @@ test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
 
     // The document grew a page and the desk turned to it, all before the press.
     await expect(page.locator(`${FILE} .pg-count`)).toHaveText('3 / 3')
-    const building = await callsign()
-    expect(building, 'the file in hand is still headed by the agent who flew it').not.toBe(flying)
-    expect(building).toMatch(/^ECHO-\d+$/)
+    // …and it is UNNAMED. H3's second half (08-09, 민서): the page opens with
+    // its 호출부호 row blank, because the run loop has not issued the next
+    // callsign and the desk will not print a name it cannot promise to send.
+    // The press is what fills it in — asserted at the bottom of this test.
+    expect(await callsign(), 'the incoming page was headed before anyone was sent').toBe('')
     // …and it is the file that agent flew, handed on intact — this is what the
     // operator revises, not a blank board. Asserted on the BOARD's text rather
     // than by counting `[data-block-id]`: a seated sentence carries that
@@ -736,13 +738,21 @@ test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
     await expect(page.locator(`${FILE} .filed-s`).first()).toHaveText(SEEDS[0].text)
     await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
 
-    // The press commits it — and turns nothing. Same page count, same agent:
-    // the run loop has simply caught up with the name the desk was already using.
+    // The press commits it — and turns nothing. Same page count: the document
+    // grew when the day settled, not when the operator pressed.
     await page.locator('#btnDeploy').click()
     await confirmDeploy(page)
     await expect(page.locator('#btnDeploy')).toHaveAttribute('data-op', 'deploy', { timeout: 20_000 })
     await expect(page.locator(`${FILE} .pg-count`)).toHaveText('3 / 3')
-    expect(await callsign()).toBe(building)
+
+    // …and NOW the page has an occupant. The name types itself on across the
+    // press (`typeCallsign`), so this polls rather than reading once: what is
+    // being asserted is that the blank page ends up named, and named with an
+    // agent who is neither the one who flew nor a repeat of them.
+    await expect
+      .poll(async () => await callsign(), { timeout: 20_000 })
+      .toMatch(/^ECHO-\d+$/)
+    expect(await callsign(), 'the new page was headed by the agent who already flew').not.toBe(flying)
   })
 })
 
