@@ -3,6 +3,83 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-09) — the door is typed in, and the membrane is the mechanic
+
+**The opening screen had one thing on it and that thing was already done.** Both
+fields arrived pre-filled, `저장됨` sat to the right of the mask saying the
+password was remembered, and LOGIN was live on the first frame with its highlight
+sweeping across it every 3.6 s. A judge's first interaction with the game was a
+formality — press the one hot button on a finished form. (민서, 08-09.)
+
+**Now the operator types the card in.** The wells start empty; every press lands
+one character, `OP-2291` and then eight mask glyphs; LOGIN is `disabled` until the
+fifteenth. `저장됨` is gone with the claim it made — a field being entered by hand
+cannot also be a field that was saved.
+
+**WHAT was pressed never reaches WHAT appears, and that is the point rather than a
+concession.** `doorFill(strokes: number)` is the whole state machine and its
+signature is the guard: there is no parameter through which a pressed character
+could travel, so mashing the keyboard still types the terminal's own badge number.
+The membrane (spec-client §3 inv 1) is not merely *survived* at the door, it is
+what the door is *about* — the player's hands are on this desk and their words are
+not in it — which is why this screen can ask for fifteen keystrokes without
+becoming a text field. The readout two beats later shows the pair resolving:
+`사용자 조회 — OP-2291 tester_123 … 확인`.
+
+**Three things the brief did not ask for and the screen could not ship without:**
+
+- **A tap counts as a press.** There is no focused field here to summon a soft
+  keyboard, so on a touch screen `keydown` never fires — a key-only door is a dead
+  end for every phone that opens the deployed site. `pointerdown` on the layer is
+  the same gesture by another instrument, and on a desktop it pays again: the
+  player who reaches for the dead button is taught the mechanic by the character
+  that appears when they press it.
+- **An IME counts too.** Chrome hands `key: 'Process'` for a 두벌식 keystroke on
+  some platforms — one press, no character. A plain "single-character key" rule
+  gives a Korean operator a door that ignores them, on a Korean-language game.
+- **The locked slab had to LOOK locked.** `pointer-events:none` was the whole of
+  the old disabled state. `filter:grayscale(.95) brightness(.58)` drains the same
+  button rather than painting a second one, so the armed state needs no
+  declarations at all — dropping the attribute restores every value already there.
+
+**The one orchestrated beat.** `siArm` fires on the fifteenth press: grey slab →
+over-bright → the seal's resting red, 550 ms, with focus landing on it. Focus is
+also the only announcement this door makes and the only one it owes. The animation
+carries **no fill mode** deliberately — filled, it would pin `filter:none` and
+`transform:none` for the rest of the door's life and `:hover`/`:active`, which are
+nothing but a filter and a transform, would never be seen again.
+
+**Light blue is where the terminal is listening.** `.si-field.is-armed` is one
+class on one row and it moves the label, the well's ring and the caret together.
+The lit colour is `--gauge-2` — the caret's own, and the gauges' — not the seal's
+red: red on this desk means 관인, and a field waiting for a keystroke is an
+instrument that is on, not an alarm. Same argument `coach.css` records for why the
+onboarding mark stopped pulsing.
+
+**A reduced-motion claim was written, tested, found false, and replaced with the
+truth.** The caret is load-bearing for the first time, `base.css` collapses every
+animation to a 1 ms pass, and `siBlink` ends on `opacity:0` — so the sheet gained
+a `@media (prefers-reduced-motion)` restatement. The e2e test for it passed with
+the block **deleted**: `siBlink` is *unfilled*, so opacity falls back to the `.85`
+on `.si-caret` itself and the caret settles STILL rather than dark. That is the
+opposite of `litPulse`, which was `animation … both`. The block is gone; a comment
+records why there is none, and two guards now pin the absence it rests on (the
+blink is unfilled; shown/hidden is `display`, never the opacity the blink uses).
+
+**Verified:** `npm run check` clean · **1692** unit tests (109 files) · the
+chromium e2e lane green · **18** new unit tests (`tests/shell/sign-in.test.ts`,
+node-env: the arithmetic, the key rule, the two removals) · **16** new browser
+tests (`e2e/signin.spec.ts`, the only spec that sees the door — `signInSkipped`
+keys off `navigator.webdriver`, so `?signin=show` is the override). Screenshot-
+verified against the **production** build on `vite preview`, at all five states.
+
+**Two guards were verified red-then-green by breaking the thing they measure** —
+the greyed slab, and the tap path. A third caught a real defect while being
+written: `doorFill(NaN)` returned `armed: null` with two empty lines, because
+`Math.min`/`Math.max` propagate NaN instead of clamping it — a door with no caret,
+no character and no way forward. Unreachable from inside the module, reachable
+through an exported contract that says `number`; `Number.isFinite` is the floor.
+
 ## Status (2026-08-08) — the loop the player operates, and two regressions only the live path could show
 
 **The day now runs hands-off, and the operator's turn is at the close.** Four
