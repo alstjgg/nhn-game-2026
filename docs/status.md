@@ -3,6 +3,43 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-09) — the desk gets a room, and it costs 27.6 kB
+
+**The bed is an office now, and it holds.** A real recording of an empty office
+(CC0, Freesound) loops under the desk for the whole session, with one distant
+one-shot — keys, a phone, a printer — sown beneath it every 5–10 s. plan-audio
+§2's "no melodic BGM" survives untouched and is now stated properly: the bar was
+never *quiet*, it is **made of objects**, which a drone fails and a fan passes.
+
+Two new fields carry it, both pure data. `ambience.deskHolds` splits the two
+beds, which want opposite things — the Watch drone still retires at 10 s because
+pressure has to let up, and the room does not, because a room that switches
+itself off after ten seconds was never one. `ambience.sparse` is a timer that
+re-rolls its interval after every play, and it is deliberately **outside
+`TRIGGERS`**: that set is the closed vocabulary of moments the *game* can sound,
+and nothing in the game happens when a phone rings two desks away.
+
+**Measured, not guessed.** Bed asset at -13.5 LUFS → **-30.0 LUFS** out through
+`gain: 1` × the 0.15 ambience bus; the one-shots sit ~10 dB under it, and that
+gap is the whole effect. Every office cue is cut `highpass=150,lowpass=3500` —
+distance, not tone-shaping: a crisp keystroke at this level is
+indistinguishable from the report window typing, which is a cue that carries
+meaning (§2 rule 3).
+
+**+27.6 kB, all of it in the second load wave, and still 0 bytes before the
+first gesture.** The bed itself was free: `amb-office-tone` replaced the
+synthesised `amb-room-tone` at almost exactly its size. Shipping both would have
+put the ambience wave 100 kB over its §6 budget for a file nothing referenced,
+so the synth room tone is retired — `synth.mjs` keeps the generator and
+restoring it is one line in `CUES` plus a rebuild.
+
+`tests/shell/audio-office.test.ts` guards the seam, because this is the 08-08
+lesson's exact shape: the office is armed once at `openTheRoom`, from data only
+the live boot reads, and then does nothing for ten seconds — a browser suite
+would watch it do nothing and pass. A map that fails validation leaves the desk
+**silent** rather than broken, so a typo in `audio-map.json` deletes the whole
+audio layer without breaking a pixel. That is what the suite is for. Write-up:
+[plan-audio.md](./plan-audio.md) §4.4.
 ## Status (2026-08-09) — the door is typed in, and the membrane is the mechanic
 
 **The opening screen had one thing on it and that thing was already done.** Both
