@@ -190,14 +190,28 @@ The rest of §4 says *why* each of these is the sound it is.
 the row. A cue on every revealed line lands about 1.5 sounds a second and turns
 the fanfold into a machine.
 
-**The report's arrival is silent**, and so is **waiting**. `event:report` and
-`wait:open` are both bound to null. The wait loop held for the whole of every
+**The report's arrival is silent**, and so is the wait **loop**. `event:report`
+and `wait:open` are both bound to null. The loop held for the whole of every
 wait, and a day makes three calls per beat, so it never stopped — it left being
-a clock and became a backing track. `shell/announcer.ts` still says 무전 회신
-대기 중, which is the channel that owes the player that fact, and audio carries
-nothing alone. Binding a cue id at either trigger gives the moment a sound
-again; holding the loop from `wait:judgment` alone would sound it once per
-judgment rather than once per call.
+a clock and became a backing track. Binding a cue id at either trigger gives the
+moment a sound again.
+
+**x6/x6b (08-09) — waiting is no longer silent overall, and the reasoning above
+inverted.** This paragraph used to justify `wait:open`'s null by saying
+`shell/announcer.ts` still says 무전 회신 대기 중, "which is the channel that owes
+the player that fact, and audio carries nothing alone". Both halves are now
+false. `announcementOf` returns null for a `waiting` event; the fanfold's marker
+and the `#deployState` note are deleted; and the toast is not drawn at all — it
+is a clipped live region that only assistive tech reads. What survives is
+`wait:judgment`, bound to the `judgment` cue, which sounds once per judgment
+rather than once per call.
+
+So audio does not carry nothing alone — **it is the only channel that carries
+the wait at all**, on a desk where the model call is the one thing the player
+waits on. Treat `wait:judgment` as load-bearing: unbinding it would leave a
+working desk and a stalled one indistinguishable. `feed:wait` is a separate case
+again — it is unreachable rather than silent, because no wait line is ever
+revealed for a feed cue to ride.
 
 **The ledger sounds MOVED, not better or worse.** The client cannot know a
 unit's polarity — fewer dead is better, more cleared is better, and `score.json`
