@@ -17,12 +17,17 @@
 //     `frame()` delegating straight to the driver so "driver-fed" is testable.
 //
 // C3 (placeholder fixtures): nothing here asserts synthetic fixture CONTENT.
-// The two literals that do appear — `전 구간 정상` and `23:12` — are repo data
-// (`data/scenario/전구간정상/meta.json`), not fixture text, and the terminal
-// stamp is named by the acceptance criterion itself. Both track the SHIPPED
+// The one literal that does appear — `전 구간 정상` — is repo data
+// (`data/scenario/전구간정상/meta.json`), not fixture text. It tracks the SHIPPED
 // pack (`src/client/shell/pack.ts`): the case name asserts against
 // `PACK_DISPLAY_NAME`, which is `PACK_SLUG` spelled for a reader — the chrome
 // prints the display name, and the slug stays on the paths and doc numbers.
+//
+// x6 — `23:12` used to be the second such literal, read off the clock's `→`
+// gutter. The gutter is gone with the progress bar it ended (see the topbar
+// block below), so the terminal stamp is now pinned only where it is a FACT
+// about the pack — `tests/driver/shipped-pack.test.ts`, which plays the pack
+// this file names and derives the band from its own `meta.json`.
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
@@ -376,6 +381,30 @@ test.describe('default layout fits 1280x800', () => {
   })
 })
 
+/**
+ * x6 — the top bar's digits and the fanfold's last PRINTED stamp, read in ONE
+ * browser turn.
+ *
+ * It has to be one turn. `components/run-feed.ts` publishes the stamp inside the
+ * same synchronous block that appends the line, and the clock's listener paints
+ * inside that same block, so the two surfaces are never observably out of step —
+ * but two separate round trips could straddle a line landing between them and
+ * report a disagreement that never existed on the page.
+ *
+ * `.fl-t` is the gutter only stamped lines carry (a `mark` has none), so the
+ * last one is the last stamp printed, which is exactly what the slot publishes.
+ */
+async function chromeVsPaper(page: Page): Promise<{ digits: string; printed: string; lines: number }> {
+  return page.evaluate(() => {
+    const stamps = [...document.querySelectorAll('#w-feed #feedList .fl .fl-t')]
+    return {
+      digits: document.querySelector('#clockDigits')?.textContent?.trim() ?? '',
+      printed: stamps[stamps.length - 1]?.textContent?.trim() ?? '',
+      lines: stamps.length,
+    }
+  })
+}
+
 /* ══ [u3#c3] topbar ══════════════════════════════════════════════════════ */
 
 test.describe('topbar', () => {
@@ -393,20 +422,45 @@ test.describe('topbar', () => {
     await expect(bar.locator('#caseName')).toContainText('전 구간 정상')
   })
 
-  test('topbar — the clock reads HH:MM and runs toward the 23:12 terminal', async ({ page }) => {
+  test('topbar — the clock reads HH:MM', async ({ page }) => {
     await expect(page.locator('#clockDigits')).toHaveText(/^\d{2}:\d{2}$/)
-    // `meta.clock.end` is authored `23:12+`; `shell/pack.ts` strips the
-    // sub-minute `+` before the band is painted, so the gutter reads `23:12`.
-    await expect(page.locator('#clockUnit .clk-term')).toContainText('23:12')
+    // DELETED (x6): `#clockUnit .clk-term` toContainText `23:12`. The gutter was
+    // the right END of the progress bar and went with it — the chrome stopped
+    // drawing the sim clock's position against the band, because the digits
+    // beside it now read the LIVE FEED's printed stamp and the two disagree by
+    // whatever the fanfold's reveal queue is holding. Replaced by the test
+    // below, which pins the stronger claim: the digits ARE the feed's stamp.
   })
 
-  test('topbar — the clock time is driver-fed, never view-computed', async ({ page }) => {
-    for (let i = 0; i < 3; i += 1) {
-      const f = await frame(page)
-      const shown = (await page.locator('#clockDigits').textContent())?.trim()
-      expect(shown).toBe(f.clock)
-      await page.waitForTimeout(200)
-    }
+  // RE-AIMED (08-09, x6), never deleted. This compared `#clockDigits` against
+  // `frame().clock` — the DRIVER's own running minute — and that coupling is
+  // precisely what x6 removed. The fanfold reveals through a paced queue and
+  // holds on the beat a report lands in, so the sim clock ran AHEAD of the paper
+  // and the top bar printed a minute nothing else on the desk agreed with.
+  //
+  // The half that always mattered survives whole: the view still computes no
+  // time, it is handed one. Only the source moved — from the clock to the paper.
+  test('topbar — the clock time is feed-fed, never view-computed', async ({ page }) => {
+    // Held at boot (rate 0), so nothing lands between the two reads below and
+    // the opening fanout has already printed.
+    expect((await frame(page)).rate, 'the desk booted already running').toBe(0)
+
+    const opening = await chromeVsPaper(page)
+    expect(opening.lines, 'the fanfold printed no stamped line to follow').toBeGreaterThan(0)
+    expect(opening.digits).toMatch(/^\d{2}:\d{2}$/)
+    expect(opening.digits, 'the top bar is not showing the stamp the fanfold printed').toBe(opening.printed)
+
+    // …and it keeps following once the day runs. Only a committed file starts
+    // it, so DEPLOY first, then wait for the paper to move past its opening
+    // minute and read both surfaces again.
+    await page.locator('#w-file #btnDeploy').click()
+    await confirmDeploy(page)
+    await expect
+      .poll(async () => (await chromeVsPaper(page)).printed, { timeout: 30_000 })
+      .not.toBe(opening.printed)
+
+    const later = await chromeVsPaper(page)
+    expect(later.digits, 'the chrome drifted off the paper once the day ran').toBe(later.printed)
   })
 
   // RE-AIMED (08-08, W4), never deleted. These two asserted the transport row:
@@ -439,32 +493,18 @@ test.describe('topbar', () => {
     await expect(page.locator('.clk-rate .snd-btn')).toHaveCount(1)
   })
 
-  test('topbar — the progress fill tracks the clock and never leaves the bar', async ({ page }) => {
-    const barBox = await box(page.locator('.clk-bar'))
-    const fill = page.locator('#clockFill')
-    const ratio = async (): Promise<number> => (await box(fill)).width / barBox.width
-
-    const r0 = await ratio()
-    expect(r0).toBeGreaterThanOrEqual(0)
-    expect(r0).toBeLessThanOrEqual(1)
-
-    // RE-AIMED (08-08, W4): the fill needs the clock MOVING, and the only thing
-    // that starts it now is a committed file. ×4 is gone, so the wait widens to
-    // match ×1 rather than the transport's fast-forward.
-    await page.locator('#w-file #btnDeploy').click()
-    await confirmDeploy(page)
-    const m0 = (await frame(page)).minute
-    await expect
-      .poll(async () => {
-        const f = await frame(page)
-        return f.minute - m0 >= 20 || f.ended
-      }, { timeout: 40000 })
-      .toBe(true)
-
-    const r1 = await ratio()
-    expect(r1).toBeGreaterThanOrEqual(r0)
-    expect(r1).toBeLessThanOrEqual(1)
-  })
+  // DELETED (08-09, x6), and nothing replaces it in this file. The test measured
+  // `#clockFill`'s box against `.clk-bar`'s: the fill starts inside the track,
+  // grows with the sim clock and never runs past the terminal marker. Both
+  // elements are gone. The bar drew `driver.clock`'s own minute as geometry
+  // right under digits that read the LIVE FEED's printed stamp, so the unit
+  // showed two times at once and the drawn one was always the faster — the
+  // mismatch `shell/feed-clock.ts` exists to close, not a fill to re-aim.
+  //
+  // Nothing measurable is lost. That the clock ADVANCES under a committed file
+  // is the "held until a file is committed" test above, off `frame().minute`
+  // rather than off a width; that the run STOPS at the pack's terminal minute is
+  // `e2e/run-loop.spec.ts`, which watches the run close rather than a pixel.
 
   test('topbar — the D-DAY unit shows the run, the remainder and one pip per run', async ({ page }) => {
     await expect(page.locator('#runNum')).toHaveText(/^RUN \d{2}$/)
