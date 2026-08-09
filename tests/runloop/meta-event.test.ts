@@ -122,10 +122,13 @@ describe('[e8#A9] metaEvent() is a ViewEvent `meta` member', () => {
     expect(rl.metaEvent().run).toBe(3)
   })
 
-  it('(g) totalRuns defaults to 4 when the caller omits it (spec assumption 1)', () => {
+  // H3 (08-09) — the default is 5, up from 4. Still a LITERAL and deliberately
+  // not `DEFAULT_TOTAL_RUNS - 1`: this is the one place the shipped allotment is
+  // pinned, and a test that reads the constant it is pinning cannot fail.
+  it('(g) totalRuns defaults to 5 when the caller omits it (spec assumption 1)', () => {
     const rl = loop()
     rl.startRun()
-    expect(rl.metaEvent().runs_left).toBe(3)
+    expect(rl.metaEvent().runs_left).toBe(4)
   })
 
   it('(h) totalRuns is config, never persisted — it stays out of the meta-state', () => {

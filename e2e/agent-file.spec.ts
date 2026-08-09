@@ -20,7 +20,7 @@
 // re-points `playwright.config.ts` per C5) — nothing below assumes a dev server.
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
-import { confirmDeploy, newRun } from './fixtures/harness.ts'
+import { confirmDeploy, drain, newRun } from './fixtures/harness.ts'
 
 const FILE = '#w-file'
 const CAP = 4
@@ -673,6 +673,76 @@ test.describe('[U5.3] a finished sitting becomes a page of its own', () => {
     await expect(page.locator(`${FILE} #slotBoard`)).toHaveCount(0)
     await expect(page.locator(`${FILE} .slot-unset`)).toHaveCount(0)
     await expect(page.locator(`${FILE} [data-block-id]`)).toHaveCount(0)
+  })
+
+  /**
+   * H3 (08-09) — WHEN the page turns, which (a) above could not see.
+   *
+   * (a) closes the day and presses in one helper call (`newRun`), so it read the
+   * same three pages whether they appeared at 21:04 or a press later. They
+   * appeared a press later, and that press is where a whole sitting went wrong:
+   * the operator mined the day's report into a file headed with the callsign of
+   * the agent who had just come home, pressed, and watched the page they had
+   * been working on re-head itself to the NEXT agent while a second page
+   * carrying the same callsign appeared behind it. Over an allotment the pages
+   * they built on read ECHO-1, ECHO-1, ECHO-2, ECHO-3 — the last agent never got
+   * a page to be outfitted on at all (measured against the shipped build, 08-09).
+   *
+   * So the claim is about the close and nothing else: at 21:04, before any
+   * press, the day that ended is a record and the file in hand is the next
+   * agent's.
+   */
+  test('[H3] (b) the page turns at 21:04, and the press turns nothing', async ({ page }) => {
+    await boot(page)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+    await seed(page)
+    await place(page, SEEDS[0].id, 0)
+
+    const callsign = (): Promise<string | null> =>
+      page.locator(`${FILE} .sect`).nth(0).locator('dd').first().textContent()
+    const flying = await callsign()
+    expect(flying, '식별 carries no callsign to fly').toMatch(/^ECHO-\d+$/)
+
+    await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
+    await expect(page.locator('#btnDeploy')).toHaveAttribute('data-state', 'deployed')
+    // Still two pages while the day runs: the agent on the desk has not landed.
+    await expect(page.locator(`${FILE} .pg-count`)).toHaveText('2 / 2')
+
+    // 21:04 — and NO press. `drain` is `newRun` without its click.
+    await drain(page)
+    await expect(page.locator('#w-file #btnDeploy')).toHaveAttribute('data-op', 'new_run', {
+      timeout: 30_000,
+    })
+
+    // The document grew a page and the desk turned to it, all before the press.
+    await expect(page.locator(`${FILE} .pg-count`)).toHaveText('3 / 3')
+    const building = await callsign()
+    expect(building, 'the file in hand is still headed by the agent who flew it').not.toBe(flying)
+    expect(building).toMatch(/^ECHO-\d+$/)
+    // …and it is the file that agent flew, handed on intact — this is what the
+    // operator revises, not a blank board. Asserted on the BOARD's text rather
+    // than by counting `[data-block-id]`: a seated sentence carries that
+    // attribute on more than one node (the cell and its thread anchor, see
+    // `(e) the pin anchor writes data-block-id from the model`), and the claim
+    // here is about the handover being present, not about its markup.
+    await expect(page.locator(`${FILE} #slotBoard`)).toContainText(SEEDS[0].text)
+
+    // One page back: the sitting that just ended, read-only, holding what went
+    // out with it.
+    await page.locator(`${FILE} .pg-nav .pg-turn`).first().click()
+    await expect(page.locator(`${FILE} .sect`).nth(0).locator('dd').first()).toHaveText(flying!)
+    await expect(page.locator(`${FILE} .filed-s`)).toHaveCount(1)
+    await expect(page.locator(`${FILE} .filed-s`).first()).toHaveText(SEEDS[0].text)
+    await page.locator(`${FILE} .pg-nav .pg-turn`).last().click()
+
+    // The press commits it — and turns nothing. Same page count, same agent:
+    // the run loop has simply caught up with the name the desk was already using.
+    await page.locator('#btnDeploy').click()
+    await confirmDeploy(page)
+    await expect(page.locator('#btnDeploy')).toHaveAttribute('data-op', 'deploy', { timeout: 20_000 })
+    await expect(page.locator(`${FILE} .pg-count`)).toHaveText('3 / 3')
+    expect(await callsign()).toBe(building)
   })
 })
 

@@ -17,8 +17,19 @@ import type { MetaState } from './meta-state.ts'
 import { cloneMetaState, deeperClock, emptyMetaState } from './meta-state.ts'
 import type { MetaStore } from './store.ts'
 
-/** How many runs a sitting gets when the caller does not say. */
-export const DEFAULT_TOTAL_RUNS = 4
+/**
+ * How many runs a sitting gets when the caller does not say.
+ *
+ * H3 (08-09) — 4 → 5. A run is an AGENT: the sitting hands the operator one
+ * file per day and the day is that agent's whole life, so this number is how
+ * many agents a judge gets to outfit before the deck is spent. Four read as
+ * three from the desk — the file's pages turned on the press rather than at
+ * 21:04, so the last day's file was always built on the previous agent's page
+ * (`windows/agent-file.ts`, the same H3 fix) — and a judge who plays minutes
+ * rather than hours should reach the end of the allotment with the loop
+ * understood, which took one more day than four gave them.
+ */
+export const DEFAULT_TOTAL_RUNS = 5
 
 export type RunLoopDeps = {
   store: MetaStore

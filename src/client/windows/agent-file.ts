@@ -26,7 +26,14 @@ import { PORTAL } from '../shell/portal-identity.ts'
 import { createRunState, hasFiledReport } from '../shell/run-state.ts'
 import type { RunPhase, RunState } from '../shell/run-state.ts'
 import { blockCardModel, setPickedBlockId } from '../components/block-card.ts'
-import { agentModel, buildDossier, callsignOf, coverModel, filedModel } from '../components/dossier.ts'
+import {
+  agentModel,
+  buildDossier,
+  callsignOf,
+  coverModel,
+  filedModel,
+  nextCallsignOf,
+} from '../components/dossier.ts'
 import { SLOT_CAP, createSlotBoard, usedIds } from '../components/slot-board.ts'
 import { buildDeployStamp, buildDeployZone, deployView } from '../components/deploy-button.ts'
 import type { DeployMode } from '../components/deploy-button.ts'
@@ -118,6 +125,24 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   let opensAt = driver.clock.at()
   let committedRun: number | null = null
   let committedAt: string | null = null
+  let committedIncoming = false
+  /**
+   * H3 — the file on the desk belongs to the agent AFTER `run`.
+   *
+   * True from the moment the day closes until the `meta` that opens the next
+   * one, and false the rest of the time. The desk knows this before the run
+   * loop does, because 21:04 is when the operator gets the file back: what they
+   * mine into it from then on is the NEXT agent's handover, and heading that
+   * page with the callsign of the agent who has just come home is what made a
+   * sitting read as ECHO-1, ECHO-1, ECHO-2, ECHO-3.
+   *
+   * `runs_left` gates it (see the `'tally'` branch): on the last day of an
+   * allotment there is no next agent, so the page stays the one that flew.
+   */
+  let incoming = false
+
+  /** `ECHO-n` for the agent this file is being built FOR, closed day included. */
+  const onDesk = (): string => (incoming ? nextCallsignOf(run) : callsignOf(run))
 
   // U3 — the merged control's own turn state, ported from `windows/tally.ts`.
   let closed = false
@@ -149,10 +174,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       if (board.isLocked() && committedRun === null) {
         committedRun = run
         committedAt = opensAt
+        // H3 — …and it is stamped for whoever the file was being built for. A
+        // press made after 21:04 commits the INCOMING agent's file, and the
+        // chop has to name them and not the agent whose day has just ended.
+        committedIncoming = incoming
       }
       if (!board.isLocked()) {
         committedRun = null
         committedAt = null
+        committedIncoming = false
       }
       sync()
     },
@@ -168,6 +198,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       slots: board.cells(),
       deployed: board.isLocked(),
       run: committedRun ?? run,
+      incoming: committedRun === null ? incoming : committedIncoming,
       at: committedAt ?? opensAt,
       closed,
       releasable: settled,
@@ -231,12 +262,14 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       return
     }
     board.deploy()
-    // U5.3 — write site 1: the OPENING commit, which belongs to the agent on
-    // the desk right now. In practice this is ECHO-1's alone — after a
-    // `new_run` the file arrives already committed and this mode never comes
-    // round again — and without it the first sitting would never get a page,
-    // which is the first comparison the operator would reach for.
-    filed.set(run, usedIds(board.cells()))
+    // H3 — the press records NOTHING any more. A page is a sitting that is
+    // OVER, and the two writes that used to happen here and on the next `meta`
+    // both ran a press too late: the record of what ECHO-1 flew appeared only
+    // once ECHO-2's day had opened, so between 21:04 and the press the desk
+    // held no page for the day it had just played and headed the file the
+    // operator was mining into with the callsign of the agent who had already
+    // come home. Both are now written where they are true — the close (see the
+    // `'tally'` branch below).
   }
 
   const zone = buildDeployZone(() => {
@@ -250,10 +283,13 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     // question in front of ECHO-1 and nobody after — from day 2 the commit
     // arrives in `next` mode, and that is the press that carries a file the
     // operator has actually revised.
-    // x5 — the plate names the agent it is about to send out. `run` is the
-    // sitting on the desk, which is exactly the agent the last page carries and
-    // whose file this press commits.
-    void openConfirm(must('#app'), deployCopy(callsignOf(run))).then((confirmed) => {
+    // x5 — the plate names the agent it is about to send out.
+    // H3 — which is the agent the last page carries, and after 21:04 that is
+    // the INCOMING one: the press in `next` mode commits the file the operator
+    // has just built out of the day's report, and it flies with the agent who
+    // has not gone out yet. `onDesk()` is the same string the page is headed
+    // with, so the question and the page cannot name two different agents.
+    void openConfirm(must('#app'), deployCopy(onDesk())).then((confirmed) => {
       if (confirmed) commitFile(mode)
     })
   })
@@ -324,11 +360,12 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    * The document, in order: the cover, then a page per finished agent, then the
    * agent on the desk.
    *
-   * U5.3 — a record is shown as a PAST page only while its sitting is behind
-   * the current one. The current agent's own file is recorded the moment it is
-   * committed (it has to be — that is when it is knowable), and it is the live
-   * page until the run moves on, so `flown >= run` is what keeps it from
-   * appearing twice.
+   * U5.3 · H3 — a record is a sitting that is OVER, and `filed` holds nothing
+   * else: the entry is written at 21:04 (the `'tally'` branch below) and the
+   * live page moves on to the incoming agent in the same breath. So there is no
+   * `flown >= run` filter to apply any more — the last day of an allotment
+   * files no entry at all, because it has no successor to hand the page to, and
+   * its own page stays live to the end of the sitting.
    */
   function pages(): HTMLElement[] {
     const cover = el('div', 'file-page')
@@ -336,7 +373,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
 
     const past: HTMLElement[] = []
     for (const flown of [...filed.keys()].sort((a, b) => a - b)) {
-      if (flown >= run) continue
       const ids = filed.get(flown) ?? []
       const page = el('div', 'file-page')
       page.append(
@@ -346,7 +382,7 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     }
 
     const agent = el('div', 'file-page')
-    agent.append(buildDossier(agentModel({ slotCap: SLOT_CAP, callsign: callsignOf(run) }), board.root))
+    agent.append(buildDossier(agentModel({ slotCap: SLOT_CAP, callsign: onDesk() }), board.root))
     agent.append(zone.root)
 
     return [cover, ...past, agent]
@@ -445,6 +481,25 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   store.subscribe((state: RunState) => {
     if (state.phase === 'tally' && !closed) {
       closed = true
+      // H3 — THE PAGE TURNS HERE, and this is the whole of the fix.
+      //
+      // The day is over, so the agent who flew it is a record: their page is
+      // written with the file they actually went out with, and the file the
+      // operator gets back is the next agent's, opened on a page of their own
+      // and already holding the handover — the board keeps its sentences
+      // through the unlock below, which is exactly what the operator is meant
+      // to revise. The press that follows commits it and turns nothing.
+      //
+      // `runsLeft` is the seam's own word for "this is the last day" (it is
+      // `totalRuns - run_count`, so it reads 0 there and nowhere else — the
+      // audio's ending cue hangs off the same field). On that day no page is
+      // filed and none is opened: there is no agent after this one, and a page
+      // headed for someone who can never be sent is a promise the desk cannot
+      // keep. The last agent's own page simply stays live.
+      if (state.meta.runsLeft > 0) {
+        filed.set(run, usedIds(board.cells()))
+        incoming = true
+      }
       // W4 — the close is what hands the file back. Until now the file stayed
       // locked until NEW RUN, so the day's report could not be mined into the
       // day it was written for; the operator had to open tomorrow before
@@ -458,6 +513,11 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       armHold()
       // x6b — blank, not a wait line. See the note at the head of this file.
       settleNote = ''
+      // H3 — …and the desk turns to it. The document grew a page a moment ago
+      // and the DEPLOY control went with it, so a file left on the page it was
+      // on would leave the operator holding a read-only record with nothing to
+      // press. This is the jump the `meta` handler used to make on the press.
+      if (incoming) turn('last')
       sync()
       // The stream's own close line lands in the SAME tick this fires
       // (`shell/announcer.ts`'s `run_end` handler) — a second write here would
@@ -530,14 +590,20 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     if (changedRun && board.isLocked()) {
       committedRun = event.run
       committedAt = opensAt
-      // U5.3 — write site 2. The file committed at the close reached the
-      // CLOSING run's membrane (W4's op order), but what it carries is the
-      // file the operator built after 21:04 — the INCOMING agent's. So it is
-      // filed under `event.run`, which is the same re-pointing the stamp does
-      // on the two lines above: page inventory and stamp date cannot disagree,
-      // because one branch decides both.
-      filed.set(event.run, usedIds(board.cells()))
+      // H3 — and the agent this stamp names is no longer an incoming one: the
+      // run loop has just named them, so `run` alone says who they are. The
+      // chop's text does not change across this line — that is the point, the
+      // page and the stamp read the same before and after the press — only the
+      // way it is derived does.
+      committedIncoming = false
     }
+    // H3 — the file that was the NEXT agent's is now the agent's. Cleared here
+    // rather than where `closed` is (the `'tally'` branch's own reset above),
+    // because that branch runs on the same `meta` and runs FIRST — `run` is
+    // still the closing day's there, and clearing it a tick early would head
+    // the live page with the agent who has already come home for exactly one
+    // render.
+    if (changedRun) incoming = false
     // M1 — §0's callsign is per sitting, so only a changed run re-prints the
     // dossier; an archive-only `meta` must not re-parent the live slot board.
     // U5.3 — …and a NEW sitting opens on its own page. The jump is conditional
