@@ -1,6 +1,6 @@
 import { CALL_SPECS } from "./calls.js";
 import type { RuntimeConfig } from "./config.js";
-import { DEFAULT_PROMPT } from "./default-prompt.js";
+import { defaultPromptFor } from "./default-prompt.js";
 import { errorCode, ProviderOutputError, PublicError } from "./errors.js";
 import { renderCall } from "./prompt.js";
 import type { CallProvider } from "./provider.js";
@@ -47,7 +47,10 @@ export class CallService {
     // out must cost zero tokens. Building the tool inside the provider would
     // also make the failure indistinguishable from a model failure, which is
     // exactly the confusion the fallback headers exist to prevent.
-    const rendered = renderCall(request, DEFAULT_PROMPT as unknown as Record<string, unknown>);
+    const rendered = renderCall(
+      request,
+      defaultPromptFor(request.pack) as unknown as Record<string, unknown>,
+    );
     const tool = spec.buildTool(request.slots);
 
     let result;

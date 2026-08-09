@@ -1,0 +1,335 @@
+{
+  "events": [
+    {
+      "id": "t1",
+      "time": "18:38",
+      "surface": "call",
+      "place_id": "p1",
+      "text": "한내돔 야간 당직 표기웅이 신고했습니다. 천장 가운데가 처지고 물이 떨어진다고 했고, 행사는 끝났고 자기 혼자라고 했습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t2",
+      "time": "18:40",
+      "surface": "document",
+      "place_id": null,
+      "text": "한내돔 시설대장을 조회했습니다. 공기 압력으로 지붕을 띄우는 막구조이고 급기 송풍기는 두 대, 출입구는 남측 회전문 한 곳입니다. 정기점검 확인란이 두 해째 비어 있습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t3",
+      "time": "18:55",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "모르는 번호가 들어왔습니다. 문세라라고 했고, 회전문 앞에 줄이 섰는데 한 번에 두 사람씩만 돈다고 했습니다. 방금 관중석 조명 절반이 꺼졌다고 덧붙였습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t4",
+      "time": "19:26",
+      "surface": "call",
+      "place_id": "p1",
+      "text": "표기웅에게 안에 몇 명이냐고 다시 물었습니다. 대답이 한 박자 늦게 돌아왔고 정리 중이라고 했습니다. 급기를 묻자 한 대는 원래 안 돈다고 했습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t5",
+      "time": "19:33",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "문세라가 다시 걸어 왔습니다. 관중석에서 센 수와 코트에서 센 수가 맞지 않고, 아까 말한 수는 자기 팀만 센 것이었다고 했습니다. 앞쪽 줄이 줄지 않는다고 했습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t6",
+      "time": "19:47",
+      "surface": "call",
+      "place_id": "p4",
+      "text": "문세라가 서쪽에서 소리가 났다고 전했습니다. 벽 아래 자재 반입 슬리브로 여덟 명이 기어 나왔고 바깥이 하역장이라고 했습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed and not west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t7",
+      "time": "19:52",
+      "surface": "call",
+      "place_id": null,
+      "text": "전 정비기사 하도경과 연결됐습니다. 급기가 도느냐고 되물었고, 나머지 한 대는 자기가 있을 때부터 안 돌았다고 했습니다. 지금 사람이 걸어 다닐 수 있는 것은 안쪽 압력이 지붕을 들고 있기 때문이고, 큰 개구부를 열면 그 압력이 빠져 막이 내려온다고 덧붙였습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t8",
+      "time": "19:55",
+      "surface": "call",
+      "place_id": "p5",
+      "text": "표기웅에게 북측 비상 개방문이 있느냐고 물었습니다. 도면에 있다고 답했습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t9",
+      "time": "20:04",
+      "surface": "onsite",
+      "place_id": "p3",
+      "text": "문세라가 천장 가운데가 함몰됐고 눈이 안으로 쏟아진다고 전했습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t10",
+      "time": "20:05",
+      "surface": "call",
+      "place_id": null,
+      "text": "하도경이 늦게 회신했습니다. 2호기 인버터는 배전반 B에 물려 있고 3번 차단기가 내려가 있으면 대기 상태로 잠들어 있을 뿐이라고 했습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed and not west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t11",
+      "time": "20:05",
+      "surface": "onsite",
+      "place_id": "p4",
+      "text": "문세라가 서쪽 슬리브로 한 사람씩 나가고 있으며 관중석 위쪽에 아직 남은 사람이 있다고 전했습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t12",
+      "time": "20:14",
+      "surface": "call",
+      "place_id": null,
+      "text": "표기웅이 3번 차단기를 올렸다고 했습니다. 문세라가 천장 가운데가 다시 올라가고 눈이 가장자리로 흘러내린다고 전했습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "vent_restored"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        },
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t13",
+      "time": "20:16",
+      "surface": "onsite",
+      "place_id": "p5",
+      "text": "북측 비상 개방문이 열렸다고 전해 왔습니다. 막이 주저앉는 동안 열린 폭으로 사람들이 눈밭으로 걸어 나오고 있다고 했습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "north_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t14",
+      "time": "20:19",
+      "surface": "onsite",
+      "place_id": "p3",
+      "text": "남측 통제선에서 큰 소리를 보고했습니다. 지붕이 내려앉았다고 했습니다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "not vent_restored"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t15",
+      "time": "20:41",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "소방 선착대가 회전문이 막에 눌려 돌지 않는다고 보고했습니다. 북측 비상 개방문은 손잡이에 사슬이 감겨 열리지 않으며 절단기를 기다린다고 했습니다. 서쪽 벽 아래 개구부는 안쪽 적재물에 막혀 있다고 덧붙였습니다",
+      "exposure": {
+        "visible_from": "20:41",
+        "extra_condition": "not north_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t16",
+      "time": "21:02",
+      "surface": "call",
+      "place_id": null,
+      "text": "당직자 주머니에서 자물쇠 열쇠가 나왔다고 전해 왔습니다. 사슬은 그 전에 절단됐다고 했습니다",
+      "exposure": {
+        "visible_from": "21:02",
+        "extra_condition": "not north_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t17",
+      "time": "21:35",
+      "surface": "call",
+      "place_id": null,
+      "text": "집결지에서 센 수가 세 번 다르다고 알려 왔습니다. 세 번째 명단을 회선으로 읽어 주었고 그 안에서 문세라 이름을 확인했습니다",
+      "exposure": {
+        "visible_from": "21:35",
+        "extra_condition": "not west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    }
+  ]
+}

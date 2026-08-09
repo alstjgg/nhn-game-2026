@@ -184,10 +184,10 @@ for (const g of pack.gates.gates ?? []) {
   uniq(g.stances.map((s) => s.id), `${g.gate} stances`);
   if (!stanceIds.has(g.default_stance)) errors.push(`${g.gate}: default_stance "${g.default_stance}" not in stance set`);
   if (g.place_id && !placeIds.has(g.place_id)) errors.push(`${g.gate}: unknown place_id "${g.place_id}"`);
-  const condIds = new Set(g.key_conditions.map((k) => k.id));
-  uniq(g.key_conditions.map((k) => k.id), `${g.gate} key_conditions`);
+  const condIds = new Set((g.key_conditions ?? []).map((k) => k.id));
+  uniq((g.key_conditions ?? []).map((k) => k.id), `${g.gate} key_conditions`);
   const perCond = new Map([...condIds].map((k) => [k, 0]));
-  for (const ex of g.key_examples) {
+  for (const ex of g.key_examples ?? []) {
     if (!condIds.has(ex.for)) errors.push(`${g.gate}: key_example for "${ex.for}" — no such condition`);
     else perCond.set(ex.for, perCond.get(ex.for) + 1);
   }
@@ -249,8 +249,8 @@ const inferSpecies = (minedFrom) =>
     : /객관 로그|객관 사건/.test(minedFrom) ? '사실'
       : null;
 for (const g of pack.gates.gates ?? []) {
-  const condSpecies = new Map(g.key_conditions.map((k) => [k.id, k.species]));
-  for (const ex of g.key_examples) {
+  const condSpecies = new Map((g.key_conditions ?? []).map((k) => [k.id, k.species]));
+  for (const ex of g.key_examples ?? []) {
     const inferred = inferSpecies(ex.mined_from);
     const want = condSpecies.get(ex.for);
     if (inferred && want && inferred !== want) {
@@ -275,8 +275,8 @@ const clauseByRef = (targetsClause) => {
   return m ? `cl${m[1]}` : null;
 };
 for (const g of pack.gates.gates ?? []) {
-  const condClause = new Map(g.key_conditions.map((k) => [k.id, clauseByRef(k.targets_clause)]));
-  for (const ex of g.key_examples) {
+  const condClause = new Map((g.key_conditions ?? []).map((k) => [k.id, clauseByRef(k.targets_clause)]));
+  for (const ex of g.key_examples ?? []) {
     const cl = condClause.get(ex.for);
     const stems = cl ? clauseVocab.get(cl) : null;
     if (stems && !stems.some((s) => ex.text.includes(s))) {

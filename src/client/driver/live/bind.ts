@@ -95,7 +95,7 @@ export function bindLiveRun(deps: BindDeps, open: OpenRunDeps): BoundRun {
   seedCarried(blocks, open.carried)
 
   const engine = createEngine({ pack: deps.pack, run: open.run })
-  const composer = createComposer({ blocks, reportGuidance: deps.guidance })
+  const composer = createComposer({ blocks, reportGuidance: deps.guidance, pack: deps.pack.slug })
   const transport = createTransport({ baseUrl: deps.proxyBaseUrl, fetch: deps.fetch })
 
   // The scorer reads the state the day ENDED in, so it is handed the engine's

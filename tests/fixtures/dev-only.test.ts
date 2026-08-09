@@ -120,11 +120,21 @@ describe('[u2f#c10] frozen inputs are read, never written', () => {
   //
   // The gate-vocabulary repair (08-06) lands under that same release — the leak
   // is in the authored timeline itself, so there is nowhere else to fix it.
-  const RELEASED = ['docs/spec-client.md', 'src/shared/species.ts', 'data/scenario/우는다리/']
-  const FROZEN = [
-    // Narrowed from `data/scenario/` — the pack under it is released (above);
-    // the schemas it is checked against are not.
+  //
+  // `data/scenario/_schema/` joins them (08-09). The full argument is recorded
+  // at `tests/acceptance/discovery-and-frozen-guard.test.ts`; in short, the
+  // sentence that kept it frozen after the run merged — "hardening never needs
+  // to touch them" — was a claim about REQUIREDNESS, and a graph-first pack
+  // falsifies it: its gates carry no key conditions and its temperament no
+  // clauses, both of which the schemas demanded. The edits only widen the legal
+  // set, so every pack that validated before still validates.
+  const RELEASED = [
+    'docs/spec-client.md',
+    'src/shared/species.ts',
+    'data/scenario/우는다리/',
     'data/scenario/_schema/',
+  ]
+  const FROZEN = [
     'docs/design/',
     'src/shared/segment.ts',
     'tools/tests/segment.golden.mjs',

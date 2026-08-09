@@ -1,0 +1,259 @@
+# DOME-G1-baseline — arm `baseline`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-BLOCK |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | dome-base |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** 빈 인수인계에서 요원은 a(시설 누수로 접수)를 낸다. 진실 1의 강한 문장을 주입하면 b 또는 c로 옮긴다. 약한 문장(placebo)은 옮기지 못한다 — 요원이 이미 스스로 느끼고 있는 것을 되돌려 받을 뿐이기 때문이다.
+- **Drop condition:** baseline이 a에 80% 미만으로 앉으면 게이트 설계 결함이다. 그래프 선행 방식은 무개입 기본값이 확률이 아니라 구조여야 하므로, N을 늘려 구제하지 않고 stance 세트 또는 장면 산문을 고친다.
+- **Contingency:** placebo가 움직이면 미끼가 미끼가 아니다 — 초안 §3의 약한 문장 판정이 틀린 것이고, 진실 1의 강·약 구분을 다시 쓴다.
+
+## Calls (verbatim)
+
+### 01
+
+latency 6.538s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 18:38_신고내용,18:40_시설정보
+
+```json
+{
+  "inner_note": "18:38 신고자가 \"행사는 끝났고 자기 혼자\"라고 말했다. 천장 처짐과 낙수는 객관적 현상이다. 지붕이 공기압으로 지탱되는 막구조이고 2년 정기점검이 비어 있다는 것도 확인했다. 지금 확인된 사실은 여기까지다.",
+  "stance": "a",
+  "utterance": "천장이 처지고 물이 떨어진다는 것은 신고자가 직접 보고 말한 것입니다. 시설 누수 신고로 접수하겠습니다.",
+  "because_referent": "표기웅 당직자가 18:38에 신고한 천장 처짐과 낙수, 그리고 행사 종료 및 본인 단독 재실 현황",
+  "because_block_ids": [
+    "18:38_신고내용",
+    "18:40_시설정보"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "당직자가 \"자기 혼자\"라고 명시했는데, 이를 거짓이라고 선 없이 의심하는 것은 확인되지 않은 것을 단정하는 것입니다. 회선을 유지하고 신고 내용을 그대로 받아들이는 것이 먼저입니다."
+}
+```
+
+### 02
+
+latency 6.373s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 현장 당직자 직접 신고,행사 종료 및 인원 확인,점검 미실시 기록
+
+```json
+{
+  "inner_note": "신고자가 직접 현장에 있고 \"자기 혼자\"라고 명확히 말했으며, 이를 뒷받침할 시설 정보도 있다. 2년간 점검이 없었다는 것은 누수 신고를 뒷받침하는 정황이지, 신고자가 거짓말하는 이유는 아니다. 지금 내가 할 수 있는 것은 들은 대로 받아 적고 대응하는 것이다.",
+  "stance": "a",
+  "because_referent": "당직자 표기웅이 현장에서 직접 관찰하고 보고한 누수 현상을 신고 내용 그대로 받아 적는 것이 원칙이다.",
+  "because_block_ids": [
+    "현장 당직자 직접 신고",
+    "행사 종료 및 인원 확인",
+    "점검 미실시 기록"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "당직자가 \"자기 혼자\"라고 명확히 했으므로, 이를 거짓이라고 가정하고 행동할 근거가 없다. 지금 필요한 것은 당직자의 말을 믿고 신고된 시설 문제에 대응하는 것이다.",
+  "utterance": "18:38 신고 접수, 신고자 한내돔 야간 당직자 표기웅, 천장 중앙 처짐 및 물 낙하 신고, 현장 인원 신고자 단독. 18:40 시설 조회 완료, 막구조 지붕 공기압 유지 방식, 송풍기 2대, 출입구 1곳 확인. 정기점검 2년 미실시 기록 확인. 신고 내용 그대로 시설 누수 사건으로 분류하고 배수반 출동을 지시합니다."
+}
+```
+
+### 03
+
+latency 5.011s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "당직자의 보고는 직관적이고 구체적이다. 천장 처짐과 물 낙하는 객관적 현상이고, 행사 종료와 단독 근무는 확인 가능한 사실들이다. 정기점검 공백은 우려되지만, 지금 당장 구조적 붕괴 위험을 시사하지는 않는다. 내가 할 수 있는 것은 들은 것을 받아적고, 현장 확인과 조치는 담당 부서에 맡기는 것이다.",
+  "stance": "a",
+  "because_referent": "당직자가 직접 목격하여 보고한 천장 처짐과 물 낙하라는 현상",
+  "because_block_ids": [],
+  "rejected_stance": "b",
+  "rejected_reason": "당직자가 자기 혼자라고 명확히 말했는데, 이를 거짓이라고 가정할 근거가 없다. 확인되지 않은 의심을 현장 조치보다 먼저 세우면, 필요한 대응을 늦춘다.",
+  "utterance": "18:38 신고 접수했습니다. 한내돔 천장 처짐 및 물 낙하 현상 보고, 당직자 단독 근무 확인. 배수반을 현장으로 발동하겠습니다."
+}
+```
+
+### 04
+
+latency 5.286s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: report_ceiling,report_personnel
+
+```json
+{
+  "inner_note": "돔 당직자가 말한 것은 명백하다: 천장이 처지고 물이 떨어지며, 행사는 끝났고 자기만 있다고 했다. 정기점검이 2년간 미루어진 시설에서 구조적 결함이 나타난 것으로 보인다. 확인되지 않은 가정으로 당직자를 의심하거나 숨은 의도를 돌리는 것은 지금 우선이 아니다.",
+  "stance": "a",
+  "because_referent": "신고 당시각 18:38, 당직자 표기웅이 천장 처짐과 낙수를 직접 목격하고 신고했다. 행사 종료와 인원 상황을 진술했다.",
+  "because_block_ids": [
+    "report_ceiling",
+    "report_personnel"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "당직자가 자신만 있다고 명시했고, 이를 뒤집을 근거가 없다. 인원 재확인은 응급 상황 판단에 우선되지 않는다.",
+  "utterance": "18:38 신고 접수합니다. 한내돔 천장 처짐 및 낙수 — 당직자 현장 확인 신고입니다. 행사 종료, 인원 자신만. 배수반 출동 지시합니다."
+}
+```
+
+### 05
+
+latency 6.173s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 현황1,시설정보1
+
+```json
+{
+  "stance": "a",
+  "inner_note": "당직자의 신고가 물리적 현상을 분명하게 전하고 있다. 천장이 처진다는 것과 물이 떨어진다는 것은 객관적으로 확인 가능한 상태이고, 행사 종료와 현재 인원 상황도 명시했다. 추측으로 다른 가능성을 먼저 검토하는 것은 실제 위험에 대응을 지연시킨다.",
+  "because_referent": "18:38의 신고 내용 그대로와, 18:40 조회한 막구조 시설의 특성",
+  "because_block_ids": [
+    "현황1",
+    "시설정보1"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "당직자가 자기 혼자라고 명확히 말했는데, 그 진술에 반대 추정을 먼저 세우면 신고를 의심으로 받는 것이다. 인원 확인 지연은 실제 구조적 위험 대응을 늦춘다. 막구조 돔의 공기압 손실은 시간이 지날수록 위험도가 높아진다.",
+  "utterance": "18:38 신고 받겠습니다. 돔 천장 처짐, 물 낙하 확인. 당직자 현재 혼자 상태. 시설은 막구조 공압식, 출입구 남측 회전문 단일 지점. 정기점검 미실시 상태입니다. 신고 내용으로 시설 누수 접수하고 배수반 출동을 요청합니다."
+}
+```
+
+### 06
+
+latency 5.741s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 당직자-혼자-진술,막구조-압력시스템,천장처짐-누수-신고
+
+```json
+{
+  "inner_note": "천장이 처지고 물이 떨어지는 것은 구조적 위험을 시사한다. 당직자가 혼자라고 한 것과 정기점검 공백은 별개의 문제다. 지금 들은 것만으로는 당직자의 증언을 의심할 근거가 없다. 시설 상태의 즉각적인 악화가 신고의 핵심이다.",
+  "stance": "a",
+  "utterance": "18:38 당직자 표기웅이 천장 중앙이 처지고 물이 떨어진다고 신고했으며, 행사 종료 후 자신만 있다고 진술했습니다. 확인되지 않은 다른 정황을 근거로 진술을 의심할 사유가 없습니다.",
+  "because_referent": "막구조 지붕의 급격한 처짐과 누수는 공기압 유지 시스템의 긴급 이상을 나타내며, 정기점검 공백은 사후 책임 문제이지 지금의 구조 안전성 판단을 바꾸지 않습니다.",
+  "because_block_ids": [
+    "당직자-혼자-진술",
+    "막구조-압력시스템",
+    "천장처짐-누수-신고"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "행사 종료 후 당직자가 혼자라는 진술을 확인 없이 의심하는 것은, 들은 말을 그대로 받아 적는 기본 원칙에 어긋납니다. 인원 확인 지연은 구조 위험 대응 시간을 낭비합니다."
+}
+```
+
+### 07
+
+latency 4.715s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 신고내용,시설조회
+
+```json
+{
+  "inner_note": "18:38에 받은 신고는 천장 처짐과 물 낙수다. 당직자가 혼자라고 말했고, 시설 정보로 정기점검이 2년 비어 있다는 사실이 확인되었다. 이것이 안다는 것의 범위다. 당직자의 은폐 의도나 추가 인원의 존재는 내가 확인한 것이 아니다.",
+  "stance": "a",
+  "because_referent": "당직자 표기웅이 신고한 내용과 조회로 확인한 시설 정보",
+  "because_block_ids": [
+    "신고내용",
+    "시설조회"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "추가 인원이 있다는 것은 내가 확인한 정보가 아니고, 당직자의 보고를 근거 없이 불신하는 것이 된다",
+  "utterance": "18시 38분, 당직 표기웅이 천장 처짐과 물 낙수를 신고했습니다. 당직자는 행사 종료 후 혼자라고 했습니다. 시설대장 조회 결과 막구조 돔이고 정기점검이 2년 미이행 상태입니다. 신고 내용 그대로 시설 누수로 접수하고 배수반을 출동시키겠습니다."
+}
+```
+
+### 08
+
+latency 5.729s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 신고 내용,시설 특성
+
+```json
+{
+  "inner_note": "신고자가 명확히 한 것은 두 가지: 천장이 처지고 물이 떨어짐, 그리고 자신 혼자 있음. 구조 점검에서 드러난 것은 막구조 시설의 정기점검 공백. 확인되지 않은 가정들—숨겨진 인원, 책임 회피—을 근거 없이 신고의 진실성에 앞세울 수 없다. 다만 신고 내용을 그대로 받아야 한다.",
+  "stance": "a",
+  "because_referent": "신고자 표기웅이 현장에서 직접 확인한 물리적 증상—천장 처짐과 낙수—을 그 말 그대로 접수하는 것이다",
+  "because_block_ids": [
+    "신고 내용",
+    "시설 특성"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "돔 안의 실제 인원수를 신고자의 보고 없이 추정하는 것은 근거 없는 의심이다. 신고자가 '자신 혼자'라고 명시한 진술을 확인되지 않은 가정으로 무시하는 것은 청취의 원칙에 어긋난다. 필요하면 인원 확인은 시설 조치 이후 병행할 수 있다",
+  "utterance": "신고 내용대로 막구조 시설의 누수 상황으로 접수하겠습니다. 배수반 출동을 요청하고, 당직자와 회선을 유지하면서 상황 변화를 계속 확인하겠습니다."
+}
+```
+
+### 09
+
+latency 5.621s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 18:38 신고,18:40 시설 확인
+
+```json
+{
+  "inner_note": "확인되지 않은 것을 내가 먼저 단정할 수 없다. 지금 들은 것은 천장 처짐과 물 낙하, 행사 종료, 당직자 단독이다. 정기점검 공백은 우려스럽지만 그것이 지금 당장 누수 신고의 성질을 바꾸지는 않는다.",
+  "stance": "a",
+  "because_referent": "표기웅 당직자가 신고한 천장 처짐과 물 낙하는 물리적 사실이다.",
+  "because_block_ids": [
+    "18:38 신고",
+    "18:40 시설 확인"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "행사가 끝났다고 말한 것을 근거 없이 거짓이라고 판단할 수 없다. 의심은 확인의 재료가 되지만, 확인 전에 다른 조치를 미루는 이유가 되지 않는다.",
+  "utterance": "18:38 한내돔 당직 표기웅으로부터 천장 처짐과 물 낙하 신고를 접수했습니다. 행사 종료, 당직자 단독 상황이라고 신고했고, 시설 특성상(막구조 공기압 지지) 응급성이 있으므로 a항 - 신고 내용 그대로 시설 누수로 접수하고 배수반을 출동시키겠습니다. 동시에 배수반에 인원 안전 확인을 요청하겠습니다."
+}
+```
+
+### 10
+
+latency 5.247s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "당직자가 명확히 말한 것은 천장 처짐과 물 떨어짐, 그리고 자신 혼자라는 것이다. 이것을 그대로 받아 적는 것이 내 기질이다. 정기점검 미실시는 심각하지만, 그것이 지금 당장 당직자의 진술을 의심하는 근거는 아니다. 확인되지 않은 것을 단정하지 않겠다.",
+  "stance": "a",
+  "utterance": "18:38 당직자 표기웅 신고 접수. 천장 중앙 처짐, 물 떨어짐 확인. 현장 인원은 당직자 본인 1명이라 했습니다. 시설 누수로 접수하고 배수반 출동을 요청하겠습니다.",
+  "because_referent": "당직자가 자신이 혼자라고 직접 말했기 때문입니다",
+  "because_block_ids": [],
+  "rejected_stance": "c",
+  "rejected_reason": "당직자의 진술을 감추려는 의도로 가정하는 것은 확인되지 않은 추론입니다. 지난겨울의 일이 있기에 더욱 신중해야 합니다."
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | a | b | 표기웅 당직자가 18:38에 신고한 천장 처짐과 낙수, 그리고 행사 종료 및 본인 단독 재실 현황 | 18:38_신고내용 18:40_시설정보 |
+| 02 | a | b | 당직자 표기웅이 현장에서 직접 관찰하고 보고한 누수 현상을 신고 내용 그대로 받아 적는 것이 원칙이다. | 현장 당직자 직접 신고 행사 종료 및 인원 확인 점검 미실시 기록 |
+| 03 | a | b | 당직자가 직접 목격하여 보고한 천장 처짐과 물 낙하라는 현상 |  |
+| 04 | a | b | 신고 당시각 18:38, 당직자 표기웅이 천장 처짐과 낙수를 직접 목격하고 신고했다. 행사 종료와 인원 상황을 진술했다. | report_ceiling report_personnel |
+| 05 | a | b | 18:38의 신고 내용 그대로와, 18:40 조회한 막구조 시설의 특성 | 현황1 시설정보1 |
+| 06 | a | b | 막구조 지붕의 급격한 처짐과 누수는 공기압 유지 시스템의 긴급 이상을 나타내며, 정기점검 공백은 사후 책임 문제이지 지금의 구조 안전성 판단을 바꾸지 않습니다. | 당직자-혼자-진술 막구조-압력시스템 천장처짐-누수-신고 |
+| 07 | a | b | 당직자 표기웅이 신고한 내용과 조회로 확인한 시설 정보 | 신고내용 시설조회 |
+| 08 | a | b | 신고자 표기웅이 현장에서 직접 확인한 물리적 증상—천장 처짐과 낙수—을 그 말 그대로 접수하는 것이다 | 신고 내용 시설 특성 |
+| 09 | a | b | 표기웅 당직자가 신고한 천장 처짐과 물 낙하는 물리적 사실이다. | 18:38 신고 18:40 시설 확인 |
+| 10 | a | c | 당직자가 자신이 혼자라고 직접 말했기 때문입니다 |  |
+
+**Sequence (kept calls):** `a,a,a,a,a,a,a,a,a,a`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b`, `c` · unobserved in this arm: `b`, `c`
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._

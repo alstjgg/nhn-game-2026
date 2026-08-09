@@ -95,10 +95,18 @@ export type CallSlots = {
   reporter: ReporterSlots
 }
 
-/** The POST body. `POST <base>/dday/call` — one route for all three (§11). */
+/**
+ * The POST body. `POST <base>/dday/call` — one route for all three (§11).
+ *
+ * `pack` is the datapack slug this run is playing. It selects which of the
+ * proxy's per-scenario default prompts (`FLAW` · `INCIDENT` · `PRIORITY_LIST`)
+ * the call is answered with — a name, never the values, so the rule above that
+ * those three slots are refused from the client is untouched.
+ */
 export type CallRequest<T extends CallType = CallType> = {
   call_type: T
   template_version: string // /^v[0-9]+\.[0-9]+$/
+  pack: string
   slots: CallSlots[T]
 }
 
