@@ -272,6 +272,92 @@ describe('[u11#c6] frozen inputs stayed frozen (C1 / C13 / C20)', () => {
     expect(dirty).toEqual([])
   })
 
+  // The additive pledge, enforced instead of promised.
+  //
+  // Releasing `data/scenario/_schema/` from the freeze put its condition into
+  // prose above: an amendment is additive, so a new field is optional and never
+  // joins `required`. `datapack:check` already holds the half that is testable
+  // by construction — the packs on disk must still validate — but nothing held
+  // the `required` arrays themselves, and those are the half that decides
+  // whether a pack ALREADY WRITTEN survives the next amendment. A snapshot does.
+  //
+  // Adding an optional field does not touch this list, so the ordinary case
+  // stays silent. A diff here means the amendment was not additive, which is
+  // not covered by the 08-09 release and needs its own ratification.
+  const SCHEMA_REQUIRED: Record<string, string[]> = {
+    "characters.schema.json": [
+      "/properties/characters/items/properties/meters/items: id,initial,label,variable",
+      "/properties/characters/items/properties/strands: gate_ids,truth_ids",
+      "/properties/characters/items: doesnt_know,id,interest,knows,meters,name,role,strands",
+      ": characters",
+    ],
+    "gates.schema.json": [
+      "/properties/gates/items/properties/buckets/items: deltas,flags,id,stances",
+      "/properties/gates/items/properties/key_conditions/items: axis,id,referent,species,targets_clause",
+      "/properties/gates/items/properties/key_examples/items: for,mined_from,text",
+      "/properties/gates/items/properties/stances/items: desc,id,label",
+      "/properties/gates/items: buckets,default_stance,edge_predicates,false_leads,gate,key_conditions,key_examples,question,stances,standard_form",
+      ": gates",
+    ],
+    "hardening.schema.json": [
+      "/properties/characters/additionalProperties/additionalProperties: initial,variable",
+      "/properties/timeline/additionalProperties/properties/present/items: char_id,side",
+      "/properties/timeline/additionalProperties: text_head,time",
+    ],
+    "meta.schema.json": [
+      "/properties/clock: end,start",
+      ": clock,logline,slug,title",
+    ],
+    "places.schema.json": [
+      "/properties/places/items/properties/yields/items: clock,depth_note,info",
+      "/properties/places/items: desc,id,name,yields",
+      ": places",
+    ],
+    "score.schema.json": [
+      "/properties/units/items: attributed_gates,baseline,id,label,predicates,tallies",
+      "/properties/variance_notes: failed_runs,saved_runs",
+      ": baseline_summary,units",
+    ],
+    "symptoms.schema.json": [
+      "/$defs/entryList/items: min,text",
+    ],
+    "temperament.schema.json": [
+      "/properties/clauses/items: axis,axis_vocabulary,condition,defeat_condition,id",
+      ": clauses,default_disposition",
+    ],
+    "timeline.schema.json": [
+      "/properties/events/items/properties/effects: deltas,flags",
+      "/properties/events/items/properties/exposure: visible_from",
+      "/properties/events/items/properties/present/items: char_id,side",
+      "/properties/events/items: effects,exposure,id,present,surface,text,time",
+      ": events",
+    ],
+    "truths.schema.json": [
+      "/properties/truths/items/properties/carriers/items: id,text,where",
+      "/properties/truths/items/properties/false_leads/items: id,text,where",
+      "/properties/truths/items: carriers,false_leads,id,statement",
+      ": truths",
+    ],
+  }
+  it('(p) the schema amendment stayed additive — no `required` array moved', () => {
+    const dir = path.join(REPO, 'data/scenario/_schema')
+    const collect = (node: unknown, at: string, into: string[]): void => {
+      if (node === null || typeof node !== 'object') return
+      const obj = node as Record<string, unknown>
+      if (Array.isArray(obj.required)) {
+        into.push(`${at}: ${[...(obj.required as string[])].sort().join(',')}`)
+      }
+      for (const [k, v] of Object.entries(obj)) collect(v, `${at}/${k}`, into)
+    }
+    const actual: Record<string, string[]> = {}
+    for (const f of fs.readdirSync(dir).sort()) {
+      const found: string[] = []
+      collect(JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')), '', found)
+      actual[f] = found.sort()
+    }
+    expect(actual).toEqual(SCHEMA_REQUIRED)
+  })
+
   it('(o) DISCOVERY.md only ever GREW — no earlier unit\'s entry was dropped', () => {
     // Compared on the bullet's opening clause, so a correction may re-wrap the
     // paragraph; what it may not do is make the finding disappear.

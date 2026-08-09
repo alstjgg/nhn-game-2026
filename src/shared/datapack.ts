@@ -139,7 +139,7 @@ export type Gates = {
     availability?: string | null;
     /** 카드 앞의 산문 — 장면과 긴장 */
     scene?: string | null;
-    /** 이 갈림길에서 요원이 읽는 타임라인 행 id — 없으면 엔진이 직전 비트들의 서술 줄로 창을 만든다(fallback). 행의 노출 조건은 그대로 걸린다. maxItems는 TIMELINE_CAP_LINES와 같은 수지만 별도로 비준된 값이다 — 예산 상수가 움직여도 이 상한은 따라가지 않는다 */
+    /** 이 갈림길에서 요원이 읽는 타임라인 행 id — 없으면 엔진이 직전 비트들의 서술 줄로 창을 만든다(fallback). 행의 노출 조건은 그대로 걸린다. 같은 행을 두 번 실으면 창에 같은 문장이 두 줄 서므로 uniqueItems. maxItems는 TIMELINE_CAP_LINES와 같은 수지만 별도로 비준된 값이다 — 예산 상수가 움직여도 이 상한은 따라가지 않는다 */
     excerpt?: Array<string>;
     /** 카드 뒤의 산문 — 통과/실패 가지의 결과 */
     branch_note?: string | null;

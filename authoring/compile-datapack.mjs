@@ -479,8 +479,47 @@ function parseCard(cardLines, where) {
   return card;
 }
 
+// `- t7   # 21:03` → `'t7'`, having first checked that `t7` really is the 21:03 row.
+//
+// `excerpt` ids are POSITIONAL — `t7` means "the 7th row of 고정 타임라인" — so
+// inserting a row above one repoints every id below it at a different sentence
+// while every id stays valid and lint stays green. That is the same silent-edit
+// vector this field exists to remove (설계 기록 §1), reappearing inside the fix:
+// the field would let a narrative edit change what the agent knows at a gate,
+// with nothing to tell you. This branch performed exactly such an insertion —
+// the 21:03 row — and what stopped it being silent was `hardening.json`'s
+// `text_head`. The clock annotation is `excerpt`'s `text_head`.
+//
+// The annotation is REQUIRED, not optional, because an optional guard guards
+// only the entries that did not need guarding: the author who forgets to write
+// it is the author whose window just moved.
+//
+// This closes the compile path, not the field. `gates.json` can be hand-edited
+// or written by another producer, so lint's E9 still has to ask the same
+// question of the compiled pack.
+const EXCERPT_ENTRY = /^(t[0-9]+)\s+#\s*([0-2]?[0-9]:[0-5][0-9]\+?)$/;
+
+function resolveExcerpt(raw, rowTime, where) {
+  if (raw === undefined || raw === null) return null;
+  if (!Array.isArray(raw)) die(`${where}: excerpt must be a list of "tN  # 시각" entries`);
+  return raw.map((entry) => {
+    const m = EXCERPT_ENTRY.exec(String(entry).trim());
+    if (!m) {
+      die(`${where} excerpt: "${entry}" is not "tN  # 시각" — the clock is what stops a 고정 타임라인 insertion from moving this window in silence, so it is required, not a comment`);
+    }
+    const [, id, stamp] = m;
+    const actual = rowTime.get(id);
+    if (actual === undefined) die(`${where} excerpt: ${id} names no row in 고정 타임라인 (${rowTime.size} rows)`);
+    if (actual !== stamp) {
+      die(`${where} excerpt: ${id} is the ${actual} row, not the ${stamp} one — 고정 타임라인 rows moved and the ids are positional, so rekey this window`);
+    }
+    return id;
+  });
+}
+
 const gates = [];
 {
+  const rowTime = new Map(events.map((e) => [e.id, e.time]));
   const secLines = sections['갈림길'];
   const blocks = [];
   for (const raw of secLines) {
@@ -505,6 +544,7 @@ const gates = [];
     if (fenceOpen < 0 || fenceClose < 0) die(`${h[1]}: no \`\`\`yaml card block — 카드 없는 갈림길은 미완성`);
     const prose = (ls) => ls.map((l) => l.trim()).filter(Boolean).map(stripBold).join(' ') || null;
     const card = parseCard(b.lines.slice(fenceOpen + 1, fenceClose), h[1]);
+    const excerpt = resolveExcerpt(card.excerpt, rowTime, h[1]);
 
     for (const req of ['gate', 'standard_form', 'question', 'stances', 'default_stance', 'key_conditions', 'key_examples', 'false_leads']) {
       if (!(req in card)) die(`${h[1]}: card missing "${req}"`);
@@ -537,8 +577,10 @@ const gates = [];
       // 스키마가 optional + minItems 1이라 빈 배열은 "선언했는데 비어 있음"이
       // 되어 린트 ERROR로 드러나야 하고, 선언하지 않은 갈림길은 부재가 끝까지
       // 부재여야 엔진이 기존 `windowLines` fallback을 쓴다
-      // (planning/research/gate-excerpt-design.md §2·§4).
-      ...(card.excerpt ? { excerpt: card.excerpt } : {}),
+      // (planning/research/gate-excerpt-design.md §2·§4). 카드의 시각 병기는
+      // `resolveExcerpt`가 대조하고 여기까지 나르지 않는다 — 팩에 실리는 것은
+      // id뿐이고, 시각은 초안이 지고 있는 가드다.
+      ...(excerpt ? { excerpt } : {}),
       branch_note: prose(b.lines.slice(fenceClose + 1)),
       standard_form: card.standard_form,
       question: card.question,

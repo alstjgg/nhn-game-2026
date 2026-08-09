@@ -307,9 +307,9 @@ notes about one.
    standard_form: >
      갈림길 G3에서, 기질은 기본 stance 경청을 낸다;
      열쇠 조건 k1을 만족하는 문장 주입 시 공감으로 이동한다.
-   excerpt:                          # 선택. 이 갈림길에서 요원이 읽는 타임라인 행 id — 1–6개
-     - t9                            # 고정 타임라인 표에서 몇 번째 행인지로 정해지는 id
-     - t10                           # 없으면 엔진이 직전 서술 줄로 창을 만든다(fallback) — 대부분의 게이트가 이쪽
+   excerpt:                          # 선택. 이 갈림길에서 요원이 읽는 타임라인 행 id — 1–6개, 중복 불가
+     - t9    # 21:09                 # id는 고정 타임라인 표의 몇 번째 행인지 · 시각 병기는 필수(컴파일러가 대조)
+     - t10   # 21:12                 # 없으면 엔진이 직전 서술 줄로 창을 만든다(fallback) — 대부분의 게이트가 이쪽
    question: "이 갈림길에서 요원에게 던져지는 판단 질문"
    stances:                          # 2–4, all orientation-typed
      - { id: a, label: 추궁, desc: "발화에서 어떻게 나타나는지" }
@@ -339,10 +339,20 @@ notes about one.
    exactly the rows you list, in the order you list them — useful when a
    gate's judgment should turn on specific authored facts rather than
    whatever prose happened to land just before it. Name a row by its position
-   in `고정 타임라인` (the first row is `t1`, the ninth is `t9`), and never
-   name a row at or after this gate's own clock, or one this same gate's
-   `key_examples[].mined_from` already draws from — both are lint errors
-   (`gate-hardening-manual` §5, E9/E10/W5).
+   in `고정 타임라인` (the first row is `t1`, the ninth is `t9`) **and write
+   that row's clock beside it** — the annotation is required, and the compiler
+   checks it, because the ids are positional and a row inserted above one
+   silently repoints every id below.
+
+   Never name a row at or after this gate's own clock, or one this same gate's
+   `key_examples[].mined_from` already draws from, and make sure at least one
+   named row carries no exposure condition — otherwise the window can come up
+   empty on a run (`gate-hardening-manual` §5, E9/E10/E11/W5/W6).
+
+   Declaring a window does **not** discharge PR #214's 규칙 6 by machine. It
+   retires it: with a declared window, row position decides nothing, so what is
+   left is an obligation only a human read can hold — the window must not
+   contain a row that argues the default is wrong.
 
    **`default_stance` is where the first run goes, so it is where the record
    goes.** With an empty handover the 요원 takes the default at every gate, so

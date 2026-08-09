@@ -102,6 +102,24 @@ number that happens to equal the engine's prompt-budget constant
 (`TIMELINE_CAP_LINES`) — it does not track that constant, and the two may
 diverge later. See `planning/research/gate-excerpt-design.md`.
 
+**In the DRAFT, an excerpt id carries its row's clock beside it — `- t7   # 21:03`
+— and that annotation is required, not decorative.** The ids are positional
+(`t7` is the 7th row of 고정 타임라인), so inserting a row above one repoints
+every id below it at a different sentence while every id stays valid and lint
+stays green: the same silent-edit vector the field exists to remove, reappearing
+inside the fix. `datapack:compile` compares the annotation against the row's
+real clock and stops on a mismatch, which is the `text_head` guard's job done
+for the window. Only the id reaches `gates.json`; the clock is a draft-side
+guard. E9 stays meaningful anyway, because a hand-written `gates.json` never
+passed through the compiler.
+
+**A declared window must not be able to come up empty.** Every named row can be
+dropped by its own exposure condition, so a window whose rows are *all*
+conditional renders as `""` on a run where none hold — Call 1 would carry a
+`[상황]` header over a blank, a prompt shape nothing has measured
+(`SCENE_SYMPTOMS` has `(변화 없음)` for this; `TIMELINE_EXCERPT` has no
+equivalent). E11 requires at least one row that this run cannot lose.
+
 **Buckets carry `flags` alongside `deltas` (v0.4).** Caller-facing gates
 (G1 · G4 · G7 — the man on the line) discharge through scalar deltas on his
 meters. Structural gates (G2 · G3 · G5 · G6) change *world* state, not the
@@ -159,6 +177,7 @@ node authoring/lint-datapack.mjs data/scenario/<slug>
 | E8 | **Deltas are non-zero integers.** The symptom lookup matches \|Δ\| against integer `min` bands: a fractional delta matches nothing (§2.3-2 hard error) and `0` drops out of rendering entirely (§2.3-1). E7 only inspects `(variable, direction)`, so it passes this data — exactly the "looks plausible, detonates on one path" class, caught at authoring time. Integer-ness is doubled in the schema (`integer`); non-zero lives only here | engine spec §1.3 · §6-3 |
 | E9 | A declared `excerpt` id names no row in `timeline.events`. The runtime skips an unknown id in silence, so a typo costs the agent one line of its window with nothing to show for it — authoring time is the only place it is visible | gate-excerpt design §4 · `predicates.ts`'s "nothing here throws" precedent |
 | E10 | A declared `excerpt` row is not strictly before its gate's own `clock` — skipped when `clock` is `null` (a gate off the 무개입 line has no stamp to be before). The window would show the agent a row that has not happened yet | gate-excerpt design §2 |
+| E11 | **A declared `excerpt` can render empty.** Every named row is conditional, so a run where none hold sends Call 1 a `[상황]` header over a blank — a prompt shape nobody has measured, and the slot has no `(변화 없음)` equivalent. At least one named row must be unconditional, asked the way the runtime asks it (absent, empty, *or* un-parseable prose all count as shown) | gate-excerpt design §6 리스크 4 |
 
 ### 3.3 WARN — design audit
 
@@ -168,7 +187,8 @@ node authoring/lint-datapack.mjs data/scenario/<slug>
 | W2 | **Attributability** — a gate that no score unit attributes to is decoration | guide §5, "an effect with no cause is a bug" |
 | W3 | **Example species coherence** — infer each `key_examples` entry's species from its `mined_from` phrasing (subjective report → 자기서술 · objective log → 사실) and compare with the condition's species. Since a key is a condition *class*, a species-mismatched example teaches the wrong lock shape | manual §3-5; promoted after 3 instances in the 우는다리 paper check |
 | W4 | **Example axis vocabulary** — flag an example sentence carrying none of its target clause's axis vocabulary (2-syllable stem matching). The same fact scores zero if the axis is off | manual §3-1; promoted after 4 instances in the 우는다리 paper check round 2 |
-| W5 | **A declared `excerpt` hands out its own key.** Flag a row sitting at a clock this same gate's own `key_examples[].mined_from` names — the gate's window would show the agent the exact material a `key_example` was mined from, i.e. answer its own question. The machine form of PR #214's 규칙 6. Deliberately over-triggering (every row at that clock counts) and only **partial** — a `mined_from` with no clock in it contributes nothing | gate-excerpt design §3, §6 리스크 2 |
+| W5 | **A declared `excerpt` hands out its own key.** Flag a row sitting at a clock this same gate's own `key_examples[].mined_from` names — the gate's window would show the agent the exact material a `key_example` was mined from, i.e. answer its own question. **Not** the machine form of PR #214's 규칙 6: declaring a window *retires* 규칙 6 rather than automating it (row position stops deciding anything), and what replaces it — "a declared window must not argue the default is wrong" — is semantic and unlintable. Deliberately over-triggering (every row at that clock counts, and every `HH:MM` anywhere in `mined_from` registers) and only **partial** — a `mined_from` with no clock in it contributes nothing | gate-excerpt design §3, §6 리스크 2 |
+| W6 | **A declared `excerpt` on a gate with no `clock`.** `buildSchedule` skips a clock-less gate before the excerpt resolves, so the declaration can never reach a run — dead data that reads as live. Give the gate a clock or drop the field | gate-excerpt design §4 |
 
 ### 3.4 FLAG — hardening incomplete
 
