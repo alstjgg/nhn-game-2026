@@ -127,6 +127,24 @@ async function fileAnotherRun(page: Page): Promise<void> {
   await expect(newRun, 'the day never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
   await newRun.click()
   await confirmDeploy(page)
+  // WAIT FOR THE OP TO ACTUALLY LEAVE (x7, 08-09).
+  //
+  // This drained straight after the confirm, which held only while the press
+  // and its `new_run` were the same tick. They are not any more: the press
+  // types the incoming agent's callsign onto the page and then waits a beat
+  // before the chop and the op (`windows/agent-file.ts`'s NAMED_TO_CHOP_MS), so
+  // a drain here flushed the day that had ALREADY ended and returned before the
+  // next one existed. Both switch tests then found one run in the stream and
+  // failed as "the stream carries fewer than two runs", which reads as a driver
+  // fault and is a helper racing an animation.
+  //
+  // The control's own `data-op` is the honest signal — it returns to `deploy`
+  // when the new run's `meta` lands, which is the thing this helper is waiting
+  // for. `fixtures/harness.ts`'s `newRun()` already waited on exactly this; the
+  // local helper simply never did.
+  await expect(newRun, 'the press never opened the next run').toHaveAttribute('data-op', 'deploy', {
+    timeout: 30_000,
+  })
   await drain(page)
   await page.locator(`${REP} .win-bar`).click()
 }
