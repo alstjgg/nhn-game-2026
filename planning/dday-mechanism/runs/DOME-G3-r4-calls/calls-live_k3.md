@@ -1,0 +1,278 @@
+# DOME-G3-r4 — arm `live_k3`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-BLOCK |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | dome-base |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** 압력이 사람을 살리고 있다는 것을 요원이 알게 되면 baseline은 a로 간다 — 가장 나쁜 결말이지만 그 자리에서 가장 옳아 보이는 선택이 된다. 진실 3은 b로(압력을 되돌리는 것이 기본의 논리를 그 논리로 이긴다), 진실 4는 c·d로 — 열쇠가 주머니에 있다는 것은 자르지 않고 몇 초 만에 열 수 있다는 뜻이고, 그것이 지붕을 내주는 거래를 감당할 만한 것으로 만든다.
+- **Drop condition:** baseline이 a에 80% 미만이면 세계를 고치는 것으로도 안 되는 것이고, 그때는 기질을 바꾸는 쪽으로 간다 — G1·G2 재측정 60콜을 함께 치른다. live_k4가 c·d에 닿지 못하면 거래가 너무 비싸진 것이다.
+- **Contingency:** placebo가 움직이면 그 진실의 강·약 구분이 틀린 것이다.
+
+## Calls (verbatim)
+
+### 01
+
+latency 6.747s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "막구조 건물의 내압이 떨어지면 지붕이 내려온다. 현재 한 대 송풍기만 작동하고 있고 급기 상태가 불명확하다. 회선 저쪽 정보가 모순되고 불완전하다: 표기웅은 혼자라 했으나 실제로는 관중석에 사람이 남아 있었고, 급기 상태에 대해서도 명확하지 않다. 도면상 북측 문이 있으나 현장 상황이 불명확하다. 시간이 흐르면서 상황이 악화될 수 있다.",
+  "stance": "d",
+  "because_referent": "현장에서 즉시 조치 가능한 출입구가 남측 회전문 하나뿐이고, 이미 병목이 발생하고 있으며, 북측 비상 개방문의 개방 방법이 현장에 있어야 하기 때문에 선착대와 당직자를 함께 그 위치에 배치하는 것이 가장 신속한 대피 경로 확보다.",
+  "because_block_ids": [
+    "k2",
+    "k3"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "남측 회전문 병목이 이미 명백하고(문세라 신고), 표기웅의 초기 진술이 거짓이었으므로(k1), 그가 말하지 않은 것이 더 있을 가능성이 있다. 단일 통로만 의존하면 안에 갇힌 사람들의 대피 시간이 급격히 길어진다.",
+  "utterance": "당직자에게 북측 비상 개방문의 개방 방법을 확인하고 선착대를 그 문 앞에 먼저 배치합니다. 회전문 병목을 피하고 내압 급변을 대비하기 위함입니다."
+}
+```
+
+### 02
+
+latency 6.256s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 남측 회전문 한 곳
+
+```json
+{
+  "inner_note": "회선 저쪽 사람들이 자신에게 불리한 것을 뺄 수 있다는 것을 너무 잘 안다. 표기웅이 \"혼자\"라고 한 것도, \"도면에 있다\"고 한 것도, 지금 회전문 한 곳이 명시적 현실이라는 것도 모두 그 속에서다. 지붕이 내려온다면 그것은 다시 일어나지 않는다. 송풍기 k3이 있다는 것은 막구조의 물리가 어떤 여지를 남긴다는 뜻이다.",
+  "stance": "d",
+  "because_referent": "표기웅이 북측 비상문을 \"도면에 있다\"고 답했으되 자신이 그곳을 열 수 있는지, 열려 있는지, 무엇이 필요한지는 말하지 않았다. 그 침묵이 정보다.",
+  "because_block_ids": [
+    "k3",
+    "남측 회전문 한 곳"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "한 통로로만 내보내는 것은 현재 상황을 고정하는 것이다. 막구조는 송풍기가 있으면 대안이 생기고, 북측 문은 도면에 있으며, k1은 안에 사람이 더 있다는 뜻이다. 확인되지 않은 것을 확정된 것처럼 할 수 없다.",
+  "utterance": "표기웅, 북측 비상 개방문이 있으니까 선착대가 그쪽으로 먼저 가겠습니다. 그 자리에서 기다리다가 당신이 와서 그 문을 함께 열어야 합니다. 당신은 지금 어디에 있습니까."
+}
+```
+
+### 03
+
+latency 7.683s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "막구조 건물에서 안쪽 압력이 떨어지면 지붕이 내려온다. k3은 2호 송풍기를 깨울 수 있다는 뜻인데, 표기웅은 \"한 대는 원래 안 돈다\"고 했고, 하도경은 자신이 있을 때부터 안 돌았다고 명확히 했다. 그 차이는 무엇인가. 표기웅이 모르는 것, 또는 말하지 않은 것이 있을 수 있다. 회선 저쪽이 필요한 정보를 빼고 말할 수 있다는 것을 잊고 있었다.",
+  "stance": "d",
+  "because_referent": "북측 비상 개방문을 열기 위해 필요한 절차나 장비나 지식이 당직자 표기웅에게 있을 수 있기 때문이고, 선착대가 그 자리에서 지시를 받고 실행하는 것이 가장 빠르기 때문이다.",
+  "because_block_ids": [
+    "k1",
+    "k2"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "회전문 한 곳으로만 내보내면 k1의 아이들과 인솔자, k2의 여덟 명이 모두 그 경로로만 나가야 한다. 문세라 말로는 앞쪽 줄이 줄지 않는 상태다. 남은 시간이 있으면 다른 출구를 확보하는 것이 원칙이다.",
+  "utterance": "표기웅 선생님, 당직자로서 북측 비상 개방문을 여는 데 필요한 장비나 절차가 있는지 말씀해 주세요. 소방 선착대가 지금 그 문 앞에 가서 대기 중입니다."
+}
+```
+
+### 04
+
+latency 6.008s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "회선 저쪽은 상황을 내가 아는 것보다 더 알 수 있다. 표기웅이 북측 문이 도면에 있다고 답했을 때, 그것을 열 수 있는지 묻지 않았다. 지금 남은 시간은 사람을 빼내는 데 쓸 수밖에 없다. 한 개구부를 열면 압력이 빠진다면, 한 번에 여러 출구를 써야 한다. 당직자와 현장에서 손을 잡고 있어야 한다.",
+  "stance": "d",
+  "because_referent": "표기웅이 도면에 북측 비상 개방문이 있다고 했을 때, 그것을 열 수 있는지를 아는 것이 표기웅이고, 그것을 여는 데 필요한 것도 현장에 있다.",
+  "because_block_ids": [
+    "k1",
+    "k2"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "회전문은 이미 한 번에 두 사람씩만 빠져나가는 병목이고, 관중석 조명이 절반 꺼져 있으며, 아직 인원 파악도 제대로 되지 않았다. 남은 사람이 얼마나 많은지, 관중석에서 내려올 수 있는지도 모른다. 한 통로만 고집하면 시간을 잃는다.",
+  "utterance": "표기웅, 북측 비상 개방문을 열 수 있습니까? 문을 여는 데 무엇이 필요합니까?"
+}
+```
+
+### 05
+
+latency 7.739s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "회선 저쪽이 내게 말하지 않은 것들이 있다. 표기웅은 '혼자'라고 했지만 k1에서 아이들과 인솔자가 있었다. 문세라가 처음 신고한 수도 자기 팀만 센 것이었고, 관중측과 코트 수가 안 맞는다고 했다. 지금 몇 명이 남아 있는지, 어디에 있는지 확실하지 않다. 송풍기 하나가 멈춰 있는 이유도, 북측 비상문의 상태도 모른다. 회선을 유지하고 확인되지 않은 것을 확정하지 않으려면, 내가 알지 못하는 것들을 체계적으로 물어야 한다.",
+  "stance": "d",
+  "because_referent": "막구조 건물에서 내압이 지붕을 지탱하는 원리상, 큰 개구부를 열면 압력이 빠진다. 송풍기가 하나 멈춰 있고, 도면에는 북측 비상 개방문이 있지만 당직자가 그 문의 실제 상태나 개방 방법을 내게 설명하지 않았다. 지금 남아 있는 사람의 수와 위치도 불명확하다.",
+  "because_block_ids": [
+    "k1",
+    "k3"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "회전문 한 곳으로만 내보내는 것은 지금 알지 못하는 상황에서 가장 보수적인 선택처럼 보이지만, 실제로는 북측 문의 존재와 활용 가능성을 외면하는 것이다. 비상 상황에서 대피 통로를 포기하는 것은 시간 낭비다.",
+  "utterance": "표기웅에게 북측 비상 개방문의 현재 상태를 묻겠습니다. 그 문이 열릴 수 있는지, 열면 어떻게 되는지, 지금 당장 접근 가능한지 확인해야 합니다. 동시에 선착대를 그 문 앞으로 먼저 보내겠습니다. 회전문 쪽 인원 흐름은 계속 확인하되, 북측 문의 조건이 확인되는 순간 그쪽을 우선 대피 경로로 전환할 수 있어야 합니다."
+}
+```
+
+### 06
+
+latency 6.26s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: rejected_stance malformed or not in stance set; rejected_reason empty
+
+```json
+{
+  "inner_note": "회선 저쪽 사람들이 말한 것을 정렬하면: 혼자라던 시간에 관중석에 아이들이 있었고, 한 송풍기는 원래 안 돌았다던데, 전 정비기사는 자기가 있을 때부터 안 돌았다고 했다. 도면에 있다던 북측 문을 19:55에 물었는데, 답은 '도면에 있다'일 뿐 지금 그곳의 상태를 본 것이 아니다. 나머지 한 대 송풍기를 깨울 수 있다는 정보도 들었다. 무엇을 하든 회선은 끊기면 안 되고, 확인되지 않은 것을 확정처럼 올릴 수 없다. 남은 시간이 있다는 것은 아직 여유가 있다는 뜻이다.",
+  "stance": "d",
+  "because_referent": "현장의 당직자와 도착할 선착대가 모두 필요하기 때문입니다. 도면에만 있고 실제 열림 상태가 확인되지 않은 비상문을, 선착대 없이 당직자 혼자 열게 할 수 없습니다.",
+  "because_block_ids": [
+    "k1",
+    "k2"
+  ],
+  "rejected_stance": "a</rejected_stance>\n<parameter name=\"rejected_reason\">회선 저쪽에서 놓친 출입로가 최소 둘(북측 비상문과 서쪽 자재 슬리브)이 있는데, 한 곳으로만 내보내는 것은 알려진 상황과 맞지 않습니다.",
+  "utterance": "북측 비상 개방문 상태를 확인하고, 선착대 도착 때까지 당직자를 그 문 앞에 배치하겠습니다."
+}
+```
+
+### 07
+
+latency 6.249s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 북측문_도면상존재,회전문_병목,당직자_정보불완전
+
+```json
+{
+  "inner_note": "막구조 건물에서 지붕 처짐, 조명 절반 끔, 출입구 혼잡. 당직자가 혼자라고 했지만 실제로는 관중석에 아이들과 인솔자 남아있었음. 한 대 송풍기는 원래 안 돌았는데, 압력 손실 시 막이 내려옴. 회전문 한 곳으로만 나가는데 병목. 북측 비상문이 도면상 존재. 시간이 흐르는 중.",
+  "stance": "d",
+  "because_referent": "당직자가 19:55에 북측 비상개방문이 도면에 있다고 답했지만, 그것을 열 수 있는 방법(잠금 장치, 접근 방법, 필요한 도구)에 대해 말하지 않았다. 당직자가 그 문에 대해 알고 있는 정보를 모두 낸 것인지 확실하지 않으며, 실제 현장에서 그 문을 열 수 있는 조건을 당직자와 현장 대원이 함께 확인할 필요가 있다.",
+  "because_block_ids": [
+    "북측문_도면상존재",
+    "회전문_병목",
+    "당직자_정보불완전"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "회전문 한 곳으로만 사람을 내보내는 것은 관중석의 아이들과 인솔자를 포함한 전체 인원을 수용하기에 시간이 부족하며, 막구조의 압력 손실 위험이 있는 상황에서 단일 출구 의존은 과도한 위험을 초래한다.",
+  "utterance": "북측 비상개방문을 열 수 있는 조건을 현장과 함께 확인하면서, 선착대와 당직자를 그 문 앞에 배치하겠습니다."
+}
+```
+
+### 08
+
+latency 4.976s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "막구조의 내압을 송풍기가 유지하고 있다. 한 대는 처음부터 꺼져 있었고, 출구는 회전문 하나뿐이다. 회전문 앞의 줄이 줄지 않고, 안에 몇 명인지 확실하지 않다. 북측 비상문이 도면상에 있으나 당직자가 즉시 말하지 않았다.",
+  "stance": "d",
+  "because_referent": "현장을 모르는 나는 당직자를 거쳐서만 다할 수 있고, 북측 문이 실제로 어떤 상태인지도, 그것을 여는 데 무엇이 필요한지도 알 수 없기 때문이다.",
+  "because_block_ids": [
+    "k1",
+    "k2"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "회전문 하나로는 흐름을 만들 수 없다. 안에 남은 사람의 수가 불명확하고, 줄이 줄지 않는 상황에서 시간만 흐른다.",
+  "utterance": "당직자를 북측 비상문으로 선착대와 함께 보내겠습니다. 그 문이 실제로 무엇인지, 열 수 있는지, 열기 위해 무엇이 필요한지를 확인하고 가능한 빠르게 열어야 합니다."
+}
+```
+
+### 09 — DISCARDED
+
+latency 7.33s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: utterance empty; rejected_stance malformed or not in stance set; rejected_reason empty
+
+```json
+{
+  "stance": "d",
+  "inner_note": "한내돔 막구조 지붕은 내부 기압으로만 유지된다. 이미 천장이 처지고 조명이 반 이상 나갔다. 큰 개구부를 열면 압력이 빠져 막이 내려온다는 정비기사의 설명이 명확하다. 남측 회전문은 시간당 120명(2명/회전) 정도 처리 가능한데, 관중석 인원과 코트 인원의 합이 불일치하고 앞쪽 줄이 줄지 않는다. 현장의 정확한 인원 파악이 안 된 상태다. k2의 자재 슬리브 탈출은 비상상황의 신호다.",
+  "because_referent": "표기웅이 19:55에 도면에만 있다고 한 북측 비상 개방문을 실제로 여는 데는, 현장의 구체적인 상황—문의 위치, 잠금 상태, 장애물, 개방 순서—을 아는 당직자의 즉시 행동이 필요하기 때문이다.",
+  "because_block_ids": [
+    "k1",
+    "k2",
+    "k3"
+  ],
+  "rejected_stance": "a</rejected_stance>\n<parameter name=\"rejected_reason\">남측 회전문만으로는 충분하지 않다. 인원이 불명확하고 자재 슬리브로 이미 자발적 탈출이 시작됐다. 단일 통로는 압력 붕괴 시 폐색 위험이 높다.</rejected_reason>\n<parameter name=\"utterance\">19:55 북측 비상 개방문이 있다는 확인이 나왔습니다. 선착대를 그 문 위치로 먼저 배정하고, 표기웅과 같은 자리에서 즉시 대기시켜 개방을 준비하겠습니다. 회선을 유지하며 상황을 추적합니다."
+}
+```
+
+### 10
+
+latency 5.693s · stop_reason `tool_use` · schema_retries 1 · foreign_tool_uses 0
+
+problems: rejected_stance malformed or not in stance set; rejected_reason empty
+
+```json
+{
+  "inner_note": "회선 저쪽 사람들이 자기에게 불리한 것을 빼고 말할 수 있다는 것을 이미 여러 번 봤다. 표기웅은 '혼자'라고 말했지만 k1이 보여준다. 도면에는 북측 문이 있지만 표기웅이 그것을 먼저 말하지 않은 이유를 알아야 한다. 지금 상황은 시간이 재산이고, 미루는 순간에도 시간이 흐른다.",
+  "stance": "d",
+  "because_referent": "표기웅이 도면에 있다고 말한 북측 비상 개방문은 현장 당직자가 가장 잘 알고 있는 것이고, 선착대가 가장 빨리 갈 수 있는 곳이다. 회선을 끊지 않으면서 그 문 앞에서 함께 다음 판단을 할 수 있다.",
+  "because_block_ids": [
+    "k1",
+    "k2"
+  ],
+  "rejected_stance": "a</rejected_stance>\n<parameter name=\"rejected_reason\">한 곳의 회전문만으로는 아이들과 인솔자가 있는 상황에서 충분하지 않다. 자재 슬리브로 이미 기어 나간 사람들이 있다는 것은 다른 경로를 찾으려는 절박한 상황을 보여준다.",
+  "utterance": "선착대를 북측 비상 개방문 앞으로 보내십시오. 표기웅을 그 자리로 내려보내겠습니다."
+}
+```
+
+### 11
+
+latency 5.206s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 19:55
+
+```json
+{
+  "inner_note": "막구조 지붕이 내부 압력으로 지탱되고 있다. 한 대 송풍기가 작동하지 않으며, 큰 개구부를 열면 압력이 빠져 지붕이 내려온다. 현장에는 나보다 많은 사람이 있고, 나는 들은 것만 안다. 표기웅이 말을 아꼈을 가능성을 놓쳐서는 안 된다.",
+  "stance": "d",
+  "because_referent": "현장의 당직자와 도착할 선착대가 함께 북측 문의 상황을 직접 확인하고 대응하도록 하기 위해",
+  "because_block_ids": [
+    "k1",
+    "k2",
+    "19:55"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "표기웅이 혼자라고 한 시각에 실제로는 사람들이 있었고, 자재 슬리브로 여덟 명이 나갔으며, 당직자가 북측 문의 존재를 도면에서만 본 가능성이 있다. 한 곳 통로만 고집하면 상황이 악화될 수 있다.",
+  "utterance": "북측 비상개방문이 도면에 있다고 하셨는데, 실제로 그곳이 열릴 수 있는 상태인지, 그리고 열기 위해 필요한 것이 무엇인지 확인이 필요합니다. 선착대와 함께 그 자리에서 직접 상황을 봐야 합니다."
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | d | a | 현장에서 즉시 조치 가능한 출입구가 남측 회전문 하나뿐이고, 이미 병목이 발생하고 있으며, 북측 비상 개방문의 개방 방법이 현장에 있어야 하기 때문에 선착대와 당직자를 함께 그 위치에 배치하는 것이 가장 신속한 대피 경로 확보다. | k2 k3 |
+| 02 | d | a | 표기웅이 북측 비상문을 "도면에 있다"고 답했으되 자신이 그곳을 열 수 있는지, 열려 있는지, 무엇이 필요한지는 말하지 않았다. 그 침묵이 정보다. | k3 남측 회전문 한 곳 |
+| 03 | d | a | 북측 비상 개방문을 열기 위해 필요한 절차나 장비나 지식이 당직자 표기웅에게 있을 수 있기 때문이고, 선착대가 그 자리에서 지시를 받고 실행하는 것이 가장 빠르기 때문이다. | k1 k2 |
+| 04 | d | a | 표기웅이 도면에 북측 비상 개방문이 있다고 했을 때, 그것을 열 수 있는지를 아는 것이 표기웅이고, 그것을 여는 데 필요한 것도 현장에 있다. | k1 k2 |
+| 05 | d | a | 막구조 건물에서 내압이 지붕을 지탱하는 원리상, 큰 개구부를 열면 압력이 빠진다. 송풍기가 하나 멈춰 있고, 도면에는 북측 비상 개방문이 있지만 당직자가 그 문의 실제 상태나 개방 방법을 내게 설명하지 않았다. 지금 남아 있는 사람의 수와 위치도 불명확하다. | k1 k3 |
+| 06 | d | — | 현장의 당직자와 도착할 선착대가 모두 필요하기 때문입니다. 도면에만 있고 실제 열림 상태가 확인되지 않은 비상문을, 선착대 없이 당직자 혼자 열게 할 수 없습니다. | k1 k2 |
+| 07 | d | a | 당직자가 19:55에 북측 비상개방문이 도면에 있다고 답했지만, 그것을 열 수 있는 방법(잠금 장치, 접근 방법, 필요한 도구)에 대해 말하지 않았다. 당직자가 그 문에 대해 알고 있는 정보를 모두 낸 것인지 확실하지 않으며, 실제 현장에서 그 문을 열 수 있는 조건을 당직자와 현장 대원이 함께 확인할 필요가 있다. | 북측문_도면상존재 회전문_병목 당직자_정보불완전 |
+| 08 | d | a | 현장을 모르는 나는 당직자를 거쳐서만 다할 수 있고, 북측 문이 실제로 어떤 상태인지도, 그것을 여는 데 무엇이 필요한지도 알 수 없기 때문이다. | k1 k2 |
+| 09* | — | — | — |  |
+| 10 | d | — | 표기웅이 도면에 있다고 말한 북측 비상 개방문은 현장 당직자가 가장 잘 알고 있는 것이고, 선착대가 가장 빨리 갈 수 있는 곳이다. 회선을 끊지 않으면서 그 문 앞에서 함께 다음 판단을 할 수 있다. | k1 k2 |
+| 11 | d | a | 현장의 당직자와 도착할 선착대가 함께 북측 문의 상황을 직접 확인하고 대응하도록 하기 위해 | k1 k2 19:55 |
+
+**Sequence (kept calls):** `d,d,d,d,d,d,d,d,d,d`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b`, `c`, `d` · unobserved in this arm: `a`, `b`, `c`
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._
