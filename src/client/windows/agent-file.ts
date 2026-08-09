@@ -184,6 +184,13 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    */
   const CALLSIGN_MS_PER_CHAR = 80
 
+  /**
+   * The beat between the agent being NAMED and the file being chopped shut
+   * (x7, 민서 08-09). Long enough for the finished name to register as its own
+   * event; short enough that the press still feels like one gesture.
+   */
+  const NAMED_TO_CHOP_MS = 700
+
   /** The operator asked for no motion, or the determinism gate is closed. */
   const motionless = (): boolean =>
     animationsFrozen() || window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -324,14 +331,30 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       // operator just built would never carry. `board.deploy()` is also the
       // only module allowed to mint the op literal.
       typeCallsign(() => {
-        board.deploy()
-        // …and the clock starts before the op, still. The adapter bypasses the
-        // feed's reveal queue whenever the sim is paused, so releasing the
-        // opening minute against a stopped clock slaps it onto the fanfold in
-        // one frame. Nothing escapes in the gap: a running clock releases
-        // nothing while the hold is on, and the hold only comes off on the op.
-        startDay()
-        sendNewRun()
+        // x7 — A BEAT BETWEEN THE NAMING AND THE CHOP (민서, 08-09).
+        //
+        // The name finished typing and the stamp landed in the same frame, so
+        // the two read as one event and the naming — the thing the operator has
+        // been waiting the whole hold for — was over before it registered. The
+        // pause lets the filled-in name be seen on its own page before the file
+        // is closed over it. Order of operations, not decoration: 파견 완료 is a
+        // receipt for a file made out to somebody, so the somebody goes first.
+        //
+        // `setTimeout` and not the animation pump, for the reason this file has
+        // now recorded twice: at this moment the day is over and the driver's
+        // clock is neither running nor ended, so a pump-driven continuation
+        // never fires and the press silently does nothing.
+        window.setTimeout(() => {
+          board.deploy()
+          // …and the clock starts before the op, still. The adapter bypasses
+          // the feed's reveal queue whenever the sim is paused, so releasing
+          // the opening minute against a stopped clock slaps it onto the
+          // fanfold in one frame. Nothing escapes in the gap: a running clock
+          // releases nothing while the hold is on, and the hold only comes off
+          // on the op.
+          startDay()
+          sendNewRun()
+        }, NAMED_TO_CHOP_MS)
       })
       return
     }
@@ -358,13 +381,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     // question in front of ECHO-1 and nobody after — from day 2 the commit
     // arrives in `next` mode, and that is the press that carries a file the
     // operator has actually revised.
-    // x5 — the plate names the agent it is about to send out.
-    // H3 — which is the agent the last page carries, and after 21:04 that is
-    // the INCOMING one: the press in `next` mode commits the file the operator
-    // has just built out of the day's report, and it flies with the agent who
-    // has not gone out yet. `onDesk()` is the same string the page is headed
-    // with, so the question and the page cannot name two different agents.
-    void openConfirm(must('#app'), deployCopy(onDesk())).then((confirmed) => {
+    // x7 — the plate names NO agent, so `onDesk()` no longer reaches it.
+    //
+    // x5 had it name the one it was about to send, and H3 pointed that at the
+    // INCOMING agent so the question and the page could not name two different
+    // ones. Both were right about the risk and it is simply gone: the page is
+    // blank until the press names it, so on the first press there was no name
+    // to agree with. The question asks whether the HANDOVER is finished; the
+    // file is what says who carries it.
+    void openConfirm(must('#app'), deployCopy()).then((confirmed) => {
       if (confirmed) commitFile(mode)
     })
   })

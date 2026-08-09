@@ -1049,7 +1049,8 @@ test.describe('[x2] DEPLOY asks before it commits', () => {
     // the plate now states. The plate also names the agent it is about to send.
     await expect(page.locator('#confirmNo')).toHaveText('취소')
     await expect(page.locator('#confirmYes')).toHaveText('파견')
-    await expect(page.locator('#cf-body')).toContainText(/ECHO(?:-\d+)?/)
+    await expect(page.locator('#cf-body')).toHaveText('인수 인계를 완료하여 현장에 파견합니다.')
+    await expect(page.locator('#cf-body'), 'the plate named an agent again').not.toContainText('ECHO')
     // 취소 holds the focus: the reflex keystroke on an irreversible act must
     // not be the one that confirms it.
     await expect(page.locator('#confirmNo')).toBeFocused()

@@ -162,7 +162,7 @@ const FILED_NOTE = '파견 종료. 열람 전용'
  */
 const INCIDENT =
   '20XX년 XX월 XX일 20시 47분,\n' +
-  '해원터널 하행 4.2km 지점에서 흰 연기 보인다는 신고가 접수된다.\n' +
+  '해원터널 하행 4.2km 지점에서 흰 연기가 보인다는 신고가 접수된다.\n' +
   '긴급상황대응실 본부는 즉시 현장에 요원 ECHO를 파견하여 상황 파악을 시작했다.'
 
 /**
@@ -175,7 +175,11 @@ const INCIDENT =
  * small red note under the rule instead, which is how a form footnotes itself.
  * `.sect-note` is what the sheet paints that with.
  */
-const INCIDENT_NOTE = '본 시뮬레이션은 당시 ECHO의 현장 무전 기록을 토대로 재구성되었습니다.'
+// x7 — the ※ is part of the STRING, not a `::before` (민서, 08-09). The cover's
+// reveal prints text nodes, and a mark painted by the sheet would be on the page
+// before the sentence it belongs to had a character — the one glyph that would
+// give away that the line was coming. It types with the rest.
+const INCIDENT_NOTE = '※ 본 시뮬레이션은 당시 ECHO의 현장 무전 기록을 토대로 재구성되었습니다.'
 
 /**
  * 현장 요원 임무 — one line, and it is the whole posting.

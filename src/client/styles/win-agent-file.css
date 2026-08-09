@@ -40,8 +40,13 @@
    into one justified block they read as a manual again, which is the exact
    failure x6 exists to undo. Wrapping inside a clause still justifies; a line
    ended by the authored break is a last line and is not stretched. */
+/* x7 — `padding-left:var(--space-2)` removed (민서, 08-09). It read on the page
+   as a space before every body line: the heading above and the red note below
+   are both flush at the section's own left edge, and 2px of inset was enough to
+   make the prose between them look indented against them. Measured before and
+   after — heading, body and note now share one left edge. */
 .sect-body{font-family:var(--myeong);font-size:var(--fs-11-5);line-height:1.72;color:var(--pap-3);
-  padding-left:var(--space-2);text-align:justify;white-space:pre-line}
+  text-align:justify;white-space:pre-line}
 .sect.fixed .sect-body{color:var(--pap-4)}
 /* x7 — the cover's red note: the one line in a section that is not the order
    itself but a warning about it, so it is set apart from the body it follows
