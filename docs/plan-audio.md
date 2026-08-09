@@ -165,7 +165,7 @@ nothing prints as *silent* rather than going missing.
 | ambience `watch` | `watch` | `amb-watch-drone` | 40.00 s | 0.75 |
 | report typewriter, every 2 chars | `type` | `type-1` · `type-2` · `type-3` · `type-4` · `type-5` | 0.04 s | 0.3 |
 
-Buses: `sfx` 0.5 · `ambience` 0.1. Ambience retires 10000 ms after the desk opens. Preloaded: `click` · `hover` · `window-open` · `window-close`.
+Buses: `sfx` 0.5 · `ambience` 0.05. Ambience retires 10000 ms after the desk opens. Preloaded: `click` · `hover` · `window-open` · `window-close`.
 
 <!-- audio:bindings:end -->
 
@@ -330,9 +330,9 @@ that carries meaning, and §2 rule 3 does not survive that confusion. They have
 to sound like they are happening to somebody else.
 
 **Levels, measured rather than guessed.** The bed asset is written at **-13.5
-LUFS** so that `gain: 1` on the `ambience` bus (**0.1** since x10) lands it at
-**-33.5 LUFS** — roughly 11.5 dB under where game music would normally sit,
-because this one plays under a reading surface. The office cues are 21.9 dB below
+LUFS** so that `gain: 1` on the `ambience` bus (**0.05** since x10) lands it at
+**-39.5 LUFS** — roughly 17.5 dB under where game music would normally sit,
+because this one plays under a reading surface. The office cues are 28.0 dB below
 their raw cuts (`gain: 0.8` × the same bus), which puts them ~10 dB under the
 bed. That gap is the effect, and it is the first number to reach for when the
 room feels wrong. It was tuned on the running desk and it moved twice, both times
@@ -341,18 +341,24 @@ did. **0.8 is not headroom.** It is near the top of the usable range — past it
 the one-shots stop being somewhere else and start being cues on this desk, which
 is exactly the confusion the 3.5 kHz cut above exists to prevent.
 
-**x10 (08-10, 민서) — the bus went 0.15 → 0.1, and the tuning history above is
-the thing to watch.** The request was simply a quieter room, and the cut is made
-on the BUS and nowhere else: bed and office ride the same one, so the ~10 dB gap
-between them — the whole effect — is bus-invariant and the room recedes as a
-whole rather than deforming. No cue gain moved. But the office one-shots are
-tuned in ABSOLUTE terms, and -3.5 dB puts them at **-21.9 dB from their raw
-cuts**, i.e. back inside the range the two rejected settings above sat in
-(-20.9 dB "still read as an empty office"). The bed is the thing that was too
-loud, so this is the right first move; if the office has gone under with it, the
-one-knob answer is `office.gain` 0.8 → 1.0 — which restores -20.0 dB absolute at
-the cost of about 2 dB of the gap — and **not** the bus, which is the level the
-room was asked to sit at.
+**x10 (08-10, 민서) — the bus went 0.15 → 0.1 → 0.05 in two passes, and it
+overrules the tuning history above.** The request was a quieter room; 0.1 was
+still not quiet enough on the running desk, and 0.05 is where 민서 set it. The
+cut is made on the BUS and nowhere else: bed and office ride the same one, so the
+~10 dB gap between them — the whole effect — is bus-invariant and the room
+recedes as a whole rather than deforming.
+
+**The office one-shots are now 28.0 dB under their raw cuts, and that is the
+instruction rather than an oversight.** They are tuned in ABSOLUTE terms, so this
+is 7 dB past -20.9 dB, the quieter of the two settings this section records as
+having "read as an empty office". At 0.1 the standing advice here was to answer
+exactly that with `office.gain` 0.8 → 1.0 and never with the bus. 민서 was asked
+and ruled the other way — "the office.gain is fine" — and took the bus down a
+second time instead. So the distant phone, printer and keys are expected to sit
+at or past the edge of audible, and what the room is now is a bed with events in
+it that may or may not be caught, rather than a room asserting itself. **Do not
+raise `office.gain` to "restore" them without asking**; the two rejected
+settings above were rejected against a different brief.
 
 **The loop closes on a crossfade, and its seam is noise-masked rather than
 silent.** Head and tail are 2 s of the same fan recording summed against each

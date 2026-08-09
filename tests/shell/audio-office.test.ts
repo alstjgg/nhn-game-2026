@@ -256,9 +256,13 @@ describe('x10 — the room opens at the door', () => {
  * (b) is the assertion that should be argued with, not quietly re-fitted.
  */
 describe('x10 — the ambience bus', () => {
-  it('(a) sits at 0.1 — 3.5 dB under where 08-09 left it', () => {
+  it('(a) sits at 0.05 — 9.5 dB under where 08-09 left it', () => {
     const { buses } = parsed()
-    expect(buses.ambience).toBe(0.1)
+    // 0.15 → 0.1 → 0.05, in two passes on 08-10: 0.1 was still not quiet enough
+    // on the running desk. A value change, not a re-aim — the claim (the cut is
+    // made in the data, on the bus, and the desk's own cues are untouched) is the
+    // same one, and (b) is still what carries it.
+    expect(buses.ambience).toBe(0.05)
     // The desk's own cues did not get quieter. Only the room did.
     expect(buses.sfx).toBe(0.5)
   })
@@ -271,6 +275,15 @@ describe('x10 — the ambience bus', () => {
       expect(cues[id as string]?.bus, `${id} left the ambience bus`).toBe('ambience')
     }
     // The three levels the bus move deliberately did NOT touch.
+    //
+    // `office` at 0.8 is the load-bearing one now, and it is held here against a
+    // reader with a good reason to change it: at bus 0.05 the one-shots sit 28 dB
+    // under their raw cuts, 7 dB past the quieter of the two settings plan-audio
+    // §4.4 records as having "read as an empty office". 민서 was asked directly at
+    // the 0.1 pass and ruled "the office.gain is fine", then took the bus down
+    // again — so the room is deliberately a bed with events that may or may not be
+    // caught. Raising this to 1.0 is the obvious-looking fix and it is the thing
+    // that was declined; argue with this line rather than re-fitting it.
     expect(cues['bed']?.gain).toBe(1.0)
     expect(cues['office']?.gain).toBe(0.8)
     expect(cues['watch']?.gain).toBe(0.75)

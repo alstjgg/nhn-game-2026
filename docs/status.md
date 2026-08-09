@@ -244,14 +244,22 @@ seconds beginning at the login screen are gone before the card is typed, so the 
 drone under the sign-in plate, which plan-audio §4.4 forbids. `playForMs` is now
 documented as measured from each bed's OWN opening, which is two different moments.
 
-**Ambience bus 0.15 → 0.10** (−3.5 dB), bus only, no cue gain moved — the bed↔office
-gap §4.4 calls "the whole effect" is bus-invariant. `plan-audio.md`'s figures are kept
-in step (bed −33.5 LUFS). **One thing to listen for:** §4.4's tuning history rejected
-−20.9 dB for the sparse office one-shots as "still reading like an empty office", and
-0.10 × the office cue's 0.8 puts them at −21.9 dB, past that line. If the distant
-phone/printer/keys have gone inaudible the fix is `office.gain` 0.8 → 1.0 (−20.0 dB
-absolute, costing ~2 dB of the gap) and **not** the bus; the relief valve is in
-`$buses` and in the doc. `npm run audio:table` could not be re-run — no `ffprobe` on
+**Ambience bus 0.15 → 0.10 → 0.05, in two passes** (−9.5 dB in total), bus only, no cue
+gain moved — the bed↔office gap §4.4 calls "the whole effect" is bus-invariant.
+`plan-audio.md`'s figures are kept in step (bed **−39.5 LUFS**). 0.10 was still not
+quiet enough on the running desk; 0.05 is where 민서 set it.
+
+**AND THE OFFICE ONE-SHOTS ARE EXPECTED TO BE INAUDIBLE, BY INSTRUCTION.** §4.4's
+tuning history rejected −20.9 dB for the sparse phone/printer/keys as "still reading
+like an empty office", and 0.05 × the office cue's 0.8 puts them at **−28.0 dB — 7 dB
+past that line.** At the 0.10 pass the standing advice was to answer exactly this with
+`office.gain` 0.8 → 1.0 and never with the bus; 민서 was asked and ruled the other way
+("the office.gain is fine"), then took the bus down a second time. So the room is now a
+bed with events in it that may or may not be caught, rather than a room asserting
+itself. That is recorded in `$buses`, in §4.4 and at the assertion holding
+`office.gain` at 0.8, all three saying the same thing: **do not raise it to "restore"
+the one-shots without asking** — the two rejected settings were rejected against a
+different brief. `npm run audio:table` could not be re-run — no `ffprobe` on
 this machine — so one generated line was hand-edited to what the generator emits;
 regenerate on a machine with ffmpeg. Pre-existing and left alone: that generated block
 still claims "Ambience retires 10000 ms after the desk opens", false since
