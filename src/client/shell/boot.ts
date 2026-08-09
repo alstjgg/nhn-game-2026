@@ -16,6 +16,7 @@ import { installAudio } from '../audio/index.ts'
 import { createAnnouncer } from './announcer.ts'
 import { bindRadioSfx, sfxHandOver } from './radio-sfx.ts'
 import { must } from './dom.ts'
+import { installEnding } from './ending.ts'
 import { openManual } from './manual.ts'
 import { openSignIn, signInSkipped } from './sign-in.ts'
 import { installTutorial } from './tutorial.ts'
@@ -365,4 +366,14 @@ export async function bootShell(): Promise<void> {
   // `visibility:hidden` by `body.booting`. The eye needs the curtain up; the
   // ear does not.
   installTutorial(window, { driver, deskReady: revealed })
+
+  // 8 — the two endings (x6). Mounted on the same terms as the walk above it,
+  // for the same reason: it is an observer over the §5.2 stream and the DOM, it
+  // sends no op, and nothing in this file knows what it decides. What it waits
+  // for is a day CLOSING — either on one death, or with the allotment spent —
+  // and it may wait the whole sitting, so it is not awaited either.
+  //
+  // It waits on `revealed` rather than `atTheDesk` for the walk's own reason:
+  // the curtain it eventually raises is measured against a desk that is up.
+  installEnding(window, { driver, deskReady: revealed })
 }
