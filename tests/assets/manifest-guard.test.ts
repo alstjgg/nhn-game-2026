@@ -5,9 +5,26 @@
 //
 // The comparison baseline is `tests/assets/baseline/manifest-baseline.json`,
 // snapshotted at RED time. Never regenerate it to make this suite pass.
+//
+// WIDENED 2026-08-08, deliberately and narrowly. The original (b) compared each
+// frozen entry byte for byte, which cannot tell a correction from a clobbering
+// — and one correction was owed. The competition requires source AND licence for
+// every external asset, and 29 `gpt-image-1` entries carried
+// `"license": "generated for this project"`, which is our own words rather than
+// a right anyone granted us. Fixing that means changing `license` on a frozen
+// entry, which the old rule forbade.
+//
+// So the freeze moved from the whole entry to what an entry *is*: `file`,
+// `tool`, `source`, `prompt`, `note` and everything else stay byte-identical,
+// and only the licence claim may improve — and only when `license_source` cites
+// where the new claim was read. The baseline is NOT regenerated; the originals
+// are recovered from git at the commit that introduced the baseline, so a
+// tampered entry still fails and the history is the authority, not the file the
+// suite is checking.
 import { describe, it, expect } from 'vitest'
 import path from 'node:path'
 import crypto from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 import { MANIFEST, REPO, exists, fontFilesOnDisk, read, readJson } from './font-assets.ts'
 
 interface Entry {
@@ -31,6 +48,31 @@ interface Baseline {
 }
 
 const sha = (text: string): string => crypto.createHash('sha256').update(text).digest('hex')
+
+/**
+ * The only keys a later run may change on a frozen entry, and only together:
+ * a licence claim may be corrected when — and only when — the correction says
+ * where it was read.
+ */
+const LICENCE_KEYS = new Set(['license', 'license_source'])
+
+/** An entry with the licence claim removed: what the asset *is*, frozen. */
+const identity = (entry: Entry): string =>
+  JSON.stringify(Object.fromEntries(Object.entries(entry).filter(([k]) => !LICENCE_KEYS.has(k))))
+
+/**
+ * The manifest as it stood when the baseline was taken, read from git rather
+ * than from any file in the working tree — the point is that nothing a later
+ * run writes can move this comparison.
+ */
+function originalAssets(): Entry[] {
+  const commit = execFileSync('git', [
+    'log', '--diff-filter=A', '--format=%H', '-1', '--',
+    'tests/assets/baseline/manifest-baseline.json',
+  ], { cwd: REPO }).toString().trim()
+  const raw = execFileSync('git', ['show', `${commit}:assets-manifest.json`], { cwd: REPO }).toString()
+  return (JSON.parse(raw) as Manifest).assets
+}
 const raw = () => read(MANIFEST)
 const manifest = () => JSON.parse(raw()) as Manifest
 const baseline = () => readJson<Baseline>(path.join(REPO, 'tests/assets/baseline/manifest-baseline.json'))
@@ -61,12 +103,25 @@ describe('[u10#c7] append-only: nothing else is removed or rewritten', () => {
     expect(manifest().assets.length).toBeGreaterThanOrEqual(baseline().entryCount)
   })
 
-  it('(b) every non-webfont entry is byte-identical, in its original slot', () => {
+  it('(b) every non-webfont entry keeps its identity; only the licence may improve', () => {
     const assets = manifest().assets
-    const damaged = keptBaseline()
-      .filter((b) => sha(JSON.stringify(assets[b.index])) !== b.sha256)
-      .map((b) => `#${b.index} ${b.file}`)
-    expect(damaged, 'u10 may only touch the three webfont entries').toEqual([])
+    const touched = keptBaseline().filter((b) => sha(JSON.stringify(assets[b.index])) !== b.sha256)
+    if (touched.length === 0) return // untouched: the strict case, and the common one
+
+    const original = originalAssets()
+    const damaged: string[] = []
+    for (const b of touched) {
+      const now = assets[b.index] ?? {}
+      const was = original[b.index] ?? {}
+      if (identity(now) !== identity(was)) {
+        damaged.push(`#${b.index} ${b.file} — identity/provenance rewritten, not just the licence`)
+        continue
+      }
+      if (now.license !== was.license && String(now.license_source ?? '').trim() === '') {
+        damaged.push(`#${b.index} ${b.file} — licence changed with nothing citing where it was read`)
+      }
+    }
+    expect(damaged, 'a frozen entry may only have its licence claim corrected, with a citation').toEqual([])
   })
 
   it('(c) the three webfont entries stay in their original slots (no reordering)', () => {
