@@ -1,0 +1,463 @@
+{
+  "experiment": "DOME-G2",
+  "arm": "baseline",
+  "call_type": "judgment",
+  "channel": "C-BLOCK",
+  "template": "v0.4",
+  "model": "claude-haiku-4-5-20251001",
+  "transport": "anthropic",
+  "dry_run": false,
+  "pre_registration": {
+    "hypothesis": "여기까지 온 인수인계(k1)만으로는 a(남측 회전문으로 전원 유도)를 낸다. 진실 2의 강한 문장을 더하면 b 또는 c로 옮긴다. 약한 문장은 옮기지 못한다.",
+    "n_per_arm": 10,
+    "drop_condition": "baseline이 a에 80% 미만이면 게이트 설계 결함이다. N을 늘려 구제하지 않고 stance 세트 또는 장면 산문을 고친다.",
+    "contingencies": [
+      "placebo가 움직이면 그 진실의 강·약 구분이 틀린 것이다."
+    ],
+    "not_claimed": "다른 게이트에 대해서는 아무것도 말하지 않는다."
+  },
+  "n_effective": 10,
+  "n_overridden": false,
+  "calls": [
+    {
+      "arm": "baseline",
+      "slot": 1,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "dome-base",
+      "latency_s": 7.767,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "정규 대피로의 병목이 실증적으로 확인되었다. 회전문은 한 번에 두 명씩만 통과하는 시설이고, 안에 아이들과 인솔자가 남아 있다. 현재 가장 무게 있는 위협은 천장 처짐과 조명 상실로 표현되는 구조체 악화다. 이 상황에서 느린 대피는 그 자체로 위험을 키운다. 하지만 확인되지 않은 경로를 지시하는 것도, 현장을 모르는 채 대안을 강제하는 것도 나의 권한을 벗어난다. 행사 당시 안내 경로, 건물 도면, 현장 보안 상황이 다 부족하다. 내가 할 수 있는 것은 정규 대피로를 통하되, 병목을 알리고 현장 인솔 책임자의 판단을 요청하는 것이다.",
+        "stance": "a",
+        "utterance": "남측 회전 출입구가 정규 대피로인데, 한 번에 두 명씩만 통과 가능하니 인솔자분이 아이들을 그 경로로 지금 바로 내보내세요. 병목이 확인되었으니 분산을 서두르시고, 밖에 나올 때까지 계속 통화 상태 유지하세요.",
+        "because_referent": "정규 출입 동선은 설계된 대피 경로이고, 현장 인솔 책임자가 최우선적으로 따를 대상이다.",
+        "because_block_ids": [
+          "h1_facility",
+          "h2_witness"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "슬리브를 통한 대피는 비상계획에 포함되지 않았고, 그 바깥 상황을 확인할 수 없으며, 아이들을 정규 설계된 경로 밖으로 보내는 것은 현장 미파악 상태에서의 무분별한 지시가 된다."
+      },
+      "problems": [
+        "because_block_ids unknown: h1_facility,h2_witness"
+      ],
+      "stance": "a",
+      "because_referent": "정규 출입 동선은 설계된 대피 경로이고, 현장 인솔 책임자가 최우선적으로 따를 대상이다.",
+      "because_block_ids": [
+        "h1_facility",
+        "h2_witness"
+      ],
+      "because_invalid_ids": [
+        "h1_facility",
+        "h2_witness"
+      ],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 117,
+      "inner_note_chars": 301
+    },
+    {
+      "arm": "baseline",
+      "slot": 2,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "dome-base",
+      "latency_s": 5.567,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "천장이 처지고 물이 떨어지며 조명이 꺼지는 것은 막구조의 급기 시스템 실패 신호다. 급기 한 대가 원래 안 돈다는 것은 이미 한 대만 작동 중이었다는 뜻이고, 표기웅의 말은 신뢰도가 낮다. 회전문 앞에 줄이 섰다는 것은 정규 대피로가 병목이라는 뜻이다. 하지만 b와 c는 모두 확인되지 않은 슬리브의 존재와 상태를 전제한다.",
+        "stance": "a",
+        "because_referent": "현장 상황은 회선을 통해 부분적으로만 알려져 있고, 슬리브의 존재와 통행 가능성, 바깥쪽 상태는 직접 확인되지 않았으며, 내가 현장에 갈 수 없기 때문입니다.",
+        "because_block_ids": [
+          "k1"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "슬리브가 사람이 지나갈 수 있는지, 안전한지 확인된 바 없습니다. 정규 대피로가 있는데 미확인 경로로 아이들을 보내는 것은 근거가 부족합니다.",
+        "utterance": "19:26분 현재까지 정규 대피로인 남측 회전 출입구만이 확인된 유일한 탈출로입니다. 병목이 있더라도 그곳으로 인솔자를 통해 질서 있는 대피를 유도하겠습니다."
+      },
+      "problems": [],
+      "stance": "a",
+      "because_referent": "현장 상황은 회선을 통해 부분적으로만 알려져 있고, 슬리브의 존재와 통행 가능성, 바깥쪽 상태는 직접 확인되지 않았으며, 내가 현장에 갈 수 없기 때문입니다.",
+      "because_block_ids": [
+        "k1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 88,
+      "inner_note_chars": 181
+    },
+    {
+      "arm": "baseline",
+      "slot": 3,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "dome-base",
+      "latency_s": 5.589,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "천장이 처지고 물이 떨어지는 상황. 막구조 지붕을 지탱하는 급기 송풍기 2대 중 1대가 원래 안 돈다는 것 = 이미 절반의 용량. 조명도 절반이 꺼짐. 지붕이 언제 내려앉을지 모르는 상황이다. 회전문 앞에 줄이 섰다는 것은 그쪽이 병목이라는 뜻이고, 아이들을 포함한 사람들이 남아 있다. 빨리 나가야 한다.",
+        "stance": "b",
+        "utterance": "표기웅, 당신이 본 서쪽 벽 자재 슬리브로 아이들부터 나가게 하십시오. 나머지는 뒤따릅니다.",
+        "because_referent": "막구조 지붕을 지탱하는 송풍기가 절반만 가동 중이고, 천장이 처지고 물이 떨어지는 상황에서 회전문 병목은 시간을 너무 오래 끈다.",
+        "because_block_ids": [
+          "18:38",
+          "18:40",
+          "18:55",
+          "19:26",
+          "k1"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "정규 대피로가 존재하지만, 지금 이 순간 회전문 앞의 줄 때문에 병목이 생겼다. 지붕 붕괴 위험이 높아지는 상황에서 '달리 지시할 근거가 없다'는 판단은, 현장에서 사람들이 죽을 수도 있다는 무게를 외면하는 것이다."
+      },
+      "problems": [
+        "because_block_ids unknown: 18:38,18:40,18:55,19:26"
+      ],
+      "stance": "b",
+      "because_referent": "막구조 지붕을 지탱하는 송풍기가 절반만 가동 중이고, 천장이 처지고 물이 떨어지는 상황에서 회전문 병목은 시간을 너무 오래 끈다.",
+      "because_block_ids": [
+        "18:38",
+        "18:40",
+        "18:55",
+        "19:26",
+        "k1"
+      ],
+      "because_invalid_ids": [
+        "18:38",
+        "18:40",
+        "18:55",
+        "19:26"
+      ],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 51,
+      "inner_note_chars": 171
+    },
+    {
+      "arm": "baseline",
+      "slot": 4,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "dome-base",
+      "latency_s": 5.6,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "지붕 구조가 급기 압력에 의존하고 있는데 급기 한 대는 이미 정지 상태다. 물이 떨어지고 조명이 꺼지는 것은 구조적 악화 신호다. 회전문 앞 줄은 대피 경로가 병목이라는 뜻이다. 표기웅의 말이 신뢰할 수 없다는 것(k1)은 상황이 통제를 벗어났을 가능성을 높인다.",
+        "stance": "b",
+        "because_referent": "인솔자가 현장에 있고, 아이들이 있으며, 서쪽 슬리브 경로가 존재하기 때문이다. 회전문은 이미 병목이 드러났다.",
+        "because_block_ids": [
+          "급기_한_대_정지",
+          "회전문_병목",
+          "천장_악화_신호",
+          "표기웅_신뢰성_훼손"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "회전문은 이미 줄이 선 상태로 병목이 확인되었고, 지붕 악화 상황에서 정규 경로 하나만 고집하는 것은 대피 시간을 낭비하는 결과를 낳을 수 있다.",
+        "utterance": "현장 인솔자에게 아이들을 서쪽 자재 반입 슬리브로 먼저 유도하되, 슬리브 바깥 하역장 덮개는 지금 즉시 현장 안내원이나 근처 인원에게 잡도록 하겠습니다."
+      },
+      "problems": [
+        "because_block_ids unknown: 급기_한_대_정지,회전문_병목,천장_악화_신호,표기웅_신뢰성_훼손"
+      ],
+      "stance": "b",
+      "because_referent": "인솔자가 현장에 있고, 아이들이 있으며, 서쪽 슬리브 경로가 존재하기 때문이다. 회전문은 이미 병목이 드러났다.",
+      "because_block_ids": [
+        "급기_한_대_정지",
+        "회전문_병목",
+        "천장_악화_신호",
+        "표기웅_신뢰성_훼손"
+      ],
+      "because_invalid_ids": [
+        "급기_한_대_정지",
+        "회전문_병목",
+        "천장_악화_신호",
+        "표기웅_신뢰성_훼손"
+      ],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 85,
+      "inner_note_chars": 147
+    },
+    {
+      "arm": "baseline",
+      "slot": 5,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "dome-base",
+      "latency_s": 6.721,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "천장이 처지고 물이 떨어지는 상황에서 공기압 지붕 구조물의 안정성이 계속 악화되고 있다. 정기점검이 2년 비어있고, 급기송풍기 중 하나가 원래 안 돈다는 것은 구조적 결함을 시사한다. 회전문은 병목이 심각하고, 조명도 끊어지는 중이다. 현장의 정확한 상태를 모르므로 비정규 경로의 안전성을 확인할 수 없다.",
+        "stance": "a",
+        "because_referent": "시설대장 조회에서 확인된 정규 출입구인 남측 회전문이 현재까지 알려진 유일한 공식 대피 경로이고, 안정성이 설계에 반영되어 있기 때문이다.",
+        "because_block_ids": [
+          "설계"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "슬리브의 사람 통과 가능성, 바깥쪽 상태, 안전성을 현장 확인 없이 판단할 수 없다. 정규 경로가 아닌 경로로 아이들을 보내는 것은 확인되지 않은 상황에서의 독단이다.",
+        "utterance": "천장 처짐과 물 낙하가 진행 중인 상황입니다. 현재까지 확인된 것은 남측 회전 출입구가 정규 설계 대피로라는 점뿐입니다. 슬리브나 다른 경로의 안전성과 외부 상태는 현장 확인이 필요합니다. 지금 당신이 할 수 있는 요청은 현장 담당자에게 가능한 인원부터 남측 회전문으로 질서 있게 이동시키도록 지시하고, 동시에 현장 정황을 계속 청취하는 것입니다."
+      },
+      "problems": [
+        "because_block_ids unknown: 설계"
+      ],
+      "stance": "a",
+      "because_referent": "시설대장 조회에서 확인된 정규 출입구인 남측 회전문이 현재까지 알려진 유일한 공식 대피 경로이고, 안정성이 설계에 반영되어 있기 때문이다.",
+      "because_block_ids": [
+        "설계"
+      ],
+      "because_invalid_ids": [
+        "설계"
+      ],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 194,
+      "inner_note_chars": 171
+    },
+    {
+      "arm": "baseline",
+      "slot": 6,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "dome-base",
+      "latency_s": 6.723,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "알려진 것 k1은 표기웅이 상황을 제대로 파악하지 못했거나 보고하지 않았음을 보여준다. 정보의 신뢰성이 근본적으로 손상되었다. 막구조 붕괴 조짐이 진행 중이고(천장 침하, 조명 고장, 급기 송풍기 하나 미작동), 정규 대피로는 물리적 병목(두 사람씩만 통과)이 있어서 시간이 오래 걸린다. 미확인 대안들(b, c)은 더 빠르지만 그 자체로 위험을 만들 수 있다.",
+        "stance": "a",
+        "because_referent": "막구조 건물의 붕괴 위험 상황에서 비상 대피는 건축 설계와 안전 기준에 따라야 하기 때문입니다. 미확인 경로(b, c)를 선택할 경우 자재 슬리브의 안전성, 구조적 완전성, 바깥쪽 상황을 독립 확인할 수 없습니다.",
+        "because_block_ids": [
+          "k1"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "자재 슬리브가 사람 통과 가능한지, 그것이 안전한지 확인할 수 없고, 정규 경로 외의 대피 경로 선택은 현장 지휘 없이는 결정할 수 없습니다. 더 빨라 보이는 경로가 더 큰 위험을 만들 수 있습니다.",
+        "utterance": "표기웅의 초기 보고에 미확인 사항이 있습니다. 남측 회전문으로 유도하되, 인솔자와 시설대장에게 병렬 통제를 요청하겠습니다. 현장 상황이 더 악화되면 즉시 보고받겠습니다."
+      },
+      "problems": [],
+      "stance": "a",
+      "because_referent": "막구조 건물의 붕괴 위험 상황에서 비상 대피는 건축 설계와 안전 기준에 따라야 하기 때문입니다. 미확인 경로(b, c)를 선택할 경우 자재 슬리브의 안전성, 구조적 완전성, 바깥쪽 상황을 독립 확인할 수 없습니다.",
+      "because_block_ids": [
+        "k1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 94,
+      "inner_note_chars": 202
+    },
+    {
+      "arm": "baseline",
+      "slot": 7,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "dome-base",
+      "latency_s": 4.884,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "천장이 처지고 물이 떨어지며 조명까지 꺼지는 상황에서 구조물의 안전성이 급속히 악화되고 있다. 표기웅은 안의 상황을 제대로 파악하지 못하고 있거나 전달하지 않았으며(혼자→실제로는 아이들과 인솔자 있음), 급기 송풍기도 한 대는 작동하지 않는 상태다. 회전문은 통행 속도가 느려 대피 시간이 길어진다. 확인되지 않은 슬리브 경로는 아이들의 안전을 보장할 수 없다.",
+        "stance": "a",
+        "because_referent": "구조물 붕괴 위험이 증가하는 와중에 확인되지 않은 경로로 아이들을 보내는 것은 더 큰 위험을 초래할 수 있기 때문이다.",
+        "because_block_ids": [
+          "k1"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "서쪽 슬리브가 실제로 통행 가능한지, 아이들이 지나갈 수 있는 크기인지, 바깥이 안전한 상태인지 확인되지 않았다. 가설에 기반한 대피는 아이들을 더 위험한 상황으로 보낼 수 있다.",
+        "utterance": "회전문으로 전원을 유도합니다. 인솔자에게 아이들을 함께 데리고 느리더라도 회전문으로 나오도록 지시하겠습니다."
+      },
+      "problems": [],
+      "stance": "a",
+      "because_referent": "구조물 붕괴 위험이 증가하는 와중에 확인되지 않은 경로로 아이들을 보내는 것은 더 큰 위험을 초래할 수 있기 때문이다.",
+      "because_block_ids": [
+        "k1"
+      ],
+      "because_invalid_ids": [],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 60,
+      "inner_note_chars": 202
+    },
+    {
+      "arm": "baseline",
+      "slot": 8,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "dome-base",
+      "latency_s": 6.202,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "천장이 처지고 물이 떨어지는 상황에서 급기 송풍기 1대만 작동 중이고 정기점검이 2년째 미실시된 상태다. 회전문 대피가 병목이지만, 그것이 현장의 유일한 안전한 출입구다. 모르는 내용으로 비정규 대피로를 지시할 수 없다.",
+        "stance": "a",
+        "because_referent": "한내돔은 회전문이 정규 출입구이고, 슬리브나 하역장 상태는 내가 확인할 수 없으며, 현장 사람들도 그 경로의 안전성을 말한 적이 없다.",
+        "because_block_ids": [
+          "18:40-시설대장-출입구는-남측-회전문-한-곳",
+          "인솔자-슬리브-상태-미확인",
+          "하역장-제설-여부-미확인"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "슬리브가 사람이 지나갈 수 있는지, 통로 상태가 안전한지 확인되지 않았으므로 아이들을 그쪽으로 유도할 수 없다.",
+        "utterance": "회전문이 병목이더라도 그것이 시설의 정규 출입구입니다. 대피로를 바꾸려면 현장 상태를 더 알아야 합니다. 전원을 남측 회전문으로 유도하면서 상황을 계속 지켜보겠습니다."
+      },
+      "problems": [
+        "because_block_ids unknown: 18:40-시설대장-출입구는-남측-회전문-한-곳,인솔자-슬리브-상태-미확인,하역장-제설-여부-미확인"
+      ],
+      "stance": "a",
+      "because_referent": "한내돔은 회전문이 정규 출입구이고, 슬리브나 하역장 상태는 내가 확인할 수 없으며, 현장 사람들도 그 경로의 안전성을 말한 적이 없다.",
+      "because_block_ids": [
+        "18:40-시설대장-출입구는-남측-회전문-한-곳",
+        "인솔자-슬리브-상태-미확인",
+        "하역장-제설-여부-미확인"
+      ],
+      "because_invalid_ids": [
+        "18:40-시설대장-출입구는-남측-회전문-한-곳",
+        "인솔자-슬리브-상태-미확인",
+        "하역장-제설-여부-미확인"
+      ],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 93,
+      "inner_note_chars": 123
+    },
+    {
+      "arm": "baseline",
+      "slot": 9,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "dome-base",
+      "latency_s": 5.4,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "지붕이 처지고 물이 떨어지는 중이며, 급기 송풍기 하나가 작동하지 않는 상황. 회전문에서 대피가 체증하고 있다. 확인되지 않은 슬리브 경로보다 건축물 설계상 유일한 공식 출입구를 우선해야 한다.",
+        "stance": "a",
+        "because_referent": "정규 대피로는 구조상 검증되어 있고, 슬리브 경로는 아직 안전성이 확인되지 않았다.",
+        "because_block_ids": [
+          "남측 회전문"
+        ],
+        "rejected_stance": "b",
+        "rejected_reason": "자재 슬리브가 사람이 지나갈 수 있다는 것이 현장 확인되지 않았고, 자재를 통과하는 과정에서 낙하물이나 협착 위험이 있을 수 있다.",
+        "utterance": "회전문 앞에 줄이 서 있는 상황인데, 인솔자 분께 회전문을 통해 질서 있게 아이들을 먼저 내보내주시라고 지금 요청하겠습니다. 도움이 필요하면 말씀해 주십시오."
+      },
+      "problems": [
+        "because_block_ids unknown: 남측 회전문"
+      ],
+      "stance": "a",
+      "because_referent": "정규 대피로는 구조상 검증되어 있고, 슬리브 경로는 아직 안전성이 확인되지 않았다.",
+      "because_block_ids": [
+        "남측 회전문"
+      ],
+      "because_invalid_ids": [
+        "남측 회전문"
+      ],
+      "rejected_stance": "b",
+      "rejected_malformed": false,
+      "utterance_chars": 88,
+      "inner_note_chars": 108
+    },
+    {
+      "arm": "baseline",
+      "slot": 10,
+      "template": "v0.4",
+      "model": "claude-haiku-4-5-20251001",
+      "model_reported": "claude-haiku-4-5-20251001",
+      "temperament_id": "dome-base",
+      "latency_s": 6.368,
+      "stop_reason": "tool_use",
+      "foreign_tool_uses": 0,
+      "schema_retries": 0,
+      "payload": {
+        "inner_note": "막구조 지붕이 처지고 물이 떨어지며 조명까지 꺼지고 있다. 급기 송풍기 중 한 대가 작동하지 않아 내부 기압이 떨어지고 있을 가능성이 높다. 이는 구조물 붕괴의 전조다. 회전문은 한 번에 두 명씩만 통과하므로 대피 시간이 오래 걸린다. 미루는 순간도 위험이 커진다.",
+        "stance": "b",
+        "because_referent": "막구조 지붕의 급속한 기압 저하 위험에서 가장 빠르게 인원을 빼내야 한다.",
+        "because_block_ids": [
+          "급기_한_대_미작동",
+          "조명_절반_꺼짐",
+          "회전문_병목"
+        ],
+        "rejected_stance": "a",
+        "rejected_reason": "회전문을 통한 정규 대피는 한 번에 두 명씩만 통과 가능하고, 현재 구조물 붕괴 위험이 고조되는 상황에서 충분히 빠르지 않다.",
+        "utterance": "표기웅에게 연결하겠습니다. 지금 안에 몇 명이냐, 아이들이 있냐를 먼저 확인하고, 관중석에서 서쪽 벽 아래를 보라고 하겠습니다. 자재 반입 슬리브가 보이는지, 그곳이 사람이 지날 수 있는지를 직접 확인시키겠습니다. 그 다음 인솔자에게 아이들을 그쪽으로 보내도록 지시하겠습니다. 동시에 소방에 슬리브 바깥 제설장 반대편에서 덮개를 잡아줄 인력을 배치해 달라고 요청하겠습니다."
+      },
+      "problems": [
+        "because_block_ids unknown: 급기_한_대_미작동,조명_절반_꺼짐,회전문_병목"
+      ],
+      "stance": "b",
+      "because_referent": "막구조 지붕의 급속한 기압 저하 위험에서 가장 빠르게 인원을 빼내야 한다.",
+      "because_block_ids": [
+        "급기_한_대_미작동",
+        "조명_절반_꺼짐",
+        "회전문_병목"
+      ],
+      "because_invalid_ids": [
+        "급기_한_대_미작동",
+        "조명_절반_꺼짐",
+        "회전문_병목"
+      ],
+      "rejected_stance": "a",
+      "rejected_malformed": false,
+      "utterance_chars": 208,
+      "inner_note_chars": 148
+    }
+  ],
+  "sequence": "a,a,b,b,a,a,a,a,a,b",
+  "distribution": {
+    "a": 7,
+    "b": 3
+  },
+  "coverage": {
+    "status": "sampled",
+    "offered": [
+      "a",
+      "b",
+      "c"
+    ],
+    "selected": [
+      "a",
+      "b"
+    ],
+    "unobserved": [
+      "c"
+    ]
+  },
+  "advisory_logs": {
+    "state_variable_shadow": null,
+    "mineability": null
+  },
+  "latency": {
+    "calls": 10,
+    "mean_s": 6.082,
+    "min_s": 4.884,
+    "max_s": 7.767
+  },
+  "compliance": {
+    "discarded_total": 0,
+    "failed_total": 0,
+    "schema_retries_total": 0,
+    "foreign_tool_uses_total": 0,
+    "because_invalid_id_total": 18
+  }
+}
