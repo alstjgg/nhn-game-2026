@@ -51,8 +51,18 @@ export const PLAYER_SUPPLIED_SLOTS: readonly string[] = ['BLOCKS']
  * K4 — which `ComposerDeps` key carries which §6 slot, as one explicit literal.
  * Typed on `keyof ComposerRuntimeDeps`, so a new composer dependency is a
  * compile error here rather than a silently unmapped slot.
+ *
+ * `pack` is excluded, and the exclusion is the claim: it carries no §6 slot. It
+ * is a SELECTOR, not a supplier — it names which of the proxy's per-scenario
+ * default prompts answers the call, and the proxy stays the supplier of
+ * `FLAW` · `INCIDENT` · `PRIORITY_LIST` exactly as §6 assigns. Mapping it to one
+ * of those three would claim the composer supplies a value it never sees.
+ * Excluding one named key keeps the compile-error property for every other:
+ * a new dependency still has to appear here.
  */
-export const DEP_KEY_TO_SLOT: Readonly<Record<keyof ComposerRuntimeDeps, string>> = {
+export const DEP_KEY_TO_SLOT: Readonly<
+  Record<Exclude<keyof ComposerRuntimeDeps, 'pack'>, string>
+> = {
   blocks: 'BLOCKS',
   reportGuidance: 'REPORT_GUIDANCE',
 }

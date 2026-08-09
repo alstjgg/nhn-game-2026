@@ -146,10 +146,18 @@ function parseCallRequest(value: unknown): CallRequest {
   ) {
     throw new PublicError(400, "invalid_request", "slots must be an object.");
   }
+  // A wrong TYPE is a malformed envelope and is rejected. An unknown NAME is
+  // not checked here: which packs exist is `default-prompt.ts`'s knowledge, and
+  // it answers an unknown one with the incumbent rather than a 400. See
+  // `FALLBACK_PACK` for why that direction.
+  if (body.pack !== undefined && typeof body.pack !== "string") {
+    throw new PublicError(400, "invalid_request", "pack must be a string.");
+  }
 
   return {
     call_type: body.call_type,
     template_version: body.template_version,
+    ...(body.pack === undefined ? {} : { pack: body.pack }),
     slots: body.slots as Record<string, unknown>,
   };
 }

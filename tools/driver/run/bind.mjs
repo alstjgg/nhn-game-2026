@@ -103,7 +103,7 @@ export function bindRun({ pack, guidance, provider, run, carried = [] }) {
 
   const blocks = createBlockStore()
   seedCarried(blocks, carried)
-  const composer = createComposer({ blocks, reportGuidance: guidance })
+  const composer = createComposer({ blocks, reportGuidance: guidance, pack: pack.slug })
 
   // The record-numbering offset, applied once, plus the per-beat journal
   // capture — taken before the real engine resets it on advance. Every other
