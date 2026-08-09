@@ -649,10 +649,30 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   function startCover(): void {
     if (coverDone || coverTimer !== null || motionless()) return
     if (document.body.classList.contains('booting')) {
-      coverTimer = setTimeout(startCover, COVER_SWEEP_STEP)
+      // THE RETRY MUST RELEASE THE LATCH IT SET (x7, fixed 08-09).
+      //
+      // This armed `startCover` directly, and the guard above rejects a call
+      // while `coverTimer` is non-null. So the retry fired, re-entered, found
+      // its OWN timer id still stored, and returned — the reveal died after
+      // exactly one attempt and the cover sat BLANK for the whole session. Not
+      // "did not type": empty, because `paintCover()` had already printed zero
+      // characters over it.
+      //
+      // The e2e suite could not see it. `boot()` presses 건너뛰기 before every
+      // test, which lands the document whole, so every spec in the file was
+      // reading a cover the reveal had never touched. It took opening the built
+      // page in a browser. `stepCover` clears the latch on entry for this same
+      // reason; the retry now does too.
+      coverTimer = setTimeout(() => {
+        coverTimer = null
+        startCover()
+      }, COVER_SWEEP_STEP)
       return
     }
-    coverTimer = setTimeout(stepCover, COVER_LEAD_MS)
+    coverTimer = setTimeout(() => {
+      coverTimer = null
+      stepCover()
+    }, COVER_LEAD_MS)
   }
 
   /**

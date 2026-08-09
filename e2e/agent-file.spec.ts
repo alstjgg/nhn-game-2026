@@ -914,6 +914,22 @@ test.describe('[x7] every page is headed, and the cover types itself out', () =>
     await expect(page.locator(`${FILE} .fh-doc`)).toHaveText(DOC_LINE)
     await expect(page.locator(`${FILE} .fh-title`)).toHaveText('현장 요원 운용 파일')
 
+    // …and it arrives BY ITSELF, with no gesture in between. THIS is the
+    // assertion the blank-cover bug walked straight through (x7, 08-09).
+    //
+    // `startCover`'s boot-sweep retry re-entered while its own timer id was
+    // still latched, so the reveal died after one attempt and printed nothing
+    // at all. `printing` was 0, `whole` was the full document, and the
+    // `whole > printing` check below was satisfied by the SKIP alone — a cover
+    // that never types passes every other assertion in this test. It took
+    // opening the built page in a browser to see it.
+    //
+    // Two samples with nothing done between them is the only thing that tells a
+    // reveal from a document that was whole the entire time.
+    await expect
+      .poll(async () => ((await dossier.textContent()) ?? '').length, { timeout: 15_000 })
+      .toBeGreaterThan(printing)
+
     await skip.click()
     await expect(skip, 'the spent control stayed on the page').toHaveCount(0)
 
