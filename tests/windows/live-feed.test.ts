@@ -113,6 +113,22 @@ const REFERENCE_MARKS: Record<FeedKind, string> = {
   mark: '',
 }
 
+/**
+ * The port's deviations from that table — one, x10 (민서, 08-10): the radio
+ * prints NO mark. The `◈` sat in the gutter of a line that is already the only
+ * thing on the paper in `--radio` at 700 weight, so the ink and the weight were
+ * doing the marking twice; it went out with the `ECHO-n · 무전` caption that
+ * used to head the same line ((i) below).
+ *
+ * It is kept as a DELTA against the reference rather than written into the table
+ * so both halves stay provable: what the reference printed, and what this port
+ * decided not to. `''` and not "absent" — that is what keeps the 21px mark
+ * gutter reserved, and the radio's text on the common left edge.
+ */
+const MARK_DEVIATIONS: Partial<Record<FeedKind, string>> = { radio: '' }
+
+const EXPECTED_MARKS: Record<FeedKind, string> = { ...REFERENCE_MARKS, ...MARK_DEVIATIONS }
+
 const EVENTS: readonly ViewEvent[] = woodariRun03.events
 
 const feedLines = (): FeedLine[] =>
@@ -140,10 +156,17 @@ describe('[u5#c1] seven kinds map 1:1', () => {
     expect(Object.keys(FEED_MARKS).sort()).toEqual([...KINDS].sort())
   })
 
-  it('(b) every mark is the reference mark (app.js:405), character for character', () => {
+  it('(b) every mark is the reference mark (app.js:405) but the one declared deviation', () => {
     for (const kind of KINDS) {
-      expect(FEED_MARKS[kind]).toBe(REFERENCE_MARKS[kind])
+      expect(`${kind}:${FEED_MARKS[kind]}`).toBe(`${kind}:${EXPECTED_MARKS[kind]}`)
     }
+    // The deviation is DECLARED, not discovered: exactly one kind may differ
+    // from the reference table, and it is the radio, and it differs by having
+    // no mark at all. A second silent drift fails here rather than in review.
+    const drifted = KINDS.filter((k) => FEED_MARKS[k] !== REFERENCE_MARKS[k])
+    expect(drifted).toEqual(['radio'])
+    expect(FEED_MARKS.radio).toBe('')
+    expect(REFERENCE_MARKS.radio, 'what the reference printed, kept on the record').toBe('◈')
   })
 
   it('(c) FEED_MARKS is exactly keyed by FeedKind at the type level', () => {
@@ -160,7 +183,7 @@ describe('[u5#c1] seven kinds map 1:1', () => {
       expect(node.kind).toBe(kind)
       expect(node.classes).toContain('fl')
       expect(node.classes).toContain(`fl-${kind}`)
-      expect(node.mark).toBe(REFERENCE_MARKS[kind])
+      expect(node.mark).toBe(EXPECTED_MARKS[kind])
     }
   })
 
@@ -187,11 +210,25 @@ describe('[u5#c1] seven kinds map 1:1', () => {
     expect(source).toMatch(/never/)
   })
 
-  it('(i) radio renders a label part plus the line text, verbatim', () => {
+  // x10 (민서, 08-10) — this used to read 'radio renders a label part plus the
+  // line text, verbatim'. The label was the `ECHO-n · 무전` caption, and it is
+  // gone: it repeated on every radio line a name the fanfold's header already
+  // prints once per run. What is left to pin is its ABSENCE, which is a claim
+  // the caption's own test cannot make — the utterance alone, no caption before
+  // it, no mark beside it, and the U5.4 citation still free to follow it.
+  it('(i) radio renders the utterance alone — no channel caption, no mark', () => {
     const line: FeedLine = { kind: 'radio', clock: '08:51', text: '회선 유지합니다.' }
     const node = model(line)
-    expect(node.parts.some((p: FeedPart) => p.p === 'label')).toBe(true)
-    expect(nodeText(node)).toContain(line.text)
+    expect(node.parts.map((p: FeedPart) => p.p)).toEqual(['text'])
+    expect(nodeText(node)).toBe(line.text)
+    expect(node.mark).toBe('')
+    // Not merely "no `label` part": the caption may not come back wearing
+    // another part type either.
+    expect(nodeText(node)).not.toContain('무전')
+
+    // The citation is untouched by any of this — it still rides after the text.
+    const cited: FeedLine = { ...line, cited_slots: [0] }
+    expect(model(cited).parts.map((p: FeedPart) => p.p)).toEqual(['text', 'cite'])
   })
 
   // x8 — the npc line is the AGENT RELAYING what was said, not a screenplay
@@ -846,11 +883,16 @@ describe('[u5#c9] the window renders, never authors', () => {
     }
   })
 
-  it('(c) run-feed.ts authors exactly the six declared chrome literals', () => {
+  // x10 (민서, 08-10) — FIVE, not six, and not the same five it started with.
+  // Two literals left and one arrived, in two separate changes that met here:
+  // `' · 무전'` went with the radio's channel caption and `'(변화 없음)'` with
+  // the empty-symptom line, so the window authors neither word any more; the
+  // NPC relay frame `'라고 말한다'` is what took their place. The set shrinking
+  // is itself part of the guard — do not put either departure back.
+  it('(c) run-feed.ts authors exactly the five declared chrome literals', () => {
     const ALLOWED = new Set([
       '연속용지 · 상황실 무전 기록',
       '열람 전용 — 이 창은 조작되지 않습니다',
-      ' · 무전',
       // x8's NPC frame. Chrome, and the one piece of it that is a SENTENCE: the
       // feed is the agent's radio record, so an NPC's answer is printed as the
       // agent relaying it (`표기웅 “…”라고 말한다`) rather than as a screenplay

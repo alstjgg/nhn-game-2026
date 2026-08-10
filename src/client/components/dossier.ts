@@ -165,6 +165,16 @@ const FILED_NOTE = '파견 종료. 열람 전용'
  * change. The third is untouched: who 본부 sent is a fact about the AGENT
  * PROGRAMME, not about which building it was.
  *
+ * …AND THE SNOW IS IN IT NOW (x10, 민서 08-10). The second line opened straight
+ * on the dome until this change; it opens on 폭설이 내리던 날. The weather is not
+ * scenery in this pack — `meta.json`'s logline is 대설주의보가 내린 밤, and a
+ * 막구조 roof sags because snow is standing on it. A cover that named the
+ * sagging and not the snow handed the operator a building failing for no
+ * reason, and the cause was the one thing the three lines were silent about.
+ * The clause is the PACK'S on the same terms as the time and the place below:
+ * if the pack's night ever stops being a snowy one, this string is what is
+ * wrong.
+ *
  * THESE TWO LINES ARE THE PACK'S, NOT THIS MODULE'S, and that is the standing
  * hazard here. The time has to agree with `data/scenario/<slug>/meta.json`'s
  * `start` — which is what the desk clock opens on — and the place has to agree
@@ -180,7 +190,7 @@ const FILED_NOTE = '파견 종료. 열람 전용'
  */
 const INCIDENT =
   '20XX년 XX월 XX일 18시 38분,\n' +
-  '한내시립스포츠돔에서 천장 가운데가 처진다는 신고가 접수된다.\n' +
+  '폭설이 내리던 날, 한내시립스포츠돔에서 천장 가운데가 처진다는 신고가 접수된다.\n' +
   '긴급상황대응실 본부는 즉시 현장에 요원 ECHO를 파견하여 상황 파악을 시작했다.'
 
 /**

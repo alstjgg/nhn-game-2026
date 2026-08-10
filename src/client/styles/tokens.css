@@ -144,7 +144,6 @@
   --feed-hd:#5f665a;
   --feed-rule:#5c6355;
   --radio:#1a2f42;
-  --radio-2:#4a6b8a;
   --npc:#4a3524;
   /* x8 — `--symptom` / `--symptom-mark` are gone, the way `--feed-wait` went in
      x7: the symptom line no longer reaches the DOM, so nothing consumed them.

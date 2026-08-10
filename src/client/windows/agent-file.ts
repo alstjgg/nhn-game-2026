@@ -747,10 +747,15 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    * the desk: nothing else on the cover types, and the two surfaces never share
    * a screen.
    *
-   * It sums to 18.7 s for the whole cover — 18,696 ms of scheduled waits, over
-   * the 308 characters (67 of them spaces) that `components/dossier.ts`'s
+   * It sums to 19.3 s for the whole cover — 19,296 ms of scheduled waits, over
+   * the 319 characters (70 of them spaces) that `components/dossier.ts`'s
    * `coverModel()` prints as 12 text runs across 10 rows. That is deliberate and
    * it is also exactly why 건너뛰기 exists.
+   *
+   * (Recomputed 08-10 with the copy, per the rule below: 사건 개요's second line
+   * gained 폭설이 내리던 날 — eleven characters, three of them spaces, all of them
+   * mid-line — so 8 × 36 + 3 × 104 = 600 ms on top of the 18,696 the rates were
+   * last read against. The rates themselves did not move; the page grew.)
    *
    * x10 — THE FIGURE IS RECOMPUTED, because it had gone stale and a stale total
    * is worse than none. This paragraph said "roughly a quarter-minute", which
