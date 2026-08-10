@@ -58,6 +58,20 @@ const bad = (message: string) =>
 const isFilled = (v: unknown): boolean =>
   typeof v === "string" && v.trim().length > 0;
 
+/**
+ * Nothing authored happened in this beat on this run.
+ *
+ * `buildTool` and `validate` both ask it, and they must get the same answer or
+ * the schema would permit a shape the validator then refuses — a fallback for a
+ * model that obeyed. One predicate rather than the condition twice.
+ *
+ * `isFilled` is deliberately not reused: it asks whether a slot the CLIENT sent
+ * is usable, and answers false for a non-string. This asks whether the beat is
+ * quiet, and a missing slot is quiet in exactly the same way an empty one is.
+ */
+const quietBeat = (slots: Record<string, unknown>): boolean =>
+  String(slots.FIXED_NPC_ACTION ?? "").trim().length === 0;
+
 const judgment: CallSpec = {
   slots: [
     "FLAW",
@@ -166,6 +180,20 @@ const narration: CallSpec = {
     // which also licenses the model to have someone speak in an empty room.
     // Found 2026-08-03 by running the pack through the real handler.
     const roster = idsOf(slots.PRESENT_NPCS);
+    // A QUIET beat: nothing authored happened in this minute on this run. The
+    // renderer says so out loud (`prompt.ts`'s FIXED_NPC_ACTION sentinel), and
+    // this is the other half — without it the sentinel only makes the invention
+    // informed. `2~3개` plus a validator that refuses an empty array is a
+    // CONTRACT TO WRITE, so a beat with no anchor left the model two sentences
+    // to produce and only the previous beats to produce them from; what came
+    // back rode `feed.ts:40` onto the paper as `kind: 'event'`, the same mark
+    // and the same face as a row the author wrote. On these beats the invented
+    // line is not beside the record — it IS the record, because the beat's only
+    // other line is a symptom and the fanfold stopped printing those (x8).
+    //
+    // So silence becomes sayable. The base prompt has told the model since v0.4
+    // that "비어 있다고 채우지 않는다"; until now the schema contradicted it.
+    const quiet = quietBeat(slots);
     return {
       name: "narration",
       description: "이 비트의 반응을 기록한다. 정확히 한 번만 호출한다.",
@@ -175,8 +203,9 @@ const narration: CallSpec = {
           timeline_entries: {
             type: "array",
             items: { type: "string" },
-            description:
-              "고정 사건에 뒤따르는 반응과 장면의 결. 2~3개. 한 항목은 한 문장이다 — 마침표는 항목의 맨 끝에 하나뿐이고, 항목 안에서 두 문장을 잇지 않는다. 이미 타임라인에 있는 것(고정 사건·요원 발화)은 다시 쓰지 않는다. 현장에서 남기는 짧은 기록이다 — 해라체로 끝맺는다.",
+            description: quiet
+              ? "이번 비트에는 기록된 사건이 없다. 앞 비트를 이어 붙여 채우지 않는다 — 쓸 것이 없으면 빈 배열이 정답이다. 그래도 쓸 것이 있다면(장면의 변화가 무언가를 말하고 있다면) 한 항목은 한 문장이고, 현장에서 남기는 짧은 기록이라 해라체로 끝맺는다."
+              : "고정 사건에 뒤따르는 반응과 장면의 결. 2~3개. 한 항목은 한 문장이다 — 마침표는 항목의 맨 끝에 하나뿐이고, 항목 안에서 두 문장을 잇지 않는다. 이미 타임라인에 있는 것(고정 사건·요원 발화)은 다시 쓰지 않는다. 현장에서 남기는 짧은 기록이다 — 해라체로 끝맺는다.",
           },
           // `maxItems: 1` is the ONE mechanical half of the misattribution fix
           // (handoff §3.3). The rest is prompt wording, deliberately: the player
@@ -199,14 +228,23 @@ const narration: CallSpec = {
     };
   },
 
-  validate(input) {
+  validate(input, slots) {
     if (!input || typeof input !== "object") return ["response was not an object"];
     const value = input as Record<string, unknown>;
     const problems: string[] = [];
 
+    // Read from the SLOTS, the same question `buildTool` asked — a beat with no
+    // authored event may legally come back with nothing. Refusing it here would
+    // undo the schema's permission in the worst possible way: a fallback, which
+    // prints `※ 회신 불량` on the paper and costs the beat its whole narration,
+    // for a model that did exactly what it was asked to do.
+    //
+    // An empty array is still refused everywhere else, because everywhere else
+    // there IS something to react to and silence is a dropped beat.
+    const quiet = quietBeat(slots);
     if (!Array.isArray(value.timeline_entries)) {
       problems.push("timeline_entries not an array");
-    } else if (!value.timeline_entries.length) {
+    } else if (!value.timeline_entries.length && !quiet) {
       problems.push("timeline_entries empty");
     } else if (value.timeline_entries.some((e) => !isFilled(e))) {
       problems.push("timeline_entries has an empty entry");
