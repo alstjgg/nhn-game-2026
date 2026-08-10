@@ -126,7 +126,7 @@ describe('[e7#A8] the VALUE-level echo — the note may not return as a minable 
       makeRig({ transport: createFixtureProvider({ judgment: sentinelJudgment() }) }),
     )
     const texts = events.flatMap((event) => (event.type === 'report' ? event.facts : [])).map((s) => s.text)
-    // `[통제실] ` + the utterance: an `EXPERIENCED` line, verbatim, in `facts`.
+    // `[무전] ` + the utterance: an `EXPERIENCED` line, verbatim, in `facts`.
     expect(texts.some((text) => text.includes('기록을 남긴다.'))).toBe(true)
   })
 

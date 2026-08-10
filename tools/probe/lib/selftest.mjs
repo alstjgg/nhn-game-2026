@@ -359,6 +359,17 @@ check('no nested objects in the narration schema', () => {
     if (s.type === 'array') assert.equal(s.items?.type, 'string', `${name} is not an array of scalars`);
   }
 });
+// The ONE mechanical half of the misattribution fix, and until this check the
+// only thing holding it was that nobody deleted the line: removing `maxItems`
+// from either copy left every suite green (proxy, probe, root, bundle) because
+// no test read the schema's constraints and the deploy smoke only ever calls
+// judgment. `npc_lines` is capped by schema on purpose — the prompt asks for one
+// line, and the cap is what makes the model refuse a second rather than us
+// truncating after the fact. See docs/handoffs/feed-register-llm.md §3.3.
+check('npc_lines is capped at one line — the schema refuses overproduction', () => {
+  const props = nspec.buildTool(narrSuite()).input_schema.properties;
+  assert.equal(props.npc_lines.maxItems, 1, 'npc_lines lost its cap');
+});
 
 console.log('reporter validation:');
 const rspec = CALL_TYPES.reporter;

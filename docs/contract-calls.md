@@ -11,6 +11,17 @@
 > this document fixes them as **executable input/output contracts**. If the two
 > disagree, either this document is wrong or the spec gets amended explicitly —
 > never silently.
+>
+> **On the word "controller".** It appears throughout this document and means
+> **the agent** — the LLM that judges, speaks and reports. It is the agent's
+> pre-DDAY name, from when the fiction placed it as a night controller in a
+> regional situation room. Since prompts `judgment v0.5` / `narration v0.4` /
+> `reporter v0.4` the fiction is 현장 요원 ECHO, dispatched by HQ to a crisis
+> post at the site, and the player is the 운영자 receiving its radio at HQ. The
+> term is left standing here because it names a *seat in the call structure* —
+> "the controller's empty seat" (§3) is the same structural fact under either
+> name — and renaming it across this document, `tools/probe/`, and the engine is
+> a separate change. Read it as "the agent" everywhere.
 
 ## Where the law lives
 
@@ -117,14 +128,14 @@ One call per beat — not one per NPC.
 | `AGENT_UTTERANCE` | Call 1's `utterance` | Names what must not be echoed, and gives the validator its comparison value for detecting re-emission |
 | `FIXED_NPC_ACTION` | This beat's fixed NPC action | Not the subject of narration but a **non-contradiction constraint**. Treated as already having happened. ⚠️ **Must not be an event that demands a reply from the controller** — see below |
 | `SCENE_SYMPTOMS` | The engine's delta journal rendered into symptom sentences | The only channel by which state change reaches anything (rule 5) |
-| `PRESENT_NPCS` | List of `{id, name, side}`. `side` is `line` (across the phone line) or `room` (inside the situation room) | Speakers of `npc_lines` may come from here and nowhere else. **`side` is not decoration** — see below |
+| `PRESENT_NPCS` | List of `{id, name, side}`. `side` is `line` (across the phone line) or `room` (beside the agent, at the site's crisis post) | Speakers of `npc_lines` may come from here and nowhere else. **`side` is not decoration** — see below |
 
 ### Output
 
 | # | Field | Type | Meaning |
 |---|---|---|---|
 | 1 | `timeline_entries` | string[] | Reaction and scene description, one sentence per item. **Does not repeat what is already in the timeline** (fixed event, controller utterance) |
-| 2 | `npc_lines` | string[] | `"<npc_id>: <line>"`. Empty array if nobody speaks |
+| 2 | `npc_lines` | string[] | `"<npc_id>: <line>"`. **`maxItems: 1`** — at most one speaker, at most one line, and it may not be a question or a request that needs an answer. Empty array if nobody speaks, which is the common case |
 
 **Why `npc_lines` is a prefixed string:** speaker attribution is required but
 nested objects are banned (rule 2). Same convention as the harness rendering
@@ -198,7 +209,7 @@ the whole measurement program.
 | # | Field | Type | Meaning |
 |---|---|---|---|
 | 1 | `facts` | string[] | Objective record. Only what actually happened or was observed, one sentence per item |
-| 2 | `report_body` | string | The self-written report (markdown). Where thought and judgment live |
+| 2 | `report_body` | string | The radio situation report (markdown) — dictated over the line to HQ and filed there as a document. Where thought and judgment live. Business-formal 존댓말, as is `facts` |
 
 **Two reasons for this order.** Putting `facts` first makes fact-fixing the
 anchor for writing the body. Putting `report_body` **last** means that under

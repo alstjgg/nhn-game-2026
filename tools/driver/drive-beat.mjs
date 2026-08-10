@@ -96,7 +96,7 @@ console.log(`${j.stance}  "${j.utterance.slice(0, 40)}…"`);
 //    carry both the utterance and the fixed action — that assembly is exactly
 //    what the engine will own.
 const timelineBefore = lines(J.slots.TIMELINE_EXCERPT);
-const utteranceLine = `통제관: "${j.utterance}"`;
+const utteranceLine = `요원: "${j.utterance}"`;
 const narrationSuite = withSlots(N, {
   AGENT_UTTERANCE: j.utterance,
   TIMELINE_TAIL: [...timelineBefore, utteranceLine, N.slots.FIXED_NPC_ACTION],
@@ -139,7 +139,7 @@ const md = [
   '',
   '## 2. Narration — wired from judgment',
   '',
-  `\`AGENT_UTTERANCE\` ← judgment.utterance · \`TIMELINE_TAIL\` ← 타임라인 + 통제관 발화 + 고정 사건`,
+  `\`AGENT_UTTERANCE\` ← judgment.utterance · \`TIMELINE_TAIL\` ← 타임라인 + 요원 발화 + 고정 사건`,
   '',
   ...n.timeline_entries.map((e) => `- ${e}`),
   '',

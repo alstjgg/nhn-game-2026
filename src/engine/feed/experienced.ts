@@ -24,11 +24,22 @@ import type { RoundInput, RoundSlots } from './types.ts'
  * Line prefixes, one per §5 row. The exact prose is **provisional**: §5 fixes
  * what goes in and in what order, not how it reads. Keeping it in one frozen
  * table makes a retune a one-line change instead of a hunt.
+ *
+ * `UTTERANCE` was `'[통제실] '` until the fiction moved (prompts judgment v0.5 /
+ * narration v0.4 / reporter v0.4). There is no 통제실 — the agent is a field
+ * officer at the site's crisis post, and reporter v0.4 both asks it to record
+ * its own speech as an event and forbids system vocabulary from its world. A
+ * place name that exists nowhere is exactly the ghost-entity vector the prompt
+ * work removed, and this one had a second route to the player: on the Call 3
+ * fallback path `assembleObjectiveLog` keeps the utterance row, those lines are
+ * minted on the `f` channel and shown verbatim. `[무전]` names the medium, which
+ * is the honest contrast to `[속내]` — what was thought, then what went out on
+ * the line. Regenerate `artifacts/runs/우는다리-fixture-r1.json` when this moves.
  */
 export const EXPERIENCED_PREFIX = {
   SCRIPT: '',
   INNER_NOTE: '[속내] ',
-  UTTERANCE: '[통제실] ',
+  UTTERANCE: '[무전] ',
   TIMELINE: '',
   NPC: '',
 } as const

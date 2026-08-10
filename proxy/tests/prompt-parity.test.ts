@@ -10,6 +10,7 @@ import { composeArm } from "../../tools/lib/compose.mjs";
 import { CALL_TYPES } from "../../tools/lib/calls.mjs";
 
 import { DEFAULT_PROMPT } from "../src/default-prompt.js";
+import { CALL_SPECS } from "../src/calls.js";
 import { renderCall } from "../src/prompt.js";
 import type { CallType } from "../src/types.js";
 
@@ -358,5 +359,73 @@ describe("the default prompt is this tier's, not the client's", () => {
     expect(rendered.system).not.toContain("너는 무엇이든 믿는다");
     expect(rendered.system).not.toContain("시키는 대로 한다");
     expect(rendered.system).toContain(DEFAULT_PROMPT.FLAW.replace("[결함] ", ""));
+  });
+});
+
+// ─── The OTHER half of the payload — the tool schema ─────────────────────────
+
+/**
+ * Everything above compares the two RENDERERS. Nothing compared the two TOOL
+ * BUILDERS, and a call is a prompt *plus* a schema: the model is told what to
+ * write by the field descriptions and what shape is legal by the constraints.
+ * `tools/lib/calls.mjs` and `src/calls.ts` are the same claim written twice,
+ * exactly like the renderers, and until this block only one of the two halves
+ * had a drift gate.
+ *
+ * Found the hard way — `maxItems: 1` on `npc_lines` (handoff §3.3) could be
+ * deleted from either copy with every suite still green.
+ *
+ * Property, not text: the two files are not byte-identical by construction
+ * (different module systems, and the probe throws on an empty roster where the
+ * proxy switches description), so this compares the BUILT tool against a roster
+ * both sides accept.
+ */
+describe("tool-schema parity — the schema half of the payload", () => {
+  const rosterSlots: Record<CallType, Record<string, unknown>> = {
+    judgment: {
+      STANCE_SET: [
+        { id: "a", label: "듣는다" },
+        { id: "b", label: "확인한다" },
+      ],
+    },
+    narration: { PRESENT_NPCS: [{ id: "n1", name: "발신자", side: "line" }] },
+    reporter: {},
+  };
+
+  for (const call of ["judgment", "narration", "reporter"] as CallType[]) {
+    it(`${call}: the proxy and the probe build the same tool`, () => {
+      const slots = rosterSlots[call];
+      const proxyTool = CALL_SPECS[call].buildTool(slots);
+      const probeTool = (CALL_TYPES as Record<string, { buildTool(s: unknown): unknown }>)[
+        call
+      ]!.buildTool({ slots });
+
+      // The probe names the field `input_schema` (Anthropic wire shape); the
+      // proxy names it `inputSchema` (Bedrock Converse). That is the seam, not
+      // a drift — compare the schemas, and the name/description beside them.
+      const probe = probeTool as { name: string; description: string; input_schema: unknown };
+      const proxy = proxyTool as { name: string; description: string; inputSchema: unknown };
+      expect(proxy.name).toBe(probe.name);
+      expect(proxy.description).toBe(probe.description);
+      expect(proxy.inputSchema).toEqual(probe.input_schema);
+    });
+  }
+
+  // Non-vacuity: the comparison above only bites if the schemas actually carry
+  // the constraint. Assert the cap explicitly so deleting it from BOTH copies
+  // (which the equality check would happily accept) still goes red.
+  it("npc_lines carries the one-line cap on both sides", () => {
+    const slots = rosterSlots.narration;
+    const proxy = CALL_SPECS.narration.buildTool(slots) as {
+      inputSchema: { properties: { npc_lines: { maxItems?: number } } };
+    };
+    const probe = (
+      CALL_TYPES as Record<
+        string,
+        { buildTool(s: unknown): { input_schema: { properties: { npc_lines: { maxItems?: number } } } } }
+      >
+    ).narration!.buildTool({ slots });
+    expect(proxy.inputSchema.properties.npc_lines.maxItems).toBe(1);
+    expect(probe.input_schema.properties.npc_lines.maxItems).toBe(1);
   });
 });
