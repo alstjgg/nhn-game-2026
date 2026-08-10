@@ -47,11 +47,30 @@ import { renderReportGuidance } from '../shared/report-guidance.ts'
  */
 export type BlockStore = { get(id: string): Block | undefined }
 
-/** One template version per call type — both prompt layers exist at each. */
+/**
+ * One template version per call type — both prompt layers exist at each.
+ *
+ * x12 (민서, 08-10) — bumped onto the prompts PR #234 published: the fiction the
+ * client has been shipping for weeks (운영자 + 현장 요원 ECHO) and the one the
+ * prompts described (광역 재난상황실의 야간 통제관) were two different games, and
+ * this line is what finally picks the second one up. `judgment v0.5` /
+ * `narration v0.4` / `reporter v0.4` carry the recast, the register split
+ * (Call 3 존댓말, Calls 1–2 clipped 해라체), the one-NPC-one-line rule and the
+ * branch for a beat where the agent said nothing — which is most of them
+ * (`driver.ts:133`, and `docs/handoffs/feed-register-llm-amendment.md` for why).
+ *
+ * IT LANDS SECOND, AND THIS IS THE SECOND. `proxy-deploy.yml` and the Pages
+ * `deploy.yml` both fire on push-to-main and run concurrently, so a client that
+ * asks for a version the proxy has not deployed yet makes `proxy/src/prompt.ts`
+ * throw `unknown_template_version` on every call — not a soft fallback, the
+ * whole desk. The prompts merged in #234 and their proxy deploy went green
+ * before this moved. Versions are additive and the old ones are still in the
+ * bundle, so the ordering only ever costs a delay, never a break.
+ */
 export const TEMPLATE_VERSION: Readonly<Record<CallType, string>> = Object.freeze({
-  judgment: 'v0.4',
-  narration: 'v0.3',
-  reporter: 'v0.3',
+  judgment: 'v0.5',
+  narration: 'v0.4',
+  reporter: 'v0.4',
 })
 
 /** Everything `createComposer` needs: e0's deps, narrowed, plus the store. */

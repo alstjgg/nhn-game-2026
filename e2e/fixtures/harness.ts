@@ -149,6 +149,32 @@ export async function awaitRecordFinal(page: Page): Promise<void> {
  * drain crosses run close. The final-record wait is folded in HERE, so a
  * caller that reaches the desk through THIS helper always lands on a settled
  * result rather than a mid count-up.
+ *
+ * x11 — SETTLED RESULT, NOT SETTLED PAPER (민서, 08-10). That promise was once
+ * both, because `run_end` made the LIVE FEED dump its whole reveal queue in a
+ * single frame. It drains at reading pace now, with `shell/ending.ts` waiting on
+ * it (`shell/feed-drain.ts`), so this returned while the fanfold was still
+ * printing.
+ *
+ * x12 — AND SO THE PAPER IS SETTLED HERE, because the result now waits for it
+ * (민서, 08-10). The terminal record's count-up holds until the fanfold has
+ * printed its way to the same `score` it mints the 집계 line from
+ * (`shell/feed-reach.ts`), so `awaitRecordFinal` below is now a wait on the
+ * PAPER as much as on the ledger — and this helper releases a whole day's stream
+ * in a single call, which is a thing no player can do. On a lane whose day is
+ * actually RUNNING (anything that pressed 배치 first — `deployFile`, and `newRun`
+ * under W4's one press) that left ~78 s of reading-paced paper standing between
+ * the drain and the record, inside a 40 s assertion: eleven specs failed as
+ * "record stuck at pending", none of them about the feed.
+ *
+ * The flush is the honest resolution and not a budget dodge. `drain()` is
+ * already the lane that says "release everything now"; landing the paper in the
+ * same breath is that same instruction reaching the one surface that had started
+ * pacing it, and it is exactly what the desk itself does for a halted clock, a
+ * seek or reduced motion. The reveal's PACING is not weakened by it: that claim
+ * is u5's, is asserted in `e2e/live-feed.spec.ts` (`the day’s end drains`) from
+ * the outside, and that test drives `__shell.drain()` itself rather than coming
+ * through here — deliberately, so it can watch the paper arrive on its own.
  */
 export async function drain(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -156,7 +182,30 @@ export async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
+  await flushFeed(page)
   await awaitRecordFinal(page)
+}
+
+/**
+ * x11 — settle the FANFOLD (민서, 08-10): apply everything still queued and
+ * finish the line being typed, so the read after it sees complete text.
+ *
+ * Lives here rather than in each spec because three of them needed it the day
+ * the reveal became a typewriter, and a helper copied three times is three
+ * places for the next change to miss. `seek` already ends with this call
+ * (`windows/live-feed.ts`), so a seeking test needs nothing; what needs one is
+ * any lane that released the stream WITHOUT seeking — the day's own close.
+ *
+ * Calling it is not a way of dodging the reveal. The pacing is u5's own claim
+ * and is asserted in u5's own file, once, on purpose — so every other spec can
+ * be about what the paper SAYS rather than about when it got there.
+ */
+export async function flushFeed(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const handle = (window as unknown as { __feed?: { flush(): void } }).__feed
+    if (!handle) throw new Error('window.__feed is not exposed by the LIVE FEED window')
+    handle.flush()
+  })
 }
 
 /** Jumps the sim clock to `at` and releases everything due by then (u5's seek). */

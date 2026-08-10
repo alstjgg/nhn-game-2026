@@ -132,9 +132,16 @@ describe('A3–A5 — the envelope is exactly what §11 describes', () => {
 
   it('A5 template_version is per call type and both prompt layers exist at it', () => {
     const reqs = allThree()
-    expect(reqs.judgment.template_version).toBe('v0.4')
-    expect(reqs.narration.template_version).toBe('v0.3')
-    expect(reqs.reporter.template_version).toBe('v0.3')
+    // x12 — bumped onto PR #234's prompts (민서, 08-10). The literals are
+    // deliberately spelled out rather than read from `TEMPLATE_VERSION`: this
+    // assert exists to make a version bump a decision someone takes on purpose,
+    // and a test that derived them would agree with any value the constant held.
+    // The loop below is what proves the version is real — both prompt layers
+    // must be in the bundle at it, which is the check that would have caught a
+    // client asking the proxy for something it cannot serve.
+    expect(reqs.judgment.template_version).toBe('v0.5')
+    expect(reqs.narration.template_version).toBe('v0.4')
+    expect(reqs.reporter.template_version).toBe('v0.4')
 
     for (const t of CALL_TYPES) {
       const v = reqs[t].template_version

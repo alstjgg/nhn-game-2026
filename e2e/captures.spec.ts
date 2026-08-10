@@ -211,6 +211,25 @@ async function seedClock(page: Page, at: string): Promise<void> {
     const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
     handle?.drain()
   })
+  // x12 — LAND THE PAPER BEFORE FRAMING WHAT WAITS ON IT, the same move and the
+  // same reasoning as `#coverSkip` above.
+  //
+  // The terminal record's count-up now holds until the LIVE FEED has printed its
+  // way to the day's `score` (`shell/feed-reach.ts`) — the ledger's headline and
+  // the fanfold's 집계 line are two printings of one count. The drain above
+  // releases the whole day in one call, so the reveal has some 78 s of
+  // reading-paced paper to get through, and the two record shots — one at 1 s,
+  // one at 11 s — would both frame the same blank `pending` article. They did:
+  // the pair came out byte-identical, which is the only reason this was caught,
+  // since the suite pairs names and sizes rather than pixels.
+  //
+  // Flushing here puts the count-up's zero back where the reference shots were
+  // taken from, and it is the honest instruction: this lane has already said
+  // "release everything now" one line above.
+  await page.evaluate(() => {
+    const feed = (window as unknown as { __feed?: { flush(): void } }).__feed
+    feed?.flush()
+  })
 }
 
 test.describe('captures', () => {

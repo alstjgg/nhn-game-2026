@@ -26,7 +26,6 @@ import type { Page } from 'playwright/test'
 import {
   CHROME,
   DEBUG,
-  EMPTY_SYMPTOM,
   FEED,
   FILE,
   FREE_TEXT,
@@ -40,6 +39,7 @@ import {
   confirmDeploy,
   drain,
   eventsOfType,
+  flushFeed,
   frame,
   lastMeta,
   mineFirst,
@@ -76,14 +76,47 @@ function symptomsPerBeat(f: Frame): number[] {
 }
 
 /**
+ * x11 — SETTLE THE FANFOLD (민서, 08-10).
+ *
+ * The LIVE FEED reveals through a paced queue, and the day's close no longer
+ * empties it: `run_end` used to dump the whole backlog in one frame, and it now
+ * drains at reading pace with `shell/ending.ts` waiting for it
+ * (`shell/feed-drain.ts`). So `drain()` — which releases the STREAM and then
+ * waits out the ledger's own ~9 s count — now returns while the paper is still
+ * printing, and every read of the fanfold below it was reading a day in
+ * progress: short by however many lines the reveal still owed, with the last
+ * line it did print stopped mid-word by the typewriter.
+ *
+ * §7's feed items are claims about WHAT the paper says, not about when it got
+ * there, so they settle it and then read it. The pacing itself is u5's own
+ * claim and is asserted in u5's own file (`e2e/live-feed.spec.ts`, `the day’s
+ * end drains`) — per [u11#c8] this suite does not re-test another unit's
+ * mechanism, and it must not silently depend on one either.
+ *
+ * The helper itself is `flushFeed` from `./fixtures/harness.ts`. It was three
+ * identical copies in three specs on the day the reveal became a typewriter;
+ * x11 folded it in, because a helper copied three times is three places for the
+ * next change to miss.
+ */
+/**
  * Feed lines as the DOM actually painted them. The kind rides the `fl-<kind>`
  * class (`components/run-feed.ts`), which is also how u5's own handle reads it.
+ *
+ * x11 — `text` is the line's CONTENT COLUMN, no longer the whole `<li>`
+ * (민서, 08-10). A line is printed twice now: `.fl-c` is typed out for the eye
+ * and `.fl-sr` carries the complete text for the ear. Reading the `<li>`
+ * therefore concatenates the clock stamp, the typed column and a second copy of
+ * the same sentence — so `#2`'s stream-order walk would match every line
+ * against a doubled haystack (passing on a paper that printed each line twice),
+ * and any count of occurrences would be off by exactly a factor of two. The
+ * announced column is not skipped: `#2 (c)` scans both, and u5 pins that they
+ * agree.
  */
 async function domLines(page: Page): Promise<{ kind: string; text: string }[]> {
   return page.locator(FEED.line).evaluateAll((nodes) =>
     nodes.map((n) => ({
       kind: (/\bfl-([a-z]+)\b/.exec((n as HTMLElement).className) ?? [, ''])[1] ?? '',
-      text: (n.textContent ?? '').trim(),
+      text: (n.querySelector('.fl-c')?.textContent ?? '').trim(),
     })),
   )
 }
@@ -115,11 +148,12 @@ test.describe('acceptance 1-7', () => {
     expect(await page.locator(CHROME.runNum).innerText()).toContain(String(lastMeta(f).run))
   })
 
-  test('#2 a full round plays in stream order, ≤3 symptoms a beat, no digit, (변화 없음) when empty', async ({
+  test('#2 a full round plays in stream order, ≤3 symptoms a beat on the stream, no digit', async ({
     page,
   }) => {
     await boot(page)
     await drain(page)
+    await flushFeed(page)
 
     const f = await frame(page)
 
@@ -137,7 +171,11 @@ test.describe('acceptance 1-7', () => {
       cursor = at
     }
 
-    // (b) ≤3 symptom lines per beat (§7 #2).
+    // (b) ≤3 symptom lines per beat (§7 #2). Read off the STREAM, which is
+    // where the cap has always been measured and is now the only place it can
+    // be: x8 stopped printing symptom lines, so the DOM carries none (민서,
+    // 08-10). The engine still emits them and Call 2 still receives them as
+    // `SCENE_SYMPTOMS`, so the cap still governs something real.
     const perBeat = symptomsPerBeat(f)
     expect(perBeat.length, 'the round played no beats').toBeGreaterThan(0)
     expect(Math.max(...perBeat)).toBeLessThanOrEqual(3)
@@ -145,25 +183,46 @@ test.describe('acceptance 1-7', () => {
     // (c) invariant 2 — no digit renders for NPC state on the player surface.
     // The clock stamp is chrome, not state: it is excluded by selector, exactly
     // as u9's inv-2 assert does.
-    const npcLines = (await domLines(page)).filter((l) => ['npc', 'symptom'].includes(l.kind))
-    expect(npcLines.length, 'the round painted no NPC or symptom line — the scan is vacuous').toBeGreaterThan(0)
+    //
+    // x11 — BOTH CONTENT COLUMNS (민서, 08-10). The typewriter split an NPC line
+    // into the `.fl-c` the operator watches and the sr-only `.fl-sr` a reader
+    // hears, and inv 2 is about what RENDERS for NPC state — a digit spoken is
+    // rendered as surely as a digit shown. Scanning `.fl-c` alone would have
+    // left the announced half unchecked while still reporting green, which is
+    // the half-blind scope this clause's scoping rule exists to forbid. Kept in
+    // step with `NPC_TEXT_SELECTOR` in `e2e/a11y.spec.ts`.
+    const npcLines = (await domLines(page)).filter((l) => l.kind === 'npc')
+    expect(npcLines.length, 'the round painted no NPC line — the scan is vacuous').toBeGreaterThan(0)
+    // Strictly MORE columns than lines, which is the non-vacuity guard doing a
+    // second job: it fails if `.fl-sr` ever stops being emitted, instead of
+    // quietly narrowing the scan back to the half it used to cover.
+    const scanned = await page.locator(FEED.npcColumns).count()
+    expect(scanned, 'an NPC line is missing a content column — the scan went half-blind').toBeGreaterThan(
+      npcLines.length,
+    )
     const digits = await page
-      .locator('#w-feed .fl-npc .fl-c, #w-feed .fl-symptom .fl-c')
+      .locator(FEED.npcColumns)
       .evaluateAll((nodes) => nodes.map((n) => n.textContent ?? '').filter((t) => /\d/.test(t)))
-    expect(digits, 'a digit reached an NPC or symptom line (inv 2)').toEqual([])
+    expect(digits, 'a digit reached an NPC line (inv 2)').toEqual([])
 
-    // (d) the empty symptom set renders its own copy, never a blank line.
-    const emptyBeats = perBeat.filter((n) => n === 0).length
-    if (emptyBeats > 0) {
-      await expect(page.locator(FEED.list)).toContainText(EMPTY_SYMPTOM)
-    }
+    // (d) …was 'the empty symptom set renders its own copy, never a blank line'.
+    // There is no symptom line on the paper to be empty, so `(변화 없음)` is not
+    // minted anywhere any more (x8). What replaces it is the negative: the
+    // symptom channel is CLOSED at the DOM, and the stream above proves the
+    // symptoms it is closed against are really being produced.
+    expect(perBeat.some((n) => n > 0), 'the round produced no symptom at all — (d) is vacuous').toBe(true)
+    expect(await page.locator('#w-feed .fl-symptom').count(), 'a symptom line reached the paper').toBe(0)
+    await expect(page.locator(FEED.list)).not.toContainText('(변화 없음)')
   })
 
-  test("#3 the gate's judgment is observable in the debug pane, its symptoms on the player pane", async ({
+  test("#3 the gate's judgment is observable in the debug pane, its prose on the player pane", async ({
     page,
   }) => {
     await boot(page)
     await drain(page)
+    // x11 — the radio-line count below is read off the fanfold, so the fanfold
+    // has to have finished printing before it is counted (see `flushFeed`).
+    await flushFeed(page)
 
     // The pane is flag-on in DEV; it reads the driver's stream, nothing else.
     await expect(page.locator(DEBUG.pane)).toHaveCount(1)
@@ -196,9 +255,29 @@ test.describe('acceptance 1-7', () => {
       expect(paneText, 'the debug pane does not show the gate beat').toContain(String(beat.beat))
     }
 
-    // The player pane sees the SYMPTOMS of that judgment, never its numbers.
-    const symptoms = await page.locator('#w-feed .fl-symptom').count()
-    expect(symptoms, 'the gate produced no visible symptom on the player pane').toBeGreaterThan(0)
+    // The player pane sees the judgment as PROSE — the agent's own radio line.
+    //
+    // This half used to count `.fl-symptom` nodes: a gate moved state, the state
+    // rendered into symptom sentences, and those printed. x8 closed that channel
+    // at the DOM (민서, 08-10), so the surface a gate now leaves the player is
+    // Call 1's utterance on the radio line. The symptoms are still produced —
+    // they are what `SCENE_SYMPTOMS` carries into Call 2 — so the second half
+    // below holds the channel shut against something real rather than nothing.
+    //
+    // What is deliberately NOT asserted here: that the radio line carries no
+    // digit. Inv 2 scopes to the NPC channel, and the agent's own speech is
+    // scenario prose that may legitimately say `17시 30분`. `#2 (c)` and
+    // `a11y.spec.ts` hold the channel that inv 2 actually names.
+    expect(
+      await page.locator('#w-feed .fl-radio .fl-c').count(),
+      'the gate left nothing on the player pane at all',
+    ).toBeGreaterThan(0)
+
+    const symptoms = f.events.filter(
+      (e) => e.type === 'feed' && (e as { line?: { kind?: string } }).line?.kind === 'symptom',
+    )
+    expect(symptoms.length, 'the round produced no symptom — the next assert is vacuous').toBeGreaterThan(0)
+    expect(await page.locator('#w-feed .fl-symptom').count(), 'a symptom reached the player pane').toBe(0)
   })
 
   test("#4 the round report renders exactly once, after the round's last beat", async ({ page }) => {
@@ -270,12 +349,29 @@ test.describe('acceptance 1-7', () => {
 
     // x6 — the digits are the FEED's stamp now, so this reads one step further
     // than it used to: not "the sim clock was seeded to 21:04" but "the paper
-    // printed 21:04". It still holds at this line, and holds for a reason rather
-    // than by luck. The fanfold paces its reveal only while the clock RUNS
-    // (`components/run-feed.ts`); seeding to the terminal minute ends the run, so
-    // every queued line — including the 21:04 symptom and the `score` that
-    // reuses its stamp — lands whole in the same turn as the `drain` above,
-    // with no queue left to hold the chrome behind the paper.
+    // printed 21:04".
+    //
+    // x11 — AND THE REASON IT HOLDS HAS CHANGED (민서, 08-10). This used to
+    // argue that it held "for a reason rather than by luck": the fanfold paces
+    // its reveal only while the clock RUNS, seeding to the terminal minute ends
+    // the run, so every queued line — the 21:04 symptom and the `score` that
+    // reuses its stamp — lands whole in the same turn as the `drain` above, with
+    // no queue left to hold the chrome behind the paper.
+    //
+    // That was true of a feed that DUMPED at `run_end`, and the dump is exactly
+    // what was removed. The reveal pump outlives the clock now and prints the
+    // day's tail at reading pace, with `shell/ending.ts` waiting on it
+    // (`shell/feed-drain.ts`). The chrome is therefore SUPPOSED to sit behind
+    // the paper at this line — that is what makes the stamp the paper's own and
+    // not the clock's — so the digits would read 20-something for a minute or
+    // more, and the five-second retry would have called the new pacing a
+    // regression in the clock.
+    //
+    // §7 #6 claims the terminal minute is REACHED and shown, not that it is
+    // shown in the frame the stream ran out, so the paper is allowed to finish
+    // and is then asked. The pacing it is being allowed is u5's own claim and is
+    // asserted there (`e2e/live-feed.spec.ts`, `the day’s end drains`).
+    await flushFeed(page)
     await expect(page.locator(CHROME.clockDigits)).toContainText('21:04')
     await expect(page.locator(RECORD.root)).toHaveCount(1)
 
@@ -303,6 +399,12 @@ test.describe('acceptance 1-7', () => {
     )
     expect(fallbacks.length, 'the fixture stream forces no fallback line (engine §5)').toBeGreaterThan(0)
 
+    // x11 — the two asserts below are "the fallback landed" and "lines landed
+    // AFTER it", and both are counts of a paper that is still printing unless it
+    // is settled first (see `flushFeed`). 17:33 is late in the day, so the
+    // unsettled read would most often find the fallback missing entirely and
+    // report the forced fallback as never rendered.
+    await flushFeed(page)
     const lines = await domLines(page)
     const at = lines.findIndex((l) => l.kind === 'fallback')
     expect(at, 'the forced fallback never rendered on the feed').toBeGreaterThan(-1)
@@ -523,6 +625,19 @@ test.describe('acceptance 9-12', () => {
     // …and the desk absorbs typing without changing a text node. No click first:
     // `#desktop` is `display:contents` (a faithful port), so it has no box to
     // click — the keystrokes go wherever the shell put focus, which is the point.
+    //
+    // x11 — THE PAPER IS STILLED BEFORE THE PAIR IS TAKEN (민서, 08-10). This
+    // compares two `innerText` snapshots of the WHOLE desk and demands they be
+    // identical, which is only a statement about typing if nothing else on the
+    // desk is writing itself between them. It used to be safe by accident: the
+    // fanfold dumped its queue at `run_end`, so by the time `drain()` returned
+    // there was nothing left to print. Now the day's tail drains at reading pace
+    // and a line — or a few characters of one — would land between the two
+    // reads, and the failure would say `typing changed the desk — something
+    // accepted text` about a desk that had accepted nothing at all. That is the
+    // worst shape a failure can take: inv 1 is the membrane rule, and a membrane
+    // assert that cries wolf is one somebody eventually loosens.
+    await flushFeed(page)
     const snapshot = () => page.locator(CHROME.app).innerText()
     const before = await snapshot()
     await page.keyboard.type('침입 텍스트')

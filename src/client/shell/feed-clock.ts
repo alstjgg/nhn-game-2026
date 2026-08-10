@@ -2,10 +2,15 @@
 //
 // x6 — the top bar used to paint `driver.clock.at()`, which is the sim clock's
 // own running minute and NOT the time the operator can see. The fanfold reveals
-// its lines through a paced queue (`run-feed.ts`'s reveal pump, plus a hold on
-// the beat a report lands in), so the chrome ran ahead of the paper by however
-// much the queue was holding: two clocks on one desk, disagreeing, with the
-// authoritative-looking one wrong. The chrome now follows the paper.
+// its lines through a paced queue (`run-feed.ts`'s reveal pump), so the chrome
+// ran ahead of the paper by however much the queue was holding: two clocks on
+// one desk, disagreeing, with the authoritative-looking one wrong. The chrome
+// now follows the paper.
+//
+// x12 — the parenthesis above named a second thing the queue did, "plus a hold
+// on the beat a report lands in", and that hold is gone (`run-feed.ts`, where
+// `REPORT_HOLD_MS` was). It is deleted rather than reworded: the argument never
+// rested on it, only on the reveal being paced at all, which it still is.
 //
 // A shell-owned slot is what makes that legal. `run-feed.ts` publishes a stamp
 // as it lands in the DOM and `components/game-clock.ts` subscribes; neither

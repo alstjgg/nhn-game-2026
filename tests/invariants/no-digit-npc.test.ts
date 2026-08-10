@@ -4,10 +4,11 @@
 // numbers are score, not state."
 //
 // SCOPE (P1-D scoping rule, [u9#c6]): **unit-scoped by selector**. The assert
-// is bound to the two NPC channels — the feed's `npc` and `symptom` lines —
-// and everything else is excluded *by name*, never by luck:
+// is bound to the feed's `npc` line — the one NPC channel that still reaches
+// the DOM, x8 having stopped `symptom` from doing so (see `NPC_LINE_SELECTORS`)
+// — and everything else is excluded *by name*, never by luck:
 //
-//   scoped   `.fl-npc .fl-c` · `.fl-symptom .fl-c`   ← NPC state, text only
+//   scoped   `.fl-npc .fl-c`                         ← NPC state, text only
 //   excluded `.fl-t` (the per-line clock stamp)      ← chrome, not NPC state
 //            `.clk-*` · `.tb-clock` · `.dd-*`        ← topbar clock / D-DAY
 //            `.tly-*` · `.ledger` · `.th-*` · `.tr-*` ← tally = score
@@ -37,10 +38,43 @@ import {
 } from './invariant-utils.ts'
 import type { Hit } from './invariant-utils.ts'
 
-/** The NPC channels this assert is scoped to — spec §3 inv 2's subject. */
-const NPC_LINE_SELECTORS = ['.fl-npc', '.fl-symptom'] as const
-/** The text-carrying node inside an NPC line (the clock stamp is a sibling). */
+/**
+ * The NPC channel this assert is scoped to — spec §3 inv 2's subject.
+ *
+ * x8 — ONE selector, not two. `.fl-symptom` was the other, and the symptom line
+ * no longer reaches the DOM (민서, 08-10): `run-feed.ts` drops the kind before
+ * `append`, and `win-live-feed.css` no longer carries a skin for it. Leaving it
+ * listed would have made half this scope select nothing.
+ *
+ * Worth recording how it would have gone unnoticed: (a) below scans the RAW
+ * stylesheet text, so the removal note in `win-live-feed.css`'s own header —
+ * which of course names `.fl-symptom` — answered the existence check for it.
+ * The rot the assert is built to catch would have been papered over by the
+ * comment explaining the rot. The kind itself is untouched: it is still on the
+ * frozen seam and still reaches Call 2, which is what `NPC_FEED_KINDS` and (d)
+ * go on holding.
+ */
+const NPC_LINE_SELECTORS = ['.fl-npc'] as const
+/**
+ * The text-carrying node inside an NPC line (the clock stamp is a sibling).
+ *
+ * x11 — an NPC line has TWO text columns on the rendered desk now (민서, 08-10):
+ * `.fl-c` types itself out and is `aria-hidden`, and an `.fl-sr` twin carries
+ * the complete text for the `role="log"` to announce. `e2e/a11y.spec.ts` scopes
+ * BOTH, because a digit heard is rendered as surely as a digit seen.
+ *
+ * This file stays on `.fl-c` alone, and that is not drift. Its scans are over
+ * CSS RULES and SOURCE, not the DOM — and `.fl-sr` declares no rule of its own:
+ * its box comes from `.sr-only` in `shell.css`, which is shared chrome (`#toast`
+ * rides it too) and therefore not an NPC-scoped selector. There is no `.fl-sr`
+ * rule for a `content:` to hide in, so widening the CSS scan to it would add no
+ * reach at all — and, worse, would pass `(a)` below on the strength of the
+ * COMMENT in `win-live-feed.css` that names it, which is exactly the rot x8
+ * found when `.fl-symptom` went. `(e)` keeps that reasoning true.
+ */
 const NPC_TEXT_SELECTOR = '.fl-c'
+/** The announced twin — asserted to stay ruleless by `(e)`, never scanned. */
+const NPC_SR_SELECTOR = '.fl-sr'
 /**
  * Excluded by name. Each one renders digits legitimately: the per-line and
  * topbar clocks are chrome, the tally is score.
@@ -141,6 +175,27 @@ describe('[u9#c2] inv 2 — the scope is explicit, and it is real', () => {
     expect(formatAll(locate(rel(FEED_SHEET), feed, /\.fl-c\s+\.fl-t/))).toEqual([])
   })
 
+  it('(e) the announced twin declares no rule of its own — the scope above stays honest', () => {
+    // x11 — the load-bearing half of `NPC_TEXT_SELECTOR`'s note. This file's CSS
+    // scan skips `.fl-sr` because there is nothing there to scan; the moment
+    // somebody gives it a rule, that stops being true and a `content:` could
+    // inject a digit into the one column an assistive-tech user actually
+    // receives, unseen by every assert in this file.
+    //
+    // Comments are blanked first, on purpose: `win-live-feed.css`'s header
+    // NAMES `.fl-sr` while explaining why it is styled elsewhere, and a raw
+    // `includes` would read that prose as a rule — the same way x8's removal
+    // note answered `(a)`'s existence check for a selector that had just been
+    // deleted. If this fires: widen `NPC_TEXT_SELECTOR` to both columns and
+    // rewrite its note, rather than deleting the new rule.
+    const declared = rulesMentioning(allSheetText(), [NPC_SR_SELECTOR]).map((r) => r.selector)
+    expect(declared, `${NPC_SR_SELECTOR} grew a rule — the NPC CSS scope must widen with it`).toEqual([])
+
+    // …and the recipe it borrows instead is real, so the twin is actually
+    // hidden. A visible `.fl-sr` would print every line on the paper twice.
+    expect(allSheetText(), 'the shared sr-only recipe is gone — `.fl-sr` is visible').toContain('.sr-only')
+  })
+
   it('(d) the seam still names both NPC channels (a rename must break this scope)', () => {
     const seam = read(path.join(SRC, 'shared/view-driver.ts'))
     expect(seam.length, `${VIEW_DRIVER} is missing`).toBeGreaterThan(0)
@@ -212,14 +267,14 @@ describe('[u9#c2] the digit scanner has teeth', () => {
   })
 
   it('(c) a CSS pseudo-element counter under an NPC selector is caught', () => {
-    const sample = '.fl-symptom .fl-c::before{content:"3"}'
+    const sample = '.fl-npc .fl-c::before{content:"3"}'
     const scoped = rulesMentioning(sample, NPC_LINE_SELECTORS)
     expect(scoped).toHaveLength(1)
     expect(contentValues(scoped).some((c) => DIGIT_RE.test(c.value))).toBe(true)
   })
 
   it('(d) a CSS escape sequence in `content` is not mistaken for a rendered digit', () => {
-    const sample = '.fl-symptom .fl-c::before{content:"\\2014"}'
+    const sample = '.fl-npc .fl-c::before{content:"\\2014"}'
     const scoped = rulesMentioning(sample, NPC_LINE_SELECTORS)
     const digits = contentValues(scoped).filter((c) =>
       DIGIT_RE.test(c.value.replace(/\\[0-9a-fA-F]{1,6}\s?/g, '')),

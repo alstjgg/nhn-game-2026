@@ -33,7 +33,7 @@ import { problems } from '../../src/shared/predicates.ts'
 import type { StorageLike } from '../../src/runloop/index.ts'
 import type { FeedLine, ViewEvent } from '../../src/shared/view-driver.ts'
 import { displayStamp } from '../../src/client/driver/clock.ts'
-import { emptySymptomModel, feedLineModel } from '../../src/client/components/run-feed.ts'
+import { feedLineModel } from '../../src/client/components/run-feed.ts'
 import type { FixtureDriver } from '../../src/client/driver/fixture-driver.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
@@ -385,14 +385,17 @@ describe('(E) the clock gutter prints a time, and `21:04+` is not one', () => {
   }, 120_000)
 
   it('every gutter stamp the feed renders is a bare HH:MM', () => {
-    // Both builders, because they are two — and they were `run-feed.ts`'s
-    // envelope and `waiting-marker.ts`'s own node until x6 deleted the second
-    // one with the waiting marker (민서, 08-09). The claim this guard makes is
-    // about the GUTTER, not about waits: an authored stamp must reach it
-    // unmangled whatever built the node. So the second builder is now the one
-    // that is still there and still does not go through `feedLineModel` —
-    // `emptySymptomModel`, the line a beat prints when it closed silent. A
-    // `fallback` line rides along so the model is exercised on a second kind.
+    // The claim this guard makes is about the GUTTER, not about any one kind:
+    // an authored stamp must reach it unmangled whatever built the node.
+    //
+    // It used to say "both builders", because there were two — `run-feed.ts`'s
+    // envelope and `waiting-marker.ts`'s own node, then `emptySymptomModel`
+    // after x6 deleted the marker. x8 deleted that one too with the symptom
+    // line (민서, 08-10), so there is exactly ONE builder left and the second
+    // half of the claim has nothing to point at. What is left is the half that
+    // always mattered, run across three kinds so the envelope is exercised
+    // rather than one arm of it: `npc`, `fallback`, and the bare `displayStamp`
+    // the envelope delegates to.
     const cases: [authored: string, printed: string][] = [
       ['21:04+', '21:04'],
       ['21:04', '21:04'],
@@ -403,7 +406,8 @@ describe('(E) the clock gutter prints a time, and `21:04+` is not one', () => {
       expect(feedLineModel(npc).stamp, `run-feed printed ${authored} verbatim`).toBe(printed)
       const fallback = { kind: 'fallback', clock: authored, text: 'x' } as FeedLine
       expect(feedLineModel(fallback).stamp, `the fallback line printed ${authored} verbatim`).toBe(printed)
-      expect(emptySymptomModel(authored).stamp, `the empty symptom printed ${authored} verbatim`).toBe(printed)
+      const event = { kind: 'event', clock: authored, text: 'x' } as FeedLine
+      expect(feedLineModel(event).stamp, `the event line printed ${authored} verbatim`).toBe(printed)
       expect(displayStamp(authored)).toBe(printed)
     }
   })

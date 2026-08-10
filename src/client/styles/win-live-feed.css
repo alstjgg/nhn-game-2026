@@ -2,9 +2,17 @@
    win-live-feed.css — WINDOW 2 · LIVE FEED (desktop.css lines 414..470).
 
    Green-bar fanfold printing as you watch: one grid row per line, kind-coded
-   (event · radio · npc · symptom · fallback · mark).
+   (event · radio · npc · fallback · mark).
 
-   SIX skins, not seven. `wait` is the seventh kind on the frozen seam
+   FIVE skins, not seven — x8 took `.fl-symptom` the same way x6 took `.fl-wait`
+   (민서, 08-10). The symptoms were the engine's delta journal in italic under
+   every beat, and `run-feed.ts` now drops a `symptom` line before it reaches the
+   DOM, so nothing carries the class. The rules that went were `.fl-symptom
+   .fl-c` and its `::before`; `--symptom` / `--symptom-mark` went with them from
+   `tokens.css`, having no consumer left. The kind itself is untouched on the
+   seam and still reaches Call 2 as `SCENE_SYMPTOMS`.
+
+   And the older removal, kept because it is the precedent: `wait` is a kind on the frozen seam
    (`shared/view-driver.ts`) and has no skin here because x6 removed the waiting
    marker outright (민서, 08-09): `run-feed.ts` drops a `wait` line before it
    reaches the DOM, so nothing ever carries `.fl-wait`. The rules that went with
@@ -55,6 +63,22 @@
 .fl-c::before{content:attr(data-mark);display:inline-block;width:21px;margin-left:var(--space-n21);
   color:var(--feed-mark);font-size:var(--fs-10)}
 
+/* x11 — THE ROW HAS A TWIN (민서, 08-10). `.fl-c` is typed out character by
+   character now (`components/run-feed.ts`), and `#feedList` is a `role="log"`
+   live region: rewriting a node's text every frame inside one can have a screen
+   reader re-announce the line per character. So the typing half is
+   `aria-hidden` and each row carries an `.fl-sr` sibling holding the complete
+   text, landed at once, which is what the region announces.
+
+   It takes its box from `.sr-only` in `shell.css` — the recipe `#toast` has
+   used since x6b, extracted rather than copied; the constraints on it (a 1px
+   box, no `margin`, why not `display:none`) are argued there. Nothing is
+   declared for it here on purpose: a second rule for the same node in a second
+   sheet is how one of them ends up half-true.
+
+   The mark keeps printing from `data-mark` above, so an empty `.fl-c` is a
+   gutter mark with nothing after it yet — the print head, before the line. */
+
 /* Each kind below sets its SIZE and its COLOUR; the face comes from `.fl-c` and
    is not restated. There used to be one exception — the radio's own channel
    label, a fixed `ECHO-n · 무전` caption in `--mono` block-set above the
@@ -78,11 +102,13 @@
 .fl-radio{margin:var(--space-2) 0}
 .fl-radio .fl-c{font-weight:700;color:var(--radio);letter-spacing:-.01em;font-size:var(--fs-11)}
 .fl-npc .fl-c{font-size:var(--fs-12);color:var(--feed-3)}
-.fl-npc .fl-c b{font-weight:700;color:var(--npc);font-size:var(--fs-10-5);letter-spacing:.04em}
+/* x8 — the speaker sits INSIDE a sentence now (`표기웅 “…”라고 말한다`), so it is
+   set as a name in running text and not as a screenplay slug. The old rule was
+   700 weight, a smaller size and .04em tracking — the three things that made it
+   read as a character cue block above a line of dialogue. Colour and a light
+   weight are kept: the name is still the informative half of the line. */
+.fl-npc .fl-c b{font-weight:600;color:var(--npc)}
 .fl-npc .fl-c q{quotes:'“' '”';font-style:normal}
-.fl-symptom .fl-c{font-style:italic;font-size:var(--fs-11);
-  color:var(--symptom);padding-left:var(--space-26)}
-.fl-symptom .fl-c::before{color:var(--symptom-mark);margin-left:var(--space-n39);width:39px;text-align:center}
 .fl-fallback{background:repeating-linear-gradient(135deg,var(--seal-a09) 0 6px,transparent 6px 12px);
   border-top:1px solid var(--seal-a4);border-bottom:1px solid var(--seal-a4);margin:var(--space-3) 0}
 .fl-fallback .fl-c{color:var(--seal-2);font-size:var(--fs-10-5)}

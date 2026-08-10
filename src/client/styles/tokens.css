@@ -145,8 +145,9 @@
   --feed-rule:#5c6355;
   --radio:#1a2f42;
   --npc:#4a3524;
-  --symptom:#6a4a3a;
-  --symptom-mark:#96604f;
+  /* x8 — `--symptom` / `--symptom-mark` are gone, the way `--feed-wait` went in
+     x7: the symptom line no longer reaches the DOM, so nothing consumed them.
+     See `win-live-feed.css`'s header for the removal. */
   --band-1:rgba(150,180,145,.30);
   --band-2:rgba(150,180,145,.22);
 }

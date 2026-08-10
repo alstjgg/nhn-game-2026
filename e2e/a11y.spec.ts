@@ -36,8 +36,26 @@ const MEMBRANE_OPS = ['slot', 'unslot', 'mine', 'deploy', 'new_run'] as const
 /** Any control that claims to perform a membrane op, however it is marked up. */
 const MEMBRANE_SELECTOR = MEMBRANE_OPS.map((op) => `[data-op="${op}"]`).join(', ')
 
-/** NPC channels (spec §3 inv 2). The clock stamp `.fl-t` is chrome, excluded. */
-const NPC_TEXT_SELECTOR = '.fl-npc .fl-c, .fl-symptom .fl-c'
+/**
+ * The NPC channel (spec §3 inv 2). The clock stamp `.fl-t` is chrome, excluded.
+ *
+ * x8 — ONE channel, not two. `.fl-symptom .fl-c` was the second, and the
+ * symptom line no longer reaches the DOM at all (민서, 08-10), so leaving it
+ * here would have quietly turned half the scope into a selector that matches
+ * nothing — the exact silent-emptying this assert's scoping rule exists to
+ * prevent. Kept in step with `tests/invariants/no-digit-npc.test.ts`.
+ *
+ * x11 — TWO COLUMNS OF THE ONE CHANNEL (민서, 08-10). The reveal became a
+ * typewriter, so a line is printed twice: `.fl-c` fills character by character
+ * and is `aria-hidden="true"` so a `role="log"` does not announce it per
+ * keystroke, and the sr-only `.fl-sr` beside it carries the complete text for
+ * the reader. Inv 2 says no DIGIT renders for NPC state, and a digit heard is
+ * rendered as surely as a digit seen — a scope that stayed on `.fl-c` would
+ * have gone on passing while the announced half of every NPC line, the half an
+ * assistive-tech user actually receives, was never scanned at all. Both columns
+ * are in scope and neither is `.fl-t`, so the exclusion below is unaffected.
+ */
+const NPC_TEXT_SELECTOR = '.fl-npc .fl-c, .fl-npc .fl-sr'
 /** Digit-bearing surfaces that are score or chrome, never NPC state. */
 /* x4 — the ledger's table became record lines; the exclusion follows the
    selectors that actually carry score digits. Kept in step with
@@ -787,8 +805,19 @@ test.describe('inv 2 · rendered DOM — no digit renders for NPC state', () => 
   })
 
   test('inv 2 — no digit renders inside an NPC or symptom line', async ({ page }) => {
-    // Scoped BY SELECTOR: `.fl-npc .fl-c` / `.fl-symptom .fl-c` only. The
-    // per-line clock stamp `.fl-t` is a sibling and is not read.
+    // Scoped BY SELECTOR: the NPC line's two content columns only — `.fl-c`,
+    // what the paper prints, and `.fl-sr`, what a reader hears (x11). The
+    // per-line clock stamp `.fl-t` is a sibling of both and is not read.
+    //
+    // WHAT THIS DOES NOT PROVE, said plainly (민서, 08-10): the desk boots into
+    // BUILD and the driver holds the run's stream until the file is committed
+    // (spec-client §5.1), so `boot()` alone leaves the fanfold empty and this
+    // scan runs over zero nodes. It is a WELL-FORMEDNESS check here, paired with
+    // the two below; the scan that runs over a real day's NPC lines — with its
+    // own non-vacuity guard on the count — is `acceptance.spec.ts` #2 (c),
+    // which drives the desk first. A day is not driven here on purpose: this
+    // file's boot is shared with the focus-order and landmark asserts, which
+    // measure the desk as the operator meets it.
     const offenders = await page.locator(NPC_TEXT_SELECTOR).evaluateAll((nodes) =>
       nodes
         .map((n) => (n.textContent ?? '').trim())

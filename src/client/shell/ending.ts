@@ -32,6 +32,17 @@
 // seconds with the finished number sitting alone on the desk, and only then
 // covers it.
 //
+// AND THE TAIL IS PART OF THE SAME PATIENCE (x11, 민서 08-10). The record is not
+// the only thing still writing itself when a day closes: the LIVE FEED prints
+// through a paced reveal queue and the day's last minutes are its most crowded,
+// so at `score` the fanfold is still some way behind the run. It used to be made
+// to catch up in one frame — `run-feed.ts` dumped its whole queue on `run_end` —
+// which is why the veil could come down at a fixed distance from the ledger and
+// be sure the paper had stopped. The dump is gone, so the distance is no longer
+// fixed and the walk asks instead: `shell/feed-drain.ts` publishes what the feed
+// still owes and this waits for it to reach zero. 민서: "If the tail is still
+// typing, nothing should stop it, not even the ending."
+//
 // ONCE PER PAGE LOAD, and the guard is a module-level flag rather than anything
 // persisted: a judge who reloads gets a fresh sitting (H2, `run-state.ts`), and
 // a sitting that can end is a sitting that can end again.
@@ -43,6 +54,7 @@
 import type { FixtureDriver, ViewEvent } from '../driver/index.ts'
 import { deathsOf } from '../../shared/predicates.ts'
 import { button, el, must } from './dom.ts'
+import { feedDrained } from './feed-drain.ts'
 
 /* ── the numbers the copy is written against ─────────────────────────────── */
 
@@ -644,10 +656,24 @@ let raised = false
 async function raise(host: Window, driver: FixtureDriver, kind: EndingKind, numbers: EndingNumbers): Promise<void> {
   if (raised) return
   raised = true
-  // The portal stops. The day is scored and the clock has nothing left to
-  // advance, but a rate left running keeps the pump feeding a stream that is
-  // over — and the desk under the veil should be as still as the plate says it
-  // is.
+  // The portal stops: the desk under the veil should be as still as the plate
+  // says it is, and nothing may release another minute behind it.
+  //
+  // x11 (08-10) — WHAT THIS DOES NOT STOP is the reveal pump, and the note here
+  // used to read as though it did ("a rate left running keeps the pump feeding a
+  // stream that is over"). `driver/fixture-driver.ts` ticks the animation
+  // channel while `clock.running || clock.ended`, deliberately — R4: the run
+  // closes at 21:04 in the same frame its terminal batch is released, so a pump
+  // that stopped with the clock would paint the day's last report and the day's
+  // last lines in one frame. The rate has never been what holds the paper.
+  //
+  // Which is what makes the wait below this call in `walkEnding` the only thing
+  // protecting the tail, and what makes it SAFE to keep this line where it is:
+  // on the earned lane the clock has already halted itself at `end` before the
+  // `score` that started the walk, so this changes nothing the feed rides on. It
+  // bites on the forced lane alone, where it is stopping a day that is genuinely
+  // still running (and there `run-feed.ts`'s own settle watchdog is what lands
+  // whatever is left, exactly as it does for any other pause).
   driver.clock.setRate(0)
   await openEnding(must('#app'), kind, numbers)
   leaveDesk(host)
@@ -660,6 +686,18 @@ async function raise(host: Window, driver: FixtureDriver, kind: EndingKind, numb
  * then raises the named walk on the preview toll, because a reviewer opening
  * `?ending=bad` is reviewing the PLATE and should not have to lose a tunnel
  * three times first.
+ *
+ * x11 — AND THE DRAIN IS NOT ADDED BACK TO IT (민서, 08-10). Every wait this
+ * lane skips — the `score`, the ledger, the held beat — is skipped for one
+ * reason: there is no day behind this plate. The drain is a wait of exactly that
+ * family. What it protects is a RECORD ENDING — the last lines of a day the
+ * operator played, which must not be covered mid-sentence — and the forced lane
+ * has no such lines: it interrupts a day that is still running, or one that has
+ * not been started at all, and it does so on purpose. Making the preview queue
+ * behind the fanfold's pacing would be the review lane waiting on the very thing
+ * it exists not to wait for. (In practice a reviewer opens it at the hand-over,
+ * where the desk is held at rate 0 with nothing queued and `feedDrained()` would
+ * resolve on the spot — but "it is usually free" is not the reason it is absent.)
  */
 async function walkEnding(host: Window, ports: EndingPorts): Promise<void> {
   const { driver, deskReady } = ports
@@ -677,7 +715,42 @@ async function walkEnding(host: Window, ports: EndingPorts): Promise<void> {
   const { kind, numbers } = await day
 
   // The day is scored; now let the record say so before covering it.
+  //
+  // THE ORDER OF THESE THREE IS LOAD-BEARING, and each line is where it is for
+  // its own reason.
+  //
+  // `ledgerLanded()` stays FIRST because it is the only one of the three that
+  // can go stale. It is a `MutationObserver` with no synchronous first look (see
+  // there — a `final` already on the DOM belongs to an earlier day), so it has
+  // to be armed while the record it is watching is still `pending`. Put any wait
+  // in front of it and a drain that outlasted the ledger's ~9 s count would arm
+  // the observer onto an attribute that had already reached its last value: the
+  // ending would then wait for a mutation that is never coming, and hang for the
+  // rest of the sitting. The two waits are not interchangeable, however alike
+  // they look on the page.
+  //
+  // `feedDrained()` goes SECOND, between the ledger and the beat, and the beat
+  // is what decides it. HELD_BEAT_MS is not a delay, it is a held frame: two
+  // seconds of the finished number sitting alone on a desk that has stopped
+  // moving. Spent while the fanfold was still printing, it would be two seconds
+  // of paper scrolling under a number nobody was being given time to read, and
+  // the veil would then land on the very frame the last line arrived in — the
+  // beat consumed by the drain and no stillness left anywhere. Waiting here
+  // keeps the beat's meaning by widening what "finished" covers: the record has
+  // landed, the paper has caught up, and only then does the desk get its pause.
+  //
+  // The feed's own 집계 line is inside this wait, which is the neatest statement
+  // of why it exists — the ledger's headline and the fanfold's closing line are
+  // two printings of one count, and covering the paper before the second one
+  // lands would tear the day's last sentence in half.
+  //
+  // NO CEILING on it, and that is a decision rather than an oversight. A timeout
+  // could only fire by covering a tail that was still typing, which is the exact
+  // failure this whole change removes; and the count's only writer is the pump
+  // that empties it, so "it never reaches zero" is a defect in the feed to be
+  // fixed there. `tests/shell/feed-drain.test.ts` is what stands over that.
   await ledgerLanded()
+  await feedDrained()
   await sleep(host, HELD_BEAT_MS)
   await raise(host, driver, kind, numbers)
 }

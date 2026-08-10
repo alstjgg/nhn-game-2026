@@ -19,7 +19,15 @@ import type { Locator, Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { awaitRecordFinal, confirmDeploy, deployFile, mineFirst, raiseWindow, turnToAgent } from './fixtures/harness.ts'
+import {
+  awaitRecordFinal,
+  confirmDeploy,
+  deployFile,
+  flushFeed,
+  mineFirst,
+  raiseWindow,
+  turnToAgent,
+} from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -89,6 +97,14 @@ async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
+  // x12 — and the paper is landed with it, for the reason `fixtures/harness.ts`'s
+  // own `drain` records: the record's count-up now waits for the LIVE FEED to
+  // have printed its way to the day's `score` (`shell/feed-reach.ts`), and a
+  // whole day released in one call is not something the reveal can be left to
+  // pace inside a test budget. The arriving REPORT is gated on the same paper,
+  // so this is also what keeps the documents below readable in the frame after
+  // the drain rather than a reading-paced minute later.
+  await flushFeed(page)
   // U3 — no more sheet to reveal; wait the record out to final instead.
   await awaitRecordFinal(page)
 }
@@ -232,23 +248,17 @@ test.describe('report renders once after the last beat', () => {
     await expect(page.locator(`${FACTS} li`)).toHaveCount(0)
   })
 
-  // x6 — the DOM half of the seal rule; the rule itself is proved under node
-  // (`tests/windows/reports.test.ts`, `[x6]`). A 검인 chop is a receipt for the
-  // SITTING, and the sitting is not received until the driver's `score` — its
-  // terminal — has landed. Reduced motion is on in this describe, so the replay
-  // is finished on its first paint and `score` is the only thing left to wait
-  // for: exactly the case that used to stamp a blank sheet.
-  test('report renders once after the last beat — the 검인 chop waits for the day to close', async ({
-    page,
-  }) => {
-    const chop = page.locator(`${REP} .sig-stamp`)
-    await expect(chop, 'the signature block never mounted — the oracle is vacuous').toHaveCount(1)
-    await expect(chop, 'a 수신 완료 chop on a day that has filed nothing').toBeHidden()
+  /* x13 — 'the 검인 chop waits for the day to close' was here (민서, 08-10).
+     It was the DOM half of a rule proved under node, and it held the case that
+     used to stamp a blank sheet: reduced motion is on in this describe, so the
+     replay finished on its first paint and the driver's `score` was the only
+     thing left to wait for.
 
-    await drain(page)
-    await expect(chop).toHaveClass(/\bon\b/)
-    await expect(chop).toBeVisible()
-  })
+     There is no chop. `.sig-stamp` selects nothing, so leaving the assert would
+     have been worse than deleting it — a scope that matches no node passes
+     forever. The reason the chop went rather than being timed a fourth time is
+     in `components/report-view.ts`; what it certified is now said by the
+     transmission being on the page and by the terminal record under it. */
 
   test('report renders once after the last beat — both panes render the event, in event order', async ({
     page,
