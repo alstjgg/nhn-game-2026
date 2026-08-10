@@ -1,9 +1,9 @@
-# AI 활용 기술 문서 — 긴급대응실 임용을 축하합니다
+# AI 활용 기술 문서 — 긴급상황대응실 운영자 임용을 축하합니다
 
-본 문서는 「긴급대응실 임용을 축하합니다」의 AI 활용을 기술한다. AI는 이 프로젝트에서 네 가지
+본 문서는 「긴급상황대응실 운영자 임용을 축하합니다」의 AI 활용을 기술한다. AI는 이 프로젝트에서 네 가지
 역할로 사용되었고, 각 역할에서 AI에게 허용된 범위는 가정이 아니라 측정으로 정해졌다.
 
-게임에서 player는 긴급대응실에 배치된 AI agent를 지휘한다 — 직접 명령하는 것이 아니라, 게임
+게임에서 player는 긴급상황대응실이 현장에 파견한 AI agent를 지휘한다 — 직접 명령하는 것이 아니라, 게임
 안에서 채굴한 문장(block)을 agent의 성격 문서에 끼워 넣는 방식으로. agent는 회선으로 들어오는
 사건을 듣고 gate마다 stance를 결정하며, 하루가 끝나면 보고서를 쓴다.
 
@@ -13,14 +13,6 @@
 | 3 | researcher | 무엇을 만들지를 정하기 위한 측정 프로그램 수행 |
 | 4 | developer | 게임 코드의 작성, 리뷰 및 통합 |
 | 5 | creator | 시나리오, 오디오 등 콘텐츠 생성 |
-
-6장은 확인된 한계의 총람이다 — 각 장은 가장 중요한 한계 하나만 본문에 남기고, 나머지 전부를
-6장에 모았다. 7장은 네 역할에 공통으로 적용된 출력 개선 기법, 8장은 사람이 보유한 영역,
-9장은 본 문서의 생성 방식과 외부 asset 및 오픈소스 출처를 다룬다. **부록 A는 게임이 실행 중
-사용하는 활성 runtime prompt 6종의 전문이다** — 본문은 발췌만 인용한다.
-
-**표기.** 기술 용어는 원어로 표기한다(prompt, gate, stance, schema, lint, proxy 등).
-인용한 경로는 모두 저장소 최상위 기준이며, 저장소는 `github.com/alstjgg/nhn-game-2026`이다.
 
 ---
 
@@ -46,13 +38,13 @@ Data layer가 Client와 AWS 양쪽에 걸쳐 있으나 도달 경로는 다르�
 
 ## 1.2 전역 규칙
 
-**① membrane — player는 LLM에 자유 텍스트를 입력하지 않는다.**
+**1. membrane — player는 LLM에 자유 텍스트를 입력하지 않는다.**
 
 - 모든 LLM 입력은 구조화된 게임 요소로 조립
 - UI, prompt, transport, data schema 각 층에서 개별적으로 강제
 - input 측에서 성립. output 측 누출은 별도 문제로 남아 있음 (2.5절)
 
-**② 모델의 특성적 실패에 한정한 불신.**
+**2. 모델의 특성적 실패에 한정한 불신.**
 
 - LLM은 사실, 판정, 상태를 소유하지 않음
 - 자기 보고는 증거로 취급하지 않음
@@ -751,8 +743,8 @@ OpenAI 출력물에 대한 제한 사항을 manifest에 함께 기재한다 — 
 | 런타임 추론 | Anthropic Claude haiku (Amazon Bedrock Converse 경유) |
 | 측정 프로그램 | Anthropic Claude sonnet / haiku (Anthropic API 직접 호출) |
 | 이미지 생성 | OpenAI gpt-image-1 |
-| 개발 및 문서 | Anthropic Claude (Claude Code) |
-| 인프라 | AWS API Gateway, AWS Lambda, GitHub Pages, GitHub Actions |
+| 개발 및 문서 | Anthropic Claude, OpenAI Codex|
+| 인프라 | AWS Lambda, GitHub Pages, GitHub Actions |
 
 ---
 
