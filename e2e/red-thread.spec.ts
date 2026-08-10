@@ -23,7 +23,7 @@
 // re-points `playwright.config.ts` per C5) — nothing below assumes a dev server.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
-import { awaitRecordFinal, turnToAgent } from './fixtures/harness.ts'
+import { awaitRecordFinal, flushFeed, turnToAgent } from './fixtures/harness.ts'
 
 const THREADS = '#threads'
 const PATH = `${THREADS} path`
@@ -65,6 +65,11 @@ async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
+  // x12 — and the paper with it: the record's count-up waits for the LIVE FEED
+  // to reach the day's `score` (`shell/feed-reach.ts`), and a day released in one
+  // call is not something the reveal can be left to pace inside a test budget.
+  // See `fixtures/harness.ts`'s own `drain` for the whole of the reasoning.
+  await flushFeed(page)
   // U3 — no more sheet to reveal; wait the record out to final instead.
   await awaitRecordFinal(page)
 }

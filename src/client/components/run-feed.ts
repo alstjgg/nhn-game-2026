@@ -29,6 +29,15 @@
 //    so the ending can wait for the tail. 민서: "if the tail is still typing,
 //    nothing should stop it, not even the ending."
 //
+// x12 (민서, 08-10) — AND THE PAPER IS NOW THE THING OTHER WINDOWS WAIT FOR. The
+// same lag that made the ending wait made REPORTS arrive early: a `report`
+// typed the round's write-up while the fanfold was still printing the beats it
+// describes. So the pump publishes where it has GOT TO — `shell/feed-reach.ts`,
+// a cue per `report` and one for the `score` — and REPORTS holds its document
+// until the paper is there. This window is unchanged in what it prints and in
+// what it costs; it simply says so out loud. See `apply`, which is the only
+// publisher, and the pacing block below for the hold that went the other way.
+//
 // The line MODEL is kept apart from the DOM on purpose: `feedLineModel` is
 // pure, so inv 2's digit scan ([u5#c3]) runs in `environment: 'node'`.
 //
@@ -41,6 +50,7 @@ import { animationsFrozen, displayStamp, mm, registerAnimation } from '../driver
 import { el } from '../shell/dom.ts'
 import { publishFeedStamp } from '../shell/feed-clock.ts'
 import { publishFeedPending } from '../shell/feed-drain.ts'
+import { publishFeedMounted, publishFeedReached } from '../shell/feed-reach.ts'
 import { callsignOf } from './dossier.ts'
 import { FALLBACK_CLASS, fallbackNoticeLine } from './fallback-notice.ts'
 import type { FallbackClass } from './fallback-notice.ts'
@@ -355,13 +365,28 @@ export function printsFeedLine(event: ViewEvent): boolean {
   return event.type === 'feed' && !isUndrawn(event.line)
 }
 
-/**
- * The reveal holds while an arrived report is being read: REPORTS types its
- * document the moment the `report` event lands on the seam, and the feed
- * printing over it defeats the reading. Lines keep queueing under the hold;
- * every flush bypass overrides it. Feel value, tuned in play.
- */
-const REPORT_HOLD_MS = 9000
+/* THE REPORT HOLD IS GONE (x12, 민서 08-10), and what replaced it runs the
+   other way round.
+
+   `REPORT_HOLD_MS = 9000` STOPPED THE FANFOLD for nine seconds whenever a
+   `report` event arrived, so the operator could read the write-up without the
+   paper printing over it. It was sized when the reveal landed lines whole and
+   the feed trailed the seam by a beat or two: pausing the one that was slightly
+   ahead let the two surfaces meet.
+
+   x11 inverted that. The paper types now, at reading pace, and it reaches a
+   round's report tens of seconds after the seam emits it — so the hold was
+   stopping the surface that was already BEHIND, for the benefit of the one that
+   had overtaken it, and every hold put it further behind the next one.
+
+   The gate REPLACED it rather than joining it. Both could not stand: a hold is
+   the paper waiting for the document, the gate is the document waiting for the
+   paper (`shell/feed-reach.ts`), and running both would be two surfaces each
+   waiting for the other to move — nine seconds of stopped paper added to every
+   round of a lag the stopping is what caused. The reading the hold was buying
+   is bought by the gate for free, and more honestly: the write-up now types
+   over a fanfold that has just finished saying what it is about, instead of one
+   that has been frozen mid-round.                                            */
 
 /* ── the window's fanfold ────────────────────────────────────────────────── */
 
@@ -588,6 +613,20 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   // x7 — the first agent, until `meta` names the sitting. Same reasoning as
   // `feedLineModel`'s default above: the boot state is a DOCUMENT question.
   let callsign = callsignOf(1)
+  /**
+   * The sitting the paper is printing, off the `meta` it has APPLIED (x12).
+   *
+   * Not the one that has arrived. Every cue this window publishes carries it
+   * (`shell/feed-reach.ts` — a round number repeats every sitting), and the run
+   * a cue belongs to is the run whose `meta` the paper has already got past —
+   * which is what the seam's own ordering guarantees it is, since `meta` opens
+   * the day the reports below it belong to. Reading an arrival here would name
+   * the next day's run on a report still queued from the last one.
+   *
+   * `0` before the first `meta`, exactly as `windows/reports.ts` holds it, so a
+   * pre-first-press cue is never mistaken for run 1's.
+   */
+  let run = 0
   let pending: { cls: FallbackClass; code: string } | null = null
 
   const motionless = (): boolean => {
@@ -679,10 +718,12 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
    * The desk's clock, moved by a line the run has REACHED.
    *
    * x6 — the top bar's clock is this stamp, published as the line lands rather
-   * than as the event arrives. The reveal queue holds lines back (and holds
-   * harder on a report), so publishing from `receive` would put the chrome ahead
-   * of the paper — the mismatch the whole slot exists to close
-   * (`shell/feed-clock.ts`).
+   * than as the event arrives. The reveal queue holds lines back, so publishing
+   * from `receive` would put the chrome ahead of the paper — the mismatch the
+   * whole slot exists to close (`shell/feed-clock.ts`). x12: it used to hold
+   * harder on a report, and that clause is deleted rather than reworded — the
+   * report hold is gone (see where `REPORT_HOLD_MS` was), and the reasoning here
+   * never depended on it, only on there being a queue at all.
    *
    * x8 — and it is called for the lines the fanfold DROPS as well as the ones it
    * prints (민서, 08-10), which is why it is a function now. Dropping the
@@ -707,7 +748,6 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
      whole. Declared above the append path because everything below publishes to
      it — the count, and the one line that is still arriving. */
   const queue: ViewEvent[] = []
-  let holdMs = 0
   /** The pause owed before the next line lands — a row's, or the desk clock's. */
   let pauseMs = 0
   /** Has the head line's desk-clock pause already been charged? See `printNext`. */
@@ -837,6 +877,15 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
    * `run_end`, and a dropped `wait`/`symptom` line) is consumed for free. See
    * `printsFeedLine`, which answers the same question one step earlier so the
    * pump can look at the head of the queue before it commits to a pause.
+   *
+   * x12 — AND IT IS THE ONE PLACE THE PAPER SAYS WHERE IT HAS GOT TO. Every cue
+   * `shell/feed-reach.ts` carries is published from an arm below, which is not
+   * tidiness: it is what makes the gate release on every path without any of
+   * them being taught about it. `flush()` is a run through `apply`, so a seek, a
+   * reduced-motion desk, frozen animations, a halted clock and the mount-time
+   * prefill all land the cues with the lines they belong to. The one rule this
+   * places on future edits is the one stated here — a cue is published where the
+   * event is APPLIED, never where it arrives.
    */
   const apply = (event: ViewEvent): boolean => {
     switch (event.type) {
@@ -846,6 +895,8 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
         // `ECHO-0` went with the literal: `callsignOf` answers a pre-first-press
         // run itself, and one guard is one place that can drift.
         callsign = callsignOf(event.run)
+        // x12 — the sitting every cue below is stamped with. See `run`.
+        run = event.run
         stock.textContent = HEAD_STOCK + HEAD_SEP + callsign
         return false
       case 'feed':
@@ -866,20 +917,39 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
       // being told this event bought no paper.
       case 'waiting':
         return false
-      case 'score':
+      case 'score': {
         // The day's count, from the ledger the run actually scored — see
         // `tally-line.ts` for why it is not a timeline event any more. It reuses
         // the last stamp the same way an opening wait marker does: the seam's
         // `score` carries no clock, and the day is over, so the line belongs to
         // the minute the run closed on rather than to one of its own.
-        return append({
+        const printed = append({
           ...envelope('event', '', [{ p: 'text', text: tallyLineText(event) }]),
           stamp,
         })
+        // x12 — and the terminal record's count-up waits for this. The ledger's
+        // headline and this 집계 line are two printings of ONE count (the same
+        // pairing `shell/ending.ts` reasons about when it waits for the tail),
+        // so the record rolling to the day's number while the paper had not yet
+        // said it was the outcome arriving ahead of its own last line.
+        // Published AFTER the append, so the line is on the page — it is still
+        // typing, which is right: the two now count up together.
+        publishFeedReached({ at: 'score', run })
+        return printed
+      }
+      case 'report':
+        // Nothing is drawn and nothing is charged — the write-up is REPORTS's
+        // document, and this window has never printed a word of it. What is new
+        // in x12 is that walking past the event is itself the news: the paper
+        // has printed everything the seam emitted before this report, which is
+        // the round's last beat, so the round is now readable without the
+        // document describing beats the operator has not seen.
+        publishFeedReached({ at: 'report', run, round: event.round })
+        return false
       default:
-        // `report` and `run_end` belong to other windows — and since x8 so do
-        // `beat_start` / `beat_end`, which this window watched only to decide
-        // whether a beat owed a `(변화 없음)` line. Nothing is owed now.
+        // `run_end` belongs to another window — and since x8 so do `beat_start`
+        // / `beat_end`, which this window watched only to decide whether a beat
+        // owed a `(변화 없음)` line. Nothing is owed now.
         return false
     }
   }
@@ -909,7 +979,6 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
     // the instant it returns: `windows/live-feed.ts` hands `flush` to `seek`,
     // and every test and e2e read that follows one reads `textContent`.
     settleTyping()
-    holdMs = 0
     pauseMs = 0
     gapPaid = false
     publishPending()
@@ -981,10 +1050,6 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
       else typing.content.replaceChildren(...typedParts(typing.parts, cursor.chars).map(partNode))
       return
     }
-    if (holdMs > 0) {
-      holdMs -= realMs
-      return
-    }
     if (pauseMs > 0) {
       pauseMs -= realMs
       return
@@ -1020,7 +1085,10 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   }
 
   const receive = (event: ViewEvent): void => {
-    if (event.type === 'report') holdMs = REPORT_HOLD_MS
+    // x12 — and NOTHING IS DONE WITH THE EVENT HERE. A `report` used to arm the
+    // nine-second hold from this line (see the block where `REPORT_HOLD_MS`
+    // was); it now rides the queue like everything else and is announced when
+    // the pump walks past it, which is the whole of the cue.
     queue.push(event)
     publishPending()
     // x11 — `run_end` NO LONGER FLUSHES (민서, 08-10). The day used to end by
@@ -1045,6 +1113,14 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   // `follow` after it returned early — a run of 43 lines with `scrollTop` still
   // 0, measured. One pin here and the first re-read has a tail to find.
   follow()
+
+  // x12 — THERE IS PAPER ON THIS DESK, said before a word of it is printed.
+  // `shell/feed-reach.ts` answers every cue as already-reached until a fanfold
+  // announces itself, because a desk with no LIVE FEED must not hang the
+  // documents that would otherwise wait for it. This is where that stops being
+  // true, and it is above the prefill so there is no window in which this window
+  // exists and its cues are answered for an absent one.
+  publishFeedMounted()
 
   // The reference's `prefillFeed`: everything the driver already released is
   // laid down without animation budget, then the tail is caught up once.

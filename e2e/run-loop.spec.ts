@@ -65,6 +65,19 @@ async function frame(page: Page): Promise<Frame> {
  * sheet to reveal (U3), so unlike the pre-U3 helper this waits on nothing
  * beyond the release itself; callers that need the record settled wait for
  * `LEDGER`'s `final` state explicitly (`drainToFinal`).
+ *
+ * x12 — …and it LANDS THE PAPER, for the reason `e2e/fixtures/harness.ts`'s own
+ * `drain` records at length. The terminal record's count-up now waits for the
+ * LIVE FEED to have printed its way to the day's `score` (`shell/feed-reach.ts`),
+ * and this call releases a whole day of stream in one go — which no player can
+ * do. On the lanes here that are actually RUNNING (the second sitting: NEW RUN
+ * commits the file and opens the day in one press, W4) that put ~78 s of
+ * reading-paced paper in front of every `final` assertion below. The flush is
+ * the same instruction reaching the surface that had started pacing it.
+ *
+ * The reveal's pacing is asserted elsewhere and from the outside —
+ * `e2e/live-feed.spec.ts`'s `the day’s end drains`, which drives `__shell.drain`
+ * itself precisely so it can watch the paper arrive on its own.
  */
 async function drain(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -72,6 +85,7 @@ async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
+  await flushFeed(page)
 }
 
 async function phase(page: Page): Promise<string> {
@@ -122,13 +136,25 @@ async function boot(page: Page): Promise<void> {
   await turnToAgent(page)
 }
 
-/** Drains to 21:04 and returns the measured `run_end → final` milliseconds. */
+/**
+ * Drains to 21:04 and returns the measured `run_end → final` milliseconds.
+ *
+ * x12 — the fanfold is landed inside the measurement, on the same tick as the
+ * release. What this test owns is the COUNT-UP's cadence, and since the record
+ * waits for the paper to reach the day's `score` (`shell/feed-reach.ts`) an
+ * unflushed measurement would be the cadence plus however far behind the reveal
+ * happened to be — a number that moves with the pacing constants of another
+ * window. The flush pins the zero to the same place it has always been.
+ */
 async function drainAndTime(page: Page): Promise<number> {
   return page.evaluate(async () => {
     const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
+    const feed = (window as unknown as { __feed?: { flush(): void } }).__feed
+    if (!feed) throw new Error('window.__feed is not exposed by the LIVE FEED window')
     const t0 = performance.now()
     handle.drain()
+    feed.flush()
     await new Promise<void>((resolve) => {
       const step = (): void => {
         if (document.querySelector('#w-rep .terminal-record[data-tally-state="final"]')) resolve()

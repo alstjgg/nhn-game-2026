@@ -19,7 +19,15 @@ import type { Locator, Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { awaitRecordFinal, confirmDeploy, deployFile, mineFirst, raiseWindow, turnToAgent } from './fixtures/harness.ts'
+import {
+  awaitRecordFinal,
+  confirmDeploy,
+  deployFile,
+  flushFeed,
+  mineFirst,
+  raiseWindow,
+  turnToAgent,
+} from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -89,6 +97,14 @@ async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
+  // x12 — and the paper is landed with it, for the reason `fixtures/harness.ts`'s
+  // own `drain` records: the record's count-up now waits for the LIVE FEED to
+  // have printed its way to the day's `score` (`shell/feed-reach.ts`), and a
+  // whole day released in one call is not something the reveal can be left to
+  // pace inside a test budget. The arriving REPORT is gated on the same paper,
+  // so this is also what keeps the documents below readable in the frame after
+  // the drain rather than a reading-paced minute later.
+  await flushFeed(page)
   // U3 — no more sheet to reveal; wait the record out to final instead.
   await awaitRecordFinal(page)
 }

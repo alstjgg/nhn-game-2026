@@ -153,12 +153,28 @@ export async function awaitRecordFinal(page: Page): Promise<void> {
  * x11 — SETTLED RESULT, NOT SETTLED PAPER (민서, 08-10). That promise was once
  * both, because `run_end` made the LIVE FEED dump its whole reveal queue in a
  * single frame. It drains at reading pace now, with `shell/ending.ts` waiting on
- * it (`shell/feed-drain.ts`), so this returns while the fanfold is still
- * printing — short by however many lines the reveal still owes, and with the
- * last line it did print stopped mid-word by the typewriter.
+ * it (`shell/feed-drain.ts`), so this returned while the fanfold was still
+ * printing.
  *
- * A caller that reads the LEDGER is unaffected and needs nothing more. A caller
- * that reads the FANFOLD wants `flushFeed` below, immediately after this.
+ * x12 — AND SO THE PAPER IS SETTLED HERE, because the result now waits for it
+ * (민서, 08-10). The terminal record's count-up holds until the fanfold has
+ * printed its way to the same `score` it mints the 집계 line from
+ * (`shell/feed-reach.ts`), so `awaitRecordFinal` below is now a wait on the
+ * PAPER as much as on the ledger — and this helper releases a whole day's stream
+ * in a single call, which is a thing no player can do. On a lane whose day is
+ * actually RUNNING (anything that pressed 배치 first — `deployFile`, and `newRun`
+ * under W4's one press) that left ~78 s of reading-paced paper standing between
+ * the drain and the record, inside a 40 s assertion: eleven specs failed as
+ * "record stuck at pending", none of them about the feed.
+ *
+ * The flush is the honest resolution and not a budget dodge. `drain()` is
+ * already the lane that says "release everything now"; landing the paper in the
+ * same breath is that same instruction reaching the one surface that had started
+ * pacing it, and it is exactly what the desk itself does for a halted clock, a
+ * seek or reduced motion. The reveal's PACING is not weakened by it: that claim
+ * is u5's, is asserted in `e2e/live-feed.spec.ts` (`the day’s end drains`) from
+ * the outside, and that test drives `__shell.drain()` itself rather than coming
+ * through here — deliberately, so it can watch the paper arrive on its own.
  */
 export async function drain(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -166,6 +182,7 @@ export async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
+  await flushFeed(page)
   await awaitRecordFinal(page)
 }
 

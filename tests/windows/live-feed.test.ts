@@ -447,8 +447,15 @@ describe('x11 the reveal pump charges time for lines, never for events', () => {
     // reason is the same: a comment that states a total goes stale with the
     // numbers beside it, and this one is the argument that removing the crowd
     // divisor was affordable. What must hold is that a run drains inside its own
-    // day at ×1, with room for the report holds, and that the pacing has not
-    // been quietly tuned down to a dump.
+    // day at ×1 and that the pacing has not been quietly tuned down to a dump.
+    //
+    // x12 — "with room for the report holds" is struck from that sentence: the
+    // holds are gone (`run-feed.ts`, where `REPORT_HOLD_MS` was) and the sum
+    // below never charged for them anyway, so the margin this leaves is now
+    // margin and nothing else. It is also the margin the report GATE spends —
+    // REPORTS waits for the paper to reach a round before it draws it
+    // (`shell/feed-reach.ts`), so the day's documents land a lag behind the
+    // seam, and the lag is exactly what this bound keeps small.
     let at = ''
     let paper = 0
     for (const event of EVENTS) {

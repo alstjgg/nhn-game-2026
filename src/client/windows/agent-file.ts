@@ -22,6 +22,7 @@ import { animationsFrozen } from '../driver/index.ts'
 import { button, el, must } from '../shell/dom.ts'
 import { deployCopy, openConfirm } from '../shell/confirm.ts'
 import { announce } from '../shell/announcer.ts'
+import { feedReached } from '../shell/feed-reach.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
 import { createRunState, hasFiledReport } from '../shell/run-state.ts'
@@ -1394,20 +1395,42 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       return
     }
     if (state.phase !== 'tally') return
-    // `counted` is derived from wall-clock time since the `score` event, not
-    // from a cross-window callback (C8) — design #4. REPORTS calls
-    // `tally.run()` the instant it sees `score` (it owns no timer of its own
-    // — inv 12's sibling rule), so `components/score-tally.ts`'s own cadence
-    // sums to `PACE.TOTAL_MS − PACE.OPEN_DELAY` from that same tick (the
-    // 900 ms `OPEN_DELAY` is already inside `settleMs`'s budget, just with
-    // nothing left here to spend it waiting). This timer matches that sum.
+    // `counted` is derived from wall-clock time since the count-up STARTED, not
+    // from a cross-window callback (C8) — design #4. `components/
+    // score-tally.ts`'s own cadence sums to `PACE.TOTAL_MS − PACE.OPEN_DELAY`
+    // from that tick (the 900 ms `OPEN_DELAY` is already inside `settleMs`'s
+    // budget, just with nothing left here to spend it waiting), and this timer
+    // matches that sum.
+    //
+    // x12 (민서, 08-10) — AND THE START IS NO LONGER THE `score` EVENT. This
+    // read "REPORTS calls `tally.run()` the instant it sees `score`", which was
+    // true and is not any more: the record's count-up now waits for the LIVE
+    // FEED to have printed its way to that same `score`, because the ledger's
+    // headline and the fanfold's 집계 line are two printings of one count
+    // (`windows/reports.ts`, `shell/feed-reach.ts`). A timer still started off
+    // the event would have released the settle — turning the page and unlocking
+    // NEW RUN — with the record still blank beside it, which is the failure this
+    // whole change is about, moved one window over.
+    //
+    // Read off the SHELL SLOT, exactly as REPORTS reads it. Neither window
+    // reaches the other and neither is told anything by the other; both ask the
+    // paper where it has got to. The lapse ceiling above it is unchanged and is
+    // still the backstop: a day whose paper never arrives releases on
+    // `HOLD_CEIL` the same way a day whose report never arrives does.
     if (state.score !== null && !scoreSeen) {
       scoreSeen = true
-      countTimer = setTimeout(() => {
-        countTimer = null
-        counted = true
-        settle()
-      }, PACE.TOTAL_MS - PACE.OPEN_DELAY)
+      const sitting = run
+      void feedReached({ at: 'score', run: sitting }).then(() => {
+        // The day may have been left behind while the paper caught up — a reset
+        // clears `scoreSeen` (the `!== 'tally'` branch above), and a timer armed
+        // after that would count for a sitting nobody is watching.
+        if (!scoreSeen || !closed || settled) return
+        countTimer = setTimeout(() => {
+          countTimer = null
+          counted = true
+          settle()
+        }, PACE.TOTAL_MS - PACE.OPEN_DELAY)
+      })
     }
     // …and a report that lands after the count-up releases the settle it was
     // holding.

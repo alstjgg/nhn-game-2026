@@ -17,6 +17,26 @@
 // alone (inv 6 / inv 12) — no pack read, and `report-view.ts` is not edited:
 // its own render cycle only ever replaces `#factsList`'s and the body's
 // children, so the record survives every repaint as a sibling article.
+//
+// x12 (민서, 08-10) — WHAT ARRIVES IS NOT WHAT IS SHOWN, and that is the one
+// structural change since. This window took the §5.2 stream literally: a
+// `report` typed the round's write-up in the frame the seam emitted it, and a
+// `score` started the record's count-up in the same beat. Since x11 the LIVE
+// FEED types its lines and paces them, so at that moment the fanfold is still
+// tens of seconds back, printing the beats the write-up is about — the day's
+// outcome appearing above a paper still printing what caused it.
+//
+// So the ARRIVING document waits for the paper: `shell/feed-reach.ts` publishes
+// where the fanfold has got to, and `afterPaper` below holds each report until
+// the feed has walked past that round's `report` event — which is the round's
+// last beat printed. The record's count-up waits for the `score` the same way,
+// because the fanfold mints the 집계 line from it and the two are one count.
+//
+// NOTHING ELSE WAITS. A report already in the archive, one the operator picks
+// off the rail, a document redrawn because the rail reconciled — all of them
+// draw synchronously, exactly as before. The gate is on arrival and on nothing
+// else, because what it protects is the ORDER two surfaces say a thing in, and
+// a document being re-read has no order left to protect.
 import type { FixtureDriver, ViewEvent } from '../driver/index.ts'
 import { callsignOf } from '../components/dossier.ts'
 import { deriveMarks, mine, repaintMines, sentenceState } from '../components/minable-sentence.ts'
@@ -26,6 +46,8 @@ import type { ArchiveEntry } from '../components/report-archive.ts'
 import { accumulated, createReportView } from '../components/report-view.ts'
 import type { ReportModel } from '../components/report-view.ts'
 import { el } from '../shell/dom.ts'
+import { feedReached } from '../shell/feed-reach.ts'
+import type { FeedCue } from '../shell/feed-reach.ts'
 import { fetchScenarioIdentity } from '../shell/pack.ts'
 import { PORTAL } from '../shell/portal-identity.ts'
 import { pad2 } from '../components/block-card.ts'
@@ -84,6 +106,38 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
   const records = new Map<number, HTMLElement>()
 
   const marks = (): MarkSets => deriveMarks(driver.store(), carried)
+
+  /**
+   * x12 — the arrival queue: land `work` once the fanfold has printed its way to
+   * `cue`, and never out of turn.
+   *
+   * A CHAIN AND NOT A BARE `await`, because a day files seven reports and the
+   * document ACCUMULATES: `accumulated(held, slice)` folds each round onto the
+   * one before it and `view.append` grows the page in place, so two rounds that
+   * landed in the wrong order would file the day's text out of sequence and
+   * replay the wrong slice. The cues themselves already resolve in stream order
+   * — the feed publishes them as it walks the queue — so the chain is not what
+   * makes the ordering true; it is what stops a future cue, a slower one, or a
+   * flush landing several at once from making it false.
+   *
+   * The chain NEVER REJECTS. Each link swallows its own failure, because a
+   * report whose render threw would otherwise take every later round of the day
+   * with it — a window stuck on a document that stopped growing, with nothing on
+   * the desk to say why. One broken round is a bad frame; a broken chain is a
+   * dead window.
+   *
+   * `queueMicrotask` is not an option and neither is a timer: what is being
+   * waited for is another window's paper, which is real time.
+   */
+  let paper: Promise<void> = Promise.resolve()
+  const afterPaper = (cue: FeedCue, work: () => void): void => {
+    paper = paper
+      .then(() => feedReached(cue))
+      .then(work)
+      .catch((cause: unknown) => {
+        console.error('the document behind the paper never landed', cause)
+      })
+  }
 
   /**
    * Is the desk holding the tear right now?
@@ -366,7 +420,20 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       view.seal(scored.has(active))
       const tally = createScoreTally({ host: node })
       tally.open()
-      tally.run(scoreModel(event))
+      // x12 — THE RECORD IS ON THE DESK NOW; THE NUMBER IS NOT. `open()` leaves
+      // it `pending` — the article mounted, blank, waiting — and the count-up
+      // runs when the fanfold has printed its way to this same `score`, which is
+      // where it mints the day's 집계 line. The record and that line are two
+      // printings of one count, and the ledger rolling to a total the paper had
+      // not reached yet was the outcome arriving ahead of its own last sentence.
+      //
+      // The MODEL is built here and not in there. It is this day's — `run`,
+      // `slug` and the event's own rows — and by the time the paper catches up
+      // the desk may be on the next sitting; a model read late would be the same
+      // event scored against whatever `run` had become.
+      const record = scoreModel(event)
+      const sitting = run
+      afterPaper({ at: 'score', run: sitting }, () => tally.run(record))
       return
     }
     if (event.type !== 'report') return
@@ -375,30 +442,41 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     // the run `meta` last named; pairing the two here is what collapses seven
     // rail tabs into one accumulating document. A round is filed once — a
     // replayed stream must not double the day.
+    //
+    // x12 — captured HERE and read inside the gate, because that is the pairing
+    // itself: the run the desk was on when the round arrived. The whole body
+    // below runs behind the paper, `rounds` and `filed` included — deliberately.
+    // Filing the round early and drawing it late would leave the two out of
+    // step, and a rail reconcile in between (a `meta` arriving, a tab pressed)
+    // reaches `drawDocument()`, which would then paint a round the fanfold has
+    // not printed the beats of — the gate defeated by the one path that does not
+    // go through it.
     const sitting = run
-    const seen = rounds.get(sitting) ?? new Set<number>()
-    if (seen.has(event.round)) return
-    seen.add(event.round)
-    rounds.set(sitting, seen)
+    afterPaper({ at: 'report', run: sitting, round: event.round }, () => {
+      const seen = rounds.get(sitting) ?? new Set<number>()
+      if (seen.has(event.round)) return
+      seen.add(event.round)
+      rounds.set(sitting, seen)
 
-    const held = filed.get(sitting) ?? null
-    const slice: ReportModel = {
-      round: event.round,
-      facts: event.facts,
-      report_body: event.report_body,
-    }
-    const whole = accumulated(held, slice)
-    filed.set(sitting, whole)
+      const held = filed.get(sitting) ?? null
+      const slice: ReportModel = {
+        round: event.round,
+        facts: event.facts,
+        report_body: event.report_body,
+      }
+      const whole = accumulated(held, slice)
+      filed.set(sitting, whole)
 
-    // The sitting already on the desk GROWS; any other case draws whole.
-    if (held !== null && active === sitting) {
-      replayed.add(`${sitting}:${event.round}`)
-      view.append(slice, whole, marks())
-      sync(false)
-      return
-    }
-    active = sitting
-    sync()
+      // The sitting already on the desk GROWS; any other case draws whole.
+      if (held !== null && active === sitting) {
+        replayed.add(`${sitting}:${event.round}`)
+        view.append(slice, whole, marks())
+        sync(false)
+        return
+      }
+      active = sitting
+      sync()
+    })
   })
 
   // The record's headline needs the pack's own end-of-day stamp — the ONE
