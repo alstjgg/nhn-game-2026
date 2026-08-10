@@ -64,6 +64,15 @@ export const PACK_SLUG = '우는다리'
  */
 export const BLOCK_PAIR: readonly [string, string] = ['b-r1-n02', 'b-r1-f01']
 
+/**
+ * The one block `runOnce` hands the agent so its gates are asked at all (x14).
+ *
+ * Its id is outside the engine's `(run, channel)` grammar on purpose: nothing
+ * in a real run can mint `b-seed-1`, so a suite that finds it in a payload is
+ * looking at the seed and not at a sentence the pack produced.
+ */
+export const SEED_BLOCK = 'b-seed-1'
+
 /** The driver must terminate; a run that does not is a bug, not a hang. */
 const MAX_STEPS = 128
 
@@ -250,7 +259,7 @@ async function runOnce(): Promise<Run> {
   const guidance = loadGuidance()
   const blocks = createBlockStore()
   const engine = createEngine({ pack, run: 1 })
-  const inner = createComposer({ blocks, reportGuidance: guidance })
+  const inner = createComposer({ blocks, reportGuidance: guidance, pack: PACK_SLUG })
   const recorder = recordingTransport(createFixtureProvider())
 
   let firstGate: GateView | null = null
@@ -273,6 +282,16 @@ async function runOnce(): Promise<Run> {
 
   const events: ViewEvent[] = []
   driver.subscribe((event) => events.push(event))
+
+  // x14 — THIS RUN IS SHAPED, and it has to be to be about anything. An empty
+  // handover now resolves every gate to its authored default with no Call 1
+  // made at all (`live-driver.ts`), so a virgin run composes no judgment
+  // payload — and a judgment payload is what this whole suite reads. One block
+  // is enough; `absorbLine` only makes an id minable, so the seed adds no feed
+  // row, no beat and no call of its own.
+  blocks.absorbLine({ kind: 'event', clock: '00:00', text: '넘겨받은 문장.', sentence_id: SEED_BLOCK })
+  driver.submit({ op: 'mine', sentence_id: SEED_BLOCK })
+  driver.submit({ op: 'deploy', blocks: [SEED_BLOCK] })
 
   let steps = 0
   while (await driver.step()) {
@@ -327,7 +346,7 @@ export async function composerRig(): Promise<ComposerRig> {
   }
   const store: BlockStore = run.blocks
   return {
-    composer: createComposer({ blocks: store, reportGuidance: run.guidance }),
+    composer: createComposer({ blocks: store, reportGuidance: run.guidance, pack: PACK_SLUG }),
     gateView: run.gateView,
     blockIds: BLOCK_PAIR,
   }

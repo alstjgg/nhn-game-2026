@@ -1,0 +1,140 @@
+{
+  "$note": "Balance-as-data for sound. Every cue mapping, level and cooldown lives here; src/client/audio/ holds no literal for any of them. Asset ids under `cues[].files` are built by tools/audio/build-audio-pack.mjs and resolve to `<base><file><ext>`. Levels are linear gain, not dB. Authority for the cue list: docs/plan-audio.md §4.",
+  "version": 1,
+  "base": "assets/audio/",
+  "ext": ".m4a",
+
+  "$buses": "Two, independently mutable. `ambience` sits far under `sfx` on purpose — plan-audio §2 rule 3: the bed must never be the reason a line is missed. The pack is foley under a reading surface, so both sit well below the level that feels right while auditing one cue at a time. x10 (08-10, 민서: '소리를 좀 조용하게') — ambience 0.15 → 0.1 → 0.05, in two passes: 0.1 was still not quiet enough on the running desk, and 0.05 is where 민서 set it. That is -26.0 dB on the bus, -9.5 dB below the level the complaint was about, and it puts the bed at -39.5 LUFS. ONE KNOB ON PURPOSE: bed (gain 1) and office (gain 0.8) both ride this bus, so the ~10 dB gap between them — the thing §4.4 calls the whole effect — is bus-invariant and the room recedes as a whole instead of deforming. NO CUE GAIN MOVED, and that was asked for explicitly: at 0.1 the office one-shots landed 21.9 dB under their raw cuts, past the 20.9 dB §4.4's tuning history rejected as reading like an EMPTY office, and the standing advice here was to answer that with `office.gain` 0.8 → 1.0 rather than with the bus. 민서 ruled otherwise — 'the office.gain is fine' — and took the bus down again instead, so the one-shots now sit 28.0 dB under their cuts and are expected to be at or past the edge of audible. THAT IS THE INSTRUCTION, not an oversight: the room is a bed with events in it that may or may not be caught, rather than a room asserting itself. Do not 'fix' the one-shots by raising `office.gain` without asking.",
+  "buses": {
+    "sfx": 0.5,
+    "ambience": 0.05
+  },
+
+  "$preload": "Fetched and decoded before everything else — the only cues reachable before the desk exists, O1's door and its controls. `ready` resolves on this list alone, so the door's controls answer without waiting for the whole pack.",
+  "preload": ["click", "hover", "window-open", "window-close"],
+
+  "$cues": "A cue is one playable sound. `files` longer than one is a variation set — a fresh member is drawn each play, never the same one twice running. `cooldownMs` drops a retrigger inside the window, which is what keeps a burst of feed lines from stacking into a wall.",
+  "cues": {
+    "mine": { "files": ["paper-tear"], "bus": "sfx", "gain": 1.0, "cooldownMs": 60 },
+    "slot": { "files": ["stamp"], "bus": "sfx", "gain": 0.95, "cooldownMs": 40 },
+    "unslot": { "files": ["paper-slide"], "bus": "sfx", "gain": 0.8, "cooldownMs": 40 },
+    "deploy": { "files": ["deploy"], "bus": "sfx", "gain": 1.0, "cooldownMs": 400 },
+    "new-run": { "files": ["counter-click"], "bus": "sfx", "gain": 0.85, "cooldownMs": 200 },
+
+    "$line": "One per day, bound to `run:open`: the typewriter starting a fresh page. A cue on every revealed line lands ~1.5 sounds a second and turns the fanfold into a machine, so ordinary event lines are silent and only lines that carry something ring.",
+    "line": { "files": ["carriage-return"], "bus": "sfx", "gain": 0.5, "cooldownMs": 1000 },
+    "type": {
+      "files": ["type-1", "type-2", "type-3", "type-4", "type-5"],
+      "bus": "sfx", "gain": 0.3, "cooldownMs": 55
+    },
+    "radio-open": { "files": ["radio-squelch-open"], "bus": "sfx", "gain": 0.6, "cooldownMs": 80 },
+    "radio-close": { "files": ["radio-squelch-close"], "bus": "sfx", "gain": 0.45, "cooldownMs": 80 },
+    "npc": { "files": ["npc-handset"], "bus": "sfx", "gain": 0.5, "cooldownMs": 120 },
+    "$symptom": "Deliberately the quietest one-shot in the pack. A player who notices every one of these is being told which lines carry temperament, and that is the deduction the game is made of — see plan-audio §4.2 #16.",
+    "symptom": { "files": ["symptom-chime"], "bus": "sfx", "gain": 0.18, "cooldownMs": 2200 },
+    "mark": { "files": ["pen-mark"], "bus": "sfx", "gain": 0.5, "cooldownMs": 120 },
+
+    "judgment": { "files": ["judgment-heartbeat"], "bus": "sfx", "gain": 0.8, "cooldownMs": 1500 },
+    "wait": { "files": ["clock-loop"], "bus": "sfx", "gain": 0.32, "loop": true },
+
+    "run-end": { "files": ["stamp-heavy"], "bus": "sfx", "gain": 0.9, "cooldownMs": 500 },
+    "$tally-final": "The ledger landing. The count-up rolls the headline for ~9 s while the row ticks all fire in its first second, so this is the full stop on the day's verdict — one struck bell, not a fourth stamp.",
+    "tally-final": { "files": ["ledger-bell"], "bus": "sfx", "gain": 0.45, "cooldownMs": 2000 },
+    "score-up": { "files": ["score-tick-up"], "bus": "sfx", "gain": 0.55, "cooldownMs": 0 },
+    "score-down": { "files": ["score-tick-down"], "bus": "sfx", "gain": 0.55, "cooldownMs": 0 },
+
+    "$fallback": "One degraded ROUND, not one sound per failed call — the three calls fail together far more often than separately, and a dead proxy fails all of them every beat.",
+    "fallback": { "files": ["fallback-burst"], "bus": "sfx", "gain": 0.5, "cooldownMs": 4000 },
+    "error": { "files": ["ui-error"], "bus": "sfx", "gain": 0.45, "cooldownMs": 4000 },
+
+    "click": { "files": ["ui-click"], "bus": "sfx", "gain": 0.45, "cooldownMs": 30 },
+    "$door-login": "The portal's LOGIN press: one press per session, and it opens a session, so it gets a switch rather than the desk's tick. Everything else on the door and on the manual sheet uses the ordinary `ui:hover` / `ui:click`, which reach them for free — both layers mount inside #app, where those listeners are delegated from.",
+    "door-login": { "files": ["counter-click"], "bus": "sfx", "gain": 0.6, "cooldownMs": 500 },
+    "hover": { "files": ["ui-hover"], "bus": "sfx", "gain": 0.12, "cooldownMs": 80 },
+    "window-open": { "files": ["drawer-open"], "bus": "sfx", "gain": 0.5, "cooldownMs": 80 },
+    "window-close": { "files": ["drawer-close"], "bus": "sfx", "gain": 0.5, "cooldownMs": 80 },
+    "drag": { "files": ["drag-start"], "bus": "sfx", "gain": 0.4, "cooldownMs": 60 },
+    "drop": { "files": ["drag-drop"], "bus": "sfx", "gain": 0.5, "cooldownMs": 60 },
+
+    "boot": { "files": ["stinger"], "bus": "sfx", "gain": 0.5, "cooldownMs": 5000 },
+    "collapse": { "files": ["collapse"], "bus": "sfx", "gain": 1.0, "cooldownMs": 5000 },
+
+    "bed": { "files": ["amb-office-tone"], "bus": "ambience", "gain": 1.0, "loop": true },
+    "watch": { "files": ["amb-watch-drone"], "bus": "ambience", "gain": 0.75, "loop": true },
+
+    "$office": "The office beyond the desk — see `ambience.sparse`. One cue id, five files, so the not-twice-running variation rule in mixer.pick() does the work and the scheduler only has to decide WHEN. gain 0.8 on the ambience bus is -18.4 dB from the raw cuts, leaving the bed about 10 dB above them. That gap is the whole effect and this is the number to reach for first when the room feels wrong. Tuned on the running desk, downward twice: -24 dB (0.42) read as an empty office and -20.9 dB (0.6) still did. Do not read 0.8 as headroom — it is near the top of the range, and past it the one-shots stop being somewhere else and start being cues on this desk, which is the confusion the 3.5 kHz cut exists to prevent.",
+    "office": { "files": ["office-keys-1", "office-keys-2", "office-keys-3", "office-phone", "office-printer"], "bus": "ambience", "gain": 0.8 }
+  },
+
+  "$bindings": "trigger → cue id, or null for a cue that is deliberately silent. `feed:*` fire when a line is REVEALED, not when its event arrives.",
+  "bindings": {
+    "op:mine": "mine",
+    "op:slot": "slot",
+    "op:unslot": "unslot",
+    "op:deploy": "deploy",
+    "op:new_run": "new-run",
+
+    "feed:event": null,
+    "feed:radio": "radio-open",
+    "feed:radio-end": "radio-close",
+    "feed:npc": "npc",
+    "feed:symptom": "symptom",
+    "feed:mark": "mark",
+    "$feed-fallback": "Silent: the fallback ViewEvent already sounds the degrade at the moment it happens (event:fallback:*), which is where shell/announcer.ts announces it too, and spec-client §7 #7 makes the notice LINE ride a later feed line.",
+    "feed:fallback": null,
+    "$feed-wait": "UNREACHABLE since x6 (08-09), which is not the same as silent. Feed cues fire when a line is REVEALED, and no wait line is revealed any more: components/run-feed.ts drops kind:'wait' before it reaches the DOM. FeedKind keeps 'wait' only because the seam is frozen (shared/view-driver.ts), so the trigger keeps its entry here - but a cue id bound at this key would sound nothing at all. The wait's audio is wait:judgment, below.",
+    "feed:wait": null,
+
+    "$wait-open": "Silent. The loop held for the whole of every wait and a day makes three calls per beat, so it never stopped - it left being a clock and became a backing track. Bind this to `wait` to bring the ticking back on every call. THE STAKES CHANGED IN x6/x6b (08-09) - read `wait:judgment` below before touching either. The wait used to be carried by three visual channels: the fanfold's `무전 회신 대기 중` marker, the `#deployState` note under DEPLOY, and the toast. All three are gone, and the toast is not drawn at all now. So `wait:judgment` is the only signal left on any channel that a call is in flight, and unbinding it would make a working desk and a stalled one sound identical. This note used to justify the silence here by pointing at `shell/announcer.ts`, which said 무전 회신 대기 중; it no longer says it - `announcementOf` returns null for a `waiting` event.",
+    "wait:open": null,
+    "wait:judgment": "judgment",
+    "wait:narration": null,
+    "wait:report": null,
+
+    "run:open": "line",
+    "$report": "Silent. Binding a cue id here is all it takes to give the moment 「무전 기록」 lands a sound.",
+    "event:report": null,
+    "event:run_end": "run-end",
+    "tally:final": "tally-final",
+    "event:fallback:1": "fallback",
+    "event:fallback:2": "fallback",
+    "event:fallback:3": "error",
+    "score:up": "score-up",
+    "score:down": "score-down",
+
+    "ui:click": "click",
+    "$door-login-null": "Silent by the coexistence decision: shell/radio-sfx.ts (O3, merged in #179) plays its carrier static under the LOGIN readout, and a counter-click on top of that bed is one press sounding twice. The `door-login` cue ships; rebinding it here is one line.",
+    "door:login": null,
+    "ui:hover": "hover",
+    "ui:window-open": "window-open",
+    "ui:window-close": "window-close",
+    "ui:drag": "drag",
+    "ui:drop": "drop",
+
+    "$boot": "Silent by the coexistence decision: the unlocking gesture is almost always the LOGIN press, which lands under radio-sfx's static bed — a stinger there is a third sound on one press. The `stinger` cue ships; rebinding it here is one line.",
+    "boot": null,
+
+    "$collapse": "Silent by the coexistence decision: 21:04 belongs to shell/radio-sfx.ts, whose day-end static swells for 1.9 s and CUTS — the silence after the cut is the cue. The ledger's row ticks still take a 2800 ms lead on the last day (the lead is keyed to the day in src/client/audio/index.ts, not to this binding), so that silence survives. The `collapse` cue ships; rebinding it here is one line, and doing so should retire the radio-sfx swell so the two never stack.",
+    "ending:collapse": null
+  },
+
+  "$ambience": "The two beds want opposite things, and `deskHolds` is what splits them. The Watch drone is still an OPENING: `playForMs` retires it that many ms after the desk opens and `beat_start` cannot bring it back, because a drone under a screen the player reads for minutes is pressure that never lets up. The desk bed is a ROOM, and a room that switches off after ten seconds was never a room — with `deskHolds` true it and its sparse events hold for the session. `null` on a slot is silence, and that is a real choice too: the Autopsy screen is meant to be quiet. x10 (08-10, 민서) — THE ROOM NOW OPENS AT THE DOOR, on the first keystroke of the sign-in card (the gesture that unlocks the audio context; nothing can sound before one). Only the drone's `playForMs` window is still anchored to the desk — 10 s that started at the login screen would be spent before the operator got through it. These two numbers did not change and their meaning did not either: `playForMs` is measured from each bed's own opening, which is now a different moment for each. See src/client/audio/index.ts `openTheRoom`.",
+  "ambience": {
+    "desk": "bed",
+    "watch": "watch",
+    "playForMs": 10000,
+    "deskHolds": true,
+    "$sparse": "Somebody else's desk, across the room, every 5–10 s. The interval is re-rolled after each play — a fixed period is audible as a metronome inside three cycles. These are NOT triggers: `TRIGGERS` in map.ts is the closed set of moments the game can sound, and nothing in the game happens when a phone rings two desks away.",
+    "sparse": {
+      "cues": ["office"],
+      "minMs": 5000,
+      "maxMs": 10000
+    }
+  },
+
+  "$typing": "The report is the only surface that types CHARACTERS — the LIVE FEED reveals whole LINES on U1's queue, which is what `feed:*` sounds. Sounding every character is unlistenable, so one keystroke lands every `everyChars` characters; the cue's own cooldown is the second bound.",
+  "typing": {
+    "everyChars": 2,
+    "cue": "type"
+  }
+}

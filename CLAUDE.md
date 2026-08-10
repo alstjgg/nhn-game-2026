@@ -61,7 +61,7 @@ transitions (planning → demo → production).
   directly from the client with an embedded key. Latency must hide in natural game pauses
   (between rounds/waves) — never block mid-action gameplay on an LLM response.
 - **Balance-as-data:** all tunables (stats, timings, costs, spawn tables) live in `data/` as
-  JSON/TS data, never inline in logic.
+  JSON/TS data, never inline in logic. `data/` holds inputs; `artifacts/` holds measurement outputs.
 - **Judge experience is the optimization target:** page must load in ~1s on mediocre wifi;
   first 60 seconds of play must carry the game (video limit is 30–60s; judges play minutes,
   not hours).
@@ -76,30 +76,12 @@ AI-utilization auto-draft) are implemented in that repo; their design record is 
 `planning/research/super-pipeline-game-mod.md`. Manual Claude Code sessions handle setup, docs,
 and anything the harness isn't suited for.
 
-## Layout
-
-```
-src/            the browser bundle + isomorphic core — bound by docs/spec-physical-architecture.md
-authoring/      authoring-time preprocessing: datapack compile · lint · type generation
-tools/          Node-only executables — probe runner, beat driver, shared call/compose libs
-proxy/          the LLM tier — Lambda + Bedrock, deployed separately from Pages
-demos/          playable demos, own stacks — each deployed at /<slug>/ by the Pages workflow
-planning/       planning-phase archive (concepts, scenarios, paper tests, meetings, legacy-services) — see planning/README.md
-public/assets/  static assets (each one manifested — see rule 5)
-data/           balance-as-data INPUTS — datapacks, policy, the user prompt layer
-artifacts/      measurement OUTPUTS — headless run records, metric reports
-docs/           living docs — project status, competition requirements, deliverable drafts
-.github/        Pages deploy workflow
-```
-
 ## Commands
 
-```bash
-npm run dev              # local dev server
-npm run build            # check + vite build → dist/
-npm run preview          # preview production build
-npm run check            # tsc (core + client) + datapack type-drift gate
+Standard Vite/npm scripts (`dev`, `build`, `preview`, `check`) are in `package.json`.
+The non-obvious ones:
 
+```bash
 npm run datapack:compile -- <draft.md>        # authoring stage 1
 npm run datapack:lint -- data/scenario/<slug> # authoring stage 2
 npm run probe:selftest                        # probe runner, offline, no key

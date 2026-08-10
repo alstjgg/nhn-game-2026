@@ -59,7 +59,7 @@ function sliceOf(events: ViewEvent[], beat: number): ViewEvent[] {
 
 describe('[e7#A1] a gate beat emits exactly the ratified sequence', () => {
   it('(a) beat_start → judgment bracket → pre-flush → narration bracket → post-flush → beat_end', async () => {
-    const events = await drain(makeRig())
+    const events = await drain(makeRig({ shaped: true }))
     expect(shape(sliceOf(events, 0))).toEqual([...GATE_BEAT])
   })
 
@@ -97,7 +97,7 @@ describe('[e7#A3] the round boundary', () => {
   })
 
   it('(c) a beat before the first gate owes no report (decision 10)', async () => {
-    const events = await drain(makeRig({ pack: leadingScriptRun() }))
+    const events = await drain(makeRig({ shaped: true, pack: leadingScriptRun() }))
     const firstReport = events.findIndex((e) => e.type === 'report')
     const firstJudgment = events.findIndex((e) => e.type === 'waiting' && e.for === 'judgment')
     expect(firstJudgment).toBeGreaterThan(-1)
@@ -169,6 +169,10 @@ describe('[e7#A7] no view is held across a beat', () => {
     const recorder = createRecorder()
     await drain(
       makeRig({
+        // Shaped, so both gates are asked: unshaped there are no
+        // `composer.judgment` entries to pair at all, and the count below
+        // would drop to the narration and reporter halves without noticing.
+        shaped: true,
         pack: twoRounds(),
         wrapEngine: (engine) => recordEngine(engine, recorder),
         wrapComposer: (composer) => recordComposer(composer, recorder),

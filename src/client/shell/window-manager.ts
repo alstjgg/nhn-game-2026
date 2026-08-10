@@ -143,7 +143,13 @@ export function createWindowManager(deps: Deps): WindowManager {
       // block deck is 843 px tall inside a 257 px body — so a keyboard operator
       // could not see the deck at all (WCAG 2.1.1, Level A). Same MIN_W/MIN_H
       // clamp as the drag; the bar's accessible name says so.
+      //
+      // A fixed sheet is the one exception, and it is gated HERE rather than
+      // desk-wide for exactly the reason above: this branch exists BECAUSE a
+      // pointer-only resize left clipped content unreachable, so a window that
+      // still resizes by pointer must keep it. The sheet resizes by neither.
       if (event.shiftKey) {
+        if (frame.def.resizable === false) return
         resize(frame, rect.width + delta[0], rect.height + delta[1])
         return
       }
@@ -157,23 +163,30 @@ export function createWindowManager(deps: Deps): WindowManager {
   }
 
   function wireResize(frame: WindowFrame): void {
-    frame.grip.addEventListener('pointerdown', (event: PointerEvent) => {
+    // A fixed sheet builds no grip, so there is nothing to wire. The pointer
+    // path and the keyboard path leave together: a window that resized by mouse
+    // only would be the WCAG 2.1.1 failure the Shift+arrow branch above was
+    // added to fix. Bound to a local `const` because a narrowed readonly
+    // property does not stay narrowed inside these callbacks.
+    const grip = frame.grip
+    if (grip === null) return
+    grip.addEventListener('pointerdown', (event: PointerEvent) => {
       event.preventDefault()
       event.stopPropagation()
       const rect = frame.root.getBoundingClientRect()
       const sx = event.clientX
       const sy = event.clientY
-      frame.grip.setPointerCapture(event.pointerId)
+      grip.setPointerCapture(event.pointerId)
 
       const onMove = (ev: PointerEvent): void => {
         resize(frame, rect.width + ev.clientX - sx, rect.height + ev.clientY - sy)
       }
       const onUp = (): void => {
-        frame.grip.removeEventListener('pointermove', onMove)
-        frame.grip.removeEventListener('pointerup', onUp)
+        grip.removeEventListener('pointermove', onMove)
+        grip.removeEventListener('pointerup', onUp)
       }
-      frame.grip.addEventListener('pointermove', onMove)
-      frame.grip.addEventListener('pointerup', onUp)
+      grip.addEventListener('pointermove', onMove)
+      grip.addEventListener('pointerup', onUp)
     })
   }
 
@@ -199,7 +212,10 @@ export function createWindowManager(deps: Deps): WindowManager {
       const def = frame.def
       const task = button('task', `${def.en} 창 열기 · 닫기`, '')
       task.dataset.win = def.key
-      task.append(el('b', undefined, def.en), el('span', 't-ko', def.ko))
+      // x5 — the `.t-ko` half is gone with `WindowDef.ko`. A taskbar button is a
+      // target the operator hits by muscle memory, and `LIVE FEED 무전` was the
+      // same window named twice inside one 32px chip.
+      task.append(el('b', undefined, def.en))
       task.addEventListener('click', () => toggle(def.key))
       tasks.set(def.key, task)
       deps.taskbar.append(task)

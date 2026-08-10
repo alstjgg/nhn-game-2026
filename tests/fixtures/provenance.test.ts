@@ -17,8 +17,13 @@ import {
 import { woodariRun03, reportOf, WOODARI_BLOCKS, WOODARI_TALLY } from '../../src/client/driver/fixtures/index.ts'
 
 /**
- * The ONLY sanctioned divergence from the design target (spec D3 row 3):
- * inv 2 forbids a digit in an `npc` line, so 20:22's `20분` is spelled out.
+ * The sanctioned divergences from the design target. The target itself is
+ * frozen (`docs/design/` — [u2f#c10] in dev-only.test.ts), so a copy revision
+ * that supersedes a reference line is recorded here, never written back.
+ *  1. spec D3 row 3: inv 2 forbids a digit in an `npc` line, so 20:22's
+ *     `20분` is spelled out.
+ *  2. plan-playtest G2 (g1-1, 08-07): the fatal-fallback line stays in
+ *     fiction instead of narrating the mechanism.
  * Every other reference line is ported verbatim.
  */
 const PORTED_DEVIATIONS = [
@@ -27,9 +32,47 @@ const PORTED_DEVIATIONS = [
     to: '영장 없이는 못 엽니다. ……스무 분만 줘요.',
     reason: 'inv 2 / [u2f#c4]: no digit may appear in an `npc` line text',
   },
+  {
+    from: '회신 실패 — 기본 응답으로 대체. 요원은 상황실에 잔류.',
+    to: '회신 불량. 요원은 상황실에 잔류.',
+    reason: 'plan-playtest G2 / g1-1: fallback copy stays in fiction; the frozen target keeps the old line',
+  },
 ] as const
 
-const DEVIATED = PORTED_DEVIATIONS.map((d) => nfc(d.to))
+/**
+ * Reference rows the port no longer carries AT ALL. `PORTED_DEVIATIONS` is a
+ * substitution valve; this is a removal, and it needs one of its own for exactly
+ * the same reason — `docs/design/` is frozen ([u2f#c10] in `dev-only.test.ts`),
+ * so a mechanism the client dropped cannot be edited out of the target.
+ *
+ * x6 (민서, 08-09): the waiting marker was removed outright — no feed line, no
+ * screen-reader toast, no CSS, and `components/waiting-marker.ts` deleted. The
+ * target's six `wait` rows (`무전 회신 대기 중`, app.js:428's `……` + breathing
+ * dots) were the whole of its content, so the port drops them and the paper
+ * shows nothing for a call in flight.
+ *
+ * What is NOT dropped is the seam's `waiting` bracket: `shared/view-driver.ts`
+ * is frozen, `driver/live-driver.ts` still emits it and the live adapter's queue
+ * is built around it, so `woodari-run03.ts` still opens and closes one — off the
+ * row that placed the call (`call: true`) now that there is no marker line to
+ * hang it on. `feed-shape.test.ts` (k) is what holds that.
+ */
+const DROPPED_KINDS = new Set<string>(['wait'])
+
+/**
+ * Non-FEED copy revisions that supersede design-target vocabulary (the target
+ * is frozen — see PORTED_DEVIATIONS above). These feed the trace haystack for
+ * (b)/(d) only; they are not feed lines, so (g)/(h) do not read them.
+ */
+const COPY_DEVIATIONS = [
+  {
+    from: '객관 로그',
+    to: '현장 기록',
+    reason: 'plan-playtest C4 / g1-4: the record reads as fieldwork; the frozen target keeps the old name',
+  },
+] as const
+
+const DEVIATED = [...PORTED_DEVIATIONS, ...COPY_DEVIATIONS].map((d) => nfc(d.to))
 const HAYSTACK = [...authoredTexts(), ...DEVIATED]
 
 /** Reference row → the text the fixture is expected to carry. */
@@ -100,12 +143,24 @@ describe('[u2f#c1] the stream IS the design target RUN 03 material', () => {
   })
 
   it('(g) the feed lines are the reference FEED rows, in order, kind and clock intact', () => {
-    const expected = designTarget().FEED.map((r) => ({
-      kind: r.kind,
-      clock: r.t,
-      text: nfc(ported(r.text)),
-      speaker: r.who ?? undefined,
-    }))
+    const reference = designTarget().FEED
+    // Non-vacuity for the valve: if the target ever stops carrying a dropped
+    // kind, the exclusion is dead and must come out rather than sit here
+    // silently widening what this guard will accept.
+    for (const kind of DROPPED_KINDS) {
+      expect(
+        reference.some((r) => r.kind === kind),
+        `DROPPED_KINDS excludes '${kind}', which the design target no longer has`,
+      ).toBe(true)
+    }
+    const expected = reference
+      .filter((r) => !DROPPED_KINDS.has(r.kind))
+      .map((r) => ({
+        kind: r.kind,
+        clock: r.t,
+        text: nfc(ported(r.text)),
+        speaker: r.who ?? undefined,
+      }))
     const actual = feedLines(woodariRun03.events).map((l) => ({
       kind: l.kind,
       clock: l.clock,

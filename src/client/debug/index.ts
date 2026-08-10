@@ -19,6 +19,24 @@ export interface DebugHandle {
   noteOp(op: MembraneOp): void
   /** Repaints both tables from the current driver frame. */
   refresh(): void
+  /** Shows or flips the pane's own visibility. Returns the new state. */
+  toggle(on?: boolean): boolean
+}
+
+/**
+ * The query flag that puts the pane ON SCREEN.
+ *
+ * The pane covers the desk's bottom-left quadrant, so a dev run that is looking
+ * at the GAME wants it out of the way — it stays mounted and recording, but
+ * paints nothing unless `?debug` (or `?debug=1`) is on the URL. Flip it live
+ * with `window.__debug.toggle()`.
+ */
+const SHOW_PARAM = 'debug'
+
+/** Whether this page load asked for the pane to be on screen. */
+function askedFor(): boolean {
+  const value = new URLSearchParams(window.location.search).get(SHOW_PARAM)
+  return value !== null && value !== '0' && value !== 'false'
 }
 
 declare global {
@@ -36,7 +54,7 @@ function currentEvents(): readonly ViewEvent[] {
 export function startDebugPane(): void {
   if (document.getElementById(PANE_ID) !== null) return
 
-  const view = mountPane(document.body)
+  const view = mountPane(document.body, askedFor())
   const ops: MembraneOp[] = []
   let painted = -1
 
@@ -63,5 +81,10 @@ export function startDebugPane(): void {
       paint()
     },
     refresh: paint,
+    toggle(on?: boolean): boolean {
+      const next = on ?? !view.visible()
+      view.setVisible(next)
+      return next
+    },
   }
 }

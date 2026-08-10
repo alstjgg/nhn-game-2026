@@ -40,9 +40,14 @@ function str(value: unknown): string {
 export function renderTemperament(pack: TemperamentPack): string {
   const lines: string[] = [HEADER]
 
+  // No blank line between the header and the disposition. Every probe fixture
+  // this renderer is measured against — `k1.md`, `k2.md`, `dome-base.md` —
+  // attaches the body directly under the header, and a pack whose measurements
+  // were taken on one shape should not ship on another. The clause separators
+  // below stay: nothing was ever measured with more than one paragraph.
   const disposition = str(pack?.default_disposition)
   if (disposition) {
-    lines.push('', disposition)
+    lines.push(disposition)
   }
 
   const clauses = Array.isArray(pack?.clauses) ? pack.clauses : []

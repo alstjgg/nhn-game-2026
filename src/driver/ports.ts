@@ -51,8 +51,21 @@ export type ReportSentences = { facts: Sentence[]; report_body: Sentence[] }
  */
 export interface EnginePort extends Engine {
   current(): BeatCursor
-  /** `null` ⇒ the engine substitutes this gate's authored `default_stance`. */
-  submitStance(response: JudgmentResponse | null): void
+  /**
+   * `null` ⇒ the engine substitutes this gate's authored `default_stance`.
+   * Returns the stance it resolved, in the author's words (U5.2b `judged`).
+   */
+  submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null
+  /**
+   * This gate takes its authored `default_stance` with NO Call 1 made, because
+   * the player handed the agent nothing. Same return as `submitStance`.
+   *
+   * On the port because the driver is the only tier that can know it: the
+   * membrane's deployed set is a client fact, and the engine cannot see it.
+   * Distinct from `submitStance(null)` so the run record can tell a call that
+   * failed from one that was never owed.
+   */
+  submitBaseline(): { stance_id: string; desc: string } | null
   applyBeatEffects(): void
   /** `null` ⇒ no `n`/`q` line is minted for this beat. */
   applyNarration(response: NarrationResponse | null): void
@@ -65,9 +78,28 @@ export interface EnginePort extends Engine {
 export type ComposerPort = Composer
 export type TransportPort = Transport
 
-/** Optional (decision 3): absent ⇒ the driver emits no `score`. */
+/**
+ * Optional (decision 3): absent ⇒ the driver emits no `score`.
+ *
+ * The row type is the §5.2 `score` event's, and has to be: this port exists to
+ * fill that event and nothing else, so a value it could return and the seam
+ * could not carry would be a scorer nobody can wire. That is what it WAS — the
+ * port said `value: number` while `contract-run-artifacts`' record said
+ * `string | number` of the same field, and `score.json` authors outcomes that
+ * are words. §5.2 amendment g settles it on the record's side;
+ * `tools/tests/run-record.mjs` keeps the two from drifting apart again.
+ *
+ * Amendment h added the other half of every row: what the UNTOUCHED day scored
+ * on the same axis. The tally is a COMPARISON sheet — its own subtitle reads
+ * 기준선 대비 — and the baseline lives in the pack, which inv 12 lets no view
+ * surface read. So it crosses the seam or it does not arrive at all.
+ */
 export type ScorerPort = {
-  score(): { total: number; rows: { label: string; value: number }[] }
+  score(): {
+    total: number
+    baseline_total: number
+    rows: { label: string; value: string | number; baseline: string | number | null }[]
+  }
 }
 
 /** What the composer resolves `BLOCKS` against — contract-engine-composer §3. */

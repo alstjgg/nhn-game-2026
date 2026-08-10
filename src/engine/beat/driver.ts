@@ -21,9 +21,10 @@
 import type { BeatView, GateView, RoundView } from '../index.ts'
 import type { PresentNpc } from '../../shared/contracts.ts'
 import type { BeatPack, RoundAssemblerPort, StateCorePort } from './ports.ts'
-import type { Beat, BeatKind, OutcomeBucket, ScheduledGate } from './schedule.ts'
+import type { Beat, BeatKind, OutcomeBucket, ScheduledGate, TimelineEvent } from './schedule.ts'
 import { BeatPhaseError, StanceResolutionError } from './errors.ts'
 import { evaluateEdges } from './predicates.ts'
+import { holds, problems } from '../../shared/predicates.ts'
 import { cloneDeep, windowLines } from './views.ts'
 
 /**
@@ -36,14 +37,32 @@ import { cloneDeep, windowLines } from './views.ts'
 export type BeatPhase = 'stance' | 'effects' | 'narration' | 'report' | 'done'
 
 /**
+ * WHERE a stance came from — three answers, not two.
+ *
+ * `model` is Call 1 landing. The other two both end in the authored
+ * `default_stance`, and only the engine can produce either, because only the
+ * engine holds that default (spec-engine §5). They are NOT the same event and
+ * the journal may not spell them the same way:
+ *
+ * - `fallback` — Call 1 was asked and did not answer. A failure.
+ * - `baseline` — Call 1 was never asked, because the agent was handed nothing.
+ *   Not a failure: it is the run behaving as every gate's `standard_form`
+ *   already claims it does.
+ *
+ * They were one boolean until x14, which is a shape that cannot say the
+ * difference; a run record that reports an unasked call as a failed one is the
+ * kind of unexplainable outcome architecture spec §2 exists to forbid.
+ */
+export type StanceOrigin = 'model' | 'fallback' | 'baseline'
+
+/**
  * The one field of Call 1's response that has state authority, plus the line.
  *
- * `fallback` is not a fourth field of the response — Call 1 either landed or it
- * did not, and only the engine knows which, because only the engine holds the
- * authored `default_stance` it substitutes (spec-engine §5). It exists so the
- * journal can say so; see `FALLBACK_CALL1_CAUSE`.
+ * `origin` is not a third field of the response — see `StanceOrigin`. It
+ * defaults to `model`, so a caller that simply answers a gate says so by
+ * omission.
  */
-export type StanceSubmission = { stance: string; utterance: string; fallback?: boolean }
+export type StanceSubmission = { stance: string; utterance: string; origin?: StanceOrigin }
 
 /**
  * spec-engine §2.1 · §5 — the `cause` a delta gets when the stance behind it is
@@ -59,6 +78,35 @@ export type StanceSubmission = { stance: string; utterance: string; fallback?: b
  * judged; the run record then asserts a model judgment that never happened.
  */
 export const FALLBACK_CALL1_CAUSE = 'fallback:call1'
+
+/**
+ * spec-engine §2.1 — the `cause` for the same authored `default_stance` when
+ * Call 1 was never asked at all, because the agent was handed nothing.
+ *
+ * Deliberately NOT `FALLBACK_CALL1_CAUSE`. That literal is §5's word for a call
+ * that failed, and reusing it here would put a failure in the run record for
+ * every gate of every empty-handover run — which is most first runs, and is the
+ * one thing the journal exists to be right about. The two strings share no
+ * prefix for the same reason: a reader grepping `fallback:` must not find this.
+ *
+ * What it records is the opposite of a defect: the gate resolved the way every
+ * gate's authored `standard_form` says it must — `아무것도 넘겨받지 않은 요원은
+ * 기본 stance a를 낸다` — by construction rather than by a model agreeing to.
+ */
+export const BASELINE_CALL1_CAUSE = 'baseline:no-handover'
+
+/**
+ * Origin → the fixed `cause` it writes, or `null` for "spell out the stance".
+ *
+ * Total over `StanceOrigin` by type, which is the point: a fourth origin cannot
+ * be added without answering this question, where a chain of `=== 'x'` tests
+ * would have silently attributed it to the model.
+ */
+const ORIGIN_CAUSE: Readonly<Record<StanceOrigin, string | null>> = Object.freeze({
+  model: null,
+  fallback: FALLBACK_CALL1_CAUSE,
+  baseline: BASELINE_CALL1_CAUSE,
+})
 
 /**
  * spec-engine §2.1 — a script event's deltas are attributed `event:<id>`
@@ -116,7 +164,40 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
   const { schedule, state, assembler, pack } = deps
 
   let cursor = 0
-  let phase: BeatPhase = openingPhase(schedule[0])
+  /**
+   * Is THIS beat's gate actually being asked? (contract-datapack F4)
+   *
+   * Read once when the beat opens and held, so `current()`, `openingPhase` and
+   * `gateView()` cannot disagree with each other inside one beat — the state
+   * moves under them as soon as effects land, and a gate that was open for the
+   * cursor and closed for the phase machine would be a hang.
+   *
+   * A gate with no authored `availability` compiles to `''`, which `holds()`
+   * answers `true` — so this is inert for every gate that does not use it.
+   */
+  let gateLive = gateOpen(schedule[0], state)
+  /**
+   * The events of THIS beat that are actually happening — `beat.events` minus
+   * the ones whose `exposure.extra_condition` is false on this run.
+   *
+   * Held rather than recomputed, like `gateLive` above and for a sharper
+   * version of its reason: `FIXED_NPC_ACTION` and `PRESENT_NPCS` are two
+   * readings of one question, and a beat that answered it twice could hand the
+   * model a roster with nobody in it and a fixed action naming that person.
+   *
+   * Written by `applyBeatEffects()` and NOT by `advance()`, which is where
+   * `gateLive` is read — the two are not interchangeable. A gate's
+   * `availability` is about the state the beat OPENS on, so it is read as the
+   * cursor moves; an event's exposure is about what happened, so it is read
+   * once this beat's own effects have landed. That is the moment
+   * `engine/index.ts`'s `recordOf` freezes the FEED's copy of the same answer,
+   * which is what makes the paper and the prompt agree by construction.
+   *
+   * `null` until then. Nothing can read it earlier: `beatView()` is the only
+   * consumer and it throws outside `narration`/`report`.
+   */
+  let shown: TimelineEvent[] | null = null
+  let phase: BeatPhase = openingPhase(schedule[0], gateLive)
   let utterance = ''
   let symptoms: string[] = []
   const stepLog: BeatStep[] = []
@@ -135,6 +216,11 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
     if (beat.gate === null) {
       throw new BeatPhaseError(`beat ${beat.index} (${beat.clock}) carries no gate`)
     }
+    if (!gateLive) {
+      throw new BeatPhaseError(
+        `gate ${beat.gate.id} is not available on this run (availability: ${JSON.stringify(beat.gate.availability)})`,
+      )
+    }
     return beat.gate
   }
 
@@ -143,17 +229,43 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
     return hit === undefined ? charId : hit.name
   }
 
-  /** D2: the co-timed event's own text. D3: the gate's scene, when alone. */
-  function fixedAction(beat: Beat): string {
-    const authored = beat.events.map((event) => event.text).join('\n')
+  /**
+   * D2: the co-timed event's own text. D3: the gate's scene, when alone.
+   *
+   * `events` is the EXPOSED set, never `beat.events` — see `shown`. D3 needs no
+   * clause of its own for that: a beat whose every event was filtered out has
+   * nothing authored, so it falls to the gate's scene by the same test that has
+   * always caught a beat with no events at all.
+   */
+  function fixedAction(beat: Beat, events: readonly TimelineEvent[]): string {
+    const authored = events.map((event) => event.text).join('\n')
     if (authored !== '') return authored
-    return beat.gate === null ? '' : beat.gate.scene
+    // A gate that is not being asked contributes no scene either: its prose
+    // describes the situation the gate is about, and that situation is what
+    // `availability` just said is not happening.
+    return beat.gate === null || !gateLive ? '' : beat.gate.scene
   }
 
-  function presentNpcs(beat: Beat): PresentNpc[] {
+  /**
+   * Who is on the line or in the room this beat — one entry per person.
+   *
+   * DEDUPED BY CHARACTER, because the roster is counted at the other end: the
+   * narration prompt tells the model that at most one person speaks here, and a
+   * character named by two co-timed events reached it twice and read as two
+   * people. Authoring around that means the pack has to know which rows share a
+   * minute, so the count is kept honest here instead.
+   *
+   * The FIRST entry wins, which keeps the roster in authoring order and, where
+   * two rows disagree about `side`, takes the one the author wrote first rather
+   * than inventing a tie-break.
+   */
+  function presentNpcs(events: readonly TimelineEvent[]): PresentNpc[] {
     const roster: PresentNpc[] = []
-    for (const event of beat.events) {
+    const seen = new Set<string>()
+    for (const event of events) {
       for (const npc of event.present ?? []) {
+        if (seen.has(npc.char_id)) continue
+        seen.add(npc.char_id)
         roster.push({ id: npc.char_id, name: nameOf(npc.char_id), side: npc.side })
       }
     }
@@ -174,7 +286,14 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
       return {
         index: beat.index,
         clock: beat.clock,
-        kind: beat.kind,
+        // What the CALLER must do this beat, which is the only thing a cursor
+        // is for: `live-driver.ts` reads this to decide whether Call 1 runs. A
+        // gate whose `availability` does not hold is not asked, so it is a
+        // script beat to everyone outside this module. `roundIndex` below is
+        // deliberately NOT recomputed — the round exists either way, and its
+        // report is still owed (`roundGates` already tolerates a round with no
+        // submission).
+        kind: beat.kind === 'gate' && gateLive ? 'gate' : 'script',
         roundIndex: beat.roundIndex,
         isRoundLast: beat.isRoundLast,
       }
@@ -194,12 +313,10 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
       // §2.1: `<gates[].gate>:<stances[].id>`. The STANCE, not the bucket — a
       // bucket is a many-to-one collapse, so `G1:ba` cannot say which of the
       // stances sharing it was chosen, and the journal is where that is
-      // recorded for good. §5 outranks the form entirely on the fallback path:
-      // the whole point of that entry is that no model chose the stance.
-      const cause =
-        submission.fallback === true
-          ? FALLBACK_CALL1_CAUSE
-          : `${gate.id}:${submission.stance}`
+      // recorded for good. §5 outranks the form entirely once no model chose:
+      // the whole point of those entries is to say so, and to say WHICH of the
+      // two ways it happened — asked and unanswered, or never asked.
+      const cause = ORIGIN_CAUSE[submission.origin ?? 'model'] ?? `${gate.id}:${submission.stance}`
 
       // §4.1 — the deltas land BEFORE anything reads state for routing.
       state.applyDeltas(bucket.deltas, cause)
@@ -231,6 +348,11 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
       // Closes this beat's journal, which is what the symptom renderer reads.
       state.journal()
       symptoms = state.renderSymptoms()
+      // …and NOW the exposure question can be asked, against a state that
+      // already carries this beat's own effects. Last of the three, after the
+      // journal has closed, so a condition reads the same run the symptoms
+      // above just described. See `shown`.
+      shown = beat.events.filter((event) => eventExposed(event.exposure?.extra_condition, state))
 
       stepLog.push({ kind: 'narration', beat: beat.index })
       if (beat.isRoundLast && beat.roundIndex !== null) {
@@ -260,8 +382,13 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
       cursor += 1
       utterance = ''
       symptoms = []
+      shown = null
       activeGroup = null
-      phase = openingPhase(schedule[cursor])
+      // Read AFTER the cursor moves and before the phase is set: the previous
+      // beat's effects have landed, so this is the state the gate's condition
+      // is about.
+      gateLive = gateOpen(schedule[cursor], state)
+      phase = openingPhase(schedule[cursor], gateLive)
       return true
     },
 
@@ -280,11 +407,16 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
         throw new BeatPhaseError(`beatView is legal after this beat's effects, not in '${phase}'`)
       }
       const beat = beatNow()
+      // `shown` cannot be null here — the phase guard above means this beat's
+      // effects have landed, and that is where it is written. The fallback is
+      // not a tolerance: it is what keeps a future phase edit from silently
+      // handing the model an unfiltered beat instead of failing a test.
+      const events = shown ?? []
       return {
         TIMELINE_TAIL: windowLines(lineGroups),
         AGENT_UTTERANCE: utterance,
-        FIXED_NPC_ACTION: fixedAction(beat),
-        PRESENT_NPCS: presentNpcs(beat),
+        FIXED_NPC_ACTION: fixedAction(beat, events),
+        PRESENT_NPCS: presentNpcs(events),
         SCENE_SYMPTOMS: [...symptoms],
       }
     },
@@ -304,7 +436,75 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
   }
 }
 
-function openingPhase(beat: Beat | undefined): BeatPhase {
+/**
+ * Does this beat's gate pass its `availability` condition right now?
+ *
+ * `false` for a beat with no gate, so the one call site can ask the question
+ * unconditionally.
+ *
+ * ── Un-hardened prose opens the gate, it does not close it ──────────────────
+ *
+ * `availability` is one of `contract-datapack`'s F4 slots: packs may still
+ * carry free text there pending promotion — 우는다리's G7 says 특정 가지에서만 —
+ * and `datapack:lint` FLAGs it as hardening work. Routing that through
+ * `holds()` alone would read it as `false` and silently delete a gate from
+ * every run, which is a behaviour change no author asked for. So a condition
+ * that does not PARSE is treated as "no condition authored yet" and the gate is
+ * asked, exactly as it was before this function existed. Only a real predicate
+ * is enforced.
+ *
+ * That also keeps the state core untouched for every pack that has not opted
+ * in: `snapshot()` is reached only when there is a predicate to resolve, so
+ * this adds no read to the §4.1 ordering chain.
+ */
+function gateOpen(beat: Beat | undefined, state: StateCorePort): boolean {
+  if (beat?.gate == null) return false
+  const condition = beat.gate.availability
+  if (condition === '' || problems(condition).length > 0) return true
+  return holds(condition, state.snapshot())
+}
+
+/**
+ * Does this event's `exposure.extra_condition` hold right now?
+ *
+ * The slot was authored, compiled and linted, and for a while NOTHING read it:
+ * every event in a beat reached the feed unconditionally. 전구간정상 authors its
+ * day as exclusive pairs — the 21:22 announcement is either "차량 안에서
+ * 대기하십시오" or "차에서 내리십시오", and the closing 개요서 either names
+ * 일반 화물 or twelve pallets — so an unread condition does not merely lose a
+ * branch, it prints BOTH halves of it in the same minute.
+ *
+ * ── Un-hardened prose shows the line, it does not delete it ────────────────
+ *
+ * Exactly `gateOpen`'s rule above, for exactly its reason. `extra_condition` is
+ * a `contract-datapack` F4 slot: packs may still carry free text there pending
+ * promotion — 우는다리's t5 says 현장(관리동)을 들여다본 런에만 보임 — and
+ * `datapack:lint` FLAGs it as hardening work. Routing that through `holds()`
+ * alone would read it as `false` and silently delete two authored events from
+ * every run of a pack nobody changed. So a condition that does not PARSE is
+ * treated as "no condition authored yet". Only a real predicate is enforced,
+ * which is also why `snapshot()` is reached only when there is one to resolve.
+ *
+ * ── One predicate, two readers ─────────────────────────────────────────────
+ *
+ * It lives HERE, beside the sibling rule it copies, because it has two callers
+ * and had one for a while: `engine/index.ts`'s `scriptLinesOf` filtered the
+ * FEED with it while `fixedAction` and `presentNpcs` below walked `beat.events`
+ * whole. The two surfaces then disagreed about what happened in a beat — the
+ * paper printed one branch and `FIXED_NPC_ACTION` handed the model both, under
+ * a heading that reads `[이미 일어난 일 — 이대로 일어났다 … 모순되지도 마라]`.
+ * Two copies of the predicate would have been two ways for that to come back;
+ * one exported function is the only shape that cannot.
+ */
+export function eventExposed(condition: string | null | undefined, state: StateCorePort): boolean {
+  if (condition === null || condition === undefined || condition === '') return true
+  if (problems(condition).length > 0) return true
+  return holds(condition, state.snapshot())
+}
+
+function openingPhase(beat: Beat | undefined, gateLive: boolean): BeatPhase {
   if (beat === undefined) return 'done'
-  return beat.kind === 'gate' ? 'stance' : 'effects'
+  // An unavailable gate opens where a script beat opens: its co-timed events
+  // still fire, Call 1 never runs, and no stance is ever submitted for it.
+  return beat.kind === 'gate' && gateLive ? 'stance' : 'effects'
 }

@@ -1,0 +1,377 @@
+{
+  "characters": {
+    "c1": {
+      "m1": {
+        "variable": "defensiveness",
+        "initial": 60
+      }
+    },
+    "c2": {
+      "m1": {
+        "variable": "trust",
+        "initial": 55
+      }
+    },
+    "c3": {
+      "m1": {
+        "variable": "avoidance",
+        "initial": 70
+      }
+    }
+  },
+  "timeline": {
+    "t1": {
+      "time": "18:38",
+      "text_head": "긴급상황대응실 본부로 ",
+      "effects": {},
+      "present": []
+    },
+    "t2": {
+      "time": "18:38+",
+      "text_head": "신고 내용은 천장 가운",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    "t3": {
+      "time": "18:40",
+      "text_head": "한내돔 시설대장을 조회",
+      "effects": {},
+      "present": []
+    },
+    "t4": {
+      "time": "18:40+",
+      "text_head": "한내돔은 공기 압력으로",
+      "effects": {},
+      "present": []
+    },
+    "t5": {
+      "time": "18:55",
+      "text_head": "한내돔 내부에서 추가 ",
+      "effects": {},
+      "present": []
+    },
+    "t6": {
+      "time": "18:55+",
+      "text_head": "아이들 열두 명과 함께",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t7": {
+      "time": "19:26",
+      "text_head": "재시도 끝에 최초 신고",
+      "effects": {},
+      "present": []
+    },
+    "t8": {
+      "time": "19:26",
+      "text_head": "한내돔 내부에 사람이 ",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    "t9": {
+      "time": "19:26",
+      "text_head": "송풍기 두 대가 정상 ",
+      "effects": {},
+      "present": []
+    },
+    "t10": {
+      "time": "19:26+",
+      "text_head": "내부 상황 파악을 위해",
+      "effects": {},
+      "present": []
+    },
+    "t11": {
+      "time": "19:33",
+      "text_head": "문세라 측에서 추가 제",
+      "effects": {},
+      "present": []
+    },
+    "t12": {
+      "time": "19:33",
+      "text_head": "줄 앞뒤로 자기 팀이 ",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t13": {
+      "time": "19:33+",
+      "text_head": "내부 상황 파악을 위해",
+      "effects": {},
+      "present": []
+    },
+    "t14": {
+      "time": "19:47",
+      "text_head": "문세라가 서쪽에서 큰 ",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t15": {
+      "time": "19:48",
+      "text_head": "도면을 조회했다. 그 ",
+      "effects": {},
+      "present": []
+    },
+    "t16": {
+      "time": "19:52",
+      "text_head": "한내돔 막구조 전 정비",
+      "effects": {},
+      "present": []
+    },
+    "t17": {
+      "time": "19:52",
+      "text_head": "송풍기 두 대가 정상 ",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    "t18": {
+      "time": "19:52+",
+      "text_head": "추가로, 지금 한내돔은",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    "t19": {
+      "time": "19:53",
+      "text_head": "하도경에게 송풍기 계통",
+      "effects": {},
+      "present": []
+    },
+    "t20": {
+      "time": "19:55",
+      "text_head": "표기웅에게 한내돔에 비",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    "t21": {
+      "time": "20:04",
+      "text_head": "문세라는 천장 가운데가",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t22": {
+      "time": "20:05",
+      "text_head": "송풍기 계통 배선에 대",
+      "effects": {},
+      "present": []
+    },
+    "t23": {
+      "time": "20:05",
+      "text_head": "작동 중이지 않은 2호",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    "t24": {
+      "time": "20:05",
+      "text_head": "문세라는 서쪽 슬리브로",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t25": {
+      "time": "20:14",
+      "text_head": "표기웅이 배전반 B 앞",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    "t26": {
+      "time": "20:15",
+      "text_head": "문세라는 돔의 천장이 ",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t27": {
+      "time": "20:16",
+      "text_head": "북측 통제선에서 북측 ",
+      "effects": {},
+      "present": []
+    },
+    "t28": {
+      "time": "20:16+",
+      "text_head": "지붕이 내려앉는 사이 ",
+      "effects": {},
+      "present": []
+    },
+    "t29": {
+      "time": "20:19",
+      "text_head": "남측 통제선에서 큰 소",
+      "effects": {},
+      "present": []
+    },
+    "t30": {
+      "time": "20:41",
+      "text_head": "소방 선착대에서 보고가",
+      "effects": {},
+      "present": []
+    },
+    "t31": {
+      "time": "20:41+",
+      "text_head": "남측 회전문은 내려앉은",
+      "effects": {},
+      "present": []
+    },
+    "t32": {
+      "time": "21:02",
+      "text_head": "야간 당직자 주머니에서",
+      "effects": {},
+      "present": []
+    },
+    "t33": {
+      "time": "21:35",
+      "text_head": "집결지에서 탈출자 인원",
+      "effects": {},
+      "present": []
+    },
+    "t34": {
+      "time": "21:35+",
+      "text_head": "최종 확인된 명단을 회",
+      "effects": {},
+      "present": []
+    }
+  },
+  "symptoms": {
+    "defensiveness": {
+      "up": [
+        {
+          "min": 10,
+          "text": "표기웅에게 같은 것을 다시 물었더니, 아까 한 대답을 낱말까지 그대로 되풀이했습니다"
+        },
+        {
+          "min": 1,
+          "text": "표기웅이 대답 앞에 규정이라는 말을 붙이기 시작했습니다"
+        }
+      ],
+      "down": [
+        {
+          "min": 20,
+          "text": "표기웅이 묻지 않은 것을 먼저 말했습니다. 자기가 언제 껐는지까지 왔습니다"
+        },
+        {
+          "min": 10,
+          "text": "표기웅의 대답에서 원래 그렇다는 말이 빠졌습니다"
+        },
+        {
+          "min": 1,
+          "text": "표기웅이 대답하기 전에 숨을 한 번 골랐습니다"
+        }
+      ]
+    },
+    "trust": {
+      "up": [
+        {
+          "min": 10,
+          "text": "문세라가 되묻지 않고 움직였습니다. 발소리가 끊기지 않고 이어졌습니다"
+        },
+        {
+          "min": 1,
+          "text": "문세라가 알겠다는 말 뒤에 자기가 본 것을 덧붙였습니다"
+        }
+      ],
+      "down": [
+        {
+          "min": 20,
+          "text": "문세라가 제가 시킨 자리를 다시 물었습니다. 두 번 물었고, 두 번째에는 왜냐고 했습니다"
+        },
+        {
+          "min": 10,
+          "text": "문세라의 대답이 짧아지고, 제 말 끝에 겹쳐 들어오기 시작했습니다"
+        },
+        {
+          "min": 1,
+          "text": "문세라가 대답 대신 주변 소리를 먼저 전했습니다"
+        }
+      ]
+    },
+    "avoidance": {
+      "down": [
+        {
+          "min": 20,
+          "text": "하도경이 오래된 일이라는 말을 거두고, 회로가 어디에 물려 있는지를 순서대로 읽어 주었습니다"
+        },
+        {
+          "min": 10,
+          "text": "하도경이 잠깐 말을 멈췄다가, 묻지 않은 배선 이야기를 덧붙였습니다"
+        },
+        {
+          "min": 1,
+          "text": "하도경이 통화를 끊겠다는 말을 하지 않았습니다"
+        }
+      ]
+    },
+    "flags": {
+      "headcount_pressed": {
+        "set": "표기웅이 인원을 다시 세는 동안 회선이 끊기지 않았습니다. 그 사이에 돔 안에서 두 번째 신고가 들어왔습니다"
+      },
+      "west_sleeve_opened": {
+        "set": "서쪽 벽 아래에서 덮개가 안쪽으로 열렸다고 전해 왔습니다. 남측 줄의 앞쪽이 처음으로 움직였습니다"
+      },
+      "vent_restored": {
+        "set": "배전반에서 차단기가 올라갔다고 했습니다. 천장 가운데가 다시 올라가고 눈이 가장자리로 흘러내린다고 전해 왔습니다"
+      },
+      "north_opened": {
+        "set": "북측 손잡이에서 사슬이 풀렸다고 전해 왔습니다. 열린 폭으로 바람이 빠져나가는 소리가 회선에 실렸습니다"
+      }
+    }
+  }
+}

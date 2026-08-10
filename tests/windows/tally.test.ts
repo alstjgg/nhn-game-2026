@@ -30,7 +30,7 @@ import {
   RUN_LOOP_TS,
   RUN_STATE_TS,
   SCORE_TALLY_TS,
-  TALLY_TS,
+  AGENT_FILE_TS,
   UNIT_FILES,
   fakeStorage,
   feedEvent,
@@ -71,9 +71,38 @@ function sourceOf(file: string): string {
   return source!.text
 }
 
-/** Every string/template literal in `text` (regex-level, good enough for a lint). */
+/**
+ * Comment bodies replaced by spaces — the prose goes, the newlines stay so any
+ * line number a failure reports still points at the right line.
+ *
+ * x6b — needed because this suite asserts the ABSENCE of a string now, and the
+ * modules that removed one quote it in the comment that records the removal.
+ * Same trick as `tests/windows/live-feed.test.ts`'s `blank()`; kept local
+ * rather than shared, since neither suite imports the other.
+ */
+function blankComments(text: string): string {
+  const keep = (s: string): string => s.replace(/[^\n]/g, ' ')
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, keep)
+    .replace(/(^|[^:])\/\/[^\n]*/g, (m, p1: string) => p1 + keep(m.slice(p1.length)))
+}
+
+/**
+ * Every string/template literal in `text` (regex-level, good enough for a lint).
+ *
+ * U3 (playtest g3-1) — the template-literal alternative now treats a `${…}`
+ * segment as one opaque unit instead of stopping dead at its `$`. The naive
+ * form left every `` `${A}${B}` `` template unmatched at its own backticks —
+ * harmless while it failed silently, until a file with TWO SUCH LITERALS
+ * (agent-file.ts, once u7's scan reached it) let the scanner treat the first
+ * literal's closing backtick as the SECOND literal's opening one, capturing
+ * every line of source code in between as one giant "prose literal" and
+ * failing (f) on whatever digit an unrelated identifier happened to contain.
+ */
 function literals(text: string): string[] {
-  return [...text.matchAll(/'([^'\\\n]*)'|"([^"\\\n]*)"|`([^`\\$]*)`/g)].map((m) => m[1] ?? m[2] ?? m[3] ?? '')
+  return [...text.matchAll(/'([^'\\\n]*)'|"([^"\\\n]*)"|`((?:\\.|\$\{[^{}]*\}|[^`\\])*)`/g)].map(
+    (m) => m[1] ?? m[2] ?? m[3] ?? '',
+  )
 }
 
 /* ══ [u7#c1] run states ═════════════════════════════════════════════════ */
@@ -257,7 +286,7 @@ describe('[u7#c3] new_run is driver-fed', () => {
   })
 
   it('(g) source: NEW RUN disables its button BEFORE it sends, so one activation is one op', () => {
-    const text = sourceOf(TALLY_TS)
+    const text = sourceOf(AGENT_FILE_TS)
     expect(text, 'tally.ts never sends the new_run op').toMatch(/['"]new_run['"]/)
 
     const sends = [...text.matchAll(/send\s*\(\s*\{\s*op\s*:\s*['"]new_run['"]/g)]
@@ -295,11 +324,15 @@ describe('[u7#c4] digits are score only', () => {
   it('(a) the score reducer copies total and rows verbatim — no client arithmetic', async () => {
     const m = await runState()
     const rows = [
-      { label: 'a', value: 200 },
-      { label: 'b', value: 7 },
+      { label: 'a', value: 200, baseline: 200 },
+      { label: 'b', value: 7, baseline: 7 },
     ]
-    const state = m.reduce(m.initialRunState(), scoreEvent(7, rows))
-    expect(state.score).toEqual({ total: 7, rows })
+    const state = m.reduce(m.initialRunState(), scoreEvent(7, rows, 26))
+    // `baselineTotal` rides across with the rest (§5.2 amendment h) — copied,
+    // never derived. The claim is still "no client arithmetic": the reducer may
+    // not compute 26 from the rows, and here it could not, because the rows sum
+    // to 207.
+    expect(state.score).toEqual({ total: 7, baselineTotal: 26, rows })
   })
 
   it('(b) the headline lands exactly on the event total — the count-up invents no number', async () => {
@@ -341,15 +374,21 @@ describe('[u7#c4] digits are score only', () => {
     expect(offenders, 'a client surface opens the engine-owned score.json').toEqual([])
   })
 
+  // x4 — RE-POINTED, not weakened. The claim is unchanged: every selector u7
+  // paints a digit into must be one inv 2 excuses BY NAME, so a digit that
+  // escapes into an NPC line still fails. What changed is the vocabulary — the
+  // ledger's `.tly-table` / `.th-v` / `.tr-v` went with its sheet skin and the
+  // day's numbers are painted into `.tly-line` / `#tlyBig` now. Both halves move
+  // together or the cross-check goes vacuous, which is what the second loop is.
   it('(d) u7 paints digits only into selectors the inv-2 scan excludes by name', () => {
     const invariant = read(path.join(REPO, 'tests/invariants/no-digit-npc.test.ts'))
     expect(invariant.length, 'the inv-2 suite is missing — the cross-check is vacuous').toBeGreaterThan(0)
-    for (const selector of ['.ledger', '.tly-table', '.th-v', '.tr-v']) {
+    for (const selector of ['.ledger', '.tly-lines', '.tly-line']) {
       expect(invariant, `${selector} is not on the inv-2 excluded list`).toContain(selector)
     }
     const painted = scannedSources().map((s) => s.text).join('\n')
-    for (const cls of ['tly-table', 'th-v', 'tr-v']) {
-      expect(painted, `u7 never paints ${cls} — the ledger scope is vacuous`).toContain(cls)
+    for (const cls of ['tly-lines', 'tly-line', 'tlyBig']) {
+      expect(painted, `u7 never paints ${cls} — the record scope is vacuous`).toContain(cls)
     }
   })
 
@@ -437,7 +476,7 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
     expect(state.phase).toBe('tally')
     expect(state.score, 'TALLY opened with a score already in hand — nothing was absorbed').toBeNull()
 
-    state = m.reduce(state, scoreEvent(7, [{ label: 'a', value: 1 }]))
+    state = m.reduce(state, scoreEvent(7, [{ label: 'a', value: 1, baseline: 1 }]))
     expect(state.score).not.toBeNull()
   })
 
@@ -449,9 +488,22 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
     )
   })
 
-  it('(i) source: no spinner — the wait is diegetic (design D2)', () => {
+  it('(i) source: no spinner — and, since x6b, no wait line either', () => {
+    // The first half is unchanged and still the point: whatever the desk does
+    // while the hold runs, it may not be a machine measuring itself.
     expect(offenders(/spinner|loading|is-busy|throbber/i)).toEqual([])
-    expect(sourceOf(TALLY_TS)).toContain('……보고서 정리 중')
+
+    // The second half INVERTED. It used to require `……보고서 정리 중` to be in
+    // this file — the diegetic wait line design D2 asked for instead of a
+    // spinner. The line is gone (민서, 08-09, playtest): it was the fanfold's
+    // removed marker mechanism wearing the same `……` leader, mounted in the
+    // AGENT FILE, and the note is blank across the hold now.
+    //
+    // Read with comments blanked, because the header of `windows/agent-file.ts`
+    // quotes the deleted literal to record where it went — a scan that counted
+    // that would be answered by the very prose explaining the removal.
+    const literal = blankComments(sourceOf(AGENT_FILE_TS))
+    expect(literal, 'a `……` wait line is authored in the AGENT FILE again').not.toMatch(/……/)
   })
 
   // R4 on score-tally.ts:258 (round 1): the count-up may not ANNOUNCE a
@@ -486,12 +538,20 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
     expect(release(false, false, true), 'a ledger that never counted is still owed its day back').toBe('lapsed')
     expect(release(true, true, true), 'a report in hand at the ceiling is still an arrival').toBe('filed')
 
-    // …and 'lapsed' says something else: the arrival copy is the arrival's, so
-    // a release that saw no report may not borrow it.
-    const text = sourceOf(TALLY_TS)
-    const filedLine = /const FILED_TAIL = '([^']*)'/.exec(text)?.[1] ?? ''
+    // …and 'lapsed' says something else. The claim here is NOT about any one
+    // word: it is that the two releases have separate copy and that the
+    // degraded one may not borrow the good one's.
+    //
+    // x5 — the good release stopped being an arrival NOTICE and became an
+    // instruction ('인수 인계 완료 후 요원을 파견하여…'), because REPORTS filling
+    // itself in already reports the arrival and the operator is the one thing on
+    // the desk with nothing telling it what to do next. So the anchor moved off
+    // '도착' — which now appears in the LAPSED line alone, where it is negated —
+    // and onto what always mattered: both lines exist, and they differ.
+    const text = sourceOf(AGENT_FILE_TS)
+    const filedLine = /const FILED_NOTE = '([^']*)'/.exec(text)?.[1] ?? ''
     const lapsedLine = /const LAPSED_TAIL = '([^']*)'/.exec(text)?.[1] ?? ''
-    expect(filedLine, 'the arrival line is gone').toContain('도착')
+    expect(filedLine, 'the good release has no line of its own').toBeTruthy()
     expect(lapsedLine, 'the degraded release has no line of its own').toBeTruthy()
     expect(lapsedLine, 'the degraded release claims an arrival it never saw').not.toBe(filedLine)
     expect(lapsedLine).not.toMatch(/도착했습니다/)
@@ -511,7 +571,7 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
 
     state = m.reduce(state, reportEvent(2))
     state = m.reduce(state, runEndEvent(3))
-    state = m.reduce(state, scoreEvent(7, [{ label: 'a', value: 1 }]))
+    state = m.reduce(state, scoreEvent(7, [{ label: 'a', value: 1, baseline: 1 }]))
     expect(state.phase).toBe('tally')
     expect(state.report, 'the round the seam filed was rewritten to the run number').toBe(2)
     expect(m.hasFiledReport(state), 'RUN 03 filed round 2 and the desk did not count it — the hold hangs').toBe(true)
@@ -519,6 +579,40 @@ describe('[u7#c2] count-up pacing is ~9 s and absorbs the report call', () => {
     // The next run starts owing its own report; the previous day`s cannot pay.
     state = m.reduce(state, metaEvent({ run: 4, runsLeft: 6 }))
     expect(m.hasFiledReport(state), 'the new run inherited the last run`s report').toBe(false)
+  })
+
+  // x4 — the count-up moved onto the record's CLOSING line, which lands
+  // `VERDICT_AFTER` after the last axis instead of at t=0. Given the flat
+  // `COUNT_MS` it would still have been climbing when `final` fired and the desk
+  // announced 집계 완료 over a moving number. `countMs` makes the ported 3400 a
+  // ceiling and the settle's remainder the budget.
+  it('(o) the closing number always lands ON final, never after it', async () => {
+    const t = await scoreTally()
+    for (let rows = 0; rows <= 12; rows += 1) {
+      const budget = t.countMs(rows)
+      expect(budget, `countMs(${rows}) is not positive`).toBeGreaterThan(0)
+      expect(budget, `countMs(${rows}) exceeds the ported ceiling`).toBeLessThanOrEqual(t.PACE.COUNT_MS)
+      expect(
+        t.PACE.VERDICT_AFTER + budget,
+        `${rows} rows: the number is still counting when the record goes final`,
+      ).toBeLessThanOrEqual(t.settleMs(rows))
+    }
+  })
+
+  // The unit is `contract-datapack` §3.6's own predicate, not a guess about the
+  // scenario: authoring writes a body count as a NUMBER and every other outcome
+  // as a word. `components/tally-line.ts` sums the feed's closing line by the
+  // same rule.
+  it('(p) a record line units a number and never a word', async () => {
+    const t = await scoreTally()
+    expect(t.lineOf({ label: '터널에서 나오지 못한 사람', value: 59 }, '명')).toBe(
+      '터널에서 나오지 못한 사람: 59명',
+    )
+    expect(t.lineOf({ label: '오세라', value: '사망' }, '명')).toBe('오세라: 사망')
+    // Zero is a number and keeps its unit — `0명` is an outcome, not an absence.
+    expect(t.lineOf({ label: '차우진', value: 0 }, '명')).toBe('차우진: 0명')
+    // …and a word that merely looks numeric is still a word.
+    expect(t.lineOf({ label: '강필주', value: '6시간 구금' }, '명')).toBe('강필주: 6시간 구금')
   })
 
   it('(n) source: no window keys the wait on `round === run`', () => {
@@ -661,9 +755,12 @@ describe('[u7#c9] run-wide hard constraints hold in this unit', () => {
     expect(offenders(/\.style\.[A-Za-z]/)).toEqual([])
     expect(offenders(/['"]\.\.?\/[^'"]*\.css['"]/)).toEqual([])
 
-    const sheet = read(path.join(REPO, 'src/client/styles/win-tally.css'))
+    const sheet = read(path.join(REPO, 'src/client/styles/win-reports.css'))
     expect(sheet.length, 'u1 already shipped the tally skin — u7 must not need one').toBeGreaterThan(0)
-    for (const cls of ['.tly-head', '.tly-table', '.tr-b', '.th-b', '.btn-newrun', '.tly-wait']) {
+    // x4 — the record's classes, not the retired sheet's. C11's claim is that
+    // u7 writes NO css and finds its skin already on disk; the list is what
+    // makes that claim non-vacuous, so it names what the record actually wears.
+    for (const cls of ['.terminal-record', '.tly-doc', '.tly-lines', '.tly-line', '.tl-s']) {
       expect(sheet, `${cls} is missing from the shipped skin`).toContain(cls)
     }
   })
@@ -717,7 +814,7 @@ describe('[u7#c9] run-wide hard constraints hold in this unit', () => {
 
   it('(i) the unit owns no shared barrel edit — only the five files it declared', () => {
     const registry = read(path.join(REPO, 'src/client/shell/window-registry.ts'))
-    expect(registry).toContain('windows/tally.ts')
+    expect(registry).not.toContain('windows/tally.ts')
     expect(registry, 'u7 wired its component through the registry').not.toContain('score-tally')
   })
 })
@@ -728,7 +825,7 @@ describe('[u7] ownership', () => {
     expect(UNIT_FILES.map(rel)).toEqual([
       'src/client/shell/run-state.ts',
       'src/client/components/score-tally.ts',
-      'src/client/windows/tally.ts',
+      'src/client/windows/agent-file.ts',
     ])
   })
 })

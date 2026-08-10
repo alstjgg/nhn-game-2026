@@ -35,8 +35,8 @@ engine and proxy landed, and how it is still tested).
    progress bar and rate control · D-DAY counter + run pips) · taskbar ·
    window manager (drag / resize / collapse / close-to-taskbar; default
    layout computed from the viewport).
-2. **Five windows**, one per loop surface (§4): AGENT FILE (build) · BLOCK
-   STORE (build) · LIVE FEED (watch) · REPORTS (autopsy) · TALLY (score).
+2. **Four windows**, one per loop surface (§4): AGENT FILE (build) · BLOCK
+   STORE (build) · LIVE FEED (watch) · REPORTS (autopsy; scoring folds in here).
 3. **The membrane.** All player input reduces to exactly
    `slot · unslot · mine · deploy · new_run` (§5.2). Nothing else ever
    crosses; no free-text surface exists.
@@ -78,7 +78,7 @@ The live driver is **not** a `src/client/` module — it landed as its own tier,
 |---|---|---|
 | `driver/` | fixture driver + fixture run files · the run-loop binding · (wiring step) `live-run.ts`, the boot-time binding that instantiates `src/driver/`'s live driver in the player build. Seam types are **not** here — they live in `src/shared/view-driver.ts` (ratified, §5.2) | `shared`; and — as the only `src/client/` module allowed past the seam (invariant 12) — the below-seam tiers the live binding composes: `src/driver/` · `src/runloop/` · `src/transport/` |
 | `shell/` | topbar (clock · D-DAY · case) · taskbar · window manager · layout | `driver` types |
-| `windows/` | the five windows, one module each | `components`, `driver` types |
+| `windows/` | the four windows, one module each | `components`, `driver` types |
 | `components/` | the §6 inventory | — |
 | `styles/` | `tokens.css` (**all** design tokens: paper stocks, the two accents, type scale — style-as-data) · per-window skins | — |
 | `debug/` | debug pane — build-flag only, **excluded from the player build** | `driver` |
@@ -102,17 +102,22 @@ manual pre-merge gate.
 3. **I1** — mining hands over the **authored sentence id**, never screen
    text. Card ↔ sentence matching (store, slots, archive highlight, red
    thread) is by id.
-4. **I13** — temperament never reaches the view. The dossier's §3 기질 block
-   renders as sealed redaction *by construction* (no temperament data is in
-   any client input).
+4. **I13** — temperament never reaches the view, *by construction*: no client
+   input has a field one could be written into. (x7, 08-09 — the invariant is
+   unchanged and is what it always was. What changed is that it is no longer
+   ILLUSTRATED: the dossier's 기질 block, which rendered as a sealed redaction,
+   left the cover and the cover was the only page it appeared on. The bars were
+   art on top of the guarantee, never the guarantee itself;
+   `tests/windows/agent-file.test.ts [u4#c2](a)` holds it on its own by scanning
+   every model for a temperament-shaped key or value.)
 5. **Latency rules 1–6** ([architecture §4](./spec-architecture.md)) bind
    every waiting surface: deterministic lines render instantly · waiting is
    diegetic, never a spinner · the tally count-up absorbs the whole report
    call · the typewriter is client-driven replay of a completed response ·
    mid-action play never blocks.
 6. **Archive segmentation** — the report archive is segmented by run/time
-   (`RUN 01 / 08:50 — 21:04`); **no gate label** appears on any player
-   surface (08-03 decision, architecture §2.1).
+   (`ECHO-1 08:50 — 21:04` — the sitting's callsign, G3); **no gate label**
+   appears on any player surface (08-03 decision, architecture §2.1).
 7. **Fixture-first** — every feature must be exercisable in fixture mode. A
    feature only demonstrable against the live proxy is review-rejected.
 8. **Style-as-data** — colors, paper stocks, type faces/sizes, spacing live
@@ -140,17 +145,16 @@ manual pre-merge gate.
 
 ## 4. Screens — the window set
 
-An **operator's desktop**: persistent chrome plus five windows. One page, no
+An **operator's desktop**: persistent chrome plus four windows. One page, no
 routing. Desktop only; minimum viewport bound in the PRD.
 
 | Region | Loop role | Holds |
 |---|---|---|
 | **Chrome** (persistent top bar) | orientation | portal identity (portal name · operator · case) · game clock → 21:04 with progress bar and rate control (×1/×4/pause) · D-DAY counter + run pips · taskbar |
-| **AGENT FILE** | Build | the dossier: §0–§2 fixed sections · §3 기질 sealed (invariant 4) · §4 known-blocks slots (cap: dev value 4 — §9) · deploy control |
+| **AGENT FILE** | Build | a paged document, every page headed 문서번호 · 현장 요원 운용 파일. Cover: 사건 개요 · 현장 요원 임무 · 현장 요원 교신 지침, revealed a character at a time on first arrival with a 건너뛰기 control (x7). Agent page: 식별 · 인수인계 사항 slots (cap: dev value 4 — §9) · deploy control (also carries the day's turn once the run closes — merged NEW RUN). One page per finished agent behind it. |
 | **BLOCK STORE** | Build | mined sentences as cards (authored id + species/axis tags) · species filter |
 | **LIVE FEED** | Watch | the run feed in seven line kinds (§6 `RunFeed`) · diegetic waiting marker; untouchable during a run |
-| **REPORTS** | Autopsy | two documents side by side: facts (objective log) · report_body (typewriter replay) · sentence mining (click → store) · **archive rail** — every past report readable, previously-slotted sentences highlighted (invariant 6) |
-| **TALLY** | Score | score count-up at run end (absorbs the report call; paced ~9 s) · run summary · new-run control |
+| **REPORTS** | Autopsy | two documents side by side: facts (objective log) · report_body (typewriter replay) · sentence mining (click → store) · **archive rail** — every past report readable, previously-slotted sentences highlighted (invariant 6) · at run end, a terminal record inside the facts document: score count-up (absorbs the report call; paced ~9 s) · run summary |
 
 ---
 
@@ -160,13 +164,16 @@ routing. Desktop only; minimum viewport bound in the PRD.
 
 ```
 fetch data/scenario/<slug>/*.json → parse against src/shared/datapack.ts types
-  → build shell (topbar · taskbar) + five windows → applyLayout(viewport)
+  → build shell (topbar · taskbar) + four windows → applyLayout(viewport)
   → connect driver: fixture (default until proxy lands) | live
   → BUILD state (file unlocked) — the idle loop starts here
 ```
 
 Run states: `BUILD → (deploy) → RUN → (per round) REPORT → … → (21:04)
-TALLY → (new_run) BUILD`, D-DAY decrementing until the last run.
+TALLY → (new_run) BUILD`, D-DAY decrementing until the last run. `TALLY` names
+the phase, not a window: the day is closed, awaiting the turn, and its two
+surfaces are the terminal record (REPORTS) and the merged deploy/NEW RUN
+control (AGENT FILE).
 
 ### 5.2 The view-driver seam (**ratified 08-03 with amendments** — 윤석,
 PR #108 review; types land in `src/shared/view-driver.ts`)
@@ -182,15 +189,35 @@ interface Sentence { id: string; text: string; species: Species; axis?: string }
 
 type FeedKind = 'event' | 'radio' | 'npc' | 'symptom' | 'wait' | 'fallback' | 'mark';
 interface FeedLine { kind: FeedKind; clock: string /* "HH:MM" */; text: string;
-                     speaker?: string; sentence_id?: string /* set ⇢ minable */ }
+                     speaker?: string; sentence_id?: string /* set ⇢ minable */;
+                     cited_slots?: number[] /* U5.4 — slot numbers, driver-resolved */ }
 
 type ViewEvent =
   | { type: 'beat_start' | 'beat_end'; beat: number; clock: string }
   | { type: 'feed';     line: FeedLine }
   | { type: 'waiting';  active: boolean; for: 'judgment' | 'narration' | 'report' }
   | { type: 'fallback'; call: 1 | 2 | 3; code: string; beat: number }
-  | { type: 'report';   round: number; facts: Sentence[]; report_body: Sentence[] }
-  | { type: 'score';    total: number; rows: { label: string; value: number }[] }
+  | { type: 'report';   round: number; facts: Sentence[]; report_body: Sentence[];
+                        judged?: { stance_id: string; desc: string; cited_ids: string[] } }
+  | { type: 'score';    total: number; baseline_total: number;
+                        rows: { label: string; value: string | number;
+                                baseline: string | number | null }[] }
+                        // AMENDED 08-05 (amendment g): a scored unit's value
+                        // may be a WORD — `score.json` tallies outcomes as
+                        // often as counts, and contract-run-artifacts' record
+                        // has always typed the same field `string | number`.
+                        // `total` does NOT widen: it is the 사망 count the
+                        // tally headline counts up, and a run with no scorer
+                        // emits no `score` event rather than an empty one
+                        // AMENDED 08-05 (amendment h): every row carries what
+                        // the UNTOUCHED day scored on the same axis, and the
+                        // headline carries its total. The tally's own subtitle
+                        // is 기준선 대비 — 무개입 하루가 기준이다, and it could
+                        // not keep that promise: the baseline lives in the pack
+                        // and inv 12 lets no view surface read one, so the
+                        // tally hardcoded `baseline: null` and every delta
+                        // printed `=`. `null` on a row means that axis did
+                        // not resolve on the untouched day
   | { type: 'run_end';  run: number }
   | { type: 'meta';     run: number; runs_left: number; carried: string[];
                         archive: { run: number; label: string }[] };
@@ -245,7 +272,7 @@ driver, not the windows, is where that guarantee is enforced (invariant 12).
 | State | Owner | Client's part |
 |---|---|---|
 | game state (meters, gates, journal) | engine | none — not even mirrored |
-| run counter · carried blocks · report archive | run-loop manager (meta-state, `sessionStorage` — §9) | display + membrane ops against it; arrives as `meta` events |
+| run counter · carried blocks · report archive | run-loop manager (meta-state, `sessionStorage` — §9; written through, cleared at boot per §7 #8) | display + membrane ops against it; arrives as `meta` events |
 | window geometry · focus · collapsed set · archive-rail selection · animation state | **client** | in-memory only — cosmetic state legitimately resets on refresh |
 | mining/slotted marks on sentences | derived from meta-state by id | render only |
 
@@ -279,10 +306,10 @@ run known-open #4 — the wiring step).
 | `DeployButton` | ready · deployed (locked) | 배치 stamp; locked = stamped over the file |
 | `RunFeed` | line kinds: `event · radio · npc · symptom · wait · fallback · mark` | green-bar fanfold printout, lines landing on the game clock |
 | `WaitingMarker` | active (diegetic phrasing) | `……무전 회신 대기 중` with breathing dots — never a spinner |
-| `ReportView` | facts (objective log) · report_body · loading-behind-tally | white bond paper, red margin rule on the report side |
+| `ReportView` | facts (objective log) · report_body · loading-behind the terminal record | white bond paper, red margin rule on the report side |
 | `MinableSentence` | unmined · mined · previously-slotted (archive highlight) | tear: red flash, strike-through, `채굴` marginal note; card animates to store |
-| `ReportArchive` | per-run sections (run/time segmented — no gate labels) | archive rail (`RUN 01 / 08:50 — 21:04`); mined and slotted marks persist |
-| `ScoreTally` | pending (absorbing report latency) · final | ruled-ledger count-up paced ~9 s |
+| `ReportArchive` | per-run sections (run/time segmented — no gate labels) | archive rail (`ECHO-1 08:50 — 21:04`); mined and slotted marks persist |
+| `ScoreTally` | pending (absorbing report latency) · final | ruled-ledger count-up paced ~9 s; hosted in REPORTS' `.terminal-record` |
 | `FallbackNotice` | per engine §5 fallback classes | `※` feed line |
 | `WindowFrame` | focused · collapsed · closed-to-taskbar · dragging · resizing | title bar, tab, corner grip; taskbar toggles and raises |
 | `RedThread` | idle · re-drawing on window drag | literal thread + pins, slot ↔ source sentence, matched by authored id |
@@ -313,14 +340,16 @@ Against `data/scenario/우는다리/`, in fixture mode, in a browser.
 6. Terminal clock reached → score renders.
 7. A forced `fallback` feed line renders per engine §5, and the run
    continues.
-8. Refresh mid-run: the multi-run meta-state (counter, archive, carried
-   blocks) survives via `sessionStorage`; closing the tab starts clean
+8. Refresh mid-run: a page load starts a NEW sitting — the run slots in
+   `sessionStorage` are cleared at boot (H2, 08-08), because a resume that
+   restores the archive rail's identities but not the report documents behind
+   them hands back a desk of empty tabs. Closing the tab starts clean
    (윤석's resolution, §9). Window geometry and other cosmetic state may
    reset.
 
 **Shell (the desktop half):**
 
-9. All five windows drag, resize, collapse, and close to the taskbar; the
+9. All four windows drag, resize, collapse, and close to the taskbar; the
    default layout fits the minimum viewport with nothing off-screen.
 10. Red threads connect every filled slot to its source sentence by authored
     id, and re-draw during window drag.
@@ -370,9 +399,11 @@ slices so LLM-generated text never hits a missing glyph).
   types land in `src/shared/view-driver.ts`. The sentence-id scheme
   (engine-minted, channel-derived species, shared segmenter with golden
   test) is part of the ratification.
-- **Persistence** — `sessionStorage` for meta-state: survives refresh (the
-  multi-run loop isn't destroyed by F5), dies with the tab (every judge
-  starts clean — `localStorage` would break the run-3 demo staging). 윤석
+- **Persistence** — `sessionStorage` for meta-state, written but no longer read
+  back on load: **F5 starts a new sitting** (H2, 08-08 — the resume could not
+  restore the filed reports, so it returned an archive of empty tabs), and the
+  slot dies with the tab either way (`localStorage` would break the run-3 demo
+  staging). 윤석
   revises physical §1 and game-design §6; §7 #8 binds it here.
 - **`src/` scaffolding** — already done (physical §3.8 step 1: the four
   `src/` dirs and the `tsconfig`/`tsconfig.core` split exist). **Condition

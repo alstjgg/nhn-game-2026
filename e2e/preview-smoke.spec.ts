@@ -12,7 +12,7 @@ import { expect, test } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { watchWire } from './fixtures/harness.ts'
+import { deployFile, watchWire } from './fixtures/harness.ts'
 import { CHROME, FREE_TEXT, WIN } from './fixtures/selectors.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -56,7 +56,7 @@ test.describe('preview smoke', () => {
 
     await page.goto('./')
     await expect(page.locator(CHROME.app)).toHaveCount(1)
-    await expect(page.locator(WIN.any)).toHaveCount(5)
+    await expect(page.locator(WIN.any)).toHaveCount(3)
     await expect(page.locator(CHROME.caseName)).not.toBeEmpty()
     expect(errors, 'the built desk threw on boot').toEqual([])
   })
@@ -81,7 +81,7 @@ test.describe('preview smoke', () => {
   test('preview smoke — the built page reaches no third-party origin (inv 10)', async ({ page, baseURL }) => {
     const wire = watchWire(page, baseURL!)
     await page.goto('./')
-    await expect(page.locator(WIN.any)).toHaveCount(5)
+    await expect(page.locator(WIN.any)).toHaveCount(3)
     await page.waitForLoadState('networkidle')
     // The LLM tier is the one origin inv 10 admits, and it is admitted by NAME:
     // the host comes from the same `.env.production` the build read, so a second
@@ -134,7 +134,7 @@ test.describe('preview smoke', () => {
 
   test('preview smoke — the built page carries no free-text surface (inv 1)', async ({ page }) => {
     await page.goto('./')
-    await expect(page.locator(WIN.any)).toHaveCount(5)
+    await expect(page.locator(WIN.any)).toHaveCount(3)
     expect(await page.locator(FREE_TEXT).count(), 'a free-text surface reached the player build').toBe(0)
   })
 
@@ -154,7 +154,7 @@ test.describe('preview smoke', () => {
 
   test('preview smoke — the player build boots the LIVE desk, not a fixture', async ({ page }) => {
     await page.goto('./')
-    await expect(page.locator(WIN.any)).toHaveCount(5)
+    await expect(page.locator(WIN.any)).toHaveCount(3)
 
     // This asserted ZERO feed lines until 2026-08-05, and it was right to: a
     // player build had no driver behind it, so a line on the desk could only
@@ -166,13 +166,43 @@ test.describe('preview smoke', () => {
     // the sibling test greps the bundle for fixture and debug-pane needles, which
     // is the check that can actually tell the two apart. What survives here is
     // the browser-side half: the desk that booted is the LIVE one.
-    const feedLines = await page.locator('#w-feed #feedList .fl').count()
-    expect(feedLines, 'the player build booted a desk with no run behind it').toBeGreaterThan(0)
+    // The press is part of the claim now. `BUILD → (deploy) RUN` (spec-client
+    // §5.1) is held by the driver: an unopened day prints nothing, so a line on
+    // the fanfold of a PLAYER build is proof both that a live run is behind the
+    // desk and that the operator's own commit is what starts it — the only
+    // gesture in the game that reaches the engine at all.
+    await deployFile(page)
+
+    // Waited for, not sampled. The claim is "there is a run behind this desk",
+    // and the live path fetches a pack and opens a run loop before it can show
+    // one — so counting at first paint measures machine load, not the claim. It
+    // sampled zero once under a full-suite run and passed 3/3 alone (08-08).
+    await expect(
+      page.locator('#w-feed #feedList .fl').first(),
+      'the player build booted a desk with no run behind it',
+    ).toBeAttached({ timeout: 15_000 })
 
     // The run counter is the tell. e8's run loop opens on its own allotment;
     // the placeholder stream `shell/boot-run.ts` hardcodes RUN 3 of 10, so these
     // two can never be confused for one another.
+    //
+    // RE-AIMED (08-09). This used to pin the allotment — `toContainText('/ 5')`
+    // — which is not what the test is about and is not this file's number to
+    // know. H3 moved the allotment 4 → 5 and then back to 4; the second half
+    // updated `runloop/meta-event.test.ts` and `driver/live-desk.test.ts`, which
+    // name the constant, and missed this line, which spells the digit. CI runs
+    // the preview lane and only the preview lane, so the one place the drift
+    // could not be seen locally is the one place it broke (#224 → red `main`).
+    //
+    // The claim is LIVE-versus-PLACEHOLDER, so that is what is asserted now: the
+    // live loop opens on its first run, and the placeholder's `RUN 03 / 10` is
+    // absent. Both survive any future change to the allotment, because neither
+    // is about it. `runloop/meta-event.test.ts` (g) remains the ONE place the
+    // shipped number is pinned, deliberately as a literal.
     await expect(page.locator('#ddayUnit')).toContainText('RUN 01')
-    await expect(page.locator('#ddayUnit')).toContainText('/ 4')
+    await expect(
+      page.locator('#ddayUnit'),
+      'the player build booted the placeholder run, not the live loop',
+    ).not.toContainText('/ 10')
   })
 })

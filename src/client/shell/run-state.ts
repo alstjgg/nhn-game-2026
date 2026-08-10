@@ -33,7 +33,13 @@ export interface MetaState {
 /** The closing tally, exactly as the `score` event carries it. */
 export interface ScoreState {
   total: number
-  rows: { label: string; value: number }[]
+  /** §5.2 amendment h — the same headline on the untouched day. */
+  baselineTotal: number
+  /**
+   * §5.2 amendment g — a scored unit's value may be a word, not only a count.
+   * Amendment h — and it carries what that axis scored with no intervention.
+   */
+  rows: { label: string; value: string | number; baseline: string | number | null }[]
 }
 
 export interface RunState {
@@ -107,7 +113,15 @@ export function reduce(state: RunState, event: ViewEvent): RunState {
       return {
         phase: 'tally',
         meta: state.meta,
-        score: { total: event.total, rows: event.rows.map((row) => ({ label: row.label, value: row.value })) },
+        score: {
+          total: event.total,
+          baselineTotal: event.baseline_total,
+          rows: event.rows.map((row) => ({
+            label: row.label,
+            value: row.value,
+            baseline: row.baseline,
+          })),
+        },
         report: state.report,
       }
     case 'run_end':
@@ -167,6 +181,10 @@ function restored(storage: Storage | null): ViewEvent | null {
 /**
  * The run a refresh should re-open on, or `null` for a cold desk.
  *
+ * RETIRED (H2, 08-08) — nothing calls this. Kept because `driver/live/index.ts`
+ * still cites it by name as the shape the live path's own resume was modelled
+ * on. See `clearRunState()` below for what replaced it and why.
+ *
  * The restore used to lose a race it could not see: `createRunState` rebuilt
  * the state from the slot inside `tally.mount()`, and the driver — always
  * opened at `runs[0]` — then emitted the pack's opening `meta` in the same boot
@@ -176,6 +194,32 @@ function restored(storage: Storage | null): ViewEvent | null {
 export function restoredRun(options: RunStateOptions = {}): number | null {
   const event = restored(options.storage ?? defaultStorage())
   return event !== null && event.type === 'meta' ? event.run : null
+}
+
+/**
+ * H2 — a page load starts a new sitting: this module's slot is dropped before
+ * anything reads it.
+ *
+ * The resume this replaces restored the sitting's IDENTITY — callsign, run
+ * counter, archive — from the last `meta` event, and could not restore its
+ * CONTENT: the filed report documents live in `windows/reports.ts` and are
+ * persisted nowhere. A refresh therefore came back as ECHO-n with n rail tabs
+ * and nothing readable in any of them. Restoring them properly means persisting
+ * every sitting's whole text; dropping the resume means a judge who refreshes
+ * gets the game from the top. The second is the desk we want, and it is the
+ * amendment to spec-client §7 #8 that ships with this unit.
+ *
+ * The audio mute key is deliberately NOT cleared — a restart is not an unmute.
+ */
+export function clearRunState(options: RunStateOptions = {}): void {
+  const storage = options.storage ?? defaultStorage()
+  if (!storage) return
+  try {
+    storage.removeItem(META_KEY)
+  } catch {
+    // Same contract as `restored()`: a private-mode Storage throws on write,
+    // and a desk that cannot clear its slot still has to open.
+  }
 }
 
 /** Writes the `meta` event verbatim; a refusing Storage degrades to memory. */
@@ -200,22 +244,23 @@ export function createRunState(driver: FixtureDriver, options: RunStateOptions =
 
   const remembered = restored(storage)
   let state = remembered === null ? initialRunState() : reduce(initialRunState(), remembered)
-  let openedAt = driver.clock.minute
 
-  /**
-   * The stream a run opens with lands before the operator has done anything:
-   * `advance(0)` releases the opening minute so the desk is not blank, and the
-   * clock then waits on ▶. That opening batch is still BUILD — the day has not
-   * begun until it moves. Everything else is the reducer's, unconditionally.
-   */
-  function begun(event: ViewEvent): boolean {
-    if (event.type !== 'feed' && event.type !== 'beat_start') return true
-    return driver.clock.minute > openedAt
-  }
-
+  // Unconditional, and the driver's clock is not consulted at all.
+  //
+  // It used to be: a `feed` or `beat_start` released at the opening minute was
+  // refused, because the shell's `advance(0)` (`boot.ts` step 5) released the
+  // whole opening minute before the operator had pressed anything, and a desk
+  // that jumped to RUN off a batch nobody asked for was wrong. That guard held
+  // the PHASE right while the LIVE FEED went on printing the batch anyway.
+  //
+  // The hold now lives where the events do — the driver holds the run's own
+  // stream until a `deploy` op arrives (`driver/run-loop.ts`, `driver/live/
+  // adapter.ts`) — so a run event reaching this reducer is proof the file was
+  // committed, whatever minute the clock is sitting on. Which matters: the
+  // opening batch is released BY the press, with the clock still on the opening
+  // minute, and the old guard would now refuse the very events that mean RUN.
   driver.subscribe((event: ViewEvent) => {
-    if (event.type === 'meta') openedAt = driver.clock.minute
-    if (begun(event)) state = reduce(state, event)
+    state = reduce(state, event)
     if (event.type === 'meta') persist(storage, event)
     for (const listener of [...listeners]) listener(state)
   })

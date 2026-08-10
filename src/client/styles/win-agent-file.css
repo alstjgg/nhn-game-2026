@@ -13,80 +13,493 @@
 .file-head::after{content:'';position:absolute;left:0;right:0;bottom:-4px;height:1px;
   background:var(--graphite);opacity:.5}
 .fh-doc{font-size:var(--fs-8-5);letter-spacing:.13em;color:var(--faded)}
-.fh-title{font-family:var(--myeong);font-weight:800;font-size:var(--fs-19);
-  letter-spacing:-.01em;color:var(--pap-hd);margin-top:var(--space-2)}
+/* x5 — the file's own name is a FIXED value, so it is machine print like the
+   document number above it. 명조 is reserved for what a person wrote, and
+   nobody wrote 현장 요원 운용 파일 — it is what the form is called. */
+.fh-title{font-family:var(--mono);font-weight:700;font-size:var(--fs-17);
+  letter-spacing:.06em;color:var(--pap-hd);margin-top:var(--space-2)}
 .fh-right{text-align:right}
 .fh-k{font-size:var(--fs-8);letter-spacing:.2em;color:var(--faded)}
 .fh-v{font-size:var(--fs-14);font-weight:700;letter-spacing:.13em;color:var(--seal-2)}
 
 .sect{margin-bottom:var(--space-13);position:relative}
 .sect-hd{display:flex;align-items:baseline;gap:var(--space-8);margin-bottom:var(--space-4)}
-.sect-no{font-size:var(--fs-11);font-weight:700;color:var(--seal-2);letter-spacing:.05em}
-.sect-hd h4{font-family:var(--myeong);font-size:var(--fs-13);font-weight:700;color:var(--pap-1)}
-.sect-flag{margin-left:auto;font-size:var(--fs-7-5);letter-spacing:.2em;
-  padding:var(--space-1) var(--space-6);
-  border:1px solid var(--sh-3);color:var(--faded)}
-.sect.fixed .sect-flag{background:var(--sh-055)}
-.sect.operable .sect-flag{border-color:var(--seal);color:var(--seal-2);background:var(--seal-wash)}
+/* …and so are the section titles: 임무 · 행동 원칙 · 기질 · 교신 지침 · 식별 ·
+   인수인계 사항 are the form's headings, printed on it before anyone filled it in. */
+.sect-hd h4{font-family:var(--mono);font-size:var(--fs-12);font-weight:700;
+  letter-spacing:.08em;color:var(--pap-1)}
+/* x7 — `.sect-flag` and its two state skins are DELETED (민서, 08-09). The badge
+   said 고정 / 조작 가능 / 열람 in the corner of every section head on every page,
+   which is the form naming the kind of field beside a heading that already
+   names it. `components/dossier.ts` no longer emits the element.
+   `.sect.fixed .sect-body` below still carries the distinction in ink, which is
+   why the state class survives on the section. */
+/* x6 — `pre-line`, so the cover's sections keep their authored line breaks.
+   임무 and 교신 지침 are a posting order's clauses, one per line, and
+   `components/dossier.ts` writes them with `\n` between. Collapsed
+   into one justified block they read as a manual again, which is the exact
+   failure x6 exists to undo. Wrapping inside a clause still justifies; a line
+   ended by the authored break is a last line and is not stretched. */
+/* x7 — `padding-left:var(--space-2)` removed (민서, 08-09). It read on the page
+   as a space before every body line: the heading above and the red note below
+   are both flush at the section's own left edge, and 2px of inset was enough to
+   make the prose between them look indented against them. Measured before and
+   after — heading, body and note now share one left edge. */
 .sect-body{font-family:var(--myeong);font-size:var(--fs-11-5);line-height:1.72;color:var(--pap-3);
-  padding-left:var(--space-2);text-align:justify}
+  text-align:justify;white-space:pre-line}
 .sect.fixed .sect-body{color:var(--pap-4)}
-.sect-rows{display:grid;grid-template-columns:64px 1fr;gap:var(--space-2) var(--space-10);
+/* x7 — the cover's red note: the one line in a section that is not the order
+   itself but a warning about it, so it is set apart from the body it follows
+   the way the sealed notice used to be — the seal's own red, small, and at a
+   letter-spacing that reads as stamped rather than written. It is a separate
+   element (`components/dossier.ts` emits it as one) precisely so it can carry
+   its own ink without the body having to be marked up mid-sentence. */
+.sect-note{font-size:var(--fs-8-5);line-height:1.7;letter-spacing:.12em;
+  color:var(--seal-2);margin-top:var(--space-6);word-break:keep-all}
+/* x7 — the series name where the cover says it in BODY prose. The same ink the
+   호출부호 row already wears (`.rd-code` below), so the incident summary and the
+   identity it hands to agree on which word is the agent. `components/dossier.ts`
+   wraps it; nothing here decides where.
+   The red note is deliberately NOT marked up: it is already set entirely in this
+   red, so a bold inside it would be emphasis on emphasis with nothing to
+   contrast against. Only 사건 개요's body carries the mark (민서's request). */
+/* x10 — …AND IT IS MACHINE PRINT (민서, 08-10). `font-family:var(--mono)`, which
+   is the one thing this rule did not declare: it inherited `.sect-body`'s 명조
+   and read as a bold serif word inside a serif sentence.
+
+   The desk has exactly two faces and they mean two different things (tokens.css
+   §faces): 명조 is what a PERSON said or wrote, --mono is every FIXED value the
+   desk prints. ECHO is a callsign — an identifier issued by 본부, not a word the
+   author of this summary chose — so on the two surfaces that already print it as
+   a value it is already mono: `.sect-rows dd` sets the whole 식별 grid in it, and
+   `.rd-code` right below is mono/800 for the 호출부호 row. This rule was the one
+   place the same string was set in the other face, purely because the sentence
+   around it is prose. Now the brief and the identity row agree on the face as
+   well as on the ink, and the switch is what tells the reader that this word in
+   the middle of the sentence is a NAME the file will keep using.
+
+   ONLY HERE. `.rd-echo` is emitted at exactly one site — `components/dossier.ts`
+   `callsignMarked()`, which is reached only from a `.sect-body` line — and the
+   red note is deliberately not marked up (see the note there). So no other
+   surface picks this up: the reports, the rail tabs and the 호출부호 row print
+   their own callsigns through their own rules, and every one of them was already
+   mono. Nothing is scoped to `.file-page` for that reason — a scope would be
+   guarding against a second caller that does not exist and would go stale the
+   moment one did.
+
+   THE TRACKING AND THE LINE BOX BOTH SURVIVE THE SWAP, checked rather than
+   assumed. `.06em` was set against 명조 and it still reads against --mono,
+   because it is not doing the same job as `.rd-code`'s `.08em`: that one is a
+   standalone form value in a grid cell with nothing after it, while this one is
+   followed immediately by a 를 particle, and at .08em the gap before the particle
+   read as a space in the middle of a word. `.06em` at `--fs-11-5` (13.8px) is
+   0.83px of trailing air — enough to keep the four letters from crowding the
+   Korean, not enough to detach them from it. The line box does not move either:
+   `line-height:1.72` on `.sect-body` is a 23.7px strut and IBM Plex Mono's
+   ascent+descent at 13.8px is ~17.7px, so the inline run sits inside the rhythm
+   the paragraph already had — no reflow, no baseline shift between the lines
+   above and below it. `font-weight:800` resolves to the 700 face, which is the
+   heaviest IBM Plex Mono `fonts.css` self-hosts; that is not a defect, it is the
+   same weight `.fh-title` and `.sect-hd h4` print at, and it is what `.rd-code`
+   has always resolved to for the identical declaration. */
+.rd-echo{font-family:var(--mono);color:var(--seal-2);font-weight:800;letter-spacing:.06em}
+.sect-rows{display:grid;grid-template-columns:96px 1fr;gap:var(--space-2) var(--space-10);
   font-size:var(--fs-10-5);line-height:1.6}
 .sect-rows dt{color:var(--faded);letter-spacing:.06em}
-.sect-rows dd{font-family:var(--myeong);color:var(--pap-3)}
+/* 식별's three rows are typed-in form values (배치 · 권한 read the same on every
+   agent's page), not prose — machine print, like the keys beside them. */
+.sect-rows dd{font-family:var(--mono);color:var(--pap-3)}
+/* x4 — 식별's 호출부호. The rest of 식별 is standing text that reads the same on
+   every agent's page (배치 · 권한 never change); the callsign is the ONE value
+   that says which agent this page is about, and the file is now a document the
+   operator flips through. It is set in the seal's own red so a page turn lands
+   on the identity first. `components/dossier.ts` decides which row wears the
+   class — the sheet never spells the Korean key. */
+.sect-rows dd.rd-code{color:var(--seal-2);font-weight:800;letter-spacing:.08em}
 
-/* §3 기질 — redacted */
-.sect.sealed .sect-body{position:relative;color:transparent;user-select:none}
-.redact{display:flex;flex-wrap:wrap;gap:var(--space-4) var(--space-5);margin-top:var(--space-2)}
-.redact i{display:block;height:12px;background:var(--redact);
-  box-shadow:0 1px 0 var(--sheen-25);animation:redactIn .5s ease-out both}
-@keyframes redactIn{from{transform:scaleX(0);transform-origin:left}to{transform:none}}
-.sealed-note{font-size:var(--fs-8-5);letter-spacing:.14em;color:var(--seal-2);margin-top:var(--space-6);
-  display:flex;align-items:center;gap:var(--space-6)}
-.sealed-note::before{content:'✕';font-size:var(--fs-9)}
+/* §3 기질's redaction lived here and is DELETED (x7, 민서 08-09).
+   `.sect.sealed .sect-body`, `.redact`, `.redact i`, `@keyframes redactIn` and
+   `.sealed-note` — the transparent text, the black bars that scaled in from the
+   left, and the ✕ notice under them.
 
-/* slots */
-.slots{display:grid;gap:var(--space-7);margin-top:var(--space-8)}
-.slot{position:relative;min-height:54px;
-  padding:var(--space-8) var(--space-10) var(--space-8) var(--space-34);
-  border:1px dashed var(--sh-34);background:var(--sheen-28);
+   Kept for one round out of caution ("unstyled bars are worse than unused
+   rules") and now removed, because the caution no longer applies: the sealed
+   ARM of `buildSection` is gone with `SealedSection`, `SEALED_COPY` and
+   `SEALED_BARS`, so no code path can emit a `.sect.sealed` node to be left
+   unstyled. `e2e/agent-file.spec.ts` asserts `.sect.sealed` count 0, which is
+   what would catch a section arriving here again without its skin.
+
+   `--redact` in `tokens.css` may now be dead — it is a token, not a rule, and
+   `tests/styles/token-lint.test.ts` only checks used→declared, so it will not
+   fail either way. Left for a token pass to decide. */
+
+/* 인수인계 사항 — a paragraph, not four boxes (x4).
+
+   T1 had already taken the card FACE off a seated sentence ("what a slot holds
+   is a line of the file, not an object off a deck"), but the BOX stayed: four
+   dashed rectangles with a numbered rail down the left, standing there empty
+   whether or not the operator had anything to hand over. The file is a handover
+   the operator WRITES, so it reads as writing now — one justified flow, with
+   each sentence's slot number and its 해제 sitting in the margin of the line
+   they belong to.
+
+   The four permanent boxes are down to one blank, and only while the file is
+   empty; `#slotCount` in the deploy zone below is where the remaining seats are
+   read. `components/slot-board.ts` decides all of that — nothing here counts. */
+/* Ragged right, deliberately — the 무전 기록 pane justifies because it is one
+   long piece of prose, and this is a handful of short discrete sentences with a
+   button on the end of each. Justified, the last line of every seat stretched
+   its inter-word spaces into rivers wide enough to read as a table. */
+.slots{margin-top:var(--space-8);font-family:var(--myeong);font-size:var(--fs-11-5);
+  line-height:2.05;color:var(--pap-1);text-align:left;word-break:keep-all}
+
+/* one seated sentence: an inline run, so the paragraph can break inside it */
+.slot{display:inline}
+.slot::before{content:attr(data-no);font-family:var(--mono);font-size:var(--fs-8);font-weight:700;
+  letter-spacing:.1em;color:var(--seal-2);vertical-align:.15em;margin-right:var(--space-4);
+  padding:0 var(--space-3);border:1px solid var(--seal-a25);border-radius:1px;
+  white-space:nowrap}
+.slot .bcard{display:inline;padding:0;background:transparent;border:0}
+.slot .bc-text{display:inline;font-family:inherit;font-size:inherit;line-height:inherit;
+  color:inherit;text-align:inherit}
+/* the thread's landing dot rides the line rather than a box corner, and it
+   CLOSES the run — see the note in `slot-board.ts` on why it is last */
+.slot-pin{display:inline-block;width:7px;height:7px;border-radius:50%;vertical-align:.28em;
+  margin-left:var(--space-4);
+  background:radial-gradient(circle at 35% 30%,var(--pin-hi),var(--seal-2));
+  box-shadow:0 0 6px var(--seal-a55)}
+.slot-unset{font-size:var(--fs-8);letter-spacing:.14em;color:var(--faded);
+  margin-left:var(--space-5);padding:0 var(--space-5);vertical-align:.15em;
+  border:1px solid var(--sh-25);border-radius:1px;background:var(--sheen-28);
+  transition:.14s;white-space:nowrap}
+.slot-unset:hover{border-color:var(--seal);color:var(--seal-2);background:var(--seal-wash)}
+.slot.locked::before{color:var(--faded);border-color:var(--sh-25)}
+.slot.locked .slot-unset{display:none}
+
+/* the blank — one panel, the line centred in it both ways */
+.slot-blank{display:flex;align-items:center;justify-content:center;min-height:96px;
+  padding:var(--space-10) var(--space-14);border:1px dashed var(--sh-34);
+  background:var(--sheen-28);text-align:center;
   transition:background .18s,border-color .18s,box-shadow .18s}
-.slot::before{content:attr(data-no);position:absolute;left:0;top:0;bottom:0;width:24px;
-  display:flex;align-items:center;justify-content:center;font-size:var(--fs-9);font-weight:600;
-  color:var(--faded);border-right:1px dashed var(--sh-22);letter-spacing:.04em}
-.slot .slot-empty{font-family:var(--myeong);font-size:var(--fs-11);color:var(--faded-2);
-  display:flex;align-items:center;height:38px}
-.slot.droppable{border-color:var(--seal);background:var(--seal-wash);
+.slot-blank::before{content:none}
+.slot-blank .slot-empty{font-family:var(--myeong);font-size:var(--fs-11);line-height:1.7;
+  color:var(--faded-2);background:transparent;border:0;word-break:keep-all}
+.slot-blank .slot-target{cursor:pointer}
+.slot-blank.droppable{border-color:var(--seal);background:var(--seal-wash);
   box-shadow:0 0 0 3px var(--seal-a12)}
-.slot.filled{border-style:solid;border-color:var(--sh-4);background:var(--sheen-55)}
-.slot.locked{opacity:.92}
-.slot.locked .slot-empty{opacity:.5}
-.slot.pop{animation:slotPop .4s cubic-bezier(.3,1.5,.4,1)}
-@keyframes slotPop{0%{transform:scale(.94)}100%{transform:none}}
+.slot-blank.locked{opacity:.92}
+.slot-blank.locked .slot-empty{opacity:.5}
 
-.deploy-zone{margin-top:var(--space-18);padding-top:var(--space-12);border-top:2px solid var(--graphite);
-  display:flex;align-items:center;justify-content:space-between;gap:var(--space-12)}
-.dz-meta{font-size:var(--fs-9);letter-spacing:.08em;color:var(--faded);line-height:1.6}
+/* x5 — the zone is a COLUMN: the counter-and-button row, then the note across
+   the full page width. See the note in `deploy-button.ts` on why they split. */
+.deploy-zone{margin-top:var(--space-18);margin-bottom:var(--space-10);
+  padding-top:var(--space-12);border-top:2px solid var(--graphite);
+  display:flex;flex-direction:column;gap:var(--space-8)}
+.dz-row{display:flex;align-items:center;justify-content:space-between;gap:var(--space-12)}
+.dz-meta{min-width:0;font-size:var(--fs-9);letter-spacing:.08em;color:var(--faded);line-height:1.6}
 .dz-meta span{color:var(--graphite);font-weight:600}
-.btn-deploy{display:flex;flex-direction:column;align-items:center;gap:var(--space-1);
+#deployState{font-size:var(--fs-9);letter-spacing:.06em;line-height:1.6;
+  color:var(--graphite);font-weight:600;word-break:keep-all}
+.btn-deploy{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:var(--space-1);
   padding:var(--space-9) var(--space-20);background:var(--graphite);color:var(--kraft);
   border:1px solid var(--edge);box-shadow:2px 2px 0 var(--sh-35);transition:.14s}
 .btn-deploy:hover:not(:disabled){background:var(--seal-2);box-shadow:2px 2px 0 var(--sh-5);transform:translate(-1px,-1px)}
 .btn-deploy:active:not(:disabled){transform:translate(1px,1px);box-shadow:none}
 .btn-deploy:disabled{opacity:.3;cursor:not-allowed;box-shadow:none}
+
+/* ═══ x10 — THE FIRST DEPLOY BLINKS, AND ONLY THE FIRST (민서, 08-10) ════════
+   The control switches between its activated look and its deactivated one until
+   it is pressed, on the second page of the file and nowhere else.
+
+   WHY IT EXISTS, because a pulsing red button is otherwise the last thing this
+   desk would add. x8 took the whole build phase out of the onboarding walk — the
+   plate that used to say 요원을 파견하세요 is gone, and `shell/tutorial.ts` states
+   the cost in as many words: "the operator is no longer TOLD to turn the page or
+   to press DEPLOY, and the walk cannot say a word until they have worked both
+   out". The walk is gated on that press. Nothing on the desk moves until it
+   lands, and the control that ends the wait is under the fold of a document the
+   operator has just been made to read. This is that gap, answered by the control
+   itself rather than by a second voice over the document: the file says who is
+   going out, and the button says it is waiting for you. Once. Which is why it
+   is spent by the press and by the SECOND PAGE — the page index and the latch are
+   both decided in `windows/agent-file.ts` (`turn()` / `sync()` / the press
+   handler), because whether the mounted page is page 2 of 2 is not something a
+   stylesheet or a pure view model can know.
+
+   1 s IS THE WHOLE CYCLE, there and back — 민서's own number, 08-10, and it is
+   the SECOND number they have given it. It shipped at 0.5 s, and read on the
+   built page that was too fast: *"The DEPLOY button blinks too fast. I said 0.5
+   second period — let's fix it to a 1 second cycle."* Both numbers were meant as
+   the whole cycle, so nothing about the shape of this declaration changed; what
+   moved is the ruling on how long the cycle should be, and it moved because the
+   page was watched rather than because the spec was re-read. 0.5 s is recorded
+   here rather than dropped because "too fast" is only meaningful against the
+   number it was too fast for.
+
+   THE TWO HALVES STAY EQUAL — 500 ms deactivated, 500 ms activated. The cue is
+   showing two states and neither is the resting one: skewed, the longer half
+   would read as what the button IS and the shorter as a flash over it, which is a
+   different signal from the one asked for. Equal halves read as a lamp switching.
+
+   THE `alternate` TRAP IS WHY THERE IS NO `alternate` HERE, and it is worth
+   restating at the new number because the arithmetic is what hides it: `1s …
+   infinite alternate` is a TWO-second round trip wearing a 1 s number, exactly as
+   `.5s … infinite alternate` was a 1 s round trip wearing a 0.5 s one. It is the
+   shape anyone reaching for a two-state pulse writes first, and it is wrong at
+   every duration. One pass carries both halves and the loop repeats it, so the
+   number in the declaration is the number the operator can count.
+
+   A HARD CUT, NOT A CROSSFADE. The two halves are held flat and swap over the
+   0.1% between 49.9 and 50 (1 ms at this duration — the `siBlink` idiom in
+   `styles/signin.css`, same reason). Interpolated across 500 ms instead, the
+   button would spend most of the cycle in a muddy brown neither state owns, and
+   would read as a throb. It is a signal lamp: it is showing two states, not
+   travelling between them.
+
+   ONLY THE BACKGROUND MOVES. `:hover`'s lift and `:active`'s press are left out
+   deliberately — geometry that moved on a timer would make the button look like
+   it was being pressed by nobody, and the coach layer measures targets off
+   `getBoundingClientRect`. (An animated property outranks any author
+   declaration, so `:hover` cannot repaint a cued button. Nothing is lost: the
+   hover colour and the cue's lit half are the same `--seal-2`.)
+
+   REDUCED MOTION — THE END KEYFRAME IS THE ACTIVATED ONE, AND THAT IS THE WHOLE
+   ORDERING. `base.css` collapses every animation to a single 1 ms pass with
+   `animation-iteration-count:1`, which lands the element on its 100% keyframe;
+   `signin.css` records both sides of this trap (`siBlink` survives it by being
+   UNFILLED and falling back to the lit `opacity` on the element, `coach.css`'s
+   dead `litPulse` did not). Neither escape is available here: `.btn-deploy`'s own
+   `background` is the DEACTIVATED look, so an unfilled cue would fall back to a
+   live DEPLOY button that reads as dead — the exact failure `litPulse` shipped,
+   aimed at the one control the operator has to find. So the cue is FILLED
+   (`both`) and the red is at 100%: deactivated for the first half, activated for
+   the second, ending activated. A reduced-motion operator gets a DEPLOY button
+   that is simply red and still, which is both C18 (a desk that is working must
+   look like it is working) and the strongest reading of the cue. Do not reorder
+   these two keyframes for symmetry with the rule above them.
+
+   THE BOOT CURTAIN CANNOT SEE IT, checked twice over.
+   `components/desktop-dressing.ts`'s `revealDesk` awaits `getAnimations()` on
+   each WINDOW ROOT, and an infinite animation never settles — the hazard
+   `tests/shell/tutorial-observer.test.ts` (b) guards `coach.css` against, after
+   the old onboarding ring held the curtain down for eight seconds. That ring was
+   on the window root itself. This is on a button several levels below it, and
+   `Element.getAnimations()` without `{subtree:true}` returns only animations
+   targeting that element and its pseudo-elements — so the reveal never sees it.
+   And if it ever did, `revealDesk` filters `iterations === Infinity` out by hand.
+   Two independent reasons; the cue cannot delay the desk.
+
+   IT DOES NOT MEET THE COACH MARK EITHER, and that was checked rather than hoped
+   — `coach.css`'s own header declines a pulse outright ("a throbbing red ring
+   reads as an alarm on a desk where red means 관인"), so a red button throbbing
+   under a red leader line would be this sheet contradicting that one. It cannot
+   happen. The walk's only plate on `#btnDeploy` is its LAST one, and it opens
+   after 21:04 of the first day — by which point the settle has filed a page and
+   the live page is index 2, the control is wearing `next`, and the press that
+   opened the day spent the latch. Three independent reasons the two are never on
+   screen together, and the cue's whole window is the stretch of the walk that is
+   deliberately silent.
+
+   THE CAPTURE BASELINES DO NOT MOVE, which is the one place a number here is
+   load-bearing outside the desk — and it was RE-CHECKED against the harness when
+   the duration changed rather than carried over as an assurance.
+   `e2e/fixtures/harness.ts` freezes animations seek-and-pause at
+   `animation-delay:-2000ms` (`DEFAULT_SEEK_MS = 2000`, `freezeAt`), and 2000 is an
+   exact multiple of 1000 — 2000 = 2 × 1000, so the seek lands on the start of the
+   third iteration, progress 0%, the deactivated half, which is the background the
+   button already had. It divided by the old number too (2000 = 4 × 500), which is
+   the only reason this change was free. What would break it is a duration 2000
+   does not divide by — 700, 750, 1500 — and then the two `threaded` shots (the
+   only ones that turn to the agent's page) start recording a red DEPLOY.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.btn-deploy.is-cued{animation:dzCue 1s linear infinite both}
+@keyframes dzCue{
+  /* the deactivated look — the background `.btn-deploy` itself declares */
+  0%,49.9%{background:var(--graphite)}
+  /* …and the ACTIVATED look, which is also where the animation ENDS */
+  50%,100%{background:var(--seal-2)}}
+
 .bd-main{font-size:var(--fs-13);font-weight:700;letter-spacing:.28em;text-indent:.28em}
-.bd-sub{font-family:var(--myeong);font-size:var(--fs-9);opacity:.72;letter-spacing:.02em}
+.bd-sub{font-family:var(--mono);font-size:var(--fs-9);opacity:.72;letter-spacing:.06em}
 
 /* deploy stamp */
-.stamp{position:absolute;right:26px;top:88px;z-index:4;pointer-events:none;
+.stamp{position:absolute;right:39px;top:132px;z-index:4;pointer-events:none;
   display:none;flex-direction:column;align-items:center;gap:var(--space-2);
   padding:var(--space-9) var(--space-15);border:3px double var(--seal);color:var(--seal);
   transform:rotate(-11deg);opacity:.82;mix-blend-mode:multiply}
 .stamp.on{display:flex;animation:stampSlam .55s cubic-bezier(.2,1.4,.3,1) both}
-.stamp span{font-family:var(--myeong);font-weight:800;font-size:var(--fs-17);letter-spacing:.12em}
+.stamp span{font-family:var(--mono);font-weight:800;font-size:var(--fs-16);letter-spacing:.12em}
 .stamp em{font-style:normal;font-size:var(--fs-8);letter-spacing:.16em;opacity:.85}
 @keyframes stampSlam{
   0%{transform:rotate(-24deg) scale(3.4);opacity:0;filter:blur(5px)}
   60%{transform:rotate(-9deg) scale(.94);opacity:.95;filter:blur(0)}
   100%{transform:rotate(-11deg) scale(1);opacity:.82}}
+
+/* C1 — the file is a document with pages. One page is mounted at a time; the
+   nav is a strip at the foot of the window, outside the page it turns.
+
+   x1 (08-08) — and now the nav is PINNED there. The 1.5× type scale in a
+   third-width column made the agent's page taller than its window (measured
+   732 against 465 at 1280×800), so the document scrolls for the first time.
+   It scrolled as a whole before this rule, which carried the page control off
+   the bottom with the page it turns — a document you cannot leave. The sheet
+   scrolls; the strip under it does not. */
+.win-file .win-body{display:flex;flex-direction:column;overflow:hidden}
+.file-sheet{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
+.file-sheet::-webkit-scrollbar{width:9px}
+.file-sheet::-webkit-scrollbar-track{background:var(--sh-07)}
+.file-sheet::-webkit-scrollbar-thumb{background:var(--sh-24);border:2px solid transparent;background-clip:content-box}
+.pg-nav{flex:0 0 auto}
+.pg-nav{display:flex;align-items:center;justify-content:center;gap:var(--space-10);
+  padding:var(--space-6) 0 var(--space-2);border-top:1px solid var(--sh-28)}
+.pg-turn{font-size:var(--fs-13);line-height:1;color:var(--pap-3);background:transparent;
+  border:1px solid var(--sh-28);border-radius:2px;padding:var(--space-1) var(--space-8);cursor:pointer}
+.pg-turn:disabled{opacity:.35;cursor:default}
+.pg-count{font-size:var(--fs-8-5);letter-spacing:.16em;color:var(--faded)}
+
+/* ═══ x10 — THE WAY OUT OF THE COVER IS MARKED (민서, 08-10) ══════════════════
+   *"After the cover typing is finished, wait 1 second. If the user does not click
+   the next page button during that 1 second, blink a transparent box with a red
+   borderline around the next page button. Same cycle as the DEPLOY button blink
+   (1 second)."*
+
+   IT IS THE SAME GAP THE DEPLOY CUE ANSWERS, one gesture earlier. x8 took the
+   build phase out of the walk, and the two plates it removed were 페이지를
+   넘겨보세요 and 요원을 파견하세요 — the page turn and the commit. `dzCue` above
+   covers the second. This covers the first, and it has to, because the DEPLOY
+   control is not merely unhinted before the turn: it is NOT IN THE DOCUMENT.
+   `pages()` mounts one page at a time, so an operator who finishes reading the
+   cover and does not think to turn it is looking at a desk with no next action on
+   it anywhere — the file's own blinking button is behind a page they have not
+   turned. So the cue on `›` is upstream of the cue on DEPLOY by construction, and
+   the two are never on screen together: the turn is what mounts the page the other
+   one lives on.
+
+   ONE SECOND OF SILENCE FIRST, and the silence is the design. The cue is not a
+   label on the arrow — it is what the desk says after the operator has had a beat
+   to act on their own. An operator who finishes the cover and reaches straight for
+   `›` never sees it, which is the point: `windows/agent-file.ts` arms it a second
+   after the reveal LANDS and the press spends it for the session (`armPgCue` /
+   `pgCueSpent` there — the arm, the latch and the single writer all live in the
+   window, for the same reason the DEPLOY cue's page condition does: a stylesheet
+   cannot know that the cover is the mounted page or that the reveal has finished).
+
+   A ::after BOX, NOT AN `outline` AND NOT A `box-shadow` — and the choice is
+   between three real options, so all three reasons are written down.
+
+     · NOT `outline`. `.pg-turn` and its neighbours are focusable controls and the
+       desk's focus channel IS `outline` everywhere it is drawn by hand
+       (`confirm.css` `.cf-btn:focus-visible`, `signin.css` `.si-login`,
+       `coach.css`'s plate buttons); `.pg-turn` itself takes the UA's. A cue in
+       that channel would make a focused arrow and a hinted arrow the same object,
+       and a keyboard operator would be told to press the thing they are already
+       on. Worse, an ANIMATED property outranks every author declaration for the
+       whole cycle, so the cue would not merely resemble the focus ring — it would
+       SUPPRESS it.
+     · NOT `box-shadow` on the button. It draws the ring correctly and costs no
+       layout, but it puts the cue on a property of the button itself, one
+       `:focus-visible{box-shadow:…}` away from the same collision, and the desk
+       already uses `box-shadow` as the buttons' paper shadow (`.btn-deploy`).
+     · SO: a pseudo-element that owns nothing else. `::after` is unused on
+       `.pg-turn`, the animation targets the pseudo-element's own `opacity`, and
+       the button's every property — border, background, outline, transform — is
+       left to the cascade untouched. The face shows through because the box has no
+       `background` at all: it is a border and nothing else, which is exactly the
+       "transparent box" asked for.
+
+   IT CANNOT MOVE ANYTHING BY A PIXEL. `position:absolute` takes the box out of
+   flow, so neither the arrow's own box nor `.pg-nav`'s three-item row can feel it;
+   `position:relative` on `.pg-next` establishes the containing block and is a
+   no-op on an `inline-block` button with no positioned descendants.
+   `pointer-events:none` keeps the 2 px of overhang from widening what the operator
+   can click, and keeps it off `.pg-count` beside it.
+
+   WHY THE INSET IS 2 px AND NOT THE 4 IT WANTS TO BE. `.win-body` is
+   `overflow:hidden` (`shell.css`), `.pg-nav` is its LAST child, and the nav's own
+   `padding:var(--space-6) 0 var(--space-2)` leaves exactly 2 px between the
+   arrow's bottom edge and that clip. At `inset:-4px` the box's bottom line lands
+   3–4 px down, entirely outside the clip, and the cue renders as an
+   open-bottomed bracket. 2 px fits, uniformly, on all four sides — measured
+   against the tokens rather than eyeballed. The ceiling is the nav's bottom
+   padding: widening the halo means giving the nav a row it does not have, which
+   would push the sheet up and is the one thing a hint may not do.
+
+   REDUCED MOTION — THE END KEYFRAME IS THE VISIBLE ONE, exactly as `dzCue` above
+   is ordered and for the same reason. `base.css` collapses every animation to a
+   single 1 ms pass with `animation-iteration-count:1`, landing the element on its
+   100% keyframe, so 100% is `opacity:1` and a reduced-motion operator gets a
+   static red box around the arrow rather than an invisible one. Reversed for
+   symmetry with anything, this cue would silently disappear for exactly the
+   operator who asked for less movement, and the mark would be gone with it —
+   `signin.css`'s `siBlink` and `coach.css`'s dead `litPulse` are the two halves of
+   that trap already recorded on this desk.
+
+   THE BOOT CURTAIN CANNOT SEE IT, checked and not assumed.
+   `components/desktop-dressing.ts`'s `revealDesk` calls `getAnimations()` on each
+   WINDOW ROOT with no `{subtree:true}`, which returns only animations targeting
+   that element and ITS OWN pseudo-elements — this one targets a pseudo-element of
+   a button several levels below the root, so the reveal never enumerates it. And
+   it filters `iterations === Infinity` by hand if it ever did. The same two
+   independent reasons `dzCue` records; a second infinite animation on a descendant
+   changes neither.
+
+   THE CAPTURE BASELINES DO NOT MOVE EITHER, by the same arithmetic as `dzCue`:
+   `freezeAt` seeks to `-2000ms`, 2000 = 2 × 1000, so a framed shot lands on 0% —
+   `opacity:0`, nothing drawn, the arrow exactly as the reference held it. And the
+   e2e lane never reaches the cue in the first place: `harness.ts`'s `boot()` calls
+   `turnToAgent()`, which clicks `›` immediately, and that press spends the latch a
+   whole second before the arm would have fired. ══════════════════════════════ */
+.pg-next{position:relative}
+.pg-next.is-cued::after{content:'';position:absolute;inset:-2px;
+  border:1px solid var(--seal-2);border-radius:3px;pointer-events:none;
+  animation:pgCue 1s linear infinite both}
+@keyframes pgCue{
+  /* nothing drawn at all — the arrow wears its own face, unmarked */
+  0%,49.9%{opacity:0}
+  /* …and the MARKED look, which is also where the animation ENDS */
+  50%,100%{opacity:1}}
+
+/* x7 — 건너뛰기, the one gesture that lands the cover's reveal.
+
+   UNDERLINED AND NOTHING ELSE (민서). Everything the operator can press on this
+   sheet is a printed thing — a stamped DEPLOY plate, a bracketed 해제, a ruled
+   page arrow — and an escape from a reveal is none of those: it is not part of
+   the document, it is a way out of watching it print. So it wears the one
+   affordance no form on this desk uses, sits under the last section rather than
+   over the page, and goes to the seal's red only on hover. It leaves the DOM
+   the moment the reveal lands (`windows/agent-file.ts`, `landCover`), so there
+   is never a spent control on the page and never a dead tab stop.
+
+   It sits in the band under the ruled head, hard right, and it is the one
+   element on this page whose box never moves: the cover grows downward as it
+   prints, so anything below the text drifts for the whole reveal. Right, not
+   centred — centred under the head it read as a caption belonging to the
+   document, and it is the opposite of that. */
+/* x7 — IN the head's right corner, not in a row of its own (민서, 08-09). A row
+   of its own is a row that goes: the control removes itself when the reveal
+   lands, and the document jumped up a line at the moment the reader reached the
+   end of it. `.file-head` is a `space-between` flex with `align-items:flex-end`,
+   so no margin is needed to place this — it lands opposite the title block on
+   the same baseline band, and the head keeps its height from `.fh-left` when the
+   button goes. */
+.cover-skip{padding:var(--space-2) 0 var(--space-2) var(--space-6);
+  background:transparent;border:0;
+  font-size:var(--fs-8-5);letter-spacing:.16em;color:var(--faded);
+  text-decoration:underline;text-underline-offset:.3em;cursor:pointer;
+  transition:color .14s;white-space:nowrap}
+.cover-skip:hover{color:var(--seal-2)}
+
+/* U5.3 — a finished sitting's page: nothing to press, and no `data-block-id`,
+   so no red thread reaches back into a page whose run is over.
+
+   x5 — and no boxes and no numbers either. It was a stack of bordered cells with
+   a slot index down the left, which is the four-box reading of the handover kept
+   alive on the one page a shift is read back from; x4 had already taken it off
+   the live page for the same reason. It prints as a paragraph, in the same
+   `.slots` type at the same measure, gone to pencil: this is a record of what
+   was said, not a place anything can be put. */
+.filed-file{padding-top:var(--space-2)}
+.filed-para{font-family:var(--myeong);font-size:var(--fs-11-5);line-height:2.05;
+  color:var(--pap-3);text-align:left;word-break:keep-all}
+.filed-s{display:inline}
+.filed-empty{font-size:var(--fs-8-5);color:var(--faded)}

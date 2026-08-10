@@ -76,6 +76,11 @@ describe('[e7#A8] the private half of Call 1 never reaches the stream', () => {
   it('(b) the utterance — the one field of Call 1 that MAY cross — did cross', async () => {
     const events = await drain(
       makeRig({
+        // Shaped — the utterance this asserts crossed is Call 1's, and an
+        // unshaped run makes no Call 1 (x14). The line on the paper would be
+        // the pack's baseline instead, and this guard would go vacuous in
+        // exactly the way its own comment below warns about.
+        shaped: true,
         transport: createFixtureProvider({ judgment: sentinelJudgment(), ...cleanReporter() }),
       }),
     )
@@ -123,16 +128,16 @@ describe('[e7#A8] the VALUE-level echo — the note may not return as a minable 
 
   it('(b) not vacuous — the echo really is on, so the rest of the prompt DID come back', async () => {
     const events = await drain(
-      makeRig({ transport: createFixtureProvider({ judgment: sentinelJudgment() }) }),
+      makeRig({ shaped: true, transport: createFixtureProvider({ judgment: sentinelJudgment() }) }),
     )
     const texts = events.flatMap((event) => (event.type === 'report' ? event.facts : [])).map((s) => s.text)
-    // `[통제실] ` + the utterance: an `EXPERIENCED` line, verbatim, in `facts`.
+    // `[무전] ` + the utterance: an `EXPERIENCED` line, verbatim, in `facts`.
     expect(texts.some((text) => text.includes('기록을 남긴다.'))).toBe(true)
   })
 
   it('(c) the withheld fact consumes no `f` sequence number — the channel stays gapless', async () => {
     const events = await drain(
-      makeRig({ transport: createFixtureProvider({ judgment: sentinelJudgment() }) }),
+      makeRig({ shaped: true, transport: createFixtureProvider({ judgment: sentinelJudgment() }) }),
     )
     const ids = events.flatMap((event) => (event.type === 'report' ? event.facts : [])).map((s) => s.id)
     expect(ids).toEqual(ids.map((_, index) => `b-r1-f${String(index + 1).padStart(2, '0')}`))

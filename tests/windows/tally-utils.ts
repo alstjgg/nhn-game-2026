@@ -17,10 +17,10 @@ import { CLIENT, exists, importable, read, rel, stripComments } from '../shell/s
 
 export const RUN_STATE_TS = path.join(CLIENT, 'shell/run-state.ts')
 export const SCORE_TALLY_TS = path.join(CLIENT, 'components/score-tally.ts')
-export const TALLY_TS = path.join(CLIENT, 'windows/tally.ts')
+export const AGENT_FILE_TS = path.join(CLIENT, 'windows/agent-file.ts')
 
 /** The three owned modules, in the order the design lists them. */
-export const UNIT_FILES = [RUN_STATE_TS, SCORE_TALLY_TS, TALLY_TS] as const
+export const UNIT_FILES = [RUN_STATE_TS, SCORE_TALLY_TS, AGENT_FILE_TS] as const
 
 /** The run-loop facade + its fixture (u7 design D2). */
 export const RUN_LOOP_TS = path.join(CLIENT, 'driver/run-loop.ts')
@@ -54,7 +54,7 @@ export interface MetaState {
 
 export interface ScoreState {
   total: number
-  rows: { label: string; value: number }[]
+  rows: { label: string; value: string | number; baseline: string | number | null }[]
 }
 
 export interface RunState {
@@ -95,7 +95,11 @@ export type SettleRelease = 'hold' | 'filed' | 'lapsed'
 export interface ScoreTallyModule {
   PACE: Pace
   settleMs(rowCount: number): number
+  /** x4 — how long the record's CLOSING line has to count, given its cadence. */
+  countMs(rowCount: number): number
   countUpAt(to: number, k: number): number
+  /** x4 — one axis as a line of the record; the unit rides a number only. */
+  lineOf(row: { label: string; value: string | number }, unit: string): string
   settleRelease(input: { counted: boolean; filed: boolean; lapsed: boolean }): SettleRelease
   createScoreTally: unknown
 }
@@ -146,8 +150,15 @@ export function reportEvent(round = 3): ViewEvent {
   return { type: 'report', round, facts: [], report_body: [] }
 }
 
-export function scoreEvent(total = 7, rows: { label: string; value: number }[] = []): ViewEvent {
-  return { type: 'score', total, rows }
+export function scoreEvent(
+  total = 7,
+  rows: { label: string; value: string | number; baseline: string | number | null }[] = [],
+  baselineTotal = total,
+): ViewEvent {
+  // `baselineTotal` defaults to `total` so every existing caller keeps asserting
+  // what it asserted: a ledger that changed nothing. A test about the DELTA
+  // passes its own (§5.2 amendment h).
+  return { type: 'score', total, baseline_total: baselineTotal, rows }
 }
 
 export function runEndEvent(run = 3): ViewEvent {

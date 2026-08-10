@@ -26,20 +26,20 @@ import type { Page } from 'playwright/test'
 import {
   CHROME,
   DEBUG,
-  EMPTY_SYMPTOM,
   FEED,
   FILE,
   FREE_TEXT,
+  RECORD,
   REPORTS,
-  STORE,
-  TALLY,
   WIN,
   WINDOWS,
 } from './fixtures/selectors.ts'
 import {
   boot,
+  confirmDeploy,
   drain,
   eventsOfType,
+  flushFeed,
   frame,
   lastMeta,
   mineFirst,
@@ -48,7 +48,6 @@ import {
   rate,
   seedClock,
   seek,
-  slotBlock,
   tallyPhase,
   tallyState,
   watchWire,
@@ -77,14 +76,47 @@ function symptomsPerBeat(f: Frame): number[] {
 }
 
 /**
+ * x11 — SETTLE THE FANFOLD (민서, 08-10).
+ *
+ * The LIVE FEED reveals through a paced queue, and the day's close no longer
+ * empties it: `run_end` used to dump the whole backlog in one frame, and it now
+ * drains at reading pace with `shell/ending.ts` waiting for it
+ * (`shell/feed-drain.ts`). So `drain()` — which releases the STREAM and then
+ * waits out the ledger's own ~9 s count — now returns while the paper is still
+ * printing, and every read of the fanfold below it was reading a day in
+ * progress: short by however many lines the reveal still owed, with the last
+ * line it did print stopped mid-word by the typewriter.
+ *
+ * §7's feed items are claims about WHAT the paper says, not about when it got
+ * there, so they settle it and then read it. The pacing itself is u5's own
+ * claim and is asserted in u5's own file (`e2e/live-feed.spec.ts`, `the day’s
+ * end drains`) — per [u11#c8] this suite does not re-test another unit's
+ * mechanism, and it must not silently depend on one either.
+ *
+ * The helper itself is `flushFeed` from `./fixtures/harness.ts`. It was three
+ * identical copies in three specs on the day the reveal became a typewriter;
+ * x11 folded it in, because a helper copied three times is three places for the
+ * next change to miss.
+ */
+/**
  * Feed lines as the DOM actually painted them. The kind rides the `fl-<kind>`
  * class (`components/run-feed.ts`), which is also how u5's own handle reads it.
+ *
+ * x11 — `text` is the line's CONTENT COLUMN, no longer the whole `<li>`
+ * (민서, 08-10). A line is printed twice now: `.fl-c` is typed out for the eye
+ * and `.fl-sr` carries the complete text for the ear. Reading the `<li>`
+ * therefore concatenates the clock stamp, the typed column and a second copy of
+ * the same sentence — so `#2`'s stream-order walk would match every line
+ * against a doubled haystack (passing on a paper that printed each line twice),
+ * and any count of occurrences would be off by exactly a factor of two. The
+ * announced column is not skipped: `#2 (c)` scans both, and u5 pins that they
+ * agree.
  */
 async function domLines(page: Page): Promise<{ kind: string; text: string }[]> {
   return page.locator(FEED.line).evaluateAll((nodes) =>
     nodes.map((n) => ({
       kind: (/\bfl-([a-z]+)\b/.exec((n as HTMLElement).className) ?? [, ''])[1] ?? '',
-      text: (n.textContent ?? '').trim(),
+      text: (n.querySelector('.fl-c')?.textContent ?? '').trim(),
     })),
   )
 }
@@ -100,7 +132,13 @@ test.describe('acceptance 1-7', () => {
     const caseName = await page.locator(CHROME.caseName).innerText()
     expect(caseName.trim().length, 'the chrome title is empty — the pack did not load').toBeGreaterThan(0)
 
-    // Counter and clock are painted from the driver, not from markup defaults.
+    // Counter and clock carry a real time, not a markup default. x6 — the two
+    // no longer share a source: the counter is still driver-fed (the `meta`
+    // event), while the clock reads the LIVE FEED's printed stamp
+    // (`shell/feed-clock.ts`). §7 #1 asks only that the chrome SHOW a clock, and
+    // it does either way — the opening stamp `shell/pack.ts` hands the view is
+    // already `HH:MM`, so the digits are never blank even before the fanfold's
+    // first line lands.
     await expect(page.locator(CHROME.runNum)).not.toBeEmpty()
     await expect(page.locator(CHROME.ddayNum)).not.toBeEmpty()
     await expect(page.locator(CHROME.clockDigits)).toHaveText(/\d{2}:\d{2}/)
@@ -110,11 +148,12 @@ test.describe('acceptance 1-7', () => {
     expect(await page.locator(CHROME.runNum).innerText()).toContain(String(lastMeta(f).run))
   })
 
-  test('#2 a full round plays in stream order, ≤3 symptoms a beat, no digit, (변화 없음) when empty', async ({
+  test('#2 a full round plays in stream order, ≤3 symptoms a beat on the stream, no digit', async ({
     page,
   }) => {
     await boot(page)
     await drain(page)
+    await flushFeed(page)
 
     const f = await frame(page)
 
@@ -132,7 +171,11 @@ test.describe('acceptance 1-7', () => {
       cursor = at
     }
 
-    // (b) ≤3 symptom lines per beat (§7 #2).
+    // (b) ≤3 symptom lines per beat (§7 #2). Read off the STREAM, which is
+    // where the cap has always been measured and is now the only place it can
+    // be: x8 stopped printing symptom lines, so the DOM carries none (민서,
+    // 08-10). The engine still emits them and Call 2 still receives them as
+    // `SCENE_SYMPTOMS`, so the cap still governs something real.
     const perBeat = symptomsPerBeat(f)
     expect(perBeat.length, 'the round played no beats').toBeGreaterThan(0)
     expect(Math.max(...perBeat)).toBeLessThanOrEqual(3)
@@ -140,25 +183,46 @@ test.describe('acceptance 1-7', () => {
     // (c) invariant 2 — no digit renders for NPC state on the player surface.
     // The clock stamp is chrome, not state: it is excluded by selector, exactly
     // as u9's inv-2 assert does.
-    const npcLines = (await domLines(page)).filter((l) => ['npc', 'symptom'].includes(l.kind))
-    expect(npcLines.length, 'the round painted no NPC or symptom line — the scan is vacuous').toBeGreaterThan(0)
+    //
+    // x11 — BOTH CONTENT COLUMNS (민서, 08-10). The typewriter split an NPC line
+    // into the `.fl-c` the operator watches and the sr-only `.fl-sr` a reader
+    // hears, and inv 2 is about what RENDERS for NPC state — a digit spoken is
+    // rendered as surely as a digit shown. Scanning `.fl-c` alone would have
+    // left the announced half unchecked while still reporting green, which is
+    // the half-blind scope this clause's scoping rule exists to forbid. Kept in
+    // step with `NPC_TEXT_SELECTOR` in `e2e/a11y.spec.ts`.
+    const npcLines = (await domLines(page)).filter((l) => l.kind === 'npc')
+    expect(npcLines.length, 'the round painted no NPC line — the scan is vacuous').toBeGreaterThan(0)
+    // Strictly MORE columns than lines, which is the non-vacuity guard doing a
+    // second job: it fails if `.fl-sr` ever stops being emitted, instead of
+    // quietly narrowing the scan back to the half it used to cover.
+    const scanned = await page.locator(FEED.npcColumns).count()
+    expect(scanned, 'an NPC line is missing a content column — the scan went half-blind').toBeGreaterThan(
+      npcLines.length,
+    )
     const digits = await page
-      .locator('#w-feed .fl-npc .fl-c, #w-feed .fl-symptom .fl-c')
+      .locator(FEED.npcColumns)
       .evaluateAll((nodes) => nodes.map((n) => n.textContent ?? '').filter((t) => /\d/.test(t)))
-    expect(digits, 'a digit reached an NPC or symptom line (inv 2)').toEqual([])
+    expect(digits, 'a digit reached an NPC line (inv 2)').toEqual([])
 
-    // (d) the empty symptom set renders its own copy, never a blank line.
-    const emptyBeats = perBeat.filter((n) => n === 0).length
-    if (emptyBeats > 0) {
-      await expect(page.locator(FEED.list)).toContainText(EMPTY_SYMPTOM)
-    }
+    // (d) …was 'the empty symptom set renders its own copy, never a blank line'.
+    // There is no symptom line on the paper to be empty, so `(변화 없음)` is not
+    // minted anywhere any more (x8). What replaces it is the negative: the
+    // symptom channel is CLOSED at the DOM, and the stream above proves the
+    // symptoms it is closed against are really being produced.
+    expect(perBeat.some((n) => n > 0), 'the round produced no symptom at all — (d) is vacuous').toBe(true)
+    expect(await page.locator('#w-feed .fl-symptom').count(), 'a symptom line reached the paper').toBe(0)
+    await expect(page.locator(FEED.list)).not.toContainText('(변화 없음)')
   })
 
-  test("#3 the gate's judgment is observable in the debug pane, its symptoms on the player pane", async ({
+  test("#3 the gate's judgment is observable in the debug pane, its prose on the player pane", async ({
     page,
   }) => {
     await boot(page)
     await drain(page)
+    // x11 — the radio-line count below is read off the fanfold, so the fanfold
+    // has to have finished printing before it is counted (see `flushFeed`).
+    await flushFeed(page)
 
     // The pane is flag-on in DEV; it reads the driver's stream, nothing else.
     await expect(page.locator(DEBUG.pane)).toHaveCount(1)
@@ -191,9 +255,29 @@ test.describe('acceptance 1-7', () => {
       expect(paneText, 'the debug pane does not show the gate beat').toContain(String(beat.beat))
     }
 
-    // The player pane sees the SYMPTOMS of that judgment, never its numbers.
-    const symptoms = await page.locator('#w-feed .fl-symptom').count()
-    expect(symptoms, 'the gate produced no visible symptom on the player pane').toBeGreaterThan(0)
+    // The player pane sees the judgment as PROSE — the agent's own radio line.
+    //
+    // This half used to count `.fl-symptom` nodes: a gate moved state, the state
+    // rendered into symptom sentences, and those printed. x8 closed that channel
+    // at the DOM (민서, 08-10), so the surface a gate now leaves the player is
+    // Call 1's utterance on the radio line. The symptoms are still produced —
+    // they are what `SCENE_SYMPTOMS` carries into Call 2 — so the second half
+    // below holds the channel shut against something real rather than nothing.
+    //
+    // What is deliberately NOT asserted here: that the radio line carries no
+    // digit. Inv 2 scopes to the NPC channel, and the agent's own speech is
+    // scenario prose that may legitimately say `17시 30분`. `#2 (c)` and
+    // `a11y.spec.ts` hold the channel that inv 2 actually names.
+    expect(
+      await page.locator('#w-feed .fl-radio .fl-c').count(),
+      'the gate left nothing on the player pane at all',
+    ).toBeGreaterThan(0)
+
+    const symptoms = f.events.filter(
+      (e) => e.type === 'feed' && (e as { line?: { kind?: string } }).line?.kind === 'symptom',
+    )
+    expect(symptoms.length, 'the round produced no symptom — the next assert is vacuous').toBeGreaterThan(0)
+    expect(await page.locator('#w-feed .fl-symptom').count(), 'a symptom reached the player pane').toBe(0)
   })
 
   test("#4 the round report renders exactly once, after the round's last beat", async ({ page }) => {
@@ -225,24 +309,25 @@ test.describe('acceptance 1-7', () => {
     // Reduced motion: the mining click must land on a settled sentence, and the
     // desk honouring the preference is itself part of the shipped behaviour.
     // §7 #5 is the loop's own sentence — the mined sentence slots into the NEXT
-    // run's composition — so the day closes and NEW RUN opens the next one
-    // first: that is what files the report and unlocks the board.
+    // run's composition — so the day CLOSES first: that is what files the
+    // report and hands the file back. RE-AIMED (08-08, W4): this used to press
+    // NEW RUN to reach the same state, and under one-press that press is the
+    // one that COMMITS the file, so mining after it is refused by design.
     await boot(page, { reduced: true })
-    await newRun(page)
+    await drain(page)
 
     const id = await mineFirst(page)
 
     // store — the card is keyed by the sentence's own authored id.
-    await expect(page.locator(`${STORE.list} .bcard[data-block="${id}"]`)).toHaveCount(1)
     expect((await frame(page)).store.mined, 'the mined id never reached the seam').toContain(id)
 
-    // slot — the same id seats on the board.
-    await slotBlock(page, id, 0)
+    // slot — the same id seats on the board, off the same gesture (08-08).
     await expect(page.locator(`${FILE.board} [data-block-id="${id}"]`).first()).toBeVisible()
     expect(Object.values((await frame(page)).store.slots)).toContain(id)
 
     // deploy — the op carries the canonical id, unchanged.
     await page.locator(FILE.deploy).click()
+    await confirmDeploy(page)
     await expect(page.locator(FILE.stamp)).toBeVisible()
     expect((await frame(page)).store.deployed, 'the deploy op dropped the canonical id').toContain(id)
 
@@ -262,8 +347,33 @@ test.describe('acceptance 1-7', () => {
     await seedClock(page, '21:04')
     await drain(page)
 
+    // x6 — the digits are the FEED's stamp now, so this reads one step further
+    // than it used to: not "the sim clock was seeded to 21:04" but "the paper
+    // printed 21:04".
+    //
+    // x11 — AND THE REASON IT HOLDS HAS CHANGED (민서, 08-10). This used to
+    // argue that it held "for a reason rather than by luck": the fanfold paces
+    // its reveal only while the clock RUNS, seeding to the terminal minute ends
+    // the run, so every queued line — the 21:04 symptom and the `score` that
+    // reuses its stamp — lands whole in the same turn as the `drain` above, with
+    // no queue left to hold the chrome behind the paper.
+    //
+    // That was true of a feed that DUMPED at `run_end`, and the dump is exactly
+    // what was removed. The reveal pump outlives the clock now and prints the
+    // day's tail at reading pace, with `shell/ending.ts` waiting on it
+    // (`shell/feed-drain.ts`). The chrome is therefore SUPPOSED to sit behind
+    // the paper at this line — that is what makes the stamp the paper's own and
+    // not the clock's — so the digits would read 20-something for a minute or
+    // more, and the five-second retry would have called the new pacing a
+    // regression in the clock.
+    //
+    // §7 #6 claims the terminal minute is REACHED and shown, not that it is
+    // shown in the frame the stream ran out, so the paper is allowed to finish
+    // and is then asked. The pacing it is being allowed is u5's own claim and is
+    // asserted there (`e2e/live-feed.spec.ts`, `the day’s end drains`).
+    await flushFeed(page)
     await expect(page.locator(CHROME.clockDigits)).toContainText('21:04')
-    await expect(page.locator(TALLY.root)).not.toHaveClass(/hidden/)
+    await expect(page.locator(RECORD.root)).toHaveCount(1)
 
     // The run has entered its closing phase…
     await expect
@@ -274,9 +384,9 @@ test.describe('acceptance 1-7', () => {
     // state, which is what "the score renders" means (u7's `state()`, the same
     // value `[data-tally-state]` carries). C18: the count-up holds past 9 s, so
     // this waits it out rather than shortening it.
-    await expect(page.locator(TALLY.ledger)).toHaveAttribute('data-tally-state', 'final', { timeout: 40_000 })
+    await expect(page.locator(RECORD.ledger)).toHaveAttribute('data-tally-state', 'final', { timeout: 40_000 })
     expect(await tallyState(page), 'the ledger handle disagrees with the DOM').toBe('final')
-    await expect(page.locator(TALLY.big)).toHaveText(/\d/)
+    await expect(page.locator(RECORD.big)).toHaveText(/\d/)
   })
 
   test('#7 a forced fallback line renders and the run continues', async ({ page }) => {
@@ -289,6 +399,12 @@ test.describe('acceptance 1-7', () => {
     )
     expect(fallbacks.length, 'the fixture stream forces no fallback line (engine §5)').toBeGreaterThan(0)
 
+    // x11 — the two asserts below are "the fallback landed" and "lines landed
+    // AFTER it", and both are counts of a paper that is still printing unless it
+    // is settled first (see `flushFeed`). 17:33 is late in the day, so the
+    // unsettled read would most often find the fallback missing entirely and
+    // report the forced fallback as never rendered.
+    await flushFeed(page)
     const lines = await domLines(page)
     const at = lines.findIndex((l) => l.kind === 'fallback')
     expect(at, 'the forced fallback never rendered on the feed').toBeGreaterThan(-1)
@@ -300,7 +416,7 @@ test.describe('acceptance 1-7', () => {
 /* ══ persistence — §7 #8 (C4: sessionStorage, never localStorage) ══════════ */
 
 test.describe('acceptance 8', () => {
-  test('#8 meta-state survives F5 and dies with the tab', async ({ page, browser }) => {
+  test('#8 a page load starts a new sitting, and nothing crosses a tab', async ({ page, browser }) => {
     await boot(page)
     // The desk's OPENING meta — what a tab that never played would show. The
     // fixture opens mid-campaign, so "clean" means "this baseline", not "empty".
@@ -326,14 +442,21 @@ test.describe('acceptance 8', () => {
     expect(stored.session.length, 'no meta-state reached sessionStorage').toBeGreaterThan(0)
     expect(stored.local, 'localStorage is forbidden everywhere (C4)').toEqual([])
 
-    // (b) F5 — the counter, archive and carried blocks come back.
+    // (b) RE-AIMED (08-08, H2) and inverted on purpose: F5 is a RESTART.
+    // The resume restored the sitting's identities — callsign, counter, archive
+    // — and could not restore the filed report documents, which live in
+    // `windows/reports.ts` and are persisted nowhere: the desk came back as
+    // ECHO-n with n rail tabs and nothing readable in any of them. The state is
+    // still WRITTEN, which is what (a) above proves; it is no longer read back.
     await page.reload()
-    await page.waitForFunction(() => Boolean((window as { __tally?: unknown }).__tally))
+    await page.waitForFunction(() => Boolean((window as { __agentFile?: unknown }).__agentFile))
     const after = await meta(page)
-    expect(after.run).toBe(before.run)
-    expect(after.runs_left).toBe(before.runs_left)
-    expect(after.carried).toEqual(before.carried)
-    expect(after.archive.map((a) => a.run)).toEqual(before.archive.map((a) => a.run))
+    expect(after.run, 'F5 resumed the played-out run instead of starting a new sitting').toBe(
+      opening.run,
+    )
+    expect(after.runs_left).toBe(opening.runs_left)
+    expect(after.carried).toEqual(opening.carried)
+    expect(after.archive.map((a) => a.run)).toEqual(opening.archive.map((a) => a.run))
 
     // (c) closing the tab starts clean — sessionStorage does not cross
     // contexts, so a new tab opens on the pack's own baseline, never on the
@@ -342,7 +465,7 @@ test.describe('acceptance 8', () => {
     const tab = await fresh.newPage()
     try {
       await tab.goto(page.url())
-      await tab.waitForFunction(() => Boolean((window as { __tally?: unknown }).__tally))
+      await tab.waitForFunction(() => Boolean((window as { __agentFile?: unknown }).__agentFile))
       const clean = await meta(tab)
       expect(clean.run, 'a new tab resumed the old tab\'s run counter').toBe(opening.run)
       expect(clean.carried, 'a new tab inherited the old tab\'s carried blocks').toEqual(opening.carried)
@@ -383,7 +506,11 @@ test.describe('acceptance 9-12', () => {
     const start = (await win.boundingBox())!
     await page.locator(`${WINDOWS.rep} ${WIN.bar}`).hover()
     await page.mouse.down()
-    await page.mouse.move(start.x + 60, start.y + 40, { steps: 8 })
+    // Up, not down: REPORTS is full column height since T1, and +40 would push
+    // its corner grip below the 800px viewport — the resize drag would land on
+    // nothing and this test would report a mechanism failure that is really a
+    // geometry one.
+    await page.mouse.move(start.x + 60, start.y - 40, { steps: 8 })
     await page.mouse.up()
     const dragged = (await win.boundingBox())!
     expect(Math.abs(dragged.x - start.x) + Math.abs(dragged.y - start.y), 'the window did not drag').toBeGreaterThan(4)
@@ -425,10 +552,12 @@ test.describe('acceptance 9-12', () => {
 
   test('#10 red threads connect every filled slot by authored id and re-draw during a drag', async ({ page }) => {
     await boot(page, { reduced: true })
-    await newRun(page)
+    // RE-AIMED (08-08, W4): a thread needs a FILLED slot, and the window in
+    // which a slot can be filled is the one the close opens — the press that
+    // used to open it now commits the file instead.
+    await drain(page)
 
-    const id = await mineFirst(page)
-    await slotBlock(page, id, 0)
+    await mineFirst(page)
 
     const filled = await page.locator(FILE.filled).count()
     expect(filled, 'no slot was filled, so no thread can be measured').toBeGreaterThan(0)
@@ -496,6 +625,19 @@ test.describe('acceptance 9-12', () => {
     // …and the desk absorbs typing without changing a text node. No click first:
     // `#desktop` is `display:contents` (a faithful port), so it has no box to
     // click — the keystrokes go wherever the shell put focus, which is the point.
+    //
+    // x11 — THE PAPER IS STILLED BEFORE THE PAIR IS TAKEN (민서, 08-10). This
+    // compares two `innerText` snapshots of the WHOLE desk and demands they be
+    // identical, which is only a statement about typing if nothing else on the
+    // desk is writing itself between them. It used to be safe by accident: the
+    // fanfold dumped its queue at `run_end`, so by the time `drain()` returned
+    // there was nothing left to print. Now the day's tail drains at reading pace
+    // and a line — or a few characters of one — would land between the two
+    // reads, and the failure would say `typing changed the desk — something
+    // accepted text` about a desk that had accepted nothing at all. That is the
+    // worst shape a failure can take: inv 1 is the membrane rule, and a membrane
+    // assert that cries wolf is one somebody eventually loosens.
+    await flushFeed(page)
     const snapshot = () => page.locator(CHROME.app).innerText()
     const before = await snapshot()
     await page.keyboard.type('침입 텍스트')

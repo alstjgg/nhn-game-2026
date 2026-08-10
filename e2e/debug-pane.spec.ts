@@ -34,7 +34,7 @@ const MARKER = 'nhn:debug-pane'
 const EVENTS = '[data-debug-table="events"]'
 const OPS = '[data-debug-table="ops"]'
 
-const WINDOW_IDS = ['w-feed', 'w-file', 'w-store', 'w-rep', 'w-tally'] as const
+const WINDOW_IDS = ['w-feed', 'w-file', 'w-rep'] as const
 
 interface ShellHandleLike {
   frame(): { events: { type: string }[]; store: { mined: string[]; slots: Record<number, string>; deployed: string[] } }
@@ -53,9 +53,15 @@ declare global {
   }
 }
 
-/** Boot the desk and wait until the flag-on pane is on screen. */
+/**
+ * Boot the desk and wait until the flag-on pane is on screen.
+ *
+ * `?debug` is what puts the pane ON SCREEN: flag-on still mounts it and still
+ * records, but a plain dev load leaves it hidden so it does not cover the desk.
+ * This spec owns the pane's contract, so it asks for it explicitly.
+ */
 async function boot(page: Page): Promise<void> {
-  await page.goto('./')
+  await page.goto('./?debug=1')
   await expect(page.locator('#w-feed')).toBeVisible()
   await expect(page.locator(PANE)).toBeVisible()
   await page.waitForFunction(() => Boolean(window.__debug) && Boolean(window.__shell))
@@ -167,21 +173,13 @@ test.describe('debug pane', () => {
     await expect(page.locator(`${PANE} [contenteditable]`)).toHaveCount(0)
     await expect(page.locator('input, textarea, select')).toHaveCount(0)
 
-    // The desk keeps all five windows; the pane is additive, not a replacement.
-    //
-    // C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted: all five are
-    // still checked. `#w-tally` boots `class="win hidden"` and comes up at
-    // 21:04 (u7), which C15 rules CORRECT behaviour rather than a bug, so the
-    // tally is asserted to be ON THE DESK — attached, and held only by its own
-    // phase class — instead of being asserted visible before its phase.
+    // The desk keeps all four windows; the pane is additive, not a
+    // replacement. U3 — TALLY is gone, and no window is phase-held any more,
+    // so every one of them is simply visible.
     for (const id of WINDOW_IDS) {
       const node = page.locator(`#${id}`)
       await expect(node).toBeAttached()
-      if (await node.evaluate((n) => n.classList.contains('hidden'))) {
-        expect(id, 'a window is hidden and it is not the phase-held tally').toBe('w-tally')
-      } else {
-        await expect(node).toBeVisible()
-      }
+      await expect(node).toBeVisible()
     }
   })
 })

@@ -1,10 +1,10 @@
 // [u1#c3] design README 'Notes' — one stacking context for every window.
 //
 // `#desktop` keeps `display:contents` and creates no stacking context of its
-// own; BLOCK STORE lives OUTSIDE `#desktop` in the markup, so any context on
-// `#desktop` (or on a .win ancestor) would make BLOCK STORE always paint on top
-// and break window focus ordering. Every `.win` must be z-ordered by the same
-// runtime `--z` custom property.
+// own; a context on `#desktop` (or on a .win ancestor) would pin one window
+// permanently on top and break window focus ordering. Every `.win` must be
+// z-ordered by the same runtime `--z` custom property. (BLOCK STORE, the
+// window that once sat outside `#desktop`, was retired by T1.)
 import { describe, it, expect } from 'vitest'
 import path from 'node:path'
 import { STYLES_DIR, declarations, read, ruleBodies, scannable, sheetsOnDisk } from './css-utils.ts'
@@ -143,7 +143,7 @@ describe('[u1#c3] every .win shares one z-order', () => {
     expect(positions).toContain('fixed')
   })
 
-  it('(c) no window-root rule pins a literal z-index (BLOCK STORE must not float)', () => {
+  it('(c) no window-root rule pins a literal z-index (no window may float)', () => {
     const offenders = sheets().flatMap(({ file, css }) =>
       windowRootBodies(css).flatMap((body) =>
         declarations(body)
@@ -155,7 +155,7 @@ describe('[u1#c3] every .win shares one z-order', () => {
   })
 
   it('(d) per-window skins order only inside their own window (z-index < 10)', () => {
-    const offenders = ['win-block-store.css', ...['win-agent-file.css', 'win-live-feed.css', 'win-reports.css', 'win-tally.css']]
+    const offenders = ['win-agent-file.css', 'win-live-feed.css', 'win-reports.css']
       .flatMap((f) => {
         const css = read(path.join(STYLES_DIR, f))
         return declarations(css)

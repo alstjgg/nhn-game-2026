@@ -1,0 +1,613 @@
+{
+  "events": [
+    {
+      "id": "t1",
+      "time": "18:38",
+      "surface": "call",
+      "place_id": "p1",
+      "text": "긴급상황대응실 본부로 접수된 신고 상황을 확인하기 위해 한내시립스포츠돔에 파견되었다. 신고자는 한내돔 야간 당직 표기웅.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t2",
+      "time": "18:38+",
+      "surface": "call",
+      "place_id": "p1",
+      "text": "신고 내용은 천장 가운데가 처지고 물이 떨어지고 있다는 것. 금일 행사는 전부 끝나 한내돔 내에는 혼자 있다고 한다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t3",
+      "time": "18:40",
+      "surface": "document",
+      "place_id": null,
+      "text": "한내돔 시설대장을 조회했다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t4",
+      "time": "18:40+",
+      "surface": "document",
+      "place_id": null,
+      "text": "한내돔은 공기 압력으로 지붕을 띄우는 막구조이며, 급기 송풍기는 두 대, 출입구는 남측 회전문 한 곳으로 확인했다. 정기점검 확인란이 두 해째 비어 있다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t5",
+      "time": "18:55",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "한내돔 내부에서 추가 신고 전화가 접수됐다. 신고자는 한내유소년배구클럽 인솔 겸 심판 문세라.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t6",
+      "time": "18:55+",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "아이들 열두 명과 함께 있다고 한다. 한내돔 관중석의 조명 절반이 갑자기 꺼졌다고 한다. 남측 회전문으로 아이들을 인솔 중이나, 두 사람씩만 나갈 수 있어 퇴장에 시간이 걸릴 것 같다고 한다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t7",
+      "time": "19:26",
+      "surface": "call",
+      "place_id": "p1",
+      "text": "재시도 끝에 최초 신고자 표기웅과 전화가 재연결되었다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t8",
+      "time": "19:26",
+      "surface": "call",
+      "place_id": "p1",
+      "text": "한내돔 내부에 사람이 혼자가 맞는지, 아니라면 몇 명인지 재확인을 요청했으나, 망설이더니 정리 중이라고만 한다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t9",
+      "time": "19:26",
+      "surface": "call",
+      "place_id": "p1",
+      "text": "송풍기 두 대가 정상 작동 중인지 물어보자, 한 대는 원래 안 돈다는 답이 돌아왔다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t10",
+      "time": "19:26+",
+      "surface": "call",
+      "place_id": "p1",
+      "text": "내부 상황 파악을 위해 표기웅과의 회선을 유지한다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t11",
+      "time": "19:33",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "문세라 측에서 추가 제보가 접수됐다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t12",
+      "time": "19:33",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "줄 앞뒤로 자기 팀이 아닌 사람들이 계속 서 있다고 한다. 관중석이 아직 반 넘게 차 있고, 그래서 줄이 전혀 줄지 않는 것 같다고 한다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t13",
+      "time": "19:33+",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "내부 상황 파악을 위해 문세라와의 회선을 유지한다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t14",
+      "time": "19:47",
+      "surface": "call",
+      "place_id": "p4",
+      "text": "문세라가 서쪽에서 큰 소리가 났다며 가 보았고, 벽 아래로 사람 여덟 명이 빠져나가는 것을 보았다고 한다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed and not west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t15",
+      "time": "19:48",
+      "surface": "document",
+      "place_id": null,
+      "text": "도면을 조회했다. 그 자리는 자재 반입 슬리브이고, 바깥은 하역장이다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed and not west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t16",
+      "time": "19:52",
+      "surface": "call",
+      "place_id": null,
+      "text": "한내돔 막구조 전 정비기사 하도경과 전화선이 연결됐다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t17",
+      "time": "19:52",
+      "surface": "call",
+      "place_id": null,
+      "text": "송풍기 두 대가 정상 작동 중인지부터 물었으나, 2호기는 자기가 있을 때부터 정상 작동한 적이 없다는 답을 들었다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t18",
+      "time": "19:52+",
+      "surface": "call",
+      "place_id": null,
+      "text": "추가로, 지금 한내돔은 내부 압력이 지붕을 들고 있는 구조이기 때문에, 큰 개구부를 열면 압력이 빠져 막이 내려앉을 것이라고 덧붙였다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t19",
+      "time": "19:53",
+      "surface": "call",
+      "place_id": null,
+      "text": "하도경에게 송풍기 계통 배선 확인을 부탁했다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t20",
+      "time": "19:55",
+      "surface": "call",
+      "place_id": "p5",
+      "text": "표기웅에게 한내돔에 비상문이 있는지 확인해달라고 요청했다. 도면 상으론 북측 비상 개방문이 있다고 답했다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t21",
+      "time": "20:04",
+      "surface": "onsite",
+      "place_id": "p3",
+      "text": "문세라는 천장 가운데가 함몰됐고, 눈이 안으로 쏟아지기 시작했다고 전해왔다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t22",
+      "time": "20:05",
+      "surface": "call",
+      "place_id": null,
+      "text": "송풍기 계통 배선에 대한 하도경의 회신이 뒤늦게 왔다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed and not west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t23",
+      "time": "20:05",
+      "surface": "call",
+      "place_id": null,
+      "text": "작동 중이지 않은 2호기 인버터는 배전반 B에 물려 있고, 배전반 B의 3번 차단기는 내려가 있을 것이라고 한다. 때문에 송풍기 2호기가 작동하지 않을 것이라는 말을 덧붙였다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "headcount_pressed and not west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t24",
+      "time": "20:05",
+      "surface": "onsite",
+      "place_id": "p4",
+      "text": "문세라는 서쪽 슬리브로 한 사람씩 탈출하고 있으며, 아직 관중석 위쪽에 남은 사람이 있다고 전했다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t25",
+      "time": "20:14",
+      "surface": "call",
+      "place_id": null,
+      "text": "표기웅이 배전반 B 앞에 도착했다고 회신했다. 3번 차단기가 내려가 있다고 한다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "vent_restored"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t26",
+      "time": "20:15",
+      "surface": "onsite",
+      "place_id": "p3",
+      "text": "문세라는 돔의 천장이 다시 상승하기 시작했으며, 눈이 가장자리로 흘러내리기 시작했다고 전했다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "vent_restored"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t27",
+      "time": "20:16",
+      "surface": "onsite",
+      "place_id": "p5",
+      "text": "북측 통제선에서 북측 비상 개방문이 열렸다는 보고가 들어왔다. 한내돔의 지붕이 주저앉기 시작했다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "north_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t28",
+      "time": "20:16+",
+      "surface": "onsite",
+      "place_id": "p5",
+      "text": "지붕이 내려앉는 사이 문이 열린 틈으로 사람들이 눈밭으로 탈출하고 있다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "north_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t29",
+      "time": "20:19",
+      "surface": "onsite",
+      "place_id": "p3",
+      "text": "남측 통제선에서 큰 소리가 들렸다는 보고가 들어왔다. 한내돔의 지붕이 내려앉았다.",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "not vent_restored"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t30",
+      "time": "20:41",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "소방 선착대에서 보고가 다수 들어왔다.",
+      "exposure": {
+        "visible_from": "20:41",
+        "extra_condition": "not north_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t31",
+      "time": "20:41+",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "남측 회전문은 내려앉은 막에 눌려 돌지 못하고 있다. 북측 비상 개방문은 손잡이에 사슬이 감겨 있어 열리지 않으며, 선착대는 절단기를 기다리고 있다. 서쪽 벽 아래 개구부는 안쪽 적재물에 막혀 있다.",
+      "exposure": {
+        "visible_from": "20:41",
+        "extra_condition": "not north_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t32",
+      "time": "21:02",
+      "surface": "call",
+      "place_id": null,
+      "text": "야간 당직자 주머니에서 북측 비상 개방문을 잠근 자물쇠의 열쇠가 발견됐다고 한다. 선착대는 그 전에 절단기로 사슬을 절단했다.",
+      "exposure": {
+        "visible_from": "21:02",
+        "extra_condition": "not north_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t33",
+      "time": "21:35",
+      "surface": "call",
+      "place_id": null,
+      "text": "집결지에서 탈출자 인원 점검이 끝났다.",
+      "exposure": {
+        "visible_from": "21:35",
+        "extra_condition": "not west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    },
+    {
+      "id": "t34",
+      "time": "21:35+",
+      "surface": "call",
+      "place_id": null,
+      "text": "최종 확인된 명단을 회선으로 넘겨받았다. 생존자와 실종자로 구분된 명단이었고, 문세라의 이름은 실종자 쪽에 있었다.",
+      "exposure": {
+        "visible_from": "21:35",
+        "extra_condition": "not west_sleeve_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": []
+    }
+  ]
+}

@@ -13,13 +13,16 @@ import { describe, it, expect } from 'vitest'
 import { createLiveAdapter } from '../../src/client/driver/live/adapter.ts'
 import type { BoundRun, RunClose } from '../../src/client/driver/live/adapter.ts'
 import type { Block } from '../../src/shared/contracts.ts'
+import { shownFrom } from '../../src/client/driver/live/adapter.ts'
+import { seedShown } from '../../src/client/driver/live/bind.ts'
+import { createBlockStore } from '../../src/driver/blocks.ts'
 
 /**
  * A `LiveDriver` that produces no beats and accepts every op, holding `blocks`
  * as its store. `bindLiveRun` seeds a real run's store with exactly the carried
  * blocks, so a stub whose store is the carried set is the honest shape.
  */
-function stubRun(run: number, blocks: readonly Block[]): BoundRun {
+function stubRun(run: number, blocks: readonly Block[], sent?: unknown[]): BoundRun {
   const store = new Map(blocks.map((b) => [b.id, b]))
   return {
     start: '08:50',
@@ -28,7 +31,10 @@ function stubRun(run: number, blocks: readonly Block[]): BoundRun {
     driver: {
       step: async () => false,
       subscribe: () => () => {},
-      submit: () => ({ ok: true }),
+      submit: (op: unknown) => {
+        sent?.push(op)
+        return { ok: true }
+      },
       blocks: () => ({ get: (id: string) => store.get(id) }),
     } as never,
   }
@@ -140,10 +146,14 @@ describe('the store the desk shows is the store the new run has', () => {
     adapter.send({ op: 'new_run' } as never)
     await settle()
 
-    // The deck is the carry-over and nothing else; the board is empty because a
-    // new day has not been built yet (`SlotBoard.unlock()` assumes exactly this).
-    // A slot surviving here drew a card the deck no longer listed.
-    expect(adapter.store()).toEqual({ mined: [B1.id], slots: {}, deployed: [] })
+    // RE-AIMED (08-08, W4). The deck is still the carry-over and nothing else —
+    // but the carry-over IS the file the operator committed, so it also seats
+    // and re-arms. An empty board here would hand the composer an empty agent
+    // file on every day after the first.
+    // RE-AIMED again (08-08, H1): seat 2, not seat 0. The old expectation
+    // encoded the re-index that moved a carried card to a seat the operator
+    // never chose; the carry now keeps the arrangement it was committed in.
+    expect(adapter.store()).toEqual({ mined: [B1.id], slots: { 2: B1.id }, deployed: [B1.id] })
   })
 
   it('(e) the carry-over handed to `next()` is what was DEPLOYED, resolved to text', async () => {
@@ -170,5 +180,76 @@ describe('the store the desk shows is the store the new run has', () => {
     expect(seen!.carried).toEqual([B2])
     expect(seen!.reachedClock).toMatch(/^\d{2}:\d{2}$/)
     expect(adapter.store().mined).toEqual([B2.id])
+  })
+
+  it('(g) the carried file is replayed into the NEW run as real ops, seats and all', async () => {
+    // The regression this unit fixes. The adapter's own mirror said the right
+    // thing while the run's membrane knew nothing: `unslot` answered
+    // `empty_slot` and `membrane.deployed()` — what Call 1 carries — was empty,
+    // so every day after the first flew an agent file the model never saw.
+    const sent: unknown[] = []
+    const adapter = createLiveAdapter({
+      first: stubRun(1, [B1, B2]),
+      canOpenNext: () => true,
+      closeRun: () => {},
+      next: async () => stubRun(2, [B1, B2], sent),
+    })
+    adapter.start()
+
+    adapter.send({ op: 'mine', sentence_id: B1.id } as never)
+    adapter.send({ op: 'mine', sentence_id: B2.id } as never)
+    adapter.send({ op: 'slot', block_id: B1.id, slot: 2 } as never)
+    adapter.send({ op: 'slot', block_id: B2.id, slot: 0 } as never)
+    adapter.send({ op: 'deploy', blocks: [B1.id, B2.id] } as never)
+
+    adapter.send({ op: 'new_run' } as never)
+    await settle()
+
+    expect(sent).toEqual([
+      { op: 'slot', block_id: B2.id, slot: 0 },
+      { op: 'slot', block_id: B1.id, slot: 2 },
+      { op: 'deploy', blocks: [B1.id, B2.id] },
+    ])
+    expect(adapter.store().slots).toEqual({ 0: B2.id, 2: B1.id })
+  })
+})
+
+/* ══ hf2 — a sentence the desk has shown stays minable ═══════════════════ */
+
+describe('a sentence the desk has shown stays minable on a later day', () => {
+  it('(h) every sentence the stream showed is carried out of the close', () => {
+    // The defect this pins: each run builds a FRESH block store and only the
+    // carried blocks were seeded into it, so a past report's sentence answered
+    // `not_minable` on every later day. `e2e/` cannot see it — the fixture
+    // loop's store is one flat object that survives `new_run`.
+    const shown = shownFrom([
+      { type: 'beat_start', beat: 0, clock: '08:50' },
+      { type: 'feed', line: { kind: 'radio', clock: '08:51', text: '회선 유지합니다.', sentence_id: 'b-r1-u01' } },
+      // A symptom line carries no id and is authored identically every run, so
+      // mining one would carry no information — it must not become minable.
+      { type: 'feed', line: { kind: 'symptom', clock: '08:52', text: '발신자의 호흡이 얕아졌다' } },
+      {
+        type: 'report',
+        round: 1,
+        facts: [{ id: 'b-r1-f01', text: '계측 일지가 반출됐다.', species: 'fact' }],
+        report_body: [{ id: 'b-r1-b01', text: '나는 회선을 끊지 않았다.', species: 'selfnarr' }],
+      },
+    ] as never)
+
+    expect(shown.map((b) => b.id).sort()).toEqual(['b-r1-b01', 'b-r1-f01', 'b-r1-u01'])
+    expect(shown.find((b) => b.id === 'b-r1-f01')?.text).toBe('계측 일지가 반출됐다.')
+  })
+
+  it('(i) seeding leaves a shown sentence minable and NOT deployed', () => {
+    const blocks = createBlockStore()
+    seedShown(blocks, [{ id: 'b-r1-f01', text: '계측 일지가 반출됐다.' }])
+
+    // `has()` reads the MINED tier: absorbed is not deployed, so nothing the
+    // operator has not mined can reach Call 1.
+    expect(blocks.has('b-r1-f01')).toBe(false)
+    // …and `mine()` reads the SEEN tier, so the operator can still take it.
+    expect(blocks.mine('b-r1-f01')).toBe(true)
+    expect(blocks.has('b-r1-f01')).toBe(true)
+    expect(blocks.mine('b-r9-f99')).toBe(false)
   })
 })

@@ -1,0 +1,577 @@
+{
+  "events": [
+    {
+      "id": "t1",
+      "time": "20:47",
+      "surface": "call",
+      "place_id": "p2",
+      "text": "차우진이 신고한다. \"차에 불이 붙었습니다. 적재함은 비었고요\"",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t2",
+      "time": "20:49",
+      "surface": "cctv",
+      "place_id": "p2",
+      "text": "흰 연기가 적재함 이음새에서 오른다. 차우진이 소화기를 들고 적재함 뒤로 돈다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t3",
+      "time": "20:52",
+      "surface": "document",
+      "place_id": "p1",
+      "text": "벽 클립보드 점검 일지. 5·6번 송풍기 칸에 '시운전 신호 유지'라고 적혀 있다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t4",
+      "time": "20:55",
+      "surface": "call",
+      "place_id": "p3",
+      "text": "오세라가 비상전화를 든다. \"여기 바람이 안 옵니다. 연기가 그대로 서 있어요\"",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t5",
+      "time": "20:58",
+      "surface": "cctv",
+      "place_id": "p2",
+      "text": "정체가 뒤로 자란다. 앞쪽 승합차에서 아이 둘이 내려 앞을 본다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t6",
+      "time": "21:01",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "하만식이 본사 당직에 전화를 건다. 차단은 승인이 있어야 한다고 말한다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t7",
+      "time": "21:07",
+      "surface": "cctv",
+      "place_id": "p2",
+      "text": "차우진이 적재함 문을 닫고 자물쇠를 채운다. 소화기는 바닥에 둔다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t8",
+      "time": "21:09",
+      "surface": "document",
+      "place_id": "p2",
+      "text": "운전석 대시보드 운송장. 품목 칸은 '일반 화물' 넉 자뿐이고 팰릿 수는 비어 있다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "manifest_checked"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t9",
+      "time": "21:12",
+      "surface": "document",
+      "place_id": "p5",
+      "text": "차단 로그. 버튼을 누른 시각과 본사 회신 시각이 11분 벌어져 있다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "logs_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t10",
+      "time": "21:16",
+      "surface": "cctv",
+      "place_id": "p5",
+      "text": "차단봉이 내려오기 전 11분 동안 60대가 더 들어왔다. 마지막은 통근버스다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t11",
+      "time": "21:22",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "관제 안내 방송이 나간다. \"차량 안에서 대기하십시오. 곧 구조대가 진입합니다\"",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "not pallet_named"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t12",
+      "time": "21:22",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "관제 안내 방송이 나간다. \"차에서 내리십시오. 앞 차량 적재함에 배터리가 실려 있습니다\"",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "pallet_named"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t13",
+      "time": "21:26",
+      "surface": "call",
+      "place_id": "p4",
+      "text": "오세라가 문을 흔든다. \"쇠사슬입니다. 관리소 자물쇠가 아니에요\"",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t14",
+      "time": "21:33",
+      "surface": "onsite",
+      "place_id": "p2",
+      "text": "적재함 안에서 연쇄 발화가 시작된다. 불꽃이 하얗게 서고, 꺼진 자리에서 다시 선다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t15",
+      "time": "21:38",
+      "surface": "cctv",
+      "place_id": "p3",
+      "text": "연기 전선이 갓길을 덮는다. 4.0km 표지가 화면에서 지워진다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t16",
+      "time": "21:50",
+      "surface": "call",
+      "place_id": "p3",
+      "text": "오세라가 말한다. \"사람들이 안 내립니다. 방송을 믿고 앉아 있어요\"",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "not pallet_named and not driven_out"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t17",
+      "time": "21:50",
+      "surface": "call",
+      "place_id": "p3",
+      "text": "오세라가 말한다. \"내렸습니다. 차 옆에 서서 기다립니다. 어디로 가라는 말이 아직 없어요\"",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "pallet_named and not driven_out"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t18",
+      "time": "21:52",
+      "surface": "onsite",
+      "place_id": "p3",
+      "text": "점검차 뒷문이 열려 있다. 유압 절단기 자리가 비었다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "doors_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t19",
+      "time": "21:55",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "하만식이 회선을 소방 지휘부로 넘긴다. 관제소 스피커가 조용해진다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "not line_kept"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t20",
+      "time": "21:55",
+      "surface": "onsite",
+      "place_id": "p1",
+      "text": "소방 지휘부가 관제소를 회선에 남겨 둔다. 관제소 마이크가 켜진 채로 있다",
+      "exposure": {
+        "visible_from": null,
+        "extra_condition": "line_kept"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t21",
+      "time": "22:04",
+      "surface": "cctv",
+      "place_id": "p2",
+      "text": "천장 마감재가 떨어진다. 카메라 12번 화면이 검게 된다",
+      "exposure": {
+        "visible_from": "22:04",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": null
+    },
+    {
+      "id": "t22",
+      "time": "22:11",
+      "surface": "onsite",
+      "place_id": "p4",
+      "text": "끊긴 쇠사슬이 바닥에 있다. 문 안쪽 상행 대피로에 사람 줄이 선다",
+      "exposure": {
+        "visible_from": "22:11",
+        "extra_condition": "doors_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t23",
+      "time": "22:19",
+      "surface": "onsite",
+      "place_id": "p4",
+      "text": "문 앞에 사람들이 겹쳐 있다. 쇠사슬은 그대로다",
+      "exposure": {
+        "visible_from": "22:19",
+        "extra_condition": "not doors_opened"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t24",
+      "time": "22:26",
+      "surface": "onsite",
+      "place_id": "p5",
+      "text": "소방 진입이 1.4km에서 멈춘다. 열이 대원들을 되돌려 보낸다",
+      "exposure": {
+        "visible_from": "22:26",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": null
+    },
+    {
+      "id": "t25",
+      "time": "22:41",
+      "surface": "call",
+      "place_id": "p4",
+      "text": "오세라의 무전이 끊긴다. 마지막 말은 9번이라는 숫자다",
+      "exposure": {
+        "visible_from": "22:41",
+        "extra_condition": "not driven_out and line_kept"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    {
+      "id": "t26",
+      "time": "22:58",
+      "surface": "cctv",
+      "place_id": "p5",
+      "text": "갱구 밖 집결지에서 인원을 센다. 세 번 세고 세 번 다른 수가 나온다",
+      "exposure": {
+        "visible_from": "22:58",
+        "extra_condition": null
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": null
+    },
+    {
+      "id": "t27",
+      "time": "23:12+",
+      "surface": "document",
+      "place_id": "p1",
+      "text": "상황 종료. 사고 개요서 적재물 칸에 '일반 화물'이 적힌다",
+      "exposure": {
+        "visible_from": "23:12+",
+        "extra_condition": "not pallet_named"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    },
+    {
+      "id": "t28",
+      "time": "23:12+",
+      "surface": "document",
+      "place_id": "p1",
+      "text": "상황 종료. 사고 개요서 적재물 칸에 폐리튬 배터리 팰릿 열두 개가 적힌다",
+      "exposure": {
+        "visible_from": "23:12+",
+        "extra_condition": "pallet_named"
+      },
+      "effects": {
+        "deltas": {},
+        "flags": {}
+      },
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "room"
+        }
+      ]
+    }
+  ]
+}

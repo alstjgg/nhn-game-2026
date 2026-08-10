@@ -19,7 +19,15 @@ import type { Locator, Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { awaitTallyReveal, raiseWindow } from './fixtures/harness.ts'
+import {
+  awaitRecordFinal,
+  confirmDeploy,
+  deployFile,
+  flushFeed,
+  mineFirst,
+  raiseWindow,
+  turnToAgent,
+} from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -89,8 +97,16 @@ async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
-  // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
-  await awaitTallyReveal(page)
+  // x12 — and the paper is landed with it, for the reason `fixtures/harness.ts`'s
+  // own `drain` records: the record's count-up now waits for the LIVE FEED to
+  // have printed its way to the day's `score` (`shell/feed-reach.ts`), and a
+  // whole day released in one call is not something the reveal can be left to
+  // pace inside a test budget. The arriving REPORT is gated on the same paper,
+  // so this is also what keeps the documents below readable in the frame after
+  // the drain rather than a reading-paced minute later.
+  await flushFeed(page)
+  // U3 — no more sheet to reveal; wait the record out to final instead.
+  await awaitRecordFinal(page)
 }
 
 /** Boot the desk with REPORTS raised. `reduced` freezes the typewriter's replay. */
@@ -98,6 +114,7 @@ async function boot(page: Page, opts: { reduced: boolean }): Promise<void> {
   if (opts.reduced) await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('./')
   await expect(page.locator(REP)).toBeVisible()
+  await turnToAgent(page)
   await page.locator(`${REP} .win-bar`).click()
 }
 
@@ -121,13 +138,29 @@ function reportsOf(f: Frame): ReportEvent[] {
  */
 async function fileAnotherRun(page: Page): Promise<void> {
   await drain(page)
-  const tally = page.locator('#w-tally')
-  await expect(tally, 'the run ended but the TALLY sheet never came up').not.toHaveClass(/\bhidden\b/, {
+  const newRun = page.locator('#w-file #btnDeploy')
+  await expect(newRun, 'the day never unlocked NEW RUN').toHaveAttribute('data-op', 'new_run', { timeout: 30_000 })
+  await expect(newRun, 'the day never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
+  await newRun.click()
+  await confirmDeploy(page)
+  // WAIT FOR THE OP TO ACTUALLY LEAVE (x7, 08-09).
+  //
+  // This drained straight after the confirm, which held only while the press
+  // and its `new_run` were the same tick. They are not any more: the press
+  // types the incoming agent's callsign onto the page and then waits a beat
+  // before the chop and the op (`windows/agent-file.ts`'s NAMED_TO_CHOP_MS), so
+  // a drain here flushed the day that had ALREADY ended and returned before the
+  // next one existed. Both switch tests then found one run in the stream and
+  // failed as "the stream carries fewer than two runs", which reads as a driver
+  // fault and is a helper racing an animation.
+  //
+  // The control's own `data-op` is the honest signal — it returns to `deploy`
+  // when the new run's `meta` lands, which is the thing this helper is waiting
+  // for. `fixtures/harness.ts`'s `newRun()` already waited on exactly this; the
+  // local helper simply never did.
+  await expect(newRun, 'the press never opened the next run').toHaveAttribute('data-op', 'deploy', {
     timeout: 30_000,
   })
-  const newRun = page.locator('#w-tally #btnNewRun')
-  await expect(newRun, 'the tally never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
-  await newRun.click()
   await drain(page)
   await page.locator(`${REP} .win-bar`).click()
 }
@@ -137,12 +170,31 @@ function metaOf(f: Frame): MetaEvent | null {
   return metas.length > 0 ? metas[metas.length - 1]! : null
 }
 
-/** The run the rail says is selected right now. */
+/**
+ * x7 — THE SUITE NO LONGER SPELLS THE ECHO SERIES AT ALL.
+ *
+ * It used to. A declared mirror of `components/dossier.ts`'s `callsignOf` sat
+ * here, because a spec that has to say "the tab belonging to run 3" needs to
+ * know something about run 3, and the rail carried the callsign as text and
+ * nothing else. A second copy read it BACKWARDS out of the label, and that one
+ * encoded the OLD numbering: it read every sitting one short after the series
+ * renumbered, and could not read run 1 at all — plain `ECHO` has no digits in
+ * it. Two mirrors of one rule, and the reverse one silently wrong.
+ *
+ * The rail publishes `data-run` now (`components/report-archive.ts`) — the
+ * number the seam always had. Both directions read that, so how a sitting is
+ * NAMED is entirely `dossier.ts`’s business and this suite is renumber-proof:
+ * nothing here would notice the series being spelled differently tomorrow.
+ */
+const tabFor = (page: Page, run: number): Locator =>
+  page.locator(`${OPTION}[data-run="${run}"]`).first()
+
+/** The run the rail says is selected — read off the tab, not out of its text. */
 async function activeRun(page: Page): Promise<number> {
-  const label = await page.locator(`${OPTION}[aria-selected="true"]`).first().innerText()
-  const digits = label.match(/\d+/)
-  expect(digits, `the selected archive option carries no RUN number: ${label}`).not.toBeNull()
-  return Number(digits![0])
+  const tab = page.locator(`${OPTION}[aria-selected="true"]`).first()
+  const run = await tab.getAttribute('data-run')
+  expect(run, 'the selected archive option carries no data-run').not.toBeNull()
+  return Number(run)
 }
 
 async function reportForActiveRun(page: Page): Promise<ReportEvent> {
@@ -195,6 +247,18 @@ test.describe('report renders once after the last beat', () => {
     await expect(page.locator(`${BODY} .sent`)).toHaveCount(0)
     await expect(page.locator(`${FACTS} li`)).toHaveCount(0)
   })
+
+  /* x13 — 'the 검인 chop waits for the day to close' was here (민서, 08-10).
+     It was the DOM half of a rule proved under node, and it held the case that
+     used to stamp a blank sheet: reduced motion is on in this describe, so the
+     replay finished on its first paint and the driver's `score` was the only
+     thing left to wait for.
+
+     There is no chop. `.sig-stamp` selects nothing, so leaving the assert would
+     have been worse than deleting it — a scope that matches no node passes
+     forever. The reason the chop went rather than being timed a fourth time is
+     in `components/report-view.ts`; what it certified is now said by the
+     transmission being on the page and by the terminal record under it. */
 
   test('report renders once after the last beat — both panes render the event, in event order', async ({
     page,
@@ -249,21 +313,38 @@ test.describe('report renders once after the last beat', () => {
     expect(facts!.x + facts!.width).toBeLessThanOrEqual(body!.x + 1)
   })
 
-  test('report renders once after the last beat — the report side carries the red margin rule', async ({
+  // x6 — INVERTED. This case used to require a red ledger rule down the report
+  // side, painted as a gradient band at x=33–34px with the prose indented 34px
+  // to clear it. The rule is gone: it was a decoration nothing was written
+  // against, and the indent it needed put 무전 기록 20px off 현장 기록's axis, so
+  // the pane the operator reads as one spread was visibly two.
+  //
+  // What is asserted instead is the thing the rule cost — the two panes hang
+  // from the same left edge — plus the rule's absence, so it cannot come back
+  // without this reading again.
+  test('report renders once after the last beat — the two panes hang from one left edge, with no ledger rule', async ({
     page,
   }) => {
     await drain(page)
-    const paint = await page
-      .locator(`${REP} .doc-body`)
-      .evaluate((n) => getComputedStyle(n as HTMLElement).backgroundImage)
-    expect(paint).toContain('gradient')
+    const pane = async (sel: string): Promise<{ paint: string; padding: string }> =>
+      page.locator(`${REP} ${sel}`).evaluate((n) => {
+        const style = getComputedStyle(n as HTMLElement)
+        return { paint: style.backgroundImage, padding: style.paddingLeft }
+      })
 
-    const reds = [...paint.matchAll(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/g)].map((m) => ({
+    const facts = await pane('.doc-facts')
+    const body = await pane('.doc-body')
+    expect(body.padding, `무전 기록 is indented off 현장 기록's axis`).toBe(facts.padding)
+
+    // No red band anywhere in the body pane's paint. `.doc-facts` keeps its own
+    // gradient (a grey edge shade at 96%), which is why the assert is on colour
+    // and not on the mere presence of a gradient.
+    const reds = [...body.paint.matchAll(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/g)].map((m) => ({
       r: Number(m[1]),
       g: Number(m[2]),
       b: Number(m[3]),
     }))
-    expect(reds.some((c) => c.r > c.g + 20 && c.r > c.b + 20), `no red rule in: ${paint}`).toBe(true)
+    expect(reds.some((c) => c.r > c.g + 20 && c.r > c.b + 20), `a red rule is back: ${body.paint}`).toBe(false)
   })
 })
 
@@ -315,8 +396,21 @@ test.describe('typewriter is replay', () => {
     await drain(page)
     const report = await reportForActiveRun(page)
 
-    // The pump only ticks while the clock runs — the operator presses ▶.
-    await page.locator('.rate-btn[data-rate="1"]').click()
+    // The pump only ticks while the clock runs. RE-AIMED (08-08, W4): there is
+    // no ▶ any more — the operator starts the day by committing a file to it.
+    //
+    // RE-AIMED AGAIN (x5): the clock is started through the LIVE FEED's own rate
+    // hook, exactly as the next case does, rather than by pressing DEPLOY. The
+    // press opens the NEXT sitting, and REPORTS now follows the new sitting onto
+    // its own tab — so the document whose replay this case is about would be
+    // unmounted mid-poll. What is under test here is the PUMP: a partially typed
+    // body finishes, and the caret is cleaned up when it does. That the press
+    // starts the day is `run-loop.spec.ts`'s claim and is asserted there.
+    await page.evaluate(() => {
+      const feed = (window as unknown as { __feed?: { rate(to: number): void } }).__feed
+      if (!feed) throw new Error('window.__feed is not exposed by the LIVE FEED window')
+      feed.rate(4)
+    })
 
     await expect
       .poll(
@@ -338,6 +432,9 @@ test.describe('typewriter is replay', () => {
     page,
   }) => {
     await boot(page, { reduced: false })
+    // The press first: the driver holds the run's stream until the file is
+    // committed (spec-client §5.1), so an unopened day has nothing to seek into.
+    await deployFile(page)
     // One sim-minute short of the terminal, then let the clock run there itself.
     await page.evaluate(() => {
       const feed = (window as unknown as { __feed?: { seek(at: string): void; rate(to: number): void } }).__feed
@@ -394,9 +491,23 @@ test.describe('typewriter is replay', () => {
       .poll(async () => page.locator(BODY).evaluate((n) => (n.textContent ?? '').length), { timeout: 30_000 })
       .toBeGreaterThanOrEqual(whole)
 
-    const newRun = page.locator('#w-tally #btnNewRun')
-    await expect(newRun, 'the tally never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
+    // x5 — the day this document belongs to, remembered before the press. The
+    // desk now follows the NEW sitting onto its own tab, so the filed document
+    // is one tab back; the defect this case guards has always been about what
+    // happens to that document, not about which tab is in front.
+    const filedTab = (await page.locator(`${OPTION}[aria-selected="true"]`).first().innerText()).trim()
+
+    const newRun = page.locator('#w-file #btnDeploy')
+    await expect(newRun, 'the day never unlocked NEW RUN').toHaveAttribute('data-op', 'new_run', { timeout: 30_000 })
+    await expect(newRun, 'the day never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
     await newRun.click()
+    await confirmDeploy(page)
+
+    // The desk moved. Come back to the day that filed it — and it must be whole
+    // ON ARRIVAL and stay whole: a re-typed document reads 0 on the first
+    // sample, a re-typing one dips on a later sample. Both are caught below.
+    await expect(page.locator(`${OPTION}[aria-selected="true"]`).first()).not.toHaveText(filedTab)
+    await page.locator(OPTION, { hasText: filedTab }).first().click()
 
     const samples: number[] = []
     for (let i = 0; i < 8; i += 1) {
@@ -430,8 +541,8 @@ test.describe('archive segmentation and highlight marks', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page, { reduced: true })
     await drain(page)
-    // `drain()` opens TALLY over the desk — raise REPORTS before any test in
-    // this block clicks into it. See `raiseWindow`.
+    // The record lands in REPORTS (U3) — raising it is the point now, not a
+    // workaround. See `raiseWindow`.
     await raiseWindow(page, 'rep')
   })
 
@@ -454,10 +565,32 @@ test.describe('archive segmentation and highlight marks', () => {
     const known = [...new Set([...meta!.archive.map((a) => a.run), ...filed])]
     await expect(page.locator(OPTION)).toHaveCount(known.length)
     const labels = await page.locator(OPTION).evaluateAll((nodes) => nodes.map((n) => (n.textContent ?? '').trim()))
+    // x5 — the tab is the CALLSIGN and nothing else, so the per-entry check
+    // inverts: it used to prove the label's time span reached the tab, and now
+    // it proves that no part of the seam's `label` does. That field is the
+    // authority's, and what it holds depends on which authority is driving —
+    // `RUN 03 / 08:50 — 21:04` from the fixture loop, `전구간정상-r3` from the live
+    // adapter. Neither is something this rail promises to render.
+    // x7 — the tabs are DISTINCT and carry none of the seam's label. What they
+    // are is no longer spelled here.
+    //
+    // This compared each tab to a locally-computed callsign, which is the
+    // mirror this file no longer keeps (see `tabFor` above). The exact naming
+    // is pinned where importing `components/dossier.ts` is legal —
+    // `tests/windows/reports.test.ts` compares `runLabel` against the real
+    // `callsignOf` — so asserting it a second time here bought nothing except a
+    // copy of the rule that could go stale on its own, and did.
+    //
+    // What only THIS lane can prove is the negative below: whatever the tab
+    // says, no part of the authority's `label` reaches it. That field holds
+    // `RUN 03 / 08:50 — 21:04` under the fixture loop and `전구간정상-r3` under the
+    // live adapter, and neither is something the rail promises to render.
+    expect(new Set(labels).size, 'two sittings share a tab label').toBe(labels.length)
     for (const [i, entry] of meta!.archive.entries()) {
-      expect(labels[i]).toMatch(new RegExp(`RUN\\s*0*${entry.run}\\b`))
+      expect(labels[i]!.trim().length, 'a tab rendered no name at all').toBeGreaterThan(0)
       const span = entry.label.replace(/^\s*RUN\s*\d+\s*[/·]\s*/i, '').trim()
-      expect(labels[i]!.replace(/\s+/g, ' ')).toContain(span.replace(/\s+/g, ' '))
+      expect(span.length, 'the fixture label is empty — this check is vacuous').toBeGreaterThan(0)
+      expect(labels[i]!.replace(/\s+/g, ' ')).not.toContain(span.replace(/\s+/g, ' '))
     }
   })
 
@@ -505,7 +638,7 @@ test.describe('archive segmentation and highlight marks', () => {
     expect(rounds.length, 'the stream carries fewer than two runs — the switch is untestable').toBeGreaterThan(1)
 
     for (const round of rounds) {
-      await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${round}\\b`) }).first().click()
+      await tabFor(page, round).click()
       await expect(page.locator(`${OPTION}[aria-selected="true"]`)).toHaveCount(1)
       expect(await activeRun(page)).toBe(round)
 
@@ -529,9 +662,12 @@ test.describe('archive segmentation and highlight marks', () => {
     const away = rounds[0]!
     const target = reports.filter((r) => r.round === home).pop()!.report_body[0]!
 
-    await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${home}\\b`) }).first().click()
+    await tabFor(page, home).click()
+    // One gesture (08-08): the click tears the sentence out AND seats it, so
+    // the mark it leaves is `slotted`. The mine op still reaches the seam —
+    // which is what this test is about.
     await page.locator(`${BODY} [data-sentence-id="${target.id}"]`).click()
-    await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bmined\b/)
+    await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bslotted\b/)
     expect((await frame(page)).store.mined).toContain(target.id)
 
     // C17 / [u11#c12] — RE-AIMED (08-04), never deleted. This step proved "the
@@ -543,15 +679,18 @@ test.describe('archive segmentation and highlight marks', () => {
     // across runs)". So the switch is proved where it is unambiguous — the
     // rail's own selection and a re-rendered body — and the id-keyed mark, which
     // is what this test is actually about, is still asserted below.
-    await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${away}\\b`) }).first().click()
+    await tabFor(page, away).click()
     expect(await activeRun(page), 'the rail did not switch to the other run').toBe(away)
     await expect(page.locator(`${BODY} .sent`), 'the away document rendered nothing').not.toHaveCount(0)
 
-    await page.locator(OPTION).filter({ hasText: new RegExp(`RUN\\s*0*${home}\\b`) }).first().click()
-    await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bmined\b/)
+    await tabFor(page, home).click()
+    await expect(page.locator(`${BODY} [data-sentence-id="${target.id}"]`)).toHaveClass(/\bslotted\b/)
 
     // Every mark on screen is a mark the STORE holds — nothing positional.
-    const marked = await anchorIds(page.locator(`${REP} .min.mined`))
+    // Both marks imply mined: `.min.mined` is a sentence whose seat was freed,
+    // `.min.slotted` one that still holds one.
+    const marked = await anchorIds(page.locator(`${REP} .min.mined, ${REP} .min.slotted`))
+    expect(marked.length, 'no mark is on screen — the store oracle is vacuous').toBeGreaterThan(0)
     const store = (await frame(page)).store.mined
     for (const id of marked) expect(store).toContain(id)
   })
@@ -561,13 +700,18 @@ test.describe('archive segmentation and highlight marks', () => {
   }) => {
     await expect(page.locator(`${REP} .min`), 'nothing is rendered — the mark scan is vacuous').not.toHaveCount(0)
     const f = await frame(page)
-    const slottedEver = new Set([...(metaOf(f)?.carried ?? []), ...Object.values(f.store.slots)])
-    const onScreen = await anchorIds(page.locator(`${REP} .min.slotted`))
-    for (const id of onScreen) expect([...slottedEver]).toContain(id)
+    // 08-08: the one mark split in two. TODAY's file is 배치 (`.slotted`); a
+    // sitting the operator already deployed is 과거 배치 (`.carried`). Each
+    // mark answers to its OWN set — that is the whole point of the split.
+    const slotted = new Set(Object.values(f.store.slots))
+    const carried = new Set(metaOf(f)?.carried ?? [])
+    for (const id of await anchorIds(page.locator(`${REP} .min.slotted`))) expect([...slotted]).toContain(id)
+    for (const id of await anchorIds(page.locator(`${REP} .min.carried`))) expect([...carried]).toContain(id)
 
     const rendered = new Set(await anchorIds(page.locator(`${REP} [data-sentence-id]`)))
-    for (const id of slottedEver) {
-      if (rendered.has(id) && !f.store.mined.includes(id)) expect(onScreen).toContain(id)
+    const onScreen = await anchorIds(page.locator(`${REP} .min.slotted, ${REP} .min.carried`))
+    for (const id of [...slotted, ...carried]) {
+      if (rendered.has(id)) expect(onScreen).toContain(id)
     }
   })
 })
@@ -578,8 +722,8 @@ test.describe('a11y', () => {
   test.beforeEach(async ({ page }) => {
     await boot(page, { reduced: true })
     await drain(page)
-    // `drain()` opens TALLY over the desk — raise REPORTS before any test in
-    // this block clicks into it. See `raiseWindow`.
+    // The record lands in REPORTS (U3) — raising it is the point now, not a
+    // workaround. See `raiseWindow`.
     await raiseWindow(page, 'rep')
   })
 
@@ -603,24 +747,30 @@ test.describe('a11y', () => {
     expect(report.report_body.length, 'need two body sentences to test both keys').toBeGreaterThan(1)
     const [first, second] = report.report_body
 
+    // One gesture (08-08): each key mines AND seats, so the mark left behind is
+    // `slotted`. `#minedCount` counts the mined set, which both keys still grow.
     const before = await minedCount(page)
     await page.locator(`${BODY} [data-sentence-id="${first!.id}"]`).focus()
     await page.keyboard.press('Enter')
-    await expect(page.locator(`${BODY} [data-sentence-id="${first!.id}"]`)).toHaveClass(/\bmined\b/)
+    await expect(page.locator(`${BODY} [data-sentence-id="${first!.id}"]`)).toHaveClass(/\bslotted\b/)
     expect(await minedCount(page)).toBe(before + 1)
 
     await page.locator(`${BODY} [data-sentence-id="${second!.id}"]`).focus()
     await page.keyboard.press(' ')
-    await expect(page.locator(`${BODY} [data-sentence-id="${second!.id}"]`)).toHaveClass(/\bmined\b/)
+    await expect(page.locator(`${BODY} [data-sentence-id="${second!.id}"]`)).toHaveClass(/\bslotted\b/)
     expect(await minedCount(page)).toBe(before + 2)
     expect((await frame(page)).store.mined).toEqual([first!.id, second!.id])
   })
 
-  test('a11y — a mined sentence announces itself as disabled and re-mining is a no-op', async ({ page }) => {
+  test('a11y — a seated sentence is settled, and re-activating it is a no-op', async ({ page }) => {
     const report = await reportForActiveRun(page)
     const target = report.report_body[0]!
     const node = page.locator(`${BODY} [data-sentence-id="${target.id}"]`)
 
+    // RE-AIMED (08-08). This used to assert a mined sentence stays ENABLED,
+    // because T1 made it the pick control for a second click. One gesture
+    // retires that step: the click seats the sentence, and a sentence sitting
+    // in the file is a dead end until 해제 frees the seat.
     await node.click()
     await expect(node).toHaveAttribute('aria-disabled', 'true')
 
@@ -668,5 +818,59 @@ test.describe('a11y', () => {
     await expect(page.locator(`${REP} .min`), 'nothing is rendered — the inv-1 scan is vacuous').not.toHaveCount(0)
     await expect(page.locator(`${REP} input, ${REP} textarea, ${REP} select`)).toHaveCount(0)
     await expect(page.locator(`${REP} [contenteditable]`)).toHaveCount(0)
+  })
+})
+
+/* ── T1 — the report is the pick surface; the store window is gone ───────── */
+
+test.describe('slotting from the report (T1)', () => {
+  test.beforeEach(async ({ page }) => {
+    await boot(page, { reduced: true })
+    await drain(page)
+    await raiseWindow(page, 'rep')
+  })
+
+  test('one activation of a report sentence seats it in the file, by id', async ({ page }) => {
+    const id = await mineFirst(page)
+    await expect.poll(async () => (await frame(page)).store.slots[0]).toBe(id)
+    await raiseWindow(page, 'rep')
+    await expect(page.locator(`${REP} [data-sentence-id="${id}"]`).first()).toHaveClass(/\bslotted\b/)
+  })
+
+  test('a11y — slotting and unslotting complete with the keyboard alone, zero pointer events', async ({ page }) => {
+    // The id is TAKEN without acting on it: `mineFirst` clicks, and one gesture
+    // means that click would already have done the slotting this test is about.
+    const target = page.locator(`${REP} .min[data-sentence-id]`).first()
+    await expect(target, 'no mineable sentence is on the REPORTS pane').toBeVisible({ timeout: 20_000 })
+    const id = (await target.getAttribute('data-sentence-id'))!
+    await page.evaluate(() => {
+      const win = window as unknown as { __pointerEvents?: number }
+      win.__pointerEvents = 0
+      for (const type of ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup']) {
+        document.addEventListener(
+          type,
+          (event) => {
+            // A keyboard-activated button fires a click with no coordinates;
+            // only a real pointer carries them.
+            const pointer = event as MouseEvent
+            if (pointer.detail > 0 || pointer.clientX > 0 || pointer.clientY > 0) {
+              win.__pointerEvents = (win.__pointerEvents ?? 0) + 1
+            }
+          },
+          true,
+        )
+      }
+    })
+    await page.locator(`${REP} [data-sentence-id="${id}"]`).first().focus()
+    await page.keyboard.press('Enter')
+    await expect.poll(async () => (await frame(page)).store.slots[0]).toBe(id)
+    await page.locator('#w-file .slot[data-slot="0"] .slot-unset').focus()
+    await page.keyboard.press('Enter')
+    await expect.poll(async () => (await frame(page)).store.slots[0]).toBeUndefined()
+    await expect(page.locator(`${REP} [data-sentence-id="${id}"]`).first()).toHaveClass(/\bmined\b/)
+    expect(
+      await page.evaluate(() => (window as unknown as { __pointerEvents?: number }).__pointerEvents),
+      'the keyboard path fired a pointer event',
+    ).toBe(0)
   })
 })

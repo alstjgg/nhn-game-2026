@@ -1,8 +1,8 @@
 // [u3#c6] The merge surface for m3.
 //
-// `windows/{agent-file,block-store,live-feed,reports,tally}.ts` exist as stubs
+// `windows/{agent-file,block-store,live-feed,reports}.ts` exist as stubs
 // exporting `mount(host, driver)`, and a SHELL-owned registry is the single
-// place that knows about all five. That is what keeps u4/u4s/u5/u6/u7 off a
+// place that knows about all four. That is what keeps u4/u4s/u5/u6/u7 off a
 // shared barrel and off `index.html` — each later unit fills exactly one file.
 //
 // The suite runs under vitest `environment: 'node'`: a stub that reached for
@@ -40,13 +40,13 @@ async function loadRegistry(): Promise<{ WINDOW_REGISTRY: readonly WindowDef[] }
   return (await import(importable(REGISTRY_TS))) as { WINDOW_REGISTRY: readonly WindowDef[] }
 }
 
-describe('[u3#c6] the five window stubs exist', () => {
+describe('[u3#c6] the four window stubs exist', () => {
   it('(a) every windows/<module>.ts is on disk', () => {
     const missing = WINDOW_KEYS.filter((k) => !exists(modulePath(k))).map((k) => WINDOW_MODULES[k])
     expect(missing).toEqual([])
   })
 
-  it('(b) windows/ holds exactly the five modules and no barrel', () => {
+  it('(b) windows/ holds exactly the four modules and no barrel', () => {
     const files = tsFiles(WINDOWS_DIR).map((f) => path.basename(f)).sort()
     expect(files).toEqual([...Object.values(WINDOW_MODULES)].sort())
     expect(exists(path.join(WINDOWS_DIR, 'index.ts'))).toBe(false)
@@ -102,16 +102,23 @@ describe('[u3#c6] the registry is shell-owned', () => {
     expect(WINDOW_REGISTRY.map((w) => w.key)).toEqual([...WINDOW_KEYS])
   })
 
-  it('(d) every entry carries a unique w-<key> dom id and both labels', async () => {
+  /**
+   * x5 — ONE label, not two. `ko` (the taskbar's short Korean name) and `sub`
+   * (the title bar's long Korean subtitle) both left the registry, so what this
+   * checks is that every entry still carries a name and that the names are
+   * DISTINCT — which is the claim that actually matters now that a window has
+   * exactly one of them. `LIVE FEED 무전` on a taskbar chip named the same
+   * window twice; two windows sharing `en` would name two windows once.
+   */
+  it('(d) every entry carries a unique w-<key> dom id and a distinct name', async () => {
     const { WINDOW_REGISTRY } = await loadRegistry()
     for (const def of WINDOW_REGISTRY) {
       expect(def.id).toBe(`w-${def.key}`)
       expect(typeof def.en).toBe('string')
       expect(def.en.trim().length).toBeGreaterThan(0)
-      expect(typeof def.ko).toBe('string')
-      expect(def.ko.trim().length).toBeGreaterThan(0)
     }
     expect(new Set(WINDOW_REGISTRY.map((w) => w.id)).size).toBe(WINDOW_KEYS.length)
+    expect(new Set(WINDOW_REGISTRY.map((w) => w.en)).size).toBe(WINDOW_KEYS.length)
   })
 
   it('(e) every entry mounts the module that owns that window', async () => {

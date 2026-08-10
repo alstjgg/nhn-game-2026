@@ -77,14 +77,28 @@ const renderLines = (v: unknown): string =>
   Array.isArray(v) ? v.map(str).join("\n") : str(v);
 
 // NPCs render grouped by `side` when the payload marks it. The grouping is not
-// cosmetic: room-side characters kept stepping into the controller's seat and
+// cosmetic: room-side characters kept stepping into the agent's seat and
 // addressing the person on the line, and a prose rule alone did not stop it —
 // the model had to infer the two sides from names. Naming the sides in the
 // payload makes the boundary structural. The labels carry the rule, not just the
 // grouping; stating it in the distant constraint list left a residual leak.
+//
+// The labels moved with the fiction (prompts v0.5/v0.4): the agent is a field
+// officer at the site's crisis post, not a night controller in a regional
+// situation room. `room` is now "beside the agent", which is what every
+// room-side row in the shipped packs already meant — 우는다리 calls the place
+// 위기 대응실 in its own draft. The MECHANISM is untouched; only the name of the
+// place the two sides sit in.
+//
+// ⚠️ `room` is mechanism kept for packs that author it; the SHIPPING pack does
+// not. 멈춘회전문 has zero room-side rows, which is why narration v0.4 states
+// "요원 곁에는 아무도 없다" flatly rather than as a condition — a conditional
+// left a seat open beside the agent, and an open seat is where 기록관 came from.
+// A pack that authors room rows makes the prompt and this label disagree. If one
+// ever does, the prompt sentence has to come back as a condition.
 const SIDE_LABELS: Record<string, string> = {
-  line: "회선 너머 — 통제관에게만 말한다",
-  room: "상황실 안 — 서로에게만 말한다. 회선 저쪽에는 말을 걸지 않는다",
+  line: "회선 너머 — 요원에게만 말한다",
+  room: "요원 곁 — 서로에게만 말한다. 회선 저쪽에는 말을 걸지 않는다",
 };
 
 const renderNpcs = (v: unknown): string => {
@@ -113,6 +127,32 @@ const RENDERERS: Record<string, (v: unknown) => string> = {
   TIMELINE_EXCERPT: renderLines,
   // narration (call contracts §2)
   TIMELINE_TAIL: renderLines,
+  // The agent speaks only on gate beats. 멈춘회전문 has nineteen beats and at
+  // most three carry an utterance — one, on a run that hands nothing over. The
+  // other sixteen used to render a labelled section with NOTHING under it,
+  // directly above an instruction not to repeat what is not there. An
+  // instruction with no anchor is where invention starts. Say the silence out
+  // loud instead, the way SCENE_SYMPTOMS says "(변화 없음)".
+  //
+  // The sentinel names no role: it renders under v0.1–v0.3's `통제관의 발화`
+  // header too, and those versions are what live requests until the client's
+  // TEMPLATE_VERSION bump lands.
+  AGENT_UTTERANCE: (v) => (str(v).trim() ? str(v) : "(없음 — 이번 비트에 발화는 없었다)"),
+  // The same hole, one slot over, and it opened wide the day the engine started
+  // honouring `exposure.extra_condition` on the prompt as well as on the feed
+  // (#238). A beat whose every authored row belongs to a branch this run did
+  // not take now hands the model NOTHING here: 멈춘회전문 goes from 2 such beats
+  // to 15 of 31 on a no-intervention run. The label still printed, with an
+  // instruction under it not to re-narrate what was not there.
+  //
+  // Two of those 15 predate #238 — the beats carrying G2 and G3, which author
+  // no timeline row of their own, so an unavailable gate leaves them empty by
+  // the D3 rule itself. The hole was already reachable in production; the
+  // filter only made it the common case.
+  //
+  // `이번 비트` and not `이 분`, matching the sentinel above: `이 분` reads as
+  // "this person" before it reads as "this minute".
+  FIXED_NPC_ACTION: (v) => (str(v).trim() ? str(v) : "(없음 — 이번 비트에 기록된 사건은 없다)"),
   SCENE_SYMPTOMS: (v) =>
     Array.isArray(v) && v.length ? v.map(str).join("\n") : "(변화 없음)",
   PRESENT_NPCS: renderNpcs,

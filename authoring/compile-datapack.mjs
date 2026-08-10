@@ -77,6 +77,52 @@ function mdTable(sectionLines, expectedHeader, where) {
   });
 }
 
+/**
+ * The `집계 규칙:` fence in §8 — `Map<unit label, predicate[]>`.
+ *
+ * Shape (two-space unit, four-space rule):
+ *
+ *     ```
+ *     집계 규칙:
+ *       다리 위의 인파:
+ *         - cancel_requested => 0
+ *         - => 24
+ *     ```
+ *
+ * Not `parseCard`: that one keys on `^[a-z_]+:` and every unit label here is
+ * Korean prose. Deliberately dumb — it carries lines across verbatim and judges
+ * none of them. Whether a rule is well-formed, names something the pack
+ * declares, or ends in a fallback is lint's, through `src/shared/predicates.ts`
+ * (contract-datapack §3.6). Compile is extraction, not authoring.
+ */
+function readScoreRules(sectionLines) {
+  const open = sectionLines.findIndex((l) => l.trim() === '```');
+  if (open === -1) return { rules: new Map(), rest: sectionLines };
+  const close = sectionLines.findIndex((l, i) => i > open && l.trim() === '```');
+  if (close === -1) die('점수: 집계 규칙 fence is unterminated');
+  const body = sectionLines.slice(open + 1, close);
+  if (body[0]?.trim() !== '집계 규칙:') die(`점수: fence does not open with "집계 규칙:"`);
+
+  const rest = [...sectionLines.slice(0, open), ...sectionLines.slice(close + 1)];
+  const out = new Map();
+  let unit = null;
+  for (const line of body.slice(1)) {
+    if (!line.trim()) continue;
+    const rule = line.match(/^ {4}- (.+)$/);
+    if (rule) {
+      if (unit === null) die(`점수 집계 규칙: rule before any unit — "${line.trim()}"`);
+      out.get(unit).push(rule[1].trim());
+      continue;
+    }
+    const head = line.match(/^ {2}(\S.*):$/);
+    if (!head) die(`점수 집계 규칙: unparseable line "${line}"`);
+    unit = head[1].trim();
+    if (out.has(unit)) die(`점수 집계 규칙: 단위 "${unit}" appears twice`);
+    out.set(unit, []);
+  }
+  return { rules: out, rest };
+}
+
 // bullets with indentation: '- ' at depth 0, '  - ' at depth 1; continuation
 // lines (indented, no dash) join onto the previous bullet
 function parseBullets(sectionLines) {
@@ -188,9 +234,33 @@ const events = [];
       present: null,
     });
   }
+  // Ordering is by minute, not by string — a lexical compare cannot rank
+  // `21:04+` against `21:04` at all.
+  //
+  // The trailing `+` is a SUB-MINUTE weight: "immediately after that minute"
+  // (decision D7, `src/engine/beat/clock.ts`, and the same reading in
+  // `src/client/driver/clock.ts` `mm()`). It is NOT a next-day marker. This
+  // once treated it as one — `+1440` — to let a timeline cross midnight, which
+  // both invented a second meaning for the token and silenced a guard that was
+  // telling the truth: the RUNTIME clock is same-day only. `createClock`'s
+  // `isEnded()` is `minute >= endMinute`, so a band of 21:47 → 00:12 is ended
+  // at construction and the run never ticks. A pack that crosses midnight
+  // compiles into a game that cannot be played.
+  //
+  // So the refusal below is load-bearing, and it is the compile-time face of a
+  // runtime limit. Lift it only together with a day-aware clock.
+  const SUB_MINUTE = 0.5;
+  const minute = (t) => {
+    const [h, m] = t.replace('+', '').split(':').map(Number);
+    return h * 60 + m + (t.endsWith('+') ? SUB_MINUTE : 0);
+  };
   const keys = events.map((e) => e.time);
   for (let i = 1; i < keys.length; i++) {
-    if (keys[i] < keys[i - 1]) die(`timeline: rows out of clock order at ${keys[i]}`);
+    if (minute(keys[i]) < minute(keys[i - 1])) {
+      die(
+        `timeline: rows out of clock order at ${keys[i]} (after ${keys[i - 1]}) — the clock is same-day only, so a situation that would cross midnight has to be authored earlier in the evening`,
+      );
+    }
   }
 }
 
@@ -436,7 +506,7 @@ const gates = [];
     const prose = (ls) => ls.map((l) => l.trim()).filter(Boolean).map(stripBold).join(' ') || null;
     const card = parseCard(b.lines.slice(fenceOpen + 1, fenceClose), h[1]);
 
-    for (const req of ['gate', 'standard_form', 'question', 'stances', 'default_stance', 'key_conditions', 'key_examples', 'false_leads']) {
+    for (const req of ['gate', 'standard_form', 'question', 'stances', 'default_stance', 'false_leads']) {
       if (!(req in card)) die(`${h[1]}: card missing "${req}"`);
     }
     if (card.gate !== h[1]) die(`${h[1]}: card says gate ${card.gate}`);
@@ -467,8 +537,12 @@ const gates = [];
       question: card.question,
       stances: card.stances,
       default_stance: card.default_stance,
-      key_conditions: card.key_conditions,
-      key_examples: card.key_examples,
+      // Optional by design, and absent is the normal case — `schedule.ts` falls
+      // back to the default stance's own label, which is already the agent's
+      // 해라체. Authored only where that label reads badly spoken aloud.
+      ...(card.baseline_utterance ? { baseline_utterance: card.baseline_utterance } : {}),
+      ...(card.key_conditions ? { key_conditions: card.key_conditions } : {}),
+      ...(card.key_examples ? { key_examples: card.key_examples } : {}),
       predicted_shift: card.predicted_shift ?? null,
       false_leads: card.false_leads,
       buckets,
@@ -483,17 +557,52 @@ let score;
 {
   const secLines = sections['점수'];
   const rows = mdTable(secLines, ['단위', '무엇이 집계되나', '무개입 기준', '소급되는 갈림길'], '점수');
+  // The `집계 규칙:` block below the table, keyed by unit label. It lives in a
+  // fence rather than a sixth table column because a unit carries three or four
+  // ORDERED rules and the values already contain every separator a cell could
+  // use (`"단순 추락" 유지 / 재조사 개시`). The table says what is counted; the
+  // block says how. Absent ⇒ every unit compiles with `predicates: []`, which
+  // is the pre-hardening state lint has always FLAGged (F3).
+  // `rest` is the section WITHOUT the fence: the block's own `    - ` lines are
+  // indented bullets to `parseBullets`, which reads the baseline summary and the
+  // variance notes from the same section and dies on a bullet with no parent.
+  const { rules: ruleBlock, rest: prose } = readScoreRules(secLines);
+
   const units = rows.map(([label, tallies, baseline, gatesCell], i) => {
     const attributed_gates = [...new Set([...gatesCell.matchAll(/G(\d+)/g)].map((m) => `G${m[1]}`))];
     if (!attributed_gates.length) die(`점수 단위 "${label}": 소급되는 갈림길 칸에 GN 표기가 없다`);
-    return { id: `u${i + 1}`, label, tallies, baseline, attributed_gates, predicates: [] };
+    const predicates = ruleBlock.get(label) ?? [];
+    ruleBlock.delete(label);
+    return { id: `u${i + 1}`, label, tallies, baseline, attributed_gates, predicates };
   });
-  const bl = parseBullets(secLines).map((b) => stripBold(b.text));
+  // A rule block naming a unit the table does not have is a typo that would
+  // otherwise vanish: the unit keeps `predicates: []`, lint FLAGs it as merely
+  // un-hardened, and the rules the author wrote go nowhere. Compile is
+  // extraction, and extraction that drops its input is a lie.
+  if (ruleBlock.size > 0) {
+    die(`점수 집계 규칙: 표에 없는 단위 ${[...ruleBlock.keys()].map((k) => JSON.stringify(k)).join(', ')}`);
+  }
+  const bl = parseBullets(prose).map((b) => stripBold(b.text));
   const find = (label) => {
     const hit = bl.find((t) => t.startsWith(label));
     if (!hit) die(`점수: "- **${label}** …" 글머리가 없다`);
     return hit.slice(label.length).trim();
   };
+  // `score.json` has three slots and no fourth. A bullet under a label none of
+  // them read compiles to nothing at all — the sentences, and any number in
+  // them, stay in the draft while the pack the game and the tests read goes on
+  // without them. Same rule as the rule block above: extraction that drops its
+  // input is a lie. A fourth idea belongs inside one of the three.
+  const SCORE_LABELS = [
+    '무개입 기준 점수(자연 기준):',
+    '못 막은 런들끼리도 점수가 다르다:',
+    '막은 런에도 치른 값이 남는다:',
+  ];
+  for (const text of bl) {
+    if (!SCORE_LABELS.some((label) => text.startsWith(label))) {
+      die(`점수: 팩에 실리지 않는 글머리 — "${text.slice(0, 30)}…"`);
+    }
+  }
   score = {
     units,
     baseline_summary: find('무개입 기준 점수(자연 기준):') ? `무개입 기준 점수(자연 기준): ${find('무개입 기준 점수(자연 기준):')}` : null,
@@ -571,6 +680,17 @@ writeJSON('truths.json', { truths });
 writeJSON('score.json', score);
 // authored via the hardening overlay; empty skeleton until then (lint flags it)
 writeJSON('symptoms.json', symptoms);
+// The overlay itself, when the pack has never been hardened. `{}` is the
+// schema's own minimum ("최소 오버레이는 빈 객체다"), and lint REQUIRES the file
+// — `hardening` is in its FILES list, so a missing one is an ERROR. Without
+// this line a freshly compiled pack always fails the factory's machine gate on
+// something the draft cannot fix, and §6-5's exit condition (lint ERROR 0) is
+// unreachable until a human hand-writes the file. Never overwritten: a hardened
+// pack keeps everything it has, which is what makes recompiling idempotent.
+if (!existsSync(hardeningPath)) {
+  writeJSON('hardening.json', {});
+  notes.push('hardening.json 없음 — 빈 오버레이를 생성했다 (하드닝 전 기본 상태)');
+}
 copyFileSync(resolve(draftPath), join(outDir, 'draft.md'));
 
 console.log(`✓ compiled ${basename(draftPath)} → ${outDir}`);

@@ -93,7 +93,8 @@ const judgment = {
           },
           utterance: {
             type: 'string',
-            description: '실제로 입에서 나가는 말. 한두 문장.',
+            description:
+              '실제로 회선에 나가는 무전. 한두 문장. 사무적으로, 짧게 끊고 해라체로 끝맺는다 — `출발했다.`는 맞고 `출발했습니다.`(존댓말)도 `출발했어.`(해체)도 틀리다. 문장 조각도 좋다.',
           },
         },
         required: [
@@ -235,6 +236,12 @@ const narration = {
 
   buildTool(suite) {
     if (npcIds(suite).length < 1) throw new Error('narration: slots.PRESENT_NPCS needs >= 1 npc');
+    // A QUIET beat — nothing authored happened in this minute on this run.
+    // `proxy/src/calls.ts` carries the account and the measurement; mirrored
+    // here because `prompt-parity.test.ts` compares the built tool as well as
+    // the two messages, and a schema that drifts makes the mechanism numbers
+    // stop describing the deployed system silently.
+    const quiet = !String(suite.slots?.FIXED_NPC_ACTION ?? '').trim();
     return {
       name: 'narration',
       description: '이 비트의 반응을 기록한다. 정확히 한 번만 호출한다.',
@@ -244,14 +251,23 @@ const narration = {
           timeline_entries: {
             type: 'array',
             items: { type: 'string' },
-            description:
-              '고정 사건에 뒤따르는 반응과 장면의 결. 항목당 정확히 한 문장. 이미 타임라인에 있는 것(고정 사건·통제관 발화)은 다시 쓰지 않는다.',
+            description: quiet
+              ? '이번 비트에는 기록된 사건이 없다. 앞 비트를 이어 붙여 채우지 않는다 — 쓸 것이 없으면 빈 배열이 정답이다. 그래도 쓸 것이 있다면(장면의 변화가 무언가를 말하고 있다면) 한 항목은 한 문장이고, 현장에서 남기는 짧은 기록이라 해라체로 끝맺는다.'
+              : '고정 사건에 뒤따르는 반응과 장면의 결. 2~3개. 한 항목은 한 문장이다 — 마침표는 항목의 맨 끝에 하나뿐이고, 항목 안에서 두 문장을 잇지 않는다. 이미 타임라인에 있는 것(고정 사건·요원 발화)은 다시 쓰지 않는다. 현장에서 남기는 짧은 기록이다 — 해라체로 끝맺는다.',
           },
+          // `maxItems: 1` is the ONE mechanical half of the misattribution fix
+          // (handoff §3.3). The rest is prompt wording, deliberately: the player
+          // ruled that a refused beat is worse than an imperfect one, so there
+          // is no validator and no drop reason for a wrong-but-legal speaker.
+          // The cap only stops OVERPRODUCTION — three lines in one beat, which
+          // is what put the agent's own questions in 표기웅's mouth — by making
+          // the schema refuse it rather than truncating after the fact.
           npc_lines: {
             type: 'array',
             items: { type: 'string' },
+            maxItems: 1,
             description:
-              '이 비트의 대사. 각 항목은 "인물id: 대사" 형식. [현장의 인물]에 있는 id만 쓴다. 대사가 없으면 빈 배열.',
+              '이 비트의 대사. 많아야 한 줄이고, 말하는 사람도 한 명뿐이다. 항목은 "인물id: 대사" 형식이며 [현장의 인물]에 있는 id만 쓴다. 되묻지 않는다 — 물음이거나 요원의 대답을 요구하는 말은 쓸 수 없다. 대사가 없는 비트가 정상이다. 없으면 빈 배열.',
           },
         },
         required: ['timeline_entries', 'npc_lines'],
@@ -263,8 +279,13 @@ const narration = {
     const problems = [];
     if (!input || typeof input !== 'object') return ['response was not an object'];
 
+    // A quiet beat may legally come back with nothing — the same predicate the
+    // schema above is built from. Kept in step with `proxy/src/calls.ts`: a
+    // validator that refuses what its own schema permits turns an obedient
+    // model into a retry, and the retry count is what this file is measured on.
+    const quiet = !String(suite.slots?.FIXED_NPC_ACTION ?? '').trim();
     if (!Array.isArray(input.timeline_entries)) problems.push('timeline_entries not an array');
-    else if (!input.timeline_entries.length) problems.push('timeline_entries empty');
+    else if (!input.timeline_entries.length && !quiet) problems.push('timeline_entries empty');
     else if (input.timeline_entries.some((e) => !String(e ?? '').trim()))
       problems.push('timeline_entries has an empty entry');
 
@@ -326,6 +347,8 @@ const narration = {
 // Contract: docs/contract-calls.md §3. 사실/판단 분리는 2안(스키마 확장,
 // 07-31 윤석): facts = 객관로그 행, report_body = 자필 보고서. 실용성이 없으면
 // 폐기하고 3안(엔진 로그)으로 격하 — 스모크의 drop_condition이 그 게이트다.
+// (그 줄은 분리를 정한 시점의 기록이다. report_body는 prompts reporter v0.3에서
+// 무전 상황 보고로 바뀌었고, 아래 필드 설명이 현행이다.)
 //
 // Field order is load-bearing twice over: facts-first is the extraction anchor
 // (본문 오염 감소 가설), and report_body-LAST is what keeps the SSE option open
@@ -353,12 +376,12 @@ const reporter = {
             type: 'array',
             items: { type: 'string' },
             description:
-              '객관 기록. 이 라운드에 실제로 일어났거나 관찰된 것만, 한 항목에 한 문장. 생각·해석·평가 금지.',
+              '객관 기록. 이 라운드에 실제로 일어났거나 관찰된 것만, 한 항목에 한 문장. 생각·해석·평가 금지. 업무 격식 존댓말로 쓴다.',
           },
           report_body: {
             type: 'string',
             description:
-              '자필 보고서 (markdown). 생각과 판단의 자리 — 무엇이 걸렸고, 왜 그렇게 판단했는지.',
+              '무전 상황 보고 (markdown). 교신 말미에 본부로 보내는 짧은 구두 보고 — 무엇이 걸렸고, 왜 그렇게 판단했는지. 업무 격식 존댓말로 쓴다.',
           },
         },
         required: ['facts', 'report_body'],
@@ -394,7 +417,7 @@ const reporter = {
   dryRunPayload() {
     return {
       facts: ['(dry-run) 객관 기록 행 자리.'],
-      report_body: '(dry-run) 자필 보고서 본문 자리.',
+      report_body: '(dry-run) 무전 상황 보고 본문 자리.',
     };
   },
 };

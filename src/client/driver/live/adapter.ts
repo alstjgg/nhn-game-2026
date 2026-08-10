@@ -57,6 +57,28 @@ export type BoundRun = {
   meta: ViewEvent
 }
 
+/**
+ * Every sentence a stream has shown, newest text winning, in first-seen order.
+ *
+ * Pure and exported so it can be tested without driving an adapter: the stub in
+ * `tests/driver/live-adapter-run-transition.test.ts` never emits, and a rule
+ * this small does not need a run to prove. The rule itself is `blocks.ts`'s own
+ * `seen` tier restated — a feed line carrying a `sentence_id`, and a report's
+ * facts and body — restated rather than shared because the store exposes no way
+ * to enumerate that tier.
+ */
+export function shownFrom(events: readonly ViewEvent[]): Block[] {
+  const byId = new Map<string, string>()
+  for (const event of events) {
+    if (event.type === 'feed') {
+      if (event.line.sentence_id !== undefined) byId.set(event.line.sentence_id, event.line.text)
+    } else if (event.type === 'report') {
+      for (const sentence of [...event.facts, ...event.report_body]) byId.set(sentence.id, sentence.text)
+    }
+  }
+  return [...byId].map(([id, text]) => ({ id, text }))
+}
+
 /** What the closing run hands the run loop so the next one can inherit it. */
 export type RunClose = {
   /** `"HH:MM"` the desk reached — e8 deepens timeline exposure from this. */
@@ -68,6 +90,15 @@ export type RunClose = {
    * would carry material the player looked at and rejected.
    */
   carried: Block[]
+  /**
+   * Every sentence the desk has shown since boot, across every run — a SUPERSET
+   * of `carried` and a different job. `carried` is the file the next day flies;
+   * this is only what the next day is allowed to MINE, so that a report the
+   * operator can still read on the archive rail is a report they can still mine
+   * from (민서, 08-08). Seeded into the new run's `seen` tier and never into
+   * `mined`, so nothing here reaches Call 1 unless the operator deploys it.
+   */
+  shown: Block[]
 }
 
 export type LiveAdapterDeps = {
@@ -131,6 +162,24 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
   let finished = false
   let started = false
   let rebuilding = false
+  /**
+   * The BUILD hold — `BUILD → (deploy) RUN` (spec-client §5.1).
+   *
+   * The desk opens with `start()` + `advance(0)` (`shell/boot.ts` step 5) so the
+   * run's `meta` lands on the chrome at boot. Unheld, that opening release also
+   * carried the run: `release()` let out everything stamped at the opening
+   * minute and `kick()` — seeing nothing pending and the clock level with the
+   * frontier — stepped the first beat. So the LIVE FEED printed the case's
+   * opening before the operator had committed anything, and, worse, Call 1 went
+   * to the model with `membrane.deployed()` empty: the first gate was judged
+   * with no agent file at all, and the file the operator then sent in only ever
+   * reached the beats after it.
+   *
+   * Both halves are held here. Nothing STAMPED is released and no beat is
+   * stepped until a `deploy` op passes through — the run's `meta` still goes out
+   * at boot, because it describes the day rather than happening inside it.
+   */
+  let armed = false
   /** Whether the run currently bound has already been handed to the run loop. */
   let closed = false
 
@@ -175,7 +224,10 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
         held.push(item)
         continue
       }
-      if (!all && item.minute !== null && item.minute > clock.minute) {
+      // A STAMPED event is the run happening; it waits for the clock, and until
+      // the file is committed it waits for that too (see `armed`). `all` is
+      // `drain()`, which overrides both on the same terms.
+      if (!all && item.minute !== null && (!armed || item.minute > clock.minute)) {
         releasing = false
         held.push(item)
         continue
@@ -192,7 +244,7 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
    * frontier would let a paused desk run the whole run in the background.
    */
   function kick(): void {
-    if (!started || stepping || finished || rebuilding) return
+    if (!started || !armed || stepping || finished || rebuilding) return
     if (pending.length > 0 || clock.minute < frontier) return
     stepping = true
     void bound.driver
@@ -245,7 +297,11 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
       const block = store.get(id)
       if (block !== undefined) carried.push({ id, text: block.text })
     }
-    return { reachedClock: clock.at(), carried }
+    // Every sentence the desk has EVER shown, derived from the event log rather
+    // than from any store: `seen` is adapter-scoped and never cleared, so it
+    // spans runs, while each run's block store is built fresh and knows only
+    // its own day.
+    return { reachedClock: clock.at(), carried, shown: shownFrom(seen) }
   }
 
   /** Opens the next day underneath the listeners that are already bound. */
@@ -253,6 +309,13 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
     rebuilding = true
     const rate: ClockRate = clock.rate
     const close = closingState()
+    // H1 — the operator's own seating, captured BEFORE the mirror is
+    // reassigned below. `close.carried` is built from `deployed`, which is
+    // sorted, so re-indexing it from 0 moves cards to seats nobody chose.
+    const carriedIds = new Set(close.carried.map((block) => block.id))
+    const seats: [number, string][] = [...slots.entries()]
+      .filter(([, id]) => carriedIds.has(id))
+      .sort((left, right) => left[0] - right[0])
     let opened: BoundRun | null = null
     try {
       opened = await deps.next(close)
@@ -276,15 +339,39 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
     // (`run-loop.ts`, R3 on `run-loop.ts:115`), reproduced with the halves the
     // other way round.
     //
-    // `slots` clears rather than carries because a new day has not been built
-    // yet — which is what `SlotBoard.unlock()` assumes on the run change, and
-    // why the fixture loop does not carry `deployed` either.
+    // W4 — the day runs the file the operator committed. `close.carried` IS
+    // that file (`closingState()` reads `deployed`), so it re-seats in its own
+    // order and re-arms as the new run's deployed set. Clearing both was right
+    // while the operator deployed INSIDE the new day; under one-press it would
+    // hand the composer an empty file every single day.
     mined = close.carried.map((block) => block.id)
-    slots = new Map()
-    deployed = []
+    slots = new Map(seats)
+    deployed = close.carried.map((block) => block.id).sort()
     clock = createClock({ start: opened.start, end: opened.end, rate })
     frontier = mm(opened.start)
     bind(opened)
+    // H1 — the three assignments above are a MIRROR, and a mirror is not a
+    // membrane. `createMembrane` is per bound run (`driver/live-driver.ts`), so
+    // the day that just opened holds an empty seat map and an empty deployed
+    // set. Left that way `unslot` answers `empty_slot` and a carried sentence
+    // can never be released, and `membrane.deployed()` — what Call 1 carries
+    // (`live-driver.ts`, `composer.judgment`) — is empty. Since x14 that is no
+    // longer merely "the committed file does not reach the model": an empty
+    // deployed set means Call 1 is NOT MADE, so a day that lost its mirror
+    // would take every gate's authored default and the operator's file would
+    // have bought them nothing at all. The fixture loop has always replayed the
+    // file as real ops (`fixtures/run-loop.ts` `carry()`).
+    //
+    // Submitted before `release()`, because `kick()` may step into Call 1 —
+    // and under x14 that ordering is decisive rather than merely tidy. A deploy
+    // that landed one step late would find the first gate already resolved to
+    // its baseline, with no call to re-run and nothing to undo it.
+    for (const [seat, id] of seats) opened.driver.submit({ op: 'slot', block_id: id, slot: seat })
+    opened.driver.submit({ op: 'deploy', blocks: [...deployed] })
+    // That submit IS the new day's commit — under one press (W4) the gesture
+    // that opened this day committed its file first — so the day opens armed
+    // and the BUILD hold above never re-arms mid-sitting.
+    armed = true
     release()
     kick()
   }
@@ -356,6 +443,11 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
     },
 
     drain() {
+      // The BUILD hold comes off here on the same terms the clock does: this is
+      // the DEV/TEST override — reachable only through the `__shell` handle,
+      // which inv 11 keeps out of the player build — and a lane that drains a
+      // day it never deployed still means to see the whole day.
+      armed = true
       // Everything already produced, regardless of the clock. It cannot pull
       // the REST of the run forward the way the fixture's can — those events do
       // not exist yet, and manufacturing them would mean calling a model — so
@@ -376,7 +468,15 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
       if (op.op === 'mine' && !mined.includes(op.sentence_id)) mined = [...mined, op.sentence_id]
       if (op.op === 'slot') slots.set(op.slot, op.block_id)
       if (op.op === 'unslot') slots.delete(op.slot)
-      if (op.op === 'deploy') deployed = [...new Set(op.blocks)].sort()
+      if (op.op === 'deploy') {
+        deployed = [...new Set(op.blocks)].sort()
+        // The BUILD→RUN edge. Stepped straight away rather than on the next
+        // frame, because the first beat is a model call and the day the
+        // operator just committed should start thinking on the press.
+        armed = true
+        release()
+        kick()
+      }
       if (op.op === 'new_run') {
         // Refused BEFORE the ack, never after. `rebuild()` settling on `null`
         // would leave the desk already told `ok`, and `tally.ts` reads that

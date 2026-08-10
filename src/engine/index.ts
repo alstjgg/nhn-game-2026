@@ -49,14 +49,17 @@ import type {
   Stance,
 } from '../shared/contracts.ts'
 import type { Symptoms, Temperament } from '../shared/datapack.ts'
+import type { PredicateState } from '../shared/predicates.ts'
 
-import { buildSchedule, createBeatDriver } from './beat/index.ts'
+import { buildSchedule, createBeatDriver, eventExposed, parseClock } from './beat/index.ts'
 import type {
   Beat,
   BeatCursor,
   BeatPack,
   DeltaEntry,
   RoundAssemblerPort,
+  ScheduledGate,
+  StanceOrigin,
   StateCorePort,
 } from './beat/index.ts'
 import { applyEffects, initState, renderSymptoms as renderBeatSymptoms } from './state/index.ts'
@@ -145,8 +148,24 @@ export interface Engine {
  */
 export interface EngineHandle extends Engine {
   current(): BeatCursor
-  /** `null` ⇒ the engine substitutes this gate's authored `default_stance`. */
-  submitStance(response: JudgmentResponse | null): void
+  /**
+   * `null` ⇒ the engine substitutes this gate's authored `default_stance`.
+   * Returns the stance it resolved — chosen or substituted — in the author's
+   * words (U5.2b, §5.2 `judged`); `null` when it carries no `desc`.
+   */
+  submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null
+  /**
+   * This gate resolves to its authored `default_stance` WITHOUT Call 1 being
+   * made, because the agent was handed nothing to judge with.
+   *
+   * Same return as `submitStance`, and deliberately not a flag on it: `null`
+   * there means a call failed, and the two must stay tellable apart in the run
+   * record (`BASELINE_CALL1_CAUSE`). It takes no argument because the line the
+   * agent speaks is the PACK's — the caller knows the handover was empty and
+   * nothing else, and a client that could pass an utterance here would be a
+   * client that could put words in the agent's mouth.
+   */
+  submitBaseline(): { stance_id: string; desc: string } | null
   applyBeatEffects(): void
   /** `null` ⇒ no `n`/`q` line is minted for this beat. */
   applyNarration(response: NarrationResponse | null): void
@@ -156,11 +175,22 @@ export interface EngineHandle extends Engine {
   advance(): boolean
   /** This beat's delta journal so far, in application order. Resets on `advance()`. */
   journal(): DeltaEntry[]
+  /**
+   * Every scalar and flag the run holds right now, flattened.
+   *
+   * The state core has answered this since e3 (`StateCorePort.snapshot()`); it
+   * was simply never on the handle, so nothing outside the beat driver could
+   * ask. `src/shared/predicates.ts` is what wants it — a predicate reads the
+   * run's state and the run's state is here — and reading is all it can do:
+   * the returned object is a fresh copy, so a caller cannot write state through
+   * the accessor that was added to observe it.
+   */
+  snapshot(): PredicateState
 }
 
 /** spec-engine §5's substitute report body — used when Call 3 never lands. */
 export const SUBSTITUTE_REPORT_BODY =
-  '보고를 생성하지 못했다. 이 라운드의 기록은 객관 로그로 남는다.'
+  '무전이 끊겨 보고가 도착하지 않았다. 요원은 홀로 판단했다. 이 라운드는 현장 기록으로만 남는다.'
 
 /** The state core, as the beat driver's `StateCorePort` sees it, over `./state`'s pure functions. */
 function createStateCore(
@@ -236,8 +266,59 @@ export function createEngine(deps: EngineDeps): EngineHandle {
     return beat
   }
 
+  /**
+   * The FEED's half of the exposure question — the rule itself is
+   * `eventExposed` (`beat/driver.ts`), which the beat driver reads for
+   * `FIXED_NPC_ACTION` and `PRESENT_NPCS`. It used to be written out here, and
+   * being written out here is how it came to be read on one surface only: the
+   * paper printed the branch that happened while the prompt was handed every
+   * branch the pack authored, including the endings this run did not reach.
+   *
+   * ── Why here, and why once ────────────────────────────────────────────────
+   *
+   * `recordOf` memoises per beat and is first called from `applyBeatEffects()`,
+   * after `beats.applyBeatEffects()` — so the state this reads already carries
+   * this beat's own effects, and a later `recordOf` for narration returns the
+   * same record rather than re-deciding against a state that has moved on. The
+   * driver freezes its own copy at the tail of that same call, which is what
+   * makes the two answers the same answer rather than two agreeing ones.
+   */
   function scriptLinesOf(beat: Beat): ScriptLine[] {
-    return beat.events.map((event) => ({ id: event.id, text: event.text }))
+    return beat.events
+      .filter((event) => eventExposed(event.exposure?.extra_condition, core.port))
+      .map((event) => ({ id: event.id, text: event.text }))
+  }
+
+  /**
+   * A beat's lines drip across its span instead of bursting at its opening
+   * minute: the adapter releases each stamp as the sim clock reaches it, so
+   * spread stamps ARE the feed's timing. Successive lines advance by a stride
+   * of sim minutes, capped one minute short of the next beat so no line
+   * outruns the beat that follows. A beat with no successor — or an authored
+   * `+` stamp, whose tie-break a whole-minute reprint would drop — keeps its
+   * authored clock on every line. Feel value, tuned in play.
+   */
+  const STAMP_STRIDE_MIN = 5
+
+  let stampBeat = -1
+  let stampMinute = 0
+  let stampCap = -1
+
+  function nextStamp(beat: Beat): string {
+    if (stampBeat !== beat.index) {
+      stampBeat = beat.index
+      const next = schedule[beat.index + 1]
+      if (next === undefined || beat.clock.endsWith('+')) {
+        stampCap = -1
+      } else {
+        stampMinute = parseClock(beat.clock)
+        stampCap = Math.max(stampMinute, Math.ceil(parseClock(next.clock)) - 1)
+      }
+    }
+    if (stampCap < 0) return beat.clock
+    const minute = stampMinute
+    stampMinute = Math.min(stampMinute + STAMP_STRIDE_MIN, stampCap)
+    return `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`
   }
 
   function recordOf(beat: Beat): BeatRecord {
@@ -250,6 +331,43 @@ export function createEngine(deps: EngineDeps): EngineHandle {
     }
     records[beat.index] = fresh
     return fresh
+  }
+
+  /** This beat's gate — the same refusal both ingest points owe their caller. */
+  function gateNowOrThrow(): ScheduledGate & { roundIndex: number | null } {
+    const beat = beatNow()
+    if (beat.gate === null) throw new Error(`beat ${beat.index} carries no gate`)
+    return { ...beat.gate, roundIndex: beat.roundIndex }
+  }
+
+  /**
+   * The one body behind `submitStance` and `submitBaseline`.
+   *
+   * Three things happen here and they happen in one place on purpose: the
+   * round's utterance is remembered for Call 3, the beat driver is told where
+   * the stance came from, and the author's own words for it are handed back.
+   * The three paths differ ONLY in what they pass in — which is the whole
+   * claim, and a second copy of this body would be a way for one of them to
+   * quietly stop being true.
+   */
+  function resolveGate(
+    gate: ScheduledGate & { roundIndex: number | null },
+    stance: string,
+    spoken: string,
+    innerNote: string,
+    origin: StanceOrigin,
+  ): { stance_id: string; desc: string } | null {
+    utterance = spoken
+    if (gate.roundIndex !== null) {
+      roundGates.set(gate.roundIndex, { utterance, inner_note: innerNote })
+    }
+    // The journal is the only place a substituted stance is distinguishable
+    // from a chosen one after the fact — and, since x14, the only place the two
+    // ways of substituting one are distinguishable from each other (§2.1).
+    beats.submitStance({ stance, utterance, origin })
+    // U5.2b — report what was judged, in the author's words (§5.2 `judged`).
+    const judged = gate.stances.find((entry) => entry.id === stance)
+    return judged?.desc !== undefined ? { stance_id: judged.id, desc: judged.desc } : null
   }
 
   return {
@@ -265,23 +383,29 @@ export function createEngine(deps: EngineDeps): EngineHandle {
 
     journal: (): DeltaEntry[] => core.port.journal(),
 
-    submitStance(response: JudgmentResponse | null): void {
-      const beat = beatNow()
-      if (beat.gate === null) throw new Error(`beat ${beat.index} carries no gate`)
+    snapshot: (): PredicateState => core.port.snapshot(),
+
+    submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null {
+      const gate = gateNowOrThrow()
       // §5 recovery: the authored default stance, which `gateView()` does not
       // expose — this is why substituting it has to be the engine's move.
-      const fallback = response === null
-      const stance = fallback ? beat.gate.defaultStance : response.stance
-      utterance = fallback ? '' : response.utterance
-      if (beat.roundIndex !== null) {
-        roundGates.set(beat.roundIndex, {
-          utterance,
-          inner_note: fallback ? '' : response.inner_note,
-        })
-      }
-      // The journal is the only place a substituted stance is distinguishable
-      // from a chosen one after the fact (§2.1's `fallback:call1`).
-      beats.submitStance({ stance, utterance, fallback })
+      return response === null
+        ? resolveGate(gate, gate.defaultStance, '', '', 'fallback')
+        : resolveGate(gate, response.stance, response.utterance, response.inner_note, 'model')
+    },
+
+    submitBaseline(): { stance_id: string; desc: string } | null {
+      const gate = gateNowOrThrow()
+      // The SAME authored default as the fallback path above, arrived at for
+      // the opposite reason — nothing was handed over, so there was nothing to
+      // ask about. `baselineUtterance` is never empty (`schedule.ts`), so the
+      // agent still speaks here: an unshaped agent taking the baseline is the
+      // design, an agent that goes silent reads as a broken one.
+      //
+      // No `inner_note`. That slot is the agent's private deliberation and no
+      // deliberation happened — Call 1 was not made. An authored line standing
+      // in for one would be the engine inventing the agent's interior.
+      return resolveGate(gate, gate.defaultStance, gate.baselineUtterance, '', 'baseline')
     },
 
     applyBeatEffects(): void {
@@ -308,7 +432,7 @@ export function createEngine(deps: EngineDeps): EngineHandle {
         },
         ids,
       )
-      lines = [...lines, ...built.lines]
+      lines = [...lines, ...built.lines.map((line) => ({ ...line, clock: nextStamp(beat) }))]
     },
 
     applyNarration(response: NarrationResponse | null): void {
@@ -320,13 +444,13 @@ export function createEngine(deps: EngineDeps): EngineHandle {
           npc_lines: response.npc_lines,
         }
         for (const entry of response.timeline_entries) {
-          lines.push({ kind: 'event', clock: beat.clock, text: entry, sentence_id: ids.next('n') })
+          lines.push({ kind: 'event', clock: nextStamp(beat), text: entry, sentence_id: ids.next('n') })
         }
         const { kept } = classifyNpcLines(response.npc_lines, { present, utterance })
         for (const npcLine of kept) {
           lines.push({
             kind: 'npc',
-            clock: beat.clock,
+            clock: nextStamp(beat),
             speaker: npcLine.speakerName,
             text: npcLine.text,
             sentence_id: ids.next('q'),

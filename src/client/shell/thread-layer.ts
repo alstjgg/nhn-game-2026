@@ -32,7 +32,6 @@ const SOURCE_ATTR = 'data-sentence-id'
 
 const WIN = '.win'
 const WIN_BODY = '.win-body'
-const TALLY = '#w-tally'
 const HIDDEN = 'hidden'
 const COLLAPSED = 'collapsed'
 
@@ -127,12 +126,11 @@ export function createThreadLayer(options: ThreadLayerOptions): ThreadLayer {
     const slotAnchors = anchorsFor(root, SLOT_SELECTORS, SLOT_ATTR, cache)
     const wanted = new Set(slotAnchors.map((a) => a.id))
     const sourceAnchors = anchorsFor(root, SOURCE_SELECTORS, SOURCE_ATTR, cache, (id) => wanted.has(id))
-    const tally = root.querySelector(TALLY)
     return planThreads({
       slotAnchors,
       sourceAnchors,
       slotted: options.slotted === undefined ? undefined : Array.from(options.slotted()),
-      tallyOpen: tally !== null && !tally.classList.contains(HIDDEN),
+      tallyOpen: false, // the TALLY sheet is gone (U3) — field ledgered for u8
     })
   }
 

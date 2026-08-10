@@ -9,35 +9,51 @@ import type { FixtureDriver } from '../driver/index.ts'
 import type { WindowKey } from './layout.ts'
 import { mount as mountLiveFeed } from '../windows/live-feed.ts'
 import { mount as mountAgentFile } from '../windows/agent-file.ts'
-import { mount as mountBlockStore } from '../windows/block-store.ts'
 import { mount as mountReports } from '../windows/reports.ts'
-import { mount as mountTally } from '../windows/tally.ts'
 
 export interface WindowDef {
   /** Desk key — `data-win`, taskbar order, applyLayout key. */
   key: WindowKey
   /** DOM id, always `w-<key>`. */
   id: string
-  /** Title-bar and taskbar name. */
+  /**
+   * Title-bar and taskbar name — and, since x5, the ONLY name either carries.
+   *
+   * The reference gave every window a short Korean name for the taskbar (`ko`)
+   * and a long Korean subtitle for the title bar (`sub`): `무전` / `실시간 무전
+   * · 열람 전용`, `요원 파일` / `요원 파일 — 프롬프트 편성`, `부검` / `부검 —
+   * 시행 기록`. Both are gone (민서, 08-08). Three windows on one desk do not
+   * need six names for three things, and the subtitles were the desk explaining
+   * itself to a reader who is already looking at the window — the LIVE FEED
+   * announcing it is 열람 전용 above a pane with nothing to press in it.
+   *
+   * x10 (민서, 08-10) finished that cut on the third label. `tab` — the
+   * two-letter code the frame printed on a trapezoid above the title bar, `LF` /
+   * `AF` / `RP` — is gone with `.win-tab` itself: 제목 위의 RP · LF · AF 태그를
+   * 없애고, 창 위치는 그대로 둘 것. It was never read anywhere else (the taskbar
+   * chips print `en`), so once the element went the field was a REQUIRED label on
+   * the registry that nothing rendered, which is worse than an absent one — a
+   * fourth window would have had to invent a code for a surface that does not
+   * exist. `en` is now the one and only name a window carries.
+   */
   en: string
-  /** The short Korean name the taskbar carries (reference: `WINS[].ko`). */
-  ko: string
-  /** The long Korean subtitle the title bar carries. */
-  sub: string
-  /** The file-tab code above the frame. */
-  tab: string
   /** The paper stock this window's body is printed on (u1's `paper.css`). */
   stock: string
   /** Whether the window carries the live dot (LIVE FEED does). */
   live?: boolean
+  /**
+   * A fixed sheet: no corner grip, no Shift+arrow resize. Absent means
+   * resizable, so only the window that opts out says so. The AGENT FILE does —
+   * its two pages are sized to its body, so any shrink clips the page-turn
+   * control off the window and takes page 2 with it (C9).
+   */
+  resizable?: boolean
   /** The window's own contents — a stub until its unit lands. */
   mount: (host: HTMLElement, driver: FixtureDriver) => void
 }
 
 export const WINDOW_REGISTRY: readonly WindowDef[] = [
-  { key: 'feed', id: 'w-feed', en: 'LIVE FEED', ko: '무전', sub: '실시간 무전 · 열람 전용', tab: 'LF', stock: 'fanfold', live: true, mount: mountLiveFeed },
-  { key: 'file', id: 'w-file', en: 'AGENT FILE', ko: '요원 파일', sub: '요원 파일 — 프롬프트 편성', tab: 'AF', stock: 'paper kraft', mount: mountAgentFile },
-  { key: 'store', id: 'w-store', en: 'BLOCK STORE', ko: '보관함', sub: '보관함 — 채굴한 문장', tab: 'BS', stock: 'paper card-stock', mount: mountBlockStore },
-  { key: 'rep', id: 'w-rep', en: 'REPORTS', ko: '부검', sub: '부검 — 시행 기록', tab: 'RP', stock: 'paper bond', mount: mountReports },
-  { key: 'tally', id: 'w-tally', en: 'TALLY', ko: '집계', sub: '집계 — 시행 결과', tab: 'TL', stock: 'paper ledger', mount: mountTally },
+  { key: 'feed', id: 'w-feed', en: 'LIVE FEED', stock: 'fanfold', live: true, mount: mountLiveFeed },
+  { key: 'file', id: 'w-file', en: 'AGENT FILE', stock: 'paper kraft', resizable: false, mount: mountAgentFile },
+  { key: 'rep', id: 'w-rep', en: 'REPORTS', stock: 'paper bond', mount: mountReports },
 ]

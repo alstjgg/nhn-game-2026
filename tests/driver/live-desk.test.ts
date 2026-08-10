@@ -29,11 +29,11 @@ import type { ReportGuidance } from '../../src/shared/report-guidance.ts'
 import { createLiveRunDriver } from '../../src/client/driver/live/index.ts'
 import { registerAnimation, thawAnimations } from '../../src/client/driver/test-hooks.ts'
 import { mm } from '../../src/client/driver/clock.ts'
+import { problems } from '../../src/shared/predicates.ts'
 import type { StorageLike } from '../../src/runloop/index.ts'
 import type { FeedLine, ViewEvent } from '../../src/shared/view-driver.ts'
 import { displayStamp } from '../../src/client/driver/clock.ts'
 import { feedLineModel } from '../../src/client/components/run-feed.ts'
-import { waitingModel } from '../../src/client/components/waiting-marker.ts'
 import type { FixtureDriver } from '../../src/client/driver/fixture-driver.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
@@ -52,6 +52,9 @@ const PACK: LivePack = {
   characters: readJson(`data/scenario/${SLUG}/characters.json`),
   temperament: readJson(`data/scenario/${SLUG}/temperament.json`),
   symptoms: readJson(`data/scenario/${SLUG}/symptoms.json`),
+  // The seventh file, since the tally stopped being empty: `bindLiveRun` builds
+  // a scorer over it and the day closes on what it resolves.
+  score: readJson(`data/scenario/${SLUG}/score.json`),
 } as LivePack
 
 const GUIDANCE = readJson('data/policy/report-guidance.json') as ReportGuidance
@@ -74,7 +77,7 @@ function realRun(run: number): BoundRun {
     carried: [],
     archive: [],
   }
-  return bindLiveRun(bindDeps, { run, carried: [], start: '08:50', end: '21:04', meta })
+  return bindLiveRun(bindDeps, { run, carried: [], shown: [], start: '08:50', end: '21:04', meta })
 }
 
 /** Pumps the adapter like `shell/boot.ts`'s frame callback, until `done`. */
@@ -84,6 +87,22 @@ async function pump(driver: FixtureDriver, done: () => boolean, frames = 40_000)
     await Promise.resolve()
   }
   for (let i = 0; i < 50 && !done(); i += 1) await new Promise((resolve) => setTimeout(resolve, 0))
+}
+
+/**
+ * Opens the day the way the DESK opens one: boot, then the press.
+ *
+ * `start()` alone no longer plays anything. `BUILD → (deploy) RUN`
+ * (spec-client §5.1) is held by the adapter itself now: nothing stamped is
+ * released and no beat is stepped until a `deploy` op arrives, so a run's
+ * opening no longer prints — and Call 1 no longer goes out — before the
+ * operator has committed a file. An EMPTY file is a committed file: the DEPLOY
+ * control is live with no slot filled (`components/deploy-button.ts`), and
+ * these runs take every gate's default stance regardless.
+ */
+function openDay(adapter: FixtureDriver): void {
+  adapter.start()
+  adapter.send({ op: 'deploy', blocks: [] })
 }
 
 describe('(A) the live desk plays its day to the end', () => {
@@ -106,7 +125,7 @@ describe('(A) the live desk plays its day to the end', () => {
     })
     const events: ViewEvent[] = []
     adapter.subscribe((event) => events.push(event))
-    adapter.start()
+    openDay(adapter)
     await pump(adapter, () => events.some((e) => e.type === 'run_end'))
 
     const types = events.map((e) => e.type)
@@ -120,14 +139,73 @@ describe('(A) the live desk plays its day to the end', () => {
     // death took with it — the run used to stop with 18 beats and 6 reports.
     expect(events.filter((e) => e.type === 'report')).toHaveLength(7)
 
-    // NOT asserted: `score`. `live-driver.ts` emits one only when it is handed
-    // a `ScorerPort`, and nothing in this repo builds one — the port is
-    // declared, `data/scenario/<slug>/score.json` is authored, and both
-    // composition roots (`live/bind.ts` and `tools/driver/run/bind.mjs`) leave
-    // the dep out. So TALLY opens with an empty ledger on the live desk AND on
-    // the headless run. That is a gap this file deliberately does not pin shut:
-    // the guard here is that the day CLOSES, and the scorer is somebody's
-    // design call, not a fix.
+    // AND THE LEDGER. This comment used to say the opposite — that `score` is
+    // not asserted because nothing in the repo builds a `ScorerPort`, so TALLY
+    // opened empty on the live desk and on the headless run alike. `bind.ts`
+    // now builds one over `score.json`, and this is the guard the gap left
+    // behind: the day does not merely close, it closes on a ledger.
+    //
+    // Without it the sheet still opens — and then holds for the 30 s
+    // `HOLD_CEIL` before releasing through the LAPSED path, because `counted`
+    // never becomes true (`windows/tally.ts`'s `settleRelease`). An empty
+    // ledger is not a missing feature the desk hides; it is a minute of dead
+    // air at the end of every run.
+    const score = events.find((e) => e.type === 'score')
+    expect(score, 'the day closed with no ledger — TALLY has nothing to count').toBeDefined()
+    const ledger = score as Extract<ViewEvent, { type: 'score' }>
+    expect(ledger.rows).toHaveLength(9)
+    // The no-intervention day: 다리 위 24 · 임차복 1 · 둔치 1, which is the
+    // 사망 26 `score.json`'s `baseline_summary` has always claimed. The fixture
+    // provider takes every gate's default stance, so this run intervenes in
+    // nothing — the headline being the baseline is the point.
+    expect(ledger.total).toBe(26)
+    // §5.2 amendment g, on the real chain: a row's value may be a word.
+    expect(ledger.rows.some((row) => typeof row.value === 'string')).toBe(true)
+  }, 120_000)
+
+  // 08-08, with `exposure.extra_condition` wired: an un-hardened condition must
+  // SHOW its line, never delete it.
+  //
+  // 우는다리 is the pack that proves it. Two of its rows carry F4 prose there —
+  // t5's 현장(관리동)을 들여다본 런에만 보임 and t11's 사무소를 들여다본 런에만
+  // — which `datapack:lint` FLAGs as hardening work and which no grammar can
+  // read. Routing those through `holds()` alone answers `false`, and this pack,
+  // which nobody edited, would quietly lose two authored events on every run.
+  // `engine/index.ts`'s `exposed()` treats "does not parse" as "no condition
+  // authored yet", exactly as `gateOpen` does for `availability`.
+  it('an exposure condition that does not parse still shows its line', async () => {
+    const timeline = PACK as unknown as {
+      timeline: { events: { text: string; exposure: { extra_condition: string | null } }[] }
+    }
+    const unreadable = timeline.timeline.events.filter(
+      (event) => (event.exposure.extra_condition ?? '') !== '' && problems(event.exposure.extra_condition!).length > 0,
+    )
+    expect(
+      unreadable.length,
+      'the pack no longer carries un-promoted exposure prose — this guard is measuring nothing',
+    ).toBeGreaterThan(0)
+
+    const adapter = createLiveAdapter({
+      first: realRun(1),
+      canOpenNext: () => true,
+      closeRun: () => {},
+      next: async () => null,
+    })
+    const events: ViewEvent[] = []
+    adapter.subscribe((event) => events.push(event))
+    openDay(adapter)
+    await pump(adapter, () => events.some((e) => e.type === 'run_end'))
+
+    const texts = events
+      .filter((event): event is Extract<ViewEvent, { type: 'feed' }> => event.type === 'feed')
+      .map((event) => event.line.text)
+    for (const event of unreadable) {
+      // Exact equality: `buildFeed` carries the authored text through verbatim.
+      expect(
+        texts.includes(event.text),
+        `an un-hardened condition deleted "${event.text.slice(0, 24)}…" from the run`,
+      ).toBe(true)
+    }
   }, 120_000)
 })
 
@@ -239,7 +317,8 @@ describe('(C) a reload resumes the day rather than spending one', () => {
       seen.push({ run: counted.run, runsLeft: counted.runs_left })
     }
     // Before the fix: 01/−3 → 02/−2 → 03/−1 → 04/−0, and NEW RUN refused from
-    // there on. A judge pressing ⌘R four times lost the game.
+    // there on. A judge pressing ⌘R four times lost the game. The remainder is
+    // `DEFAULT_TOTAL_RUNS - 1`; what the claim is about is that it does not MOVE.
     expect(seen).toEqual([
       { run: 1, runsLeft: 3 },
       { run: 1, runsLeft: 3 },
@@ -263,7 +342,7 @@ describe('(D) the deck is a set — a repeated MINE deals one card', () => {
     })
     const events: ViewEvent[] = []
     adapter.subscribe((event) => events.push(event))
-    adapter.start()
+    openDay(adapter)
     await pump(adapter, () => events.some((e) => e.type === 'feed' && e.line.sentence_id !== undefined), 400)
 
     const line = events.find((e) => e.type === 'feed' && e.line.sentence_id !== undefined)
@@ -295,7 +374,7 @@ describe('(E) the clock gutter prints a time, and `21:04+` is not one', () => {
     })
     const events: ViewEvent[] = []
     adapter.subscribe((event) => events.push(event))
-    adapter.start()
+    openDay(adapter)
     await pump(adapter, () => events.some((e) => e.type === 'run_end'))
 
     const plus = events.filter((e) => e.type === 'feed' && e.line.clock.endsWith('+'))
@@ -306,8 +385,17 @@ describe('(E) the clock gutter prints a time, and `21:04+` is not one', () => {
   }, 120_000)
 
   it('every gutter stamp the feed renders is a bare HH:MM', () => {
-    // Both builders, because they are two: `run-feed.ts`'s envelope and
-    // `waiting-marker.ts`'s own node, which does not go through it.
+    // The claim this guard makes is about the GUTTER, not about any one kind:
+    // an authored stamp must reach it unmangled whatever built the node.
+    //
+    // It used to say "both builders", because there were two — `run-feed.ts`'s
+    // envelope and `waiting-marker.ts`'s own node, then `emptySymptomModel`
+    // after x6 deleted the marker. x8 deleted that one too with the symptom
+    // line (민서, 08-10), so there is exactly ONE builder left and the second
+    // half of the claim has nothing to point at. What is left is the half that
+    // always mattered, run across three kinds so the envelope is exercised
+    // rather than one arm of it: `npc`, `fallback`, and the bare `displayStamp`
+    // the envelope delegates to.
     const cases: [authored: string, printed: string][] = [
       ['21:04+', '21:04'],
       ['21:04', '21:04'],
@@ -316,8 +404,10 @@ describe('(E) the clock gutter prints a time, and `21:04+` is not one', () => {
     for (const [authored, printed] of cases) {
       const npc = { kind: 'npc', clock: authored, text: 'x' } as FeedLine
       expect(feedLineModel(npc).stamp, `run-feed printed ${authored} verbatim`).toBe(printed)
-      const wait = { kind: 'wait', clock: authored, text: 'x' } as FeedLine
-      expect(waitingModel(wait).stamp, `waiting-marker printed ${authored} verbatim`).toBe(printed)
+      const fallback = { kind: 'fallback', clock: authored, text: 'x' } as FeedLine
+      expect(feedLineModel(fallback).stamp, `the fallback line printed ${authored} verbatim`).toBe(printed)
+      const event = { kind: 'event', clock: authored, text: 'x' } as FeedLine
+      expect(feedLineModel(event).stamp, `the event line printed ${authored} verbatim`).toBe(printed)
       expect(displayStamp(authored)).toBe(printed)
     }
   })

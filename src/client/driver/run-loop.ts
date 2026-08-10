@@ -9,7 +9,7 @@
 // Two things have to survive the swap, because the shell binds them once at
 // boot and never looks again:
 //
-// - **the listener set** — `game-clock`, the five windows and the run counter
+// - **the listener set** — `game-clock`, the three windows and the run counter
 //   all subscribed to the facade, so the facade keeps the set and re-binds the
 //   inner driver underneath them;
 // - **the clock** — `shell/boot.ts` hands `driver.clock` to the game clock and
@@ -57,9 +57,54 @@ export function createRunLoopDriver(
   let inner = createFixtureDriver(runs[index]!)
   let started = false
 
+  /* ── the BUILD hold (spec-client §5.1) ───────────────────────────────────
+     `BUILD → (deploy) RUN`: the day does not begin until a file is committed,
+     so nothing the RUN prints may reach a window before the operator's press.
+
+     The shell opens the desk with `start()` + `advance(0)` (`shell/boot.ts`
+     step 5) so the run's `meta` — the counter, the pips, the callsign the
+     fanfold's header carries — is on the desk the moment it boots. That
+     release also carried everything else stamped at the opening minute, which
+     on the demo run is the first script event and 서지형's first line: the
+     LIVE FEED printed the case's opening while the file was still empty and
+     ECHO had not gone in. The run-state reducer already refused to leave
+     BUILD for that batch (`shell/run-state.ts`) — the paper just never got the
+     same rule.
+
+     So the hold lives HERE, one layer above the replay: the fixture driver
+     still releases on its own clock and nothing about its contract moves
+     (inv 12), and this facade — which already owns what the desk has SEEN
+     across the loop — is what decides when the desk may see it. */
+  let armed = false
+  const held: ViewEvent[] = []
+
+  /**
+   * Does this event belong to the RUN, or to the desk that opens it?
+   *
+   * The stamped kinds are the run: a beat boundary and a feed line are the only
+   * things the seam gives a `"HH:MM"` of their own (`fixture-driver.ts`'s
+   * `stampOf`). `meta` carries none — it describes the day rather than
+   * happening inside it — and everything else unstamped (`report`, `waiting`,
+   * `score`, `run_end`, `fallback`) rides the stamped event before it, so once
+   * one is held the rest follow it into the queue by arrival order.
+   */
+  function isRunContent(event: ViewEvent): boolean {
+    return event.type === 'beat_start' || event.type === 'beat_end' || event.type === 'feed'
+  }
+
   function fanout(event: ViewEvent): void {
+    if (!armed && (held.length > 0 || isRunContent(event))) {
+      held.push(event)
+      return
+    }
     seen.push(event)
     for (const listener of [...listeners]) listener(event)
+  }
+
+  /** The press: the file is committed, so the day the desk held may be shown. */
+  function arm(): void {
+    armed = true
+    while (held.length > 0) fanout(held.shift()!)
   }
 
   let detach = inner.subscribe(fanout)
@@ -89,12 +134,21 @@ export function createRunLoopDriver(
     carry(kept)
   }
 
-  /** Replays the kept meta-state into the new day through the ops that made it. */
+  /**
+   * Replays the kept meta-state into the new day through the ops that made it.
+   *
+   * W4 — `deploy` now replays too. It used to be deliberately dropped ("a new
+   * day has not been deployed yet"), which was right while DEPLOY was a press
+   * the operator made INSIDE the new day. Under one-press the commit happens
+   * before the day opens, so a day that did not carry its deployed set would
+   * open with an agent file the composer cannot see.
+   */
   function carry(kept: FixtureStore): void {
     for (const id of kept.mined) inner.send({ op: 'mine', sentence_id: id })
     for (const [slot, id] of Object.entries(kept.slots)) {
       inner.send({ op: 'slot', block_id: id, slot: Number(slot) })
     }
+    if (kept.deployed.length > 0) inner.send({ op: 'deploy', blocks: [...kept.deployed] })
   }
 
   const clock: Clock = {
@@ -138,11 +192,24 @@ export function createRunLoopDriver(
     },
 
     drain() {
+      // `drain()` releases the rest of the stream regardless of the clock, and
+      // the BUILD hold comes off on the same terms: this is the DEV/TEST
+      // override — reachable only through the `__shell` handle, which inv 11
+      // keeps out of the player build — so a lane that drains a day it never
+      // deployed still gets the whole day. Arming first, so the queue goes out
+      // ahead of what the inner driver is about to release and stream order
+      // survives the flush.
+      arm()
       inner.drain()
     },
 
     send(op: MembraneOp): OpResponse {
       const response = inner.send(op)
+      // The press. `deploy` is the BUILD→RUN edge (spec-client §5.1) and stays
+      // armed across `new_run`: under one press (W4) the same gesture commits
+      // the file and opens the next day, so the day that arrives is already the
+      // file the operator sent — `carry()` replays that very op into it.
+      if (op.op === 'deploy' && response.ok) arm()
       if (op.op !== 'new_run' || !response.ok) return response
       if (index + 1 >= runs.length) return REFUSED
       rebuild()

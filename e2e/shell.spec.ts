@@ -12,39 +12,33 @@
 //
 // Contract this suite pins (design.md for this run is stale — see tests.md):
 //   • window keys/ids: feed→#w-feed · file→#w-file · store→#w-store ·
-//     rep→#w-rep · tally→#w-tally, each `.win[data-win=<key>]`
+//     rep→#w-rep, each `.win[data-win=<key>]`
 //   • `window.__shell` — dev/test handle: `{ frame(): Frame; drain(): void }`,
 //     `frame()` delegating straight to the driver so "driver-fed" is testable.
 //
 // C3 (placeholder fixtures): nothing here asserts synthetic fixture CONTENT.
-// The two literals that do appear — `우는다리` and `21:04` — are frozen repo
-// data (`data/scenario/우는다리/meta.json`), not fixture text, and `21:04` is
-// named by the acceptance criterion itself.
+// The one literal that does appear — `전 구간 정상` — is repo data
+// (`data/scenario/전구간정상/meta.json`), not fixture text. It tracks the SHIPPED
+// pack (`src/client/shell/pack.ts`): the case name asserts against
+// `PACK_DISPLAY_NAME`, which is `PACK_SLUG` spelled for a reader — the chrome
+// prints the display name, and the slug stays on the paths and doc numbers.
+//
+// x6 — `23:12` used to be the second such literal, read off the clock's `→`
+// gutter. The gutter is gone with the progress bar it ended (see the topbar
+// block below), so the terminal stamp is now pinned only where it is a FACT
+// about the pack — `tests/driver/shipped-pack.test.ts`, which plays the pack
+// this file names and derives the band from its own `meta.json`.
 import { expect, test } from 'playwright/test'
 import type { Locator, Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
+import { confirmDeploy, turnToAgent } from './fixtures/harness.ts'
 
-/** The five windows, in the taskbar order the registry must emit. */
+/** The four windows, in the taskbar order the registry must emit. */
 const WINDOWS = [
   { key: 'feed', id: 'w-feed' },
   { key: 'file', id: 'w-file' },
-  { key: 'store', id: 'w-store' },
   { key: 'rep', id: 'w-rep' },
-  { key: 'tally', id: 'w-tally' },
 ] as const
-
-// C15 / C17 / [u11#c12] — the windows that are ON THE DESK at boot.
-//
-// `#w-tally` is a floating sheet that boots `class="win hidden"` and comes up
-// only at 21:04 (u7, 08-04). C15 rules that display:none-by-class before its
-// phase is CORRECT behaviour, so a per-window loop that DRAGS, RESIZES,
-// COLLAPSES or MEASURES has nothing to grab there — a hidden element has no
-// layout box at all. The census asserts still count all five; only the checks
-// that need a rendered box are re-aimed at the desk, and none is removed.
-const DESK_WINDOWS = WINDOWS.filter((w) => w.id !== 'w-tally')
-
-/** The one window the tally sheet can stand in for while it is hidden. */
-const SHEET_STANDIN = 'w-rep'
 
 const VIEWPORT = { width: 1280, height: 800 }
 
@@ -57,7 +51,7 @@ interface Rect {
 
 // C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted. This helper waited
 // for all FIVE windows to be VISIBLE. `#w-tally` boots `class="win hidden"` and
-// comes up only at 21:04 — u7 made it a floating sheet again and C15 rules that
+// comes up only at the pack's terminal beat — u7 made it a floating sheet again and C15 rules that
 // display:none-by-class before its phase is CORRECT behaviour, not a bug. So the
 // wait is now: every window is ATTACHED, and every window not held by its phase
 // is visible. Nothing is skipped; the desk census below still counts all five.
@@ -77,6 +71,7 @@ async function boot(page: Page): Promise<void> {
   // (46vw × 42vh, fixed): LIVE FEED's grip and its lower body sit under it, so
   // a pointer press there hits the pane. See `fixtures/dev-surface.ts`.
   await hideDebugPane(page)
+  await turnToAgent(page)
 }
 
 function win(page: Page, id: string): Locator {
@@ -131,8 +126,8 @@ test.describe('window ops', () => {
     await boot(page)
   })
 
-  test('window ops — the desk carries exactly the five spec §4 windows', async ({ page }) => {
-    await expect(page.locator('.win')).toHaveCount(5)
+  test('window ops — the desk carries exactly the three spec §4 windows', async ({ page }) => {
+    await expect(page.locator('.win')).toHaveCount(3)
     const keys = await page.locator('.win').evaluateAll((nodes) =>
       nodes.map((n) => (n as HTMLElement).dataset.win ?? ''),
     )
@@ -142,18 +137,37 @@ test.describe('window ops', () => {
   test('window ops — every window carries the WindowFrame chrome', async ({ page }) => {
     for (const w of WINDOWS) {
       const node = win(page, w.id)
-      await expect(node.locator('.win-tab')).toHaveCount(1)
+      // RE-AIMED (C17, x10 08-10), never deleted — 1 → 0, and it is still an
+      // assert about this window's chrome. The frame used to print a `.win-tab`
+      // above every title bar: a clipped trapezoid with a two-letter code in it
+      // (`LF` · `AF` · `RP`). 민서 asked for those off the windows (08-10) — the
+      // code had shrunk to the initials of the name printed 23 px below it, so
+      // the tab named the window a second time in a shorter alphabet, which is
+      // x5's argument against `ko`/`sub` over again. `.win-tab` and
+      // `WindowDef.tab` are both gone.
+      //
+      // The count is PINNED, not dropped. "Every window carries the frame's
+      // chrome" is a claim about the exact set, and an absent item is as much
+      // part of that set as a present one — the same reason `.win-grip` is
+      // counted per window below rather than summed. Dropping the line would
+      // leave nothing to notice a tab quietly coming back on one window.
+      await expect(node.locator('.win-tab')).toHaveCount(0)
       await expect(node.locator('.win-bar')).toHaveCount(1)
       await expect(node.locator('.win-bar h2')).toHaveCount(1)
       await expect(node.locator('.win-ctl .wc-min')).toHaveCount(1)
       await expect(node.locator('.win-ctl .wc-close')).toHaveCount(1)
       await expect(node.locator('.win-body')).toHaveCount(1)
-      await expect(node.locator('.win-grip')).toHaveCount(1)
+      // g13-3 — two of three. The AGENT FILE is a fixed sheet and builds no
+      // grip: its two pages are sized to its body, so any shrink clips the
+      // page-turn control and takes page 2 off the window with it (C9). The
+      // count is pinned PER WINDOW, not summed, so a grip appearing on the
+      // sheet and a grip vanishing from the other two both read here.
+      await expect(node.locator('.win-grip')).toHaveCount(w.id === 'w-file' ? 0 : 1)
     }
   })
 
   test('window ops — every window drags by its title bar', async ({ page }) => {
-    for (const w of DESK_WINDOWS) {
+    for (const w of WINDOWS) {
       const node = win(page, w.id)
       const before = await box(node)
       await dragFrom(page, await box(node.locator('.win-bar')), 40, 30)
@@ -175,8 +189,14 @@ test.describe('window ops', () => {
     expect(Math.round(after.y)).toBe(Math.round(before.y))
   })
 
-  test('window ops — every window resizes by its corner grip', async ({ page }) => {
-    for (const w of DESK_WINDOWS) {
+  test('window ops — every window resizes by its corner grip, except the sheet', async ({ page }) => {
+    for (const w of WINDOWS) {
+      // g13-3 — the AGENT FILE is a fixed sheet: it builds no grip, and the
+      // census above pins that per window. Skipping it here is the shape of
+      // that decision, not a relaxation of this claim — `a11y.spec.ts` holds
+      // the other half, that the sheet does not resize from the keyboard
+      // either.
+      if (w.id === 'w-file') continue
       const node = win(page, w.id)
       const before = await box(node)
       await dragFrom(page, await box(node.locator('.win-grip')), 50, 40)
@@ -189,8 +209,7 @@ test.describe('window ops', () => {
   })
 
   test('window ops — resizing clamps to a floor and never inverts', async ({ page }) => {
-    // was `w-tally`, which is hidden until 21:04 (C15) and has no grip to pull
-    const node = win(page, SHEET_STANDIN)
+    const node = win(page, 'w-rep')
     await dragFrom(page, await box(node.locator('.win-grip')), -4000, -4000)
     const after = await box(node)
     expect(after.width).toBeGreaterThan(0)
@@ -198,7 +217,7 @@ test.describe('window ops', () => {
   })
 
   test('window ops — `—` collapses to the title bar and restores', async ({ page }) => {
-    for (const w of DESK_WINDOWS) {
+    for (const w of WINDOWS) {
       const node = win(page, w.id)
       const open = await box(node)
       await node.locator('.wc-min').click()
@@ -215,7 +234,7 @@ test.describe('window ops', () => {
   })
 
   test('window ops — `×` closes the window to the taskbar', async ({ page }) => {
-    for (const w of DESK_WINDOWS) {
+    for (const w of WINDOWS) {
       const node = win(page, w.id)
       const task = page.locator(`.task[data-win="${w.key}"]`)
       await expect(task).toHaveClass(/\bopen\b/)
@@ -226,13 +245,13 @@ test.describe('window ops', () => {
       await expect(task).not.toHaveClass(/\bopen\b/)
     }
     // Closed to the taskbar, not destroyed.
-    await expect(page.locator('.win')).toHaveCount(5)
-    await expect(page.locator('.task')).toHaveCount(5)
+    await expect(page.locator('.win')).toHaveCount(3)
+    await expect(page.locator('.task')).toHaveCount(3)
   })
 
   test('window ops — the taskbar reopens a closed window', async ({ page }) => {
-    const node = win(page, 'w-store')
-    const task = page.locator('.task[data-win="store"]')
+    const node = win(page, 'w-feed')
+    const task = page.locator('.task[data-win="feed"]')
     await node.locator('.wc-close').click()
     await expect(node).toBeHidden()
 
@@ -244,10 +263,10 @@ test.describe('window ops', () => {
   })
 
   test('window ops — the taskbar raises an unfocused window before hiding it', async ({ page }) => {
-    const store = win(page, 'w-store')
-    const task = page.locator('.task[data-win="store"]')
+    const store = win(page, 'w-feed')
+    const task = page.locator('.task[data-win="feed"]')
 
-    // Focus something else, so BLOCK STORE is open but not focused.
+    // Focus something else, so LIVE FEED is open but not focused.
     await win(page, 'w-file').locator('.win-bar').click()
     await expect(store).not.toHaveClass(/\bfocused\b/)
 
@@ -308,7 +327,7 @@ test.describe('default layout fits 1280x800', () => {
   test('default layout fits 1280x800 — no window falls outside the viewport', async ({ page }) => {
     await boot(page)
     expect(page.viewportSize()).toEqual(VIEWPORT)
-    for (const w of DESK_WINDOWS) {
+    for (const w of WINDOWS) {
       const b = await box(win(page, w.id))
       expect(b.x, `${w.id}.left`).toBeGreaterThanOrEqual(0)
       expect(b.y, `${w.id}.top`).toBeGreaterThanOrEqual(0)
@@ -322,7 +341,7 @@ test.describe('default layout fits 1280x800', () => {
   test('default layout fits 1280x800 — no window sits under the topbar', async ({ page }) => {
     await boot(page)
     const bar = await box(page.locator('#topbar'))
-    for (const w of DESK_WINDOWS) {
+    for (const w of WINDOWS) {
       const b = await box(win(page, w.id))
       expect(b.y, `${w.id} overlaps the chrome`).toBeGreaterThanOrEqual(bar.y + bar.height - 1)
     }
@@ -345,18 +364,18 @@ test.describe('default layout fits 1280x800', () => {
   test('default layout fits 1280x800 — the arrangement is computed from the viewport', async ({ page }) => {
     await boot(page)
     const at1280 = []
-    for (const w of DESK_WINDOWS) at1280.push(await box(win(page, w.id)))
+    for (const w of WINDOWS) at1280.push(await box(win(page, w.id)))
 
     await page.setViewportSize({ width: 1600, height: 900 })
     await page.evaluate(() => window.dispatchEvent(new Event('resize')))
     await page.waitForTimeout(150)
 
     const at1600 = []
-    for (const w of DESK_WINDOWS) at1600.push(await box(win(page, w.id)))
+    for (const w of WINDOWS) at1600.push(await box(win(page, w.id)))
 
     // A viewport-derived layout must react; a hard-coded one cannot.
     expect(at1600).not.toEqual(at1280)
-    for (let i = 0; i < DESK_WINDOWS.length; i += 1) {
+    for (let i = 0; i < WINDOWS.length; i += 1) {
       const b = at1600[i]!
       expect(b.x, `${WINDOWS[i]!.id}.left @1600`).toBeGreaterThanOrEqual(0)
       expect(b.x + b.width, `${WINDOWS[i]!.id}.right @1600`).toBeLessThanOrEqual(1600)
@@ -364,18 +383,41 @@ test.describe('default layout fits 1280x800', () => {
     }
   })
 
-  test('default layout fits 1280x800 — the five windows do not stack on one spot', async ({ page }) => {
+  test('default layout fits 1280x800 — the four windows do not stack on one spot', async ({ page }) => {
     await boot(page)
     const origins = new Set<string>()
-    for (const w of DESK_WINDOWS) {
+    for (const w of WINDOWS) {
       const b = await box(win(page, w.id))
       origins.add(`${Math.round(b.x)}:${Math.round(b.y)}`)
     }
-    // TALLY may share a column origin with nothing; four distinct desk columns
-    // is the floor the reference arrangement produces.
-    expect(origins.size).toBeGreaterThanOrEqual(4)
+    // Four distinct desk columns is the floor the reference arrangement produces.
+    expect(origins.size).toBeGreaterThanOrEqual(3)
   })
 })
+
+/**
+ * x6 — the top bar's digits and the fanfold's last PRINTED stamp, read in ONE
+ * browser turn.
+ *
+ * It has to be one turn. `components/run-feed.ts` publishes the stamp inside the
+ * same synchronous block that appends the line, and the clock's listener paints
+ * inside that same block, so the two surfaces are never observably out of step —
+ * but two separate round trips could straddle a line landing between them and
+ * report a disagreement that never existed on the page.
+ *
+ * `.fl-t` is the gutter only stamped lines carry (a `mark` has none), so the
+ * last one is the last stamp printed, which is exactly what the slot publishes.
+ */
+async function chromeVsPaper(page: Page): Promise<{ digits: string; printed: string; lines: number }> {
+  return page.evaluate(() => {
+    const stamps = [...document.querySelectorAll('#w-feed #feedList .fl .fl-t')]
+    return {
+      digits: document.querySelector('#clockDigits')?.textContent?.trim() ?? '',
+      printed: stamps[stamps.length - 1]?.textContent?.trim() ?? '',
+      lines: stamps.length,
+    }
+  })
+}
 
 /* ══ [u3#c3] topbar ══════════════════════════════════════════════════════ */
 
@@ -390,76 +432,142 @@ test.describe('topbar', () => {
     for (const id of ['#portalName', '#portalCode', '#opName', '#caseName']) {
       await expect(bar.locator(id)).not.toBeEmpty()
     }
-    // The case comes from the frozen scenario pack, not from a fixture.
-    await expect(bar.locator('#caseName')).toContainText('우는다리')
+    // The case comes from the shipped scenario pack, not from a fixture. A
+    // literal, not an import: nothing under `e2e/` reaches into `src/`, and the
+    // point of this line is that the CHROME printed the pack's name — reading
+    // the name out of the module the chrome reads it from would assert nothing.
+    // It goes stale loudly on a pack switch, which is the intended failure.
+    await expect(bar.locator('#caseName')).toContainText('멈춘 회전문')
   })
 
-  test('topbar — the clock reads HH:MM and runs toward the 21:04 terminal', async ({ page }) => {
+  test('topbar — the clock reads HH:MM', async ({ page }) => {
     await expect(page.locator('#clockDigits')).toHaveText(/^\d{2}:\d{2}$/)
-    await expect(page.locator('#clockUnit .clk-term')).toContainText('21:04')
+    // DELETED (x6): `#clockUnit .clk-term` toContainText `23:12`. The gutter was
+    // the right END of the progress bar and went with it — the chrome stopped
+    // drawing the sim clock's position against the band, because the digits
+    // beside it now read the LIVE FEED's printed stamp and the two disagree by
+    // whatever the fanfold's reveal queue is holding. Replaced by the test
+    // below, which pins the stronger claim: the digits ARE the feed's stamp.
   })
 
-  test('topbar — the clock time is driver-fed, never view-computed', async ({ page }) => {
-    for (let i = 0; i < 3; i += 1) {
-      const f = await frame(page)
-      const shown = (await page.locator('#clockDigits').textContent())?.trim()
-      expect(shown).toBe(f.clock)
-      await page.waitForTimeout(200)
-    }
-  })
+  // RE-AIMED (08-09, x6), never deleted. This compared `#clockDigits` against
+  // `frame().clock` — the DRIVER's own running minute — and that coupling is
+  // precisely what x6 removed. The fanfold reveals through a paced queue and
+  // holds on the beat a report lands in, so the sim clock ran AHEAD of the paper
+  // and the top bar printed a minute nothing else on the desk agreed with.
+  //
+  // The half that always mattered survives whole: the view still computes no
+  // time, it is handed one. Only the source moved — from the clock to the paper.
+  // RE-AIMED AGAIN (08-09, x6b). The version above was written on a branch cut
+  // before #218 and merged after it, so nothing failed until both were on main:
+  // #218 holds the day until the file is committed (`the day opens on the press`
+  // in `e2e/live-feed.spec.ts`), and this test opened by requiring the fanfold to
+  // have ALREADY printed. It asserted a boot state that no longer exists — a
+  // semantic conflict two green branches produced between them, which is worth
+  // recording because neither PR could have caught it alone.
+  //
+  // The claim is unchanged and is now checked across the edge that #218 created:
+  // BEFORE the press the paper is blank and the chrome shows the pack's opening
+  // stamp (the prefill `components/game-clock.ts` paints from `options.start`),
+  // and AFTER it every stamp the chrome shows is one the paper printed.
+  test('topbar — the clock time is feed-fed, never view-computed', async ({ page }) => {
+    // Held at boot (rate 0), so nothing lands between the reads below.
+    expect((await frame(page)).rate, 'the desk booted already running').toBe(0)
 
-  test('topbar — the clock ticks while running and stops on pause', async ({ page }) => {
-    await page.locator('.rate-btn[data-rate="1"]').click()
-    const start = (await frame(page)).minute
-    await expect.poll(async () => (await frame(page)).minute, { timeout: 8000 }).toBeGreaterThan(start)
+    // (1) Blank paper, and the chrome is NOT blank with it. The prefill is the
+    // one time the digits are not a printed stamp, and it is not a computed one
+    // either — it is the pack's own opening stamp, handed over at construction.
+    const held = await chromeVsPaper(page)
+    expect(held.lines, 'the day printed before it was opened (#218)').toBe(0)
+    expect(held.digits, 'the held desk shows no opening stamp').toMatch(/^\d{2}:\d{2}$/)
 
-    await page.locator('.rate-btn[data-rate="0"]').click()
-    await expect.poll(async () => (await frame(page)).rate, { timeout: 2000 }).toBe(0)
-    const paused = (await page.locator('#clockDigits').textContent())?.trim()
-    await page.waitForTimeout(700)
-    expect((await page.locator('#clockDigits').textContent())?.trim()).toBe(paused)
-  })
+    // (2) The press opens the day, and from here the chrome is FED, never
+    // computed — its digits are a stamp the run handed it.
+    //
+    // RE-AIMED AGAIN (08-10, x14). Equality with the paper's last row was the
+    // right shape only while every feed event drew one. Since x12 the undrawn
+    // kinds — `wait`, `symptom` — are dropped from the paper but still publish
+    // their stamp on the way out (`run-feed.ts`'s `advanceStamp`), which is the
+    // fix for the desk clock freezing on a symptom-only minute. So the chrome
+    // legitimately runs AHEAD of the last drawn row for as long as the run
+    // stays on undrawn lines, and this test failed whenever its read landed in
+    // one of those windows — about one run in four locally, and once in a
+    // 257-test suite that had passed twice before. A timing-shaped failure of
+    // an invariant that had quietly stopped being the invariant.
+    //
+    // What is still true, and is the whole claim, is the direction: the chrome
+    // shows a minute the run has REACHED. It never trails the paper (that would
+    // be a chrome that stopped listening) and it never precedes the run.
+    await page.locator('#w-file #btnDeploy').click()
+    await confirmDeploy(page)
+    await expect.poll(async () => (await chromeVsPaper(page)).lines, { timeout: 30_000 }).toBeGreaterThan(0)
 
-  test('topbar — the rate control offers ×1 / ×4 / pause and marks exactly one', async ({ page }) => {
-    const rates = page.locator('.clk-rate .rate-btn')
-    await expect(rates).toHaveCount(3)
-    const values = await rates.evaluateAll((nodes) =>
-      nodes.map((n) => (n as HTMLElement).dataset.rate ?? ''),
-    )
-    expect(values).toEqual(['1', '4', '0'])
-    await expect(page.locator('.rate-btn.is-on')).toHaveCount(1)
+    // Zero-padded `HH:MM` compares lexicographically, and every stamp on this
+    // desk is one — `displayStamp` strips the `+` suffix before it prints.
+    const opening = await chromeVsPaper(page)
+    expect(opening.digits).toMatch(/^\d{2}:\d{2}$/)
+    expect(
+      opening.digits >= opening.printed,
+      `the top bar (${opening.digits}) is behind the fanfold (${opening.printed})`,
+    ).toBe(true)
 
-    for (const rate of [4, 0, 1]) {
-      await page.locator(`.rate-btn[data-rate="${rate}"]`).click()
-      await expect(page.locator(`.rate-btn[data-rate="${rate}"]`)).toHaveClass(/\bis-on\b/)
-      await expect(page.locator('.rate-btn.is-on')).toHaveCount(1)
-      // The control drives the DRIVER's clock, not a view-local one.
-      await expect.poll(async () => (await frame(page)).rate, { timeout: 2000 }).toBe(rate)
-    }
-  })
-
-  test('topbar — the progress fill tracks the clock and never leaves the bar', async ({ page }) => {
-    const barBox = await box(page.locator('.clk-bar'))
-    const fill = page.locator('#clockFill')
-    const ratio = async (): Promise<number> => (await box(fill)).width / barBox.width
-
-    const r0 = await ratio()
-    expect(r0).toBeGreaterThanOrEqual(0)
-    expect(r0).toBeLessThanOrEqual(1)
-
-    await page.locator('.rate-btn[data-rate="4"]').click()
-    const m0 = (await frame(page)).minute
+    // (3) …and it keeps following as the day runs — not just on the first line.
     await expect
-      .poll(async () => {
-        const f = await frame(page)
-        return f.minute - m0 >= 20 || f.ended
-      }, { timeout: 15000 })
-      .toBe(true)
+      .poll(async () => (await chromeVsPaper(page)).printed, { timeout: 30_000 })
+      .not.toBe(opening.printed)
 
-    const r1 = await ratio()
-    expect(r1).toBeGreaterThanOrEqual(r0)
-    expect(r1).toBeLessThanOrEqual(1)
+    const later = await chromeVsPaper(page)
+    expect(
+      later.digits >= later.printed,
+      `the chrome (${later.digits}) drifted behind the paper (${later.printed}) once the day ran`,
+    ).toBe(true)
+    // It MOVED, which is what "fed" means — a chrome painting its own prefill
+    // forever would satisfy the direction check above and nothing else.
+    expect(later.digits, 'the top bar never advanced past the opening stamp').not.toBe(held.digits)
   })
+
+  // RE-AIMED (08-08, W4), never deleted. These two asserted the transport row:
+  // that ×1 / ×4 / pause existed, marked exactly one of themselves, and drove
+  // the DRIVER's clock rather than a view-local one. W4 removed the row — a day
+  // is not a recording the operator scrubs — so what they measure now is the
+  // claim that replaced it: the desk is held until a file is committed, and
+  // DEPLOY is what sets it running. The "drives the driver's clock, not a
+  // view-local one" half survives intact; only the control changed.
+  test('topbar — the desk is held until a file is committed, and DEPLOY starts it', async ({ page }) => {
+    // Held: the clock does not advance on its own, however long we watch.
+    expect((await frame(page)).rate, 'the desk booted already running').toBe(0)
+    const held = (await frame(page)).minute
+    await page.waitForTimeout(700)
+    expect((await frame(page)).minute, 'the clock advanced with no file committed').toBe(held)
+
+    await page.locator('#w-file #btnDeploy').click()
+    await confirmDeploy(page)
+
+    await expect.poll(async () => (await frame(page)).rate, { timeout: 2000 }).toBe(1)
+    await expect.poll(async () => (await frame(page)).minute, { timeout: 8000 }).toBeGreaterThan(held)
+  })
+
+  test('topbar — the desk offers no transport control at all', async ({ page }) => {
+    // The membrane's own logic: a day runs because a file was committed to it,
+    // so there is nothing here to scrub with. `.clk-rate` survives as the slot
+    // the audio toggle mounts into, and that toggle is not a rate.
+    await expect(page.locator('.rate-btn')).toHaveCount(0)
+    await expect(page.locator('.clk-rate [data-rate]')).toHaveCount(0)
+    await expect(page.locator('.clk-rate .snd-btn')).toHaveCount(1)
+  })
+
+  // DELETED (08-09, x6), and nothing replaces it in this file. The test measured
+  // `#clockFill`'s box against `.clk-bar`'s: the fill starts inside the track,
+  // grows with the sim clock and never runs past the terminal marker. Both
+  // elements are gone. The bar drew `driver.clock`'s own minute as geometry
+  // right under digits that read the LIVE FEED's printed stamp, so the unit
+  // showed two times at once and the drawn one was always the faster — the
+  // mismatch `shell/feed-clock.ts` exists to close, not a fill to re-aim.
+  //
+  // Nothing measurable is lost. That the clock ADVANCES under a committed file
+  // is the "held until a file is committed" test above, off `frame().minute`
+  // rather than off a width; that the run STOPS at the pack's terminal minute is
+  // `e2e/run-loop.spec.ts`, which watches the run close rather than a pixel.
 
   test('topbar — the D-DAY unit shows the run, the remainder and one pip per run', async ({ page }) => {
     await expect(page.locator('#runNum')).toHaveText(/^RUN \d{2}$/)
@@ -555,36 +663,48 @@ test.describe('single stacking context', () => {
     expect(offenders).toEqual([])
   })
 
-  test('single stacking context — raising BLOCK STORE puts it above AGENT FILE', async ({ page }) => {
-    const store = win(page, 'w-store')
+  test('single stacking context — raising REPORTS puts it above AGENT FILE', async ({ page }) => {
+    const rep = win(page, 'w-rep')
     const file = win(page, 'w-file')
 
-    // Park BLOCK STORE on top of AGENT FILE so the two genuinely overlap.
+    // Park AGENT FILE on top of REPORTS so the two genuinely overlap.
+    //
+    // RE-AIMED (08-08, T3). This used to drag REPORTS onto AGENT FILE. Under the
+    // two-column desk REPORTS is the full-height left column (640x692 at
+    // 1280x800) and AGENT FILE is the shorter box bottom-right, so dragging the
+    // tall window down to the short one's origin puts its bottom ~326px past the
+    // viewport; the manager clamps, the overlap never forms, and the probe reads
+    // whatever is actually under it. Moving the SMALL window over the LARGE one
+    // is the same claim with a geometry that exists.
+    const repBox = await box(rep)
+    const fileBar = await box(file.locator('.win-bar'))
     const fileBox = await box(file)
-    const storeBar = await box(store.locator('.win-bar'))
-    const storeBox = await box(store)
+    // Overlap REPORTS' right edge rather than covering it: the file's own title
+    // bar has to stay reachable AFTER REPORTS is raised over it, or the second
+    // click below has nothing to hit.
     await dragFrom(
       page,
-      storeBar,
-      fileBox.x + 40 - storeBox.x,
-      fileBox.y + 40 - storeBox.y,
+      fileBar,
+      repBox.x + repBox.width - 120 - fileBox.x,
+      repBox.y + 40 - fileBox.y,
     )
 
-    const probe = { x: fileBox.x + 90, y: fileBox.y + 90 }
+    const probe = { x: repBox.x + repBox.width - 60, y: repBox.y + 90 }
     const topAt = async (): Promise<string> =>
       page.evaluate(
         (p) => document.elementFromPoint(p.x, p.y)?.closest('.win')?.id ?? 'none',
         probe,
       )
 
-    await store.locator('.win-bar').click({ position: { x: 20, y: 8 } })
-    expect(await topAt()).toBe('w-store')
+    await rep.locator('.win-bar').click({ position: { x: 20, y: 8 } })
+    expect(await topAt()).toBe('w-rep')
 
-    await file.locator('.win-bar').click({ position: { x: 20, y: 8 } })
+    // …at a point PAST REPORTS' right edge, which REPORTS cannot be covering.
+    await file.locator('.win-bar').click({ position: { x: 200, y: 8 } })
     expect(await topAt()).toBe('w-file')
 
-    await store.locator('.win-bar').click({ position: { x: 20, y: 8 } })
-    expect(await topAt()).toBe('w-store')
+    await rep.locator('.win-bar').click({ position: { x: 20, y: 8 } })
+    expect(await topAt()).toBe('w-rep')
   })
 
   test('single stacking context — focus raises the --z of exactly one window', async ({ page }) => {
@@ -594,11 +714,10 @@ test.describe('single stacking context', () => {
         id,
       )
 
-    // was `w-tally`, hidden until 21:04 (C15) — a hidden bar cannot be clicked.
-    const raised = SHEET_STANDIN
+    const raised = 'w-rep'
     await win(page, raised).locator('.win-bar').click({ position: { x: 20, y: 8 } })
     const raisedZ = await zOf(raised)
-    for (const w of DESK_WINDOWS.filter((x) => x.id !== raised)) {
+    for (const w of WINDOWS.filter((x) => x.id !== raised)) {
       expect(await zOf(w.id)).toBeLessThan(raisedZ)
     }
     await expect(page.locator('.win.focused')).toHaveCount(1)
@@ -630,12 +749,9 @@ test.describe('a11y', () => {
     await expect(nav).toHaveAttribute('aria-label', /.+/)
   })
 
-  // C15 / C17 — `includeHidden`: `#w-tally` is a real, named region that its
-  // phase keeps off the desk until 21:04, so the census counts it where it is
-  // rather than dropping the fifth window from the a11y contract.
   test('a11y — each window is a named region', async ({ page }) => {
     const regions = page.getByRole('region', { includeHidden: true })
-    await expect(regions).toHaveCount(5)
+    await expect(regions).toHaveCount(3)
     const names = await page.locator('.win').evaluateAll((nodes) =>
       nodes.map((n) => n.getAttribute('aria-label') ?? n.getAttribute('aria-labelledby') ?? ''),
     )
@@ -643,9 +759,13 @@ test.describe('a11y', () => {
   })
 
   test('a11y — every window control is a real button and keyboard reachable', async ({ page }) => {
-    const controls = page.locator('.wc, .task, .rate-btn')
+    // RE-AIMED (08-08, W4): the three rate buttons left the topbar with the
+    // transport, so the census is three windows' controls plus three task
+    // buttons. The claim — every one of them is a real button and reachable —
+    // is unchanged.
+    const controls = page.locator('.wc, .task')
     const count = await controls.count()
-    expect(count).toBe(5 * 2 + 5 + 3)
+    expect(count).toBe(3 * 2 + 3)
     const meta = await controls.evaluateAll((nodes) =>
       nodes.map((n) => ({
         tag: n.tagName.toLowerCase(),
@@ -702,13 +822,15 @@ test.describe('a11y', () => {
       }
       const out: { sel: string; changed: boolean }[] = []
       const heldByPhase: string[] = []
-      const targets = [...document.querySelectorAll<HTMLElement>('.rate-btn, .task, .wc, .win-bar')]
+      // `.snd-btn` stands where `.rate-btn` did (W4 retired the transport) — the
+      // row still has a control in it, so the sweep still visits one.
+      const targets = [...document.querySelectorAll<HTMLElement>('.snd-btn, .task, .wc, .win-bar')]
       for (const el of targets) {
         // C15 / C17 / [u11#c12] — RE-AIMED (08-04): a control with no layout box
         // cannot take focus, so `el.focus()` is a no-op and the snapshot could
         // only ever be unchanged. The three that reported here were #w-tally's
         // bar and its two controls — the sheet boots `class="win hidden"` and
-        // comes up at 21:04, which C15 rules CORRECT. Nothing is skipped: the
+        // comes up at the terminal beat, which C15 rules CORRECT. Nothing is skipped: the
         // held ones are reported and pinned to that window below.
         if (el.getClientRects().length === 0) {
           heldByPhase.push(`${el.closest('.win')?.id ?? '(no window)'} ${el.className}`)
@@ -727,9 +849,8 @@ test.describe('a11y', () => {
     })
     expect(ringed.out.length).toBeGreaterThan(0)
     expect(ringed.out.filter((r) => !r.changed)).toEqual([])
-    for (const held of ringed.heldByPhase) {
-      expect(held, 'a control with no layout box outside a phase-held window').toMatch(/^w-tally /)
-    }
+    // U3 — no window is phase-held any more (TALLY is gone).
+    expect(ringed.heldByPhase).toEqual([])
   })
 
   test('a11y — tab order follows the visual order of the chrome', async ({ page }) => {
@@ -753,7 +874,7 @@ test.describe('a11y', () => {
   })
 
   test('a11y — a closed window is removed from the tab order', async ({ page }) => {
-    const node = win(page, 'w-store')
+    const node = win(page, 'w-feed')
     await node.locator('.wc-close').click()
     await expect(node).toBeHidden()
     const reachable = await node.evaluate((n) => {

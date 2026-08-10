@@ -12,13 +12,83 @@ export interface PortalIdentity {
   clearance: string
 }
 
+/**
+ * x1 (08-08) — the portal is renamed and its vocabulary de-escalated.
+ *
+ * "국가재난모의포털" oversold the day the scenario actually runs: 우는다리 is a
+ * bridge, a night shift and a handful of calls, not a national disaster, and a
+ * portal that announces 재난 in its own title sets the player up for a scale
+ * the game never delivers. The name, the code it abbreviates (NDSP = National
+ * Disaster Simulation Portal → ERR = Emergency Response Room), the issuing
+ * body and the 災 chop all moved together — a half-renamed portal reads as a
+ * bug, not as restraint.
+ *
+ * The code is load-bearing beyond the chrome: `windows/agent-file.ts` prints
+ * it as the document number (`문서번호 ERR-2/AF/…`), which `e2e/agent-file.spec.ts`
+ * pins.
+ */
 export const PORTAL: PortalIdentity = {
-  portal: '국가재난모의포털',
-  portalCode: 'NDSP-2',
-  operator: '박민서',
+  portal: '긴급상황대응실',
+  portalCode: 'ERR-2',
+  // x5 — the operator is the PLAYER, and the player is not 박민서. A Korean
+  // personal name on the chrome reads as one more character in the fiction, and
+  // this one happened to be the author's; the account handle says "you are
+  // signed in" and casts nobody.
+  //
+  // x9 — this is the SESSION handle, and it is no longer what the door types.
+  // The door types `operatorId` below (see `SIGN_IN.userId`): a badge number is
+  // what an operator enters at a terminal, and a handle is what the terminal
+  // then prints back at them. `authLines()` in `shell/sign-in.ts` shows the two
+  // resolving into each other — `사용자 조회 — OP-2291 tester_123 … 확인` — which
+  // is the one place the pair has to be legible as a pair.
+  operator: 'tester_123',
   operatorId: 'OP-2291',
   clearance: 'C-2',
 }
 
 /** The taskbar's standing hint — the reference's `.tb-hint`. */
 export const TASKBAR_HINT = '창을 끌어 배치 · 제목 표시줄에서 방향키로 이동'
+
+/**
+ * The card the door TYPES ITSELF as the operator presses keys (`shell/sign-in.ts`).
+ *
+ * There is nothing to authenticate: the sign-in screen is a scene, and the two
+ * fields are rendered as static text, never as a form (spec-client §3
+ * invariant 1 — the membrane admits no free-text surface anywhere, and
+ * `tests/shell/no-free-text.test.ts` holds that line at source level). The
+ * account is the terminal's, which is why it lives beside the portal's own
+ * identity rather than in the scenario pack.
+ *
+ * x9 — the two fields were PRE-FILLED and the door opened on one press. Now
+ * they start empty and fill one character per keystroke, and this card is the
+ * script: `userId` is typed first, then `secret`, and the LOGIN control is dead
+ * until both have landed. The values are therefore load-bearing arithmetic as
+ * well as copy — 7 keystrokes and then 8, because that is what they are long —
+ * so `tests/shell/sign-in.test.ts` pins both lengths.
+ *
+ * THE MEMBRANE IS THE POINT OF THE MECHANIC, not a compromise with it. The
+ * operator presses keys and the terminal writes what the terminal was always
+ * going to write; `doorFill()` takes a COUNT and never a character, so there is
+ * no path by which what was pressed becomes what appears. The player's hands
+ * are on the desk and their words are not in it.
+ */
+export interface SignInCard {
+  /** The account the terminal is provisioned to — the door's first line. */
+  userId: string
+  /** What the masked field shows — a mask, not a secret. The door's second. */
+  secret: string
+  /** The desk this session is assigned. */
+  terminal: string
+  /** The issuing body, printed at the door and on the manual. */
+  agency: string
+}
+
+export const SIGN_IN: SignInCard = {
+  // The badge, not the handle: `PORTAL.operatorId` rather than a second literal,
+  // so the number the door types cannot drift from the number the readout then
+  // confirms two lines later. See the note on `PORTAL.operator` above.
+  userId: PORTAL.operatorId,
+  secret: '********',
+  terminal: 'T-14',
+  agency: '행정안전부 · 상황대응본부',
+}

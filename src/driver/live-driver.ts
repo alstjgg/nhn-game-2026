@@ -103,8 +103,15 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
   function flush(): void {
     const lines = engine.feed()
     for (let i = cursor; i < lines.length; i += 1) {
-      const line = lines[i]
-      if (line === undefined) continue
+      const raw = lines[i]
+      if (raw === undefined) continue
+      // U5.4 — the agent's own line is the only one that can carry a citation,
+      // and it carries the one parked by the gate beat that produced it.
+      let line = raw
+      if (raw.kind === 'radio' && pendingCitedSlots !== null) {
+        if (pendingCitedSlots.length > 0) line = { ...raw, cited_slots: pendingCitedSlots }
+        pendingCitedSlots = null
+      }
       blocks.absorbLine(line)
       emit({ type: 'feed', line })
     }
@@ -145,6 +152,25 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
     return usable
   }
 
+  /**
+   * U5.2b — the judged stance per round, in the author's words; U5.2b+ adds
+   * `cited_ids`, the citation filtered to deployed ids (§5.2 `judged`).
+   */
+  const judgedStances = new Map<
+    number,
+    { stance_id: string; desc: string; cited_ids: string[] }
+  >()
+
+  /**
+   * U5.4 — a ONE-SHOT handoff from the gate beat to the flush that follows it.
+   *
+   * `flush()` sees feed lines, not beats, so the citation is parked here by the
+   * gate branch and consumed by the next radio line. It is cleared on that
+   * line whether or not it had any slots, so a later beat's utterance can never
+   * inherit an earlier round's citation.
+   */
+  let pendingCitedSlots: number[] | null = null
+
   /** Fires exactly once, whichever path reaches the end of the run. */
   function finish(): void {
     if (finished) return
@@ -152,7 +178,15 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
     ended = true
     if (scorer !== undefined) {
       const score = scorer.score()
-      emit({ type: 'score', total: score.total, rows: score.rows })
+      // Forwarded whole. The driver decides WHEN a score is emitted (decision
+      // 3: only when a scorer was supplied, and immediately before `run_end`);
+      // what a score IS belongs to the port.
+      emit({
+        type: 'score',
+        total: score.total,
+        baseline_total: score.baseline_total,
+        rows: score.rows,
+      })
     }
     emit({ type: 'run_end', run })
   }
@@ -167,8 +201,50 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
       emit({ type: 'beat_start', beat: beat.index, clock: beat.clock })
 
       if (beat.kind === 'gate') {
-        const request = composer.judgment(engine.gateView(), membrane.deployed())
-        engine.submitStance(await call(1, request, readJudgment))
+        const blocks = membrane.deployed()
+        // x14 — AN AGENT HANDED NOTHING IS NOT ASKED. Every gate's authored
+        // `standard_form` already claims this outcome — `아무것도 넘겨받지 않은
+        // 요원은 기본 stance a를 낸다` — and nothing made it true: the claim went
+        // to a model as one option among four, and the model reached past it
+        // often enough that G3's stances had to be rewritten to stop it. A run
+        // the player has not touched resolves by construction now, the same way
+        // every time.
+        //
+        // Checked HERE and not in the composer because this is the only place
+        // that can skip a call rather than shape one: `judgment()` is pure, so
+        // a composer that knew would still have to be sent.
+        //
+        // `call()` never runs on this path, so no `fallback` event is minted
+        // and the paper stays clean — an unasked call must not print `※ 회신
+        // 불량`. The engine draws the same distinction in the journal, which is
+        // why this is `submitBaseline()` and not `submitStance(null)`.
+        const unshaped = blocks.length === 0
+        const response = unshaped
+          ? null
+          : await call(1, composer.judgment(engine.gateView(), blocks), readJudgment)
+        // U5.2b — the engine resolves chosen-vs-default (§5 recovery is its
+        // move); keep its words for the round's report event. U5.2b+ — keep
+        // the citation too, filtered to ids the player deployed: the model
+        // selects among the player's own blocks and cannot mint an id onto
+        // the seam (`because_*` itself stays a banned key family there).
+        const judged = unshaped ? engine.submitBaseline() : engine.submitStance(response)
+        if (beat.roundIndex !== null && judged !== null) {
+          const deployed = new Set(blocks)
+          const citedIds =
+            response === null
+              ? []
+              : response.because_block_ids.filter((id) => deployed.has(id))
+          judgedStances.set(beat.roundIndex, { ...judged, cited_ids: citedIds })
+          // U5.4 — the same citation, resolved to the slot numbers the AGENT
+          // FILE prints, for the radio line this beat is about to flush. A
+          // fabricated id was already dropped by the filter above; one that
+          // survives it but sits in no slot drops here. Either way the mark is
+          // absent rather than wrong.
+          pendingCitedSlots = citedIds
+            .map((id) => membrane.slotOf(id))
+            .filter((slot): slot is number => slot !== null)
+            .sort((left, right) => left - right)
+        }
       }
 
       engine.applyBeatEffects()
@@ -183,11 +259,13 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
         const reporter = await call(3, composer.reporter(engine.roundView()), readReporter)
         const report = engine.applyReport(reporter)
         blocks.absorbSentences(report)
+        const judged = judgedStances.get(beat.roundIndex)
         emit({
           type: 'report',
           round: beat.roundIndex,
           facts: report.facts,
           report_body: report.report_body,
+          ...(judged === undefined ? {} : { judged }),
         })
       }
 

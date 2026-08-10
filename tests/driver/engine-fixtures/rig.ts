@@ -11,6 +11,7 @@
 // not a rig-local rebuild of it — `EngineHandle` is a structural superset of
 // `EnginePort`, so it plugs in unchanged.
 import { createFixtureProvider } from '../../../src/transport/index.ts'
+import type { ScorerPort } from '../../../src/driver/ports.ts'
 import type { Transport, TransportResult } from '../../../src/transport/index.ts'
 import { createComposer } from '../../../src/composer/compose.ts'
 import { createBlockStore, createLiveDriver } from '../../../src/driver/index.ts'
@@ -151,9 +152,17 @@ export function recordEngine(inner: EnginePort, recorder: Recorder): EnginePort 
     beatView: (): BeatView => note('engine.beatView', inner.beatView()),
     roundView: (): RoundView => note('engine.roundView', inner.roundView()),
     feed: (): FeedLine[] => inner.feed(),
-    submitStance(response: JudgmentResponse | null): void {
+    submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null {
       recorder.log.push({ name: 'engine.submitStance', value: response })
-      inner.submitStance(response)
+      return inner.submitStance(response)
+    },
+    // x14 — logged under its OWN name, not `engine.submitStance` with a null.
+    // The suites here read this log to assert the driver's ordering, and the
+    // whole point of the second entry point is that a gate nobody was asked
+    // about is a different event from a call that failed.
+    submitBaseline(): { stance_id: string; desc: string } | null {
+      recorder.log.push({ name: 'engine.submitBaseline', value: null })
+      return inner.submitBaseline()
     },
     applyBeatEffects(): void {
       recorder.log.push({ name: 'engine.applyBeatEffects', value: null })
@@ -213,7 +222,17 @@ export type RigOptions = {
   run?: number
   transport?: Transport
   responses?: Partial<CallResponse>
-  scorer?: { score(): { total: number; rows: { label: string; value: number }[] } }
+  /** The port itself — one definition, so a widened seam reaches the rig too. */
+  scorer?: ScorerPort
+  /**
+   * Hand the agent one block before the run starts, so its gates are ASKED.
+   *
+   * x14 — required by every suite whose subject is Call 1. Left off, the run is
+   * an empty handover and the driver skips Call 1 outright; that is now the
+   * behaviour under test elsewhere rather than an accident of the fixtures.
+   * See `shapeAgent`.
+   */
+  shaped?: boolean
   /** Wrap the constructed collaborators — used by the recording and leak suites. */
   wrapEngine?: (engine: EnginePort) => EnginePort
   wrapComposer?: (composer: ComposerPort) => ComposerPort
@@ -225,7 +244,7 @@ export function makeRig(options: RigOptions = {}): Rig {
   const blocks = createBlockStore()
   const baseEngine = createEngine({ pack, run: options.run })
   const engine = options.wrapEngine ? options.wrapEngine(baseEngine) : baseEngine
-  const baseComposer = createComposer({ reportGuidance: reportGuidance(), blocks })
+  const baseComposer = createComposer({ reportGuidance: reportGuidance(), blocks, pack: 'rig' })
   const composer = options.wrapComposer ? options.wrapComposer(baseComposer) : baseComposer
   const baseTransport = options.transport ?? createFixtureProvider(options.responses)
   const transport = options.wrapTransport ? options.wrapTransport(baseTransport) : baseTransport
@@ -242,7 +261,33 @@ export function makeRig(options: RigOptions = {}): Rig {
   const events: ViewEvent[] = []
   driver.subscribe((event) => events.push(event))
 
-  return { driver, blocks, engine, transport, events }
+  const rig = { driver, blocks, engine, transport, events }
+  if (options.shaped === true) shapeAgent(rig)
+  return rig
+}
+
+/**
+ * Hands the agent ONE block, so this run's gates are actually asked.
+ *
+ * x14 — a run with an empty handover takes every gate's authored default with
+ * no Call 1 made at all (`live-driver.ts`), which is the behaviour these suites
+ * were silently relying on the absence of: they drove a virgin run and still
+ * expected a judgment call. A suite about Call 1 has to SHAPE the agent now,
+ * and saying so in one line at the top of the test is the honest version of
+ * what those runs were always pretending.
+ *
+ * The seed line never reaches the stream — `absorbLine` only makes an id
+ * minable, so nothing here adds a feed row, a beat, or a call. Runs that mean
+ * to exercise the empty handover simply do not call this.
+ */
+export const SEED_BLOCK = 'b-seed-1'
+
+export function shapeAgent(rig: Rig, id: string = SEED_BLOCK): void {
+  rig.blocks.absorbLine({ kind: 'event', clock: '00:00', text: '넘겨받은 문장.', sentence_id: id })
+  const mined = rig.driver.submit({ op: 'mine', sentence_id: id })
+  if (!mined.ok) throw new Error(`shapeAgent: ${id} was not minable`)
+  const deployed = rig.driver.submit({ op: 'deploy', blocks: [id] })
+  if (!deployed.ok) throw new Error(`shapeAgent: ${id} was not deployable`)
 }
 
 /** The safety stop — a driver that never finishes is a bug, not a hang. */

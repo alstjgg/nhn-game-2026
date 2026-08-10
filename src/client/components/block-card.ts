@@ -155,18 +155,31 @@ export function buildBlockCard(model: BlockCardModel, options: BlockCardOptions)
   const card = el('div', options.inSlot ? 'bcard in-slot' : 'bcard')
   card.dataset.block = model.id
 
-  const top = el('div', 'bc-top')
-  const tag = el('span', `bc-sp ${model.cls}`)
-  tag.append(el('i', undefined, model.mark), document.createTextNode(model.ko))
-  top.append(tag)
-  if (model.axis !== undefined) top.append(el('span', 'bc-axis', `축 ${model.axis}`))
-  top.append(el('span', 'bc-id', model.id.toUpperCase()))
+  // The AGENT FILE's copy is the SENTENCE and nothing else.
+  //
+  // The species chip, the axis, the id and the `런 nn` provenance are deck
+  // furniture: they told the operator how to sort a pile of cards in the BLOCK
+  // STORE. T1 dissolved that window — and with it `win-block-store.css`, which
+  // owned the whole `.bcard` skin — but the slot went on building the deck's
+  // markup, now unstyled. That is what the 08-08 playtest photographed: a bare
+  // `◇`, a raw `B-R1-B41` and a bold `런 01` stacked above the line. Inside a
+  // slot the card prints its text; the file's own header already says which
+  // sitting it belongs to.
+  if (!options.inSlot) {
+    const top = el('div', 'bc-top')
+    const tag = el('span', `bc-sp ${model.cls}`)
+    tag.append(el('i', undefined, model.mark))
+    top.append(tag)
+    if (model.axis !== undefined) top.append(el('span', 'bc-axis', `축 ${model.axis}`))
+    top.append(el('span', 'bc-id', model.id.toUpperCase()))
+    card.append(top)
+  }
 
-  card.append(top, el('div', 'bc-text', model.text))
+  card.append(el('div', 'bc-text', model.text))
 
   // D13: the reference's `· at · src` provenance is not at the seam, so the
   // card prints the one field the id itself carries.
-  if (model.run !== null) {
+  if (!options.inSlot && model.run !== null) {
     const source = el('div', 'bc-src')
     source.append(el('b', undefined, `런 ${pad2(model.run)}`))
     card.append(source)

@@ -7,7 +7,6 @@
 import { describe, it, expect } from 'vitest'
 import path from 'node:path'
 import {
-  ALL_SHEETS,
   CORE_SHEETS,
   INDEX_CSS,
   STYLES_DIR,
@@ -38,6 +37,24 @@ const importedFiles = imported.map((s) => s.replace(/^\.\//, ''))
 // aggregation point" block, and u10's own suite binds the fonts.css import.
 const u1ImportedFiles = imports(fileAtUnit('u1', 'src/client/styles/index.css')).map((s) => s.replace(/^\.\//, ''))
 
+/**
+ * U3 (playtest g3-1) retired `win-tally.css`; T1 (playtest g5-1) retired
+ * `win-block-store.css` — `WINDOW_SHEETS` (css-utils.ts) now reflects the
+ * CURRENT three window sheets. The block below pins u1's OWN historical
+ * merge — nine sheets on disk, five of them window skins — which is frozen
+ * by definition (it reads `fileAtUnit('u1', …)`) and must not move just
+ * because later units retired two of the five. Hard-coded rather than
+ * derived: a frozen set must not track a live constant.
+ */
+const U1_WINDOW_SHEETS = [
+  'win-agent-file.css',
+  'win-block-store.css',
+  'win-live-feed.css',
+  'win-reports.css',
+  'win-tally.css',
+]
+const U1_ALL_SHEETS = [...CORE_SHEETS, ...U1_WINDOW_SHEETS]
+
 describe('[u1#c4] index.css is an import manifest', () => {
   it('(a) src/client/styles/index.css exists', () => {
     expect(exists(INDEX_CSS)).toBe(true)
@@ -64,17 +81,17 @@ describe('[u1#c4] the aggregation order is tokens → base → shell → paper �
 
   it('(b) every remaining import is a per-window skin', () => {
     const tail = u1ImportedFiles.slice(4)
-    const strays = tail.filter((f) => !(WINDOW_SHEETS as readonly string[]).includes(f))
+    const strays = tail.filter((f) => !U1_WINDOW_SHEETS.includes(f))
     expect(strays).toEqual([])
   })
 
-  it('(c) all five per-window skins are imported', () => {
+  it('(c) all four per-window skins are imported', () => {
     const missing = WINDOW_SHEETS.filter((f) => !importedFiles.includes(f))
     expect(missing).toEqual([])
   })
 
   it('(d) exactly the nine u1 sheets are imported, none twice', () => {
-    expect(u1ImportedFiles).toHaveLength(ALL_SHEETS.length)
+    expect(u1ImportedFiles).toHaveLength(U1_ALL_SHEETS.length)
     expect(new Set(u1ImportedFiles).size).toBe(u1ImportedFiles.length)
     // the live manifest never imports one sheet twice either
     expect(new Set(importedFiles).size).toBe(importedFiles.length)

@@ -1,0 +1,289 @@
+/* ===========================================================================
+   win-ending.css — the closing plate (shell/ending.ts).
+
+   The last thing anyone sees. It is the SAME instrument as the onboarding
+   briefing — `confirm.css`'s `.cf-*` hardware, walked three plates deep by a
+   single button — and that is deliberate: the terminal that hired the operator
+   is the terminal that signs them off, and a new visual language at the last
+   screen would read as a different program congratulating them. So this sheet
+   is `win-manual.css` again (the veil, the entrance, the in-place step, the
+   prose treatment of `.cf-note`, the one-button foot, the toast suppression),
+   with three things it does not share: it comes in heavier, it goes out into
+   black instead of back to the desk, and it has TWO faces.
+
+   The two faces are where the design work is. A sitting that closed on one
+   death and a sitting that spent its last run are not the same event, and the
+   plate has to say which one happened before a single word is read. Four
+   levers carry that, and only those four: the LED in the head, the head's
+   bottom rule, the button fill, and the veil. Everything else — the plate, the
+   type, the geometry, the walk — is identical between them, because the point
+   is one instrument reporting two outcomes, not two screens.
+
+   Imported AFTER `confirm.css` and `win-manual.css` in index.css. That order is
+   load-bearing: every rule below overrides a `.cf-*` it would otherwise lose to
+   (`.end-plate` and `.cf-plate` are the same specificity — source order is the
+   whole of the tiebreak).
+   =========================================================================== */
+
+/* The desk's own line does not print over the last frame — the same reasoning
+   `win-manual.css` wrote out for the briefing and `signin.css` for the door.
+   `#toast` is centred (shell.css) and so is this plate, so an unsuppressed
+   ECHO-n 교신 시작 lands across the middle of whichever paragraph is up. Here it
+   would also be a lie: the sitting is over and there is no traffic left to
+   announce. `:has()` rather than a body class so it cannot fall out of step
+   with the plate, including across the exit, where the plate is still mounted.
+   The live region keeps its text; only the painted strip is suppressed. */
+body:has(#ending) #toast{display:none}
+
+/* ─── the layer ──────────────────────────────────────────────────────────────
+   990 — above everything the desk can raise. The tallest layer in the app is
+   `#confirm` at 970 (the 파견 confirmation), then the skip link at 960, the
+   toast at 950, and the film — #sweep 902 / #vignette 901 / #grain 900 — over
+   the whole viewport; `#signin` sits at 700 and `#manual` at 480. Nothing in
+   that stack may print over the ending, because there is nothing left for the
+   operator to do behind it: the module has already set `inert` on `#topbar` and
+   `#desktop` and stopped the clock. Not 1000, deliberately — a round number is
+   an invitation for the next sheet to sit one above it, and this one is meant
+   to be the ceiling.
+
+   The veil itself is NOT declared here. It is one of the four levers, so it
+   lives in the two ending blocks below; `#ending` carries only what the two
+   share. The module always emits one of the two classes (see the contract's
+   frozen DOM), so there is no third state to paint for. */
+#ending{position:fixed;inset:0;z-index:990;
+  display:flex;align-items:center;justify-content:center;
+  /* Slower in than the briefing (.5s) and much slower than a confirmation
+     (.18s). It arrives 2000 ms after the tally settled on 최종 — the module's
+     HELD BEAT — and a curtain that snaps shut after a held pause reads as an
+     error dialog. It has to close the way a room goes quiet. */
+  animation:endVeil .9s ease-out both}
+@keyframes endVeil{from{opacity:0}to{opacity:1}}
+
+/* ─── the exit ───────────────────────────────────────────────────────────────
+   The briefing dismisses itself: `man-out` runs the veil BACKWARDS over 420 ms
+   and `manual.ts` drops the node at 460, because behind it is a desk the
+   operator is about to be handed. Reversing this veil would be wrong twice —
+   it would hand back a desk that is finished, and it would end the game on a
+   shot of an empty terminal.
+
+   So the ending does not fade out. It goes dark. A full-bleed `--ink-0` plane
+   comes down over the veil AND over the plate, and the last frame of the game
+   is a black screen — which is also exactly what the sign-in door opens from,
+   so the reload lands without a flash.
+
+   400 ms, and that number is not a taste call: the contract's exit calls
+   `window.close()` and, if the tab is still there ~400 ms later (it always is
+   on Pages — browsers refuse `close()` on a tab the script did not open),
+   clears `sessionStorage` and reloads. 400 ms is therefore the entire budget
+   between the last press and the document being torn down. Landing the
+   blackout on the last usable frame is what "weight" means here; anything
+   longer is an animation nobody ever sees the end of.
+
+   `::after` rather than animating `#ending`'s own background: the plane has to
+   cover the plate too, and an absolutely-positioned pseudo-element on a flex
+   container is not a flex item, so it stacks over the section without touching
+   the layout. */
+#ending::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:var(--ink-0);opacity:0}
+#ending.end-out{pointer-events:none}
+#ending.end-out::after{animation:endBlack .4s ease-in both}
+@keyframes endBlack{from{opacity:0}to{opacity:1}}
+/* Under the black, the plate settles rather than holding rigid — the last
+   thing it does is stop being lit. Half the blackout's length so it is
+   finished, not interrupted, by the time the plane is opaque. */
+#ending.end-out .end-plate{animation:endSettle .4s ease-in both}
+@keyframes endSettle{to{opacity:.55;transform:translateY(7px)}}
+
+/* ─── the plate ─────────────────────────────────────────────────────────────
+   Heavier than the briefing's `manRise` (.62s) and with a beat of delay, so the
+   veil closes FIRST and the plate rises out of it rather than arriving with it.
+   Two events, in order, is what makes this feel like a verdict being handed
+   over instead of a dialog opening. */
+.end-plate{animation:endRise .8s cubic-bezier(.16,.9,.2,1) .18s both}
+@keyframes endRise{from{opacity:0;transform:translateY(26px) scale(.98);filter:blur(5px)}
+  to{opacity:1;transform:none;filter:none}}
+
+/* The head's meta slot carries the step counter (`1 / 3`) where a confirmation
+   carries 되돌릴 수 없음 — a READING of where you are in a walk, not a warning,
+   so it never takes `.cf-plate-hd i`'s seal red. Tabular figures so 1 / 3 and
+   3 / 3 do not shift the corner between steps. */
+.end-plate .cf-plate-hd b{margin-right:auto}
+.end-plate .cf-plate-hd i{opacity:1;font-variant-numeric:tabular-nums}
+
+/* ─── the step ───────────────────────────────────────────────────────────────
+   The plate is built once and rewritten in place (contract: "do not remount
+   between steps"), so the change needs a mark or the walk reads as a flicker.
+   This is the briefing's page-turn unchanged — same direction, same curve —
+   because it is literally the same walk, and giving the ending its own
+   transition would be a difference the operator has to account for at the one
+   moment they should be reading.
+
+   The plate does NOT move. Its height is pinned instead: the six bodies (three
+   plates × two endings) run from about 132px to about 168px of copy, and
+   without a floor the button walks up and down the screen under a finger that
+   is pressing it three times in a row. Floored at the tallest, so the shorter
+   plates carry the slack under the last paragraph and the button never
+   moves. */
+.end-plate .cf-body{min-height:168px}
+.end-plate .end-step{animation:endStep .36s cubic-bezier(.2,.9,.3,1) both}
+@keyframes endStep{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+
+/* The grey block is PROSE, not a footnote — `win-manual.css` has the long
+   version of this argument and every word of it applies: `.cf-note` is tuned
+   for one short caption under a question (10.2px, tracked .12em), and wide
+   tracking is exactly what makes a paragraph fall apart. Tracking to near zero,
+   a line-height the Korean can breathe in, and `word-break:keep-all` so the
+   browser stops breaking inside a word — 기록|은. The two paragraphs are one
+   block, so they sit closer to each other than the first sits to the lead.
+   Colour is NOT set here: the ash the bad ending reads in is one of the things
+   that separates the two, so it lives in the blocks below.
+
+   x10 (08-10) — THE TWO SHEETS PARTED ON SIZE, AND NOT ON FACE. The header's claim
+   that this one "is `win-manual.css` again … the prose treatment of `.cf-note`" is
+   true of the argument and no longer of every value: the briefing took its prose to
+   `--fs-10-5` (12.6px) and this sheet keeps 10.2px, because the briefing is read
+   once, cold, before anything has happened, while these plates land on an operator
+   who has just watched a day end. Do not "restore consistency" on the SIZE — that
+   divergence is the statement.
+
+   ON FACE THERE IS NOTHING LEFT TO DIVERGE ABOUT. This paragraph used to end "and
+   keeps `.cf-ask` in `--myeong`, deliberately … a verdict belongs in the face this
+   desk reserves for what a person said". 민서 overruled that the same day: 명조
+   leaves the alert plates entirely, so `.cf-ask` is `--mono` on the shared template
+   in `confirm.css` and every plate family inherits it, this one included. The
+   argument it replaces is worth keeping visible because it was a real reading and
+   losing it is a real cost — an ending IS the closest thing on this desk to someone
+   speaking to the operator directly. What the desk says instead, now, is that a
+   verdict is something the TERMINAL computed and printed; the people on this desk
+   speak in the two REPORTS bodies and in the feed, and those keep the serif. This
+   sheet sets no `font-family` at all, which is how it should have been stated in
+   the first place — the plate's face is the template's business. */
+.end-plate .cf-note{letter-spacing:.01em;line-height:1.85;word-break:keep-all}
+.end-plate .cf-note + .cf-note{margin-top:var(--space-7)}
+
+/* One answer, so it sits alone on the right where a confirmation's pair ends.
+   The label changes length across the walk — 다음, then 시뮬레이션 종료 — so the
+   button may be as wide as it needs while keeping the height every plate button
+   on this desk shares.
+
+   x10 (08-10) — 20 → 12px a side, following `.man-plate .cf-btn` rather than
+   diverging from it. THIS is one of the two rules that does track the briefing,
+   and the paragraph above about not "restoring consistency" is not in tension with
+   that: what the two sheets keep apart is the TYPE, because a verdict and a notice
+   are different kinds of utterance. The optical inset of a button is not — 민서's
+   note ("버튼 안쪽 폭은 너무 넓고") was about the control, and a control that reads
+   as loose on the briefing reads as loose here for the same reason. 시뮬레이션 종료
+   is the same 7 syllables and 1 space as the briefing's 시뮬레이션 시작, so the two
+   plates' buttons stay the same size as each other, which they should: it is the
+   same press ending the same session. */
+.end-plate .cf-btn{padding:0 var(--space-12)}
+
+/* ═══ GOOD — 사망 1명 ══════════════════════════════════════════════════════
+   A pass, not a celebration. The plate is a terminal confirming a record, and
+   the record is that one person did not come out; the operator does not get
+   confetti for it. So: the seal red that marks every warning on this desk is
+   removed — nothing here is a warning any more — and `--good` takes the three
+   places it was carrying. That token has sat in the scale unused by any chrome
+   until now, which is the point: the desk has exactly one green and it means
+   this and nothing else.
+
+   THE VEIL LETS THE DESK THROUGH. `confirm.css` argued that a veil which hides
+   the file hides what the question is about; the same argument, one step
+   further on. The briefing veils hard (`--sh-5` → `--sh-9`) because behind it
+   is a desk the operator has not been handed and there is nothing back there
+   they are meant to be reading. Behind THIS one is a desk they have just
+   finished with, with 현장 기록's final tally still sitting on it — the number
+   the first plate is about to say out loud. It stays legible: same 4→8 ramp and
+   the same light 2px blur as the confirmation plate, so the record reads
+   through the veil while the plate speaks over it. */
+#ending.end-good{background:radial-gradient(70% 60% at 50% 50%,var(--sh-4),var(--sh-8));
+  backdrop-filter:blur(2px)}
+
+/* The LED stops pulsing. `.cf-led` blinks on `livePulse` everywhere it appears
+   because it means A LINE IS OPEN; the line is closed now, and a lamp that goes
+   steady is how an instrument says so. Steady, lit, and green — the one signal
+   on the plate that is visible before any type is. */
+.end-good .cf-led{background:var(--good);animation:none;
+  box-shadow:0 0 9px var(--good)}
+/* The head's bottom rule is the door's hardware (`signin.css`), a seal-red line
+   fading out at 62%. Same line, same fade, `--good` instead — the hairline of
+   colour under the title, which is the second thing the eye lands on. */
+.end-good .cf-plate-hd::after{background:linear-gradient(90deg,var(--good),transparent 62%)}
+.end-good .cf-plate-hd i{color:var(--txt-7)}
+.end-good .cf-note{color:var(--txt-3)}
+
+/* The button fill. `.cf-yes` is a seal→seal-2 top-lit gradient; this is the
+   same lighting over `--good`, built from the shade scale rather than from a
+   second green — the desk has one green and inventing a `--good-2` to darken it
+   would be a colour that exists only to be a gradient stop. `--good` under
+   white sits at roughly the same contrast as `--seal` does (≈6.4:1 vs ≈6.7:1),
+   so the two buttons weigh the same in the hand and only the hue changes: same
+   hardware, different answer.
+
+   The hover glow drops the seal tint `.cf-yes` carries and goes neutral. A
+   coloured bloom under this button would be the celebration this ending is
+   deliberately not having. */
+.end-good .end-go{background-color:var(--good);
+  background-image:linear-gradient(to bottom,var(--sheen-05),var(--sh-2))}
+.end-good .end-go:hover{filter:brightness(1.12);
+  box-shadow:inset 0 1px 0 var(--sheen-35), 0 12px 26px -12px var(--sh-9)}
+
+/* ═══ BAD — 시행 횟수 소진 ═════════════════════════════════════════════════
+   The allotment is spent and the record stands. Heavier and colder, and seal
+   red doing exactly what it does everywhere else on this desk: this IS a
+   warning, the only one of the two that is.
+
+   THE VEIL CLOSES. Same gradient, walked down the shade scale to 7→9 and the
+   blur doubled — the tally is still back there and still faintly readable,
+   because the number is the whole point of the plate and blacking it out would
+   let the operator off, but the desk is being taken away rather than left open.
+   Read the two veils side by side and the difference is visible before either
+   plate has finished rising, which is the earliest either ending can announce
+   itself. */
+#ending.end-bad{background:radial-gradient(70% 60% at 50% 50%,var(--sh-7),var(--sh-9));
+  backdrop-filter:blur(4px)}
+
+/* The LED keeps `.cf-led`'s seal red and keeps pulsing — inherited, not
+   restated. Where the good ending's lamp goes steady to say the line is closed,
+   this one is still blinking at an operator who has run out of runs.
+
+   The head's rule does NOT fade out at 62% here: it runs the full width of the
+   plate, seal into `--alert-line`, so the head is underlined rather than
+   accented. It is the same rule doing more of itself, at full strength rather
+   than the .7 every other head on the desk draws it at. */
+.end-bad .cf-plate-hd::after{background:linear-gradient(90deg,var(--seal),var(--alert-line));
+  opacity:1}
+.end-bad .cf-plate-hd b{color:var(--alert-txt)}
+.end-bad .cf-plate-hd i{color:var(--alert-dim)}
+
+/* `--alert-txt` / `--alert-line` / `--alert-dim` have existed since the port and
+   are used by exactly one rule on the whole desk (`shell.css`'s taskbar alert
+   pulse). This is the moment they were declared for. The lead goes to the pale
+   alert white and the prose to the ash `--alert-dim` instead of the desk's
+   blue-grey `--txt-3` — the same paragraphs, read in a colder ink. The plate's
+   own edge and the foot's rule follow, so the cold reaches the hardware and not
+   just the type. */
+.end-bad .end-plate{border-color:var(--alert-line)}
+.end-bad .cf-ask{color:var(--alert-txt)}
+.end-bad .cf-note{color:var(--alert-dim)}
+.end-bad .cf-foot{border-top-color:var(--alert-line)}
+
+/* The button is left alone. `.cf-yes` is already the seal-red fill this desk
+   puts under every irreversible answer, and 시뮬레이션 종료 on a bad ending is
+   precisely that — no override, which is itself the statement. */
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════════════════
+   `base.css` collapses every animation on the page to a single 1 ms pass with
+   `both` fill, which lands each of the rules above on its END state — the veil
+   opaque, the plate settled, the blackout black. All correct: the ending
+   degrades to cuts between finished frames, which is what it should do.
+
+   One exception, and it is the one base.css already documents: a signal whose
+   LOOP carries the state has to degrade to a static distinguishing style, or it
+   settles on a keyframe that means something else. `livePulse` ends at
+   `opacity:.35`, so the bad ending's LED would read as a lamp that is OFF —
+   the opposite of what it is saying. Pinned lit, exactly as `.win-dot.live` and
+   `.caret` are pinned in base.css. */
+@media (prefers-reduced-motion: reduce){
+  #ending .cf-led{opacity:1}
+}

@@ -23,12 +23,12 @@
 // Titles are load-bearing — [u9#c5]'s verification runs this whole file, and
 // `-g` filters in later units may target these describe names.
 import { expect, test } from 'playwright/test'
-import { awaitTallyReveal, drain, raiseWindow } from './fixtures/harness.ts'
+import { awaitRecordFinal, drain, raiseWindow, turnToAgent } from './fixtures/harness.ts'
 import type { Page } from 'playwright/test'
 import { hideDebugPane } from './fixtures/dev-surface.ts'
 
-/** The five windows, in the taskbar order `window-registry.ts` emits. */
-const WINDOW_IDS = ['w-feed', 'w-file', 'w-store', 'w-rep', 'w-tally'] as const
+/** The four windows, in the taskbar order `window-registry.ts` emits. */
+const WINDOW_IDS = ['w-feed', 'w-file', 'w-rep'] as const
 
 /** spec §5.2 `MembraneOp` — the entire player input vocabulary (inv 1 / C11). */
 const MEMBRANE_OPS = ['slot', 'unslot', 'mine', 'deploy', 'new_run'] as const
@@ -36,10 +36,31 @@ const MEMBRANE_OPS = ['slot', 'unslot', 'mine', 'deploy', 'new_run'] as const
 /** Any control that claims to perform a membrane op, however it is marked up. */
 const MEMBRANE_SELECTOR = MEMBRANE_OPS.map((op) => `[data-op="${op}"]`).join(', ')
 
-/** NPC channels (spec §3 inv 2). The clock stamp `.fl-t` is chrome, excluded. */
-const NPC_TEXT_SELECTOR = '.fl-npc .fl-c, .fl-symptom .fl-c'
+/**
+ * The NPC channel (spec §3 inv 2). The clock stamp `.fl-t` is chrome, excluded.
+ *
+ * x8 — ONE channel, not two. `.fl-symptom .fl-c` was the second, and the
+ * symptom line no longer reaches the DOM at all (민서, 08-10), so leaving it
+ * here would have quietly turned half the scope into a selector that matches
+ * nothing — the exact silent-emptying this assert's scoping rule exists to
+ * prevent. Kept in step with `tests/invariants/no-digit-npc.test.ts`.
+ *
+ * x11 — TWO COLUMNS OF THE ONE CHANNEL (민서, 08-10). The reveal became a
+ * typewriter, so a line is printed twice: `.fl-c` fills character by character
+ * and is `aria-hidden="true"` so a `role="log"` does not announce it per
+ * keystroke, and the sr-only `.fl-sr` beside it carries the complete text for
+ * the reader. Inv 2 says no DIGIT renders for NPC state, and a digit heard is
+ * rendered as surely as a digit seen — a scope that stayed on `.fl-c` would
+ * have gone on passing while the announced half of every NPC line, the half an
+ * assistive-tech user actually receives, was never scanned at all. Both columns
+ * are in scope and neither is `.fl-t`, so the exclusion below is unaffected.
+ */
+const NPC_TEXT_SELECTOR = '.fl-npc .fl-c, .fl-npc .fl-sr'
 /** Digit-bearing surfaces that are score or chrome, never NPC state. */
-const EXCLUDED_DIGIT_SELECTOR = '.fl-t, .clk-digits, .tb-clock, .dd-value, .dd-runs, .ledger, .tly-table, .th-v, .tr-v'
+/* x4 — the ledger's table became record lines; the exclusion follows the
+   selectors that actually carry score digits. Kept in step with
+   `EXCLUDED_SELECTORS` in `tests/invariants/no-digit-npc.test.ts`. */
+const EXCLUDED_DIGIT_SELECTOR = '.fl-t, .clk-digits, .tb-clock, .dd-value, .dd-runs, .ledger, .tly-lines, .tly-line'
 
 // C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted. This helper waited
 // for all FIVE windows to be VISIBLE. `#w-tally` boots `class="win hidden"` and
@@ -57,6 +78,7 @@ async function boot(page: Page): Promise<void> {
   // C14 / [u11#c12] — the DEV-only debug pane covers the desk's bottom-left
   // quadrant and steals the pointer there. See `fixtures/dev-surface.ts`.
   await hideDebugPane(page)
+  await turnToAgent(page)
 }
 
 interface ControlMeta {
@@ -85,9 +107,17 @@ async function census(page: Page, selector: string): Promise<ControlMeta[]> {
 interface TabStop {
   readonly top: number
   readonly left: number
+  /** The same position in the VIEWPORT frame, un-normalised. */
+  readonly vtop: number
+  readonly vleft: number
   readonly where: string
   /** The `.win` id that owns this stop, or `(chrome)` for the persistent chrome. */
   readonly win: string
+  /**
+   * The nearest scrolling ancestor, named. Two stops are only comparable in the
+   * content frame when this matches — see `tabWalk` and the ordering assert.
+   */
+  readonly scroller: string
 }
 
 /**
@@ -113,6 +143,17 @@ async function tabWalk(page: Page, limit = 60): Promise<TabStop[]> {
       // visual order is in fact forwards. Adding the scroller's offset back
       // undoes the scroll and compares like with like; the ordering rule below
       // is untouched.
+      //
+      // x1 (08-08) — AND THE FRAME IS ONLY SHARED WHEN THE SCROLLER IS. That
+      // normalisation assumed one scroll container per window. The AGENT FILE
+      // now has two: `.file-sheet` scrolls the page, and the `.pg-nav` strip
+      // under it is pinned OUTSIDE it (`win-agent-file.css`, x1). Adding the
+      // sheet's offset to `#btnDeploy` and nothing to `.pg-turn` puts them in
+      // different frames, and the deploy button — genuinely above the strip —
+      // read as below it. So the stop records its scroller, and the ordering
+      // rule falls back to the viewport frame across a scroller boundary: both
+      // stops were measured while focused, and focus scrolls its own element
+      // into view, so the viewport rect at that instant IS the visual position.
       const scrolled = (axis: 'scrollTop' | 'scrollLeft'): number => {
         let node: HTMLElement | null = el.parentElement
         let sum = 0
@@ -122,11 +163,30 @@ async function tabWalk(page: Page, limit = 60): Promise<TabStop[]> {
         }
         return sum
       }
+      const name = (node: Element): string =>
+        `${node.tagName.toLowerCase()}${node.id ? `#${node.id}` : ''}.${node.className || ''}`
+      const scrollerOf = (): string => {
+        let node: HTMLElement | null = el.parentElement
+        while (node) {
+          const cs = getComputedStyle(node)
+          if (
+            /auto|scroll/.test(cs.overflowY + cs.overflowX) &&
+            (node.scrollHeight > node.clientHeight || node.scrollWidth > node.clientWidth)
+          ) {
+            return name(node)
+          }
+          node = node.parentElement
+        }
+        return '(document)'
+      }
       return {
         top: Math.round(r.top + scrolled('scrollTop')),
         left: Math.round(r.left + scrolled('scrollLeft')),
+        vtop: Math.round(r.top),
+        vleft: Math.round(r.left),
         where: `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ''}.${el.className || ''}`,
         win: el.closest('.win')?.id ?? '(chrome)',
+        scroller: scrollerOf(),
       }
     })
     if (!stop) break
@@ -210,22 +270,32 @@ test.describe('a11y — landmarks and roles', () => {
 
     const said: string[] = []
     said.push((await toast.textContent()) ?? '')
-    // Drive the run to its close: the wait, the fallback, the filed report and
-    // the tally all have to reach an operator who is not watching pixels. Via
-    // the harness, so this spec is inside the u7 gap rule rather than beside it.
+    // Drive the run to its close: the fallback, the filed report and the tally
+    // all have to reach an operator who is not watching pixels. Via the harness,
+    // so this spec is inside the u7 gap rule rather than beside it.
+    //
+    // x6 — the WAIT used to head that list, and it is deliberately not on it any
+    // more (민서, 08-09). `무전 회신 대기 중` / `무전 회신 도착` bracketed every
+    // model call, which on a seven-round day is most of what this channel ever
+    // said, and both only said the desk was still working — the next
+    // announcement proves that with content. `shell/announcer.ts`'s `waiting`
+    // case now returns `null`. What is asserted below is unchanged and is the
+    // point: the region still CARRIES something, from the events that are worth
+    // interrupting an operator for.
     await drain(page)
     await expect
       .poll(async () => ((await toast.textContent()) ?? '') !== said[0], { timeout: 15_000 })
       .toBe(true)
   })
 
-  // ADDED 08-05 (R2 on windows/tally.ts:135): the assert above rides the STREAM,
-  // and every line it can observe comes off a `ViewEvent`. The tally's hold is
-  // the desk's own — it opens on the run's close and releases up to 30 s later
-  // on a decision no event carries — so it announced nothing at either end. An
-  // operator got the close, then ~30 s of silence indistinguishable from a hung
-  // desk, then a tab stop appearing and the wait line flipping to the opposite
-  // meaning, both mute. This pins BOTH ends of that hold.
+  // ADDED 08-05 (R2 on pre-U3 windows/tally.ts:135): the assert above rides the
+  // STREAM, and every line it can observe comes off a `ViewEvent`. The day's
+  // hold is the desk's own — it opens on the run's close and releases up to
+  // 30 s later on a decision no event carries — so it announced nothing at
+  // either end. An operator got the close, then ~30 s of silence
+  // indistinguishable from a hung desk, then a tab stop appearing and the
+  // control's note flipping to the opposite meaning, both mute. This pins
+  // BOTH ends of that hold.
   //
   // `?drill=tally-lapse` (shell/boot.ts, DEV only) boots the demo loop with its
   // `report` events withheld — the day whose generation never files, which the
@@ -233,31 +303,39 @@ test.describe('a11y — landmarks and roles', () => {
   // exists. The 30 s wait is the real ceiling, deliberately: the failure this
   // guards against is a TIMING change that re-silences the release, so the test
   // waits on the clock the product ships with.
-  test('a11y — the tally’s hold, and the lapse that ends it, are announced', async ({ page }) => {
+  test('a11y — the day’s hold, and the lapse that ends it, are announced', async ({ page }) => {
     test.setTimeout(150_000)
     const toast = page.locator('#toast')
-    const wait = page.locator('#w-tally .tly-wait')
-    const newRun = page.locator('#w-tally #btnNewRun')
+    const wait = page.locator('#w-file #deployState')
+    const newRun = page.locator('#w-file #btnDeploy')
 
     await page.goto('./?drill=tally-lapse')
     await page.waitForFunction(() => Boolean((window as { __shell?: unknown }).__shell))
     await hideDebugPane(page)
+    // C1 — `#deployState` and `#btnDeploy` are on the agent's page; the file
+    // opens on its cover. This test drives the desk by URL, not through boot().
+    await turnToAgent(page)
 
-    // Drive the day to its close; the ledger comes up ~900 ms later. The
-    // harness `drain` is the close AND the reveal wait, which is exactly the
-    // pair this was spelling out by hand.
+    // Drive the day to its close; the terminal record counts up on its own
+    // ~9 s cadence, unrelated to whether the report has filed. The harness
+    // `drain` waits it out to `final`.
     await drain(page)
 
-    // (1) the hold is a fact an operator can HEAR, not only a line on the sheet.
+    // (1) the hold is a fact an operator can HEAR — and, since x6b, ONLY hear.
+    // The control's printed wait line is gone (it was the fanfold's removed
+    // marker mechanism mounted in this window), so the live region is no longer
+    // the redundant half of the pair: it is the only channel that carries the
+    // hold at all. That makes this assertion load-bearing rather than belt-and-
+    // braces, which is why the empty-note check sits right under it.
     await expect(toast, 'the desk closed the run and held it in silence').toContainText('보고서 정리 중', {
       timeout: 20_000,
     })
-    await expect(wait).toHaveText('……보고서 정리 중')
+    await expect(wait, 'the control printed a wait line again').toHaveText('')
     await expect(newRun, 'NEW RUN is offered while the hold is still up').toBeDisabled()
 
-    // (2) …and so is the release. The wait line changing to the opposite meaning
-    // is not an announcement: `.tly-wait` is a plain node with no live-region
-    // ancestor, which is exactly why the toast has to carry this.
+    // (2) …and so is the release. The control's note changing to the opposite
+    // meaning is not an announcement: `#deployState` is a plain node with no
+    // live-region ancestor, which is exactly why the toast has to carry this.
     await expect(toast, 'the hold lapsed and the desk said nothing').toContainText(
       '보고서가 도착하지 않았습니다',
       { timeout: 60_000 },
@@ -319,6 +397,11 @@ test.describe('a11y — keyboard reach', () => {
   // the EMPTY set and reported green. The five controls now carry `data-op`,
   // and this census makes a missing one fail the suite instead of emptying it.
   // The desk is driven first: `mine` only exists once a report has been filed.
+  //
+  // U3 — `deploy` and `new_run` share ONE physical control across its modes
+  // (design #3), so no single instant shows both ops. The census is a union
+  // of two scans: build phase, where the control reads `deploy`, and after
+  // `drain()` lands the terminal record, where it reads `new_run`.
   test('a11y — all five membrane ops have a marked, keyboard-operable control', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.reload()
@@ -329,35 +412,50 @@ test.describe('a11y — keyboard reach', () => {
     await page.waitForFunction(
       () => (window as unknown as { __shell?: unknown }).__shell !== undefined,
     )
+    // C1 — the reload re-opens the file on its cover, so `slot`/`unslot` are
+    // not in the document until it is turned. boot()'s own turn was undone by
+    // the reload above.
+    await turnToAgent(page)
+
+    const opsOf = (): Promise<string[]> =>
+      page
+        .locator(MEMBRANE_SELECTOR)
+        .evaluateAll((nodes) => [...new Set(nodes.map((n) => n.getAttribute('data-op') ?? ''))])
+    const beforeDrain = await opsOf()
+
     await page.evaluate(() => {
       const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
       if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
       handle.drain()
     })
-    // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
-    await awaitTallyReveal(page)
+    // U3 — no more sheet to reveal; wait the record out to final instead.
+    await awaitRecordFinal(page)
     await expect(page.locator('[data-op="mine"]').first()).toBeAttached({ timeout: 15_000 })
 
-    // `unslot` only exists once a seat is filled, so the desk is driven through
-    // mine → pick → slot first. Driving it is the point: a census taken before
-    // the operator has done anything is exactly the empty one this replaces.
+    // `unslot` only exists once a seat is filled, so the desk is driven first.
+    // ONE activation does it (08-08): the sentence is torn out and seated in
+    // the same gesture, and it is `aria-disabled` afterwards — a second click
+    // here would hang on a control that correctly refuses. Driving it is the
+    // point: a census taken before the operator has done anything is exactly
+    // the empty one this replaces.
     //
-    // Each window is RAISED before it is used. `drain()` above released
-    // `run_end`, so TALLY is open as a floating sheet over the desk, and a click
-    // that lands on the sheet does nothing — this test failed intermittently
-    // with `unslot` never attaching, because the `slot` click had been swallowed.
-    // See `raiseWindow`.
+    // x4 — the two are scanned on OPPOSITE sides of that activation, because
+    // the AGENT FILE's blank is gone the moment the file has a line in it: the
+    // four permanent boxes became one paragraph and one blank, and the blank is
+    // the `slot` op's control. So `slot` is censused while the file is still
+    // empty and `unslot` after the sentence lands. Both still have to exist —
+    // neither assert is dropped, only ordered.
+    //
+    // Each window is RAISED before it is used — a click that lands under
+    // another focused window does nothing. See `raiseWindow`.
+    await expect(page.locator('[data-op="slot"]').first()).toBeAttached({ timeout: 15_000 })
     await raiseWindow(page, 'rep')
     await page.locator('[data-op="mine"]').first().click()
-    await raiseWindow(page, 'store')
-    await page.locator('#storeList .bcard').first().click()
     await raiseWindow(page, 'file')
-    await page.locator('[data-op="slot"]').first().click()
     await expect(page.locator('[data-op="unslot"]').first()).toBeAttached({ timeout: 15_000 })
 
-    const found = await page
-      .locator(MEMBRANE_SELECTOR)
-      .evaluateAll((nodes) => [...new Set(nodes.map((n) => n.getAttribute('data-op') ?? ''))].sort())
+    const afterDrain = await opsOf()
+    const found = [...new Set([...beforeDrain, ...afterDrain])].sort()
     expect(found, 'a membrane op has no marked control on the desk').toEqual([...MEMBRANE_OPS].sort())
 
     for (const c of await census(page, MEMBRANE_SELECTOR)) {
@@ -391,14 +489,32 @@ test.describe('a11y — keyboard reach', () => {
       .evaluateAll((nodes) => nodes.filter((n) => n.getAttribute('aria-hidden') === 'true').length)
     expect(hidden, 'the resize grip is hidden from assistive tech').toBe(0)
 
-    const bar = page.locator('#w-store .win-bar')
+    // g13-3 — the AGENT FILE is a fixed sheet, and BOTH halves are pinned here
+    // because only both together keep 2.1.1: a window that resized by pointer
+    // and not by key would be the very violation this test was added for. So
+    // the sheet must have no grip to drag, no Shift promise in the name its bar
+    // announces, and no resize when the key is actually pressed.
+    await expect(page.locator('#w-file .win-grip')).toHaveCount(0)
+    expect(
+      (await page.locator('#w-file .win-bar').getAttribute('aria-label')) ?? '',
+      'the fixed sheet advertises a resize path it does not have',
+    ).not.toMatch(/Shift/)
+    const sheetH = async (): Promise<number> =>
+      page.locator('#w-file').evaluate((n) => Math.round(n.getBoundingClientRect().height))
+    const sheetBefore = await sheetH()
+    await page.locator('#w-file .win-bar').focus()
+    await page.keyboard.press('Shift+ArrowDown')
+    await page.keyboard.press('Shift+ArrowDown')
+    expect(await sheetH(), 'Shift+ArrowDown resized the fixed sheet').toBe(sheetBefore)
+
+    const bar = page.locator('#w-rep .win-bar')
     expect(
       (await bar.getAttribute('aria-label')) ?? '',
       'the bar does not announce its resize path — an undiscoverable path is not a path',
     ).toMatch(/Shift/)
 
     const boxOf = async (): Promise<{ w: number; h: number }> =>
-      page.locator('#w-store').evaluate((n) => {
+      page.locator('#w-rep').evaluate((n) => {
         const r = n.getBoundingClientRect()
         return { w: Math.round(r.width), h: Math.round(r.height) }
       })
@@ -410,9 +526,9 @@ test.describe('a11y — keyboard reach', () => {
     expect(after.h, 'Shift+ArrowDown on the focused bar did not resize the window').toBeGreaterThan(before.h)
 
     // …and plain arrows still MOVE, unchanged.
-    const topBefore = await page.locator('#w-store').evaluate((n) => Math.round(n.getBoundingClientRect().top))
+    const topBefore = await page.locator('#w-rep').evaluate((n) => Math.round(n.getBoundingClientRect().top))
     await page.keyboard.press('ArrowDown')
-    const topAfter = await page.locator('#w-store').evaluate((n) => Math.round(n.getBoundingClientRect().top))
+    const topAfter = await page.locator('#w-rep').evaluate((n) => Math.round(n.getBoundingClientRect().top))
     expect(topAfter, 'the arrow-key move path regressed').toBeGreaterThan(topBefore)
   })
 
@@ -432,7 +548,7 @@ test.describe('a11y — keyboard reach', () => {
   })
 
   // C15 / C17 / [u11#c12] — RE-AIMED (08-04), never deleted and not narrowed by
-  // selector: the sweep still visits every `.wc, .task, .win-bar, .rate-btn,
+  // selector: the sweep still visits every `.wc, .task, .win-bar, .snd-btn,
   // [data-op]` in the document. What changed is that a control with NO LAYOUT
   // BOX is now reported as such instead of being counted as unringed. The three
   // that failed were `#w-tally`'s own bar and its two window controls: the tally
@@ -455,7 +571,9 @@ test.describe('a11y — keyboard reach', () => {
       // `.win-grip` joined the sweep on 08-05 with its keyboard path (R2 on
       // window-frame.ts:55) — a control the operator can now reach has to ring.
       for (const el of document.querySelectorAll<HTMLElement>(
-        '.wc, .task, .win-bar, .win-grip, .rate-btn, [data-op]',
+        // `.rate-btn` is gone with W4's transport row; `.snd-btn` (the mute
+        // toggle) is what stands in that row now, and it keeps the coverage.
+        '.wc, .task, .win-bar, .win-grip, .snd-btn, [data-op]',
       )) {
         const name = `${el.tagName.toLowerCase()}.${el.className}`
         if (el.getClientRects().length === 0) {
@@ -473,9 +591,9 @@ test.describe('a11y — keyboard reach', () => {
     })
     expect(measured.reachable, 'no reachable control was measured — the sweep is vacuous').toBeGreaterThan(0)
     expect(measured.unringed, 'these controls give no visible focus feedback').toEqual([])
-    for (const held of measured.heldByPhase) {
-      expect(held, 'a control with no layout box outside a phase-held window').toMatch(/^w-tally /)
-    }
+    // U3 — no window is phase-held any more (TALLY is gone); every control on
+    // the desk has a layout box from boot.
+    expect(measured.heldByPhase).toEqual([])
   })
 })
 
@@ -516,8 +634,16 @@ test.describe('a11y — focus order follows visual order at 1280x800', () => {
       const prev = stops[i - 1]!
       const cur = stops[i]!
       if (cur.win !== prev.win) continue
-      const sameRow = Math.abs(cur.top - prev.top) < 8
-      const forwards = sameRow ? cur.left >= prev.left : cur.top > prev.top
+      // Content frame inside one scroller, viewport frame across two — see the
+      // note in `tabWalk`. Mixing the frames is what makes a stop read backwards
+      // when it is not.
+      const shared = cur.scroller === prev.scroller
+      const curTop = shared ? cur.top : cur.vtop
+      const prevTop = shared ? prev.top : prev.vtop
+      const curLeft = shared ? cur.left : cur.vleft
+      const prevLeft = shared ? prev.left : prev.vleft
+      const sameRow = Math.abs(curTop - prevTop) < 8
+      const forwards = sameRow ? curLeft >= prevLeft : curTop > prevTop
       expect(forwards, `tab stop ${i} (${cur.where}) goes backwards from ${prev.where} inside ${cur.win}`).toBe(true)
     }
   })
@@ -572,7 +698,7 @@ test.describe('a11y — focus order follows visual order at 1280x800', () => {
   })
 
   test('a11y — a hidden window contributes no tab stop', async ({ page }) => {
-    const node = page.locator('#w-store')
+    const node = page.locator('#w-feed')
     await node.locator('.wc-close').click()
     await expect(node).toBeHidden()
     const reachable = await node.evaluate((n) => {
@@ -679,8 +805,19 @@ test.describe('inv 2 · rendered DOM — no digit renders for NPC state', () => 
   })
 
   test('inv 2 — no digit renders inside an NPC or symptom line', async ({ page }) => {
-    // Scoped BY SELECTOR: `.fl-npc .fl-c` / `.fl-symptom .fl-c` only. The
-    // per-line clock stamp `.fl-t` is a sibling and is not read.
+    // Scoped BY SELECTOR: the NPC line's two content columns only — `.fl-c`,
+    // what the paper prints, and `.fl-sr`, what a reader hears (x11). The
+    // per-line clock stamp `.fl-t` is a sibling of both and is not read.
+    //
+    // WHAT THIS DOES NOT PROVE, said plainly (민서, 08-10): the desk boots into
+    // BUILD and the driver holds the run's stream until the file is committed
+    // (spec-client §5.1), so `boot()` alone leaves the fanfold empty and this
+    // scan runs over zero nodes. It is a WELL-FORMEDNESS check here, paired with
+    // the two below; the scan that runs over a real day's NPC lines — with its
+    // own non-vacuity guard on the count — is `acceptance.spec.ts` #2 (c),
+    // which drives the desk first. A day is not driven here on purpose: this
+    // file's boot is shared with the focus-order and landmark asserts, which
+    // measure the desk as the operator meets it.
     const offenders = await page.locator(NPC_TEXT_SELECTOR).evaluateAll((nodes) =>
       nodes
         .map((n) => (n.textContent ?? '').trim())

@@ -33,6 +33,16 @@ const ARCHIVE_TS = path.join(CLIENT, 'components/report-archive.ts')
 const VIEW_TS = path.join(CLIENT, 'components/report-view.ts')
 const REPORTS_TS = path.join(CLIENT, 'windows/reports.ts')
 const UNIT_FILES = [MINABLE_TS, ARCHIVE_TS, VIEW_TS, REPORTS_TS] as const
+/**
+ * NOT a unit file — u4's, and deliberately outside every scan above.
+ *
+ * x7 — the rail's tab is a CALLSIGN, and the callsign has one owner
+ * (`callsignOf`, D4: the pack carries none, so the whole series is document
+ * art). This file used to pin the strings that owner happened to return, which
+ * proved only that the assertion and the mint were written on the same day; see
+ * `[u6#c4] (b)` for what it costs.
+ */
+const DOSSIER_TS = path.join(CLIENT, 'components/dossier.ts')
 const FIXTURES_DIR = path.join(CLIENT, 'driver/fixtures')
 
 interface Source {
@@ -64,11 +74,12 @@ function offenders(re: RegExp): string[] {
 
 /* ── the exported surface (u6 design §4) ─────────────────────────────────── */
 
-type MinableState = 'unmined' | 'mined' | 'slotted'
+type MinableState = 'unmined' | 'mined' | 'slotted' | 'carried'
 
 interface MarkSets {
   mined: ReadonlySet<string>
-  slottedEver: ReadonlySet<string>
+  slotted: ReadonlySet<string>
+  carried: ReadonlySet<string>
 }
 
 interface MineEffect {
@@ -88,6 +99,14 @@ interface MinableModule {
   sentenceAttrs(sentence: Sentence): Readonly<Record<string, string>>
   mine(id: string, marks: MarkSets): MineOutcome
   isMineKey(key: string): boolean
+  /**
+   * x10 — the DOM half's two repaints, typed against `unknown` nodes so the
+   * node-env suite can hand them a stub. Neither reads anything off an element
+   * but `dataset.sentenceId`, which is what makes that honest (see `[x10]` at
+   * the foot of this file).
+   */
+  applyState(node: unknown, state: MinableState, held?: boolean): void
+  repaintMines(host: unknown, marks: MarkSets, held: boolean): void
 }
 
 interface ArchiveSegment {
@@ -105,21 +124,29 @@ interface ArchiveModule {
   railKeyIndex(count: number, current: number, key: string): number | null
 }
 
+/** u4's — the one mint of the ECHO series. See `DOSSIER_TS`. */
+interface DossierModule {
+  callsignOf(run: number): string
+}
+
 interface TypeState {
   sentence: number
   chars: number
   done: boolean
 }
 
+/** A shadow of `components/report-view.ts`'s own — keep the two in step. */
 interface ReportModel {
   round: number
   facts: Sentence[]
   report_body: Sentence[]
+  opens?: string[]
 }
 
 interface ViewModule {
   typeCursor(state: TypeState, elapsedMs: number, lengths: readonly number[]): TypeState
   minedCount(model: ReportModel, marks: MarkSets): number
+  accumulated(held: ReportModel | null, slice: ReportModel): ReportModel
 }
 
 async function minable(): Promise<MinableModule> {
@@ -128,6 +155,10 @@ async function minable(): Promise<MinableModule> {
 
 async function archive(): Promise<ArchiveModule> {
   return (await import(importable(ARCHIVE_TS))) as unknown as ArchiveModule
+}
+
+async function dossier(): Promise<DossierModule> {
+  return (await import(importable(DOSSIER_TS))) as unknown as DossierModule
 }
 
 async function view(): Promise<ViewModule> {
@@ -261,29 +292,51 @@ describe('[u6#c3] mine op carries authored id', () => {
 /* ══ [u6#c5] minable states ═════════════════════════════════════════════ */
 
 describe('[u6#c5] minable states', () => {
-  it('(a) unmined · mined · slotted are three distinct states', async () => {
+  it('(a) unmined · mined · slotted · carried are four distinct states', async () => {
     const m = await minable()
-    const marks = m.deriveMarks(store({ mined: ['id-mined'], slots: { 0: 'id-slotted' } }), [])
+    // `id-slotted` is mined TOO, because that is the only way a sentence gets
+    // into a slot: an unmined block cannot be slotted (`engine-ops.test.ts (b)`).
+    // This used to seat an unmined id — a state the app cannot produce — so the
+    // assert passed over a combination that never occurs.
+    const marks = m.deriveMarks(
+      store({ mined: ['id-mined', 'id-slotted'], slots: { 0: 'id-slotted' } }),
+      ['id-carried'],
+    )
     expect(m.sentenceState('id-plain', marks)).toBe('unmined')
     expect(m.sentenceState('id-mined', marks)).toBe('mined')
     expect(m.sentenceState('id-slotted', marks)).toBe('slotted')
+    expect(m.sentenceState('id-carried', marks)).toBe('carried')
   })
 
-  it('(b) mined wins over slotted when a sentence is both', async () => {
+  it('(b) slotted wins over carried wins over mined when a sentence is several', async () => {
+    // REVERSED (08-06). [u6#c5] b had mined win, which made `'slotted'`
+    // unreachable — every slotted id is also mined (see (a)) — so `.min.slotted`
+    // in `win-reports.css` never rendered and the operator got no sign that a
+    // sentence had been placed. The more specific state reads first.
+    //
+    // `carried` split out of `slotted` (08-08): TODAY's file and an EARLIER
+    // day's are different facts about the desk, and the rail shows both at
+    // once. A carried id seated again today reads 배치, not 과거 배치.
     const m = await minable()
-    const marks = m.deriveMarks(store({ mined: ['id-x'], slots: { 2: 'id-x' } }), ['id-x'])
-    expect(m.sentenceState('id-x', marks)).toBe('mined')
+    const both = m.deriveMarks(store({ mined: ['id-x'], slots: { 2: 'id-x' } }), ['id-x'])
+    expect(m.sentenceState('id-x', both)).toBe('slotted')
+
+    const past = m.deriveMarks(store({ mined: ['id-x'] }), ['id-x'])
+    expect(m.sentenceState('id-x', past)).toBe('carried')
   })
 
-  it('(c) the three classes are distinct and carry the skin selectors u1 shipped', async () => {
+  it('(c) the four classes are distinct and carry the skin selectors u1 shipped', async () => {
     const m = await minable()
-    const classes = (['unmined', 'mined', 'slotted'] as MinableState[]).map((s) => m.sentenceClass(s))
-    expect(new Set(classes).size).toBe(3)
+    const states: MinableState[] = ['unmined', 'mined', 'slotted', 'carried']
+    const classes = states.map((s) => m.sentenceClass(s))
+    expect(new Set(classes).size).toBe(4)
     for (const c of classes) expect(c.split(/\s+/)).toContain('min')
     expect(classes[0]!.split(/\s+/)).not.toContain('mined')
     expect(classes[0]!.split(/\s+/)).not.toContain('slotted')
+    expect(classes[0]!.split(/\s+/)).not.toContain('carried')
     expect(classes[1]!.split(/\s+/)).toContain('mined')
     expect(classes[2]!.split(/\s+/)).toContain('slotted')
+    expect(classes[3]!.split(/\s+/)).toContain('carried')
   })
 
   it('(d) deriveMarks folds store.mined, the slot values and meta.carried — and mutates nothing', async () => {
@@ -293,7 +346,8 @@ describe('[u6#c5] minable states', () => {
     const marks = m.deriveMarks(snapshot, carried)
 
     expect([...marks.mined].sort()).toEqual(['a'])
-    expect([...marks.slottedEver].sort()).toEqual(['b', 'c', 'd'])
+    expect([...marks.slotted].sort()).toEqual(['b', 'c'])
+    expect([...marks.carried].sort()).toEqual(['d'])
     expect(snapshot).toEqual(store({ mined: ['a'], slots: { 0: 'b', 3: 'c' } }))
     expect(carried).toEqual(['d'])
   })
@@ -425,8 +479,9 @@ describe('[u6#c4] archive segmentation is pure and gate-free', () => {
     expect(segments.map((s) => s.run)).toEqual([1, 2])
   })
 
-  it('(b) the run label is `RUN nn`, zero-padded, derived from the number', async () => {
+  it("(b) the run label is the sitting's callsign, derived from the number", async () => {
     const a = await archive()
+    const { callsignOf } = await dossier()
     const segments = a.archiveSegments(
       [
         { run: 1, label: '08:50 — 21:04' },
@@ -434,22 +489,51 @@ describe('[u6#c4] archive segmentation is pure and gate-free', () => {
       ],
       1,
     )
-    expect(segments[0]!.runLabel).toBe('RUN 01')
-    expect(segments[1]!.runLabel).toBe('RUN 12')
+    // x7 — asserted against `callsignOf`, not against the two strings it
+    // happened to return the day this was written (`'ECHO-1'` / `'ECHO-12'`).
+    // What the rail promises is that the tab is THE SAME NAME the AGENT FILE
+    // prints for that sitting; a literal here proved that only by coincidence,
+    // and when the series was renumbered (the unshaped first agent is plain
+    // `ECHO` now) it was this assertion that went red while the two surfaces it
+    // guards still agreed perfectly.
+    expect(segments[0]!.runLabel).toBe(callsignOf(1))
+    expect(segments[1]!.runLabel).toBe(callsignOf(12))
+    // …and not vacuously: a callsign in shape, DELIBERATELY LITERAL on `ECHO`
+    // because that is the shipped name of the series and nothing else here says
+    // it out loud — renaming it should not be able to pass in silence. The
+    // number is the part that may move.
+    expect(segments[0]!.runLabel).toMatch(/^ECHO(?:-\d+)?$/)
+    expect(segments[1]!.runLabel).not.toBe(segments[0]!.runLabel)
   })
 
-  it('(c) a label that already carries its own `RUN nn /` prefix is normalised, not doubled', async () => {
+  /**
+   * x5 — the tab prints the CALLSIGN and nothing else, so the doubled-prefix
+   * defect this case was written for cannot be reached at all: there is no
+   * second line for a label to be normalised onto.
+   *
+   * It holds the stronger claim that replaced it. The seam's `label` is whatever
+   * the authority put there — `RUN 01 / 08:50 — 21:04` from the fixture loop,
+   * `전구간정상-r1` from the live adapter (`driver/live/index.ts`), and neither is
+   * something this window promises to print well. A segment must carry no trace
+   * of it, so nothing about the tab can drift when the label's format does.
+   */
+  it('(c) no part of the seam label reaches a segment — the tab is the callsign alone', async () => {
     const a = await archive()
+    const { callsignOf } = await dossier()
     const segments = a.archiveSegments(
       [
         { run: 1, label: 'RUN 01 / 08:50 — 21:04' },
-        { run: 2, label: '09:10 — 21:04' },
+        { run: 2, label: '전구간정상-r2' },
       ],
       1,
     )
-    expect(segments[0]!.span).toBe('08:50 — 21:04')
-    expect(segments[1]!.span).toBe('09:10 — 21:04')
-    for (const s of segments) expect(`${s.runLabel} ${s.span}`).not.toMatch(/RUN\s*\d+[\s/·]*RUN/)
+    const printed = segments.map((s) => JSON.stringify(s))
+    expect(printed[0]).not.toMatch(/08:50|21:04|RUN\s*01/)
+    expect(printed[1]).not.toMatch(/전구간정상|-r2/)
+    // x7 — same substitution as (b): what is left on the tab after the seam's
+    // label has been refused is the callsign, whatever `callsignOf` currently
+    // makes of a run. This case is about what did NOT reach the tab.
+    expect(segments.map((s) => s.runLabel)).toEqual([callsignOf(1), callsignOf(2)])
   })
 
   it('(d) exactly one segment is selected — the active run', async () => {
@@ -598,5 +682,311 @@ describe('[u6#c10] run-wide hard constraints hold in this unit', () => {
   it('(g) C5/C6 — u6 edits neither runner config nor vitest.config.ts', () => {
     expect(read(path.join(CLIENT, '../../playwright.config.ts'))).not.toMatch(/reports\.spec|u6/)
     expect(read(path.join(CLIENT, '../../vitest.config.ts'))).not.toMatch(/jsdom|happy-dom/)
+  })
+})
+
+/* ══ [w2] one sitting, one accumulating record ══════════════════════════ */
+
+describe('[w2] a sitting accumulates its rounds into one document', () => {
+  const s = (id: string): Sentence => ({ id, text: `${id} 문장`, species: 'fact' })
+
+  it('(a) the first round of a sitting is the document', async () => {
+    const v = await view()
+    const round = { round: 0, facts: [s('f1')], report_body: [s('b1')] }
+    expect(v.accumulated(null, round)).toEqual(round)
+  })
+
+  it('(b) each further round appends to both panes, in arrival order', async () => {
+    const v = await view()
+    const one = v.accumulated(null, { round: 0, facts: [s('f1')], report_body: [s('b1')] })
+    const two = v.accumulated(one, { round: 1, facts: [s('f2')], report_body: [s('b2'), s('b3')] })
+
+    expect(two.facts.map((x) => x.id)).toEqual(['f1', 'f2'])
+    expect(two.report_body.map((x) => x.id)).toEqual(['b1', 'b2', 'b3'])
+  })
+
+  it('(c) the model carries the LATEST round filed — that is the replay key', async () => {
+    const v = await view()
+    const one = v.accumulated(null, { round: 0, facts: [], report_body: [s('b1')] })
+    expect(v.accumulated(one, { round: 6, facts: [], report_body: [s('b2')] }).round).toBe(6)
+  })
+
+  it('(d) it mutates neither side — the held document and the slice are untouched', async () => {
+    const v = await view()
+    const held = { round: 0, facts: [s('f1')], report_body: [s('b1')] }
+    const slice = { round: 1, facts: [s('f2')], report_body: [s('b2')] }
+    v.accumulated(held, slice)
+    expect(held.facts.map((x) => x.id)).toEqual(['f1'])
+    expect(held.report_body.map((x) => x.id)).toEqual(['b1'])
+    expect(slice.facts.map((x) => x.id)).toEqual(['f2'])
+  })
+
+  it('(e) a seven-round day is ONE document, and the mined tally counts all of it', async () => {
+    const v = await view()
+    const m = await minable()
+    let doc: ReportModel | null = null
+    for (let round = 0; round < 7; round += 1) {
+      doc = v.accumulated(doc, {
+        round,
+        facts: [s(`f${round}`)],
+        report_body: [s(`b${round}`)],
+      })
+    }
+    expect(doc!.facts).toHaveLength(7)
+    expect(doc!.report_body).toHaveLength(7)
+    expect(v.minedCount(doc!, m.deriveMarks(store({ mined: ['f3', 'b5'] }), []))).toBe(2)
+  })
+
+  it('(f) the window keys its rail on the run, never on the round', () => {
+    // The defect was `railEntries(archive, [...filed.keys()])` being handed
+    // ROUND numbers. `filed` is now keyed by the sitting, and the only write
+    // to it takes its key from the run `meta` last named.
+    const window = scannedSources().find((s) => s.file.endsWith('windows/reports.ts'))
+    expect(window, 'the REPORTS window is not in the scanned set').toBeTruthy()
+    expect(window!.text, 'the report handler no longer names the sitting').toMatch(/const sitting = run/)
+    expect(window!.text, 'a report is still filed under its round').not.toMatch(/filed\.set\(\s*event\.round/)
+  })
+
+  it('(g) each round after the first records the id it opens on', async () => {
+    const v = await view()
+    const one = v.accumulated(null, { round: 0, facts: [], report_body: [s('b1'), s('b2')] })
+    // A single-round document carries no boundary at all — `(a)` above pins
+    // that identity, and a break before the very first sentence would open the
+    // record with a blank line.
+    expect(one.opens).toBeUndefined()
+
+    const two = v.accumulated(one, { round: 1, facts: [], report_body: [s('b3')] })
+    const three = v.accumulated(two, { round: 2, facts: [], report_body: [s('b4'), s('b5')] })
+    expect(three.opens).toEqual(['b3', 'b4'])
+    // The boundary is an id in the body, never an index into it: `render()`
+    // rebuilds the flat list and matches by id, so an id that is not there is
+    // simply no break rather than a break in the wrong place.
+    expect(three.report_body.map((x) => x.id)).toEqual(['b1', 'b2', 'b3', 'b4', 'b5'])
+  })
+})
+
+/* ══ [x6] the 검인 chop — REMOVED (민서, 08-10) ══════════════════════════
+
+   Six asserts stood here and all six were right about the rule they measured:
+   a round finishing does not stamp while the day is open; the run's `score` is
+   what stamps it once the replay has finished; seal and replay land in either
+   order and whichever is second stamps; a sitting that filed nothing stays
+   unstamped; and two source guards holding `stamped()` as the single writer and
+   the window's seal as fed from `score` rather than from the archive.
+
+   None of that was the problem. The rule was never wrong — WHEN its three facts
+   first stood together kept moving underneath it, because everything around it
+   moved: x11 made the LIVE FEED type, x12 held REPORTS until the paper reached
+   the round. The chop landed twice, then once but too early, and no probe here
+   or in a browser reproduced either reliably. It was removed rather than timed a
+   fourth time; `components/report-view.ts` carries the account.
+
+   `ChopState` / `chopDown` are gone from `ViewModule` above with it.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+
+/* ══ [x10] the tear is HELD while the handover types itself out ══════════ */
+//
+// 민서 (08-10): mining is disabled while the previous ECHO's 인수인계 사항 is
+// being typed out. The REVEAL is the AGENT FILE's (`components/slot-board.ts`,
+// and u4's suite holds that half); what is asserted here is REPORTS' side of it
+// — that the gesture cannot reach the `mine` op while the board says it is
+// drawing, that the sentences SAY they are unavailable rather than silently
+// ignoring a press, and that saying so is undone by a repaint rather than by an
+// undo step somebody has to remember.
+//
+// The DOM half is exercised with a STUB node, not with jsdom (C6 — vitest is
+// node-env only). That is honest here and only here: `applyState` and
+// `repaintMines` touch `className`, `setAttribute`/`removeAttribute` and
+// `dataset.sentenceId`, which the stub implements completely. The rendered
+// article is `e2e/reports.spec.ts`'s.
+
+const TYPEWRITER_TS = path.join(CLIENT, 'components/typewriter.ts')
+
+interface TypePace {
+  msPerChar: number
+  msBetween: number
+}
+
+interface TypewriterModule {
+  MS_PER_CHAR: number
+  MS_BETWEEN: number
+  READING_PACE: TypePace
+  TYPE_START: TypeState
+  typeCursor(state: TypeState, elapsedMs: number, lengths: readonly number[], pace?: TypePace): TypeState
+  typeDuration(lengths: readonly number[], pace?: TypePace): number
+}
+
+async function typewriter(): Promise<TypewriterModule> {
+  return (await import(importable(TYPEWRITER_TS))) as unknown as TypewriterModule
+}
+
+/** Everything `applyState` and `repaintMines` actually touch on an anchor. */
+interface StubNode {
+  className: string
+  dataset: { sentenceId: string }
+  attrs: Map<string, string>
+  setAttribute(name: string, value: string): void
+  removeAttribute(name: string): void
+}
+
+function stubNode(id: string): StubNode {
+  const attrs = new Map<string, string>()
+  return {
+    className: '',
+    dataset: { sentenceId: id },
+    attrs,
+    setAttribute(name: string, value: string): void {
+      attrs.set(name, value)
+    },
+    removeAttribute(name: string): void {
+      attrs.delete(name)
+    },
+  }
+}
+
+/** A page of anchors, as `repaintMines` reads one. */
+function stubHost(nodes: readonly StubNode[]): unknown {
+  return { querySelectorAll: (): readonly StubNode[] => nodes }
+}
+
+const disabled = (node: StubNode): string | undefined => node.attrs.get('aria-disabled')
+
+describe('[x10] mining is held while the handover is typing itself out', () => {
+  it('(a) the two-argument call is unchanged — a settled sentence is unavailable, an operable one is not', async () => {
+    const m = await minable()
+    const slotted = stubNode('id-slotted')
+    const unmined = stubNode('id-plain')
+    // Exactly as `components/report-view.ts` calls it: two arguments, no hold.
+    // The third argument defaults, so x10 changed nothing for the caller that
+    // did not ask for it.
+    m.applyState(slotted, 'slotted')
+    m.applyState(unmined, 'unmined')
+    expect(disabled(slotted)).toBe('true')
+    expect(disabled(unmined)).toBeUndefined()
+  })
+
+  it('(b) a held tear SAYS so, and the release takes it back on the same node', async () => {
+    const m = await minable()
+    const node = stubNode('id-plain')
+
+    m.applyState(node, 'unmined', true)
+    expect(disabled(node), 'a held sentence must announce that it is unavailable').toBe('true')
+
+    // The release is a REPAINT, not an undo: the same call with the hold down
+    // clears the attribute, because the attribute is derived from the arguments
+    // and never read back off the node.
+    m.applyState(node, 'unmined', false)
+    expect(disabled(node), 'the hold stuck ON — the operator cannot mine for the rest of the sitting').toBeUndefined()
+
+    // …and it survives being held twice and released once, which is the shape a
+    // second settle in one sitting would produce.
+    m.applyState(node, 'unmined', true)
+    m.applyState(node, 'unmined', true)
+    m.applyState(node, 'unmined', false)
+    expect(disabled(node)).toBeUndefined()
+  })
+
+  it('(c) the hold reaches every sentence, and the release gives each one its OWN state back', async () => {
+    const m = await minable()
+    const marks = m.deriveMarks(store({ mined: ['id-mined', 'id-slotted'], slots: { 0: 'id-slotted' } }), ['id-carried'])
+    const nodes = ['id-plain', 'id-mined', 'id-slotted', 'id-carried'].map(stubNode)
+    const host = stubHost(nodes)
+
+    m.repaintMines(host, marks, true)
+    expect(nodes.map(disabled), 'the hold must reach every anchor on the page').toEqual([
+      'true',
+      'true',
+      'true',
+      'true',
+    ])
+
+    m.repaintMines(host, marks, false)
+    // Unconditional AND total: the release does not blanket-clear, it recomputes
+    // — the two settled sentences are still dead ends, the other two are live.
+    expect(nodes.map(disabled)).toEqual([undefined, undefined, 'true', 'true'])
+    // The class list is repainted from the marks in the same pass, so the two
+    // repaints cannot disagree about what a sentence is.
+    expect(nodes.map((n) => n.className)).toEqual([
+      m.sentenceClass('unmined'),
+      m.sentenceClass('mined'),
+      m.sentenceClass('slotted'),
+      m.sentenceClass('carried'),
+    ])
+  })
+
+  it('(d) source: a held gesture stops above the op — no `mine` is minted, nothing reaches the seam', () => {
+    const win = scannedSources().find((s) => s.file.endsWith('windows/reports.ts'))
+    expect(win, 'the REPORTS window is not in the scanned set').toBeTruthy()
+    const text = win!.text
+    const held = text.indexOf('isRevealing()')
+    const minted = text.indexOf('mine(id, m)')
+    const sent = text.indexOf('driver.send(')
+    const placed = text.indexOf('board.place(')
+    expect(held, 'the window no longer asks the board whether it is drawing').toBeGreaterThan(-1)
+    for (const [what, at] of [
+      ['the mine reducer', minted],
+      ['the seam', sent],
+      ['the seat', placed],
+    ] as const) {
+      expect(at, `${what} is gone from onMine`).toBeGreaterThan(-1)
+      expect(held, `a held tear can still reach ${what}`).toBeLessThan(at)
+    }
+    // …and it is a REFUSAL, not a deferral: nothing queues the gesture to be
+    // replayed when the reveal lands.
+    expect(text, 'a held gesture is remembered instead of refused').not.toMatch(/setTimeout[^\n]*onMine|pendingMine/)
+  })
+
+  it('(e) source: the hold is READ off the board — no body class, no second copy of the fact', () => {
+    const win = scannedSources().find((s) => s.file.endsWith('windows/reports.ts'))
+    const text = win!.text
+    // The idiom this window already uses for "ask the board" (it reads
+    // `isLocked()` in the same handler), and deliberately not a `<body>` class or
+    // a module-level flag: a copy of the fact is what can be left behind, and a
+    // hold nobody cleared is a desk where mining never comes back.
+    expect(text, 'the hold is not derived from the board').toMatch(/getSlotBoard\(\)\?\.isRevealing\(\)/)
+    expect(text, 'the window writes a body class').not.toMatch(/document\.body|classList\.(?:add|remove|toggle)/)
+    expect(text, 'the hold is stored rather than asked for').not.toMatch(
+      /\blet\s+(?:held|mineHeld|revealing|gated)\b/,
+    )
+  })
+
+  it('(f) source: ONE repaint path, so no refresh can forget the hold', () => {
+    const win = scannedSources().find((s) => s.file.endsWith('windows/reports.ts'))
+    const text = win!.text
+    // Every mark repaint in this window goes through `paintMarks()`, which is the
+    // only caller of `view.refresh` and always follows it with the hold.
+    expect(text.match(/view\.refresh\(/g) ?? [], 'a second repaint path can leave the hold unpainted').toHaveLength(1)
+    expect(text).toMatch(/function paintMarks\(\)[\s\S]{0,200}view\.refresh\([\s\S]{0,120}repaintMines\(/)
+    expect((text.match(/paintMarks\(\)/g) ?? []).length, 'nothing calls the one repaint path').toBeGreaterThan(2)
+    // The watcher is what carries BOTH edges of the reveal onto the page — the
+    // reveal is no more an event than slotting is — so the hold has to be in the
+    // stamp it compares.
+    expect(text, 'the frame stamp does not watch the hold').toMatch(/slotStamp[\s\S]{0,400}mineHeld\(\)/)
+  })
+
+  it('(g) the REPORT body replay is untouched: its pace is the default, and it names none', async () => {
+    const t = await typewriter()
+    // The desk's reading pace, pinned. It is what `report-view.ts` types at and
+    // 민서 asked for the HANDOVER to be quicker, not the report.
+    expect(t.MS_PER_CHAR).toBe(11)
+    expect(t.MS_BETWEEN).toBe(130)
+    expect(t.READING_PACE).toEqual({ msPerChar: 11, msBetween: 130 })
+
+    const lengths = [34, 34, 34]
+    for (const elapsed of [0, 90, 400, 1_500, 60_000]) {
+      expect(
+        t.typeCursor(t.TYPE_START, elapsed, lengths),
+        'the default pace has drifted from the desk’s reading pace',
+      ).toEqual(t.typeCursor(t.TYPE_START, elapsed, lengths, t.READING_PACE))
+    }
+    expect(t.typeDuration(lengths)).toBe(t.typeDuration(lengths, t.READING_PACE))
+
+    // …and the caller says nothing, so it cannot drift even if a default did.
+    const src = scannedSources().find((s) => s.file.endsWith('components/report-view.ts'))
+    expect(src!.text, 'the REPORT replay now names a pace of its own').toMatch(
+      /typeCursor\(\s*TYPE_START,\s*elapsed,\s*lengths\s*\)/,
+    )
+    expect(src!.text, 'the REPORT replay carries pace numbers').not.toMatch(/msPerChar|msBetween|PACE\b/)
   })
 })

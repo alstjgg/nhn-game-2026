@@ -41,7 +41,7 @@ import type { Page } from 'playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { advance, freezeAt, firstPaint, runToMount, settled } from './fixtures/harness.ts'
+import { advance, freezeAt, firstPaint, runToMount, settled, turnToAgent } from './fixtures/harness.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -112,10 +112,9 @@ const SHOTS: readonly Shot[] = [
   { name: 'win-agent-file', selector: '#w-file' },
   { name: 'win-live-feed', selector: '#w-feed' },
   { name: 'win-reports', selector: '#w-rep' },
-  { name: 'win-block-store', selector: '#w-store' },
   { name: 'red-thread-overlay', selector: null, threaded: true },
-  { name: 'win-tally', selector: '#w-tally', seedAt: '21:04' },
-  { name: 'tally-countup-final', selector: '#w-tally', seedAt: '21:04', holdMs: 11_000 },
+  { name: 'terminal-record', selector: '#w-rep .terminal-record', seedAt: '21:04' },
+  { name: 'terminal-record-final', selector: '#w-rep .terminal-record', seedAt: '21:04', holdMs: 11_000 },
 ]
 
 /** The note describes THIS run — it is rewritten once per worker, not grown. */
@@ -183,6 +182,8 @@ async function drawThread(page: Page): Promise<{ count: number; ids: string[]; f
   // [u8#c3] — an anchor outside its window's visible rect has no thread, and
   // the AGENT FILE board sits below its dossier. Bring it into view the way the
   // operator would, exactly as `e2e/red-thread.spec.ts` does, THEN redraw.
+  // C1 — the board is on the agent's page; the file opens on its cover.
+  await turnToAgent(page)
   const filledSlots = page.locator('#w-file .slot.filled')
   const filled = await filledSlots.count()
   if (filled > 0) await filledSlots.last().scrollIntoViewIfNeeded()
@@ -209,6 +210,25 @@ async function seedClock(page: Page, at: string): Promise<void> {
   await page.evaluate(() => {
     const handle = (window as unknown as { __shell?: { drain(): void } }).__shell
     handle?.drain()
+  })
+  // x12 — LAND THE PAPER BEFORE FRAMING WHAT WAITS ON IT, the same move and the
+  // same reasoning as `#coverSkip` above.
+  //
+  // The terminal record's count-up now holds until the LIVE FEED has printed its
+  // way to the day's `score` (`shell/feed-reach.ts`) — the ledger's headline and
+  // the fanfold's 집계 line are two printings of one count. The drain above
+  // releases the whole day in one call, so the reveal has some 78 s of
+  // reading-paced paper to get through, and the two record shots — one at 1 s,
+  // one at 11 s — would both frame the same blank `pending` article. They did:
+  // the pair came out byte-identical, which is the only reason this was caught,
+  // since the suite pairs names and sizes rather than pixels.
+  //
+  // Flushing here puts the count-up's zero back where the reference shots were
+  // taken from, and it is the honest instruction: this lane has already said
+  // "release everything now" one line above.
+  await page.evaluate(() => {
+    const feed = (window as unknown as { __feed?: { flush(): void } }).__feed
+    feed?.flush()
   })
 }
 
@@ -268,18 +288,40 @@ test.describe('captures', () => {
         ).toBe(false)
         expect(
           desk.windows.length,
-          `only ${desk.windows.length}/5 windows mounted — the shot would capture a stalled boot`,
-        ).toBe(5)
+          `only ${desk.windows.length}/3 windows mounted — the shot would capture a stalled boot`,
+        ).toBe(3)
         expect(
           desk.windows.filter((w) => w.visibility === 'hidden').map((w) => w.id),
           'a mounted window computes visibility:hidden — it occupies its box but paints nothing',
         ).toEqual([])
       }
 
+      // x7 — LAND THE COVER BEFORE FRAMING IT.
+      //
+      // The AGENT FILE's cover types itself out now (`windows/agent-file.ts`),
+      // and a capture installs a VIRTUAL clock, which virtualises the timers the
+      // reveal steps on. `runToMount` then advances it by however much the mount
+      // happened to cost, so `win-agent-file` — which frames `#w-file` on its
+      // cover, since only `threaded` shots turn to the agent's page — would pair
+      // its reference against a half-printed page, at a different fraction every
+      // run. Nothing would FAIL (this suite pairs names and sizes, not pixels),
+      // which is what makes it worth guarding: the shots are a competition
+      // artifact and a silently wrong one is the bad case.
+      //
+      // Pressing the operator's own control rather than reaching into the
+      // window: `#coverSkip` is the 건너뛰기 button, and it is removed once the
+      // reveal has landed, so the `count()` guard covers both "already whole"
+      // and "this shot is not on the cover". `underSweep` is exempt — that shot
+      // IS the boot sweep and the desk has not been handed over yet.
+      if (!shot.underSweep) {
+        const skip = page.locator('#coverSkip')
+        if ((await skip.count()) > 0) await skip.click()
+      }
+
       if (shot.seedAt) {
         await seedClock(page, shot.seedAt)
         await advance(page, mode, shot.holdMs ?? 1000)
-        await expect(page.locator('#w-tally'), 'the tally never left its hidden phase').not.toHaveClass(/hidden/)
+        await expect(page.locator('#w-rep .terminal-record'), 'the terminal record never landed').toHaveCount(1)
       }
 
       // PANE — a shot with the pane visible is invalid, not a finding.
@@ -344,7 +386,7 @@ test.describe('captures', () => {
     // keeps a refresh from quietly shipping nine shots.
     expect(fs.existsSync(REFERENCE_DIR), `reference shots are missing at ${REFERENCE_DIR}`).toBe(true)
     const reference = png(REFERENCE_DIR)
-    expect(reference.length, 'the reference side is not the expected ten shots').toBe(10)
+    expect(reference.length, 'the reference side is not the expected nine shots').toBe(9)
     expect(SHOTS.map((s) => `${s.name}.png`).sort()).toEqual(reference)
     expect(fs.existsSync(OUT_DIR), 'no build-side shots were produced').toBe(true)
     expect(png(OUT_DIR)).toEqual(reference)
@@ -356,7 +398,7 @@ test.describe('captures', () => {
     // silently compared one reference frame against two build states. Names
     // that frame the same surface at different moments must differ in content
     // — on both sides.
-    const pairs: readonly [string, string][] = [['win-tally.png', 'tally-countup-final.png']]
+    const pairs: readonly [string, string][] = [['terminal-record.png', 'terminal-record-final.png']]
     for (const dir of [REFERENCE_DIR, OUT_DIR].filter((d) => fs.existsSync(d))) {
       for (const [a, b] of pairs) {
         const fa = path.join(dir, a)

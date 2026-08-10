@@ -11,7 +11,7 @@
 import type { Block } from '../../../shared/contracts.ts'
 import { createRunLoop } from '../../../runloop/index.ts'
 import type { RunLoop } from '../../../runloop/index.ts'
-import { createWebStorageMetaStore } from '../../../runloop/index.ts'
+import { clearWebStorageMetaStore, createWebStorageMetaStore } from '../../../runloop/index.ts'
 import type { StorageLike } from '../../../runloop/index.ts'
 import type { ReportGuidance } from '../../../shared/report-guidance.ts'
 import type { FixtureDriver } from '../fixture-driver.ts'
@@ -31,6 +31,8 @@ export type LiveRunDeps = {
   fetch: typeof globalThis.fetch
   /** `sessionStorage`. Meta-state is per-tab by design (physical §1.1). */
   storage: StorageLike
+  /** W1 — the sitting stamp; a stored MetaState from another build is dropped. */
+  stamp?: string
   slug: string
   /** `"HH:MM"` bounds from the pack meta the shell already fetched. */
   start: string
@@ -75,8 +77,12 @@ export async function createLiveRunDriver(deps: LiveRunDeps): Promise<FixtureDri
     fetch: (url, init) => deps.fetch(url, init as RequestInit),
   }
 
+  // H2 — a page load is a new sitting. Cleared here rather than inside the
+  // store, because the store is also the headless path's and that one resumes.
+  clearWebStorageMetaStore(deps.storage, deps.slug)
+
   const runLoop: RunLoop = createRunLoop({
-    store: createWebStorageMetaStore(deps.storage, deps.slug),
+    store: createWebStorageMetaStore(deps.storage, deps.slug, deps.stamp),
     packSlug: deps.slug,
   })
 
@@ -85,10 +91,13 @@ export async function createLiveRunDriver(deps: LiveRunDeps): Promise<FixtureDri
    * in, then the binder wires an engine seeded with both. The `meta` event is
    * taken AFTER `startRun` so the counter the desk renders is this run's.
    */
-  function openRun(carried: readonly Block[], run: number): BoundRun {
+  function openRun(carried: readonly Block[], run: number, shown: readonly Block[] = []): BoundRun {
     return bindLiveRun(bindDeps, {
       run,
       carried,
+      // Defaulted, so the FIRST run of a session needs no argument: nothing has
+      // been shown yet, and there is no closing day to have collected it.
+      shown,
       start: deps.start,
       end: deps.end,
       meta: runLoop.metaEvent(),
@@ -183,7 +192,9 @@ export async function createLiveRunDriver(deps: LiveRunDeps): Promise<FixtureDri
 
       const next = runLoop.startRun()
       current = next.run
-      return openRun(next.carried, next.run)
+      // `next.carried` is the run loop's carry-over; `close.shown` is the
+      // desk's whole history and comes from the closing day, not the loop.
+      return openRun(next.carried, next.run, close.shown)
     },
   })
 }

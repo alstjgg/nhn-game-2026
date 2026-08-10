@@ -1,5 +1,5 @@
 // The shell's boot sequence — spec-client §5.1, in that order:
-// fetch the pack → build the chrome and the five windows → applyLayout →
+// fetch the pack → build the chrome and the three windows → applyLayout →
 // connect the driver → open the run.
 //
 // The shell owns the desk and nothing else: it never renders run content (the
@@ -8,16 +8,22 @@
 // event does, spec-client §5.2 amendment d).
 import { createLiveRunDriver, createRunLoopDriver, demoRunLoop, installClockHook } from '../driver/index.ts'
 import { placeholderBootRun } from './boot-run.ts'
-import type { ClockHook, ClockRate, FixtureDriver, Frame } from '../driver/index.ts'
+import type { ClockHook, FixtureDriver, Frame } from '../driver/index.ts'
 import { createGameClock } from '../components/game-clock.ts'
 import { createRunCounter } from '../components/run-counter.ts'
 import { holdDesk, revealDesk } from '../components/desktop-dressing.ts'
+import { installAudio } from '../audio/index.ts'
 import { createAnnouncer } from './announcer.ts'
+import { bindRadioSfx, sfxHandOver } from './radio-sfx.ts'
 import { must } from './dom.ts'
-import { fetchScenarioIdentity } from './pack.ts'
+import { installEnding } from './ending.ts'
+import { openManual } from './manual.ts'
+import { openSignIn, signInSkipped } from './sign-in.ts'
+import { installTutorial } from './tutorial.ts'
+import { PACK_DISPLAY_NAME, fetchScenarioIdentity } from './pack.ts'
 import type { ScenarioIdentity } from './pack.ts'
 import { PORTAL, TASKBAR_HINT } from './portal-identity.ts'
-import { restoredRun } from './run-state.ts'
+import { clearRunState } from './run-state.ts'
 import { WINDOW_REGISTRY } from './window-registry.ts'
 import { createWindowManager } from './window-manager.ts'
 // A namespace import on purpose: the overlay may only be mounted once the desk
@@ -82,6 +88,7 @@ async function openLiveDesk(identity: ScenarioIdentity): Promise<FixtureDriver |
       baseUrl: document.baseURI,
       fetch: (url, init) => window.fetch(url, init),
       storage: window.sessionStorage,
+      stamp: __BUILD_STAMP__,
       slug: identity.slug,
       start: identity.start,
       end: identity.end,
@@ -93,33 +100,128 @@ async function openLiveDesk(identity: ScenarioIdentity): Promise<FixtureDriver |
   }
 }
 
-function renderIdentity(identity: ScenarioIdentity): void {
+/**
+ * The chrome row's left two thirds. Takes no argument: every string it paints
+ * is authored (`PORTAL`, `PACK_DISPLAY_NAME`), and it stopped reading the
+ * fetched identity when the case name became display text rather than the
+ * slug. The identity is still fetched — the clock band below needs it.
+ */
+function renderIdentity(): void {
   must('#portalName').textContent = PORTAL.portal
   must('#portalCode').textContent = PORTAL.portalCode
-  must('#opName').textContent = `${PORTAL.operatorId} · ${PORTAL.operator}`
+  // x2 (08-08) — the id alone. `PORTAL.operator` still exists and the sign-in
+  // readout still prints it, because the door is where the terminal tells you
+  // WHO you signed in as; the chrome row afterwards is a badge, and a badge
+  // that also spells the name out is the same fact twice at the top of every
+  // screen. The name is not orphaned data — it is data the door consumes.
+  must('#opName').textContent = PORTAL.operatorId
   must('#opClearance').textContent = `권한 ${PORTAL.clearance}`
-  must('#caseName').textContent = identity.slug
+  must('#caseName').textContent = PACK_DISPLAY_NAME
 }
 
-/** Pumps real elapsed milliseconds into the driver and repaints the clock. */
-function runPump(driver: FixtureDriver, paint: (at: string, minute: number) => void): void {
+/**
+ * Interval for the hidden-document pump. The browser throttles it hard — ~1/s
+ * for a background tab, ~1/min once it has been hidden five minutes — and that
+ * is fine: see `runPump` for why the day still keeps correct time under it.
+ */
+const HIDDEN_PUMP_MS = 250
+
+/**
+ * Pumps real elapsed milliseconds into the driver. That is the whole job.
+ *
+ * x6 — it used to repaint the top bar's clock as well, from `driver.clock.at()`.
+ * The digits now read the LIVE FEED's latest printed stamp instead
+ * (`shell/feed-clock.ts`), so the pump has nothing left to paint and the `paint`
+ * parameter is dropped rather than handed a no-op: a callback nobody passes is
+ * an invitation to start feeding this view again from the sim clock, which is
+ * exactly the disagreement the seam was built to close.
+ *
+ * TWO PUMPS, ONE TIMELINE. A frame callback does not fire in a hidden document
+ * — a background tab, a minimised window, a window another app fully covers —
+ * so a rAF-only pump stops the day dead the moment the player looks away, and
+ * the run only resumes when they look back. That is why the same build "runs in
+ * the background" for one of us and freezes for the other: it is not the
+ * machine, it is whether the browser still calls the frame the desk rides on.
+ *
+ * So when the document goes hidden the frame pump hands over to an interval,
+ * and hands back on return. The clock survives the swap because `advance()`
+ * takes ELAPSED REAL MILLISECONDS, not a frame count (`driver/clock.ts`): a
+ * throttled tick that arrives once a minute carries a 60_000 ms delta and moves
+ * sim time by exactly as much as 3600 frames would have. `release()` drains
+ * every event now due in order and `kick()` chains the next beat off its own
+ * promise, so a coarse tick loses no beat — it only repaints in bursts, which
+ * is all a tab nobody is watching can do anyway.
+ *
+ * Both pumps read `performance.now()`, the same clock rAF stamps its argument
+ * with and the one that keeps running while hidden, so `previous` carries
+ * across a swap with no seam: no minute is double-counted and none is dropped.
+ */
+function runPump(driver: FixtureDriver): void {
   let previous: number | null = null
-  const step = (now: number): void => {
+  let frame: number | null = null
+  let timer: number | null = null
+
+  const pump = (now: number): void => {
     if (previous !== null) driver.advance(now - previous)
     previous = now
-    paint(driver.clock.at(), driver.clock.minute)
-    requestAnimationFrame(step)
   }
-  requestAnimationFrame(step)
+
+  const step = (now: number): void => {
+    pump(now)
+    frame = requestAnimationFrame(step)
+  }
+
+  const stop = (): void => {
+    if (frame !== null) cancelAnimationFrame(frame)
+    if (timer !== null) window.clearInterval(timer)
+    frame = null
+    timer = null
+  }
+
+  const start = (): void => {
+    if (document.hidden) timer = window.setInterval(() => pump(performance.now()), HIDDEN_PUMP_MS)
+    else frame = requestAnimationFrame(step)
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    stop()
+    start()
+  })
+  start()
 }
 
 export async function bootShell(): Promise<void> {
   const body = document.body
   holdDesk(body)
 
+  // 0 — the door (plan-playtest O1). Mounted BEFORE the pack fetch so the first
+  // painted frame is the portal, not a bare wallpaper waiting on the network,
+  // and so `body.signin` is on the element before the top bar's `barDrop` can
+  // run. Everything below it proceeds at full speed behind the curtain: the
+  // opening builds no second hold, it only defers the reveal at the bottom of
+  // this function. `signInSkipped` is what keeps the e2e lane pointed at the
+  // desk (see its doc comment).
+  const door = signInSkipped(window) ? null : openSignIn(must('#app'), body)
+
+  // Resolved at the hand-over (step 6), when the desk is what the player is
+  // looking at — see 4c.
+  //
+  // x10 (08-10, 민서) — the resolver was called `openTheEars`, because opening
+  // them was its job: the whole ambience waited behind this promise and the desk
+  // was where the room arrived. The room now comes up at the DOOR, on the first
+  // keystroke that unlocks the audio context (`audio/index.ts` `openTheRoom`),
+  // so what is left behind this promise is the WATCH DRONE's ten-second window —
+  // the one bed that is still an opening and still has to be spent where the
+  // player can hear it. The promise resolves on BOTH paths (below), door or no
+  // door, so the drone's window is never one that fails to open.
+  let theDeskIsUp = (): void => {}
+  const atTheDesk = new Promise<void>((resolve) => {
+    theDeskIsUp = () => resolve()
+  })
+
   // 1 — the scenario pack.
   const identity = await fetchScenarioIdentity()
-  renderIdentity(identity)
+  renderIdentity()
 
   // 2 — the driver behind the §5.2 seam. Nothing above this line knows it.
   // The loop opens on the run the tab left off at (§7 #8): the persisted `meta`
@@ -131,19 +233,28 @@ export async function bootShell(): Promise<void> {
   // player build gets, since `demoRunLoop` answers `null` there (§5.4) and the
   // fixtures tree-shake out. The placeholder is the floor: a pack that will not
   // load must still leave a booted desk rather than a blank page.
+  // H2 — a page load is a new sitting. Before the driver is built, because
+  // `createRunState` reads this module's slot the moment it is constructed and
+  // the live path reads the runloop's inside `createLiveRunDriver`.
+  clearRunState()
   const fixtures = await demoRunLoop({ withoutReports: lapseDrill() })
   const driver =
     fixtures !== null
-      ? createRunLoopDriver(fixtures, { openAt: restoredRun() })
+      ? createRunLoopDriver(fixtures)
       : ((await openLiveDesk(identity)) ??
-        createRunLoopDriver([placeholderBootRun(identity)], { openAt: restoredRun() }))
+        createRunLoopDriver([placeholderBootRun(identity)]))
 
-  // 3 — the chrome the driver feeds.
-  const clock = createGameClock({
+  // 3 — the chrome. The run counter is driver-fed; the clock is not any more.
+  //
+  // x6 — the clock takes the pack's opening stamp and then follows the LIVE
+  // FEED's own printed stamps (`shell/feed-clock.ts`), so it is wired here
+  // without the driver and without `identity.end`. The terminal stamp was the
+  // right end of a progress bar that no longer exists; the pack still carries it
+  // and the driver still ends the run on it — the chrome simply stopped printing
+  // a second, faster time next to the one the operator can read off the paper.
+  createGameClock({
     root: must('#clockUnit'),
     start: identity.start,
-    end: identity.end,
-    onRate: (rate: ClockRate) => driver.clock.setRate(rate),
   })
   const runs = createRunCounter(must('#ddayUnit'))
   driver.subscribe((event) => {
@@ -154,8 +265,9 @@ export async function bootShell(): Promise<void> {
   // state changes (R2 on index.html:125). It is bound before the windows mount
   // so the opening `meta` is announced like every later one.
   createAnnouncer(must('#toast'), driver)
+  bindRadioSfx(driver)
 
-  // 4 — the five windows and the taskbar, then the computed desk arrangement.
+  // 4 — the three windows and the taskbar, then the computed desk arrangement.
   const desk = createWindowManager({
     desk: must('#desktop'),
     taskbar: must('#taskbar'),
@@ -181,9 +293,48 @@ export async function bootShell(): Promise<void> {
   })
   if (import.meta.env.DEV) window.__threads = threads
 
+  // 4c — the ear. Mounted here because it observes what the windows wrote:
+  // `[data-op]`, the `.hidden` class the manager toggles, the fanfold's revealed
+  // lines and the report typewriter's repaints. Like the announcer it reads the
+  // §5.2 stream and sends nothing back — audio is redundant reinforcement, never
+  // a channel (plan-audio §2).
+  //
+  // It unlocks on the first gesture wherever that lands — the door has controls
+  // of its own — and x10 (08-10, 민서) is that THE ROOM COMES UP THERE: the desk
+  // bed and the office around it start on that first keystroke, at the login
+  // screen, because a room that holds for the whole session was already there
+  // before the operator signed in. What still waits for the hand-over below is
+  // the Watch drone's window, which is an opening rather than a room and would
+  // be spent behind the curtain (`audio/index.ts` carries the full reversal).
+  //
+  // The subscription itself can wait for nothing: the opening `meta` lands
+  // during boot and carries `runs_left`, which the ending cue reads.
+  installAudio({
+    driver,
+    root: must('#app'),
+    controls: document.querySelector<HTMLElement>('.clk-rate'),
+    baseUrl: document.baseURI,
+    fetch: (url, init) => window.fetch(url, init),
+    storage: window.sessionStorage,
+    deskReady: atTheDesk,
+  })
+
   // 5 — open the run. `advance(0)` releases what is due at the opening minute
-  // without moving the clock; the desk then waits on hold until the operator
-  // presses ▶, so the sim never runs behind an operator who has not looked yet.
+  // without moving the clock; the rate then goes to 0 and the desk is HELD
+  // there, so the sim never runs behind an operator who has not looked yet.
+  //
+  // x11 (08-10) — WHAT TAKES THE HOLD OFF is the AGENT FILE, and this note used
+  // to say "until the operator presses ▶". There is no ▶: W4 retired the top
+  // bar's ×1 / ×4 / pause with the unit that owned them
+  // (`windows/agent-file.ts:370` — "a day is not a recording the operator
+  // scrubs, it is something they commit a file to and then watch"), so the one
+  // thing that sets this clock going is a committed file — `agent-file.ts`
+  // `startDay()`, the only `setRate` on the desk an operator's press can reach
+  // (`shell/ending.ts` stops the portal at the veil, and `windows/live-feed.ts`
+  // has one on the DEV-only `__feed` handle) — and the one thing that stops it
+  // is 21:04 (`driver/clock.ts` halts at `end`). The line below is unchanged and
+  // the hold is unchanged; only the sentence describing it was still pointing at
+  // a control that had left.
   driver.start()
   driver.advance(0)
   driver.clock.setRate(0)
@@ -211,10 +362,47 @@ export async function bootShell(): Promise<void> {
     }
   }
 
-  runPump(driver, clock.paint)
+  runPump(driver)
   desk.focus('feed')
-  revealDesk(
+
+  // 6 — the hand-over. Signed in, the operator gets one thing on the desk: the
+  // sheet the portal issues with the terminal. Closing it uncovers the desk
+  // that has been standing ready behind it the whole time — the SAME hold and
+  // the SAME reveal the desk has always used, just released later.
+  if (door !== null) {
+    await door
+    // x5b — the sheet is a centred plate now and places itself, so it no longer
+    // takes the viewport it used to size a window against.
+    await openManual(must('#app'))
+    sfxHandOver()
+  }
+  const revealed = revealDesk(
     body,
     desk.frames.map((f) => f.root),
   )
+  // Outside the `door !== null` branch on purpose: on the skip paths
+  // (`?signin=skip`, `navigator.webdriver`) there is no door to await, and a
+  // drone window that never opened would be a cue deleted by a URL parameter.
+  theDeskIsUp()
+
+  // 7 — the onboarding walk (x3). Mounted LAST and never awaited: it is an
+  // observer over a desk that is already fully playable, it sends no op, and
+  // nothing above this line knows it exists.
+  //
+  // It waits on `revealed`, NOT on `atTheDesk`. The ear's promise resolves at
+  // the hand-over, one microtask before the reveal's own frame — early enough
+  // that the walk's first mark would land on a window still held at
+  // `visibility:hidden` by `body.booting`. The eye needs the curtain up; the
+  // ear does not.
+  installTutorial(window, { driver, deskReady: revealed })
+
+  // 8 — the two endings (x6). Mounted on the same terms as the walk above it,
+  // for the same reason: it is an observer over the §5.2 stream and the DOM, it
+  // sends no op, and nothing in this file knows what it decides. What it waits
+  // for is a day CLOSING — either on one death, or with the allotment spent —
+  // and it may wait the whole sitting, so it is not awaited either.
+  //
+  // It waits on `revealed` rather than `atTheDesk` for the walk's own reason:
+  // the curtain it eventually raises is measured against a desk that is up.
+  installEnding(window, { driver, deskReady: revealed })
 }

@@ -109,8 +109,12 @@ describe('[e7#A10] `deploy`', () => {
     expect(rig.driver.submit({ op: 'deploy', blocks: [N2, N1] })).toEqual({ ok: true })
     await drain(rig)
 
-    // Gate 1 carried nothing (nothing had been mined yet); gate 2 carries the set.
-    expect(judgmentBlocks(transport.sent)).toEqual([[], [N1, N2]])
+    // ONE judgment, not two. Gate 1 opened before anything had been mined, so
+    // x14 resolves it to its authored default with no call made — the empty
+    // set is no longer something a payload can carry, because there is no
+    // payload. Gate 2 is the first gate this run actually asks about, and it
+    // carries exactly what was deployed.
+    expect(judgmentBlocks(transport.sent)).toEqual([[N1, N2]])
   })
 
   it('(b) a set containing an unmined id is refused and changes nothing', async () => {
@@ -123,7 +127,10 @@ describe('[e7#A10] `deploy`', () => {
       reason: 'unknown_block',
     })
     await drain(rig)
-    expect(judgmentBlocks(transport.sent)).toEqual([[], []])
+    // A refused deploy leaves the handover empty, and an empty handover is now
+    // no call at all — so "changes nothing" is visible as NO judgment payload
+    // rather than as two empty ones. Both gates took their authored default.
+    expect(judgmentBlocks(transport.sent)).toEqual([])
   })
 })
 
@@ -136,7 +143,10 @@ describe('[e7#A11] `deploy` is order-free at the seam', () => {
     rig.driver.submit({ op: 'mine', sentence_id: N2 })
     rig.driver.submit({ op: 'deploy', blocks: order })
     await drain(rig)
-    return transport.sent.filter((request) => request.call_type === 'judgment')[1]
+    // `[0]`, not `[1]`: gate 1 opened on an empty handover and was never asked
+    // (x14), so the first judgment payload this run composes is gate 2's — the
+    // one carrying the deployed set, which is the one this suite is about.
+    return transport.sent.filter((request) => request.call_type === 'judgment')[0]
   }
 
   it('(a) the two click orders compose byte-identical `CallRequest`s', async () => {
@@ -195,7 +205,15 @@ describe('[e7#decision 3] `score` is optional', () => {
 
   it('(b) with a scorer, `score` is emitted immediately before `run_end`', async () => {
     const events = await drain(
-      makeRig({ scorer: { score: () => ({ total: 7, rows: [{ label: '정확도', value: 7 }] }) } }),
+      makeRig({
+        scorer: {
+          score: () => ({
+            total: 7,
+            baseline_total: 9,
+            rows: [{ label: '정확도', value: 7, baseline: 9 }],
+          }),
+        },
+      }),
     )
     expect(events.slice(-2).map((event) => event.type)).toEqual(['score', 'run_end'])
   })

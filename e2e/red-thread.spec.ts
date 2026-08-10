@@ -23,14 +23,13 @@
 // re-points `playwright.config.ts` per C5) — nothing below assumes a dev server.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
-import { awaitTallyReveal, expectTallyOpen } from './fixtures/harness.ts'
+import { awaitRecordFinal, flushFeed, turnToAgent } from './fixtures/harness.ts'
 
 const THREADS = '#threads'
 const PATH = `${THREADS} path`
 const PIN = `${THREADS} circle`
 const FILE = '#w-file'
 const REP = '#w-rep'
-const TALLY = '#w-tally'
 
 /** An id in the authored grammar that no report can have minted (c1 negative). */
 const ABSENT_ID = 'b-r9-f99'
@@ -66,8 +65,13 @@ async function drain(page: Page): Promise<void> {
     if (!handle) throw new Error('window.__shell is not exposed by the shell boot')
     handle.drain()
   })
-  // u7 ruling — the close→reveal gap belongs to TALLY; see `awaitTallyReveal`.
-  await awaitTallyReveal(page)
+  // x12 — and the paper with it: the record's count-up waits for the LIVE FEED
+  // to reach the day's `score` (`shell/feed-reach.ts`), and a day released in one
+  // call is not something the reveal can be left to pace inside a test budget.
+  // See `fixtures/harness.ts`'s own `drain` for the whole of the reasoning.
+  await flushFeed(page)
+  // U3 — no more sheet to reveal; wait the record out to final instead.
+  await awaitRecordFinal(page)
 }
 
 /** Force one synchronous redraw, then let the layer's own rAF settle. */
@@ -118,14 +122,23 @@ async function boot(page: Page): Promise<void> {
   await expect(page.locator(REP)).toBeVisible()
   await page.waitForFunction(() => (window as unknown as Handles).__threads !== undefined)
   await page.waitForFunction(() => (window as unknown as Handles).__agentFile !== undefined)
+  await turnToAgent(page)
   await drain(page)
-  await takeNextRun(page)
   await expect(page.locator(`${REP} [data-sentence-id]`).first()).toBeVisible()
   await holdStill(page)
 }
 
 /**
- * Leaves the TALLY the way the run's own loop leaves it — NEW RUN.
+ * RETIRED (08-08, W4) — kept for the record it carries, no longer in `boot()`.
+ *
+ * This drove the desk past the close so the threads could be measured in a RUN
+ * phase. One-press DEPLOY makes that setup measure nothing: the press now
+ * COMMITS the file, so the day after it opens locked and `place()` is refused
+ * by `planOps` — every thread oracle in this file went vacuous at once. The
+ * window a thread actually lives in is the one the close opens: after `drain()`
+ * the file is unlocked, the day's report is on the desk, and the operator is
+ * doing exactly what these tests assert. The tally-window flake the note below
+ * describes cannot recur either — U3 dissolved `#w-tally` into REPORTS.
  *
  * C17 / [u11#c12] — RE-AIMED (08-04, u11 attempt 2). This is the setup the
  * file's flakiness lived in. The code here used to close the sheet with its
@@ -148,18 +161,6 @@ async function boot(page: Page): Promise<void> {
  * tally is shut because the run says so — and with the clock held at 0 it never
  * reaches the next 21:04. Nothing is skipped and no thread rule is relaxed.
  */
-async function takeNextRun(page: Page): Promise<void> {
-  await expect(page.locator(TALLY), 'the run ended but the TALLY sheet never came up').not.toHaveClass(
-    /\bhidden\b/,
-    { timeout: 30_000 },
-  )
-  const newRun = page.locator(`${TALLY} #btnNewRun`)
-  await expect(newRun, 'the tally never unlocked NEW RUN').toBeEnabled({ timeout: 30_000 })
-  await newRun.click()
-  await expect(page.locator(TALLY), 'NEW RUN did not put the tally away').toHaveClass(/\bhidden\b/, {
-    timeout: 20_000,
-  })
-}
 
 /** The sentence ids the booted run actually rendered, in document order (C3). */
 async function sourceIds(page: Page): Promise<string[]> {
@@ -273,9 +274,6 @@ async function threadPath(page: Page): Promise<string> {
         // the layer's narrowing set is the DRIVER's store, not the DOM
         // (`shell/boot.ts:106`) — the two can disagree
         driverSlots: frame?.store?.slots ?? null,
-        // `planThreads` returns [] outright while the tally is up ([u8#c1]) —
-        // the FIRST thing to check when every thread is gone at once
-        tally: document.querySelector('#w-tally')?.className ?? null,
         body: document.body.className,
         file: win(fileSelector as string),
         slot: rect(`${fileSelector} .slot.filled`),
@@ -438,21 +436,6 @@ test.describe('every filled slot is threaded by id', () => {
     await expect(page.locator(PATH)).toHaveCount(0)
     await expect(page.locator(PIN)).toHaveCount(0)
   })
-
-  test('every filled slot is threaded by id — while the TALLY is open no thread crosses it', async ({
-    page,
-  }) => {
-    await thread(page, 2)
-    await expect(page.locator(PATH)).toHaveCount(2)
-
-    await page.locator('#taskbar [data-win="tally"]').click()
-    // Opened by hand, mid-run — no close crossed, so there is no reveal to
-    // wait out. Visibility is the whole assertion (`expectTallyOpen`), and it
-    // is the harness that knows how the sheet spells "hidden".
-    await expectTallyOpen(page)
-    await redraw(page)
-    await expect(page.locator(PATH)).toHaveCount(0)
-  })
 })
 
 /* ══ [u8#c2] endpoints track windows during drag ═════════════════════════ */
@@ -480,9 +463,14 @@ test.describe('endpoints track windows during drag', () => {
     await page.mouse.move(start.x + dx / 3, start.y + dy / 3)
     await page.mouse.move(start.x + (dx * 2) / 3, start.y + (dy * 2) / 3)
     await page.mouse.move(start.x + dx, start.y + dy)
-    await page.waitForTimeout(50)
-
+    // POLLED, NOT SLEPT (08-09) — see the note on the REPORTS-grip test at the
+    // foot of this describe. `toHaveClass` retries on its own; the endpoint read
+    // below did not, so a 50 ms sleep was the only thing standing between the
+    // pointer move and the overlay's next frame.
     await expect(page.locator(FILE)).toHaveClass(/\bdragging\b/)
+    await expect
+      .poll(async () => (await box(page, FILE)).x !== windowBefore.x, { timeout: 5_000 })
+      .toBe(true)
     const during = await slotEndpoint(page)
     // C17 / [u11#c12] — RE-AIMED (08-04), never deleted: the endpoint is
     // compared to what the WINDOW did, not to what the pointer asked for. u3's
@@ -524,7 +512,18 @@ test.describe('endpoints track windows during drag', () => {
     await page.mouse.down()
     await page.mouse.move(start.x, start.y + dy / 2)
     await page.mouse.move(start.x, start.y + dy)
-    await page.waitForTimeout(50)
+    // POLLED, NOT SLEPT (08-09) — same race as the two tests below. Waits for
+    // the overlay to have redrawn AT ALL, then measures it precisely: the
+    // tolerance check is the claim, and it may not be the thing racing a frame.
+    await expect
+      .poll(
+        async () => {
+          const [moved] = endpointsOf(await threadPath(page))
+          return moved[1] !== before[1]
+        },
+        { timeout: 5_000 },
+      )
+      .toBe(true)
 
     const [during] = endpointsOf(await threadPath(page))
     near(during[1] - before[1], dy)
@@ -577,14 +576,39 @@ test.describe('endpoints track windows during drag', () => {
   test('endpoints track windows during drag — a resize by the grip re-draws within a frame', async ({
     page,
   }) => {
-    const grip = await box(page, `${FILE} .win-grip`)
-    const before = await slotEndpoint(page)
+    // RE-AIMED (g13-3). This gripped the AGENT FILE, which is a fixed sheet
+    // now and has no grip at all, so the claim moves to a window that can still
+    // do it. REPORTS carries the SOURCE end of the thread, so the read is
+    // `endpointsOf(d)[0]` — `[1]` is the slot end, which a REPORTS resize does
+    // not touch.
+    //
+    // The drag is HORIZONTAL only. REPORTS is full column height since T1
+    // (`layout.ts` gives it y 94 · h 692 at 1280×800), so its 16px grip sits
+    // ~14px above the viewport floor and a downward drag would carry the
+    // pointer off the desk — the same geometry that made the FILE version of
+    // this test red. Widening the window widens the justified body, which is
+    // what moves the source pin (`right(rect) - 6`).
+    const grip = await box(page, `${REP} .win-grip`)
+    const [before] = endpointsOf(await threadPath(page))
     await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2)
     await page.mouse.down()
-    await page.mouse.move(grip.x + 120, grip.y + 90)
-    await page.waitForTimeout(50)
-    const during = await slotEndpoint(page)
-    expect(before[0] !== during[0] || before[1] !== during[1]).toBe(true)
+    await page.mouse.move(grip.x + 120, grip.y + grip.height / 2)
+    // POLLED, NOT SLEPT (08-09). This was `waitForTimeout(50)` and then one
+    // read, which is a fixed sleep racing a rAF redraw: the overlay re-draws on
+    // the next frame after the resize, and 50 ms is ~3 frames on the machine
+    // this was written on and can be under one on a loaded CI runner. It passed
+    // 201/201 locally and failed on `desk`'s first outing — the flake was always
+    // there, and turning the lane on is what made it visible.
+    //
+    // Polling asserts the same claim and states it better: the endpoint moves
+    // WHILE the button is still down. It also gets faster on a quick machine
+    // rather than always paying the 50 ms.
+    await expect
+      .poll(async () => {
+        const [during] = endpointsOf(await threadPath(page))
+        return before[0] !== during[0] || before[1] !== during[1]
+      }, { timeout: 5_000 })
+      .toBe(true)
     await page.mouse.up()
   })
 })
@@ -634,6 +658,14 @@ test.describe('clipped to visible rect', () => {
   test('clipped to visible rect — a source scrolled out of its body drops exactly that thread', async ({
     page,
   }) => {
+    // RE-AIMED (08-08, T3) — the PRECONDITION, never the criterion. T3 gave
+    // REPORTS the whole left column (640px wide at 1280x800, up from 505), and a
+    // wider column wraps less: the facts document stopped overflowing far enough
+    // for a sentence to be lifted clear of the body's top edge (measured 83px of
+    // travel against the 134px needed). The oracle below is untouched; it is
+    // handed a desk narrow enough to still overflow, which is what it always
+    // assumed and no longer got for free.
+    await page.setViewportSize({ width: 1000, height: 720 })
     const ids = await thread(page, 2)
     await expect(page.locator(PATH)).toHaveCount(2)
 

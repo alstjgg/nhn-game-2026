@@ -11,6 +11,7 @@ import {
   CLIENT,
   COMPONENTS_DIR,
   INDEX_HTML,
+  REPO,
   SHELL_DIR,
   WINDOWS_DIR,
   clientSources,
@@ -61,14 +62,95 @@ describe('[u3#c9] index.html carries the shell containers and nothing more', () 
     expect(html()).not.toMatch(/<script(?![^>]*\bsrc=)[^>]*>[\s\S]*?<\/script>/)
     expect(html()).not.toMatch(/<style\b/)
   })
+
+  /**
+   * (f) — ADDED x10 (민서, 08-10), and it closes the exact hole that let a
+   * dropped concept ship for two months.
+   *
+   * The blueprint wallpaper carried four `<text class="bplabel">` labels:
+   * `경간 A · 정착부 N-3`, `경간 B · 정착부 S-3`,
+   * `윤슬교 종단면 · 축척 1:400 · 세명건설`, and a red `정착부 — 소선 파단`.
+   * That is the vocabulary of the FIRST scenario concept — the bridge — which
+   * the project dropped for the pack it actually ships (`PACK_SLUG` in
+   * `shell/pack.ts` is `전구간정상`, a tunnel). Nothing in the suite said a
+   * word about the wallpaper's text, so a concept change swept the driver, the
+   * data packs and the copy and left the markup captioning a case that no
+   * longer exists.
+   *
+   * This is not a new claim, it is THIS describe's own claim finally measured:
+   * the block comment at the top of index.html says nothing in the file
+   * "stands in for something the driver or the scenario pack owns", and a
+   * bridge's span numbers are as owned by a pack as a character's name is.
+   * Hence (f) here rather than a suite of its own — the shell markup may not
+   * hard-code scenario vocabulary, whichever scenario it belongs to.
+   *
+   * Scoped to `index.html` DELIBERATELY. These needles are live, correct
+   * content elsewhere: `data/scenario/우는다리/` is a real pack we keep, and
+   * `driver/fixtures/woodari-*.ts` are its fixtures. The offence is a shell
+   * container speaking a pack's language, not the words existing in the repo.
+   * Comments are scanned too — a label moved into a comment is still the
+   * dropped concept's name sitting in the shipped markup, which is why the
+   * `.bp` group's note above spells its history in prose and quotes the
+   * dropped strings nowhere.
+   */
+  it('(f) it hard-codes no scenario vocabulary — not even the dropped concept`s', () => {
+    // The bridge concept's fingerprints: place + contractor, the two structural
+    // nouns its labels were built from, the failure mode, and the title block's
+    // scale. Any one of them in index.html means a pack's words are back in the
+    // shell — extend the list, never trim it.
+    const DROPPED = ['윤슬', '세명건설', '경간', '정착부', '소선', '축척', '1:400']
+    const doc = html()
+    const found = DROPPED.filter((needle) => doc.includes(needle))
+    expect(found, 'index.html names the dropped bridge concept again').toEqual([])
+  })
+
+  it('(g) the guard above is not vacuous — it can see the labels it bans', () => {
+    // (f) reads the tree, so it passes for free the day someone breaks how it
+    // reads. Pinned against the vendored design file, which still carries all
+    // four labels on purpose (it is the port source, and history): if the same
+    // needles stop firing there, (f) has stopped being a scan.
+    const DROPPED = ['윤슬', '세명건설', '경간', '정착부', '소선', '축척', '1:400']
+    const design = read(path.join(REPO, 'docs/design/phase2-ui/index.html'))
+    expect(design.length, 'the design fixture is gone — re-aim (f)`s teeth').toBeGreaterThan(0)
+    const seen = DROPPED.filter((needle) => design.includes(needle))
+    expect(seen.sort()).toEqual([...DROPPED].sort())
+  })
 })
 
 describe('[u3#c3] the clock is driver-fed', () => {
-  it('(a) the shell owns no view-local timer', () => {
-    const offenders = unitSources()
-      .filter((s) => /\bsetInterval\s*\(/.test(s.text))
-      .map((s) => s.file)
-    expect(offenders).toEqual([])
+  // RE-AIMED (08-08), never deleted — and narrowed, not loosened.
+  //
+  // What this bans is a SELF-PACED timer: a view that decides for itself when
+  // the desk moves. It was never the PUMP. `runPump` in `boot.ts` has always
+  // fed the driver real elapsed milliseconds off a host callback; the only
+  // question is which callback, and a flat ban on `setInterval` answered that
+  // question by accident rather than on purpose.
+  //
+  // It answered it wrong. A hidden document — a background tab, a minimised
+  // window, a window another app fully covers — gets NO frame callbacks at all,
+  // so a rAF-only pump stopped the day dead the moment the desk was switched
+  // away from, and only resumed when it was looked at again. The pump now hands
+  // over to an interval while hidden and back on return. That interval computes
+  // no time and paces nothing: it samples `performance.now()` and hands the
+  // delta to `driver.advance()`, which is precisely what the frame callback
+  // does with the timestamp it is handed. (b) below still holds the line that
+  // actually matters — no `Date.now()`, no wall clock, no sim time derived in
+  // a view — and it is untouched.
+  //
+  // So the shape is PINNED instead of the name banned: exactly one interval in
+  // the whole shell, in `boot.ts`, inside `runPump`, feeding the driver. A
+  // second one anywhere, or this one drifting out of the pump, still fails.
+  it('(a) the shell owns no self-paced timer — its one interval is the driver pump', () => {
+    const withInterval = unitSources().filter((s) => /\bsetInterval\s*\(/.test(s.text))
+    expect(withInterval.map((s) => s.file)).toEqual(['src/client/shell/boot.ts'])
+
+    const boot = withInterval[0]!.text
+    expect([...boot.matchAll(/\bsetInterval\s*\(/g)], 'the shell grew a second interval').toHaveLength(1)
+
+    const pump = /function runPump\b[\s\S]*?\n}/.exec(boot)
+    expect(pump, 'runPump is gone — re-aim this guard at whatever replaced it').not.toBeNull()
+    expect(pump![0], 'the interval left the pump').toMatch(/\bsetInterval\s*\(/)
+    expect(pump![0], 'the pump stopped feeding the driver').toMatch(/driver\.advance\s*\(/)
   })
 
   it('(b) the shell never derives sim time from the wall clock', () => {

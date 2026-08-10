@@ -11,6 +11,9 @@ export const minimalRun: FixtureRun = {
   events: [
     { type: 'beat_start', beat: 1, clock: '13:05' },
     { type: 'feed', line: { kind: 'event', clock: '13:05', text: 'synthetic event line' } },
+    // x6 — KEPT, and now the only reason it is here: since the waiting marker was
+    // removed this pair is a wait that must render nothing at all, and a bracket
+    // with no feed line beside it is exactly the shape the live driver emits.
     { type: 'waiting', active: true, for: 'judgment' },
     { type: 'waiting', active: false, for: 'judgment' },
     {
@@ -30,7 +33,7 @@ export const minimalRun: FixtureRun = {
       facts: [{ id: 'm-r1-f01', text: 'synthetic fact', species: 'fact' }],
       report_body: [{ id: 'm-r1-b01', text: 'synthetic body', species: 'selfnarr' }],
     },
-    { type: 'score', total: 0, rows: [{ label: 'synthetic', value: 0 }] },
+    { type: 'score', total: 0, baseline_total: 0, rows: [{ label: 'synthetic', value: 0, baseline: 0 }] },
     { type: 'meta', run: 1, runs_left: 0, carried: [], archive: [] },
     { type: 'run_end', run: 1 },
   ],

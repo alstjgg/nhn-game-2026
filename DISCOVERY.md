@@ -757,6 +757,95 @@ Entry form: `- [<unit>] <finding> — <impact> · <who resolves it>`.
   anywhere under `src/client/**` — but `driver/seam-guard.ts:11` names that key
   in `BANNED_EXACT` in order to REJECT any event carrying it (inv 12); the scan
   now skips that one named file, with the reason in the source.
+- [x10] **A guard that pinned a SCOPE, re-aimed onto the RULE (08-10).**
+  `tests/shell/manual.test.ts [x10] (a)` asserted `.man-plate .cf-ask` was
+  `var(--mono)` while `confirm.css`'s stayed `var(--myeong)` — the briefing had one
+  face, the confirmation and the endings kept the serif. 민서 overruled the scope the
+  same day (명조 leaves the alert plates entirely), which left the guard pinning two
+  things that must now be false: a per-family override that must NOT exist, and a
+  `--myeong` that was the whole point of removing. Re-aimed UP to the ruling itself
+  and it is stronger for it: the face is declared exactly once on the shared
+  `.cf-ask`, and none of the three alert sheets may name `--myeong` anywhere. Both
+  halves verified red (restoring the serif fails the first; appending a redundant
+  `.man-plate .cf-ask` fails the second). **The transferable part**: the original
+  asserted per-family values, so a re-scope had to find and edit three assertions and
+  could leave one behind; the re-aimed form asserts "declared once, nowhere else",
+  which survives the next re-scope untouched. When a decision is about SCOPE, pin the
+  invariant, not the current distribution. Comments are stripped before the
+  `--myeong` scan — all three sheets discuss the face at length, because the argument
+  it replaced was a real reading and is kept on the record, and a guard reading prose
+  would fire on the reasoning instead of on a declaration · x10.
+- [x10] **`reuseExistingServer` lets one worktree's e2e run assert against ANOTHER
+  worktree's build, and it reports green or red without ever saying so (08-10).**
+  `playwright.config.ts` sets `reuseExistingServer: !process.env.CI` on all three
+  lanes, and the lane ports are hard-coded (`UNIT_PORT = 5174`, 5175, 5176) with no
+  env override. So a local `PW_LANE=unit npx playwright test` does not check whether
+  the listener on 5174 is ITS OWN — it finds something answering and skips the
+  `--outDir dist-e2e` build entirely. Observed here: 32 failures that looked exactly
+  like a code regression (`.win-tab` count 1 where this branch had just removed it,
+  `#caseName` reading `멈춘 회전문` where `PACK_SLUG` is `전구간정상`), all because a
+  concurrent run in the sibling `.claude/worktrees/scenario-model` had bound 5174
+  first. The false direction is the dangerous one: the same mechanism will report
+  **green** when the foreign build happens to satisfy the assertions, so a run can
+  pass without the tree under test ever having been compiled.
+  **This repo is unusually exposed** — CLAUDE.md's development method is parallel
+  agents in git worktrees, all of which share these three ports and most of which
+  symlink one `node_modules`. Two mitigations, in order of cost: run local e2e as
+  `CI=1 …` (`reuseExistingServer` becomes false, `--strictPort` then fails loudly on
+  a busy port instead of borrowing), and longer-term let the three ports be read
+  from env so worktrees can be isolated rather than serialised. Diagnostic that
+  identifies it in one command:
+  `lsof -ti tcp:5174 | xargs ps -o command=` — if the path is not this worktree's,
+  every result from that run is void · x10.
+- [x10] **The C17 re-aim log has a blind spot: it cannot see `e2e/` (08-10).**
+  `e2e/shell.spec.ts`'s *"every window carries the WindowFrame chrome"* asserted
+  `.win-tab` count 1 per window. 민서 had the RP / LF / AF tags removed, so the
+  assert is RE-AIMED to `toHaveCount(0)` — pinned rather than dropped, because "the
+  frame's chrome" is a claim about an exact SET and an absent item belongs to that
+  set as much as a present one; deleting the line would leave nothing to notice a
+  tab coming back on one window. It is annotated `RE-AIMED (C17, x10 08-10)` at the
+  site, and it is logged here **by policy and not because anything demanded it**:
+  `tests/acceptance/discovery-and-frozen-guard.test.ts (l)`'s `reAimedTestFiles()`
+  walks `path.join(REPO, 'tests')` and filters `*.test.ts`, so every re-aim under
+  `e2e/` is invisible to it and stays green unlogged. That is the finding worth
+  keeping — the guard that enforces this log covers the unit suite only, and the
+  browser suite is where the assertions about SURFACES live, which is exactly where
+  a removed element gets re-aimed. Widening `(l)` to `e2e/**/*.spec.ts` is a
+  one-line change and is not made here only because it would go red on re-aims
+  already in that tree that predate the rule · x10.
+- [x10] **A guard that derived a WRAP, and got it backwards (08-10).**
+  `tests/shell/manual.test.ts [x10] (c)` floors the onboarding plate's body at its
+  taller step so the one button on it cannot move between the two presses. It
+  derived that floor from the type tokens and the line counts, and it counted step
+  2's lead as TWO lines — the reasoning being that moving `.cf-ask` to `--mono`
+  (x10 sets the briefing's lead in the desk's fixed face) would push
+  실제 상황 투입에 앞서 모의 과정을 실시합니다. onto a second line. It does not: 21
+  syllables at 1.2em of 18px is ~454px inside 468px of measure, so the derivation
+  was one wrap away from right and picked the wrong side. The sheet took the number
+  it produced, and `min-height:226px` shipped 31px of dead air on BOTH plates —
+  which is the same defect as the stale `126px` it replaced, pointing the other
+  way, and on a plate whose whole brief was to move the eye off the furniture and
+  onto the middle text. Measured on the built page at 1280×800 with the floor
+  lifted: step 1's natural body is 142px, step 2's is 195px. The floor is 195 and
+  the derivation now counts one line. **The claim was not weakened** — both bounds
+  still bite (226 fails `< tallest + 12` at 206.84, verified) and the literal was
+  deliberately NOT inlined, because the derivation is what makes the sheet's number
+  go red when the type tokens move under it. The general finding is the one worth
+  keeping: a node-env guard can check every input to a wrap and never the wrap, so
+  a figure that turns on one belongs in a browser · x10.
+- [x9] **A third re-aim in the same file, at the `ui/tutorial-coach` merge
+  (08-09).** `tests/windows/agent-file.test.ts [u4#c2] (d)` asserted
+  `String(coverModel)).not.toMatch(/document/)` — and `String(fn)` returns the
+  function's COMMENTS along with its code, so the guard failed the moment
+  `coverModel` grew a note using the word "document" in its ordinary sense (the
+  record of why the cover carries no slugs, which says a plate must not narrate a
+  document mid-performance). That is prose about a paper document; the claim is
+  that neither model touches `window.document`. Both lines now strip comments and
+  match on a word boundary, so they measure code. They are KEPT rather than folded
+  into the stronger scan four lines below them — that one reads a source slice, and
+  a closure that captured a DOM node from an enclosing scope would appear in
+  `String(fn)` and nowhere else. Verified non-vacuous: injecting `document.title`
+  into `coverModel` fails three asserts in this test.
 - [u4] **Contract additions frozen for u4s / u8.** `slot-board.ts` exports
   `planOps(state, action)` (pure — the single decision point for
   slot/unslot/deploy), plus `boardState()` and `usedIds()` so `deploy-button.ts`
@@ -968,6 +1057,29 @@ deleted, excluded or `.skip`ped — every one is re-aimed and logged here (C12/C
   after u2 landed it), and (b)'s "complement of FROZEN_SUITES = e7's additions"
   named explicitly, since the client run landed its own suites under
   `tests/driver/`.
+
+### W4 (08-08 playtest) — a deploy now carries, because the press moved
+
+The 08-08 playtest collapsed the two-press day (NEW RUN, then DEPLOY inside the
+new day) into one: the close hands the file back, the operator rebuilds it from
+the day's own report, and a single 배치 commits it AND opens tomorrow. The
+commit therefore happens *before* the run boundary instead of after it, which
+reverses one deliberate ruling. Both asserts that encoded the old order are
+re-aimed, neither deleted (C12/C17):
+
+- [W4] `tests/driver/run-loop-continuity.test.ts` — `(b)` asserted "a deploy
+  does NOT carry — the new day has not been deployed yet". That was exactly
+  right while DEPLOY was a press made *inside* the new day: carrying it would
+  have pre-deployed a file the operator had not built. Under one-press the
+  deployed set IS the file the next day runs with, so `(b)` now asserts it
+  carries — alongside the seats, which `(a)` already proved carry.
+- [W4] `tests/driver/live-adapter-run-transition.test.ts` — `(d)`'s
+  `{ mined: [B1.id], slots: {}, deployed: [] }` said the board is empty because
+  "a new day has not been built yet". Same reversal, and on the live path it
+  was load-bearing in a way the fixture path hid: `closingState()` harvests
+  `deployed` into `carried`, so a rebuild that cleared both handed the composer
+  an empty agent file on every day after the first. The carried deck now also
+  seats and re-arms.
 
 ### C8 (`fixture-only`) has expired — the player build may carry the engine
 
@@ -1414,3 +1526,5 @@ invariant wins and the compliant equivalent is recorded here.*
   `show(true)` clicks this window's own taskbar button — the desk's public
   affordance — and falls back to the class when there is no taskbar (the unit tests
   mount bare). (`discovery/u7.md` IMPLEMENT attempt 2 §2)
+- [H1] **A mirror is not a membrane.** W4 re-armed the carried agent file in the live adapter's view mirror (`live/adapter.ts`) and never replayed it into the run that opened. `createMembrane` is per bound run, so the new day held an empty seat map: `unslot` answered `empty_slot` (the operator could not release a carried sentence at all) and `membrane.deployed()` — the value `composer.judgment` carries into Call 1 — was empty, so every day after the first flew a file the model never received. Fixed by submitting the file as real `slot`/`deploy` ops into the opened run, which is what the fixture loop's `carry()` always did. `tests/driver/live-adapter-run-transition.test.ts` `(d)` is RE-AIMED a second time (C17): the carry keeps the operator's seat numbers instead of re-indexing the sorted carry list from 0.
+- [x3] **A silent mark cannot teach a portal.** The onboarding walk shipped as twelve pulses of one class, `is-lit`, on whatever the step pointed at — no copy anywhere on the screen — and its own module header argued at length that a coach mark was the wrong shape and that an overlay must not exist. The argument was sound and it lost to the requirement: a window glowing red tells a first-time operator that something is *wrong*, not that they should turn the page, and the desk has roughly sixty seconds to teach three windows, a page turn, a commit and a mine. Only printed copy carries that, and printed copy needs a plate. The walk is now eleven plates driven by what the operator does, with a red leader to the target and a scrim holed over it (`shell/coach.ts`, `styles/coach.css`; `styles/tutorial.css` deleted). Exactly one clause of the old contract is spent — the walk mounts DOM — and it is named as spent rather than dropped; the rest (sends no op, drives no clock, imported once, not awaited, imports no component or window) is held and widened to cover the new layer, which is surface the guards had never seen. `tests/shell/tutorial-observer.test.ts` is RE-AIMED wholesale (C17): its `(b)` "the sheet paints no layout property" is gone, because a plate needs `position`/`top`/`left`, and what that guard was really protecting — nothing moves the desk — is already held by `shell-source.test.ts` `[C12/inv 8] (c)`, which forces the plate's box through `--coach-x`/`--coach-y`; its `(e)` "its only import is a TYPE" is replaced by an enumerated allow-list of runtime imports, so the walk can still never become the route by which the desk grows a dependency; and its `(c)` "no other stylesheet claims `.is-lit`" is KEPT, where it now proves the ring is painted nowhere at all rather than that one sheet owned it. Three guards are new and cover the overlay's own hazards: the layer disclaims pointer events with the plate the only taker (a scrim that ate a press would deadlock a walk whose steps come down on that press), nothing animates `infinite` (the old pulse held the desk at `visibility:hidden` because `revealDesk` awaits an animation that never settles), and `#coach`'s place on the z-ladder is read out of the other sheets (`#topbar`/`#threads`/`#manual` under it, `#signin`/`#grain`/`#confirm`/`#ending` over it) so a mark can never land on top of the irreversible 배치 확인 question, with `#toast` pinned as the 1×1 live region x6b reduced it to — a re-painted toast is centred at 50%/50%, which is where plate 1 lands, so it must fail here rather than land as an announcement across the first instruction the player reads. Two selectors the walk inherited were wrong and are fixed at the source rather than worked around: `.pg-turn:not([disabled])` was never a name for 다음 장 — it isolates the forward leaf on the cover alone, points at 이전 장 on the agent's page, and resolves to *two* elements once a past page exists — so `windows/agent-file.ts` classes the leaves `pg-prev`/`pg-next`; and 인수인계 사항 was addressed as `.sect.operable`, a state the same section loses when a past page renders it `filed`, so `components/dossier.ts` slugs its sections and the plate points at `[data-sect="handover"]`. The eighth gate was also wrong in a way no selector fixes: it latched on a click on any sentence, but mining is *refused* while the day is running (`windows/reports.ts` bails on `board.isLocked()`), so a mid-day click seated nothing and would have raised the 인수인계 plate over an empty section — and a keyboard mine raises no click at all, since a sentence is a `role="button"` span. The gate reads the mine's outcome instead, `#w-file .slot.filled`. And the walk's TIMING was wrong in the same region: the REPORTS plate was gated on the day's first `report`, which is what the flow as first written asked for ("when the first REPORTS start coming in") but which on this desk lands mid-shift — a live day files seven — so the walk dimmed the desk in the middle of the one stretch the operator is meant to be reading, one plate after being told to read it. Plates 5–8 now hang off the close, `report` is not subscribed to at all, and `e2e/tutorial.spec.ts (m)` sits through a full real-time shift with a MutationObserver armed to prove no plate is ever mounted while the run phase is live (sampling for a mid-day instant is a race: the fixture files its report a few seconds before 21:04).

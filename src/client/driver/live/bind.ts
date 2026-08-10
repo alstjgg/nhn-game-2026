@@ -18,7 +18,7 @@ import type { Block } from '../../../shared/contracts.ts'
 import type { ReportGuidance } from '../../../shared/report-guidance.ts'
 import { createEngine } from '../../../engine/index.ts'
 import { createComposer } from '../../../composer/index.ts'
-import { createBlockStore, createLiveDriver } from '../../../driver/index.ts'
+import { baselineState, createBlockStore, createLiveDriver, createScorer } from '../../../driver/index.ts'
 import type { MutableBlockStore } from '../../../driver/index.ts'
 import { createTransport } from '../../../transport/index.ts'
 import type { FetchLike } from '../../../transport/index.ts'
@@ -40,11 +40,32 @@ export type BindDeps = {
 export type OpenRunDeps = {
   run: number
   carried: readonly Block[]
+  /** Every sentence shown so far, seeded minable-but-unmined (`RunClose.shown`). */
+  shown: readonly Block[]
   /** `"HH:MM"` bounds for this run's clock, read off the pack's meta. */
   start: string
   end: string
   /** The run/meta view e8 folds onto the stream. */
   meta: BoundRun['meta']
+}
+
+/**
+ * Every sentence the desk has already shown, into this run's `seen` tier only.
+ *
+ * NOT mined — `mine()` reads `seen` and `has()`/`get()` read `mined`, so an
+ * absorbed-but-unmined sentence is exactly "minable, not deployed". That is
+ * what lets an operator mine out of a past sitting's report on a later day
+ * without any of it reaching Call 1 unbidden.
+ *
+ * There is deliberately no throw here, unlike `seedCarried`: a carried block
+ * that cannot be seeded is a broken carry-over, but a shown sentence that
+ * cannot be is just a line the next day will refuse to mine, which is the
+ * behaviour this unit is replacing rather than a corruption of it.
+ */
+export function seedShown(blocks: MutableBlockStore, shown: readonly Block[]): void {
+  for (const block of shown) {
+    blocks.absorbLine({ kind: 'mark', clock: '00:00', text: block.text, sentence_id: block.id })
+  }
 }
 
 /**
@@ -68,13 +89,25 @@ function seedCarried(blocks: MutableBlockStore, carried: readonly Block[]): void
 /** Wires one run and hands back what the adapter needs to open it. */
 export function bindLiveRun(deps: BindDeps, open: OpenRunDeps): BoundRun {
   const blocks = createBlockStore()
+  // Order matters: `shown` only absorbs, `seedCarried` absorbs AND mines. A
+  // carried block appears in both and must end up mined, so it goes last.
+  seedShown(blocks, open.shown)
   seedCarried(blocks, open.carried)
 
   const engine = createEngine({ pack: deps.pack, run: open.run })
-  const composer = createComposer({ blocks, reportGuidance: deps.guidance })
+  const composer = createComposer({ blocks, reportGuidance: deps.guidance, pack: deps.pack.slug })
   const transport = createTransport({ baseUrl: deps.proxyBaseUrl, fetch: deps.fetch })
 
-  const driver = createLiveDriver({ engine, composer, transport, blocks, run: open.run })
+  // The scorer reads the state the day ENDED in, so it is handed the engine's
+  // accessor rather than a snapshot: `createLiveDriver` calls `score()` once,
+  // immediately before `run_end` (transport decision 3). Built here rather than
+  // inside the driver because the pack is this file's to thread — the driver
+  // knows ports, never files.
+  // The baseline day is a property of the PACK, not of this run, so it is
+  // computed once per bound run from the same pack the engine got.
+  const scorer = createScorer(deps.pack.score, () => engine.snapshot(), baselineState(deps.pack))
+
+  const driver = createLiveDriver({ engine, composer, transport, blocks, scorer, run: open.run })
 
   return { driver, start: open.start, end: open.end, meta: open.meta }
 }

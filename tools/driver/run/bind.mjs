@@ -22,7 +22,13 @@
 import { createEngine } from '../../../src/engine/index.ts'
 import { buildSchedule } from '../../../src/engine/beat/index.ts'
 import { createComposer } from '../../../src/composer/index.ts'
-import { createBlockStore, createLiveDriver } from '../../../src/driver/index.ts'
+import {
+  baselineState,
+  createBlockStore,
+  createLiveDriver,
+  createScorer,
+  scoreRecord,
+} from '../../../src/driver/index.ts'
 import { recordingTransport } from './record.mjs'
 
 /**
@@ -55,8 +61,13 @@ function seedCarried(blocks, carried) {
  * annotation interleaved) and the Call 1 / Call 3 payloads, verbatim.
  *
  * `carried` is the run loop's carry-over **for this run** — `[]` on run 1.
+ *
+ * `deploy` is `{id, text}` blocks to seed and then put in the agent's hands
+ * before the first beat — the headless equivalent of the player mining and
+ * deploying. Empty is the honest default: an untouched run hands the agent
+ * nothing, and since x14 that is what makes its gates resolve without a Call 1.
  */
-export function bindRun({ pack, guidance, provider, run, carried = [] }) {
+export function bindRun({ pack, guidance, provider, run, carried = [], deploy = [] }) {
   // Read-only — see the file header. Never advanced, never applied to.
   const schedule = buildSchedule(pack.timeline, pack.gates)
 
@@ -97,7 +108,7 @@ export function bindRun({ pack, guidance, provider, run, carried = [] }) {
 
   const blocks = createBlockStore()
   seedCarried(blocks, carried)
-  const composer = createComposer({ blocks, reportGuidance: guidance })
+  const composer = createComposer({ blocks, reportGuidance: guidance, pack: pack.slug })
 
   // The record-numbering offset, applied once, plus the per-beat journal
   // capture — taken before the real engine resets it on advance. Every other
@@ -106,16 +117,60 @@ export function bindRun({ pack, guidance, provider, run, carried = [] }) {
   const recordingEngine = {
     ...engine,
     current: () => ({ ...engine.current(), index: engine.current().index + 1 }),
+    // x14 — THE OTHER PLACE A GATE RESOLVES. The `gate_stance` above is written
+    // from inside `transport.send`, which only ever fires for a call that was
+    // MADE; an empty handover makes none, so every gate of a virgin run fell
+    // out of the record entirely — `beats[].gate: null`, no stance, on a beat
+    // that did carry a gate and did resolve it. The record is a competition
+    // deliverable and a run that took its authored defaults is the run most
+    // likely to be read, so the event is minted here too, off the same
+    // schedule and in the same shape.
+    submitBaseline() {
+      const cursor = engine.current()
+      const gate = schedule[cursor.index].gate
+      events.push({
+        type: 'gate_stance',
+        beat: cursor.index + 1,
+        gate: gate.id,
+        stance: gate.defaultStance,
+      })
+      return engine.submitBaseline()
+    },
     advance() {
       journals.push({ beat: engine.current().index + 1, deltas: engine.journal() })
       return engine.advance()
     },
   }
 
-  const driver = createLiveDriver({ engine: recordingEngine, composer, transport, blocks, run })
+  // The same scorer the browser binder builds, over the same pack file — the
+  // two roots stay symmetrical, which is what makes a headless replay evidence
+  // about the thing the judge plays.
+  const baseline = baselineState(pack)
+  const scorer = createScorer(pack.score, () => engine.snapshot(), baseline)
+
+  const driver = createLiveDriver({ engine: recordingEngine, composer, transport, blocks, scorer, run })
   driver.subscribe((event) => {
     events.push(event)
   })
 
-  return { driver, events, journals, calls: recorder.calls }
+  // x14 — SHAPE THE AGENT, or it is never asked anything. An empty handover
+  // resolves every gate to its authored default with no Call 1 made, so a
+  // headless run that deploys nothing composes no judgment payload at all —
+  // correct, and useless to a harness whose subject is Call 1. `carried` seeds
+  // the store; it does not deploy, because deploying is the player's act and a
+  // tool may not perform it on their behalf without being told to.
+  if (deploy.length > 0) {
+    seedCarried(blocks, deploy)
+    const ids = deploy.map((block) => block.id)
+    const ack = driver.submit({ op: 'deploy', blocks: ids })
+    if (!ack.ok) throw new Error(`deploy ${JSON.stringify(ids)} was refused: ${ack.reason}`)
+  }
+
+  // The record's half of the same reading, deferred: `run-record.schema.json`
+  // indexes units by `id` and the §5.2 event carries labels, so neither shape
+  // can be recovered from the other (see `src/driver/scorer.ts`). Called after
+  // the run, against the state it ended in.
+  const score = () => scoreRecord(pack.score, engine.snapshot(), baseline)
+
+  return { driver, events, journals, calls: recorder.calls, score }
 }

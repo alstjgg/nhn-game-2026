@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=1280" />
-    <title>NDSP-2 · 우는다리 — 운영자 단말</title>
+    <title>ERR-2 · 멈춘 회전문 — 운영자 단말</title>
   </head>
   <body>
     <!--
@@ -16,6 +16,9 @@
       topbar 56..104, overlays 279..284); the third-party webfont links are
       dropped (inv 10 — u10 self-hosts) and the window markup is built at
       runtime because its geometry comes from applyLayout, never from markup.
+      The wallpaper is no longer a VERBATIM port of 14..55 — x10 dropped the
+      blueprint's four text labels, for the reason recorded on the `.bp` group
+      below. The design file keeps them; it is history, not the target.
     -->
     <div id="app">
       <a class="skip-link" href="#desktop">본문(데스크)으로 건너뛰기</a>
@@ -33,7 +36,36 @@
           </defs>
           <rect width="1600" height="900" fill="url(#gridfine)" opacity=".3" />
           <rect width="1600" height="900" fill="url(#grid)" opacity=".5" />
-          <!-- 윤슬교 종단면 -->
+          <!-- A structural elevation — a long span on two towers, drawn as
+               dressing and nothing else. It names no place, no contractor and
+               no defect, which is the whole point of it: it is the paper the
+               desk happens to be standing on, not a document in the case.
+
+               x10 (민서, 08-10) — it USED to name all three. Four
+               `<text class="bplabel">` nodes rode this group: two callouts on
+               the deck naming a span and an anchorage each, a title block up
+               at the tower line carrying the structure's name, its scale and
+               its contractor, and a red warning beside the `.mark` circle
+               naming the failure. Every word of it belonged to the FIRST
+               scenario concept — the bridge — which the project dropped for
+               the pack it actually ships (`PACK_SLUG` in `shell/pack.ts`; the
+               case is a tunnel). A wallpaper that captions a case the desk is
+               not running is worse than an unlabelled one, and it is also the
+               shell standing in for something the scenario pack owns, which
+               this block's opening line says nothing here does.
+
+               So the labels are gone and the DRAWING is untouched: every path,
+               both grid patterns, both `<rect>` fills and the pulsing `.mark`
+               circle stay exactly as they were. 민서 asked for the text
+               stripped and the screen otherwise left alone, and chose the
+               option that keeps the circle — it is drawing, not text, and it
+               is now the only thing on the wallpaper that points at anything.
+               `.bplabel` / `.bplabel.warn` went with the nodes in
+               `styles/shell.css`, and `[u3#c9] (f)` in
+               `tests/shell/shell-source.test.ts` holds the line — which is why
+               the dropped strings are DESCRIBED above and quoted nowhere: (f)
+               scans this file's comments too, on purpose. The verbatim four are
+               in the design file and in git. -->
           <g class="bp" transform="translate(0,120)">
             <path d="M60 560 L1540 560" />
             <path d="M60 566 L1540 566" class="thin" />
@@ -49,11 +81,7 @@
             </g>
             <path d="M60 620 H1540" class="dim" />
             <path d="M60 610 V630 M800 610 V630 M1540 610 V630" class="dim" />
-            <text x="420" y="606" class="bplabel">경간 A · 정착부 N-3</text>
-            <text x="1150" y="606" class="bplabel">경간 B · 정착부 S-3</text>
-            <text x="60" y="270" class="bplabel">윤슬교 종단면 · 축척 1:400 · 세명건설</text>
             <circle cx="800" cy="560" r="26" class="mark" />
-            <text x="836" y="565" class="bplabel warn">정착부 — 소선 파단</text>
           </g>
         </svg>
         <div id="horizon"></div>
@@ -70,7 +98,7 @@
               <svg viewBox="0 0 40 40">
                 <circle cx="20" cy="20" r="18" />
                 <circle cx="20" cy="20" r="14.5" />
-                <text x="20" y="25.5" text-anchor="middle">災</text>
+                <text x="20" y="25.5" text-anchor="middle">緊</text>
               </svg>
             </span>
             <span class="tb-portal">
@@ -93,19 +121,35 @@
             <div class="clk-face">
               <span class="clk-lead">SIM</span>
               <span class="clk-digits" id="clockDigits"></span>
-              <span class="clk-term"></span>
             </div>
-            <div class="clk-bar"><i id="clockFill"></i><u id="clockTerm"></u></div>
-            <div class="clk-rate">
-              <button class="rate-btn" data-rate="1" type="button" title="재생 ×1">▶</button>
-              <button class="rate-btn" data-rate="4" type="button" title="빨리감기 ×4">▶▶</button>
-              <button class="rate-btn is-on" data-rate="0" type="button" title="일시정지">❚❚</button>
-            </div>
+            <!-- W4 — the transport controls are gone. The day is not something
+                 the operator scrubs; it is something they commit a file to and
+                 then watch. DEPLOY starts it, the terminal minute ends it. What
+                 is left here is the slot the audio toggle mounts into
+                 (`shell/boot.ts`).
+
+                 x6 — the progress bar is gone too, and so is the `→ 23:12`
+                 gutter that was its right end. The digits now read the LIVE
+                 FEED's latest PRINTED stamp (`shell/feed-clock.ts`), while the
+                 fill measured `driver.clock`'s own running minute against the
+                 band: one box, two times, and the faster one drawn as the
+                 authority. The chrome follows the paper now, so the face and
+                 the mute toggle are all that is left — one row, not a stack. -->
+            <div class="clk-rate"></div>
           </div>
 
+          <!-- x6 — the two lines swapped languages, because they were naming
+               two different things. `D-DAY −02` counts down to a date, and this
+               unit counts ATTEMPTS: the day is re-run, it does not approach. The
+               figure is what the operator reads under pressure, so it is now
+               spelled in the language they read the rest of the paper in, and
+               the Latin line above it joins OPERATOR / CASE as the rail of
+               small caps that says what the field is. Ids untouched —
+               `#ddayNum` is `components/run-counter.ts`'s and the pips are the
+               same strip. -->
           <div class="tb-dday" id="ddayUnit">
-            <div class="dd-label">잔여 시행</div>
-            <div class="dd-value">D-DAY <span id="ddayNum"></span></div>
+            <div class="dd-label">REMAINING ATTEMPTS</div>
+            <div class="dd-value">잔여 시행 <span id="ddayNum"></span></div>
             <div class="dd-runs"><span id="runNum"></span> / <span id="runTotal"></span></div>
             <div class="dd-pips" id="ddayPips"></div>
           </div>

@@ -1,19 +1,27 @@
 ---
 name: write-scenario
-description: Scenario factory — runs one assignment through the write → compile → lint → paper-check → revise loop, producing a validated datapack and a verdict memo. Args - brief file path (replaces built-in §1–§3) · draft-only (write, then stop) · existing draft path (skip writing, run the validation loop only). Format canon - drafts follow §4, datapacks follow data/scenario/_schema.
+description: Scenario factory — runs one assignment through the write → compile → lint → paper-check → revise loop, producing a validated datapack and a verdict memo, and on request hardens a selected pack into a playable one. Args - brief file path (replaces built-in §1–§3) · draft-only (write, then stop) · existing draft path (skip writing, run the validation loop only) · harden <slug> (skip writing, run §7 against an existing pack). Format canon - drafts follow §4, datapacks follow data/scenario/_schema.
 ---
 
 # Scenario factory
 
 The session running this skill is the **orchestrator** — it does not write. §0–§5
 are the material fed wholesale to the writing sub-agent (the entirety of the
-writer's world); the process this session follows is §6. The final product is a
-bundle that has passed the validation loop: **datapack + verdict memo + draft
-diff + remainder list**. All produced artifacts (draft, datapack, memos) are
-written in Korean.
+writer's world); the process this session follows is §6, and §7 when asked. The
+default product is a bundle that has passed the validation loop: **datapack +
+verdict memo + draft diff + remainder list**. All produced artifacts (draft,
+datapack, memos) are written in Korean.
+
+**That default pack is not playable, and that is deliberate.** The loop produces
+a *draft-stage* pack: no meter is bound to an engine variable, no gate carries
+buckets, `symptoms.json` is `{}`, and lint's FLAG list is the hardening
+worklist. Making it playable is §7, and §7 runs **only when asked**, because the
+manual is written for the scenario that was chosen (`당선 시나리오 확정 후`) and
+hardening a candidate you will discard is wasted work.
 
 **Args:** brief file path (replaces §1–§3) · `draft-only` (stop after §6-1) ·
-existing draft path (skip §6-1, enter §6-2 with that draft).
+existing draft path (skip §6-1, enter §6-2 with that draft) · `harden <slug>`
+(skip §6 entirely, run §7 against an existing pack).
 
 ## 0. Preparation — what to read, and what not to
 
@@ -29,34 +37,58 @@ existing draft path (skip §6-1, enter §6-2 with that draft).
 
 ## 1. Game context
 
-- **World:** a world where a great disaster is already scheduled. The moment
-  the crisis was detected, the response organization's prediction simulator
-  swallowed all of the city's data and reconstructed the entire span of time
-  up to D-Day. **The truth is inside the simulation — but not in a form a
-  human can open.** There is exactly one way to read it: the player (the
-  disaster-preparedness officer) sends **a single AI agent** inside to live
-  through it, and receives its report. Until D-Day, again and again — watch
-  the failure → read the report → revise the agent's prompt → send it back.
-  A game of completing, by trial and error, the agent that resolves the
-  disaster.
-- **The agent's verbs are reading, judging, persuading, and setting
-  priorities.** The agent is an LLM — it solves problems with words and
+- **World:** the player is a new hire at the 국가재난대응실 — the national
+  disaster response office, where a report call comes in and 요원 are
+  dispatched to it with the situational knowledge the desk can give them.
+  Before real duty, the player trains on the 국가재난모의포탈, a portal that
+  replays **reconstructions of disasters that actually happened**. The people
+  inside already died. The portal asks one question: could you have solved
+  it?
+- **The record is not open.** Because this is an examination, the portal
+  hands over only what the duty officer held that day — the incoming report
+  call, and what the 요원 sends back. **The truth is inside the
+  reconstruction, but not in a form a human can open.** There is exactly one
+  way to read it: send **a single AI 요원** in to live through it and receive
+  its report. Again and again — watch the failure → read the report → revise
+  the handover → send them back in. A game of completing, by trial and error,
+  the 요원 who resolves the situation.
+- **The 요원's verbs are reading, judging, persuading, and setting
+  priorities.** The 요원 is an LLM — it solves problems with words and
   judgment, not physical force.
-- **The disaster itself cannot be prevented. What the agent contends with is
+- **The disaster itself cannot be prevented. What the 요원 contends with is
   people.** The disaster is the clock; humans are the puzzle — the old man
   who refuses to evacuate, the official who covers up, the crowd in panic.
-- **The simulated world runs on a fixed timeline.** Without the agent's
+- **The reconstruction runs on a fixed timeline.** Without the 요원's
   intervention, the same things happen at the same times, every run. So the
-  fact that "the bridge collapses at 13:00" can only be learned in a run that
-  reached 13:00 — a run that goes further mines deeper truth.
+  fact that "the stairwell collapses at 19:40" can only be learned in a run
+  that reached 19:40 — a run that goes further mines deeper truth.
+- **One situation is one report call to its resolution — roughly two to three
+  hours.** The clock is short, so its graduations must be fine: twelve hours
+  at one-hour steps and two and a half hours at fifteen-minute steps are the
+  same depth. Shorten the span without multiplying the layers and the world
+  runs dry by run 3.
+- **Depth has two axes.** The clock — a run that lasted longer sees more. And
+  **gate outcome** — which way the 요원 broke at an earlier gate changes what
+  surfaces later. The second axis works **within a run only**: nothing about
+  which stance was taken survives into the next run. So
+  `요원이 옥상에 함께 오른 런에서 보임` is writable and
+  `요원이 옥상에 함께 오른 런 이후로 보임` is not. This axis does not
+  accumulate across runs — it makes runs differ from one another.
+- **Name the outcome, never the gate.** Write that second axis as something
+  that happened in the world — `요원이 옥상에 함께 오른 런`,
+  `관장이 종이를 두 장 편 런` — never as `G3에서 동행을 택한 런`. `G1`,
+  `갈림길`, `게이트` are words for the workshop, and the timeline is read by
+  the player. The rule is not a style preference: naming a gate on a player
+  surface is item 9 of the guide's forbidden list, and it fails a machine
+  check.
 - **Sentence mining:** when a run ends, the player receives two reports (an
-  objective event log + a subjective report the agent wrote in its own
+  objective event log + a subjective report the 요원 wrote in its own
   temperament) and **drags sentences out of them into the next run's
-  prompt**. The scenario must be dense enough in facts, secrets, and
-  conjecture to feed this mining.
+  handover** (`인수인계 사항`). The scenario must be dense enough in facts,
+  secrets, and conjecture to feed this mining.
 - **The membrane:** the player never types a single character. They only
-  select sentences the simulation itself produced.
-- **The same disaster is watched repeatedly (5–10 runs).** A thin world gets
+  select sentences the reconstruction itself produced.
+- **The same situation is watched repeatedly (5–10 runs).** A thin world gets
   boring by run 3. Every viewing must reveal a new face, a new secret.
 
 ## 2. Assignment
@@ -67,31 +99,83 @@ existing draft path (skip §6-1, enter §6-2 with that draft).
 
 ### Free topic
 
-The kind of disaster, the shape of the city, the form of the response
-organization, what is hidden and who is confronted — all of it is yours to
-decide. Keep §1's game context (a scheduled disaster, a simulated world, one
-agent, people as the puzzle) and the guide's physics, and any stage you can
-imagine is open. No differentiator, guiding question, or trap is given in
-advance — designing those from a blank page is part of this assignment's
-writing, and the logline should be their answer.
+The kind of disaster, the shape of the city, who was on duty that day, what
+is hidden and who is confronted — all of it is yours to decide. Keep §1's
+game context (a real past disaster replayed as training, one 요원, people as
+the puzzle) and the guide's physics, and any stage you can imagine is open.
+No differentiator, guiding question, or trap is given in advance — designing
+those from a blank page is part of this assignment's writing, and the logline
+should be their answer.
 
-**The single restriction:** the bomb-threat call with an unidentified caller
-is already taken by another assignment. Start outside the phone line.
+**The single restriction:** the bomb threat phoned in by a voice nobody can
+place is already taken by another assignment. Every situation opens on a
+report call, so the phone line itself is not off limits — that particular
+caller is.
 
 **File prefix:** `자유주제`
 
 ## 3. Quantities
 
-Gates 5–7 · characters 5–7 · places 3–5 · hidden truths 4–6.
+Span roughly 2–3 hours · gates 3 · 인물 exactly 3 · places 3–5 ·
+hidden truths 3–4 · timeline rows 20–25 · score units 4 or fewer.
 
-The direction of these numbers is **long, not wide**. Keep only as many
-characters and places as an audience can hold every face of (7 major
-characters is the cap — the conventional limit of who an audience can track).
-Instead, one character spans several truths and gates, and one place yields
-different information at different clock depths. Don't stretch story strands
-horizontally; stack them vertically along run depth — best of all is a chain
-where a sentence carrying one truth delivers the player to the door of the
-next.
+**A judge plays this for minutes, not hours.** Every number above is sized for
+someone who will see three or four runs and then decide. Anything the player
+must read twice to hold is a number too large.
+
+**The span must close before midnight.** Not a taste — the sim clock is
+same-day only, and it ends the run the moment its minute counter reaches the
+terminal stamp. A band that reads 21:47 → 00:12 is *already ended* when the
+run is built: the clock never ticks, the progress bar's span collapses to one
+minute, and the game boots into a finished day. `compile-datapack.mjs` refuses
+a timeline whose rows would cross midnight, so this fails loudly at compile
+rather than quietly on the desk. An evening scenario starts early enough that
+its last row still lands on the same date.
+
+**Three people, three gates — one gate belongs to each.** There is no 조연
+tier: a body that brushes the story once and leaves is furniture, and
+furniture belongs in the timeline's prose, not in the cast. Three is few
+enough that a face arrives fully formed on its first appearance, and that each
+gate can be *about* somebody rather than about a decision with people nearby.
+
+**Twenty-odd rows, not forty.** The clock is short and its graduations should
+be fine, but fine is not the same as dense: the player reads this timeline
+plus two reports every run, and ore they skim is ore they do not mine. Cut the
+rows that only establish; keep the rows that carry a sentence someone will
+want to hand over. If the world feels thin at 25 rows, the fix is deeper
+places and more carriers per truth, not more rows.
+
+Instead of widening, one character spans several truths and gates, and one
+place yields different information at different depths. Don't stretch story
+strands horizontally; stack them vertically along run depth — best of all is
+a chain where a sentence carrying one truth delivers the player to the door
+of the next.
+
+**Three gates, and three is not a budget to spend up to — it is the count.**
+A forking situation reads as a weighty one, which is exactly the trap: past
+three, the forks stop being decisions and become a checklist the 요원 walks.
+Three also keeps the locks honest. The 기질 carries at most two conditional
+clauses (§4-6), so every gate past the second is another lock cut from the
+same two keys; at six or seven gates a player who learns one axis opens half
+the scenario at once, and the back half goes shallow in a single run. At
+three, each gate can hold its own axis-and-지목 pair and stay a real question.
+
+Spend what the gate count frees on **depth**, not on more scenes: more
+carrying sentences per truth, more that one place yields at different depths.
+
+**The three gates are not equal, and must not be.** One of them is worth tens
+of lives — it is the gate the whole scenario is built to deliver the player
+to. The other two are worth a named person's fate and, more importantly,
+**control what can be mined before the decisive one**: an outcome at G1 is
+what puts the key to G3 into the ore, or keeps it out. Three gates that each
+save a third of the toll produce no moment worth replaying; one that saves
+tens, reachable only through the other two, is the whole game.
+
+**Run 1 should be short.** It is the run with an empty handover, so it is the
+run that watches the day happen — and the player has to reach the score screen
+fast enough to want a second one. Let the early runs end early: the 요원 is
+shut out, the line is taken away, the desk stops answering. Later runs earn
+their length by going further. Screen time is a reward, not a default.
 
 ## 4. Output format
 
@@ -106,31 +190,104 @@ sentences; the skeleton follows the below exactly. Section headers are
 `## N. <name>` with exactly these nine Korean names, in this order:
 `로그라인 · 고정 타임라인 · 인물 · 장소 · 숨겨진 진실 · 기질 제안 · 갈림길 · 점수 · 자기 검사`.
 
+### 어디까지 플레이어에게 닿는가
+
+Not all nine sections ship. Some are compiled into files the browser
+downloads, and some exist only for the workshop — and you cannot tell which
+from the draft, so here it is.
+
+Read the left column as **reaches the browser**, not as *appears on screen*.
+Some of it is rendered into the 요원's own prompt rather than shown to the
+player; either way it has left the workshop and is fetchable, so it is written
+in the world's language.
+
+| 브라우저가 받는다 | 워크숍에 남는다 |
+|---|---|
+| `로그라인` · `고정 타임라인` 사건 텍스트 **와** 런 깊이 칸 · `인물`의 이름·역할·이해관계·아는 것·**눈금 라벨** · `기질 제안`의 기본 성향·조건절 본문·패배 조건·**축 이름과 축 어휘** · `갈림길`의 제목·장면·`question`·`stances`·`false_leads` · `점수`의 단위 이름과 집계 규칙 | `장소` · `숨겨진 진실` · `자기 검사` · `걸치는 줄기` · `눈금 후보`라는 말 자체 · `standard_form` · `key_examples` · `key_conditions` (축·지목·종·`targets_clause` 전부) · `점수` 표와 세 글머리 |
+
+Two things that surprise people. **Your section headings are not the data** —
+`**조건절 1 (축 어휘: …)**` is parsed into `cl1` and the words `조건절`,
+`눈금 후보` never travel; what travels is the prose under them, plus the axis
+name you chose. And **the split runs per-bullet, not per-section**: inside
+`인물`, `걸치는 줄기` stays home while `눈금 후보`'s label ships.
+
+The left column is the membrane, and two kinds of word are barred from it.
+
+**Gate structure** — `G1`, `갈림길`, `게이트`, stance labels quoted as labels.
+
+**The vocabulary of the game itself** — `런`, `에이전트`, `기질`, `stance`,
+`주입`, `블록`, `조건절`, `눈금`, `플레이어`. This is the one that slips:
+`재앙의 정체는 이 순간까지 간 런에서만 확정된다` names no gate and still
+breaks the frame, because **the reconstruction does not know it is being
+replayed.** Nobody inside that afternoon has a word for a run. Write the
+sentence from inside the day — `폭발음은 기록되지 않았다` — and let the
+exposure column carry when it becomes visible.
+
+Both are checked by `datapack:lint`. Write the left column as the world
+describing itself: the player is looking at a reconstruction, not at your
+notes about one.
+
 1. **`로그라인`** — 3 sentences or fewer.
-2. **`고정 타임라인`** — the no-intervention event table, from start to the
-   final clock. Exactly five columns:
+2. **`고정 타임라인`** — the no-intervention event table, from the report
+   call to the final clock (the span is §3's — roughly 2–3 hours). Exactly
+   five columns:
    `| 시각 | 표면 | 장소 | 사건 | 처음 보이는 런 깊이 |`.
    표면 is one of `통화/CCTV/현장/문서`; 장소 is a name from the 장소 section,
    verbatim (— if none applies). The run-depth cell uses exactly one of three
    phrasings: `초반 런에도 보임` / `시계 N까지 간 런에만 보임` /
    `시계 끝까지 간 런에만 보임` — extra conditions are appended after
-   `" · "`. **One exposure per row** — information with different exposure
+   `" · "`. A **gate-outcome depth** goes in that tail, in prose, named by
+   what happened in the world — never by gate id or stance label:
+   `초반 런에도 보임 · 요원이 옥상에 함께 오른 런에서만`. `G3에서 동행을 택한
+   런에서만` says the same thing and is forbidden — this cell ships to the
+   player (§4의 「어디까지 플레이어에게 닿는가」), and a gate id there is
+   forbidden-list item 9. Write it as a condition on *this* run, never as
+   something unlocked for runs afterward — the axis does not survive a run
+   boundary (§1).
+
+   **The tail is the one slot whose prose cannot survive to ship, and that is
+   deliberate.** Every Korean phrasing of a gate outcome contains the word
+   `런`, which is itself barred from player surfaces — so there is no wording
+   that is both natural and clean. The draft writes prose because prose is
+   what a human hardener reads; **hardening then replaces the tail with a flag
+   identifier** (`roof_seen`), which has no prose in it to leak. A pack that
+   still carries Korean here is unfinished, and lint says so on every such row.
+   Watch the asymmetry: `시계 N까지 간 런에만 보임` is parsed into a clock
+   stamp and never ships, so the same word is harmless in the first half of
+   the cell and a leak in the second.
+   **One exposure per row** — information with different exposure
    depths is split into separate rows.
-3. **`인물`** (5–7) — each character in this shape:
+3. **`인물`** (exactly 3) — each character in this shape:
    - Under a `**이름** (나이 · 역할)` heading, four bullets:
      `- 이해관계: …` / `- 아는 것: 항목 · 항목 · …. 모르는 것: ….`
      (items separated by `·` — commas belong inside sentences) /
      `- 눈금 후보: A · B.` (max 2 per character) /
-     `- 걸치는 줄기: 진실 1·2…, 갈림길 G1·G4….` (truth and gate numbers in
+     `- 걸치는 줄기: 진실 1·2…, 갈림길 G1·G3….` (truth and gate numbers in
      exactly this notation).
-   - Every character spans two or more hidden truths or gates — a character
-     carrying only one strand doesn't earn the slot.
+   - Every character spans two or more hidden truths or gates, and **one of
+     the three owns each gate** — the person that gate is about. A character
+     carrying one strand doesn't earn a slot, and at three slots there is
+     nowhere for them to hide.
+   - **Anyone who is not one of the three lives in the timeline's prose.** The
+     crowd, the dispatcher who reads a number out, the child someone carries —
+     they can be named, spoken and killed in a row of the fixed timeline
+     without ever taking a slot here. This section is for the people the 요원
+     argues with; everyone else is the day happening.
+   - **One of the three is the face of the toll.** When the tally counts a
+     crowd (§4-8), the number cannot be felt on its own — so one of these
+     three stands where the number falls: known by name, reachable by the
+     player, and lost in the run that changes nothing.
 4. **`장소`** (3–5) — each place as a
    `**이름** — one line: what information surfaces only there.` heading,
    followed by two or more `- 깊이: 정보` bullets. 깊이 is `시계 HH:MM`
-   (with an optional tail) or free prose (like `재방문 깊이`) — the depths
-   must be different clock depths.
-5. **`숨겨진 진실`** (4–6) — each under a `**진실 N — 진실 한 문장**`
+   (with an optional tail) or free prose — the depths must be genuinely
+   different depths. Inside a 2–3 hour span the clock depths sit closer
+   together than they used to, so one of a place's depths may instead be a
+   gate-outcome depth (`G2에서 침묵을 택한 런` …) — that counts as a
+   different depth even at the same clock. This section is **not** published,
+   so naming the gate here is fine; the same depth written into the timeline's
+   run-depth cell is not (§4-2).
+5. **`숨겨진 진실`** (3–4) — each under a `**진실 N — 진실 한 문장**`
    heading:
    - Under `- 실어 나르는 문장:`, 3 or more entries of
      `- "문장 원문" — 나오는 자리(표면 · 시계 깊이 · 몇 번째 런쯤)`.
@@ -140,22 +297,22 @@ sentences; the skeleton follows the below exactly. Section headers are
    conditional clauses, each under a
    `**조건절 N (축 어휘: 축 — '어휘', '어휘')**` heading with body text and a
    `- 패배 조건: 단, ….` bullet.
-7. **`갈림길`** (5–7) — each gate opens with a
+7. **`갈림길`** (exactly 3) — each gate opens with a
    `### GN 「제목」 — 시각, 장소` heading, then prose (the scene and its
    tension), then the gate card as a **yaml code block**. A gate without a
    card is unfinished:
 
    ```yaml
-   gate: G3                          # G1..G7
+   gate: G3                          # G1..G3
    standard_form: >
      갈림길 G3에서, 기질은 기본 stance 경청을 낸다;
      열쇠 조건 k1을 만족하는 문장 주입 시 공감으로 이동한다.
-   question: "이 갈림길에서 에이전트에게 던져지는 판단 질문"
+   question: "이 갈림길에서 요원에게 던져지는 판단 질문"
    stances:                          # 2–4, all orientation-typed
      - { id: a, label: 추궁, desc: "발화에서 어떻게 나타나는지" }
      - { id: c, label: 경청, desc: "..." }
      - { id: d, label: 공감, desc: "..." }
-   default_stance: c                 # prediction with no injection
+   default_stance: c                 # no injection — and it must land on the record
    key_conditions:                   # a key is a condition, not a sentence — 1+
      - id: k1
        axis: 두려움                   # the axis of the clause it strikes
@@ -173,6 +330,31 @@ sentences; the skeleton follows the below exactly. Section headers are
    with only one key is a lottery, not deduction. (This card format is a
    synchronized copy of the authoring-tool canon — the session follows this
    copy alone.)
+
+   **`default_stance` is where the first run goes, so it is where the record
+   goes.** With an empty handover the 요원 takes the default at every gate, so
+   the all-default path across your three gates must reproduce the fixed
+   timeline exactly — the day as it actually happened, with nothing improved.
+   Write each `default_stance` as the stance that changes nothing: the one
+   that defers, or accepts what the authority says, or walks past. If a
+   stance would save someone, spare a building, or open a document, it is not
+   the default of that gate — it is what a handover has to buy.
+
+   **Three gates, two clauses — so the 지목 is what keeps the locks apart.**
+   A key is 축 × 지목 × 인증 종, and a sentence with the right axis pointed at
+   the wrong thing opens nothing (that is measured, not assumed). Two axes are
+   therefore not two locks: **no two key conditions in the whole scenario may
+   share the same `(axis, referent, species)` triple**, and a machine check
+   enforces it. Vary the 지목 first — the same 하중 axis can point at the roof
+   plant, at the truss, at the gutter, and each is a different lock.
+
+   Two more, for the same reason. **Both 조건절 must be used, and neither may
+   own all three gates** — if one clause opens everything, a player who learns
+   one axis on run 3 has the rest for free. And **at least one condition
+   should be `자기서술` pointed at the 요원 itself**, drawn from what it wrote
+   about its own mistake in an earlier report: a self-description key cannot
+   be learned once as a world-fact, it has to be re-earned each run, so it
+   resists the flattening the other keys are prone to.
 8. **`점수`** — a table
    `| 단위 | 무엇이 집계되나 | 무개입 기준 | 소급되는 갈림길 |`
    (the baseline in concrete numbers; gates in GN notation), followed by
@@ -184,11 +366,51 @@ sentences; the skeleton follows the below exactly. Section headers are
    (scale, place, time) and tally in units of people — those evacuated in
    time, the one wrongfully arrested, how the caller ends. Runs that failed
    to prevent it must still score differently from each other, and a run
-   that prevented it must still carry a price. The no-intervention baseline
-   is natural: the fixed timeline's disaster happening as scheduled *is* the
-   baseline score.
-9. **`자기 검사`** — for each of the 7 items on the guide's forbidden list,
-   one line confirming this draft does not violate it, plus an 8th line
+   that prevented it must still carry a price. **The no-intervention baseline
+   is not invented — it is the record.** A run where the 요원 changed nothing
+   replays what actually happened that day, and that result *is* the baseline
+   score. The player competes against the record, every run.
+
+   **The day kills more than a hundred people, and a good run saves most of
+   them.** This sets the shape of everything above it. A toll in the single
+   digits cannot be felt across a score screen, and it makes one mining
+   decision worth one life — which is a puzzle, not a disaster. Build the
+   situation so the record runs to **three digits**: a crowd has to be
+   somewhere it cannot leave quickly, and the clock has to reach it. A
+   stadium, a ferry, a platform at rush hour, a tower with one stair.
+
+   **One unit carries the number; the rest carry the names.** Four units at
+   most, and exactly one of them is the crowd count — that is the unit whose
+   value the tally screen shows against the record, and `137 → 62` is legible
+   in a second where six mixed units are not. The other units are the three
+   people: what each of them loses, and whether they are alive at 상황 종료.
+
+   **Zero is reachable, and the disaster still happens.** The floor of the
+   crowd count is **0** — every single person out in time is a run the player
+   can achieve, and it must feel like winning rather than like a smaller
+   number. This does not soften §1: the roof still comes down, the ferry still
+   lists, the platform still floods. What the 요원 changes is who is standing
+   there when it does. So `막은 런에도 치른 값이 남는다` is paid by the other
+   units, never by keeping a body on the crowd count — the whistleblower is
+   prosecuted anyway, the building is condemned, the one who stayed behind to
+   hold a door is still lost.
+
+   **The first run is the worst run. This is an invariant, not a tendency.**
+   The 무개입 기준 column is not a description sitting beside the game — it is
+   what the machine computes when no handover is carried, and the two must be
+   the same number. So write every unit's baseline as the *worst* value that
+   unit can take: the most dead, the most trapped, the wrongly arrested one
+   still arrested, the collapse at its widest. Nothing the player does may
+   land below it. If some intervention would make a unit worse than the
+   record — a run that gets someone killed who survived that day — then the
+   record was not the floor and the baseline is miswritten; move the worse
+   outcome into the baseline and let the intervention climb from there.
+
+   Every later run is measured as distance from that floor, which is what
+   makes run 1 legible: the player watches the day happen, and every run
+   after is an argument with it.
+9. **`자기 검사`** — for each of the 9 items on the guide's forbidden list,
+   one line confirming this draft does not violate it, plus a 10th line
    confirming the translationese sweep (§5, "The language of the draft") was
    run. If you discover a violation, fix it first, then submit.
 
@@ -211,7 +433,7 @@ Translated Korean has a smell, and mined sentences carry that smell straight
 into the game.
 
 Before submitting, sweep the draft for the usual translationese tells
-(this sweep is the 8th line of `자기 검사`):
+(this sweep is the 10th line of `자기 검사`):
 
 - **Pronouns 그/그녀/그것/그들** — Korean repeats the name or drops the
   subject. `그녀는 대장을 덮었다` → `윤은 대장을 덮었다`.
@@ -249,7 +471,7 @@ subjects, weight at the end of the sentence:
 
 1. **Write** — spawn one sub-agent. Its task: read §0–§5 of this file plus
    the guide (`docs/scenario/scenario-generation-guide.md`) and **follow
-   §0–§5 only; §6 is a process document — ignore it**. If a brief argument
+   §0–§5 only; §6 and §7 are process documents — ignore them**. If a brief argument
    exists, pass it per §0-3. So the orchestrator's vocabulary cannot seep
    into the draft, **writing always happens in a sub-agent**. If
    `draft-only`, report the draft path and stop.
@@ -301,10 +523,108 @@ subjects, weight at the end of the sentence:
 5. **Loop** — run §6-2 → §6-3 again. Exit condition: lint ERROR 0 **and**
    draft-fixable blockers 0. Maximum 3 rounds — if anything remains, stop
    and report it as remainder.
+
+   **"Blockers 0" is a verdict, not an inference.** Only §6-3 can establish
+   it, so a round that fixes every named blocker and then stops at the machine
+   gate has **paused, not exited** — lint cannot see a preemption or an escape
+   hatch, which is why §6-3 exists. Either run the confirming check or say in
+   the report that the last verdict on record is the one *before* the fixes,
+   and name which blockers were fixed without re-reading.
 6. **Report** — close with the bundle: pack path · final verdict memo ·
    draft diff (against the freshly written draft) · remainder list
    (cross-track / advisory / "lint promotion candidates" — a finding a
    machine could have caught proposes a rule promotion) · a summary of
    remaining lint WARN·FLAG. **Passing this loop does not replace the human
    read of manual §6** — the report must state that one human read before
-   the probe still stands.
+   the probe still stands. State plainly that the pack is **draft-stage and
+   not playable**, and that §7 is what makes it so — the FLAG count is that
+   sentence in numbers.
+
+## 7. Hardening — orchestrator only, and only when asked
+
+> Runs on `harden <slug>`, never as part of a default run. Read
+> `docs/scenario/gate-hardening-manual.md` in full first — §6 used it as the
+> checker's rulebook; here it is the instruction set.
+
+**Precondition, and what to do when it is not met.** The input is a pack with
+lint ERROR 0 and a §6-3 verdict of 통과 or 조건부 통과. A 재작업 verdict whose
+blockers were all fixed **does not become 통과 by being fixed** (§6-5) — the
+verdict on record is still 재작업, because nothing re-read the draft. Two ways
+forward, and pick deliberately rather than by default:
+
+- **Run §6-3 once more first.** Correct, and the only option if any fix
+  touched a stance set, a key example or a timeline row near a gate — those
+  are exactly what a paper check sees and lint does not.
+- **Proceed on the stale verdict.** Acceptable when every blocker was
+  individually verified and the fixes were narrow. Then say so in the §7-5
+  report, in these words: which verdict is on record, that it predates the
+  fixes, and what went unread. Hardening on an unconfirmed draft is a choice
+  someone may need to revisit; it must not be discoverable only by reading
+  timestamps.
+
+**Why this is a separate stage and not the loop's last step.** The manual is
+addressed to the session that runs *after* a scenario is chosen. Hardening is
+also the only place three of lint's rules can fail: `E-P5`, symptom coverage
+and `E8` all need buckets to exist before they mean anything, so a draft-stage
+pack passes them vacuously. Hardening is where they start biting.
+
+1. **Order is forced, because each artifact names the one before it.** Buckets
+   declare the flags; the score ladders and the symptom dictionary can only
+   read flags that already exist. Author in this order, in one pass per gate:
+
+   1. **`buckets`** in the draft's yaml cards (manual §5 is the canon; the
+      draft is where they live, so recompiling stays idempotent). 2–4 per
+      gate, every stance covered, deltas non-zero integers.
+   2. **`hardening.json`** — `characters` (meter → engine variable + integer
+      initial), `timeline` (per event `time` · `text_head` · `effects` ·
+      `present[]`), `symptoms`.
+
+      **`effects` defaults to explicit `{}` on every event.** The fixed
+      timeline is the day that happened; what the player changes rides on gate
+      buckets, and `{}` says "authored, none" where `null` says "not looked
+      at yet" — which is why the empty object clears the worklist flag and the
+      null does not. Give an event a real effect only when the record itself
+      must assert something no bucket can, and know the price before you do:
+      **every settable flag needs its own symptom sentence**, so one timeline
+      flag is one more piece of authored prose, and a flag that only the fixed
+      timeline sets is unreadable by any predicate anyway (`E-P3`) — it can
+      only ever be texture.
+   3. **`집계 규칙:`** fence under §8, keyed by the exact unit label from the
+      table, ordered, fallback last.
+   4. **Exposure tails** — replace the Korean in each run-depth cell's
+      `" · "` tail with the flag identifier that now exists. This is what
+      finally clears `W-V2`; see §4-2.
+
+2. **The rules that only exist here.** Each one is an ERROR, not taste:
+   - **No default-stance bucket sets a flag any score ladder reads** (`E-P5`).
+     The all-default path is the first run, and the first run is the record —
+     §4-8. Meter deltas on a default bucket are fine; flags are not.
+   - **Score conditions read intervention flags only**, never scalars, or the
+     default bucket's deltas reach the ladder by the back door.
+   - **Symptom coverage** — every `(variable, direction)` a bucket can reach
+     needs a list with a `min: 1` floor, entries in descending `min` order,
+     and a sentence for every settable flag. No digits in symptom text.
+   - **`text_head` is derived, not typed.** Slice it from the compiled
+     `timeline.json`; a hand-typed head that drifts from the event stops the
+     compiler, and forty of them typed by hand is forty chances to be wrong.
+
+3. **Split the work by what it is.** The rosters and text heads are mechanical
+   — derive them from the compiled pack with a script rather than by hand. The
+   design-bearing parts (which meters bind and to what initials, delta sizes,
+   flag semantics, and every symptom sentence) are authored, and the symptom
+   sentences are **prose**: spawn a sub-agent with §5's Korean persona for
+   them, exactly as §6-1 does, or they arrive in translationese.
+
+4. **Machine gate** — recompile, then lint. Recompiling merges the overlay, so
+   it is also the check that the overlay actually bound: the compile NOTE
+   reports how many characters, events and symptom variables merged, and a
+   zero there means the file did not take. Exit condition: **lint ERROR 0**,
+   and the FLAG list reduced to items that are genuinely someone else's
+   (routing vocabulary, engine-side gaps). Loop at most 3 times.
+
+5. **Report** — pack path · what bound (meters, flags, symptom variables) ·
+   FLAG count before and after · anything left on the worklist and whose it
+   is. Then state what hardening does **not** buy: the manual's §6 human read
+   still stands, and the probe (~30 calls, first gate only) is what actually
+   confirms the recipe survived into this pack's fixture text. Passing lint is
+   not a gate's certificate.

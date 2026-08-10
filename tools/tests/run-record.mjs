@@ -39,6 +39,7 @@ import {
 
 import { createFixtureProvider } from '../../src/transport/fixture.ts'
 import { createMemoryMetaStore } from '../../src/runloop/store.ts'
+import { deathsOf } from '../../src/shared/predicates.ts'
 import { validate as validateAgainst, loadSchema } from '../driver/run/schema.ts'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
@@ -436,6 +437,10 @@ describe('A12 — reports are verbatim, never re-derived', () => {
       provider: wrapped.transport,
       store: createMemoryMetaStore(),
       runId: `${PACK}-fixture-r1`,
+      // SHAPED — x14. An empty handover makes no Call 1 at all, so there would
+      // be no stance for the recorder to capture and this would be asserting
+      // over a run that never asked anything.
+      deploy: [{ id: 'b-seed-1', text: '넘겨받은 문장.' }],
     })
     assert.equal(typeof wrapped.calls.stance, 'string')
     assert.notEqual(wrapped.calls.stance.length, 0)
@@ -537,9 +542,35 @@ describe('record assembly', () => {
     assert.equal(record.policy, 'greedy')
   })
 
-  test('score is null — the minimal engine has no ending model; do not synthesize one', async () => {
+  // RE-AIMED, not dropped. This asserted `score === null` because "the minimal
+  // engine has no ending model; do not synthesize one" — and the pack now
+  // AUTHORS one (contract-datapack §3.6), so the premise moved while the claim
+  // did not. The ending is still never synthesized HERE; it is read. What the
+  // test measures is exactly that: every recorded value is the tail of a rule
+  // the pack wrote, and `total` is what those values cost in deaths rather than
+  // a number this file invented. The cost rule is `deathsOf`'s and is imported:
+  // a copy here would be a second definition of the pack's arithmetic, and the
+  // one this file used to hold — numbers only — stopped being the whole rule
+  // when a person-unit's prose outcome (`사망 · …`) started counting.
+  test('score comes from the pack — every value is an authored rule, never synthesized', async () => {
     const { record } = await pass()
-    assert.equal(record.score, null)
+    const authored = JSON.parse(
+      fs.readFileSync(path.join(REPO, 'data/scenario', PACK, 'score.json'), 'utf8'),
+    )
+    assert.ok(record.score, 'the run recorded no score at all')
+    assert.equal(record.score.units.length, authored.units.length)
+
+    const sum = record.score.units.reduce((n, u) => n + deathsOf(u.value), 0)
+    assert.equal(record.score.total, sum, 'total is not what the recorded values cost')
+
+    for (const unit of record.score.units) {
+      const rules = authored.units.find((u) => u.id === unit.id)?.predicates ?? []
+      const values = rules.map((rule) => rule.slice(rule.indexOf('=>') + 2).trim())
+      assert.ok(
+        values.includes(String(unit.value)),
+        `${unit.id} recorded ${JSON.stringify(unit.value)}, which no rule of its own authors`,
+      )
+    }
   })
 
   test('reached_clock is non-null and equals the last non-null beat clock (decision 6 / D-4)', async () => {
@@ -1001,6 +1032,10 @@ describe('[r1#D] an ok-but-unusable Call 1 is recorded as the default stance', (
       provider: unusableJudgment(),
       store: createMemoryMetaStore(),
       runId: `${PACK}-unusable-r1`,
+      // SHAPED — x14. The defect this guards is in how an ANSWERED-but-unusable
+      // Call 1 is recorded, so the run has to make one; unshaped there is no
+      // judgment call to land unusable and the guard measures nothing.
+      deploy: [{ id: 'b-seed-1', text: '넘겨받은 문장.' }],
     })
 
     const stances = record.beats.map((beat) => beat.stance)
@@ -1024,5 +1059,74 @@ describe('[r1#D] an ok-but-unusable Call 1 is recorded as the default stance', (
     // The grading itself must survive: the run still reports the calls as failed.
     const graded = events.filter((event) => JSON.stringify(event).includes('unusable_payload'))
     assert.ok(graded.length > 0, 'the unusable payloads must still be graded as fallbacks')
+  })
+})
+
+describe('the record and the §5.2 seam agree on what a scored value is', () => {
+  // WHY THIS LIVES HERE, AND NOT IN `tests/driver/seam-shapes.test.ts`. That
+  // file is the natural home and is byte-pinned by `engine-boundaries
+  // (a:seam-shapes.test.ts)` — adding a case to it breaks a different suite.
+  // Here is the next best place: beside the schema this measures against.
+  //
+  // WHAT IT IS FOR. `ScorerPort` exists to fill the §5.2 `score` event, and this
+  // schema stores the same numbers — so a value the record accepts and the seam
+  // refuses is a scorer nobody can wire. That was the state of the repo: the
+  // seam typed `rows[].value: number` while `run-record.schema.json` had always
+  // typed the same field `string | number`, and `score.json` authors outcomes
+  // that are words. Nothing pinned the two together, so the disagreement went
+  // unseen until someone tried to build a scorer and found the port could not
+  // express its own data. §5.2 amendment g settled it on this schema's side.
+  //
+  // It reads the SCHEMA rather than restating it, so authoring that widens or
+  // narrows the record has to come back through here.
+  const flatten = (file) =>
+    fs
+      .readFileSync(path.join(REPO, file), 'utf8')
+      .replace(/\/\/.*$/gm, '')
+      .replace(/\s+/g, ' ')
+
+  const seam = flatten('src/shared/view-driver.ts')
+
+  test('(a) `score.rows[].value` carries exactly the types the record stores', () => {
+    const schema = JSON.parse(fs.readFileSync(RUN_SCHEMA_PATH, 'utf8'))
+    const stored = [...schema.properties.score.properties.units.items.properties.value.type].sort()
+
+    // BOTH declaration sites, because the compiler only guards one direction:
+    // a `ScorerPort` narrowed back to `value: number` is still assignable to
+    // the event and compiles clean — the exact state this guard exists to
+    // prevent. (The other two copies need no pin: `run-state.ts` is checked by
+    // assignment from the event, and `spec-client.md` is prose.)
+    for (const file of ['src/shared/view-driver.ts', 'src/driver/ports.ts']) {
+      // The `value:` FIELD, not the union member. `rows: { label: string; … }`
+      // puts the word `string` in every version of this line, so a member-wide
+      // search reports agreement against a seam that cannot carry a string
+      // value at all — this guard's first draft did exactly that and stayed
+      // green through the change it was written to catch.
+      // …and it stops at the FIELD, not the closing brace. Amendment h put
+      // `baseline` after `value`, so a match that ran to `}` would compare
+      // `string | number; baseline: string | number | null` against the
+      // record's two types and fail on a seam that is perfectly correct.
+      const carried = /rows: \{ label: string; value: ([^;}]*)[;}]/.exec(flatten(file))?.[1]
+      assert.ok(carried, `${file} no longer carries \`score.rows[].value\``)
+      assert.deepEqual(
+        carried.split('|').map((t) => t.trim()).filter(Boolean).sort(),
+        stored,
+        `the record stores a score value ${file} cannot carry`,
+      )
+    }
+  })
+
+  test('(b) `total` is NOT held to that rule, and must not be', () => {
+    // The record allows `null` there because a run with no scorer records one.
+    // The seam's answer to that same state is to emit no `score` event at all
+    // (`live-driver.ts`, the `scorer !== undefined` guard), and the axis it
+    // feeds is 사망 · 명 — a count whose whole movement in `score-tally.ts` is
+    // counting one up. Widening it would be a design change wearing a type
+    // change's clothes.
+    // The delimiter is `;` in the seam's one-line union member and a space in
+    // the port's multi-line object, so both are allowed — the claim is about
+    // `total`'s TYPE, not about how either file is formatted.
+    assert.match(seam, /type: 'score'; total: number[;\s]/)
+    assert.match(flatten('src/driver/ports.ts'), /score\(\): \{ total: number[;\s]/)
   })
 })

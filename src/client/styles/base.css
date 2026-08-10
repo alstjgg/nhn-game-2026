@@ -2,8 +2,8 @@
    base.css — reset + document ground (desktop.css lines 46..58).
 
    Nothing here may create a stacking context: `.win` roots are z-ordered by a
-   single runtime `--z` and BLOCK STORE lives outside `#desktop` in the markup,
-   so html / body / #app must stay neutral (design README 'Notes').
+   single runtime `--z` shared across the whole desk, so html / body / #app must
+   stay neutral (design README 'Notes').
    =========================================================================== */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -44,10 +44,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     transition-duration:1ms!important;
     transition-delay:0s!important;
   }
-  /* The three signals whose loop CARRIES the state degrade to a static
-     distinguishing style rather than settling on their own dim keyframe —
-     C18: a desk that is waiting must still look like it is waiting. */
+  /* The signals whose loop CARRIES the state degrade to a static distinguishing
+     style rather than settling on their own dim keyframe — C18: a desk that is
+     working must still look like it is working.
+
+     x6 — there were three. `.fl-wait .dots i` was the feed's breathing wait
+     marker, and the marker itself is gone (민서, 08-09: a wait draws nothing),
+     so there is no dot left to hold visible. */
   .win-dot.live{opacity:1}
-  .fl-wait .dots i{opacity:.9}
   .caret{opacity:1}
 }

@@ -50,7 +50,7 @@ const IDS_2 = ['b-r1-n02', 'b-r1-f01']
 const IDS_3 = ['b-r1-a03', 'b-r1-f01', 'b-r1-n02']
 
 function composer() {
-  return createComposer({ reportGuidance: makeReportGuidance(), blocks: makeBlockStore() })
+  return createComposer({ reportGuidance: makeReportGuidance(), blocks: makeBlockStore(), pack: 'testpack' })
 }
 
 /** All three payloads from one fresh composer, keyed by call type. */
@@ -102,10 +102,10 @@ describe('A1/A2 — §8-4: proxy-owned slots never leave the client', () => {
 // ─── A3 / A4 / A5 — the envelope ─────────────────────────────────────────────
 
 describe('A3–A5 — the envelope is exactly what §11 describes', () => {
-  it('A3 keys are [call_type, template_version, slots] in that order', () => {
+  it('A3 keys are [call_type, template_version, pack, slots] in that order', () => {
     const reqs = allThree()
     for (const t of CALL_TYPES) {
-      expect(Object.keys(reqs[t]), t).toEqual(['call_type', 'template_version', 'slots'])
+      expect(Object.keys(reqs[t]), t).toEqual(['call_type', 'template_version', 'pack', 'slots'])
     }
   })
 
@@ -132,9 +132,16 @@ describe('A3–A5 — the envelope is exactly what §11 describes', () => {
 
   it('A5 template_version is per call type and both prompt layers exist at it', () => {
     const reqs = allThree()
-    expect(reqs.judgment.template_version).toBe('v0.4')
-    expect(reqs.narration.template_version).toBe('v0.3')
-    expect(reqs.reporter.template_version).toBe('v0.2')
+    // x12 — bumped onto PR #234's prompts (민서, 08-10). The literals are
+    // deliberately spelled out rather than read from `TEMPLATE_VERSION`: this
+    // assert exists to make a version bump a decision someone takes on purpose,
+    // and a test that derived them would agree with any value the constant held.
+    // The loop below is what proves the version is real — both prompt layers
+    // must be in the bundle at it, which is the check that would have caught a
+    // client asking the proxy for something it cannot serve.
+    expect(reqs.judgment.template_version).toBe('v0.5')
+    expect(reqs.narration.template_version).toBe('v0.4')
+    expect(reqs.reporter.template_version).toBe('v0.4')
 
     for (const t of CALL_TYPES) {
       const v = reqs[t].template_version
@@ -322,7 +329,7 @@ describe('A14–A16 — structured stays structured, prose comes from e1', () =>
 
   it('A16 REPORT_GUIDANCE is renderReportGuidance’s prose, never [object Object]', () => {
     const guidance = makeReportGuidance()
-    const c = createComposer({ reportGuidance: guidance, blocks: makeBlockStore() })
+    const c = createComposer({ reportGuidance: guidance, blocks: makeBlockStore(), pack: 'testpack' })
     const value = (c.reporter(makeRoundView()).slots as ReporterSlots).REPORT_GUIDANCE
     expect(typeof value).toBe('string')
     expect(value).toBe(renderReportGuidance(guidance))
@@ -431,12 +438,34 @@ describe('A18/A19 — the composer is pure and datapack-blind', () => {
 // ─── A20 (git half) — the frozen mirrors are untouched ───────────────────────
 
 describe('A20 — D3 prompt byte-parity inputs stay frozen', () => {
-  it('this unit changes nothing under proxy/ or tools/lib/{compose,calls}.mjs', () => {
-    const out = execFileSync(
-      'git',
-      ['status', '--porcelain', '--', 'proxy', 'tools/lib/compose.mjs', 'tools/lib/calls.mjs'],
-      { cwd: REPO, encoding: 'utf8' },
-    ).trim()
+  // NARROWED (08-09) from all of `proxy/` to the surfaces byte-parity actually
+  // rests on: the two renderers, the templates they read, and the generated
+  // bundle between them. What this guard is for is the ⚠️ in §10 — the probe
+  // keeps its own renderer, and if the two drift the measurements stop
+  // describing the deployed system. `proxy/src/{types,handler,call-service}.ts`
+  // are none of those; a per-scenario default prompt reaches Call 1 through a
+  // route this guard was never watching.
+  //
+  // Two things make the narrowing safe rather than convenient. The direct check
+  // exists: `proxy/tests/prompt-parity.test.ts` composes a suite through both
+  // renderers and fails on any difference, which is a stronger statement than
+  // "nobody touched the files". And this one is scoped to the WORKING TREE —
+  // it goes quiet the moment a change is committed, so read as a freeze over
+  // the whole tier it was never a gate, only a tripwire on the way past.
+  const PARITY_INPUTS = [
+    'proxy/prompts',
+    'proxy/src/prompt.ts',
+    'proxy/src/prompt-bundle.generated.ts',
+    'proxy/src/calls.ts',
+    'tools/lib/compose.mjs',
+    'tools/lib/calls.mjs',
+  ]
+
+  it('this unit changes nothing the probe and the proxy must render identically', () => {
+    const out = execFileSync('git', ['status', '--porcelain', '--', ...PARITY_INPUTS], {
+      cwd: REPO,
+      encoding: 'utf8',
+    }).trim()
     expect(out, `frozen paths modified:\n${out}`).toBe('')
   })
 })
