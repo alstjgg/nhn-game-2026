@@ -87,12 +87,7 @@
       "time": "19:26",
       "text_head": "송풍기 두 대가 정상 ",
       "effects": {},
-      "present": [
-        {
-          "char_id": "c1",
-          "side": "line"
-        }
-      ]
+      "present": []
     },
     "t10": {
       "time": "19:26+",
@@ -214,7 +209,7 @@
       ]
     },
     "t24": {
-      "time": "20:05",
+      "time": "20:05+",
       "text_head": "문세라는 서쪽 슬리브로",
       "effects": {},
       "present": [
