@@ -89,6 +89,13 @@ const renderLines = (v: unknown): string =>
 // room-side row in the shipped packs already meant — 우는다리 calls the place
 // 위기 대응실 in its own draft. The MECHANISM is untouched; only the name of the
 // place the two sides sit in.
+//
+// ⚠️ `room` is mechanism kept for packs that author it; the SHIPPING pack does
+// not. 멈춘회전문 has zero room-side rows, which is why narration v0.4 states
+// "요원 곁에는 아무도 없다" flatly rather than as a condition — a conditional
+// left a seat open beside the agent, and an open seat is where 기록관 came from.
+// A pack that authors room rows makes the prompt and this label disagree. If one
+// ever does, the prompt sentence has to come back as a condition.
 const SIDE_LABELS: Record<string, string> = {
   line: "회선 너머 — 요원에게만 말한다",
   room: "요원 곁 — 서로에게만 말한다. 회선 저쪽에는 말을 걸지 않는다",

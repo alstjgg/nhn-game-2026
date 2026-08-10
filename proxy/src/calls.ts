@@ -176,7 +176,7 @@ const narration: CallSpec = {
             type: "array",
             items: { type: "string" },
             description:
-              "고정 사건에 뒤따르는 반응과 장면의 결. 4~5개. 한 항목은 한 문장이다 — 마침표는 항목의 맨 끝에 하나뿐이고, 항목 안에서 두 문장을 잇지 않는다. 이미 타임라인에 있는 것(고정 사건·요원 발화)은 다시 쓰지 않는다. 현장에서 남기는 짧은 기록이다 — 반말체로 끝맺는다.",
+              "고정 사건에 뒤따르는 반응과 장면의 결. 2~3개. 한 항목은 한 문장이다 — 마침표는 항목의 맨 끝에 하나뿐이고, 항목 안에서 두 문장을 잇지 않는다. 이미 타임라인에 있는 것(고정 사건·요원 발화)은 다시 쓰지 않는다. 현장에서 남기는 짧은 기록이다 — 해라체로 끝맺는다.",
           },
           // `maxItems: 1` is the ONE mechanical half of the misattribution fix
           // (handoff §3.3). The rest is prompt wording, deliberately: the player
