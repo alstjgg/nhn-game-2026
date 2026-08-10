@@ -56,14 +56,27 @@
   color:var(--feed-mark);font-size:var(--fs-10)}
 
 /* Each kind below sets its SIZE and its COLOUR; the face comes from `.fl-c` and
-   is not restated. The one exception is the radio's own channel label, which is
-   a fixed caption on a content line. */
+   is not restated. There used to be one exception — the radio's own channel
+   label, a fixed `ECHO-n · 무전` caption in `--mono` block-set above the
+   utterance — and x10 (민서, 08-10) deleted it, along with the radio's `◈`.
+
+   The caption said, on every radio line, the name the fanfold's header already
+   prints once per run; the mark sat beside a line that was already the only
+   thing on the paper in `--radio` at 700. So the channel is named by the ink and
+   the weight below and by nothing else, and two rules went with the caption:
+   `.fl-radio .fl-c b` (nothing constructs a radio `<b>` any more — `.fl-npc
+   .fl-c b` on the NPC speaker is a different rule and stays) and
+   `.fl-radio .fl-c::before{color:var(--radio)}`, which coloured a mark that is
+   now the empty string. `--radio-2`, the caption's ink, went from `tokens.css`
+   with them — it had no other consumer.
+
+   What did NOT change is the indentation. `run-feed.ts` gives radio the empty
+   mark rather than skipping the mark, so `.fl-c::before` still reserves its
+   21px and the agent's text keeps the left edge every other kind's body text
+   sits on. Losing the mark was not allowed to move the column. */
 .fl-event .fl-c{font-size:var(--fs-11-5);color:var(--feed-2)}
 .fl-radio{margin:var(--space-2) 0}
 .fl-radio .fl-c{font-weight:700;color:var(--radio);letter-spacing:-.01em;font-size:var(--fs-11)}
-.fl-radio .fl-c::before{color:var(--radio)}
-.fl-radio .fl-c b{display:block;font-family:var(--mono);font-size:var(--fs-8);letter-spacing:.22em;
-  color:var(--radio-2);font-weight:600;margin-bottom:var(--space-1)}
 .fl-npc .fl-c{font-size:var(--fs-12);color:var(--feed-3)}
 .fl-npc .fl-c b{font-weight:700;color:var(--npc);font-size:var(--fs-10-5);letter-spacing:.04em}
 .fl-npc .fl-c q{quotes:'“' '”';font-style:normal}

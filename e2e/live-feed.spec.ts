@@ -32,10 +32,15 @@ const FEED = '#w-feed'
 const LIST = '#w-feed #feedList'
 const SCROLL = '#w-feed #feedScroll'
 
-/** The reference marks (app.js:405) as they must reach `.fl-c[data-mark]`. */
+/**
+ * The marks as they must reach `.fl-c[data-mark]` — app.js:405's table with the
+ * one deviation x10 (민서, 08-10) declared: the radio prints none. The attribute
+ * is still WRITTEN, empty, so the 21px gutter stays reserved and the agent's
+ * text keeps the left edge every other kind's body text sits on.
+ */
 const MARKS: Record<string, string> = {
   event: '▸',
-  radio: '◈',
+  radio: '',
   npc: '—',
   symptom: '·',
   wait: '',
@@ -224,6 +229,43 @@ test.describe('round renders in order', () => {
     for (const line of await domLines(page)) {
       if (line.kind === 'mark') continue
       expect(`${line.kind}:${line.mark ?? ''}`).toBe(`${line.kind}:${MARKS[line.kind] ?? ''}`)
+    }
+  })
+
+  // x10 (민서, 08-10) — the radio's `◈` and its `ECHO-n · 무전` caption both went
+  // (`MARKS` above carries the empty mark; this pins the other half). The caption
+  // repeated on every radio line the name the fanfold header prints once per run.
+  // What must be on the paper is the utterance, and after it nothing but the
+  // U5.4 citation — the DOM half of `live-feed.test.ts`'s `[u5#c1] (i)`.
+  test('round renders in order — a radio line prints the utterance alone, uncaptioned', async ({ page }) => {
+    await expect(page.locator(`${LIST} li.fl-radio .fl-c b`)).toHaveCount(0)
+
+    const spoken = (await streamLines(page)).filter((l) => l.kind === 'radio')
+    expect(spoken.length).toBeGreaterThan(0)
+
+    // Read in ONE pass, not row by row: an uncited line has no `.fl-cite` at
+    // all, and asking a Playwright locator for the text of nothing waits for it
+    // to appear until the test times out. Absence is the thing being measured,
+    // so it has to be read as absence.
+    const printed = await page.locator(`${LIST} li.fl-radio`).evaluateAll((rows) =>
+      rows.map((row) => {
+        const content = row.querySelector('.fl-c')
+        return {
+          text: (content?.textContent ?? '').trim(),
+          cite: (row.querySelector('.fl-cite')?.textContent ?? '').trim(),
+          mark: content?.getAttribute('data-mark') ?? null,
+        }
+      }),
+    )
+    expect(printed.length).toBe(spoken.length)
+
+    for (let i = 0; i < spoken.length; i += 1) {
+      // Nothing before the utterance …
+      expect(printed[i]!.text.startsWith(spoken[i]!.text)).toBe(true)
+      // … and nothing after it but the citation, when there is one.
+      expect(printed[i]!.text.slice(spoken[i]!.text.length).trim()).toBe(printed[i]!.cite)
+      // The gutter is empty, not absent: the column is still reserved.
+      expect(printed[i]!.mark).toBe('')
     }
   })
 
