@@ -506,7 +506,7 @@ const gates = [];
     const prose = (ls) => ls.map((l) => l.trim()).filter(Boolean).map(stripBold).join(' ') || null;
     const card = parseCard(b.lines.slice(fenceOpen + 1, fenceClose), h[1]);
 
-    for (const req of ['gate', 'standard_form', 'question', 'stances', 'default_stance', 'key_conditions', 'key_examples', 'false_leads']) {
+    for (const req of ['gate', 'standard_form', 'question', 'stances', 'default_stance', 'false_leads']) {
       if (!(req in card)) die(`${h[1]}: card missing "${req}"`);
     }
     if (card.gate !== h[1]) die(`${h[1]}: card says gate ${card.gate}`);
@@ -537,8 +537,8 @@ const gates = [];
       question: card.question,
       stances: card.stances,
       default_stance: card.default_stance,
-      key_conditions: card.key_conditions,
-      key_examples: card.key_examples,
+      ...(card.key_conditions ? { key_conditions: card.key_conditions } : {}),
+      ...(card.key_examples ? { key_examples: card.key_examples } : {}),
       predicted_shift: card.predicted_shift ?? null,
       false_leads: card.false_leads,
       buckets,

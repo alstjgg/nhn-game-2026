@@ -16,6 +16,7 @@ import type { FetchLike, FetchResponseLike } from '../../src/transport/index.ts'
 export const JUDGMENT_REQUEST: CallRequest<'judgment'> = {
   call_type: 'judgment',
   template_version: 'v0.4',
+  pack: 'testpack',
   slots: {
     TEMPERAMENT: 'Procedural. Will not improvise without a named authority.',
     TIMELINE_EXCERPT: ['회선이 열렸다.', '현장에서 1차 보고가 올라왔다.'],
@@ -31,6 +32,7 @@ export const JUDGMENT_REQUEST: CallRequest<'judgment'> = {
 export const NARRATION_REQUEST: CallRequest<'narration'> = {
   call_type: 'narration',
   template_version: 'v0.4',
+  pack: 'testpack',
   slots: {
     TIMELINE_TAIL: ['요원이 대피를 명령했다.'],
     AGENT_UTTERANCE: '지금 나가십시오.',
@@ -46,6 +48,7 @@ export const NARRATION_REQUEST: CallRequest<'narration'> = {
 export const REPORTER_REQUEST: CallRequest<'reporter'> = {
   call_type: 'reporter',
   template_version: 'v0.4',
+  pack: 'testpack',
   slots: {
     EXPERIENCED: ['요원이 대피를 명령했다.', '부장이 수화기를 내려놓았다.'],
     TEMPERAMENT: 'Procedural. Will not improvise without a named authority.',

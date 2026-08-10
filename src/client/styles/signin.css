@@ -25,11 +25,20 @@ body.signin #topbar{animation:none;transform:translateY(-100%);pointer-events:no
 body.signin .skip-link{display:none}
 body.signin #toast{display:none}
 
-/* The 윤슬교 longitudinal section is the door's backdrop, not the desk's
-   leftover: with no windows on the screen there is finally room to read the
-   bridge this whole simulation is about, so it is lit up while the door is
-   open. `filter`, not `opacity` — `bpIn` is an `animation … both` and a filled
-   animation outranks a plain declaration. */
+/* The blueprint is the door's backdrop, not the desk's leftover: with no
+   windows on the screen there is finally room to see the drawing at all, so it
+   is lit up while the door is open. `filter`, not `opacity` — `bpIn` is an
+   `animation … both` and a filled animation outranks a plain declaration.
+
+   x10 (민서, 08-10) — this comment used to name the drawing and call it "the
+   bridge this whole simulation is about", and it was wrong twice over. The
+   shipped case is a tunnel (`PACK_SLUG`, `shell/pack.ts`), and the wallpaper
+   now carries no name at all: its four `<text>` labels named the dropped first
+   concept and are gone (see the `.bp` group in index.html). This rule is
+   unchanged and still earns its keep — the door is the ONE screen with nothing
+   over the wallpaper, so it is the only place the drawing is worth lighting.
+   What it lights is dressing now, and the four corner marks below are the only
+   text on this screen. */
 body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
 
 /* ═══ THE LAYER ═══════════════════════════════════════════════════════════
@@ -172,25 +181,74 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
 .si-plate-hd i{margin-left:auto;font-style:normal;font-size:var(--fs-8);
   letter-spacing:.2em;color:var(--txt-7)}
 
-/* ─── the two filled fields — display only, never a form (inv 1) ───────── */
+/* ═══ THE TWO FIELDS — TYPED, never a form (inv 1) ═════════════════════════
+   x9. These arrived pre-filled and inert: an id, a mask, and `저장됨` on the
+   right of the mask saying the password was remembered. They start EMPTY now and
+   `shell/sign-in.ts` lands one character per press, so `저장됨` is gone with the
+   claim it made — a field being entered by hand cannot also be a field that was
+   saved, and the mechanic is the one telling the truth.
+
+   ONE CLASS DRIVES THE HAND-OFF. `.si-field.is-armed` is written on the row that
+   is taking the next press, and it moves three things at once: the label, the
+   well's ring and the caret. Three rules and one source of truth, instead of the
+   layer reaching for three nodes.
+
+   LIGHT BLUE IS WHERE THE TERMINAL IS LISTENING. `--gauge-2` is the caret's own
+   colour and the gauges' — the desk's vocabulary for a live instrument — so the
+   armed label is lit in it, and the seal's red is left alone. Red on this desk
+   means 관인 (see `coach.css` on why the onboarding mark stopped pulsing); a
+   field waiting for a keystroke is not an alarm, it is an instrument that is on.
+   ═══════════════════════════════════════════════════════════════════════════ */
 .si-form{padding:var(--space-20) var(--space-20) var(--space-16);
   display:flex;flex-direction:column;gap:var(--space-11)}
 .si-field{display:flex;align-items:center;gap:var(--space-12)}
 .si-label{width:58px;flex:0 0 auto;font-size:var(--fs-8-5);letter-spacing:.2em;
-  color:var(--txt-6);text-align:right}
+  color:var(--txt-6);text-align:right;transition:color .3s}
+.si-field.is-armed .si-label{color:var(--gauge-2)}
+/* `--line-1` over `--ink-line` is a one-step lift, deliberately: the armed well
+   is brighter than its neighbour and no brighter than the plate it sits in. */
 .si-well{flex:1;min-width:0;height:34px;display:flex;align-items:center;
   padding:0 var(--space-12);background:var(--track);
-  box-shadow:inset 0 0 0 1px var(--ink-line), inset 0 2px 5px -2px var(--sh-8)}
+  box-shadow:inset 0 0 0 1px var(--ink-line), inset 0 2px 5px -2px var(--sh-8);
+  transition:box-shadow .3s}
+.si-field.is-armed .si-well{
+  box-shadow:inset 0 0 0 1px var(--line-1), inset 0 2px 5px -2px var(--sh-8)}
+/* No `overflow:hidden` any more, and that is not tidying: the value is a row of
+   per-character spans that animate in on a vertical translate, and a clipped
+   well would shear the top off every one of them as it landed. Nothing overflows
+   — seven characters and eight glyphs in a 340-odd px well. */
 .si-value{font-size:var(--fs-14);letter-spacing:.06em;color:var(--txt-hi);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  white-space:nowrap}
 .si-value.si-secret{letter-spacing:.3em;color:var(--txt-3)}
-.si-caret{width:7px;height:16px;margin-left:var(--space-2);flex:0 0 auto;
+/* ONE CHARACTER LANDING. `inline-block` because `transform` does not apply to an
+   inline box at all — as a plain `<span>` this animation would run the opacity
+   half and silently drop the strike. Short and steep: 140 ms is about as long as
+   a key takes to bottom out, and anything slower reads as text fading in rather
+   than as type being struck. */
+.si-ch{display:inline-block;animation:siChar .14s cubic-bezier(.2,.8,.2,1) both}
+@keyframes siChar{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+/* Both wells own one; only the armed one shows it. `display`, not `opacity` —
+   the caret's whole job is done by an opacity animation, and a hidden state
+   sharing that channel would be a state the blink could argue with. */
+.si-caret{display:none;width:7px;height:16px;margin-left:var(--space-2);flex:0 0 auto;
   background:var(--gauge-2);opacity:.85;animation:siBlink .9s steps(2) infinite}
+.si-field.is-armed .si-caret{display:block}
 @keyframes siBlink{0%,49%{opacity:.85}50%,100%{opacity:0}}
-.si-lock{margin-left:auto;flex:0 0 auto;font-size:var(--fs-8);letter-spacing:.14em;
-  color:var(--txt-7)}
 
-/* ─── the one control on the screen ────────────────────────────────────── */
+/* ═══ THE ONE CONTROL ON THE SCREEN ════════════════════════════════════════
+   x9 — it is DEAD for the first fifteen presses, and it has to look dead. The
+   only thing this rule used to say about `[disabled]` was `pointer-events:none`,
+   which meant a locked button sat there in full seal red with a highlight sweep
+   crossing it every 3.6 s: the most inviting object on the screen, and inert.
+   That is not a locked control, that is a broken one.
+
+   `filter`, and one property, rather than a second palette. Greying the slab out
+   is a statement about the SAME button — same shape, same weight, same place,
+   drained — which is what a dead control is, and it means the armed state needs
+   no declarations at all: dropping the attribute restores every value already
+   written below. `.58` and not lower because the `LOGIN` lettering greys with
+   everything else, and it still has to be readable while it waits.
+   ═══════════════════════════════════════════════════════════════════════════ */
 .si-login{position:relative;overflow:hidden;display:flex;align-items:center;
   justify-content:center;gap:var(--space-14);
   width:calc(100% - var(--space-20) - var(--space-20));height:46px;
@@ -198,7 +256,7 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
   background:linear-gradient(to bottom,var(--seal),var(--seal-2));
   border:1px solid var(--edge);color:var(--txt-max);
   box-shadow:inset 0 1px 0 var(--sheen-25), 0 6px 18px -10px var(--sh-9);
-  transition:transform .12s, box-shadow .18s, filter .18s}
+  transition:transform .12s, box-shadow .18s, filter .3s}
 .si-login b{font-size:var(--fs-15);font-weight:700;letter-spacing:.46em;text-indent:.46em}
 .si-login i{font-style:normal;font-size:var(--fs-9);letter-spacing:.16em;opacity:.72}
 .si-login::after{content:'';position:absolute;top:0;bottom:0;width:38%;left:-45%;
@@ -209,7 +267,28 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
   box-shadow:inset 0 1px 0 var(--sheen-35), 0 12px 26px -12px var(--seal-a5)}
 .si-login:active{transform:translateY(1px);filter:brightness(.94)}
 .si-login:focus-visible{outline:2px solid var(--txt-4);outline-offset:3px}
-.si-login[disabled]{pointer-events:none}
+.si-login[disabled]{pointer-events:none;filter:grayscale(.95) brightness(.58)}
+/* The sweep is an invitation, so a locked slab does not get one. */
+.si-login[disabled]::after{display:none}
+
+/* ─── the fifteenth press ──────────────────────────────────────────────────
+   The whole screen has been still and grey and one keystroke wide; this is the
+   moment it pays out, and it is the only orchestrated beat on the door.
+
+   An `animation` on `filter` deliberately OUTRANKS the `.3s` transition above,
+   so the slab does not fade up from grey — it is already red at frame one, over-
+   bright, and settles. Grey slab → hot → seal red, in 550 ms, with the lift
+   under it: the button arrives rather than brightening.
+
+   NO FILL MODE, and that is the whole reason this works. `both`/`forwards` would
+   pin `filter:none` and `transform:none` for the rest of the door's life, and
+   `:hover`/`:active` below — which are nothing but a `filter` and a `transform` —
+   would never be seen again. Unfilled, the animation hands both properties back
+   to the cascade the instant it ends. ═══════════════════════════════════════ */
+.si-login.is-armed{animation:siArm .55s cubic-bezier(.2,.8,.2,1)}
+@keyframes siArm{
+  0%{filter:brightness(2.1) saturate(.62);transform:translateY(-2px)}
+  100%{filter:none;transform:none}}
 
 .si-note{display:flex;align-items:center;gap:var(--space-8);
   padding:var(--space-8) var(--space-20) var(--space-11);
@@ -236,3 +315,32 @@ body.signin #blueprint{filter:brightness(1.7) contrast(1.05)}
   background:linear-gradient(90deg,var(--gauge-1),var(--gauge-2));
   animation:siFill 2.24s cubic-bezier(.4,0,.2,1) both}
 @keyframes siFill{to{width:100%}}
+
+/* ═══ REDUCED MOTION — THIS SHEET DECLARES NOTHING, AND THAT IS CHECKED ═════
+   `base.css` collapses every animation to one 1 ms pass, and it restates by hand
+   the few signals whose LOOP carries the state (C18 — a desk that is working must
+   still look like it is working). x9 makes `.si-caret` load-bearing for the first
+   time: it is the only thing on this screen that says which well the next press
+   goes into, and the door does not open until fifteen have gone somewhere. So the
+   obvious move is to add it to that list.
+
+   It does NOT need to be there, and the reason is worth writing down because it
+   is the opposite of the one `coach.css` records for the mark it replaced.
+   `litPulse` settled invisible under the collapse because it was declared
+   `animation … both`, and a FILLED animation holds its end keyframe forever.
+   `siBlink` is unfilled. When the 1 ms pass finishes, `opacity` falls back to the
+   `.85` declared on `.si-caret` itself — the blink's own lit value — so a
+   reduced-motion operator gets a caret that is simply STILL. Which is exactly
+   what the query is asking for.
+
+   Two guards keep that true rather than lucky, because it rests entirely on the
+   absence of a keyword: `tests/shell/sign-in.test.ts` pins the blink as unfilled
+   and pins the caret's shown/hidden state to `display` (opacity is the blink's
+   channel and cannot also be the visibility one), and `e2e/signin.spec.ts` opens
+   the door under `reducedMotion: 'reduce'` and asserts the caret is on screen and
+   the fifteen presses still work.
+
+   `siChar` and `siArm` are filled and unfilled respectively, and both end on the
+   state their element then holds — see `siArm`'s own note on why it must not be
+   filled — so the collapse lands them where a full pass would.
+   ═══════════════════════════════════════════════════════════════════════════ */

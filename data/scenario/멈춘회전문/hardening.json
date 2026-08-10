@@ -1,0 +1,269 @@
+{
+  "characters": {
+    "c1": {
+      "m1": {
+        "variable": "defensiveness",
+        "initial": 60
+      }
+    },
+    "c2": {
+      "m1": {
+        "variable": "trust",
+        "initial": 55
+      }
+    },
+    "c3": {
+      "m1": {
+        "variable": "avoidance",
+        "initial": 70
+      }
+    }
+  },
+  "timeline": {
+    "t1": {
+      "time": "18:38",
+      "text_head": "한내돔 야간 당직 표기",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    "t2": {
+      "time": "18:40",
+      "text_head": "한내돔 시설대장을 조회",
+      "effects": {},
+      "present": []
+    },
+    "t3": {
+      "time": "18:55",
+      "text_head": "모르는 번호가 들어왔습",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t4": {
+      "time": "19:26",
+      "text_head": "표기웅에게 안에 몇 명",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    "t5": {
+      "time": "19:33",
+      "text_head": "문세라가 다시 걸어 왔",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t6": {
+      "time": "19:47",
+      "text_head": "문세라가 서쪽에서 소리",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t7": {
+      "time": "19:52",
+      "text_head": "전 정비기사 하도경과 ",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    "t8": {
+      "time": "19:55",
+      "text_head": "표기웅에게 북측 비상 ",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    "t9": {
+      "time": "20:04",
+      "text_head": "문세라가 천장 가운데가",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t10": {
+      "time": "20:05",
+      "text_head": "하도경이 늦게 회신했습",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    "t11": {
+      "time": "20:05",
+      "text_head": "문세라가 서쪽 슬리브로",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t12": {
+      "time": "20:14",
+      "text_head": "표기웅이 3번 차단기를",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        },
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t13": {
+      "time": "20:16",
+      "text_head": "북측 비상 개방문이 열",
+      "effects": {},
+      "present": []
+    },
+    "t14": {
+      "time": "20:19",
+      "text_head": "남측 통제선에서 큰 소",
+      "effects": {},
+      "present": []
+    },
+    "t15": {
+      "time": "20:41",
+      "text_head": "소방 선착대가 회전문이",
+      "effects": {},
+      "present": []
+    },
+    "t16": {
+      "time": "21:02",
+      "text_head": "당직자 주머니에서 자물",
+      "effects": {},
+      "present": []
+    },
+    "t17": {
+      "time": "21:35",
+      "text_head": "집결지에서 센 수가 세",
+      "effects": {},
+      "present": []
+    }
+  },
+  "symptoms": {
+    "defensiveness": {
+      "up": [
+        {
+          "min": 10,
+          "text": "표기웅에게 같은 것을 다시 물었더니, 아까 한 대답을 낱말까지 그대로 되풀이했습니다"
+        },
+        {
+          "min": 1,
+          "text": "표기웅이 대답 앞에 규정이라는 말을 붙이기 시작했습니다"
+        }
+      ],
+      "down": [
+        {
+          "min": 20,
+          "text": "표기웅이 묻지 않은 것을 먼저 말했습니다. 자기가 언제 껐는지까지 왔습니다"
+        },
+        {
+          "min": 10,
+          "text": "표기웅의 대답에서 원래 그렇다는 말이 빠졌습니다"
+        },
+        {
+          "min": 1,
+          "text": "표기웅이 대답하기 전에 숨을 한 번 골랐습니다"
+        }
+      ]
+    },
+    "trust": {
+      "up": [
+        {
+          "min": 10,
+          "text": "문세라가 되묻지 않고 움직였습니다. 발소리가 끊기지 않고 이어졌습니다"
+        },
+        {
+          "min": 1,
+          "text": "문세라가 알겠다는 말 뒤에 자기가 본 것을 덧붙였습니다"
+        }
+      ],
+      "down": [
+        {
+          "min": 20,
+          "text": "문세라가 제가 시킨 자리를 다시 물었습니다. 두 번 물었고, 두 번째에는 왜냐고 했습니다"
+        },
+        {
+          "min": 10,
+          "text": "문세라의 대답이 짧아지고, 제 말 끝에 겹쳐 들어오기 시작했습니다"
+        },
+        {
+          "min": 1,
+          "text": "문세라가 대답 대신 주변 소리를 먼저 전했습니다"
+        }
+      ]
+    },
+    "avoidance": {
+      "down": [
+        {
+          "min": 20,
+          "text": "하도경이 오래된 일이라는 말을 거두고, 회로가 어디에 물려 있는지를 순서대로 읽어 주었습니다"
+        },
+        {
+          "min": 10,
+          "text": "하도경이 잠깐 말을 멈췄다가, 묻지 않은 배선 이야기를 덧붙였습니다"
+        },
+        {
+          "min": 1,
+          "text": "하도경이 통화를 끊겠다는 말을 하지 않았습니다"
+        }
+      ]
+    },
+    "flags": {
+      "headcount_pressed": {
+        "set": "표기웅이 인원을 다시 세는 동안 회선이 끊기지 않았습니다. 그 사이에 모르는 번호가 상황실로 들어왔습니다"
+      },
+      "west_sleeve_opened": {
+        "set": "서쪽 벽 아래에서 덮개가 안쪽으로 열렸다고 전해 왔습니다. 남측 줄의 앞쪽이 처음으로 움직였습니다"
+      },
+      "vent_restored": {
+        "set": "배전반에서 차단기가 올라갔다고 했습니다. 천장 가운데가 다시 올라가고 눈이 가장자리로 흘러내린다고 전해 왔습니다"
+      },
+      "north_opened": {
+        "set": "북측 손잡이에서 사슬이 풀렸다고 전해 왔습니다. 열린 폭으로 바람이 빠져나가는 소리가 회선에 실렸습니다"
+      }
+    }
+  }
+}

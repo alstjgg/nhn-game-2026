@@ -152,17 +152,35 @@ const FILED_NOTE = '파견 종료. 열람 전용'
  * 사건 개요 — the three-line incident record the whole file hangs off.
  *
  * The date is written 20XX년 XX월 XX일 on purpose. A real date would place the
- * game in a year and invite the reader to check it against a tunnel that does
+ * game in a year and invite the reader to check it against a venue that does
  * not exist; the redacted form is what a declassified incident summary looks
  * like, and it dates the file without dating the world. The TIME is exact
- * (20시 47분) because a minute is what an incident log actually pins.
+ * (18시 38분) because a minute is what an incident log actually pins.
  *
  * It names 요원 ECHO in prose. That is the same agent `callsignOf(1)` mints —
  * see the note there; the two are one fact written twice and must not drift.
+ *
+ * x10 (민서, 08-10) — THE INCIDENT IS THE SPORTS DOME NOW. The first two lines
+ * read 20시 47분 / 해원터널 하행 4.2km 지점에서 흰 연기가 보인다는 신고 until this
+ * change. The third is untouched: who 본부 sent is a fact about the AGENT
+ * PROGRAMME, not about which building it was.
+ *
+ * THESE TWO LINES ARE THE PACK'S, NOT THIS MODULE'S, and that is the standing
+ * hazard here. The time has to agree with `data/scenario/<slug>/meta.json`'s
+ * `start` — which is what the desk clock opens on — and the place has to agree
+ * with the pack's `places.json`, its symptoms, its timeline and every line the
+ * feed prints. They are written as literals because the cover is authored copy
+ * (the redacted date is a piece of writing, not data), so nothing checks the
+ * agreement for us: `PACK_SLUG` in `shell/pack.ts` selects the pack, and this
+ * string is trusted to describe it. When these two were written for 해원터널 they
+ * matched a pack whose `start` was `20:47`. They were changed ahead of the
+ * sports-dome pack landing (민서: "the pack is being deployed right now"), so
+ * **if the desk clock does not open on 18:38, one of the two is wrong and it is
+ * probably this file.** Check `meta.json`'s `start` before believing this line.
  */
 const INCIDENT =
-  '20XX년 XX월 XX일 20시 47분,\n' +
-  '해원터널 하행 4.2km 지점에서 흰 연기가 보인다는 신고가 접수된다.\n' +
+  '20XX년 XX월 XX일 18시 38분,\n' +
+  '한내시립스포츠돔에서 천장 가운데가 처진다는 신고가 접수된다.\n' +
   '긴급상황대응실 본부는 즉시 현장에 요원 ECHO를 파견하여 상황 파악을 시작했다.'
 
 /**
@@ -216,6 +234,32 @@ const COMMS_ORDERS =
 
 interface SectionHead {
   title: string
+  /**
+   * The section's stable ASCII name, printed as `data-sect` by the builder.
+   *
+   * It exists for callers OUTSIDE this window that have to point at one
+   * section: the coach-mark walk anchors a plate on 인수인계 사항, and that
+   * section is `.sect.operable` on the live agent's page and `.sect.filed` on a
+   * past one. Those are two STATES of one section, not two sections, and
+   * `.sect.fixed` covers four unrelated ones — so state cannot serve as a name.
+   * The slug is what does not move when the state does.
+   *
+   * It is NOT the title, and it is never derived from one. The Korean titles are
+   * document art this module owns, exactly as the row key is (see `CALLSIGN_KEY`
+   * above, which is the same ruling in the same file): a selector that spelled
+   * `인수인계 사항` would have a stylesheet or a tutorial reading copy it does not
+   * own, and x5 reworded half of this page's copy without touching a single
+   * section's identity — which is the property the slug preserves.
+   *
+   * OPTIONAL, and the cover uses none. A slug is earned by being pointed at from
+   * outside, so the rule is "name what someone else has to find", not "name
+   * everything": today that is `identity` and `handover` on the agent's page and
+   * its filed copies, and nothing at all on the cover. `ui/tutorial-coach` did
+   * slug the cover's three sections, for three plates x8 then cut — see the note
+   * at `coverModel`. A slug with no caller is a selector nobody is holding, which
+   * is worse than no selector: it reads as a contract when it is a leftover.
+   */
+  slug?: string
 }
 
 export interface RowsSection extends SectionHead {
@@ -284,6 +328,13 @@ export type DossierSection = RowsSection | FixedSection | OperableSection | File
  */
 export function coverModel(): DossierSection[] {
   return [
+    // No slugs on the cover, and that is a decision the merge made rather than
+    // inherited. `ui/tutorial-coach` slugged all three of these (`mission`,
+    // `conduct`, `comms`) back when three of the walk's plates opened ON the
+    // cover; x8 cut those plates — the cover types its own incident brief now,
+    // and a plate narrating a document mid-performance is a second voice over
+    // the first. Nothing outside this window points here any more, so nothing
+    // here needs a name. `handover` below is the one slug still earning its keep.
     { title: '사건 개요', state: 'fixed', body: INCIDENT, note: INCIDENT_NOTE },
     { title: '현장 요원 임무', state: 'fixed', body: MISSION },
     { title: '현장 요원 교신 지침', state: 'fixed', body: COMMS_ORDERS },
@@ -295,6 +346,7 @@ export function agentModel(input: AgentInput): DossierSection[] {
   return [
     {
       title: '식별',
+      slug: 'identity',
       state: 'fixed',
       rows: [
         ['호출부호', input.callsign],
@@ -308,6 +360,11 @@ export function agentModel(input: AgentInput): DossierSection[] {
       // next. The cap still comes from `slotCap` and not from a literal (D3), so
       // the note and the board it sits above cannot drift.
       title: '인수인계 사항',
+      // …and the SAME slug the past-page version below carries. That sameness is
+      // the whole point of having a slug at all: the live sheet and every filed
+      // sheet are one section in two states, so whatever points at the handover
+      // finds it on either page.
+      slug: 'handover',
       state: 'operable',
       note: `요원에게 최대 ${input.slotCap}가지 주요 사항을 전달하십시오`,
     },
@@ -326,6 +383,7 @@ export function filedModel(input: FiledInput): DossierSection[] {
   return [
     {
       title: '식별',
+      slug: 'identity',
       state: 'fixed',
       rows: [
         ['호출부호', input.callsign],
@@ -339,6 +397,9 @@ export function filedModel(input: FiledInput): DossierSection[] {
       // below), so the note said out loud what the reader can see, and 배치 is
       // the vocabulary the confirmation plate retired in favour of 파견.
       title: '인수인계 사항',
+      // The live page's slug, unchanged — see `agentModel`. `state` is what says
+      // the sitting is over; the name says which section it is.
+      slug: 'handover',
       state: 'filed',
       note: FILED_NOTE,
     },
@@ -407,6 +468,12 @@ function spaced(...nodes: Node[]): Node[] {
 
 function buildSection(section: DossierSection, slotHost: HTMLElement): HTMLElement {
   const node = el('div', `sect ${section.state}`)
+  // The state is a CLASS and the name is a DATA ATTRIBUTE, on purpose: the sheet
+  // paints states (`.sect.operable .sect-flag`) and never asks which section it
+  // has, while everything that asks which section it has (the coach-mark walk)
+  // never paints. Two readers, two channels, and neither can be mistaken for the
+  // other the way a second class in `sect ${state}` could be.
+  if (section.slug !== undefined) node.dataset.sect = section.slug
   const head = el('div', 'sect-hd')
   // C1 — no `§n`. The titles are distinct words and carry the document on
   // their own; a number that has to be kept in step with a page order is one

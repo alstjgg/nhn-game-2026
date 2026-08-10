@@ -58,6 +58,18 @@ export const TEMPLATE_VERSION: Readonly<Record<CallType, string>> = Object.freez
 export type ComposerRuntimeDeps = ComposerDeps & {
   reportGuidance: ReportGuidance
   blocks: BlockStore
+  /**
+   * The datapack slug this composer's runs are playing.
+   *
+   * Not a scenario READ — contract §7 bars the composer from opening the
+   * datapack, and this does not open it. It is the pack's name, arriving the
+   * same way `reportGuidance` does: as a construction dependency the driver
+   * threads in. It travels on the wire so the proxy can pick which agent
+   * answers (see `CallRequest.pack`), and it is required rather than optional
+   * so a caller that forgets it is a type error here and not a silently
+   * mismatched agent in production.
+   */
+  pack: string
 }
 
 /**
@@ -82,7 +94,7 @@ function resolveBlocks(store: BlockStore, ids: readonly string[]): Block[] {
 }
 
 export function createComposer(deps: ComposerRuntimeDeps): Composer {
-  const { blocks, reportGuidance } = deps
+  const { blocks, reportGuidance, pack } = deps
 
   return {
     judgment(view: GateView, blockIds: string[]): CallRequest {
@@ -100,6 +112,7 @@ export function createComposer(deps: ComposerRuntimeDeps): Composer {
       return {
         call_type: 'judgment',
         template_version: TEMPLATE_VERSION.judgment,
+        pack,
         slots,
       }
     },
@@ -119,6 +132,7 @@ export function createComposer(deps: ComposerRuntimeDeps): Composer {
       return {
         call_type: 'narration',
         template_version: TEMPLATE_VERSION.narration,
+        pack,
         slots,
       }
     },
@@ -132,6 +146,7 @@ export function createComposer(deps: ComposerRuntimeDeps): Composer {
       return {
         call_type: 'reporter',
         template_version: TEMPLATE_VERSION.reporter,
+        pack,
         slots,
       }
     },

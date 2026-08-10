@@ -4,10 +4,10 @@
   "base": "assets/audio/",
   "ext": ".m4a",
 
-  "$buses": "Two, independently mutable. `ambience` sits far under `sfx` on purpose — plan-audio §2 rule 3: the bed must never be the reason a line is missed. The pack is foley under a reading surface, so both sit well below the level that feels right while auditing one cue at a time.",
+  "$buses": "Two, independently mutable. `ambience` sits far under `sfx` on purpose — plan-audio §2 rule 3: the bed must never be the reason a line is missed. The pack is foley under a reading surface, so both sit well below the level that feels right while auditing one cue at a time. x10 (08-10, 민서: '소리를 좀 조용하게') — ambience 0.15 → 0.1 → 0.05, in two passes: 0.1 was still not quiet enough on the running desk, and 0.05 is where 민서 set it. That is -26.0 dB on the bus, -9.5 dB below the level the complaint was about, and it puts the bed at -39.5 LUFS. ONE KNOB ON PURPOSE: bed (gain 1) and office (gain 0.8) both ride this bus, so the ~10 dB gap between them — the thing §4.4 calls the whole effect — is bus-invariant and the room recedes as a whole instead of deforming. NO CUE GAIN MOVED, and that was asked for explicitly: at 0.1 the office one-shots landed 21.9 dB under their raw cuts, past the 20.9 dB §4.4's tuning history rejected as reading like an EMPTY office, and the standing advice here was to answer that with `office.gain` 0.8 → 1.0 rather than with the bus. 민서 ruled otherwise — 'the office.gain is fine' — and took the bus down again instead, so the one-shots now sit 28.0 dB under their cuts and are expected to be at or past the edge of audible. THAT IS THE INSTRUCTION, not an oversight: the room is a bed with events in it that may or may not be caught, rather than a room asserting itself. Do not 'fix' the one-shots by raising `office.gain` without asking.",
   "buses": {
     "sfx": 0.5,
-    "ambience": 0.15
+    "ambience": 0.05
   },
 
   "$preload": "Fetched and decoded before everything else — the only cues reachable before the desk exists, O1's door and its controls. `ready` resolves on this list alone, so the door's controls answer without waiting for the whole pack.",
@@ -59,8 +59,11 @@
     "boot": { "files": ["stinger"], "bus": "sfx", "gain": 0.5, "cooldownMs": 5000 },
     "collapse": { "files": ["collapse"], "bus": "sfx", "gain": 1.0, "cooldownMs": 5000 },
 
-    "bed": { "files": ["amb-room-tone"], "bus": "ambience", "gain": 1.0, "loop": true },
-    "watch": { "files": ["amb-watch-drone"], "bus": "ambience", "gain": 0.75, "loop": true }
+    "bed": { "files": ["amb-office-tone"], "bus": "ambience", "gain": 1.0, "loop": true },
+    "watch": { "files": ["amb-watch-drone"], "bus": "ambience", "gain": 0.75, "loop": true },
+
+    "$office": "The office beyond the desk — see `ambience.sparse`. One cue id, five files, so the not-twice-running variation rule in mixer.pick() does the work and the scheduler only has to decide WHEN. gain 0.8 on the ambience bus is -18.4 dB from the raw cuts, leaving the bed about 10 dB above them. That gap is the whole effect and this is the number to reach for first when the room feels wrong. Tuned on the running desk, downward twice: -24 dB (0.42) read as an empty office and -20.9 dB (0.6) still did. Do not read 0.8 as headroom — it is near the top of the range, and past it the one-shots stop being somewhere else and start being cues on this desk, which is the confusion the 3.5 kHz cut exists to prevent.",
+    "office": { "files": ["office-keys-1", "office-keys-2", "office-keys-3", "office-phone", "office-printer"], "bus": "ambience", "gain": 0.8 }
   },
 
   "$bindings": "trigger → cue id, or null for a cue that is deliberately silent. `feed:*` fire when a line is REVEALED, not when its event arrives.",
@@ -115,11 +118,18 @@
     "ending:collapse": null
   },
 
-  "$ambience": "An opening, not a bed. `playForMs` retires both loops that many ms after the desk opens and they never return, the Watch drone included. Room tone and a drone are broadband noise under a screen the player reads for minutes; held for a whole run they read as fatigue rather than atmosphere. Set `playForMs` to null to hold them for the session. `null` on a slot is silence, and that is a real choice too — the Autopsy screen is meant to be quiet.",
+  "$ambience": "The two beds want opposite things, and `deskHolds` is what splits them. The Watch drone is still an OPENING: `playForMs` retires it that many ms after the desk opens and `beat_start` cannot bring it back, because a drone under a screen the player reads for minutes is pressure that never lets up. The desk bed is a ROOM, and a room that switches off after ten seconds was never a room — with `deskHolds` true it and its sparse events hold for the session. `null` on a slot is silence, and that is a real choice too: the Autopsy screen is meant to be quiet. x10 (08-10, 민서) — THE ROOM NOW OPENS AT THE DOOR, on the first keystroke of the sign-in card (the gesture that unlocks the audio context; nothing can sound before one). Only the drone's `playForMs` window is still anchored to the desk — 10 s that started at the login screen would be spent before the operator got through it. These two numbers did not change and their meaning did not either: `playForMs` is measured from each bed's own opening, which is now a different moment for each. See src/client/audio/index.ts `openTheRoom`.",
   "ambience": {
     "desk": "bed",
     "watch": "watch",
-    "playForMs": 10000
+    "playForMs": 10000,
+    "deskHolds": true,
+    "$sparse": "Somebody else's desk, across the room, every 5–10 s. The interval is re-rolled after each play — a fixed period is audible as a metronome inside three cycles. These are NOT triggers: `TRIGGERS` in map.ts is the closed set of moments the game can sound, and nothing in the game happens when a phone rings two desks away.",
+    "sparse": {
+      "cues": ["office"],
+      "minMs": 5000,
+      "maxMs": 10000
+    }
   },
 
   "$typing": "The report is the only surface that types CHARACTERS — the LIVE FEED reveals whole LINES on U1's queue, which is what `feed:*` sounds. Sounding every character is unlistenable, so one keystroke lands every `everyChars` characters; the cue's own cooldown is the second bound.",

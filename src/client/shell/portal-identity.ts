@@ -33,8 +33,14 @@ export const PORTAL: PortalIdentity = {
   // x5 — the operator is the PLAYER, and the player is not 박민서. A Korean
   // personal name on the chrome reads as one more character in the fiction, and
   // this one happened to be the author's; the account handle says "you are
-  // signed in" and casts nobody. It matches `SIGN_IN.userId` below, which is the
-  // same account seen at the door.
+  // signed in" and casts nobody.
+  //
+  // x9 — this is the SESSION handle, and it is no longer what the door types.
+  // The door types `operatorId` below (see `SIGN_IN.userId`): a badge number is
+  // what an operator enters at a terminal, and a handle is what the terminal
+  // then prints back at them. `authLines()` in `shell/sign-in.ts` shows the two
+  // resolving into each other — `사용자 조회 — OP-2291 tester_123 … 확인` — which
+  // is the one place the pair has to be legible as a pair.
   operator: 'tester_123',
   operatorId: 'OP-2291',
   clearance: 'C-2',
@@ -44,7 +50,7 @@ export const PORTAL: PortalIdentity = {
 export const TASKBAR_HINT = '창을 끌어 배치 · 제목 표시줄에서 방향키로 이동'
 
 /**
- * The card the terminal comes pre-filled with at the door (`shell/sign-in.ts`).
+ * The card the door TYPES ITSELF as the operator presses keys (`shell/sign-in.ts`).
  *
  * There is nothing to authenticate: the sign-in screen is a scene, and the two
  * fields are rendered as static text, never as a form (spec-client §3
@@ -52,11 +58,24 @@ export const TASKBAR_HINT = '창을 끌어 배치 · 제목 표시줄에서 방�
  * `tests/shell/no-free-text.test.ts` holds that line at source level). The
  * account is the terminal's, which is why it lives beside the portal's own
  * identity rather than in the scenario pack.
+ *
+ * x9 — the two fields were PRE-FILLED and the door opened on one press. Now
+ * they start empty and fill one character per keystroke, and this card is the
+ * script: `userId` is typed first, then `secret`, and the LOGIN control is dead
+ * until both have landed. The values are therefore load-bearing arithmetic as
+ * well as copy — 7 keystrokes and then 8, because that is what they are long —
+ * so `tests/shell/sign-in.test.ts` pins both lengths.
+ *
+ * THE MEMBRANE IS THE POINT OF THE MECHANIC, not a compromise with it. The
+ * operator presses keys and the terminal writes what the terminal was always
+ * going to write; `doorFill()` takes a COUNT and never a character, so there is
+ * no path by which what was pressed becomes what appears. The player's hands
+ * are on the desk and their words are not in it.
  */
 export interface SignInCard {
-  /** The account the terminal is provisioned to. */
+  /** The account the terminal is provisioned to — the door's first line. */
   userId: string
-  /** What the masked field shows — a mask, not a secret. */
+  /** What the masked field shows — a mask, not a secret. The door's second. */
   secret: string
   /** The desk this session is assigned. */
   terminal: string
@@ -65,8 +84,11 @@ export interface SignInCard {
 }
 
 export const SIGN_IN: SignInCard = {
-  userId: 'tester_123',
-  secret: '*********',
+  // The badge, not the handle: `PORTAL.operatorId` rather than a second literal,
+  // so the number the door types cannot drift from the number the readout then
+  // confirms two lines later. See the note on `PORTAL.operator` above.
+  userId: PORTAL.operatorId,
+  secret: '********',
   terminal: 'T-14',
   agency: '행정안전부 · 상황대응본부',
 }

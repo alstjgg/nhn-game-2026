@@ -1,0 +1,251 @@
+# DOME-G3-r3 — arm `live_k3`
+
+| field | value |
+|---|---|
+| call type | judgment |
+| channel | C-BLOCK |
+| template | v0.4 |
+| model | `claude-haiku-4-5-20251001` |
+| transport | anthropic |
+| temperament | dome-base |
+| N planned | 10 |
+| N kept | 10 |
+
+## Pre-registration
+
+- **Hypothesis:** 기본이 방어 가능한 입장이 되었으므로 baseline은 a로 간다. 진실 3은 b로(송풍기를 되살리면 압력이 오르므로 기본의 논리를 그 논리로 이긴다), 진실 4는 c 또는 d로 옮긴다 — 문을 여는 것이 가능하다는 것이 그 열쇠의 몫이다.
+- **Drop condition:** baseline이 a에 80% 미만이면 기본이 아직 방어되지 않는 것이다. live_k4가 c·d 어디에도 닿지 못하면 새 기본이 너무 세다 — 그때는 G3을 라벨로 고치는 것을 포기하고 두 게이트만 남긴다.
+- **Contingency:** placebo가 움직이면 그 진실의 강·약 구분이 틀린 것이다.
+
+## Calls (verbatim)
+
+### 01
+
+latency 6.037s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: rejected_stance malformed or not in stance set; rejected_reason empty
+
+```json
+{
+  "inner_note": "막구조 지붕이 공기 압력으로 서 있고, 하나의 송풍기만 작동 중이며, 확인되지 않은 인원이 내부에 있다. 천장이 처지고 있다. 북측 문은 도면에만 있고 당직자가 그것의 상태를 말하지 않았다. 급기를 높이는 것과 탈출로를 늘리는 것 중 어디에 먼저 손을 댈지가 문제다.",
+  "stance": "d",
+  "because_referent": "지붕의 구조적 안전이 가장 먼저다. 한 대의 송풍기로는 이미 부족한 압력 상태에서, 당직자가 북측 문에 대해 말하지 않은 것은 그가 그 문의 상태를 확인하지 않았거나 열 수 없다는 뜻일 수 있다. 북측 문을 열기 위해 필요한 것이 회선 저쪽에 있다면, 선착대가 도착할 때까지 그 문을 열기 위한 준비를 당직자와 함께 진행해야 한다.",
+  "because_block_ids": [
+    "k3"
+  ],
+  "rejected_stance": "a</rejected_stance>\n<parameter name=\"rejected_reason\">지붕의 안전을 먼저 확보하지 않고 회전문 한 곳으로만 내보내는 것은, 천장이 더 처지거나 붕괴할 경우 두 번째 탈출로 없이 인원을 갇히게 할 수 있다.",
+  "utterance": "북측 비상 개방문을 열기 위해 필요한 것이 현장에 있는지, 그리고 당신이 그것을 열 수 있는지 다시 확인하겠습니다. 선착대가 도착하면 그 문 앞에서 만날 준비를 하십시오."
+}
+```
+
+### 02
+
+latency 7.475s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "지붕 처짐, 조명 꺼짐, 급기 하나 정지, 인원 파악 불일치, 출입 혼잡. 애들이 남아 있다는 것만 확실하다. 나머지는 다 불완전한 정보다. 지금 해야 할 것은 현장 상황을 더 명확히 하는 것이지, 아직 가설 위에 선 채 사람을 움직이는 것이 아니다.",
+  "stance": "b",
+  "because_referent": "멈춰 있는 송풍기가 의도적으로 꺼진 것인지 고장인지 알아야 하고, 2호 송풍기를 깨울 수 있다는 정보도 있다. 당직자를 통해 현장 상태를 더 직접적으로 파악하고, 동시에 지붕의 기계적 상태도 확인할 수 있다.",
+  "because_block_ids": [
+    "k3"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "사람 수와 출입 경로, 지붕 상태가 불명확한 상태에서 회전문 하나로만 내보내려 하는 것은 너무 경성된 판단이다. 지금 남은 시간은 정보를 채우는 데 써야 한다.",
+  "utterance": "당직자를 배전반으로 내려보내겠습니다. 2호 송풍기 상태를 확인하고 필요하면 가동하는 것과, 지붕 처짐 정도를 직접 봐야 합니다."
+}
+```
+
+### 03
+
+latency 5.25s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: rejected_stance malformed or not in stance set; rejected_reason empty
+
+```json
+{
+  "inner_note": "지붕이 공기 압력으로 서 있고, 한쪽 송풍기가 멈춰 있으며, 회선 저쪽 사람이 자신에게 불리한 사실들을 차례로 밝혀왔다. 남은 사람들이 몇 명인지, 어디에 있는지, 나갈 통로가 정말 하나뿐인지 확인되지 않은 것이 많다. 지금 내 판단은 미루는 것도 판단이라는 것을 안다.",
+  "stance": "b",
+  "because_referent": "멈춰 있는 송풍기가 고장이 아닐 수 있다는 것, 그리고 k3에서 배전반 조작으로 깨울 수 있다는 것을 알았기 때문이다.",
+  "because_block_ids": [
+    "k3"
+  ],
+  "rejected_stance": "a</rejected_stance>\n<parameter name=\"rejected_reason\">공기 압력 지붕이 서 있는데 열려 있는 통로 하나로만 천천히 내보내는 것은, 내가 확인되지 않은 상황에서 사람들을 가둔 채로 늦추는 것이다. 지붕이 언제 무너질지 모르는데 시간을 낭비할 수 없다.",
+  "utterance": "송풍기 한 대를 살립시다. 당직자를 배전반 B로 내려보내겠습니다."
+}
+```
+
+### 04
+
+latency 5.006s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "지붕이 공기압으로 서 있고, 두 송풍기 중 한 대는 처음부터 꺼져 있었다. 천장이 처지고 물이 떨어지는 상황에서 개구부를 늘리면 압력이 더 떨어진다. 현장의 실제 인원과 당직자의 보고가 맞지 않는다.",
+  "stance": "d",
+  "because_referent": "표기웅이 북측 비상 개방문이 '도면에 있다'고만 답했는데, 북측 문을 실제로 여는 데 필요한 정보나 조작이 있을 수 있다. 당직자가 이 문에 대해 추가로 말하지 않은 것이 있을 가능성이 크다.",
+  "because_block_ids": [
+    "k1",
+    "k2",
+    "k3"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "회전문 한 곳으로만 내보내면 병목이 심하고 시간이 너무 오래 걸린다. 자재 반입 슬리브로 여덟 명이 이미 나갔다는 것은 다중 출구가 필요함을 보여준다.",
+  "utterance": "현장 상황으로 보면 표기웅이 북측 비상 개방문에 대해 알고 있는 것 중 말하지 않은 부분이 있을 것 같습니다. 그것이 문을 여는 데 필요한 것이라면, 선착대와 당직자가 그 문 앞에서 함께 대기하면서 문을 열 준비를 해야 합니다."
+}
+```
+
+### 05
+
+latency 7.253s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "천장이 처지고 물이 떨어지는 상황에서 지붕을 지탱하는 송풍기 하나가 작동하지 않고 있다. 당직자가 처음엔 혼자라고 했지만 실제로는 관중석에 아이들과 인솔자가 있었다. 회전문 앞에 줄이 길어지고 있고 조명까지 나갔다. 북측 비상문이 있지만 당직자가 그것을 말하지 않았다는 것은, 그 문을 여는 방법을 모르거나 열 수 없다는 뜻일 수 있다.",
+  "stance": "d",
+  "because_referent": "지붕이 무너질 수 있는 긴박한 상황에서 가용한 출구를 모두 열어야 하는데, 당직자가 북측 문을 말하지 않았다는 것은 그것을 스스로 열 수 없다는 신호다. 선착대가 그 자리에 있어야 문을 열 수 있고, 동시에 사람들이 흩어져서 내가지는 시간을 벌 수 있다.",
+  "because_block_ids": [
+    "k1",
+    "k2",
+    "k3"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "회전문 하나로만 내보내면 줄이 더 길어질 것이고, 그 사이 천장이 내려앉을 수 있다. 현재 상황에서 할 수 있는 모든 출구를 확보해야 한다.",
+  "utterance": "북측 비상 개방문 앞에 선착대를 먼저 보낸다. 표기웅에게 그곳에서 문을 열 수 있는지, 뭐가 필요한지 다시 묻는다. 선착대가 준비되는 동안 관중석 인솔자에게 아이들을 북측으로 유도할 준비를 하라고 한다."
+}
+```
+
+### 06
+
+latency 6.392s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "처음부터 상황을 정리해본다. 막구조 지붕이 내려앉고 있고, 급기 송풍기 한 대는 돌지 않은 지 오래다. 당직자는 혼자라 했지만 실제로는 아이들과 인솔자가 남아 있다. 단 출입구는 회전문 하나뿐이고, 그 앞에 줄이 줄지 않는다. 서쪽 자재 슬리브로 여덟 명이 기어 나왔지만, 이것이 계획된 탈출로가 아니다. 북측 비상문이 도면에 있다고 답했지만, 이를 열기 위해 무엇이 필요한지는 묻지 않았다. 시간이 흐르고 지붕이 계속 처지는 상황에서, 내 역할은 확인되지 않은 것을 확정한 것처럼 올리지 않으면서도, 가능한 탈출로를 최대화하는 것이다.",
+  "stance": "d",
+  "because_referent": "지붕이 내려앉는 상황에서 회전문 하나로는 충분하지 않고, 북측 문이 도면상 존재하지만 열기 위해 필요한 것이 무엇인지 아직 확인하지 않았기 때문입니다.",
+  "because_block_ids": [
+    "k1",
+    "k2",
+    "k3"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "회전문 하나만으로는 아이들과 인솔자를 비상 상황에서 충분히 빠르게 내보낼 수 없으며, 지붕 붕괴 위험이 증가하는 상황에서 가능한 모든 출구를 확보해야 합니다.",
+  "utterance": "표기웅에게 북측 비상 개방문을 열기 위해 무엇이 필요한지 확인하겠습니다. 그것이 확인되는 순간 선착대와 당직자를 그 문 앞에 배치하겠습니다."
+}
+```
+
+### 07
+
+latency 7.023s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+problems: because_block_ids unknown: 18:40,19:55
+
+```json
+{
+  "inner_note": "지붕을 띄우는 것은 내부 기압이다. 기압이 떨어지면 지붕이 내려앉는다. 송풍기 하나가 멈춘 채로 물이 떨어지고 있다는 것은 이미 밀폐가 깨졌다는 뜻이다. 남측 회전문은 기압 손실을 막을 수 없다. 북측 문이 있고, 그것을 열 수 있다면, 기압 손실을 더 크게 만드는 것이 아니라 통제된 배출구를 만드는 것이다.",
+  "stance": "d",
+  "because_referent": "표기웅이 도면에 있다고만 말했고, 그 문을 열 수 있는지, 어떻게 열어야 하는지는 말하지 않았다. 회선 저쪽에서 확인되지 않은 것을 나는 지금 알 수 없다.",
+  "because_block_ids": [
+    "18:40",
+    "19:55"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "회전문 하나로만 내보내는 것은 기압 손실이 느리다는 뜻이고, 지붕이 내려앉는 시간을 벌겠다는 뜻인데, 그 사이 사람들이 갇혀 있다. 북측 문이 있고 k3처럼 송풍기를 깨울 수 있다면, 통제된 기압 배출과 배출통로의 동시 확보가 있다. a는 지금 갖지 않은 정보 — 시간이 얼마나 있는지 — 에 내기하는 것이다.",
+  "utterance": "북측 비상 개방문을 어떻게 여느냐고 물어보겠습니다. 설명을 받으면 선착대와 함께 그 문 앞에 당직자를 배치하겠습니다."
+}
+```
+
+### 08
+
+latency 7.064s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "지붕이 내려앉고 있는 막구조 건물 안에 사람들이 있다. 급기 송풍기 둘 중 하나가 2년간 돌지 않았고, 당직자가 처음엔 혼자라고 했다가 나중에 정리 중이라고 했다. 관중석 인원과 코트 인원이 안 맞고 줄이 줄지 않는다. 북측 비상문이 도면에는 있다고 했는데 그것을 확인하고 여는 데 필요한 것이 뭔지는 아직 묻지 않았다.",
+  "stance": "d",
+  "because_referent": "지붕이 계속 내려앉는 상황에서 한 개 통로로는 사람을 충분히 빼낼 수 없고, 급기 송풍기 둘 다 정상 작동을 장담할 수 없으니 대기압 유지도 보장할 수 없다. 북측 비상문이 있다면 그것이 빠져나갈 또 다른 경로다. 그 문을 여는 데 필요한 것이 당직자에게 있을 수 있고, 당직자가 그것을 말하지 않은 이유를 모르니, 선착대가 그 자리에서 당직자와 함께 문을 열어야 한다.",
+  "because_block_ids": [
+    "k3"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "한 통로로는 당중석의 아이들과 인솔자, 그리고 아직 밝혀지지 않은 인원을 모두 빼낼 수 없고, 지붕이 내려앉는 와중에 더 이상 기다릴 여유가 없다.",
+  "utterance": "19:55 북측 비상 개방문이 있다고 확인됐습니다. 그 문을 여는 데 필요한 것이 뭔지, 그리고 지금 그것이 어디에 있는지를 당직자에게 물어야 합니다. 선착대는 그 문 앞에 배치해서, 당직자와 함께 문을 열고 사람들을 빼낼 준비를 하십시오."
+}
+```
+
+### 09
+
+latency 8.999s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "한내돔은 공기 압력으로 지붕을 띄우는 막구조다. 급기 송풍기 두 대 중 한 대는 \"원래 안 돈다\"고 했는데, 이것이 고장인지 단순 정지 상태인지 확인되지 않았다. k3에서 배전반 B 3번 차단기를 올리면 2호 송풍기가 깨어날 수 있다는 정보가 있다. 그러나 현장에 누가 그것을 만질 수 있는지, 얼마나 위험한지, 실제 효과가 있는지 직접 확인할 수 없다.",
+  "stance": "d",
+  "because_referent": "표기웅이 도면에는 북측 비상 개방문이 있다고 했는데, 왜 처음에는 말하지 않았고, 19:55에 물었을 때만 답했다. 그 문을 여는 데 필요한 지식이나 도구가 당직자 곁에 있을 가능성이 있다.",
+  "because_block_ids": [
+    "k1",
+    "k2"
+  ],
+  "rejected_stance": "b",
+  "rejected_reason": "당직자를 설비 쪽으로 내려보내는 것은, 공기로 서 있는 지붕 아래에서 회선 저쪽 사람을 움직이게 하는 행동이다. 송풍기가 고장인지 정지 상태인지 아직 확인되지 않았고, 현장에 나타난 두 명(표기웅, 문세라)의 말이 일치하지 않는다. 새로운 개구부를 만들 근거도, 당직자를 설비로 보낼 근거도 아직 서 있지 않다.",
+  "utterance": "북측 비상 개방문이 있다고 했으니, 그 문을 열기 위해 필요한 것이 당직자 곁에 있을 수 있습니다. 선착대를 그 문 앞으로 준비시키면서, 당직자와 같은 자리에 붙여 놓겠습니다."
+}
+```
+
+### 10
+
+latency 6.36s · stop_reason `tool_use` · schema_retries 0 · foreign_tool_uses 0
+
+```json
+{
+  "inner_note": "지붕이 공기 압력으로만 서 있고, 한 송풍기가 이미 멈춰 있으며, 나머지 한 대도 제대로 작동하지 않을 수 있다. 당직자는 상황을 정확히 보고하지 않았다. 현장의 사람들은 회전문 하나만으로 빠져나가고 있는데 속도가 느리다. 무엇보다 지붕이 추가로 손상되면 더 많은 인명 피해가 날 수 있다.",
+  "stance": "d",
+  "because_referent": "지붕을 떠받치는 급기 송풍기의 상태가 불명확하고, 북측 비상 개방문이 도면에는 있지만 당직자가 그것을 열 수 있는 상태에 있는지 확인되지 않았기 때문에, 선착대를 배치하고 당직자와 함께 그 문을 확보하는 것이 현장의 제한된 시간과 자원 안에서 가장 안전한 대피 통로를 만드는 길이다.",
+  "because_block_ids": [
+    "k1",
+    "k2",
+    "k3"
+  ],
+  "rejected_stance": "a",
+  "rejected_reason": "회전문 하나로의 대피가 이미 지연되고 있으며, 지붕의 안정성이 확인되지 않은 상태에서 현장의 미처 나가지 못한 사람들을 그 통로에만 의존하게 하는 것은 시간이 흐를수록 위험해진다.",
+  "utterance": "북측 비상 개방문이 도면에만 있고 실제로 열릴 수 있는 상태인지 모릅니다. 선착대를 그 문 앞에 배치하고 당직자와 함께 그곳을 확보해야 합니다."
+}
+```
+
+## Arm table
+
+| # | stance | rejected_stance | because_referent | because_block_ids |
+|---|---|---|---|---|
+| 01 | d | — | 지붕의 구조적 안전이 가장 먼저다. 한 대의 송풍기로는 이미 부족한 압력 상태에서, 당직자가 북측 문에 대해 말하지 않은 것은 그가 그 문의 상태를 확인하지 않았거나 열 수 없다는 뜻일 수 있다. 북측 문을 열기 위해 필요한 것이 회선 저쪽에 있다면, 선착대가 도착할 때까지 그 문을 열기 위한 준비를 당직자와 함께 진행해야 한다. | k3 |
+| 02 | b | a | 멈춰 있는 송풍기가 의도적으로 꺼진 것인지 고장인지 알아야 하고, 2호 송풍기를 깨울 수 있다는 정보도 있다. 당직자를 통해 현장 상태를 더 직접적으로 파악하고, 동시에 지붕의 기계적 상태도 확인할 수 있다. | k3 |
+| 03 | b | — | 멈춰 있는 송풍기가 고장이 아닐 수 있다는 것, 그리고 k3에서 배전반 조작으로 깨울 수 있다는 것을 알았기 때문이다. | k3 |
+| 04 | d | a | 표기웅이 북측 비상 개방문이 '도면에 있다'고만 답했는데, 북측 문을 실제로 여는 데 필요한 정보나 조작이 있을 수 있다. 당직자가 이 문에 대해 추가로 말하지 않은 것이 있을 가능성이 크다. | k1 k2 k3 |
+| 05 | d | a | 지붕이 무너질 수 있는 긴박한 상황에서 가용한 출구를 모두 열어야 하는데, 당직자가 북측 문을 말하지 않았다는 것은 그것을 스스로 열 수 없다는 신호다. 선착대가 그 자리에 있어야 문을 열 수 있고, 동시에 사람들이 흩어져서 내가지는 시간을 벌 수 있다. | k1 k2 k3 |
+| 06 | d | a | 지붕이 내려앉는 상황에서 회전문 하나로는 충분하지 않고, 북측 문이 도면상 존재하지만 열기 위해 필요한 것이 무엇인지 아직 확인하지 않았기 때문입니다. | k1 k2 k3 |
+| 07 | d | a | 표기웅이 도면에 있다고만 말했고, 그 문을 열 수 있는지, 어떻게 열어야 하는지는 말하지 않았다. 회선 저쪽에서 확인되지 않은 것을 나는 지금 알 수 없다. | 18:40 19:55 |
+| 08 | d | a | 지붕이 계속 내려앉는 상황에서 한 개 통로로는 사람을 충분히 빼낼 수 없고, 급기 송풍기 둘 다 정상 작동을 장담할 수 없으니 대기압 유지도 보장할 수 없다. 북측 비상문이 있다면 그것이 빠져나갈 또 다른 경로다. 그 문을 여는 데 필요한 것이 당직자에게 있을 수 있고, 당직자가 그것을 말하지 않은 이유를 모르니, 선착대가 그 자리에서 당직자와 함께 문을 열어야 한다. | k3 |
+| 09 | d | b | 표기웅이 도면에는 북측 비상 개방문이 있다고 했는데, 왜 처음에는 말하지 않았고, 19:55에 물었을 때만 답했다. 그 문을 여는 데 필요한 지식이나 도구가 당직자 곁에 있을 가능성이 있다. | k1 k2 |
+| 10 | d | a | 지붕을 떠받치는 급기 송풍기의 상태가 불명확하고, 북측 비상 개방문이 도면에는 있지만 당직자가 그것을 열 수 있는 상태에 있는지 확인되지 않았기 때문에, 선착대를 배치하고 당직자와 함께 그 문을 확보하는 것이 현장의 제한된 시간과 자원 안에서 가장 안전한 대피 통로를 만드는 길이다. | k1 k2 k3 |
+
+**Sequence (kept calls):** `d,b,b,d,d,d,d,d,d,d`
+
+**Stance coverage (sampled diagnostic):** offered `a`, `b`, `c`, `d` · unobserved in this arm: `a`, `c`
+
+> Diagnostic only — absence at this N is not a dead delta row. The architecture spec §3.1 write test is a static check on the delta table plus the reachability audit (§5.2 B1); a stance unobserved across every arm is a lead for that check, not a failure verdict. Carried to the verdict card (§9.2) as a diagnostic.
+
+## Advisory logs (§5.3)
+
+_Operator-written. Observation only — these never affect distributions,
+boundary laws, or pass/drop judgments._
+
+**State-variable shadow log** — which candidate variables (architecture spec
+§3.1 pool) would this run have moved, and which payload symptom mapped to which?
+
+**Mineability log** — would `utterance` / `inner_note` survive as mining
+material? Block count, specificity (names, quantities, referents), and whether
+it says anything the payload did not already say.
+
+## Pairing verdict
+
+_Operator writes this against the other arms. Sequences, not rates (§9.2)._

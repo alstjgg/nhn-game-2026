@@ -204,10 +204,19 @@ export async function bootShell(): Promise<void> {
   const door = signInSkipped(window) ? null : openSignIn(must('#app'), body)
 
   // Resolved at the hand-over (step 6), when the desk is what the player is
-  // looking at. The ear waits on it — see 4c.
-  let openTheEars = (): void => {}
+  // looking at — see 4c.
+  //
+  // x10 (08-10, 민서) — the resolver was called `openTheEars`, because opening
+  // them was its job: the whole ambience waited behind this promise and the desk
+  // was where the room arrived. The room now comes up at the DOOR, on the first
+  // keystroke that unlocks the audio context (`audio/index.ts` `openTheRoom`),
+  // so what is left behind this promise is the WATCH DRONE's ten-second window —
+  // the one bed that is still an opening and still has to be spent where the
+  // player can hear it. The promise resolves on BOTH paths (below), door or no
+  // door, so the drone's window is never one that fails to open.
+  let theDeskIsUp = (): void => {}
   const atTheDesk = new Promise<void>((resolve) => {
-    openTheEars = () => resolve()
+    theDeskIsUp = () => resolve()
   })
 
   // 1 — the scenario pack.
@@ -291,11 +300,15 @@ export async function bootShell(): Promise<void> {
   // a channel (plan-audio §2).
   //
   // It unlocks on the first gesture wherever that lands — the door has controls
-  // of its own — but the AMBIENCE waits for the hand-over below: an opening that
-  // plays out behind a curtain is an opening nobody hears. The opening `meta`
-  // lands during boot and carries `runs_left`, which the ending cue reads, so
-  // the subscription cannot wait; but the first gesture belongs to the door
-  // (O1), and unlocking there would spend the opening ambience behind it.
+  // of its own — and x10 (08-10, 민서) is that THE ROOM COMES UP THERE: the desk
+  // bed and the office around it start on that first keystroke, at the login
+  // screen, because a room that holds for the whole session was already there
+  // before the operator signed in. What still waits for the hand-over below is
+  // the Watch drone's window, which is an opening rather than a room and would
+  // be spent behind the curtain (`audio/index.ts` carries the full reversal).
+  //
+  // The subscription itself can wait for nothing: the opening `meta` lands
+  // during boot and carries `runs_left`, which the ending cue reads.
   installAudio({
     driver,
     root: must('#app'),
@@ -354,7 +367,10 @@ export async function bootShell(): Promise<void> {
     body,
     desk.frames.map((f) => f.root),
   )
-  openTheEars()
+  // Outside the `door !== null` branch on purpose: on the skip paths
+  // (`?signin=skip`, `navigator.webdriver`) there is no door to await, and a
+  // drone window that never opened would be a cue deleted by a URL parameter.
+  theDeskIsUp()
 
   // 7 — the onboarding walk (x3). Mounted LAST and never awaited: it is an
   // observer over a desk that is already fully playable, it sends no op, and

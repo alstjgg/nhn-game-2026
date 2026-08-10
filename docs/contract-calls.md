@@ -479,9 +479,18 @@ renders them (physical architecture §3.10):
 | `FLAW` `INCIDENT` `PRIORITY_LIST` | `proxy/src/default-prompt.ts` |
 | temperament | `data/scenario/<slug>/temperament.json`; `tools/probe/fixtures/temperament/` holds the probe's prose stand-ins |
 
-The client posts `{call_type, template_version, slots}` and nothing else. Slots
-this tier owns are **ignored** when a client sends them — honouring them would
-let a client rewrite the agent's character.
+The client posts `{call_type, template_version, pack, slots}` and nothing else.
+Slots this tier owns are **ignored** when a client sends them — honouring them
+would let a client rewrite the agent's character.
+
+`pack` is the one thing the client gets to say about those slots, and it is a
+**name, not a value**: it selects which of `default-prompt.ts`'s per-scenario
+entries answers the call. The refusal above is untouched — a client may ask for
+the 멈춘회전문 agent, and cannot author one. An unknown name is served the
+fallback entry rather than a 400, because the two tiers deploy on separate
+triggers and a client can outrun its proxy; `FALLBACK_PACK` carries the full
+argument, and `tests/shared/default-prompt-coverage.test.ts` is what stops the
+fallback from becoming a silent default.
 
 `tools/probe/` supplies slot values from hand-authored suite JSON; in production
 they come from the §6 suppliers — **the contract is the same and only the
@@ -514,6 +523,7 @@ origin: <the deployed Pages origin>          ← checked; a mismatch is 403
 {
   "call_type": "judgment" | "narration" | "reporter",
   "template_version": "v0.4",                // /^v[0-9]+\.[0-9]+$/
+  "pack": "멈춘회전문",                        // datapack slug — picks the default prompt
   "slots": { /* values, not prose — see below */ }
 }
 ```

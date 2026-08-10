@@ -27,9 +27,17 @@
 .bp .mark{fill:none;stroke:var(--seal);stroke-width:1.2;opacity:.75;
   animation:pulseMark 4.5s ease-in-out infinite}
 @keyframes pulseMark{0%,100%{opacity:.25;r:22}50%{opacity:.9;r:30}}
-.bplabel{fill:var(--blueprint);font-weight:400;font-size:var(--fs-11);line-height:1;
-  font-family:var(--mono);letter-spacing:.08em}
-.bplabel.warn{fill:var(--seal);opacity:.85}
+/* x10 (민서, 08-10) — `.bplabel` and `.bplabel.warn` are GONE, not commented
+   out. They skinned the four `<text>` labels the blueprint used to carry, and
+   those labels named the dropped bridge concept rather than the shipped pack
+   (see the `.bp` group's comment in index.html). Nothing in `src/`, `e2e/` or
+   `tests/` referenced the classes; the only surviving copies are in the
+   vendored design file (`docs/design/phase2-ui/desktop.css:76-77`), which is
+   the port SOURCE and stays as it is. A rule that paints a surface the markup
+   no longer has is a claim that the surface exists, so it does not get to
+   stay behind "just in case" — `.bplabel.warn` was also the only `--seal`
+   consumer in the wallpaper, and losing it is the point: the wallpaper is
+   dressing and the red is the case's. Both are recoverable from git. */
 #horizon{position:absolute;left:0;right:0;bottom:0;height:34vh;
   background:linear-gradient(to top,var(--horizon),transparent 70%);
   pointer-events:none}
@@ -214,11 +222,33 @@ body.booting .win{visibility:hidden}
 .win.dragging{transition:none;cursor:grabbing}
 .win.dragging .win-body{pointer-events:none}
 
-.win-tab{position:absolute;top:-23px;left:16px;height:24px;padding:0 var(--space-11);
-  display:flex;align-items:center;font-size:var(--fs-8-5);letter-spacing:.2em;font-weight:600;
-  background:linear-gradient(to bottom,var(--tab-hi),var(--tab-lo));color:var(--txt-3);
-  border:1px solid var(--edge);border-bottom:0;
-  clip-path:polygon(0 100%,4px 0,calc(100% - 4px) 0,100% 100%)}
+/* x10 — THE FILE TAB IS GONE, rule and element in the same round. It was:
+
+     .win-tab{position:absolute;top:-23px;left:16px;height:24px;padding:0 var(--space-11);
+       display:flex;align-items:center;font-size:var(--fs-8-5);letter-spacing:.2em;font-weight:600;
+       background:linear-gradient(to bottom,var(--tab-hi),var(--tab-lo));color:var(--txt-3);
+       border:1px solid var(--edge);border-bottom:0;
+       clip-path:polygon(0 100%,4px 0,calc(100% - 4px) 0,100% 100%)}
+
+   — a clipped trapezoid above each title bar carrying a two-letter code (`LF` ·
+   `AF` · `RP`). 민서 (08-10): 제목 위의 RP · LF · AF 태그를 없애고, 창 위치는
+   그대로 둘 것. The reasoning is in `components/window-frame.ts`.
+
+   POSITIONS ARE UNCHANGED BY CONSTRUCTION, and `top:-23px` is why. The tab was
+   `position:absolute` off `.win`, so it took no part in the window's column
+   flow, and it did not clear itself either: 23 px above a window whose row GAP
+   is 16 means 7 px of it hung over the window ABOVE. Nothing on the desk was
+   sized around it — `shell/layout.ts` has `TOP = 133`, and that number is
+   spelled out there as topbar 71 + taskbar 44 + 18 px of desk margin, with no
+   term for a tab.
+
+   `--tab-hi` / `--tab-lo` stay in `tokens.css`, now unreferenced. That file is a
+   declared palette: an unused palette entry makes no false claim about a surface
+   the way an unused RULE does, and several suites read it expecting the vendored
+   values to stay put.
+
+   This was also the sheet's ONE `clip-path` trapezoid. If a later plate wants
+   the idiom, the polygon above is the one the desk actually used. */
 
 .win-bar{display:flex;align-items:center;gap:var(--space-9);height:45px;
   padding:0 var(--space-6) 0 var(--space-11);

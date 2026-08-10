@@ -3,6 +3,695 @@
 > Single source of truth for mutable project state. Updated freely, any session, any time.
 > Rules live in /CLAUDE.md and do not repeat here. Newest information first.
 
+## Status (2026-08-10) — x10: six change requests on the first minute a judge sees
+
+Six requests from 민서, verified against the code before any of them was taken as
+read, then split into three file-disjoint units and built in parallel in one
+worktree. All six shipped. What follows is the record of the four that turned out
+to be about something other than what they looked like.
+
+**THE ALERT PLATE'S FOOT WAS TALLER THAN ITS HEAD, on all three plate families.**
+`confirm.css` is the shared `.cf-*` template and it is worn by the 배치 확인
+confirmation, the onboarding walk and both endings. The foot was
+11 + 35 + 18 + a 1px rule = **65px** of answer under a **42px** title, with the
+sentence the plate exists for sitting between them: the heaviest band on the plate
+was the one carrying the least. Re-cut to **37px**, five under the head.
+
+**And the first cut of it fixed the BAND and not the BUTTON** — 민서, same day,
+second pass: 버튼 글자를 줄이고 버튼 높이를 낮춰서 하단 영역에 여백이 생기게 하라.
+버튼 안쪽 폭은 너무 넓고 바깥쪽 높이는 여백이 없다. The first cut kept `--fs-9-5` and
+a 24px box, proving the type *could* survive the shorter band, and spent the whole
+saving on the band — so the button was no smaller than before, only its room was.
+Final: 9 + **18** + 9 + 1, same 37px band, with the button 6px shorter, the type at
+`--fs-8-5` (10.2px) and half again the air around it. The type shrink was the risk
+민서 accepted at the first pass and then asked for outright; the first pass's own
+objection to `--fs-8-5` (it is `.cf-note`'s size) is recorded as **overruled**
+rather than quietly reversed — at 700 weight on solid seal red beside a 400-weight
+caption in `--txt-7`, the answer is not the quieter of the two at equal size.
+
+**`min-width` was never what made those buttons wide.** It dropped 88 → 56px, but on
+both one-button plates the per-family `padding:0 var(--space-20)` was doing it: 다음
+is 25px of glyphs and sat in a 68px box with 21px of dead air a side while the floor
+never came near binding. Both inline paddings went 20 → **12px**, measured on the
+built page, and 다음 (25px of glyphs) and 시뮬레이션 시작 (97px) now land within 2px
+of the same optical inset — which is what a fixed padding is supposed to buy and did
+not. The two feet still declare inline padding and nothing else, enumerated in a
+test so neither can fork away from the template by growing a second property.
+
+**THE ONBOARDING IS TWO PLATES AND NEW COPY.** 신규 운영자 안내 → 모의 과정 안내,
+with x5c's middle plate (시뮬레이션 대상 — "the first simulation replays the real
+incident, watch it") and its third (파견과 재시도) both cut outright rather than
+merged. That content is deliberately gone: x8 gave the mechanics to the eight-plate
+coach walk, the first run demonstrates the replay **by being** it, and a briefing
+that announces it in advance spends the only surprise the opening has. What is left
+is the two things a notice has to say before a simulator starts — who the operator
+is (load-bearing: that they do *not* go to the scene, the one fact the desk itself
+cannot show) and that what follows is a rehearsal with a fixed allotment. The
+`n / 2` counter re-counted itself from `MANUAL_STEPS.length` with no edit anywhere.
+`최대 3번까지` is arithmetic, not copy — it is `DEFAULT_TOTAL_RUNS - 1`, and a test
+fails if the allotment moves without the sentence.
+
+**A GUARD DERIVED A LINE WRAP AND GOT IT BACKWARDS — the one real defect x10
+introduced and caught.** The onboarding plate's body is floored at its taller step
+so the single button on it cannot move between the two presses. That floor was
+derived on paper from the type tokens, and the derivation counted step 2's lead as
+two lines on the reasoning that setting `.cf-ask` in `--mono` would wrap it. It does
+not: 21 syllables at 1.2em of 18px is ~454px inside 468px of measure — one wrap away
+from right, wrong side. `min-height:226px` shipped **31px of dead air on both
+plates**, which is the stale `126px` it replaced pointing the other way, on the one
+plate whose whole brief was to move the eye off the furniture and onto the middle
+text. Measured on the built page with the floor lifted: step 1 is 142px, step 2 is
+195px. Floor is 195. The guard is RE-AIMED (C17, logged in `DISCOVERY.md`) to count
+one line and the literal was deliberately **not** inlined, so the sheet still goes
+red when the type tokens move. Standing lesson: a node-env guard can check every
+input to a wrap and never the wrap itself.
+
+**THE WALLPAPER WAS CAPTIONING A CASE THE DESK IS NOT RUNNING.** The `#blueprint`
+SVG carried four `<text>` labels naming a bridge — its name, its scale, its
+contractor, its anchorages and, in the seal's red, its failure — all of it from the
+first scenario concept, while the shipped pack is a tunnel. 민서 named three and
+chose to drop the fourth as well. All four gone, every path, both grid patterns,
+both fills and the pulsing `.mark` circle untouched; `.bplabel` / `.bplabel.warn`
+deleted with them (nothing referenced them, and the one hash baseline that reads
+`shell.css` was already re-aimed to u10's range on 08-04). **Nothing in the suite
+had ever asserted anything about the wallpaper's text — which is exactly how it
+survived a concept change.** `tests/shell/shell-source.test.ts [u3#c9] (f)` now
+holds it, with `(g)` as its teeth against the vendored design file. Scoped to
+`index.html` on purpose: `data/scenario/우는다리/` is a complete, kept, lint-clean
+pack full of that vocabulary and `e2e/fonts.spec.ts` uses 정착부 as a rendering
+sample, so the claim is "the shell markup may not hard-code scenario vocabulary",
+not a repo-wide word ban. Two stale comments naming the dropped concept went with
+it, in `index.html` and in `signin.css` (which called the drawing "the bridge this
+whole simulation is about" — false twice over).
+
+**THE FIRST DEPLOY BLINKS, AND ONLY THE FIRST.** `.btn-deploy.is-cued` alternates
+the control's deactivated `--graphite` and its activated `--seal-2` on a **0.5 s
+whole cycle** — no `alternate`, which would have been a 1 s round trip wearing a
+0.5 s number — with a hard cut over 0.1% so it reads as a signal lamp rather than a
+throb. Background only: geometry on a timer would look like a button being pressed
+by nobody, and the coach layer measures targets off `getBoundingClientRect`. It runs
+only while the mounted page is the live page at index 1 (`pages()` is
+`[cover, ...filed, live]`, so that is the first sitting and nothing after it), and
+the press spends it permanently — before `openConfirm`, so answering 취소 does not
+bring it back. Afterwards the control simply shows what it normally would; 민서's
+ruling, and worth recording that "the activated colour (red)" is this button's
+**hover** colour, not an enabled state — its resting background has always been
+graphite. Three hazards were checked rather than hoped: `base.css` collapses every
+animation to a 1 ms pass landing on the **100%** keyframe, so red is at 100% and a
+reduced-motion operator gets a still red DEPLOY (verified: 0 infinite animations
+running, background `rgb(141,26,32)`); `revealDesk` reads `getAnimations()` on window
+roots without `{subtree:true}` and filters `Infinity` anyway, so the cue cannot hold
+the boot curtain as x3's ring once did; and the walk's only `#btnDeploy` plate opens
+after 21:04 of day 1, by which point the live page is index 2, the control wears
+`next`, and the latch is spent.
+
+**THE CUE'S CYCLE IS 1 s, NOT 0.5 — and there are two cues now.** 민서 read 0.5 s as
+too fast on the built page, so `dzCue` is 1000 ms (500 graphite, 500 red; skewed,
+the longer half would read as what the button *is* and the shorter as a flash, which
+is a different signal). The old number is recorded rather than deleted — "too fast"
+only means something against the number it was too fast for.
+
+And a second mark answers the same kind of gap at the other end of the file: **after
+the cover's reveal lands, one second of silence, then a transparent box with a red
+border blinks around `›`** until the operator presses it. Same 1 s cycle, because a
+desk that blinks at two rates is a desk with two alarms. It is a `::after` box, not
+an `outline` and not a `box-shadow` — and the reason is stronger than "the focus ring
+uses outline": an ANIMATED property outranks every author declaration for the whole
+run, so a cue on any property of the button itself would not merely resemble focus,
+it would *suppress* it. The pseudo-element owns nothing else, so border, background,
+outline and transform all stay with the cascade. `PG_CUE_ARM_MS = 1000` is declared
+apart from the sheet's cycle: same figure, different kind of number, neither derived
+from the other.
+
+Its arm is guarded by `viewing !== 0` **inside** the arm rather than by agreement
+between callers, which matters because `landCover()` has three of them and the third
+is `turn()` mounting a non-cover page — the operator who has already turned the page
+must not be asked to. It also arms on the `motionless()` path, where there is no
+reveal at all: that operator got no beat of motion to say the document had ended, and
+under the same media query the blink degrades to a still mark rather than a flash.
+Its latch is its own, and the direction that bites is the reverse of the obvious one —
+the page turn is what MOUNTS the page the DEPLOY cue lives on, so a shared flag would
+mean following the first hint took the second away.
+
+Verified against the harness rather than assumed: `e2e/fixtures/harness.ts`'s
+`DEFAULT_SEEK_MS = 2000` is an exact multiple of 1000, so frozen captures still land
+on iteration start (0% — graphite, the button's own background) and the tracked shots
+do not record a lit cue. 700/750/1500 would have broken that; the arithmetic is in
+the sheet.
+
+**THE RP / LF / AF TAGS ARE OFF THE WINDOWS.** `.win-tab` was a clipped trapezoid
+23px above each title bar carrying a two-letter code — the initials of the name
+printed directly below it, which is x5's argument against the `ko`/`sub` subtitles
+over again. Element, rule and `WindowDef.tab` all gone; nothing else read the field
+(the taskbar prints `def.en`). 민서 asked for the positions kept, and they are kept
+**by construction**: the rule was `position:absolute;top:-23px`, and the proof it
+reserved no space is that `layout.ts` uses `GAP = 16` between stacked windows, so 7px
+of the tab was hanging *over* the window above it. A layout that had allowed for it
+would have used ≥23. `--tab-hi` / `--tab-lo` are left in `tokens.css`, orphaned on
+purpose: a declared palette entry makes no false claim about a surface the way an
+orphaned rule does.
+
+**The nine tracked reference shots are refreshed, clearing x5's debt with x10's.**
+`shell-desktop-1280x800.png` and `red-thread-overlay.png` were showing the tags —
+and had *also* been stale since x5, still displaying the deleted Korean window
+subtitles and taskbar names. One
+`CAPTURE_BASELINE=1 SHOT_OUT=e2e/reference-shots` pass clears both. `captures.spec.ts`
+pairs names and sizes rather than pixels, so nothing had failed; that is precisely why
+the drift accumulated. Re-verified afterwards in a NORMAL run (11 passed), and the
+per-run `capture-note.md` the refresh drops into the output directory was removed
+rather than committed — it describes a run, not a baseline.
+
+**Also:** the cover types 20% faster (`COVER_MS_PER_CHAR` 45 → 36,
+`COVER_MS_WORD` 130 → 104 — x7 raised these from 22/45 yesterday and overshot; the
+340 ms line pause was ruled correct and is untouched), which takes the whole reveal
+from 22.5 s to **18.7 s**, and the doc comment claiming "roughly a quarter-minute"
+now states the real figure instead of the pre-x7 one. `ECHO` on the cover is set in
+`--mono` — it is a callsign issued by 본부, and the two other surfaces that print it
+as a value were already mono, so this rule was the one place the same string wore
+the serif.
+
+**NO ALERT PLATE IS SET IN 명조 ANY MORE, and the scope was reversed twice in a
+day.** x10 first put only the briefing's lead into `--mono` so it would match the
+prose under it, keeping the serif on the confirmation's question and the endings'
+verdicts on the reading that those are somebody SPEAKING. 민서 overruled the scope:
+명조 leaves the plates entirely. So the face is one declaration on the shared
+`.cf-ask` in `confirm.css`, inherited by all three families, and the briefing's own
+override is **deleted** rather than left equal to the template — a redundant override
+claims the plate needs its own face and goes stale in silence. What the desk now says
+is that every plate is the TERMINAL issuing something; the people speak in the two
+REPORTS bodies and in the feed, and those keep the serif. The lost reading is kept in
+`win-ending.css` on the record, because an ending is the closest thing on this desk to
+someone addressing the operator and giving that up is a real cost.
+
+The guard moved with it and is **stronger** for the re-aim (C17, logged): it used to
+pin the SCOPE — `.man-plate` mono, confirm myeong — so a re-scope had to find and edit
+three per-family assertions and could leave one behind. It now pins the RULE: declared
+exactly once, and no alert sheet may name `--myeong` anywhere. Verified red both ways.
+Comments are stripped before that scan, because all three sheets discuss the face at
+length and a guard reading prose would fire on the reasoning.
+
+**MINING IS HELD WHILE THE PREVIOUS AGENT'S 인수인계 사항 TYPES ITSELF OUT**, and the
+gate has no state of its own. The signal is `SlotBoard.isRevealing()` — literally
+`reveal !== null` — read through the `getSlotBoard()` singleton that `windows/reports.ts`
+already consults for `isLocked()` inside `onMine`. A `<body>` class was rejected on the
+grounds that every precedent for one (`booting`, `signin`, `man-step`) is a *shell*
+module, and a component writing one would be a second copy of a fact the board owns —
+a class nobody removes is a desk where mining never comes back. **Because there is no
+gate variable there is nothing to leak:** `reveal` has one clearer and three exits
+reach it (last character, watchdog, a replaced reveal), and the early-return paths —
+empty file, reduced motion, the determinism gate — leave `reveal === null` by
+construction, so they never gate at all. `aria-disabled` is re-derived from
+`marks + held` in one repaint pass rather than undone, so releasing restores each
+sentence's own state.
+
+**And that reveal now types at 54% of its old duration** — `msPerChar` 11 → **6**,
+`msBetween` 130 → **70**, holding the pause at ~11.7 characters' worth. The pace is a
+PARAMETER, not a fork: `typewriter.ts` bundles the old numbers as `READING_PACE` and
+defaults to them, so `components/report-view.ts` — the other caller — is byte-for-byte
+untouched and the reports still read at the desk's reading pace. Measured on the
+woodari fixtures (42 sentences, median 34 chars): four median sentences 2016 → 1096 ms,
+a real run-03 pick 2104 → 1124 ms. Both totals are pinned to the arithmetic by a guard
+that recomputes them off the fixture, so the note cannot go stale the way the cover's
+"quarter-minute" did. The watchdog is unaffected — it counts frames since the last
+tick, not expected duration.
+
+**THE COVER OPENS ON A DIFFERENT INCIDENT** (민서, 08-10): 18시 38분 ·
+한내시립스포츠돔에서 천장 가운데가 처진다는 신고. The third line is untouched — who
+본부 dispatched is a fact about the agent programme, not about the building. **These two
+lines are the PACK's and nothing checks the agreement**, which is the standing hazard
+now written at the constant: the time has to match `meta.json`'s `start` (the clock's
+own opening) and the place has to match `places.json`, the symptoms, the timeline and
+every line the feed prints. They were changed ahead of the sports-dome pack landing, so
+if the desk clock does not open on 18:38 it is probably this file that is wrong. The
+endings still name 해원터널 (and 갱구, and 341명) — deliberately out of scope, handled by
+the deploy that is landing the pack. **[Closed — that deploy is #230, one entry down. It
+merged before this one, so by the time you read this the endings name the dome. The
+agreement this paragraph asks for holds: `meta.json`'s `start` is 18:38.]**
+
+**THE ROOM IS ALREADY THERE WHEN THE OPERATOR SIGNS IN.** `openTheRoom()` moved off
+`deskReady` and onto the audio `unlock()`, reversing its own recorded ruling that "the
+opening belongs to the desk". **On load there is still silence and nothing fetched** —
+a browser suspends any `AudioContext` built outside a gesture, so "from the first
+painted frame" is not something any layer can be asked for. The first keystroke of the
+15-press card is the gesture, which `sfxKeyTick` already proved works at the door; the
+bed fades in under the card being typed and the sparse office follows. Hanging it off
+the unlock is also what makes both door paths work through ONE code path — the unlock
+is the only moment the door and `?signin=skip` share, so the `boot.ts` call site did
+not have to move.
+
+**The Watch drone stays gated on the desk, and splitting it was the point.** Ten
+seconds beginning at the login screen are gone before the card is typed, so the map's
+`playForMs` window would have silenced the drone instead of shaping it — and
+`advance(0)` can release the first `beat_start` while the door is still up, raising a
+drone under the sign-in plate, which plan-audio §4.4 forbids. `playForMs` is now
+documented as measured from each bed's OWN opening, which is two different moments.
+
+**Ambience bus 0.15 → 0.10 → 0.05, in two passes** (−9.5 dB in total), bus only, no cue
+gain moved — the bed↔office gap §4.4 calls "the whole effect" is bus-invariant.
+`plan-audio.md`'s figures are kept in step (bed **−39.5 LUFS**). 0.10 was still not
+quiet enough on the running desk; 0.05 is where 민서 set it.
+
+**AND THE OFFICE ONE-SHOTS ARE EXPECTED TO BE INAUDIBLE, BY INSTRUCTION.** §4.4's
+tuning history rejected −20.9 dB for the sparse phone/printer/keys as "still reading
+like an empty office", and 0.05 × the office cue's 0.8 puts them at **−28.0 dB — 7 dB
+past that line.** At the 0.10 pass the standing advice was to answer exactly this with
+`office.gain` 0.8 → 1.0 and never with the bus; 민서 was asked and ruled the other way
+("the office.gain is fine"), then took the bus down a second time. So the room is now a
+bed with events in it that may or may not be caught, rather than a room asserting
+itself. That is recorded in `$buses`, in §4.4 and at the assertion holding
+`office.gain` at 0.8, all three saying the same thing: **do not raise it to "restore"
+the one-shots without asking** — the two rejected settings were rejected against a
+different brief. `npm run audio:table` could not be re-run — no `ffprobe` on
+this machine — so one generated line was hand-edited to what the generator emits;
+regenerate on a machine with ffmpeg. Pre-existing and left alone: that generated block
+still claims "Ambience retires 10000 ms after the desk opens", false since
+`deskHolds: true` landed on 08-09, because `tools/audio/build-audio-pack.mjs` does not
+read `deskHolds`.
+
+**RUN LOCAL E2E AS `CI=1`.** One run in this session reported 32 failures that read
+exactly like a regression and were not: `reuseExistingServer: !process.env.CI` had
+silently adopted a concurrent run's server from the sibling `scenario-model` worktree,
+so the suite spent 6.6 minutes asserting against another branch's bundle. The ports
+are hard-coded and shared by every worktree, and the failing direction is not the
+dangerous one — the same mechanism will report GREEN whenever the foreign build
+happens to satisfy the assertions, with the tree under test never compiled. Full
+finding, and the one-command diagnostic, in `DISCOVERY.md`.
+
+Verified on the merged tree: `npm run check` clean · **1759** unit tests (111 files)
+· **224** e2e chromium (4.8 m, `CI=1`) · **7** e2e preview against the real `dist/` ·
+**11** captures re-paired against the refreshed baseline. Screenshot-checked on the
+production build at each step; the nine tracked shots were refreshed twice, once for
+the tab removal and again once the plate type and the cover's incident changed the
+pixels under them.
+Screenshot-checked at nine states on the production build, not the dev server: both
+plates measure head 42 / body 195 / foot 37 / button 24, the confirmation plate the
+same, the wallpaper carries 0 `<text>` nodes, `ECHO` resolves to IBM Plex Mono
+inside a Nanum Myeongjo sentence, the cue's two halves are `rgb(36,42,48)` and
+`rgb(141,26,32)`, and `is-cued` is false after 취소.
+
+**One flake worth adding to the `desk` list, not caused by x10.**
+`tests/assets/no-third-party-url.test.ts` runs a full `vite build` inside a vitest
+`beforeAll` (240 s timeout). It failed to collect on one of four local runs, taking
+its 9 tests with it while the other 1720 passed; the other three runs were clean and
+the file is untouched by x10. That is structurally the same family as the four
+wall-clock-coupled e2e assertions that took the `desk` required check offline on
+08-09 — a unit suite is supposed to be the fast deterministic gate, and this one has
+a production build in it.
+
+## Status (2026-08-10) — the desk plays a different disaster, and the agent it plays against was re-measured
+
+PR #230, merged before x10 above. The scenario-drafting skill and the generation
+guide had stopped tracking the concept several changes ago, so the model was rebuilt
+from scratch without consulting either, a writing brief was derived from it, and one
+pack was authored through that brief and shipped. **`PACK_SLUG` is now 멈춘회전문.**
+
+**THE ORDER OF AUTHORING INVERTED.** Endings → routes → gates → the knowledge each
+gate needs → and the timeline written last, carrying only rows that deliver that
+knowledge. Four things follow. A failure is not where the run stops but where the
+agent's hands stop reaching — the clock keeps running, reports keep arriving, and
+that tail is the next attempt's briefing, which is the only place keys come from. The
+first attempt passes exactly one gate and then fails, because the knowledge the
+remaining edges demand does not exist until the disaster is over, which makes the
+no-intervention default a matter of structure rather than probability. The tally is
+decided by the last node reached. And temperament conditional clauses are **gone** —
+the lock existed to manufacture failure in a scenario that had none of its own, and
+the graph does that job now. The decisions record is `planning/scenario-model.md`;
+the brief is `planning/scenario-writer-brief.md`.
+
+**멈춘회전문.** An air-supported dome under heavy snow: the roof sags, and the people
+inside leave through a revolving door that turns two at a time. The way out and the
+force holding the roof up are the same variable, so opening a door is the same act as
+bringing the roof down. Three gates, two winning routes, three characters, seventeen
+timeline rows, 18:38–21:35, nineteen beats. The ladder, verified against the engine's
+own scorer — monotone, and the floor is the record, not an invention:
+
+    F1  no intervention   207   185 · 21 · 문세라 dies
+    F2  +headcount         57    44 · 12 · 문세라 dies
+    F3  +west sleeve       12     9 ·  3 · 문세라 lives
+    WIN_A +vent restored    0     표기웅 charged, the sign-off investigated
+    WIN_B +north door       0     표기웅 charged, 문세라 fractures an ankle
+
+**TWO GATES ARE MEASURED AND ONE IS NOT, AND THE FAILURE IS ON THE RECORD.** 36 arms,
+360 calls through `tools/probe`, every one pre-registered with an arm diff and a
+placebo. G1: baseline 10/10 on the default, key 10/10 to the non-default, placebo
+10/10 back on the default. G2: baseline 10/10, key moved 7/10, placebo 9/10. Both
+pass their pre-registered drop conditions. **G3 was repaired six times and failed six
+times** — three label rewrites, one addition to world physics, one cost-symmetry
+rewrite, one temperament change — and the baseline never moved. The diagnosis is the
+position, not the wording: at 19:58 opening the emergency door is the correct act, and
+no key gates a correct act. It routes cleanly to `WIN_B`; what the player hands over
+just does not decide it. Records in `planning/dday-mechanism/runs/DOME-*`, failures
+included, and the brief's §5 carries the rules the probes bought.
+
+**THE AGENT WE MEASURED WAS NOT THE AGENT WE DEPLOYED, in two places.** This is the
+part worth carrying forward: gate numbers describe a *prompt*, and they describe the
+*game* only if the game sends that prompt. (1) The three DOME suites carried their own
+`FLAW` · `INCIDENT` · `PRIORITY_LIST`; the proxy shipped four different values
+globally. `default-prompt.ts` had predicted this in its own header — "if a second
+scenario wants a different flaw, this becomes a lookup keyed by pack, and the payload
+has to name the pack" — so `DEFAULT_PROMPTS` is now keyed by slug and `CallRequest`
+carries `pack`. The slug travels as a NAME, never as values: the client may ask for an
+agent and still cannot author one, so the refusal in call contracts §6 is untouched.
+An unknown slug falls back to the incumbent rather than 400ing, because the two tiers
+deploy on separate triggers and a client can outrun its proxy — rejecting would turn
+that window into "every Call 1 fails and every gate takes its default stance". (2) The
+probe fixture ADDRESSES the agent (너는 회선 저쪽이…) and the pack DESCRIBED it
+(요원은…), with `renderTemperament` passing that straight through. The pack now carries
+the fixture's wording and the renderer no longer inserts a blank line under its header,
+which none of the three fixtures have either. **What stops both from rotting is
+`tests/shared/default-prompt-coverage.test.ts`**: it fails when `PACK_SLUG` has no
+entry, and it reads the suite JSON to check each entry still matches the suite that
+measured it, slot for slot. A literal copied into the test would have drifted in
+exactly the silence it exists to break. Wire shape amended in `contract-calls.md`
+§10/§11.
+
+**THE ENDING WAS NOT A ONE-LINE SWITCH, and one constant decided whether the game
+works.** `RESCUE_TOTAL` was 1 — 전구간정상's rescue left 오세라 inside the ninth door.
+Both of this pack's winning routes close on **0** and no run closes on 1, so leaving it
+alone would have made the good ending unreachable: the player wins and sees nothing.
+`TUNNEL_OCCUPANTS` 341 → `SITE_OCCUPANTS` 736. One FACT changed with it: 오세라 walked
+into the tunnel and was never one of its 341, so her death was held out of the crowd
+arithmetic and the plate's two numbers deliberately did not sum; 문세라 is inside the
+dome from the first minute, so here they do. The hold-out mechanism is kept rather than
+inlined — a future pack whose named person stands outside the crowd needs it back
+without a rewrite — and the test says plainly that on this pack that branch is untested
+by construction. **One guard was lost and is recorded as lost:** the old test asserted
+"total 0 is NOT the good ending", which also stood watch over a short or unscored
+ledger reading as a perfect day. Here 0 IS the win, so the two are no longer
+distinguishable at that seam; the real defence was always upstream (`scoreRecord`
+returns null, not 0, when no unit resolved) and the inverted test now says so. Copy
+re-authored for the dome by 민서, three beats and the shared sentence kept.
+
+**AUTHORING TOOLS RELAXED, AND A FROZEN PATH RELEASED.** The graph-first method uses
+neither temperament clauses nor key conditions, and the schemas made all three
+mandatory — so `key_conditions` and `key_examples` left `required` and `clauses.minItems`
+went 1 → 0. Every edit is a WIDENING: nothing changed type, nothing changed shape, and
+전구간정상 and 우는다리 still lint at ERROR 0. That put the work under
+`data/scenario/_schema/`, which the two frozen-input guards hold, so both now release
+it — and the release note separates the two claims that kept it frozen. The freeze's own
+premise died at #110 with the rest. What kept it frozen past that was the second claim,
+that §3.6's grammar was sized so hardening would never need the schemas, and that held
+only for packs authored the way 우는다리 was.
+
+**THE LINT FLAG LIST IS NOT A WORKLIST.** Six FLAGs: three `edge_predicates empty`,
+which is dead wiring (compiled, returned as `nextNode` from `submitStance`, consumed by
+nothing in `src`), and three second-meter-unbound, which is the idiom in every pack
+here. For scale: 멈춘회전문 6, 전구간정상 9, 우는다리 26. This pack is cleaner than what
+already shipped.
+
+**IT DEPLOYED, AND THAT WAS CHECKED RATHER THAN ASSUMED.** All three workflows green on
+the merge commit — CI, Pages, and Proxy deploy, the last of which health-checks the
+stack and then makes a real model call asserting `x-llm-fallback: false`. Live: the page
+title reads 멈춘 회전문, `data/scenario/멈춘회전문/meta.json` serves off the deployed
+base, and `/dday/health` answers `{"ok":true,…"calls":true}` on haiku-4-5. `desk` went
+3-for-3 green across the PR at ~13 min a run, which is NOT evidence its four flaky
+assertions were fixed — they were never touched — and it is still not a required
+context on ruleset 19214918.
+
+**WHAT IS NOT SETTLED.** The probes went over the Anthropic API and the game calls
+Bedrock through the proxy: same model, different serving path and tool-call envelope,
+so the post-deploy call proves the tier answers and does not re-measure the gates.
+10/10 is not p = 1 — ten samples per arm on a pinned model bound a drop condition and
+nothing more. `proxy/events/call.json` still carries no `pack`, so the post-deploy smoke
+exercises the fallback rather than the lookup. And nobody has sat four attempts through;
+the suite plays the pack in a real browser, which is not the same thing. One stale
+sentence above, in x10's wallpaper paragraph: "the shipped pack is a tunnel" was true
+when written and is not now.
+
+## Status (2026-08-09) — the desk gets a room, and it costs 27.6 kB
+
+**The bed is an office now, and it holds.** A real recording of an empty office
+(CC0, Freesound) loops under the desk for the whole session, with one distant
+one-shot — keys, a phone, a printer — sown beneath it every 5–10 s. plan-audio
+§2's "no melodic BGM" survives untouched and is now stated properly: the bar was
+never *quiet*, it is **made of objects**, which a drone fails and a fan passes.
+
+Two new fields carry it, both pure data. `ambience.deskHolds` splits the two
+beds, which want opposite things — the Watch drone still retires at 10 s because
+pressure has to let up, and the room does not, because a room that switches
+itself off after ten seconds was never one. `ambience.sparse` is a timer that
+re-rolls its interval after every play, and it is deliberately **outside
+`TRIGGERS`**: that set is the closed vocabulary of moments the *game* can sound,
+and nothing in the game happens when a phone rings two desks away.
+
+**Measured, not guessed.** Bed asset at -13.5 LUFS → **-30.0 LUFS** out through
+`gain: 1` × the 0.15 ambience bus; the one-shots sit ~10 dB under it, and that
+gap is the whole effect. Every office cue is cut `highpass=150,lowpass=3500` —
+distance, not tone-shaping: a crisp keystroke at this level is
+indistinguishable from the report window typing, which is a cue that carries
+meaning (§2 rule 3).
+
+**+27.6 kB, all of it in the second load wave, and still 0 bytes before the
+first gesture.** The bed itself was free: `amb-office-tone` replaced the
+synthesised `amb-room-tone` at almost exactly its size. Shipping both would have
+put the ambience wave 100 kB over its §6 budget for a file nothing referenced,
+so the synth room tone is retired — `synth.mjs` keeps the generator and
+restoring it is one line in `CUES` plus a rebuild.
+
+`tests/shell/audio-office.test.ts` guards the seam, because this is the 08-08
+lesson's exact shape: the office is armed once at `openTheRoom`, from data only
+the live boot reads, and then does nothing for ten seconds — a browser suite
+would watch it do nothing and pass. A map that fails validation leaves the desk
+**silent** rather than broken, so a typo in `audio-map.json` deletes the whole
+audio layer without breaking a pixel. That is what the suite is for. Write-up:
+[plan-audio.md](./plan-audio.md) §4.4.
+## Status (2026-08-09) — the door is typed in, and the membrane is the mechanic
+
+**The opening screen had one thing on it and that thing was already done.** Both
+fields arrived pre-filled, `저장됨` sat to the right of the mask saying the
+password was remembered, and LOGIN was live on the first frame with its highlight
+sweeping across it every 3.6 s. A judge's first interaction with the game was a
+formality — press the one hot button on a finished form. (민서, 08-09.)
+
+**Now the operator types the card in.** The wells start empty; every press lands
+one character, `OP-2291` and then eight mask glyphs; LOGIN is `disabled` until the
+fifteenth. `저장됨` is gone with the claim it made — a field being entered by hand
+cannot also be a field that was saved.
+
+**WHAT was pressed never reaches WHAT appears, and that is the point rather than a
+concession.** `doorFill(strokes: number)` is the whole state machine and its
+signature is the guard: there is no parameter through which a pressed character
+could travel, so mashing the keyboard still types the terminal's own badge number.
+The membrane (spec-client §3 inv 1) is not merely *survived* at the door, it is
+what the door is *about* — the player's hands are on this desk and their words are
+not in it — which is why this screen can ask for fifteen keystrokes without
+becoming a text field. The readout two beats later shows the pair resolving:
+`사용자 조회 — OP-2291 tester_123 … 확인`.
+
+**Three things the brief did not ask for and the screen could not ship without:**
+
+- **A tap counts as a press.** There is no focused field here to summon a soft
+  keyboard, so on a touch screen `keydown` never fires — a key-only door is a dead
+  end for every phone that opens the deployed site. `pointerdown` on the layer is
+  the same gesture by another instrument, and on a desktop it pays again: the
+  player who reaches for the dead button is taught the mechanic by the character
+  that appears when they press it.
+- **An IME counts too.** Chrome hands `key: 'Process'` for a 두벌식 keystroke on
+  some platforms — one press, no character. A plain "single-character key" rule
+  gives a Korean operator a door that ignores them, on a Korean-language game.
+- **The locked slab had to LOOK locked.** `pointer-events:none` was the whole of
+  the old disabled state. `filter:grayscale(.95) brightness(.58)` drains the same
+  button rather than painting a second one, so the armed state needs no
+  declarations at all — dropping the attribute restores every value already there.
+
+**The one orchestrated beat.** `siArm` fires on the fifteenth press: grey slab →
+over-bright → the seal's resting red, 550 ms, with focus landing on it. Focus is
+also the only announcement this door makes and the only one it owes. The animation
+carries **no fill mode** deliberately — filled, it would pin `filter:none` and
+`transform:none` for the rest of the door's life and `:hover`/`:active`, which are
+nothing but a filter and a transform, would never be seen again.
+
+**Light blue is where the terminal is listening.** `.si-field.is-armed` is one
+class on one row and it moves the label, the well's ring and the caret together.
+The lit colour is `--gauge-2` — the caret's own, and the gauges' — not the seal's
+red: red on this desk means 관인, and a field waiting for a keystroke is an
+instrument that is on, not an alarm. Same argument `coach.css` records for why the
+onboarding mark stopped pulsing.
+
+**A reduced-motion claim was written, tested, found false, and replaced with the
+truth.** The caret is load-bearing for the first time, `base.css` collapses every
+animation to a 1 ms pass, and `siBlink` ends on `opacity:0` — so the sheet gained
+a `@media (prefers-reduced-motion)` restatement. The e2e test for it passed with
+the block **deleted**: `siBlink` is *unfilled*, so opacity falls back to the `.85`
+on `.si-caret` itself and the caret settles STILL rather than dark. That is the
+opposite of `litPulse`, which was `animation … both`. The block is gone; a comment
+records why there is none, and two guards now pin the absence it rests on (the
+blink is unfilled; shown/hidden is `display`, never the opacity the blink uses).
+
+**Verified:** `npm run check` clean · **1692** unit tests (109 files) · the
+chromium e2e lane green · **18** new unit tests (`tests/shell/sign-in.test.ts`,
+node-env: the arithmetic, the key rule, the two removals) · **16** new browser
+tests (`e2e/signin.spec.ts`, the only spec that sees the door — `signInSkipped`
+keys off `navigator.webdriver`, so `?signin=show` is the override). Screenshot-
+verified against the **production** build on `vite preview`, at all five states.
+
+**Two guards were verified red-then-green by breaking the thing they measure** —
+the greyed slab, and the tap path. A third caught a real defect while being
+written: `doorFill(NaN)` returned `armed: null` with two empty lines, because
+`Math.min`/`Math.max` propagate NaN instead of clamping it — a door with no caret,
+no character and no way forward. Unreachable from inside the module, reachable
+through an exported contract that says `number`; `Number.isFinite` is the floor.
+
+## Status (2026-08-09) — the onboarding walk speaks
+
+**The tutorial was a silent red ring and now it is eight plates that say one line
+each.** `x3` shipped the walk as twelve pulses of `.is-lit` with no copy anywhere
+on the screen, on the argument that a coach mark is a product-tour bubble and an
+overlay must not sit on the controls it points at. The argument was sound and it
+lost to the requirement: a window glowing red reads as *something is wrong*, not
+*read this*, and the desk has roughly sixty seconds to carry a judge.
+`shell/coach.ts` + `styles/coach.css` are the plate, a red leader line and a scrim
+holed over the target; `styles/tutorial.css` is deleted. The walk is driven
+entirely by what the operator does — every stopwatch is gone, including the
+eight-second hold on the file and the ten-second ceiling on 해제 — and every plate
+carries a way out of the whole walk. The gating is unchanged:
+`?tutorial=show` / `?tutorial=skip`, off under `navigator.webdriver`, so every e2e
+lane but `e2e/tutorial.spec.ts` still sees no walk at all.
+
+**THE PLATE IS ONE ROW OF CHROME** (x8, 민서 08-09). It was a paper slip with an
+`안내` header band and two worded buttons under a rule — three rows to say one
+line, and none of the furniture carried the lesson. What is left is a single dark
+bar sized to its own sentence: `--mono` at 12.6px in `--txt-hi` on the desk's own
+`--chrome-*` gradient, then `▶▶` outlined to leave the walk, then a red 23×20
+square with a `✓` to take the step. `white-space:nowrap` + `width:max-content`, so
+a long step is a long bar and never a second line (measured: 249px shortest, 412px
+longest, 34px tall in both). The two words survive only as `aria-label`s. `▶▶`
+rather than the requested `⏩` because U+23E9 is emoji-presentation and ignores
+`color` — a colour glyph cannot be the white/grey mark the design asks for.
+
+**THE BUILD PHASE IS UNNARRATED** (x8). Three plates opened this walk and all
+three are cut: the file's head line, the page control, and the commit. Every one
+pointed into the AGENT FILE before the day had started, and the AGENT FILE is the
+one window that now introduces *itself* — x7's cover types its incident brief out
+on arrival, the handover rows materialise one at a time, and the press names the
+agent and then stamps the chop as two beats. A plate narrating a document in the
+middle of performing its own opening is a second voice over the first.
+
+Stated rather than discovered: the operator is no longer told to turn the page or
+to press DEPLOY, and the walk cannot say a word until they have worked out both —
+`simStarted` is chained off the press. The walk is strictly the debrief now. Note
+this branch is still based on pre-x7 `main`, where the cover does *not* type
+itself out, so the silence is more total here than it will be after the re-aim.
+
+**The layer is non-blocking by construction, and that is load-bearing rather
+than polite.** The scrim and the leader are one `pointer-events:none` SVG whose
+hole is cut with `fill-rule:evenodd`, so the target reads at full brightness and
+*every pixel of the desk stays pressable, dimmed or not*. Most plates come down
+when the operator presses the very thing the mark names, so a layer that ate that
+press would deadlock its own walk. `e2e/tutorial.spec.ts (f)`/`(g)` prove the
+press lands in a browser; the source guard proves the declaration it rests on.
+
+**NOTHING INTERRUPTS THE DAY** (민서, 08-09). While the simulation is running the
+operator is reading the LIVE FEED, and the walk does not talk over it. Plates 2
+through 5 hang off a single gate — the day being over with both documents filed —
+and the run of them is a debrief: the REPORTS window, its two columns, and the
+gesture that moves a sentence out of them.
+
+The plate that broke this was the REPORTS one. The flow as first written asked for
+it "when the first REPORTS start coming in", and on this desk that lands mid-shift
+— a live day files seven reports across the day — so the walk raised a plate and
+dimmed the desk in the middle of the one stretch of the game the player is meant
+to be watching, one plate after having told them to watch it. `report` is no
+longer subscribed to at all; the record's own DOM is what says the day produced
+something, which is also the only thing those four plates need to be true.
+
+`e2e/tutorial.spec.ts (m)` is the guard, and it earns its 82 seconds: it arms a
+MutationObserver inside the page, sits through a **full real-time shift**, and
+asserts no plate was mounted at any point while the run phase was live. Sampling
+for a mid-day instant was tried first and is a race — the fixture files its one
+report a few seconds before 21:04, so a polling loop steps straight over the
+window it is trying to measure. Watching cannot miss it, and it proves the
+stronger claim.
+
+**Three defects were found and fixed at the source rather than worked around.**
+
+- **`.pg-turn:not([disabled])` was never a name for 다음 장.** It isolates the
+  forward leaf on the *cover* alone, because that is the one page where 이전 장 is
+  the disabled one; on the agent's page it points at 이전 장, and once a past page
+  exists (U5.3 files one per closed day) **both** leaves are enabled and it
+  resolves to two elements. `windows/agent-file.ts` classes them `pg-prev` /
+  `pg-next`. `pg-turn` stays on both, so all 25 existing e2e call sites and both
+  CSS rules are untouched.
+- **인수인계 사항 was addressed by a STATE, not a name.** `.sect.operable` is
+  what the same section stops being when a past page renders it `filed`.
+  `components/dossier.ts` slugs its sections and the plate points at
+  `[data-sect="handover"]`. 기질 deliberately carries no slug — `[u4#c2]` pins the
+  sealed section's key set to exactly four fields. *(Superseded at the merge: 기질
+  no longer exists. See the re-aim note at the foot of this entry.)*
+- **The mine gate latched on the wrong event.** Mining is *refused* while the day
+  runs (`windows/reports.ts` bails on `board.isLocked()`), so a mid-day click on
+  a sentence seats nothing — and would have raised the 인수인계 plate over an
+  empty section. A keyboard mine raises no click at all, since a sentence is a
+  `role="button"` span. The gate reads the mine's *outcome*, `#w-file .slot.filled`.
+
+**A toast collision was reported here and it is WITHDRAWN.** The branch was cut at
+#218 and the walk was reviewed against that base, where `#toast` was still a
+painted panel centred at 50%/50% — which is where the file-title plate landed
+(x8 has since cut it), so the opening announcement covered what was then the first
+instruction the player ever read. `#coach` was
+raised to 955 to get out from under it. That whole fix was unnecessary: x6b (#221)
+had already taken the toast's visible panel away and left a 1×1 live region, so on
+`main` the collision cannot happen. `main` is merged in (#221 · #222 · #223), the
+z-index is back at **690**, and the ladder claim is asserted rather than commented
+— `tests/shell/tutorial-observer.test.ts` reads `#topbar` / `#threads` / `#manual`
+/ `#signin` / `#grain` / `#confirm` / `#ending` out of their own sheets, and pins
+`#toast` as still being the 1×1 region, so a re-painted toast lands here as a
+failure instead of as an announcement across a plate. The grain falling across the
+plate is deliberate at 690: the mark is furniture on this desk, and a plate the
+film does not touch would read as pasted on from outside the fiction.
+
+**Merging `main` also brought the ending sequence** (`shell/ending.ts`, `#ending`
+at z-index 990) under the walk, and the conflicts in `dossier.ts` (x6 rewrote
+`coverModel` to take no argument) and `index.css` (the new `win-ending.css`
+import) are resolved keeping both sides: main's copy and structure, the branch's
+section slugs.
+
+**Verified:** `npm run check` green · **1677** unit tests · **205** e2e (chromium
+lane — x6b retired two waiting-marker specs, this branch adds one) · 7
+preview-smoke on the real production artefact, load budget included ·
+`e2e/tutorial.spec.ts` **13** tests · the plates walked and screenshotted on both
+the fixture host and `npm run preview`, plus 1280×800 and
+`prefers-reduced-motion`. `is-lit` appears nowhere in the bundle. The re-aim is
+logged in `DISCOVERY.md` per `[u11#c6] (l)`.
+
+**What the three cut plates cost the suite, and how it was paid.** Four tests were
+pinned to them. `(e)` is now an assertion of ABSENCE — it walks the whole build
+phase and proves no plate follows the page turn, none follows the DEPLOY press,
+and none lands on the 배치 확인 modal, which is the only kind of test that proves a
+cut landed. `(f)`, the "scrim does not swallow the press it points at" test, was
+proved on the page-turn plate and is re-aimed onto the MINE, the earliest
+surviving plate that still ends on a press; `(g)` does the same for 해제. `(d)`
+keeps its regression (the old infinite pulse stalling `revealDesk`) but asserts
+the property that is left: the curtain comes up on its own and the desk is
+operable with no plate to guide it.
+
+**Not done, deliberately:** the walk puts no plate on the 배치 확인 modal and does
+not re-show plate 3 if the operator answers 취소 (민서's call). Nothing stalls —
+plate 4 is armed on the simulation starting, so it appears whenever they do
+commit; they simply lose that one hint.
+
+**RE-AIMED ONTO CURRENT MAIN at the merge (08-09), and one claim above is now
+false.** This work was built on `59d87d6`; `main` moved 30 files past it, two of
+them the walk reaches into — `windows/agent-file.ts` (+697) and
+`components/dossier.ts` (+365). `pg-next` and `data-sect` are both this branch's,
+neither exists on `main`, and both re-applied onto the rewritten files without
+conflict. Every anchor still resolves and all 13 tutorial tests pass against the
+merged tree unchanged.
+
+The one conflict that needed a decision was the COVER. This branch slugged its
+three sections (`mission`, `conduct`, `comms`) for three plates x8 then cut, and
+`main` had meanwhile renamed all three and deleted 기질, `SEALED_*` and `CONDUCT`
+outright. `main`'s sections win and the slugs are dropped: a slug is earned by
+being pointed at from outside, and a slug with no caller reads as a contract when
+it is a leftover. `handover` is the only one still earning its keep, which is also
+the only one the walk ever used. The 기질 line in the selector notes above is kept
+as written and marked superseded — the sealed section it reasons about is gone, so
+the reasoning is history rather than a rule.
+
+The verified numbers above are this branch's own and are not restated: the merged
+tree is **1696** unit tests and **224** e2e chromium, both green, and those are the
+figures in the door entry at the top of this file.
+
 ## Status (2026-08-08) — the loop the player operates, and two regressions only the live path could show
 
 **The day now runs hands-off, and the operator's turn is at the close.** Four

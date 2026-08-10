@@ -250,7 +250,7 @@ async function runOnce(): Promise<Run> {
   const guidance = loadGuidance()
   const blocks = createBlockStore()
   const engine = createEngine({ pack, run: 1 })
-  const inner = createComposer({ blocks, reportGuidance: guidance })
+  const inner = createComposer({ blocks, reportGuidance: guidance, pack: PACK_SLUG })
   const recorder = recordingTransport(createFixtureProvider())
 
   let firstGate: GateView | null = null
@@ -327,7 +327,7 @@ export async function composerRig(): Promise<ComposerRig> {
   }
   const store: BlockStore = run.blocks
   return {
-    composer: createComposer({ blocks: store, reportGuidance: run.guidance }),
+    composer: createComposer({ blocks: store, reportGuidance: run.guidance, pack: PACK_SLUG }),
     gateView: run.gateView,
     blockIds: BLOCK_PAIR,
   }

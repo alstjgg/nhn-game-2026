@@ -31,6 +31,14 @@ const REPO = path.resolve(HERE, '../..')
 const OUT = path.join(REPO, 'public/assets/audio')
 const CACHE = path.join(HERE, '.cache')
 
+/**
+ * The day a `license_at` was read from upstream. This is the default; a source
+ * added later carries its own `checked`, because the whole point of the field
+ * is *when* the claim was verified and a shared constant quietly back-dates —
+ * or forward-dates — every entry that did not exist on the day it names.
+ */
+const CHECKED = '2026-08-08'
+
 /* ── where every recording came from ─────────────────────────────────────── */
 
 /**
@@ -44,50 +52,89 @@ const SOURCES = {
     page: 'https://kenney.nl/assets/interface-sounds',
     url: 'https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip',
     zip: true, license: 'CC0-1.0', author: 'Kenney', attribution: null,
+    license_at: "License.txt inside the pack: 'License: (Creative Commons Zero, CC0)'",
   },
   'kenney-impact': {
     page: 'https://kenney.nl/assets/impact-sounds',
     url: 'https://kenney.nl/media/pages/assets/impact-sounds/87b4ddecda-1677589768/kenney_impact-sounds.zip',
     zip: true, license: 'CC0-1.0', author: 'Kenney', attribution: null,
+    license_at: "License.txt inside the pack: 'License: (Creative Commons Zero, CC0)'",
   },
   'oga-paper': {
     page: 'https://opengameart.org/content/various-paper-sound-effects',
     url: 'https://opengameart.org/sites/default/files/',
     files: ['paper_ripped_-_1.mp3', 'paper_sound_-_1.mp3'],
     license: 'CC0-1.0', author: 'Luckius', attribution: null,
+      license_at: "the submission page's own Licenses field reads CC0",
   },
   'oga-typewriter': {
     page: 'https://opengameart.org/content/typewriter-sounds',
     url: 'https://opengameart.org/sites/default/files/',
     files: ['typewriter1.wav', 'typewriter2.wav'],
     license: 'CC0-1.0', author: 'Cassie-OrbitGames', attribution: null,
+      license_at: "the submission page's own Licenses field reads CC0",
   },
   'oga-bookflips': {
     page: 'https://opengameart.org/content/10-book-page-flips',
     url: 'https://opengameart.org/sites/default/files/book_flips_-_starninjas.zip',
     zip: true, license: 'CC0-1.0', author: 'StarNinjas', attribution: null,
+      license_at: "the submission page's own Licenses field reads CC0",
   },
   'oga-100sfx': {
     page: 'https://opengameart.org/content/100-cc0-sfx',
     url: 'https://opengameart.org/sites/default/files/100-CC0-SFX_0.zip',
     zip: true, license: 'CC0-1.0', author: 'rubberduck', attribution: null,
+      license_at: "the submission page's own Licenses field reads CC0",
   },
   'oga-woodmetal': {
     page: 'https://opengameart.org/content/100-cc0-metal-and-wood-sfx',
     url: 'https://opengameart.org/sites/default/files/100-CC0-wood-metal-SFX.zip',
     zip: true, license: 'CC0-1.0', author: 'rubberduck', attribution: null,
+      license_at: "the submission page's own Licenses field reads CC0",
   },
   'commons-ding': {
     page: 'https://commons.wikimedia.org/wiki/File:406243_stubb_typewriter-ding-near-mono.wav',
     url: 'https://upload.wikimedia.org/wikipedia/commons/9/9f/406243_stubb_typewriter-ding-near-mono.wav',
     files: ['406243_stubb_typewriter-ding-near-mono.wav'],
     license: 'CC0-1.0', author: '_stubb', attribution: null, direct: true,
+      license_at: "the file page's licence box: CC0 / Creative Commons Zero, Public Domain Dedication",
   },
   'commons-clock': {
     page: 'https://commons.wikimedia.org/wiki/File:Clock_ticking.ogg',
     url: 'https://upload.wikimedia.org/wikipedia/commons/5/56/Clock_ticking.ogg',
     files: ['Clock_ticking.ogg'],
     license: 'public-domain', author: 'Natalie', attribution: null, direct: true,
+      license_at: "the file page's licence box: Public domain",
+  },
+  // The two office sources. Freesound serves the ORIGINAL wav only to a
+  // signed-in caller, so what these URLs fetch is the site's own `-hq` preview
+  // render (128 kbps MP3) — the highest-quality artefact a build step can get
+  // unattended, and the reason this builder stays runnable on the other
+  // member's laptop with no account. Both uploads are CC0, which the render
+  // inherits. Everything they feed is low-passed at 3.5 kHz or is stationary
+  // fan noise, so the transcode is inaudible where it lands.
+  'freesound-office-tone': {
+    page: 'https://freesound.org/people/richwise/sounds/456207/',
+    url: 'https://cdn.freesound.org/previews/456/456207_1481531-hq.mp3',
+    files: ['456207_1481531-hq.mp3'],
+    license: 'CC0-1.0', author: 'richwise', attribution: null, direct: true,
+    checked: '2026-08-09',
+    license_at: "the sound page's own licence block: 'Creative Commons 0' — "
+      + "'You can copy, modify, distribute and perform the sound, even for commercial "
+      + "purposes, all without asking permission.' The URL fetched is that upload's own "
+      + '-hq preview render, so it carries the upload\'s dedication.',
+  },
+  'freesound-office-events': {
+    page: 'https://freesound.org/people/Fupicat/sounds/534123/',
+    url: 'https://cdn.freesound.org/previews/534/534123_7724198-hq.mp3',
+    files: ['534123_7724198-hq.mp3'],
+    license: 'CC0-1.0', author: 'Fupicat', attribution: null, direct: true,
+    checked: '2026-08-09',
+    license_at: "the sound page's own licence block: 'Creative Commons 0' — "
+      + "'You can copy, modify, distribute and perform the sound, even for commercial "
+      + "purposes, all without asking permission.' The uploader states the sound is "
+      + 'itself composed of CC0 Freesound material. The URL fetched is that upload\'s '
+      + 'own -hq preview render, so it carries the upload\'s dedication.',
   },
 }
 
@@ -217,8 +264,57 @@ const CUES = {
   'stinger': { layers: [{ synth: 'stinger' }] },
 
   /* — ambience: stereo, lazy-loaded, looped — */
-  'amb-room-tone': { layers: [{ synth: 'amb-room-tone' }], ambience: true, loop: true },
+  // NOTE — the synthesised `amb-room-tone` that used to be the desk bed is
+  // retired: `amb-office-tone` below is a real room and does the same job
+  // better. `synth.mjs` keeps the generator, so restoring it is one line here
+  // plus a rebuild. Shipping both put the ambience wave 100 kB over its §6
+  // budget for a file nothing referenced.
   'amb-watch-drone': { layers: [{ synth: 'amb-watch-drone' }], ambience: true, loop: true },
+
+  /* — the office beyond the desk (plan-audio §4.4) — */
+  // A 30 s seamless loop cut out of a 7:52 recording of an empty office, made
+  // to close on itself with the two-layer crossfade trick: layer 1 is 60→90
+  // fading IN over 2 s, layer 2 is the 90→92 that follows it, laid over that
+  // same head fading OUT. The two sum to constant power across the join, and
+  // because layer 2 is the audio that genuinely comes after layer 1's tail, the
+  // wrap from 30 s back to 0 s is continuous rather than merely quiet.
+  //
+  // `volume=24.5dB` is the one level decision made here rather than in the map,
+  // and it is source normalisation, not balance: the recording arrives at -38
+  // LUFS because it is a real room recorded quietly, and the pack's beds are
+  // written at about -13.5 so that `gain: 1` on the ambience bus lands where a
+  // bed belongs. Lifting it here keeps the map's number readable — the
+  // alternative is `gain: 16.8` in balance data, which tells a reader nothing.
+  // Peak after the lift is -2.6 dBFS, so nothing clips.
+  'amb-office-tone': {
+    ambience: true, loop: true,
+    layers: [
+      { src: 'freesound-office-tone/456207_1481531-hq.mp3', filters: 'atrim=60:90,asetpts=PTS-STARTPTS,volume=24.5dB,afade=t=in:st=0:d=2' },
+      { src: 'freesound-office-tone/456207_1481531-hq.mp3', filters: 'atrim=90:92,asetpts=PTS-STARTPTS,volume=24.5dB,afade=t=out:st=0:d=2' },
+    ],
+  },
+  // Five one-shots cut out of a 24 s office loop that is far too busy to lay
+  // down whole — it rings a phone every 6 s. What the desk wants is the same
+  // room heard occasionally, so the events are extracted and re-sown on a
+  // 5–10 s timer (`ambience.sparse`) instead.
+  //
+  // `highpass=150,lowpass=3500` on every one of them is not tone-shaping, it is
+  // DISTANCE: these must read as somebody else's desk across the room. A crisp
+  // keystroke here would be indistinguishable from the report window typing,
+  // which is a cue that carries meaning (plan-audio §2 rule 3).
+  ...Object.fromEntries([
+    ['office-keys-1', [9.90, 10.52]],
+    ['office-keys-2', [21.00, 21.58]],
+    ['office-keys-3', [2.20, 2.78]],
+    ['office-phone', [5.97, 6.97]],
+    ['office-printer', [14.48, 15.10]],
+  ].map(([id, [from, to]]) => [id, {
+    layers: [{
+      src: 'freesound-office-events/534123_7724198-hq.mp3',
+      filters: `atrim=${from}:${to},asetpts=PTS-STARTPTS,highpass=f=150,lowpass=f=3500,`
+        + `afade=t=in:st=0:d=0.02,afade=t=out:st=${(to - from - 0.06).toFixed(2)}:d=0.06`,
+    }],
+  }])),
 }
 
 /* ── fetch + extract ─────────────────────────────────────────────────────── */
@@ -382,6 +478,10 @@ function writeManifest() {
         tool: 'tools/audio/synth.mjs — procedural DSP, deterministic (no model, no recording)',
         prompt: null,
         license: 'generated for this project',
+        license_source:
+          'tools/audio/synth.mjs in this repository — the waveform is computed by our own code, '
+          + 'not returned by a model and not derived from a recording, so no third-party grant applies. '
+          + 'The generator is seeded and byte-reproducible; re-running it reproduces this file.',
         generated: synths,
       })
       continue
@@ -397,6 +497,11 @@ function writeManifest() {
       recipe: 'tools/audio/build-audio-pack.mjs (cut/filter/mix, AAC 48k mono · 96k stereo)',
       prompt: null,
       license: licenses.length === 1 ? licenses[0] : licenses.join(' + '),
+      // Where the claim was READ, per upstream — a licence name with no citation
+      // is the defect this field exists to close.
+      license_source: packs
+        .map((k) => `${SOURCES[k].page} — ${SOURCES[k].license_at} (checked ${SOURCES[k].checked ?? CHECKED})`)
+        .join(' | '),
     })
   }
 

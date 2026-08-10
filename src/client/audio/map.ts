@@ -76,8 +76,36 @@ export interface AudioMap {
   ambience: {
     desk: string | null
     watch: string | null
-    /** How long any bed may play, from unlock. `null` = for the whole session. */
+    /**
+     * How long a bed may play, measured from the moment THAT bed started.
+     * `null` = for the whole session.
+     *
+     * x10 (08-10) — the two anchors parted when the two beds did. The Watch
+     * drone's window opens at the desk, because that is where the drone starts;
+     * the desk bed's (only reachable with `deskHolds` false) runs from the
+     * unlock, because since x10 that is where the room starts. Neither is "from
+     * the desk" for its own sake — each is from its own opening.
+     */
     playForMs: number | null
+    /**
+     * The desk bed ignores `playForMs` and holds for the session.
+     *
+     * The Watch drone still retires on that timer, and `beat_start` is still
+     * gated on it at both ends — the two beds want opposite things. A drone
+     * under a screen the player reads for minutes is pressure that never lets
+     * up; a room the player sits in is the opposite, and it stops being a room
+     * the moment it switches off (plan-audio §4.4).
+     */
+    deskHolds: boolean
+    /**
+     * One-shots sown under the desk bed at a random interval in
+     * `[minMs, maxMs]`, one at a time, never the same cue twice running.
+     *
+     * This is the office beyond the desk. It is deliberately NOT a trigger:
+     * `TRIGGERS` is the closed set of moments the *game* can sound, and nothing
+     * in the game happens when somebody across the room answers a phone.
+     */
+    sparse: { cues: readonly string[]; minMs: number; maxMs: number } | null
   }
   typing: { everyChars: number; cue: string }
 }
@@ -137,6 +165,28 @@ export function validateAudioMap(raw: unknown): { map: AudioMap } | { error: str
     if (id !== null && !cues.has(id)) return { error: `ambience names missing cue "${id}"` }
   }
 
+  let sparse: AudioMap['ambience']['sparse'] = null
+  // Present-but-malformed must refuse, not degrade: a typo here would delete
+  // the whole office silently, which is exactly the failure this validator
+  // exists to make loud. Absent and `null` both mean "no office" and are fine.
+  if (amb.sparse !== undefined && amb.sparse !== null && !isRecord(amb.sparse)) {
+    return { error: 'ambience.sparse is not an object' }
+  }
+  if (isRecord(amb.sparse)) {
+    const list = amb.sparse.cues
+    if (!Array.isArray(list) || !list.every((id) => typeof id === 'string')) {
+      return { error: 'ambience.sparse.cues is not a list of cue ids' }
+    }
+    for (const id of list) {
+      if (!cues.has(id as string)) return { error: `ambience.sparse names missing cue "${id}"` }
+    }
+    const { minMs, maxMs } = amb.sparse
+    if (typeof minMs !== 'number' || typeof maxMs !== 'number' || minMs <= 0 || maxMs < minMs) {
+      return { error: 'ambience.sparse needs 0 < minMs <= maxMs' }
+    }
+    sparse = { cues: list as string[], minMs, maxMs }
+  }
+
   const preload: string[] = []
   if (Array.isArray(raw.preload)) {
     for (const id of raw.preload) {
@@ -166,6 +216,8 @@ export function validateAudioMap(raw: unknown): { map: AudioMap } | { error: str
         desk: bed,
         watch,
         playForMs: typeof amb.playForMs === 'number' ? amb.playForMs : null,
+        deskHolds: amb.deskHolds === true,
+        sparse,
       },
       typing: {
         everyChars: typeof typing.everyChars === 'number' ? Math.max(1, typing.everyChars) : 1,
