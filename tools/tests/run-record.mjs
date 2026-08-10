@@ -437,6 +437,10 @@ describe('A12 — reports are verbatim, never re-derived', () => {
       provider: wrapped.transport,
       store: createMemoryMetaStore(),
       runId: `${PACK}-fixture-r1`,
+      // SHAPED — x14. An empty handover makes no Call 1 at all, so there would
+      // be no stance for the recorder to capture and this would be asserting
+      // over a run that never asked anything.
+      deploy: [{ id: 'b-seed-1', text: '넘겨받은 문장.' }],
     })
     assert.equal(typeof wrapped.calls.stance, 'string')
     assert.notEqual(wrapped.calls.stance.length, 0)
@@ -1028,6 +1032,10 @@ describe('[r1#D] an ok-but-unusable Call 1 is recorded as the default stance', (
       provider: unusableJudgment(),
       store: createMemoryMetaStore(),
       runId: `${PACK}-unusable-r1`,
+      // SHAPED — x14. The defect this guards is in how an ANSWERED-but-unusable
+      // Call 1 is recorded, so the run has to make one; unshaped there is no
+      // judgment call to land unusable and the guard measures nothing.
+      deploy: [{ id: 'b-seed-1', text: '넘겨받은 문장.' }],
     })
 
     const stances = record.beats.map((beat) => beat.stance)

@@ -11,7 +11,7 @@
 //   C — the grammar itself deviated, twice.
 import { describe, it, expect } from 'vitest'
 import { createEngine } from '../../../src/engine/index.ts'
-import { FALLBACK_CALL1_CAUSE } from '../../../src/engine/beat/index.ts'
+import { BASELINE_CALL1_CAUSE, FALLBACK_CALL1_CAUSE } from '../../../src/engine/beat/index.ts'
 import { rig } from './harness.ts'
 import { TRUST_SEED, pack, ev, gate, trustPack } from './fixtures/packs.ts'
 import { attributedRound } from '../../driver/engine-fixtures/pack.ts'
@@ -28,16 +28,29 @@ describe('[#116 B] a Call 1 fallback is visible in the delta journal', () => {
     expect(FALLBACK_CALL1_CAUSE).toBe('fallback:call1')
   })
 
-  it('(b) a submission flagged `fallback` attributes its deltas to fallback:call1', () => {
+  it('(b) a submission whose origin is `fallback` attributes its deltas to fallback:call1', () => {
     const r = rig(trustPack(), { ...TRUST_SEED })
-    r.driver.submitStance({ stance: 'a', utterance: '', fallback: true })
+    r.driver.submitStance({ stance: 'a', utterance: '', origin: 'fallback' })
     expect(causes(r.state)).toEqual([FALLBACK_CALL1_CAUSE, FALLBACK_CALL1_CAUSE])
   })
 
-  it('(c) an unflagged submission of the SAME stance does not — the two are distinguishable', () => {
+  it('(c) an origin-less submission of the SAME stance does not — the two are distinguishable', () => {
     const r = rig(trustPack(), { ...TRUST_SEED })
     r.driver.submitStance({ stance: 'a', utterance: 'u' })
     expect(causes(r.state)).not.toContain(FALLBACK_CALL1_CAUSE)
+  })
+
+  // x14 — the THIRD origin. The same authored default, reached because the
+  // agent was handed nothing rather than because a call failed. Two literals
+  // that shared a prefix would let a reader grepping `fallback:` count these as
+  // failures, and on an empty-handover run that is every gate of the run.
+  it('(f) `baseline` is its own cause, and shares no prefix with the fallback one', () => {
+    const r = rig(trustPack(), { ...TRUST_SEED })
+    r.driver.submitStance({ stance: 'a', utterance: 'u', origin: 'baseline' })
+    expect(BASELINE_CALL1_CAUSE).toBe('baseline:no-handover')
+    expect(causes(r.state)).toEqual([BASELINE_CALL1_CAUSE, BASELINE_CALL1_CAUSE])
+    expect(BASELINE_CALL1_CAUSE.startsWith('fallback:')).toBe(false)
+    expect(FALLBACK_CALL1_CAUSE.startsWith('baseline:')).toBe(false)
   })
 
   it('(d) end-to-end: submitStance(null) and submitStance({stance}) no longer agree', () => {

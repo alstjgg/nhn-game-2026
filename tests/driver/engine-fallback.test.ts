@@ -35,7 +35,7 @@ function fallbacks(events: ViewEvent[]): Extract<ViewEvent, { type: 'fallback' }
 
 describe('[e7#A5] Call 1 fails', () => {
   it('(a) one `fallback{call:1}` lands between the judgment bracket’s two edges', async () => {
-    const events = await drain(makeRig({ transport: failingTransport('judgment') }))
+    const events = await drain(makeRig({ shaped: true, transport: failingTransport('judgment') }))
     expect(shape(events).slice(0, 4)).toEqual([
       'beat_start',
       'waiting:judgment:on',
@@ -46,14 +46,14 @@ describe('[e7#A5] Call 1 fails', () => {
   })
 
   it('(b) the run continues — `step()` still resolves true and the run reaches `run_end`', async () => {
-    const rig = makeRig({ transport: failingTransport('judgment') })
+    const rig = makeRig({ shaped: true, transport: failingTransport('judgment') })
     expect(await rig.driver.step()).toBe(true)
     const events = await drain(rig)
     expect(events.filter((event) => event.type === 'run_end').length).toBe(1)
   })
 
   it('(c) the engine substituted the authored default stance, so no utterance was minted', async () => {
-    const events = await drain(makeRig({ transport: failingTransport('judgment') }))
+    const events = await drain(makeRig({ shaped: true, transport: failingTransport('judgment') }))
     // The `u` channel is minted from Call 1's utterance and from nothing else;
     // a substituted stance carries no line, so the radio row is absent.
     expect(feedLines(events).filter((line) => line.kind === 'radio')).toEqual([])
@@ -64,7 +64,7 @@ describe('[e7#A5] Call 1 fails', () => {
 
 describe('[e7#A5] Call 2 fails', () => {
   it('(a) one `fallback{call:2}` per beat, inside that beat’s narration bracket', async () => {
-    const events = await drain(makeRig({ transport: failingTransport('narration') }))
+    const events = await drain(makeRig({ shaped: true, transport: failingTransport('narration') }))
     expect(fallbacks(events).map((event) => event.call)).toEqual([2, 2])
     const beat = shape(events).slice(0, 9)
     expect(beat).toEqual([
@@ -81,7 +81,7 @@ describe('[e7#A5] Call 2 fails', () => {
   })
 
   it('(b) zero `n`/`q` lines that beat; `event`/`radio`/`symptom` still arrive', async () => {
-    const events = await drain(makeRig({ transport: failingTransport('narration') }))
+    const events = await drain(makeRig({ shaped: true, transport: failingTransport('narration') }))
     const lines = feedLines(events)
     const minted = lines.flatMap((line) => (line.sentence_id ?? '').match(/-([nq])\d+$/) ?? [])
     expect(minted).toEqual([])
@@ -97,7 +97,7 @@ describe('[e7#A5] Call 2 fails', () => {
 
 describe('[e7#A5] Call 3 fails', () => {
   it('(a) one `fallback{call:3}` per round, inside that round’s report bracket', async () => {
-    const events = await drain(makeRig({ pack: twoRounds(), transport: failingTransport('reporter') }))
+    const events = await drain(makeRig({ shaped: true, pack: twoRounds(), transport: failingTransport('reporter') }))
     expect(fallbacks(events).map((event) => event.call)).toEqual([3, 3])
     const tokens = shape(events)
     const at = tokens.indexOf('fallback:3')
@@ -110,14 +110,14 @@ describe('[e7#A5] Call 3 fails', () => {
   })
 
   it('(b) the run continues past a failed round report', async () => {
-    const rig = makeRig({ pack: twoRounds(), transport: failingTransport('reporter') })
+    const rig = makeRig({ shaped: true, pack: twoRounds(), transport: failingTransport('reporter') })
     expect(await rig.driver.step()).toBe(true)
     // Beat 1 closes round 0 and its Call 3 fails; the run must not end there.
     expect(await rig.driver.step()).toBe(true)
   })
 
   it('(c) `facts` are non-empty from the objective log and `report_body` is the substitute', async () => {
-    const events = await drain(makeRig({ transport: failingTransport('reporter') }))
+    const events = await drain(makeRig({ shaped: true, transport: failingTransport('reporter') }))
     const reports = events.flatMap((event) => (event.type === 'report' ? [event] : []))
     expect(reports.length).toBe(1)
     const report = reports[0]
@@ -140,6 +140,7 @@ describe('[e7#A5] Call 3 fails', () => {
   it('(d) the objective log withholds this round’s `inner_note` — it is not Call 3’s prompt', async () => {
     const events = await drain(
       makeRig({
+        shaped: true,
         transport: failingTransport('reporter', 'LLM_TIMEOUT', { judgment: sentinelJudgment() }),
       }),
     )
@@ -163,7 +164,7 @@ describe('[e7#A5] Call 3 fails', () => {
 // and thereby asserted that the model had judged a gate it never judged.
 describe('[#116 D] a call that lands unusable is a fallback too', () => {
   it('(a) a 200 judgment with no `stance` emits fallback{call:1} inside the bracket', async () => {
-    const events = await drain(makeRig({ transport: unusableTransport('judgment', 'stance') }))
+    const events = await drain(makeRig({ shaped: true, transport: unusableTransport('judgment', 'stance') }))
     expect(shape(events).slice(0, 4)).toEqual([
       'beat_start',
       'waiting:judgment:on',
@@ -178,6 +179,7 @@ describe('[#116 D] a call that lands unusable is a fallback too', () => {
   it('(b) the engine got `null` AND the stream said so — the two records agree', async () => {
     const recorder = createRecorder()
     const rig = makeRig({
+      shaped: true,
       transport: unusableTransport('judgment', 'stance'),
       wrapEngine: (engine) => recordEngine(engine, recorder),
     })
@@ -194,14 +196,14 @@ describe('[#116 D] a call that lands unusable is a fallback too', () => {
   })
 
   it('(c) the code is the driver’s own, not a status code borrowed from the wire', async () => {
-    const events = await drain(makeRig({ transport: unusableTransport('judgment', 'stance') }))
+    const events = await drain(makeRig({ shaped: true, transport: unusableTransport('judgment', 'stance') }))
     expect(fallbacks(events).map((event) => event.code)).toEqual([UNUSABLE_PAYLOAD_CODE])
     expect(UNUSABLE_PAYLOAD_CODE).not.toBe('LLM_TIMEOUT')
   })
 
   it('(d) the same holds for Call 2 — one per beat, and no `n`/`q` lines that beat', async () => {
     const events = await drain(
-      makeRig({ transport: unusableTransport('narration', 'timeline_entries') }),
+      makeRig({ shaped: true, transport: unusableTransport('narration', 'timeline_entries') }),
     )
     expect(fallbacks(events).map((event) => event.call)).toEqual([2, 2])
     const minted = feedLines(events).flatMap((line) => (line.sentence_id ?? '').match(/-[nq]\d+$/) ?? [])
@@ -210,7 +212,7 @@ describe('[#116 D] a call that lands unusable is a fallback too', () => {
 
   it('(e) the same holds for Call 3 — the substitute body, not a silent empty report', async () => {
     const events = await drain(
-      makeRig({ transport: unusableTransport('reporter', 'report_body') }),
+      makeRig({ shaped: true, transport: unusableTransport('reporter', 'report_body') }),
     )
     expect(fallbacks(events).map((event) => event.call)).toEqual([3])
     const reports = events.flatMap((event) => (event.type === 'report' ? [event] : []))
@@ -219,12 +221,12 @@ describe('[#116 D] a call that lands unusable is a fallback too', () => {
   })
 
   it('(f) a well-formed run emits none of these — the guard is not firing on success', async () => {
-    const events = await drain(makeRig({ pack: twoRounds() }))
+    const events = await drain(makeRig({ shaped: true, pack: twoRounds() }))
     expect(fallbacks(events)).toEqual([])
   })
 
   it('(g) every `waiting` is still paired when the unusable payload arrives', async () => {
-    const events = await drain(makeRig({ transport: unusableTransport('judgment', 'stance') }))
+    const events = await drain(makeRig({ shaped: true, transport: unusableTransport('judgment', 'stance') }))
     const edges = events.flatMap((e) => (e.type === 'waiting' && e.for === 'judgment' ? [e.active] : []))
     expect(edges).toEqual([true, false])
   })
@@ -232,7 +234,7 @@ describe('[#116 D] a call that lands unusable is a fallback too', () => {
 
 describe('[e7#A5] the bracket survives the failure path (A4 on the fallback path)', () => {
   it('(a) every `waiting` is still paired when every call fails', async () => {
-    const events = await drain(makeRig({ pack: twoRounds(), transport: failingTransport() }))
+    const events = await drain(makeRig({ shaped: true, pack: twoRounds(), transport: failingTransport() }))
     for (const label of ['judgment', 'narration', 'report'] as const) {
       const edges = events.flatMap((e) => (e.type === 'waiting' && e.for === label ? [e.active] : []))
       expect(edges.length).toBeGreaterThan(0)

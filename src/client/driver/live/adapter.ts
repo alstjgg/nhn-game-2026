@@ -355,10 +355,17 @@ export function createLiveAdapter(deps: LiveAdapterDeps): FixtureDriver {
     // the day that just opened holds an empty seat map and an empty deployed
     // set. Left that way `unslot` answers `empty_slot` and a carried sentence
     // can never be released, and `membrane.deployed()` — what Call 1 carries
-    // (`live-driver.ts`, `composer.judgment`) — is empty, so the file the
-    // operator committed never reaches the model at all. The fixture loop has
-    // always replayed the file as real ops (`fixtures/run-loop.ts` `carry()`).
-    // Submitted before `release()`, because `kick()` may step into Call 1.
+    // (`live-driver.ts`, `composer.judgment`) — is empty. Since x14 that is no
+    // longer merely "the committed file does not reach the model": an empty
+    // deployed set means Call 1 is NOT MADE, so a day that lost its mirror
+    // would take every gate's authored default and the operator's file would
+    // have bought them nothing at all. The fixture loop has always replayed the
+    // file as real ops (`fixtures/run-loop.ts` `carry()`).
+    //
+    // Submitted before `release()`, because `kick()` may step into Call 1 —
+    // and under x14 that ordering is decisive rather than merely tidy. A deploy
+    // that landed one step late would find the first gate already resolved to
+    // its baseline, with no call to re-run and nothing to undo it.
     for (const [seat, id] of seats) opened.driver.submit({ op: 'slot', block_id: id, slot: seat })
     opened.driver.submit({ op: 'deploy', blocks: [...deployed] })
     // That submit IS the new day's commit — under one press (W4) the gesture

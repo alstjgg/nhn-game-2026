@@ -58,6 +58,8 @@ import type {
   BeatPack,
   DeltaEntry,
   RoundAssemblerPort,
+  ScheduledGate,
+  StanceOrigin,
   StateCorePort,
 } from './beat/index.ts'
 import { applyEffects, initState, renderSymptoms as renderBeatSymptoms } from './state/index.ts'
@@ -152,6 +154,18 @@ export interface EngineHandle extends Engine {
    * words (U5.2b, §5.2 `judged`); `null` when it carries no `desc`.
    */
   submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null
+  /**
+   * This gate resolves to its authored `default_stance` WITHOUT Call 1 being
+   * made, because the agent was handed nothing to judge with.
+   *
+   * Same return as `submitStance`, and deliberately not a flag on it: `null`
+   * there means a call failed, and the two must stay tellable apart in the run
+   * record (`BASELINE_CALL1_CAUSE`). It takes no argument because the line the
+   * agent speaks is the PACK's — the caller knows the handover was empty and
+   * nothing else, and a client that could pass an utterance here would be a
+   * client that could put words in the agent's mouth.
+   */
+  submitBaseline(): { stance_id: string; desc: string } | null
   applyBeatEffects(): void
   /** `null` ⇒ no `n`/`q` line is minted for this beat. */
   applyNarration(response: NarrationResponse | null): void
@@ -319,6 +333,43 @@ export function createEngine(deps: EngineDeps): EngineHandle {
     return fresh
   }
 
+  /** This beat's gate — the same refusal both ingest points owe their caller. */
+  function gateNowOrThrow(): ScheduledGate & { roundIndex: number | null } {
+    const beat = beatNow()
+    if (beat.gate === null) throw new Error(`beat ${beat.index} carries no gate`)
+    return { ...beat.gate, roundIndex: beat.roundIndex }
+  }
+
+  /**
+   * The one body behind `submitStance` and `submitBaseline`.
+   *
+   * Three things happen here and they happen in one place on purpose: the
+   * round's utterance is remembered for Call 3, the beat driver is told where
+   * the stance came from, and the author's own words for it are handed back.
+   * The three paths differ ONLY in what they pass in — which is the whole
+   * claim, and a second copy of this body would be a way for one of them to
+   * quietly stop being true.
+   */
+  function resolveGate(
+    gate: ScheduledGate & { roundIndex: number | null },
+    stance: string,
+    spoken: string,
+    innerNote: string,
+    origin: StanceOrigin,
+  ): { stance_id: string; desc: string } | null {
+    utterance = spoken
+    if (gate.roundIndex !== null) {
+      roundGates.set(gate.roundIndex, { utterance, inner_note: innerNote })
+    }
+    // The journal is the only place a substituted stance is distinguishable
+    // from a chosen one after the fact — and, since x14, the only place the two
+    // ways of substituting one are distinguishable from each other (§2.1).
+    beats.submitStance({ stance, utterance, origin })
+    // U5.2b — report what was judged, in the author's words (§5.2 `judged`).
+    const judged = gate.stances.find((entry) => entry.id === stance)
+    return judged?.desc !== undefined ? { stance_id: judged.id, desc: judged.desc } : null
+  }
+
   return {
     current(): BeatCursor {
       return beats.current()
@@ -335,25 +386,26 @@ export function createEngine(deps: EngineDeps): EngineHandle {
     snapshot: (): PredicateState => core.port.snapshot(),
 
     submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null {
-      const beat = beatNow()
-      if (beat.gate === null) throw new Error(`beat ${beat.index} carries no gate`)
+      const gate = gateNowOrThrow()
       // §5 recovery: the authored default stance, which `gateView()` does not
       // expose — this is why substituting it has to be the engine's move.
-      const fallback = response === null
-      const stance = fallback ? beat.gate.defaultStance : response.stance
-      utterance = fallback ? '' : response.utterance
-      if (beat.roundIndex !== null) {
-        roundGates.set(beat.roundIndex, {
-          utterance,
-          inner_note: fallback ? '' : response.inner_note,
-        })
-      }
-      // The journal is the only place a substituted stance is distinguishable
-      // from a chosen one after the fact (§2.1's `fallback:call1`).
-      beats.submitStance({ stance, utterance, fallback })
-      // U5.2b — report what was judged, in the author's words (§5.2 `judged`).
-      const judged = beat.gate.stances.find((entry) => entry.id === stance)
-      return judged?.desc !== undefined ? { stance_id: judged.id, desc: judged.desc } : null
+      return response === null
+        ? resolveGate(gate, gate.defaultStance, '', '', 'fallback')
+        : resolveGate(gate, response.stance, response.utterance, response.inner_note, 'model')
+    },
+
+    submitBaseline(): { stance_id: string; desc: string } | null {
+      const gate = gateNowOrThrow()
+      // The SAME authored default as the fallback path above, arrived at for
+      // the opposite reason — nothing was handed over, so there was nothing to
+      // ask about. `baselineUtterance` is never empty (`schedule.ts`), so the
+      // agent still speaks here: an unshaped agent taking the baseline is the
+      // design, an agent that goes silent reads as a broken one.
+      //
+      // No `inner_note`. That slot is the agent's private deliberation and no
+      // deliberation happened — Call 1 was not made. An authored line standing
+      // in for one would be the engine inventing the agent's interior.
+      return resolveGate(gate, gate.defaultStance, gate.baselineUtterance, '', 'baseline')
     },
 
     applyBeatEffects(): void {

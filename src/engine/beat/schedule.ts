@@ -42,6 +42,24 @@ export type ScheduledGate = {
   scene: string
   stances: Stance[]
   defaultStance: string
+  /**
+   * What the agent says at this gate when it was handed nothing — the one line
+   * an UNSHAPED agent speaks, never a model's (see `driver.ts`'s `baseline`
+   * origin).
+   *
+   * Resolved once, here, and never empty. `compileGate` prefers the authored
+   * `baseline_utterance` and falls back to the DEFAULT STANCE'S OWN LABEL,
+   * which is not a degraded substitute: a label is already written in the
+   * agent's 해라체 as the action it takes and the reason it takes it — 멈춘회전문's
+   * G1 `a` opens `달리 볼 까닭이 없으므로`. An agent reasoning from temperament
+   * alone says exactly that, so the authored field is an escape hatch for a
+   * label that reads badly aloud, not the normal path.
+   *
+   * Resolved at BUILD time, unlike `availability` below, because nothing about
+   * it can move during a run: the label and the default are both authored, and
+   * a line that changed between two beats of one run would be a second agent.
+   */
+  baselineUtterance: string
   buckets: OutcomeBucket[]
   edges: CompiledEdge[]
   /**
@@ -117,12 +135,24 @@ export function buildSchedule(timeline: Timeline, gates: Gates): Beat[] {
 }
 
 function compileGate(authored: AuthoredGate): ScheduledGate {
+  const stances = authored.stances.map((stance) => ({
+    id: stance.id,
+    label: stance.label,
+    desc: stance.desc,
+  }))
+  // See `ScheduledGate.baselineUtterance`. The label is looked up rather than
+  // indexed: `default_stance` is a schema pattern (`^[a-z]$`) and nothing
+  // upstream promises it names a stance that exists, so a pack that mis-authors
+  // it gets an empty line here — never a crash, and never another stance's.
+  const authoredBaseline = (authored.baseline_utterance ?? '').trim()
+  const defaultLabel = stances.find((stance) => stance.id === authored.default_stance)?.label ?? ''
   return {
     id: authored.gate,
     question: authored.question,
     scene: authored.scene ?? '',
-    stances: authored.stances.map((stance) => ({ id: stance.id, label: stance.label, desc: stance.desc })),
+    stances,
     defaultStance: authored.default_stance,
+    baselineUtterance: authoredBaseline !== '' ? authoredBaseline : defaultLabel,
     buckets: authored.buckets,
     edges: compileEdges(authored.edge_predicates),
     availability: authored.availability ?? '',

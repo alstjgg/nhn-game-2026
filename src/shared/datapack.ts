@@ -150,6 +150,8 @@ export type Gates = {
       desc: string;
     }>;
     default_stance: string;
+    /** 아무것도 넘겨받지 않은 요원이 이 갈림길에서 하는 말 한 줄. 없으면 default_stance의 label이 그대로 쓰인다 — label은 이미 요원의 해라체로 '무엇을 왜 하는지'를 적고 있어서, 이 칸은 label이 소리 내어 읽기 나쁠 때를 위한 탈출구다 */
+    baseline_utterance?: string | null;
     /** 열쇠는 조건 클래스다(축 × 지목 × 인증 종) — 문장이 아니다 */
     key_conditions?: Array<{
       id: string;

@@ -56,6 +56,16 @@ export interface EnginePort extends Engine {
    * Returns the stance it resolved, in the author's words (U5.2b `judged`).
    */
   submitStance(response: JudgmentResponse | null): { stance_id: string; desc: string } | null
+  /**
+   * This gate takes its authored `default_stance` with NO Call 1 made, because
+   * the player handed the agent nothing. Same return as `submitStance`.
+   *
+   * On the port because the driver is the only tier that can know it: the
+   * membrane's deployed set is a client fact, and the engine cannot see it.
+   * Distinct from `submitStance(null)` so the run record can tell a call that
+   * failed from one that was never owed.
+   */
+  submitBaseline(): { stance_id: string; desc: string } | null
   applyBeatEffects(): void
   /** `null` ⇒ no `n`/`q` line is minted for this beat. */
   applyNarration(response: NarrationResponse | null): void
