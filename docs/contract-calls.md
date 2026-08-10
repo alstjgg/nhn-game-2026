@@ -11,6 +11,17 @@
 > this document fixes them as **executable input/output contracts**. If the two
 > disagree, either this document is wrong or the spec gets amended explicitly —
 > never silently.
+>
+> **On the word "controller".** It appears throughout this document and means
+> **the agent** — the LLM that judges, speaks and reports. It is the agent's
+> pre-DDAY name, from when the fiction placed it as a night controller in a
+> regional situation room. Since prompts `judgment v0.5` / `narration v0.4` /
+> `reporter v0.4` the fiction is 현장 요원 ECHO, dispatched by HQ to a crisis
+> post at the site, and the player is the 운영자 receiving its radio at HQ. The
+> term is left standing here because it names a *seat in the call structure* —
+> "the controller's empty seat" (§3) is the same structural fact under either
+> name — and renaming it across this document, `tools/probe/`, and the engine is
+> a separate change. Read it as "the agent" everywhere.
 
 ## Where the law lives
 
@@ -114,21 +125,37 @@ One call per beat — not one per NPC.
 | Slot | Contents | Why it is needed |
 |---|---|---|
 | `TIMELINE_TAIL` | Tail of the engine timeline — **including the fixed event and controller utterance the engine already rendered** | Context. It is already on screen, so it is not to be written again |
-| `AGENT_UTTERANCE` | Call 1's `utterance` | Names what must not be echoed, and gives the validator its comparison value for detecting re-emission |
+| `AGENT_UTTERANCE` | Call 1's `utterance`, or `(없음 — 이번 비트에 발화는 없었다)` when the agent did not speak | Names what must not be echoed, and gives the validator its comparison value for detecting re-emission. **The empty case is the common one** — the agent speaks on gate beats only, so most beats render the sentinel. The renderer says the silence rather than leaving the label standing over a blank, and the base prompt branches on it. The validator compares against the raw slot value, so the sentinel is never read as an echo |
 | `FIXED_NPC_ACTION` | This beat's fixed NPC action | Not the subject of narration but a **non-contradiction constraint**. Treated as already having happened. ⚠️ **Must not be an event that demands a reply from the controller** — see below |
 | `SCENE_SYMPTOMS` | The engine's delta journal rendered into symptom sentences | The only channel by which state change reaches anything (rule 5) |
-| `PRESENT_NPCS` | List of `{id, name, side}`. `side` is `line` (across the phone line) or `room` (inside the situation room) | Speakers of `npc_lines` may come from here and nowhere else. **`side` is not decoration** — see below |
+| `PRESENT_NPCS` | List of `{id, name, side}`. `side` is `line` (across the phone line) or `room` (beside the agent, at the site's crisis post) | Speakers of `npc_lines` may come from here and nowhere else. **`side` is not decoration** — see below |
 
 ### Output
 
 | # | Field | Type | Meaning |
 |---|---|---|---|
 | 1 | `timeline_entries` | string[] | Reaction and scene description, one sentence per item. **Does not repeat what is already in the timeline** (fixed event, controller utterance) |
-| 2 | `npc_lines` | string[] | `"<npc_id>: <line>"`. Empty array if nobody speaks |
+| 2 | `npc_lines` | string[] | `"<npc_id>: <line>"`. **`maxItems: 1`** — at most one speaker, at most one line, and it may not be a question or a request that needs an answer. Empty array if nobody speaks, which is the common case |
 
 **Why `npc_lines` is a prefixed string:** speaker attribution is required but
 nested objects are banned (rule 2). Same convention as the harness rendering
 blocks as `id: text`.
+
+**Register — 해라체 is the agent's, and the agent's only.** Decided 08-10,
+recorded here because Call 2 is the one call whose output has two speakers and a
+rule stated per-call cannot express that.
+
+| Output | Speaker | Register |
+|---|---|---|
+| `timeline_entries` | the narrator, writing the agent's side of the record | 해라체 — `숨이 가빠졌다.` Not 해체, not 존댓말 |
+| `npc_lines` | the NPC, in their own voice | whatever their relationship to the agent gives them. A caller speaking 존댓말 to the agent is a fact of that seat, not a character choice |
+
+The earlier phrasing — "Call 2, all output, clipped radio 반말" — did not split
+those two, and applied literally it puts 반말 in the mouth of a night duty
+officer twice the agent's age. It also collapses the distinction `PRESENT_NPCS`
+carries in `side`. Read the rule as **who is speaking**, not which call it came
+from: Call 1's `utterance` is the agent, so 해라체; Call 3 is the agent too, but
+filed as a document, so business-formal 존댓말; `npc_lines` is never the agent.
 
 **Validation**
 
@@ -198,7 +225,7 @@ the whole measurement program.
 | # | Field | Type | Meaning |
 |---|---|---|---|
 | 1 | `facts` | string[] | Objective record. Only what actually happened or was observed, one sentence per item |
-| 2 | `report_body` | string | The self-written report (markdown). Where thought and judgment live |
+| 2 | `report_body` | string | The radio situation report (markdown) — dictated over the line to HQ and filed there as a document. Where thought and judgment live. Business-formal 존댓말, as is `facts` |
 
 **Two reasons for this order.** Putting `facts` first makes fact-fixing the
 anchor for writing the body. Putting `report_body` **last** means that under
@@ -286,7 +313,7 @@ is no plan to activate it.
 | 1 | `BLOCKS` | The player — mined from the actual generated text of timeline and reports (W3, I1) |
 | 1 | `GATE_QUESTION` `STANCE_SET` | Scenario, per gate |
 | 2 | `TIMELINE_TAIL` | Tail of the engine timeline |
-| 2 | `AGENT_UTTERANCE` | Call 1's `utterance` this beat, held by the engine. Empty string on a script beat |
+| 2 | `AGENT_UTTERANCE` | Call 1's `utterance` this beat, held by the engine. Empty string on a script beat — which is most beats; the proxy renders it as a sentinel rather than a blank |
 | 2 | `FIXED_NPC_ACTION` `PRESENT_NPCS` | Scenario, per beat |
 | 2 | `SCENE_SYMPTOMS` | Engine per-beat delta journal → symptom renderer |
 | 3 | `EXPERIENCED` | Round event assembler (script + Call 2 output + Call 1 `utterance`/`inner_note`) |

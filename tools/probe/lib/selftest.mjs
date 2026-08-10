@@ -303,8 +303,8 @@ check('PRESENT_NPCS renders grouped by side, with the role rule on the label', (
   const side = { caller_a: 'line', hbr: 'room' };
   s.slots.PRESENT_NPCS = s.slots.PRESENT_NPCS.map((p) => ({ ...p, side: side[p.id] }));
   const { user } = composeArm(s, 'baseline', opts);
-  assert.match(user, /\[회선 너머 — 통제관에게만 말한다\]\ncaller_a/);
-  assert.match(user, /\[상황실 안 — 서로에게만 말한다\. 회선 저쪽에는 말을 걸지 않는다\]\nhbr/);
+  assert.match(user, /\[회선 너머 — 요원에게만 말한다\]\ncaller_a/);
+  assert.match(user, /\[요원 곁 — 서로에게만 말한다\. 회선 저쪽에는 말을 걸지 않는다\]\nhbr/);
 });
 
 check('PRESENT_NPCS without side stays flat — existing suites unaffected', () => {
@@ -358,6 +358,17 @@ check('no nested objects in the narration schema', () => {
     assert.notEqual(s.type, 'object', `${name} is a nested object — banned, see run log A7`);
     if (s.type === 'array') assert.equal(s.items?.type, 'string', `${name} is not an array of scalars`);
   }
+});
+// The ONE mechanical half of the misattribution fix, and until this check the
+// only thing holding it was that nobody deleted the line: removing `maxItems`
+// from either copy left every suite green (proxy, probe, root, bundle) because
+// no test read the schema's constraints and the deploy smoke only ever calls
+// judgment. `npc_lines` is capped by schema on purpose — the prompt asks for one
+// line, and the cap is what makes the model refuse a second rather than us
+// truncating after the fact. See docs/handoffs/feed-register-llm.md §3.3.
+check('npc_lines is capped at one line — the schema refuses overproduction', () => {
+  const props = nspec.buildTool(narrSuite()).input_schema.properties;
+  assert.equal(props.npc_lines.maxItems, 1, 'npc_lines lost its cap');
 });
 
 console.log('reporter validation:');
