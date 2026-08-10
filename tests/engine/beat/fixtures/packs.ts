@@ -37,7 +37,10 @@ export function ev(id: string, time: string, opts: Partial<Ev> = {}): Ev {
     surface: opts.surface ?? 'call',
     place_id: null,
     text: opts.text ?? `${id}-text`,
-    exposure: { visible_from: null, extra_condition: null },
+    // F4 · `exposure.extra_condition` — honoured rather than pinned to null, so
+    // a fixture can author a row that only some branches see. Everything that
+    // does not ask for one still gets the unconditional row it always got.
+    exposure: opts.exposure ?? { visible_from: null, extra_condition: null },
   }
 }
 
@@ -168,6 +171,62 @@ export function availabilityPack(unhardened = false): BeatPack {
       gate('G2', '10:00', { availability: unhardened ? '특정 가지에서만' : 'opened' }),
     ],
   )
+}
+
+// ── F4 · `exposure.extra_condition` — a ROW that only some branches see ─────
+//
+// The gate's sibling, shaped the way the shipped packs actually author it: one
+// gate at 09:00 whose `b` bucket sets `opened`, then a co-timed EXCLUSIVE PAIR
+// at 10:00 — one row for the branch that opened, one for the branch that did
+// not, each naming its own person. Exactly one of them happened on any run.
+//
+// The pair is the whole point. A beat that hands both halves to Call 2 is not
+// merely showing a line too many: `FIXED_NPC_ACTION` is introduced to the model
+// as what has already happened and must not be contradicted, so the two rows
+// arrive as one run in which the branch was both taken and not taken.
+//
+// `unhardened` is the inert case, and it is the same argument `availability`
+// makes: prose in the slot is not a predicate (우는다리's t5 says 현장(관리동)을
+// 들여다본 런에만 보임), so the row must still be shown rather than deleted from
+// every run of a pack nobody hardened.
+export function exposurePack(unhardened = false): BeatPack {
+  const opened = unhardened ? '열린 가지에서만' : 'opened'
+  return pack(
+    [
+      ev('x1', '09:00'),
+      ev('x2', '10:00', {
+        text: 'opened-row',
+        present: [{ char_id: 'c1', side: 'line' }],
+        exposure: { visible_from: null, extra_condition: opened },
+      }),
+      ev('x3', '10:00', {
+        text: 'shut-row',
+        present: [{ char_id: 'c2', side: 'room' }],
+        exposure: { visible_from: null, extra_condition: 'not opened' },
+      }),
+    ],
+    [
+      gate('G1', '09:00', {
+        buckets: [
+          { id: 'shut', stances: ['a'], deltas: {}, flags: {} },
+          { id: 'open', stances: ['b'], deltas: {}, flags: { opened: true } },
+        ],
+      }),
+    ],
+  )
+}
+
+// ── One person, two co-timed rows — the roster must still count one ─────────
+//
+// Both rows are unconditional and both name `c1`; a pack splits a minute like
+// this whenever one person does two things in it. The narration prompt states
+// that at most one person is on the roster, so a second entry for the same
+// character is read at the far end as a second person in the room.
+export function twinRosterPack(): BeatPack {
+  return pack([
+    ev('t1', '09:00', { text: 'first', present: [{ char_id: 'c1', side: 'line' }] }),
+    ev('t2', '09:00', { text: 'second', present: [{ char_id: 'c1', side: 'line' }] }),
+  ])
 }
 
 // ── A5 · null effects ───────────────────────────────────────────────────────

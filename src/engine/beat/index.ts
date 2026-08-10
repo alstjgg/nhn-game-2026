@@ -9,7 +9,7 @@
 export { TIMELINE_CAP_LINES } from './caps.ts'
 export { parseClock } from './clock.ts'
 export { buildSchedule } from './schedule.ts'
-export { createBeatDriver, EVENT_CAUSE_PREFIX, FALLBACK_CALL1_CAUSE } from './driver.ts'
+export { createBeatDriver, eventExposed, EVENT_CAUSE_PREFIX, FALLBACK_CALL1_CAUSE } from './driver.ts'
 export { compileEdges, evaluateEdges } from './predicates.ts'
 export {
   BeatPhaseError,
