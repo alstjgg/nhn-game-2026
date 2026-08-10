@@ -34,7 +34,7 @@ Committer identities (full log):
 | 37 | C9Boom7 `<54443620+C9Boom7@users.noreply.github.com>` |
 | 2 | MinSeo Park `<alstjgg@users.noreply.github.com>` |
 
-Corporate-email flag: **none found** — no `linecorp.com` (or other corporate-domain) addresses appear as author or committer. Notes for the record:
+Corporate-email flag: **none found** — no corporate-domain addresses appear as author or committer. Notes for the record:
 
 - MinSeo Park uses three distinct identities: the `alstjgg` GitHub noreply address in two forms, plus a personal `13579wkd@naver.com` address (39 commits, spanning 2026-07-21 → 2026-08-03). Personal, not corporate, but not the `alstjgg` noreply form the repo rule names.
 - `C9Boom7` is the second personal GitHub account (team member B), also a noreply address.
@@ -64,7 +64,7 @@ Other co-author trailers seen:
 | 27 | `MinSeo Park <26458319+alstjgg@users.noreply.github.com>` | human co-author added by GitHub squash |
 | 5 | `Codex <noreply@openai.com>` | OpenAI Codex-attributed commits (asset/tooling work, 07-23 → 07-25) |
 | 2 | `Claude Agent <agent@example.com>` | placeholder identity, on `179fcf1` and `783246e` |
-| 1 | `USER <user@AL02375929.local>` | machine-local placeholder |
+| 1 | `USER <user@[machine-local]>` | unconfigured machine-local placeholder |
 
 ## 4. Message conventions
 
@@ -140,3 +140,76 @@ Commits per day (full log; first-parent in parentheses). Notes inferred from mes
 | `47e119e` | docs — the proxy has made real Bedrock calls, and the latency budget was wrong — self-correction of an earlier estimate |
 
 No `revert`-subject commits and no explicit live-site hotfix commits exist in this range.
+
+---
+
+## Incremental sweep — implementation phase
+
+Snapshot: **main @ 8b7651f, 2026-08-10** (previous sweep marker `5a3c388`, 2026-08-04). Range: `5a3c388..origin/main`. This section covers only the new commits; the section above is unchanged.
+
+### 1. Overall shape
+
+| View | Commits | Merge commits | Non-merge commits | First commit (commit date) | Last commit |
+|---|---|---|---|---|---|
+| Full log (`git log 5a3c388..origin/main`, incl. merged-branch commits) | 522 | 161 | 361 | 2026-08-03 21:57 | 2026-08-10 18:28 (`8b7651f`) |
+| First-parent view of main (`--first-parent`) | 88 | ~85 | ~3 | same | same |
+
+- The first-parent view is now almost entirely GitHub PR-merge commits: of 161 merges, **118 are `Merge pull request`** (squash/merge via web UI), plus 10 `Merge branch`, 11 `Merge remote`, 2 `Merge origin` (in-branch sync merges). The workflow shifted decisively to one-PR-per-change.
+- PR numbers run to #235; the range spans roughly PR #110 → #235.
+- First-parent earliest commit-date (2026-08-03) predates the `5a3c388` snapshot time (2026-08-04 17:13) because branches created earlier were merged into main after the snapshot.
+
+### 2. Authorship
+
+Author identities (full log):
+
+| Count | Author |
+|---|---|
+| 297 | MinSeo Park `<26458319+alstjgg@users.noreply.github.com>` |
+| 139 | C9Boom7 `<54443620+C9Boom7@users.noreply.github.com>` |
+| 83 | MinSeo Park `<13579wkd@naver.com>` |
+| 3 | MinSeo Park `<yeahimpark@gmail.com>` |
+
+Committer identities (full log): 296 `26458319+alstjgg` noreply · 118 GitHub `<noreply@github.com>` · 106 C9Boom7 · 2 `yeahimpark@gmail.com`.
+
+Corporate-email flag: **none found** — no corporate-domain address as author or committer.
+
+- **NEW identity this sweep:** `MinSeo Park <yeahimpark@gmail.com>` (3 commits: `b5109e6`, `0f2a087`, `19e6a5e`, all 2026-08-04, discovery-consolidation / debug-pane work). Personal Gmail, **not corporate** — but it is a fourth MinSeo Park identity and **not** the `alstjgg` noreply form the repo rule names. Flag for the record.
+- The `alstjgg` noreply form (`26458319+alstjgg@…`) is now dominant (297). The `13579wkd@naver.com` personal address continues (83). The bare `alstjgg@users.noreply.github.com` form seen in the prior sweep does not recur here.
+
+### 3. AI attribution & model variants
+
+- Commits carrying any Claude/Anthropic co-author trailer: **317 of 522** (61%). No non-Claude AI trailers (no Codex/OpenAI) appear in this range. No human co-author trailers appear (the GitHub-squash human-co-author habit dropped off).
+- First-parent view: ~0 trailers — first-parent commits are PR-merge commits; trailers live in the squashed non-merge commits.
+- `[AGENT` markers in commit subjects/bodies: **0** (unchanged convention — that marker lives on PRs).
+
+Per Claude-model variant (per-commit, deduped; sums to 317):
+
+| Count | Trailer identity |
+|---|---|
+| 137 | `Claude Opus 5 <noreply@anthropic.com>` |
+| 116 | `Claude Opus 5 (1M context) <noreply@anthropic.com>` |
+| 61 | `Claude Fable 5 <noreply@anthropic.com>` |
+| 3 | `Claude Sonnet 5 <noreply@anthropic.com>` |
+
+- The implementation phase consolidated onto the **Opus 5 family** (Opus 5 + its 1M-context variant = 253 of 317, 80%), with Fable 5 the secondary. The `Opus 4.8` and `Opus 4.8 (1M)` variants from the prior sweep **do not appear** — the fleet moved up a model generation.
+
+### 4. AI-process markers (super-pipeline)
+
+| Marker | Occurrences (full messages) | Note |
+|---|---|---|
+| `DISCOVERY` | 19 | `docs(discovery):` consolidation + per-unit verify notes; `DISCOVERY.md` protocol |
+| `VERIFY` | 10 | of which `VERIFY attempt N` = 7 (`attempt 1`/`attempt 2` retry loops) |
+| `[u…]` unit references | 94 (bodies) / 3 (subjects) | subjects: `[u2]`,`[u3]`,`[u10]`; bodies cross-cite units like `[u2#c9](p)` in review/discovery text |
+| `run-2026…` run-id stamps | 4 | two runs: `run-20260803-213143`, `run-20260804-000518` (seed chore + branches) |
+| `[run-…]` bracketed | 2 | final-run merge subjects |
+| `STEER` | 2 | steer injections |
+| `[AGENT` | 0 | — |
+| `IMPLEMENT (green)` | 0 | phase tag not used in this range |
+
+- Two super-pipeline runs land here (`super/20260803-213143` via PR #110, `super/20260804-000518` via PR #116), each with unit/extension sub-branches (`-u4s`, `-u7`, `-u8`, `-u11`, `-e7`, `-e9`, `-e10`) and a `review-fix/fix2/…` branch — the decompose → parallel-worktree → review-panel → loop-until-green shape is visible in the branch names.
+- 3 revert commits (`f9b1638`, `8308a30`, `45d69ee`) — scenario/pack/tooling rollbacks, evidence of the verify loop catching regressions.
+
+### 5. Implementation narrative (prose)
+
+This sweep is the phase transition from planning/spec to **building and hardening the selected game, DDAY**. The two super-pipeline runs (Aug 3–5) stand up the engine: the tally/scorer, live-run driver wiring, and the DDAY report/feed surface. From Aug 6 onward the corpus becomes a dense **playtest-and-fix stream** — `playtest(gN-…)` / `playtest(wN)` / `playtest(U5.x)` waves (48 `playtest:` non-merge commits) iterating the desk chrome (two-column REPORTS/feed/AGENT-FILE layout, the `x1`–`x10` UI passes), the reveal-queue/feed pacing, the DEPLOY commit gesture, and audio (BGM room tone, radio cues, silent-wait-loop fixes). A distinct **prompt/scenario track** (Korean-bodied `feat/fix/docs(scenario)` and `fix(prompts)`) authors graph-first scenario packs (멈춘회전문, 전구간정상, 자유주제 cable-car collapse) and tunes the agent's default prompt, roster rules, and 해라체 register — the membrane-safe LLM input. A **proxy/live-AI track** splits default prompts per-pack, wires `bindLiveRun`, and guards build-vs-live-feed and the answer-key-in-published-pack deploy hazard. Threaded through is a **deliverables-mining track** (`docs(deliverables)` Phase 2/3 theme induction, `deliverables/mining` PR #217) — the effort this manifest feeds. Peak activity: 2026-08-08 (172 commits) during the playtest waves.
+

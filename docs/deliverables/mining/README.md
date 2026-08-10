@@ -16,17 +16,19 @@ listed here.
 ## Where the atoms are
 
 This directory carries the **method, the manifests, and the outputs**. It does
-not carry the ore. The ten `atoms-S*.md` files — 905 atoms, the raw extraction
-Phase 1 produced — are frozen at the tag **`mining/ores-20260809`** and were
-removed from the tree there: they are input to the induction, not a deliverable,
-and at ~8,950 lines they buried the documents a reader actually wants.
+not carry the ore. The `atoms-S*.md` files — **1,271 atoms** (905 from the
+planning/demo phase + 364 from the 2026-08-10 implementation sweep) — are frozen
+at the tag **`mining/ores-20260810`** and were removed from the tree there: they
+are input to the induction, not a deliverable, and they buried the documents a
+reader actually wants. (The earlier **`mining/ores-20260809`** tag remains as
+the Phase-1-only 905-atom freeze that Phase 2/3 first induced from.)
 
 Nothing about them is lost. Every theme in `theme-map-passA.md`,
 `theme-map-passB.md`, and `theme-map-final.md` cites atom ids, and any id
 resolves against the tag:
 
 ```bash
-git show mining/ores-20260809:docs/deliverables/mining/atoms-S6.md | grep -A12 'S6-024'
+git show mining/ores-20260810:docs/deliverables/mining/atoms-S6.md | grep -A12 'S6-024'
 ```
 
 Each atom in turn cites its own source — a SHA, a PR number, a document section —
@@ -44,7 +46,7 @@ reintroducing the files here.
 | phase | what | output |
 |---|---|---|
 | 0 | **Corpus map** — enumerate every mining target | `corpus-files.md`, `corpus-commits.md`, `corpus-prs.md` (this snapshot) |
-| 1 | **Atom mining** — parallel agents sweep each slice, extracting story atoms `{source, date, event, tension/decision, quote, lane}`; no selection, boring atoms kept | `atoms-S*.md` per slice — frozen at `mining/ores-20260809`, see above |
+| 1 | **Atom mining** — parallel agents sweep each slice, extracting story atoms `{source, date, event, tension/decision, quote, lane}`; no selection, boring atoms kept | `atoms-S*.md` per slice — frozen at `mining/ores-20260810` (was `-20260809` at Phase-3 close), see above |
 | 2 | **Theme induction** — cluster atoms bottom-up; pre-existing theme hypotheses compete on equal footing and are reported "unevidenced" if nothing attaches; each theme carries supporting atoms, counter-evidence, and gaps | theme map |
 | 3 | **Theme review** — human selects/merges/kills; first moment selection happens | reviewed theme set |
 | 4 | **Story bank** — per theme, a narrative with every claim linked to evidence (SHA / PR # / doc §) | story bank |
@@ -79,8 +81,10 @@ may split, merge, or die as evidence accumulates:
 | S6 | `docs/` (incl. `status.md` history) + planning root-level docs + repo-root prose |
 | S7 | prose inside `data/` and `artifacts/` |
 | S8 | commit history of `main` (see `corpus-commits.md`) |
-| S9 | PR bodies + review threads (see `corpus-prs.md`) |
+| S9 | PR bodies + review threads (see `corpus-prs.md`) — S9a/S9b demo-era, `atoms-S9c.md` implementation-phase (#140+) |
 | S10 | oral history — team-memory accounts of pre-repo / off-repo decisions (see `oral-history.md`); ranks below written sources on conflict, but is the only source for causal ordering of the founding decisions |
+| S11 | implementation build-record — `DISCOVERY.md`, `discovery/` (engine e0–e10, client u0–u11), `planning/prds/` (see `atoms-S11a.md`, `atoms-S11b.md`); added by the 2026-08-10 implementation sweep |
+| S12 | runtime AI in production — `proxy/`, `proxy/prompts/`, live-LLM wiring (see `atoms-S12.md`); added by the 2026-08-10 implementation sweep |
 
 ## Sweep protocol
 
@@ -94,7 +98,16 @@ two largest integration PRs in the corpus. Incremental sweeps mine everything
 merged after the marker timestamp, then advance it — the final sweep happens
 immediately before Phase 5 assembly.
 
+The **2026-08-10 implementation sweep** covered `5a3c388..8b7651f` (PRs #140–#237,
+522 commits) into slices S3–S12, added S11 (build-record) and S12 (runtime AI),
+ran the QA gauntlet, and re-froze the ore as `mining/ores-20260810` (1,271 atoms).
+The theme map was refreshed incrementally in `theme-map-impl-addendum.md`
+(61 attachments + 12 net-new themes T-85–T-96), preserving the 84 reviewed themes.
+
 Known blind spots at the current snapshot:
+- **main has since advanced to `51ca8d0`** — a 26-commit tail (through PR #240,
+  prompt/scenario/feed hardening) landed after the sweep and is unswept; it is
+  for the final pre-Phase-5 sweep;
 - atoms mined 2026-08-04 were captured under an earlier *failure-weighted*
   extraction bias (revised 2026-08-05); successes and impressive AI output may
   be under-sampled until a balancing sweep runs (audited before deciding);

@@ -211,3 +211,175 @@ Snapshot: 2026-08-04, PRs #1–#139 inventoried (139 PRs, no gaps in numbering).
 #110 and #116 are the two run-integration PRs (`20260803-213143`,
 `20260804-000518`) — the densest lane-2 evidence in the corpus. Inline
 review-thread contents remain unswept for all PRs.
+
+## Incremental sweep — implementation phase
+
+Snapshot: **2026-08-10, PRs #140–#237** appended (highest PR #237). 98 PRs
+enumerated with no gaps in the #140–#237 span *as PRs* — the numbers absent
+from a base-`main` listing (#140, #147, #148, #153, #202, #203, #226, #236)
+are stacked PRs whose base is a feature/run branch, not `main`; all are
+captured below. Counts mirror the original manifest: `reviews` = review
+submissions (approve / comment / changes-requested); `comments` = issue-level
+PR comments. **Inline review-thread comment bodies were NOT read** — only their
+per-PR counts were pulled from the API; thread contents remain unswept, same
+caveat as the #1–#139 section.
+
+Phase character has shifted. The #1–#139 corpus was dominated by
+super-pipeline runs (unit PRs on `super/<ts>` bases + `[run-…]` integration
+dashboards). In #140+ that machinery has almost entirely stopped: only **one**
+unit PR survives (#140, a straggler from run `20260803-213143`), there are
+**no** `[run-…]` integration/dashboard PRs and **no** `[STEER]` comment
+surfaces in range. The work is now direct-to-`main` manual/human PRs (a long
+playtest-iteration and UI-polish stream) plus a band of single-agent
+`claude/*` fix sessions. No `[AGENT]` title markers appear in this range
+(the `[u3#c3]` / `[u11]` / `[g1-3-G4]` fragments are unit/PRD tags, not the
+`[AGENT]` author marker).
+
+### PR table — #140–#237
+
+| # | title | author | state | merged | reviews | comments | category |
+|---|---|---|---|---|---|---|---|
+| 140 | [u11] Verify capture-framing seams and reference content (attempt 2) | alstjgg | MERGED | 2026-08-04 | 0 | 0 | unit |
+| 141 | client — bind the desk to the live driver, and point it at the deployed proxy | C9Boom7 | MERGED | 2026-08-05 | 1 | 6 | manual |
+| 142 | Post-merge reconcile — spec-client v3.2, frozen-guard re-aim, PW_HOST gate | alstjgg | MERGED | 2026-08-05 | 1 | 2 | manual |
+| 143 | test(e2e) — encode the u7 ruling, drop the retries, fix the two races they were hiding | alstjgg | MERGED | 2026-08-05 | 1 | 1 | manual |
+| 144 | build: declare the Node floor `import.meta.main` already imposes | C9Boom7 | CLOSED | — | 0 | 2 | manual |
+| 145 | fix(tools) — silent Node floor in the run driver, and the tally-ledger finding on record | alstjgg | MERGED | 2026-08-05 | 1 | 3 | manual |
+| 146 | seam + shared — a scored unit's value may be a word, and something that can read a predicate | C9Boom7 | MERGED | 2026-08-05 | 1 | 1 | manual |
+| 147 | authoring — predicates get a source, a compiler and a lint | C9Boom7 | MERGED | 2026-08-05 | 0 | 1 | manual |
+| 148 | driver — the tally counts: a scorer over the pack, wired in both roots | C9Boom7 | MERGED | 2026-08-05 | 0 | 1 | manual |
+| 149 | docs — playtest triage, and how its items reach a low-cost executor | alstjgg | MERGED | 2026-08-06 | 1 | 7 | manual |
+| 150 | fix(deploy): the deployed build was publishing its own answer key | C9Boom7 | MERGED | 2026-08-06 | 1 | 1 | manual |
+| 151 | docs(meetings): add 07-27 회의록 — 다키스트 던전 컨셉 폐기, 새 방향 모색 | C9Boom7 | MERGED | 2026-08-06 | 1 | 1 | single-agent |
+| 152 | docs(playtest): v7 + group-1 mini-PRDs (g1-1…g1-6) | alstjgg | MERGED | 2026-08-06 | 1 | 0 | manual |
+| 153 | docs(playtest): groups 2–4 non-dependent mini-PRDs (U1 · O1 · O2 · U3 · U5.2b) | alstjgg | MERGED | 2026-08-06 | 2 | 1 | manual |
+| 154 | docs(playtest): carry #153's PRDs to main · v8 · g1-1 stamped for execution | alstjgg | MERGED | 2026-08-07 | 3 | 1 | manual |
+| 155 | docs(prds) — g1-1 amendment: E6 sanctioned-deviation entry; g1-4 stamp flag | alstjgg | MERGED | 2026-08-07 | 1 | 0 | manual |
+| 156 | playtest(G2): fallback lines speak the transmission register | alstjgg | MERGED | 2026-08-07 | 1 | 0 | manual |
+| 157 | docs(playtest) — v9 wave-parallel execution · wave-1 stamps · g1-4 amendment | alstjgg | MERGED | 2026-08-07 | 1 | 0 | manual |
+| 158 | playtest(T2): report_body max_chars 1200 -> 700 | alstjgg | MERGED | 2026-08-07 | 1 | 0 | manual |
+| 159 | [g1-3-G4] Rewrite AGENT FILE §2 body as a person, not a manual | alstjgg | MERGED | 2026-08-07 | 1 | 0 | manual |
+| 160 | playtest(U5.2b): report event carries the judged stance's desc | alstjgg | MERGED | 2026-08-07 | 1 | 0 | manual |
+| 161 | docs(playtest) — v10 citation-order rule · g1-2 E5 corrected to :399 | alstjgg | MERGED | 2026-08-07 | 1 | 1 | manual |
+| 162 | playtest(M2): species tags off the display, data untouched | alstjgg | MERGED | 2026-08-07 | 1 | 0 | manual |
+| 163 | docs(prds) — g1-4 re-stamped at 25f84d3: E7 → :179 | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 164 | playtest(C2-C4): 인수인계 사항 · 교신 지침 · 현장 기록 · 무전 기록 | alstjgg | MERGED | 2026-08-07 | 1 | 0 | manual |
+| 165 | docs(prds) — g1-5 stamped at b22e7e8 · g1-6 author-rows deferred | alstjgg | MERGED | 2026-08-07 | 1 | 0 | manual |
+| 166 | playtest(M1): callsign threads per run — ECHO-n | alstjgg | MERGED | 2026-08-07 | 0 | 2 | manual |
+| 167 | docs(prds) — recover 윤석's g1-5 E4 gate (stranded off #165's merge) | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 168 | docs(playtest) — g2-1 stamped (full-e2e dry-run) · O1/O2 deferred | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 169 | playtest(U1): reveal queue paces the feed downstream of fanout | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 170 | docs — T1 gains its documentation half · block store retired from the specs | C9Boom7 | CLOSED | — | 0 | 0 | manual |
+| 171 | playtest(U1): reveal delay priced by line length at Korean reading speed | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 172 | playtest: report length 300~700 → 100~350자 | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 173 | playtest: the report is a radio SITREP — reporter v0.3, facts cap 3 | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 174 | playtest wave 5: U3 — TALLY dissolves into 현장 기록 and DEPLOY · three feed-timing riders | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 175 | playtest(O1): the door — sign-in, terminal manual, then the desk | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 176 | docs(playtest) — v12: re-audit at fa49be6 · remaining units regrouped by dependency | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 177 | playtest(C2): bound narration volume — 4~5 entries, one sentence each | C9Boom7 | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 178 | playtest(U5.2b+): judged carries cited_ids — the citation, filtered to deployed | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 179 | playtest(O3): three radio cues — WebAudio in place, no assets ship | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 180 | playtest(G3): RUN nn labels become the sitting's callsign — ECHO-n | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 181 | playtest(T1): BLOCK STORE dissolves — a mined sentence in REPORTS is the pick | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 182 | feat(audio): the desk has sound — 34 cues, observer-only, coexisting with O3's radio moments | C9Boom7 | MERGED | 2026-08-07 | 0 | 0 | single-agent |
+| 183 | fix(dday): the feed and the ledger reported different days at the same 21:04 | C9Boom7 | MERGED | 2026-08-07 | 0 | 0 | single-agent |
+| 184 | docs(playtest) — v13: wave B′ — the 08-08 playtest reframes the loop · W1/W3 PRDs | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 185 | fix(e2e): live-feed mirror oracles exempt the minted 집계 line — main is red without it | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 186 | playtest(W1): sessionStorage MetaState resumes only under its own build stamp | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 187 | playtest(W3): a second activation seats the mined sentence — visible affordance, surfaced refusals | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 188 | fix(audio): the wait loop is silent — it had become a backing track | C9Boom7 | MERGED | 2026-08-07 | 0 | 0 | single-agent |
+| 189 | playtest(hotfix): mining is one click · 과거 배치 · the slot card is the sentence | alstjgg | MERGED | 2026-08-07 | 0 | 0 | manual |
+| 190 | playtest(W2): one sitting is one accumulating record — the rail is keyed by run, not by round | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 191 | playtest(W4): one DEPLOY — the close unlocks the file, one press commits it and opens the next day | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 192 | fix(reports): the 현장 기록 marks are painted per line, not per sentence | C9Boom7 | MERGED | 2026-08-08 | 0 | 0 | single-agent |
+| 193 | dev(u9d): the debug pane starts off-screen — `?debug` is what mounts it in view | C9Boom7 | MERGED | 2026-08-08 | 0 | 0 | single-agent |
+| 194 | playtest wave g12 — two live-path regressions, a round break, and the prose T1 left | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 195 | docs — the plan goes back to being a plan; C1 → U5.3 restored to Must | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 196 | fix(u5): the feed follows its tail only while the reader is at it | C9Boom7 | MERGED | 2026-08-08 | 0 | 0 | single-agent |
+| 197 | feat(scenario) — the desk opens on 전구간정상 | alstjgg | MERGED | 2026-08-08 | 0 | 1 | manual |
+| 198 | playtest wave g13 — two columns, a paged file, and a file that cannot be broken by a drag | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 199 | playtest wave g14 — U5.3: the AGENT FILE keeps a page per agent | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 200 | playtest wave g15 — U5.4: the agent's line names the slots that moved it | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 201 | ui(x1) — 1.5× type, a slower door, and the portal stops saying 재난 | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 202 | ui(x2) — DEPLOY asks before it commits | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 203 | ui(x3) — the onboarding walk: twelve marks, once per session | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 204 | fix(shell) — the day stops when the tab does: the sim clock rode a frame callback | C9Boom7 | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 205 | test(shell) — [u3#c3](a) re-aimed: main is red on a guard the pump tripped | C9Boom7 | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 206 | ui — the deploy confirmation and the tutorial, which #201 left behind on their branches | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 207 | fix(reports) — a sitting's tab opens with the day and is signed by its own agent | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 208 | fix(live) — every sentence the desk has shown is minable on any later day | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 209 | ui(x4) — the 집계 becomes record lines, 인수인계 사항 becomes a paragraph, and 호출부호 goes red | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 210 | fix(u5): the feed's tail spacer is bounded by the window, not by a length | C9Boom7 | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 211 | fix: the all-survive run closed on 총 사망자 수 0명 — a unit that is one person now counts as one | C9Boom7 | MERGED | 2026-08-08 | 0 | 1 | single-agent |
+| 212 | ui(x2) — the desk's type at 1.2×, the door at 1.0×, and two labels the chrome over-spelled | C9Boom7 | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 213 | fix(datapack): 오세라의 죽음이 총계에 들어가고, 차우진의 생사가 모든 갈래에서 말해진다 | alstjgg | CLOSED | — | 0 | 0 | manual |
+| 214 | fix(scenario) — 스탠스 라벨이 판단면이다: 무개입 런이 기본값에 앉게 하는 일곱 규칙 | alstjgg | MERGED | 2026-08-08 | 2 | 5 | manual |
+| 215 | ui(x5) — the desk stops explaining itself, and the plates get smaller | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 216 | scenario(전구간정상): the burning truck's driver rides inside the 341, so the crowd counts the other 340 | C9Boom7 | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 217 | docs(deliverables) — deliverable #4, mined bottom-up: 905 atoms → two independent inductions → 82 themes → a nine-section outline | alstjgg | MERGED | 2026-08-09 | 0 | 0 | manual |
+| 218 | fix(client) — the day does not begin until the file is committed | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 219 | ui(x6) — the chrome follows the paper, and the desk stops narrating its waits | alstjgg | MERGED | 2026-08-08 | 0 | 0 | manual |
+| 220 | feat(gate-excerpt) — a gate declares its own window: what was a budget side effect becomes authored | C9Boom7 | OPEN | — | 1 | 1 | manual |
+| 221 | ui(x6b) — the desk stops announcing itself, and main goes green again | alstjgg | MERGED | 2026-08-09 | 0 | 0 | manual |
+| 222 | ui(x6) — the agent file is a posting order, and the agent is who it is issued to | alstjgg | MERGED | 2026-08-09 | 0 | 0 | manual |
+| 223 | feat(client) — the sitting ends, and it ends two ways | alstjgg | MERGED | 2026-08-09 | 0 | 0 | manual |
+| 224 | fix(x6/H3) — the page turns when the day settles, and the press names it | alstjgg | MERGED | 2026-08-09 | 0 | 0 | manual |
+| 225 | fix(ci) — the desk runs in CI, and the press stops depending on an animation | alstjgg | MERGED | 2026-08-09 | 0 | 0 | manual |
+| 226 | docs(#4) — §7 "Utilizing AI" 산출물 본문 | C9Boom7 | MERGED | 2026-08-09 | 0 | 0 | manual |
+| 227 | ui(x9) — the opening asks the player to do something: a typed door, and a walk that speaks | alstjgg | MERGED | 2026-08-09 | 0 | 0 | manual |
+| 228 | docs(assets): every licence claim now cites where it was read | C9Boom7 | MERGED | 2026-08-09 | 0 | 0 | single-agent |
+| 229 | audio: the desk gets a room — an office bed instead of BGM | C9Boom7 | MERGED | 2026-08-09 | 0 | 0 | single-agent |
+| 230 | feat: ship 멈춘회전문 — a graph-first scenario model, the writing brief, and the pack switch | alstjgg | MERGED | 2026-08-09 | 1 | 0 | manual |
+| 231 | x10 — the first minute, answered ten times | alstjgg | MERGED | 2026-08-09 | 0 | 0 | manual |
+| 232 | docs(status) — record the pack switch: 멈춘회전문 is what the desk now plays | alstjgg | MERGED | 2026-08-09 | 0 | 0 | manual |
+| 233 | docs(handoff) — 프롬프트는 다른 게임을 설명하고 있다 | alstjgg | MERGED | 2026-08-09 | 0 | 0 | manual |
+| 234 | fix(prompts) — 요원은 현장에 있고, 상황실에는 아무도 없다 | C9Boom7 | MERGED | 2026-08-10 | 11 | 0 | manual |
+| 235 | docs(handoff) — 발화는 거의 언제나 비어 있다 | alstjgg | MERGED | 2026-08-10 | 1 | 2 | manual |
+| 236 | docs(#4) — §7 "Utilizing AI" 본문을 모델 성능 축으로 다시 쓴다 | C9Boom7 | MERGED | 2026-08-10 | 0 | 0 | manual |
+| 237 | feat(client) — 종이가 스스로 찍히고, 클라이언트가 새 프롬프트를 부른다 | alstjgg | OPEN | — | 0 | 1 | manual |
+
+### Category totals — #140–#237
+
+| category | count | notes |
+|---|---|---|
+| manual/human | 87 | direct-to-`main` playtest iteration, UI polish, docs/PRDs, scenario/data |
+| single-agent | 10 | `claude/*` head branches (#151, #182, #183, #188, #192, #193, #196, #211, #228, #229) |
+| unit | 1 | #140 only — a straggler from run `20260803-213143` |
+| integration-or-dashboard | 0 | no `[run-…]` PRs and no `[STEER]` surfaces in range |
+| **total** | **98** | PRs #140–#237, no numbering gaps |
+
+State split: 93 MERGED, 3 CLOSED-unmerged (#144, #170, #213), 2 OPEN (#220, #237).
+Author split: alstjgg 71, C9Boom7 27.
+
+### Review-thread-rich PRs (Phase-1 S9 targets)
+
+Ranked by reviews + issue-comments (thread bodies unread — counts only).
+This range is far thinner than #1–#139: the top PR here (#234, 11) would rank
+mid-pack in the earlier sweep, and only ~9 PRs clear a total of 3.
+
+| # | title | reviews | comments | total | category |
+|---|---|---|---|---|---|
+| 234 | fix(prompts) — 요원은 현장에 있고, 상황실에는 아무도 없다 | 11 | 0 | 11 | manual |
+| 149 | docs — playtest triage, and how its items reach a low-cost executor | 1 | 7 | 8 | manual |
+| 214 | fix(scenario) — 스탠스 라벨이 판단면이다 (무개입 런 일곱 규칙) | 2 | 5 | 7 | manual |
+| 141 | client — bind the desk to the live driver + deployed proxy | 1 | 6 | 7 | manual |
+| 154 | docs(playtest): carry #153's PRDs to main · v8 · g1-1 stamped | 3 | 1 | 4 | manual |
+| 145 | fix(tools) — silent Node floor + tally-ledger finding | 1 | 3 | 4 | manual |
+| 153 | docs(playtest): groups 2–4 non-dependent mini-PRDs | 2 | 1 | 3 | manual |
+| 235 | docs(handoff) — 발화는 거의 언제나 비어 있다 | 1 | 2 | 3 | manual |
+| 142 | Post-merge reconcile — spec-client v3.2, frozen-guard, PW_HOST gate | 1 | 2 | 3 | manual |
+| 220 | feat(gate-excerpt) — a gate declares its own window (OPEN) | 1 | 1 | 2 | manual |
+| 166 | playtest(M1): callsign threads per run — ECHO-n | 0 | 2 | 2 | manual |
+| 144 | build: declare the Node floor (CLOSED-unmerged) | 0 | 2 | 2 | manual |
+
+The remaining ~86 PRs sit at total ≤ 1 (mostly single-review approve-and-merge
+or bare merges). Highest-value deep-mine targets: **#234, #149, #214, #141,
+#154, #145, #153, #235, #142, #220** (top ten). #234's 11 review submissions
+on a prompt-fix PR is the single densest review event in the range and the
+clearest S9 candidate.
+
+### Sweep marker — implementation phase
+
+Snapshot 2026-08-10, PRs #140–#237 inventoried (98 PRs). Two still OPEN at
+snapshot (#220, #237) — their counts will grow. Inline review-thread bodies
+remain unswept for the entire corpus (#1–#237).
