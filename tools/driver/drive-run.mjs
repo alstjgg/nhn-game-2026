@@ -68,6 +68,11 @@ export async function runHeadless({
   runId,
   providerName,
   policy,
+  // x14 — block ids to place in the agent's hands before the first beat. Empty
+  // is a virgin run, which now takes every gate's authored default with no
+  // Call 1 made at all; a caller whose subject is Call 1 has to name something
+  // here. See `bindRun`.
+  deploy = [],
 }) {
   const runLoop = createRunLoop({ store, packSlug: pack.slug })
   const begun = runLoop.startRun()
@@ -77,7 +82,7 @@ export async function runHeadless({
   // `begun.carried` is not decoration on the record: it is this run's starting
   // block store. Recording a carry-over the run itself does not hold would make
   // `injected_blocks` a claim about a run that never had those blocks.
-  const rig = bindRun({ pack, guidance, provider, run: begun.run, carried: begun.carried })
+  const rig = bindRun({ pack, guidance, provider, run: begun.run, carried: begun.carried, deploy })
   while (await rig.driver.step()) {
     // The driver owns the loop's termination; this is the only place it turns.
   }
