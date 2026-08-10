@@ -111,6 +111,12 @@ const RENDERERS = {
   // TEMPLATE_VERSION bump lands.
   AGENT_UTTERANCE: (v) =>
     String(v ?? '').trim() ? String(v ?? '') : '(없음 — 이번 비트에 발화는 없었다)',
+  // The same hole one slot over — `proxy/src/prompt.ts` carries the account and
+  // the measurement. Mirrored here because `prompt-parity.test.ts` holds the two
+  // renderers to byte identity, which is the only thing keeping the mechanism
+  // numbers describing the deployed system.
+  FIXED_NPC_ACTION: (v) =>
+    String(v ?? '').trim() ? String(v ?? '') : '(없음 — 이번 비트에 기록된 사건은 없다)',
   SCENE_SYMPTOMS: (v) => (Array.isArray(v) && v.length ? v.join('\n') : '(변화 없음)'),
   PRESENT_NPCS: renderNpcs,
   // reporter (contracts doc §3) — one round's events as lines
