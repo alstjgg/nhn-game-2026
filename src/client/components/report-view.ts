@@ -49,7 +49,6 @@ export { TYPE_START, typeCursor }
 /** The pump registration name — one replay at a time, per window. */
 const PUMP = 'reports/typewriter'
 
-
 /* x13 — THE 검인 CHOP IS GONE (민서, 08-10). `ChopState` and `chopDown()` stood
    here: the rule that weighed `sealed` (the day's `score` had landed), `received`
    (the sitting had filed something) and `typed` (the replay had run out), so a
@@ -214,7 +213,6 @@ export function createReportView(options: ReportViewOptions): ReportView {
 
   const docBody = el('article', 'doc doc-body')
   docBody.append(documentHead(BODY_TITLE), body, sig)
-
 
   const grid = el('div', 'rep-grid')
   grid.append(docFacts, docBody)
@@ -428,7 +426,6 @@ export function createReportView(options: ReportViewOptions): ReportView {
     round(): number | null {
       return current === null ? null : current.round
     },
-
 
     brand(callsign: string): void {
       sigLine.textContent = callsign

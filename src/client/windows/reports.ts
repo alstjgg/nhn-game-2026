@@ -254,7 +254,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    */
   const replayed = new Set<string>()
 
-
   function drawDocument(): void {
     if (active === null) return
     // The document being drawn belongs to `active`, so the signature and
