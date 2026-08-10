@@ -481,15 +481,35 @@ test.describe('topbar', () => {
     expect(held.lines, 'the day printed before it was opened (#218)').toBe(0)
     expect(held.digits, 'the held desk shows no opening stamp').toMatch(/^\d{2}:\d{2}$/)
 
-    // (2) The press opens the day. As soon as the paper carries a stamp, the
-    // chrome must be showing that stamp and no other.
+    // (2) The press opens the day, and from here the chrome is FED, never
+    // computed — its digits are a stamp the run handed it.
+    //
+    // RE-AIMED AGAIN (08-10, x14). Equality with the paper's last row was the
+    // right shape only while every feed event drew one. Since x12 the undrawn
+    // kinds — `wait`, `symptom` — are dropped from the paper but still publish
+    // their stamp on the way out (`run-feed.ts`'s `advanceStamp`), which is the
+    // fix for the desk clock freezing on a symptom-only minute. So the chrome
+    // legitimately runs AHEAD of the last drawn row for as long as the run
+    // stays on undrawn lines, and this test failed whenever its read landed in
+    // one of those windows — about one run in four locally, and once in a
+    // 257-test suite that had passed twice before. A timing-shaped failure of
+    // an invariant that had quietly stopped being the invariant.
+    //
+    // What is still true, and is the whole claim, is the direction: the chrome
+    // shows a minute the run has REACHED. It never trails the paper (that would
+    // be a chrome that stopped listening) and it never precedes the run.
     await page.locator('#w-file #btnDeploy').click()
     await confirmDeploy(page)
     await expect.poll(async () => (await chromeVsPaper(page)).lines, { timeout: 30_000 }).toBeGreaterThan(0)
 
+    // Zero-padded `HH:MM` compares lexicographically, and every stamp on this
+    // desk is one — `displayStamp` strips the `+` suffix before it prints.
     const opening = await chromeVsPaper(page)
     expect(opening.digits).toMatch(/^\d{2}:\d{2}$/)
-    expect(opening.digits, 'the top bar is not showing the stamp the fanfold printed').toBe(opening.printed)
+    expect(
+      opening.digits >= opening.printed,
+      `the top bar (${opening.digits}) is behind the fanfold (${opening.printed})`,
+    ).toBe(true)
 
     // (3) …and it keeps following as the day runs — not just on the first line.
     await expect
@@ -497,7 +517,13 @@ test.describe('topbar', () => {
       .not.toBe(opening.printed)
 
     const later = await chromeVsPaper(page)
-    expect(later.digits, 'the chrome drifted off the paper once the day ran').toBe(later.printed)
+    expect(
+      later.digits >= later.printed,
+      `the chrome (${later.digits}) drifted behind the paper (${later.printed}) once the day ran`,
+    ).toBe(true)
+    // It MOVED, which is what "fed" means — a chrome painting its own prefill
+    // forever would satisfy the direction check above and nothing else.
+    expect(later.digits, 'the top bar never advanced past the opening stamp').not.toBe(held.digits)
   })
 
   // RE-AIMED (08-08, W4), never deleted. These two asserted the transport row:
