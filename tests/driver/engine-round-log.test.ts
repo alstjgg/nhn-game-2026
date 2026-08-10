@@ -47,7 +47,12 @@ function echoingProvider() {
 
 async function run(): Promise<{ npcLines: string[]; experienced: string[] }> {
   const transport = spyOn(echoingProvider())
-  const events = await drain(makeRig({ pack: scriptedRound(), transport }))
+  // Shaped, so the gate is asked and its utterance is the ECHOING one above.
+  // Unshaped the gate takes x14's baseline path, whose line comes from the pack
+  // (the default stance's label) — the beat still has a non-empty utterance and
+  // the echo rule still fires, but against a string no npc line here repeats,
+  // so (a) would pass without the rule existing at all.
+  const events = await drain(makeRig({ shaped: true, pack: scriptedRound(), transport }))
 
   const npcLines = events.flatMap((event) =>
     event.type === 'feed' && event.line.kind === 'npc'

@@ -537,6 +537,10 @@ const gates = [];
       question: card.question,
       stances: card.stances,
       default_stance: card.default_stance,
+      // Optional by design, and absent is the normal case — `schedule.ts` falls
+      // back to the default stance's own label, which is already the agent's
+      // 해라체. Authored only where that label reads badly spoken aloud.
+      ...(card.baseline_utterance ? { baseline_utterance: card.baseline_utterance } : {}),
       ...(card.key_conditions ? { key_conditions: card.key_conditions } : {}),
       ...(card.key_examples ? { key_examples: card.key_examples } : {}),
       predicted_shift: card.predicted_shift ?? null,

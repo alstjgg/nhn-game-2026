@@ -37,14 +37,32 @@ import { cloneDeep, windowLines } from './views.ts'
 export type BeatPhase = 'stance' | 'effects' | 'narration' | 'report' | 'done'
 
 /**
+ * WHERE a stance came from — three answers, not two.
+ *
+ * `model` is Call 1 landing. The other two both end in the authored
+ * `default_stance`, and only the engine can produce either, because only the
+ * engine holds that default (spec-engine §5). They are NOT the same event and
+ * the journal may not spell them the same way:
+ *
+ * - `fallback` — Call 1 was asked and did not answer. A failure.
+ * - `baseline` — Call 1 was never asked, because the agent was handed nothing.
+ *   Not a failure: it is the run behaving as every gate's `standard_form`
+ *   already claims it does.
+ *
+ * They were one boolean until x14, which is a shape that cannot say the
+ * difference; a run record that reports an unasked call as a failed one is the
+ * kind of unexplainable outcome architecture spec §2 exists to forbid.
+ */
+export type StanceOrigin = 'model' | 'fallback' | 'baseline'
+
+/**
  * The one field of Call 1's response that has state authority, plus the line.
  *
- * `fallback` is not a fourth field of the response — Call 1 either landed or it
- * did not, and only the engine knows which, because only the engine holds the
- * authored `default_stance` it substitutes (spec-engine §5). It exists so the
- * journal can say so; see `FALLBACK_CALL1_CAUSE`.
+ * `origin` is not a third field of the response — see `StanceOrigin`. It
+ * defaults to `model`, so a caller that simply answers a gate says so by
+ * omission.
  */
-export type StanceSubmission = { stance: string; utterance: string; fallback?: boolean }
+export type StanceSubmission = { stance: string; utterance: string; origin?: StanceOrigin }
 
 /**
  * spec-engine §2.1 · §5 — the `cause` a delta gets when the stance behind it is
@@ -60,6 +78,35 @@ export type StanceSubmission = { stance: string; utterance: string; fallback?: b
  * judged; the run record then asserts a model judgment that never happened.
  */
 export const FALLBACK_CALL1_CAUSE = 'fallback:call1'
+
+/**
+ * spec-engine §2.1 — the `cause` for the same authored `default_stance` when
+ * Call 1 was never asked at all, because the agent was handed nothing.
+ *
+ * Deliberately NOT `FALLBACK_CALL1_CAUSE`. That literal is §5's word for a call
+ * that failed, and reusing it here would put a failure in the run record for
+ * every gate of every empty-handover run — which is most first runs, and is the
+ * one thing the journal exists to be right about. The two strings share no
+ * prefix for the same reason: a reader grepping `fallback:` must not find this.
+ *
+ * What it records is the opposite of a defect: the gate resolved the way every
+ * gate's authored `standard_form` says it must — `아무것도 넘겨받지 않은 요원은
+ * 기본 stance a를 낸다` — by construction rather than by a model agreeing to.
+ */
+export const BASELINE_CALL1_CAUSE = 'baseline:no-handover'
+
+/**
+ * Origin → the fixed `cause` it writes, or `null` for "spell out the stance".
+ *
+ * Total over `StanceOrigin` by type, which is the point: a fourth origin cannot
+ * be added without answering this question, where a chain of `=== 'x'` tests
+ * would have silently attributed it to the model.
+ */
+const ORIGIN_CAUSE: Readonly<Record<StanceOrigin, string | null>> = Object.freeze({
+  model: null,
+  fallback: FALLBACK_CALL1_CAUSE,
+  baseline: BASELINE_CALL1_CAUSE,
+})
 
 /**
  * spec-engine §2.1 — a script event's deltas are attributed `event:<id>`
@@ -266,12 +313,10 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
       // §2.1: `<gates[].gate>:<stances[].id>`. The STANCE, not the bucket — a
       // bucket is a many-to-one collapse, so `G1:ba` cannot say which of the
       // stances sharing it was chosen, and the journal is where that is
-      // recorded for good. §5 outranks the form entirely on the fallback path:
-      // the whole point of that entry is that no model chose the stance.
-      const cause =
-        submission.fallback === true
-          ? FALLBACK_CALL1_CAUSE
-          : `${gate.id}:${submission.stance}`
+      // recorded for good. §5 outranks the form entirely once no model chose:
+      // the whole point of those entries is to say so, and to say WHICH of the
+      // two ways it happened — asked and unanswered, or never asked.
+      const cause = ORIGIN_CAUSE[submission.origin ?? 'model'] ?? `${gate.id}:${submission.stance}`
 
       // §4.1 — the deltas land BEFORE anything reads state for routing.
       state.applyDeltas(bucket.deltas, cause)

@@ -201,16 +201,35 @@ export function createLiveDriver(deps: LiveDriverDeps): LiveDriver {
       emit({ type: 'beat_start', beat: beat.index, clock: beat.clock })
 
       if (beat.kind === 'gate') {
-        const request = composer.judgment(engine.gateView(), membrane.deployed())
+        const blocks = membrane.deployed()
+        // x14 — AN AGENT HANDED NOTHING IS NOT ASKED. Every gate's authored
+        // `standard_form` already claims this outcome — `아무것도 넘겨받지 않은
+        // 요원은 기본 stance a를 낸다` — and nothing made it true: the claim went
+        // to a model as one option among four, and the model reached past it
+        // often enough that G3's stances had to be rewritten to stop it. A run
+        // the player has not touched resolves by construction now, the same way
+        // every time.
+        //
+        // Checked HERE and not in the composer because this is the only place
+        // that can skip a call rather than shape one: `judgment()` is pure, so
+        // a composer that knew would still have to be sent.
+        //
+        // `call()` never runs on this path, so no `fallback` event is minted
+        // and the paper stays clean — an unasked call must not print `※ 회신
+        // 불량`. The engine draws the same distinction in the journal, which is
+        // why this is `submitBaseline()` and not `submitStance(null)`.
+        const unshaped = blocks.length === 0
+        const response = unshaped
+          ? null
+          : await call(1, composer.judgment(engine.gateView(), blocks), readJudgment)
         // U5.2b — the engine resolves chosen-vs-default (§5 recovery is its
         // move); keep its words for the round's report event. U5.2b+ — keep
         // the citation too, filtered to ids the player deployed: the model
         // selects among the player's own blocks and cannot mint an id onto
         // the seam (`because_*` itself stays a banned key family there).
-        const response = await call(1, request, readJudgment)
-        const judged = engine.submitStance(response)
+        const judged = unshaped ? engine.submitBaseline() : engine.submitStance(response)
         if (beat.roundIndex !== null && judged !== null) {
-          const deployed = new Set(membrane.deployed())
+          const deployed = new Set(blocks)
           const citedIds =
             response === null
               ? []
