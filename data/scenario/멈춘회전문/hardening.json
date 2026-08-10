@@ -22,7 +22,13 @@
   "timeline": {
     "t1": {
       "time": "18:38",
-      "text_head": "한내돔 야간 당직 표기",
+      "text_head": "긴급상황대응실 본부로 ",
+      "effects": {},
+      "present": []
+    },
+    "t2": {
+      "time": "18:38+",
+      "text_head": "신고 내용은 천장 가운",
       "effects": {},
       "present": [
         {
@@ -31,48 +37,27 @@
         }
       ]
     },
-    "t2": {
+    "t3": {
       "time": "18:40",
       "text_head": "한내돔 시설대장을 조회",
       "effects": {},
       "present": []
     },
-    "t3": {
-      "time": "18:55",
-      "text_head": "모르는 번호가 들어왔습",
-      "effects": {},
-      "present": [
-        {
-          "char_id": "c2",
-          "side": "line"
-        }
-      ]
-    },
     "t4": {
-      "time": "19:26",
-      "text_head": "표기웅에게 안에 몇 명",
+      "time": "18:40+",
+      "text_head": "한내돔은 공기 압력으로",
       "effects": {},
-      "present": [
-        {
-          "char_id": "c1",
-          "side": "line"
-        }
-      ]
+      "present": []
     },
     "t5": {
-      "time": "19:33",
-      "text_head": "문세라가 다시 걸어 왔",
+      "time": "18:55",
+      "text_head": "한내돔 내부에서 추가 ",
       "effects": {},
-      "present": [
-        {
-          "char_id": "c2",
-          "side": "line"
-        }
-      ]
+      "present": []
     },
     "t6": {
-      "time": "19:47",
-      "text_head": "문세라가 서쪽에서 소리",
+      "time": "18:55+",
+      "text_head": "아이들 12명과 함께 ",
       "effects": {},
       "present": [
         {
@@ -82,19 +67,14 @@
       ]
     },
     "t7": {
-      "time": "19:52",
-      "text_head": "전 정비기사 하도경과 ",
+      "time": "19:26",
+      "text_head": "재시도 끝에 최초 신고",
       "effects": {},
-      "present": [
-        {
-          "char_id": "c3",
-          "side": "line"
-        }
-      ]
+      "present": []
     },
     "t8": {
-      "time": "19:55",
-      "text_head": "표기웅에게 북측 비상 ",
+      "time": "19:26",
+      "text_head": "한내돔 내부에 사람이 ",
       "effects": {},
       "present": [
         {
@@ -104,8 +84,31 @@
       ]
     },
     "t9": {
-      "time": "20:04",
-      "text_head": "문세라가 천장 가운데가",
+      "time": "19:26",
+      "text_head": "송풍기 두 대가 정상 ",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    "t10": {
+      "time": "19:26+",
+      "text_head": "내부 상황 파악을 위해",
+      "effects": {},
+      "present": []
+    },
+    "t11": {
+      "time": "19:33",
+      "text_head": "문세라 측에서 추가 제",
+      "effects": {},
+      "present": []
+    },
+    "t12": {
+      "time": "19:33",
+      "text_head": "줄 앞뒤로 자기 팀이 ",
       "effects": {},
       "present": [
         {
@@ -114,9 +117,38 @@
         }
       ]
     },
-    "t10": {
-      "time": "20:05",
-      "text_head": "하도경이 늦게 회신했습",
+    "t13": {
+      "time": "19:33+",
+      "text_head": "내부 상황 파악을 위해",
+      "effects": {},
+      "present": []
+    },
+    "t14": {
+      "time": "19:47",
+      "text_head": "문세라가 서쪽에서 큰 ",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t15": {
+      "time": "19:48",
+      "text_head": "도면을 조회했다. 그 ",
+      "effects": {},
+      "present": []
+    },
+    "t16": {
+      "time": "19:52",
+      "text_head": "한내돔 막구조 전 정비",
+      "effects": {},
+      "present": []
+    },
+    "t17": {
+      "time": "19:52",
+      "text_head": "송풍기 두 대가 정상 ",
       "effects": {},
       "present": [
         {
@@ -125,59 +157,140 @@
         }
       ]
     },
-    "t11": {
-      "time": "20:05",
-      "text_head": "문세라가 서쪽 슬리브로",
+    "t18": {
+      "time": "19:52+",
+      "text_head": "추가로, 지금 한내돔은",
       "effects": {},
       "present": [
         {
-          "char_id": "c2",
+          "char_id": "c3",
           "side": "line"
         }
       ]
     },
-    "t12": {
-      "time": "20:14",
-      "text_head": "표기웅이 3번 차단기를",
+    "t19": {
+      "time": "19:53",
+      "text_head": "하도경에게 송풍기 계통",
+      "effects": {},
+      "present": []
+    },
+    "t20": {
+      "time": "19:55",
+      "text_head": "표기웅에게 한내돔에 비",
       "effects": {},
       "present": [
         {
           "char_id": "c1",
           "side": "line"
-        },
+        }
+      ]
+    },
+    "t21": {
+      "time": "20:04",
+      "text_head": "문세라는 천장 가운데가",
+      "effects": {},
+      "present": [
         {
           "char_id": "c2",
           "side": "line"
         }
       ]
     },
-    "t13": {
-      "time": "20:16",
-      "text_head": "북측 비상 개방문이 열",
+    "t22": {
+      "time": "20:05",
+      "text_head": "송풍기 계통 배선에 대",
       "effects": {},
       "present": []
     },
-    "t14": {
+    "t23": {
+      "time": "20:05",
+      "text_head": "작동 중이지 않은 2호",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c3",
+          "side": "line"
+        }
+      ]
+    },
+    "t24": {
+      "time": "20:05",
+      "text_head": "문세라는 서쪽 슬리브로",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t25": {
+      "time": "20:14",
+      "text_head": "표기웅이 배전반 B 앞",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c1",
+          "side": "line"
+        }
+      ]
+    },
+    "t26": {
+      "time": "20:15",
+      "text_head": "문세라는 돔의 천장이 ",
+      "effects": {},
+      "present": [
+        {
+          "char_id": "c2",
+          "side": "line"
+        }
+      ]
+    },
+    "t27": {
+      "time": "20:16",
+      "text_head": "북측 통제선에서 북측 ",
+      "effects": {},
+      "present": []
+    },
+    "t28": {
+      "time": "20:16+",
+      "text_head": "지붕이 내려앉는 사이 ",
+      "effects": {},
+      "present": []
+    },
+    "t29": {
       "time": "20:19",
       "text_head": "남측 통제선에서 큰 소",
       "effects": {},
       "present": []
     },
-    "t15": {
+    "t30": {
       "time": "20:41",
-      "text_head": "소방 선착대가 회전문이",
+      "text_head": "소방 선착대에서 보고가",
       "effects": {},
       "present": []
     },
-    "t16": {
+    "t31": {
+      "time": "20:41+",
+      "text_head": "남측 회전문은 내려앉은",
+      "effects": {},
+      "present": []
+    },
+    "t32": {
       "time": "21:02",
-      "text_head": "당직자 주머니에서 자물",
+      "text_head": "야간 당직자 주머니에서",
       "effects": {},
       "present": []
     },
-    "t17": {
+    "t33": {
       "time": "21:35",
-      "text_head": "집결지에서 센 수가 세",
+      "text_head": "집결지에서 탈출자 인원",
+      "effects": {},
+      "present": []
+    },
+    "t34": {
+      "time": "21:35+",
+      "text_head": "최종 확인된 명단을 회",
       "effects": {},
       "present": []
     }
