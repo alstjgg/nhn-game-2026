@@ -15,11 +15,14 @@ Stage 1 (reconciliation) is complete and mechanical where it could be. **Stage 2
 review-first gate that has held for this whole track holds here: nothing was committed
 or pushed on the strength of this file alone.
 
+**2026-08-10 — implementation-sweep merge.** The implementation-phase atom sweep (theme-map-impl-addendum.md) is folded in here additively: 61 existing themes gained `(impl-2026-08-10)`-tagged atom attachments, 12 net-new themes (T-85…T-96) were appended as `verdict: proposed` for director selection, and §3 amendments were recorded inline as `impl-2026-08-10 amendment (proposed)` lines without overwriting any existing verdict, #4-role or thesis. theme-map-impl-addendum.md is retained as the derivation record.
+
 ## Headline numbers
 
 | | count |
 |---|---|
 | kept | **82** |
+| proposed (impl-2026-08-10) | **+12** (T-85…T-96, awaiting director selection) |
 | merged | **1** (A T-39 → T-60) |
 | killed | **0** |
 | carried tombstone | 1 (Pass A's own T-35 → T-12) |
@@ -31,10 +34,13 @@ or pushed on the strength of this file alone.
 | `#4-role: supporting-anecdote` | 41 |
 | `#4-role: archive` | 4 |
 | atom ids carried | **863 of 863** cited by either pass (zero dropped) |
+| ↳ +attachments (impl-2026-08-10) | 61 themes gained new atom ids (S2/S3-sweep/S4-075+/S6-199+/S7/S8-sweep/S9c/S11a/S11b/S12); total carried grew — not re-tallied here, see addendum §1 |
 
 *Amended 2026-08-07 after OH-5: T-68 promoted `archive` → `section` on new evidence, so
 section is 28 and archive 4. No theme was added, merged or killed by the interview —
 an interview supplies oral evidence and locations, not themes.*
+
+*Amended 2026-08-10 by the implementation-sweep merge: 82 kept + 12 proposed = **94** records. The 12 proposed themes are additions awaiting selection, not decided themes; the 82 kept count and all prior verdicts are unchanged. Atom ids carried grew via §1 attachments (exact total not re-verified — see theme-map-impl-addendum.md §1).*
 
 Numbering: a theme anchored in Pass A keeps **Pass A's number**, so `T-01…T-69` are
 traceable straight back. `T-70…T-84` are themes with no Pass A anchor. Every record's
@@ -95,6 +101,8 @@ than smoothed over.
 
 The residue is concentrated in the PR-thread slices (S9b + S9a = 24 of 41), i.e. exactly
 where the unmined #110/#116 material lives, so it is very likely **one gap, not two**.
+
+*Residue update — 2026-08-10 implementation sweep (§4 of the addendum), flagged **plausible, not owned** (no silent adoption):* the S9b (17) + S9a (7) = 24 PR-thread residue is exactly the harness-ops / review-panel material now addressed by **T-88** (era boundary), **T-89** (worktree sync), **T-90** (stale guards) and the T-26/T-27 amendments — its likely home. **S4** (S4-006, S4-014, S4-025) plausibly homes under **T-57 / T-77 / T-88** now the 07-27 note is folded; **S6** (8) under **T-79** now the S6 impl sweep is attached to it; **S1** (3) and **S8** (3) find no strong new home and stay in residue. These are predicted homes to be confirmed by the pre-Phase-5 sweep, not adoptions.
 
 ## Carried corrections (do not re-litigate)
 
@@ -223,13 +231,15 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-01 + B T-01
   - basis: Same thesis, same title in both passes. Containment 0.74 (Jaccard would have read 0.30).
 - #4-role: **spine**
+- impl-2026-08-10 amendment (proposed): the production membrane is an *output*-leak problem. The snapshot thesis is the input membrane (no free text in); the impl sweep shows the live failure is on the output side — model-authored text reaching the player through a legal key (S6-243/S8-068/S8-069) and unauthored fiction from a stale prompt permission (S12-002/006/011), which no key-level guard can catch. Extend the thesis to name the output-side leak; treat as spine *strengthening*, not weakening.
 - thesis: The founding invariant of every concept and of the shipped game is that the player never sends free text to a model: all LLM input is assembled from structured game elements. It is never a slogan in this corpus — it is re-expressed as template law, API law, transport law, data-schema law and UI-primitive law, extended rather than weakened when a legitimate-looking exception appeared, and documented at its true strength where it did not fully hold.
 - lanes: 1 / cross (primary 1)
 - origin: seed-confirmed:1 (the closed-environment mechanism the seed names)
 - seen-by (Pass B): B1, B2, B4, B5 — **⇈ convergence (4 lanes)**
 - support (57 atom ids across 10 slices, A ∪ B):
-  S1-003, S1-008, S1-012, S1-037, S1-043, S1-048, S2-007, S2-011, S2-037, S2-052, S2-053, S3-036, S4-015, S4-023, S4-038, S4-066, S4-073, S5-021, S5-026, S5-027, S5-037, S5-040, S6-005, S6-027, S6-058, S6-061, S6-077, S6-087, S6-095, S6-113, S6-181, S6-196, S7-003, S7-007, S7-008, S7-016, S8-020, S8-029, S8-W007, S9a-007, S9a-017, S9a-026, S9a-035, S9a-056, S9a-075, S9a-076, S9a-W003, S9a-W006, S9a-W010, S9b-008, S9b-010, S9b-024, S9b-057, S9b-113, S9b-136, S9b-176, S9b-W012
+  S1-003, S1-008, S1-012, S1-037, S1-043, S1-048, S2-007, S2-011, S2-037, S2-052, S2-053, S3-036, S4-015, S4-023, S4-038, S4-066, S4-073, S5-021, S5-026, S5-027, S5-037, S5-040, S6-005, S6-027, S6-058, S6-061, S6-077, S6-087, S6-095, S6-113, S6-181, S6-196, S7-003, S7-007, S7-008, S7-016, S8-020, S8-029, S8-W007, S9a-007, S9a-017, S9a-026, S9a-035, S9a-056, S9a-075, S9a-076, S9a-W003, S9a-W006, S9a-W010, S9b-008, S9b-010, S9b-024, S9b-057, S9b-113, S9b-136, S9b-176, S9b-W012, S8-110, S12-012, S12-019, S12-021, S12-033, S6-224, S6-225, S6-245, S6-246 (impl-2026-08-10)
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence S6-243, S8-068, S8-069, S12-002, S12-006, S12-011 — the output-side membrane leak (see amendment below).
   - *[from A T-01]* **the leaks are documented by the team itself and must travel with the theme.** S4-073 / S5-040 / S6-181 / S9a-075: `history[].npcLine`, `playerChoiceLabel` and `availableClues[].text` are client-supplied strings reaching the prompt verbatim on an unauthenticated endpoint — "an accepted, mitigated residual risk rather than an absence of free text," and S9a-075 is the *audit that downgraded the team's own claim*. S9b-008 (a default JSON import shipped the answer key into the client bundle), S9b-010 (an untrusted payload reached a raw CSS `url()` sink and made Chromium fetch an attacker URL — "the membrane's structured-input promise does not by itself neutralize a value-shaped injection at the render sink"), S9b-024→025 / S9b-W012 (the agent's private `inner_note` entered `EXPERIENCED`, was minted as a certified fact and carried into the next round's blocks, with §8-5 — the criterion written to catch exactly this — **green over a live breach**), S9b-057 (INV-3 armed on one path and silently absent on another). S6-095 accepts that hidden truths ship to the browser and are readable in devtools. S1-048 is the one concept that stretched it: Doodle Life answers NPC requests with **player drawings** — the membrane constrains the medium (text), not expressiveness. S2-011 shows the *team itself* injecting a free-form identity block in-band when the structural path was unavailable.
   - *[from B T-01]* NOT absolute in the pre-DDAY apothecary runtime — `history[].npcLine`, `playerChoiceLabel`, `availableClues[].text` reach the prompt verbatim, documented as "an accepted, mitigated residual risk, not an absence of free text" (S4-073, S5-040, S6-181, S9a-075). Engine-side breach: `inner_note` leaked into the certified fact channel in shipped fallback code (S9b-024/025). DDAY's proxy-renders-everything design later closes this class (S6-027). Looked across S4/S5/S6 residual-risk atoms and S9a/S9b security threads.
 - gaps:
@@ -252,14 +262,16 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: seed-confirmed:1
 - seen-by (Pass B): B1, B4, B5 — **⇈ convergence (3 lanes)**
 - support (68 atom ids across 9 slices, A ∪ B):
-  S1-009, S1-014, S1-021, S1-032, S1-037, S1-043, S1-050, S1-055, S2-011, S2-015, S2-028, S2-029, S2-030, S2-033, S2-056, S2-068, S3-030, S3-031, S3-032, S3-034, S3-037, S3-041, S3-043, S3-050, S3-051, S3-053, S4-003, S4-004, S4-005, S4-010, S4-017, S4-038, S4-066, S5-006, S5-012, S5-026, S5-034, S5-037, S6-037, S6-054, S6-063, S6-079, S6-082, S6-083, S6-084, S6-091, S6-109, S6-131, S6-146, S6-150, S6-163, S6-164, S6-170, S7-008, S7-010, S7-011, S7-012, S7-014, S7-018, S8-029, S8-035, S8-041, S8-047, S8-051, S9b-014, S9b-060, S9b-117, S9b-173
+  S1-009, S1-014, S1-021, S1-032, S1-037, S1-043, S1-050, S1-055, S2-011, S2-015, S2-028, S2-029, S2-030, S2-033, S2-056, S2-068, S3-030, S3-031, S3-032, S3-034, S3-037, S3-041, S3-043, S3-050, S3-051, S3-053, S4-003, S4-004, S4-005, S4-010, S4-017, S4-038, S4-066, S5-006, S5-012, S5-026, S5-034, S5-037, S6-037, S6-054, S6-063, S6-079, S6-082, S6-083, S6-084, S6-091, S6-109, S6-131, S6-146, S6-150, S6-163, S6-164, S6-170, S7-008, S7-010, S7-011, S7-012, S7-014, S7-018, S8-029, S8-035, S8-041, S8-047, S8-051, S9b-014, S9b-060, S9b-117, S9b-173, S9c-050, S6-245 (impl-2026-08-10)
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence S9c-016, S12-005.
   - *[from A T-02]* **the narrowing is measured and is not a mood.** S3-050 + S3-034 + S3-037: the priority list is removed from the game entirely, so the player was left with **one** channel, not two; S8-041 and S8-051 say the same from the commit side ("The player holds ONE lever, not two"), S6-146 records the player's operation ending "narrower than the 07-29 doc described"; S3-031 restricts mineable blocks to fact + self-narration; S3-032 switches execution grading off; S3-030 makes injection irreversible; S8-035 pins temperament "플레이어에게 완전 비가시·불변". S6-091 names the resulting danger — "a large pool with a hidden matching rule is the classic unfair-puzzle shape" — and constrains the fix space so the easy repair is off the table. S2-015 is the floor: with no temperament authored, the space collapses to 24/24 identical choices, so the default state of this system is *no* freedom and the freedom is entirely an authoring cost. S6-163 separates "the mechanism works" from "the player can see it works."
   - *[from B T-03]* The maximal-freedom pole was tried and clawed back at BOTH altitudes — in-game full-delegation (Doodle Life, 1–2 min/call, S4-010) and in-build "governance without a rendered pixel" (frontend-mod v1 killed, S5-012). Recorded dissent that the closed environment is the wrong call (S4-005). The boundary drifted and needed re-enforcing: BUCKET_CONFIG hardcoded in `src/` (S9b-014/015), a bucket-id where a stance-id belonged (S9b-060). Placement (S1-055) inverts the allocation entirely. The in-game/in-build parallel is B5's synthesis — no atom states the team *saw* it.
 - gaps:
   - *[from A T-02]* **not one atom in 905 measures whether a player feels free.** S6-164's paper discoverability probe (n=2–3) is specified with a pass condition and no result; S7-014's `score_variance` / `near_miss_trace_rate` / `policy_gap` are defined and unmeasured because `artifacts/` did not exist at the snapshot. The seed is a design goal throughout the corpus and never once an observation. A playtest record, or the post-snapshot tail, is the only thing that could close it.
   - *[from B T-03]* Whether the illusion reads as freedom to a judge in 60s (vs. a constrained puzzle) is untested — no human read confirms it (S6-063 debt carried).
 - oral-only:
+  - *[impl-2026-08-10]* +oral OH-3 §4.
   - *[from A T-02]* OH-2 §3's **three-mitigation taxonomy** (agent guardrails / player no-access / closed environment, "final = #1+#3") is the framing this theme instantiates and appears in **no slice**; A3, A4, A5 and A6 each checked for it independently and found only its effects. OH-1 §2's causal claim that 닫힌 환경 / 자유라는 착각 *started from* the membrane agreement is likewise oral. OH-3 §4 ("열린 환경과 닫힌 환경이 자연스럽게 이어지도록") independently corroborates the *mechanism* from the second narrator's chair — that convergence is the strongest thing the oral record offers and it is still oral.
   - *[from B T-03]* the seed's framing and the "게임은 왜 재밌을까 / 자유도" discussion left no written trace (S4 OH-1 hook 6).
 - fit:
@@ -276,7 +288,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B1 — **[single-source]**
 - support (34 atom ids across 7 slices, A ∪ B):
-  S1-009, S1-013, S1-021, S1-023, S1-041, S1-042, S1-045, S1-049, S1-050, S1-055, S2-018, S2-039, S2-068, S3-032, S3-057, S3-058, S6-046, S6-056, S6-077, S6-109, S6-113, S6-122, S6-125, S6-132, S6-138, S6-172, S6-184, S7-002, S7-003, S8-048, S9b-024, S9b-136, S9b-166, S9b-176
+  S1-009, S1-013, S1-021, S1-023, S1-041, S1-042, S1-045, S1-049, S1-050, S1-055, S2-018, S2-039, S2-068, S3-032, S3-057, S3-058, S6-046, S6-056, S6-077, S6-109, S6-113, S6-122, S6-125, S6-132, S6-138, S6-172, S6-184, S7-002, S7-003, S8-048, S9b-024, S9b-136, S9b-166, S9b-176, S8-078, S12-005, S12-008, S12-029, S12-032 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-03]* the fence is drawn around the *solution path*, not around the model's role, and two atoms argue the opposite emphasis and are left standing: **S6-122** declares `facts` "a bet that the objective log can be made by an LLM" with its deletion clause pre-written, and **S6-077** argues generated material *is* the player's supply chain, so Call 2's quality is "load-bearing, not decoration." **S1-055** is the full inversion — Placement hides the deterministic stats entirely and makes acted dialogue the sole information channel. **S1-023** and **S2-039** record the team *recommending an LLM judge* precisely because it accepted an off-script solution a deterministic sim could not. **S1-013** refuses determinism outright as the fairness contract. And S6-184: the fence does not extend to the project's own documentation, which was AI-drafted.
   - *[from B T-19]* The "gap is content" harvest sits next to a hard line where the same leakage is *fatal* — fabricated facts in the objective log (S3-058, one call inventing "배경음 분석 결과 조용한 환경 확인됨"), the inner_note leak breaching the fact channel (S9b-024). The identical property (prose bleeding across layers) is a feature on the subjective axis and a membrane breach on the objective axis (S3-057 says exactly this). E-LEV: the exculpation fact is known and cited but spoken 0/30 (S3-032) — the model *withholds*, complicating "distortion is reliably harvestable."
@@ -299,7 +311,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: 1
 - origin: emergent
 - support (21 atom ids across 4 slices, A ∪ B):
-  S2-021, S2-027, S2-034, S3-005, S3-006, S3-028, S3-029, S3-031, S3-032, S3-033, S3-034, S3-035, S3-037, S3-047, S3-057, S3-060, S6-154, S6-160, S6-171, S6-175, S9b-173
+  S2-021, S2-027, S2-034, S3-005, S3-006, S3-028, S3-029, S3-031, S3-032, S3-033, S3-034, S3-035, S3-037, S3-047, S3-057, S3-060, S6-154, S6-160, S6-171, S6-175, S9b-173, S3-075, S8-086, S8-087, S8-088, S9c-022, S9c-066 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-04]* the law is induced from **one scenario, one gate pair (J1/J8), one model configuration**. S3-028 is explicit that the passing negative control "licenses nothing about subtler, near-axis fakes"; S3-047 labels the whole evidence base provisional; S3-006 and S3-034 show how fast an apparently solid behavioural claim collapsed under replication. S6-160 adds a confound the program raised against itself: schema-constrained decoding is "a different generation regime", making all pre-shape findings provisional. Nothing in the corpus tests these clauses on a different model or a different scenario.
 - gaps:
@@ -314,12 +326,13 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-05 + B T-14
   - basis: Both passes independently reach the temperament pivot and the 24/24 near-death. Containment 0.58.
 - #4-role: **section**
+- impl-2026-08-10 amendment (proposed): the temperament-removal arc is now complete (lock deleted, schema floor minItems:0, shipped pack graph-first) — consider resolving the “later removed” clause. See T-95.
 - thesis: The reproducibility hypothesis succeeded so completely it nearly killed the concept — 24/24 identical choices meant every player's agent behaves the same. The recovery moved the control surface from equipped sentences to authored temperament, and temperament, fact and structure then each flipped the same judgment point independently. Temperament was later removed from the *player's* channel entirely.
 - lanes: 1, 4 / 1
 - origin: emergent
 - seen-by (Pass B): B1 — **[single-source]** (lane-1-native mechanism)
 - support (30 atom ids across 6 slices, A ∪ B):
-  S1-015, S1-040, S2-015, S2-016, S2-017, S2-018, S2-019, S2-028, S2-029, S2-030, S2-031, S2-033, S2-034, S2-051, S3-016, S3-027, S3-036, S6-037, S6-054, S6-055, S6-057, S6-063, S6-161, S6-173, S6-174, S8-035, S8-040, S8-041, S9b-147, S9b-W011
+  S1-015, S1-040, S2-015, S2-016, S2-017, S2-018, S2-019, S2-028, S2-029, S2-030, S2-031, S2-033, S2-034, S2-051, S3-016, S3-027, S3-036, S6-037, S6-054, S6-055, S6-057, S6-063, S6-161, S6-173, S6-174, S8-035, S8-040, S8-041, S9b-147, S9b-W011, S3-077, S8-086, S12-020, S2-072, S7-027, S7-029, S9c-065 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-05]* **the legibility claim contradicts itself inside S2 and is not resolved here.** S2-033 says the mechanism is legible in the model's own words; S2-018 says agents cite the equipped sentence as grounds for the exact opposite behaviour, so `because` is decoration — both dated 07-28, both from the same program. S2-031 shows even temperament flattened to zero variance by choice architecture (a single option satisfying both clauses). S2-034 records scope bleed onto unintended targets, "beneficial and harmful in the same run." Sample sizes are tiny throughout (2/2, 3/3, 3/5) and no atom reports a variance estimate; "100% separation" is 3 vs 3. All three axes were verified at **one** judgment point, and whether they *compose* is untested and unproposed.
   - *[from B T-14]* The sentence channel was *not* dead — it was hidden by a bad measuring instrument; changing only the stance set took the same block 0/10→9/10 (S3-016, S6-173, S8-040), reviving injection as the player lever. Both "temperament is the lever" and "the block is the lever" are true under different apparatus — preserved tension (S6-055 records the block "initially looked dead").
@@ -342,7 +355,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: 1
 - origin: emergent
 - support (16 atom ids across 5 slices, A ∪ B):
-  S3-014, S3-015, S6-027, S6-057, S6-090, S6-117, S6-121, S6-123, S6-140, S6-162, S6-166, S7-002, S7-016, S7-019, S8-044, S9a-085
+  S3-014, S3-015, S6-027, S6-057, S6-090, S6-117, S6-121, S6-123, S6-140, S6-162, S6-166, S7-002, S7-016, S7-019, S8-044, S9a-085, S8-082, S12-003, S12-004, S12-010, S12-020, S12-037 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-06]* **the frozen artifact was frozen around latent defects.** S6-166 itself records a clause silently converting a conditional into an unconditional across every arm, found only later; S6-162 concedes the base template's credulity line may be lifting both arms; S6-057 shows the authoring law discovered by two failures, not designed. S7-016's "only means that worked" claim cites no experiment, and **S8-044** records the same misattribution class still at 8/10 at a *different* call — so the two figures cannot be joined. No atom in the corpus claims prompt engineering was solved.
 - gaps:
@@ -361,7 +374,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: 1
 - origin: emergent
 - support (23 atom ids across 6 slices, A ∪ B):
-  S2-025, S2-032, S2-035, S2-036, S2-065, S3-005, S3-058, S3-060, S6-020, S6-056, S6-060, S6-062, S6-066, S6-074, S6-116, S6-120, S6-158, S6-175, S7-007, S7-017, S8-037, S8-044, S9a-085
+  S2-025, S2-032, S2-035, S2-036, S2-065, S3-005, S3-058, S3-060, S6-020, S6-056, S6-060, S6-062, S6-066, S6-074, S6-116, S6-120, S6-158, S6-175, S7-007, S7-017, S8-037, S8-044, S9a-085, S3-078, S3-080, S8-083, S12-002, S12-005, S12-013, S12-014, S12-018, S12-036 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-07]* A5 looked for internal contradiction here and found little, which is itself suspicious — and the two complications it did find are load-bearing. **S6-060**: the "failure" carried the game's best material, so the limit was the policy's, not the model's. **S6-158**: block injection went 0/3 on first attempt and "a no-retry rule would have killed the strongest known mechanism" — several catalogued failures were *authoring* failures misread as model failures, which is T-35's whole argument. S2-032 records six authoring defects (including a structurally impossible gate, 5/5 fail) that the model was then blamed for absorbing. And per the coverage audit, S6 and S3 were mined under a failure-weighted bias and never re-swept — **this is the theme most likely to be over-represented relative to reality.**
 - gaps:
@@ -406,7 +419,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B2 (operational) + T-04 cross-corroboration — **⇈**
 - support (29 atom ids across 3 slices, A ∪ B):
-  S6-185, S6-187, S6-188, S9a-008, S9a-009, S9a-018, S9a-019, S9a-032, S9a-039, S9a-040, S9a-071, S9a-089, S9a-092, S9a-W001, S9a-W002, S9a-W005, S9a-W007, S9a-W009, S9a-W010, S9a-W011, S9b-009, S9b-023, S9b-026, S9b-027, S9b-045, S9b-050, S9b-113, S9b-168, S9b-W003
+  S6-185, S6-187, S6-188, S9a-008, S9a-009, S9a-018, S9a-019, S9a-032, S9a-039, S9a-040, S9a-071, S9a-089, S9a-092, S9a-W001, S9a-W002, S9a-W005, S9a-W007, S9a-W009, S9a-W010, S9a-W011, S9b-009, S9b-023, S9b-026, S9b-027, S9b-045, S9b-050, S9b-113, S9b-168, S9b-W003, S8-111, S9c-004, S9c-029, S9c-030, S11b-033 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-09]* **the stance is not universal and its enforcement decayed.** S9a-092 / S9a-W009 / S9a-W010: by super/20260803–20260804 unit PRs merge with **zero** review submissions, so the gate numbers are the author's own self-report — exactly what the stance exists to distrust. S9a-W011 records a bare "LGTM" approval. S9a-040 shows the re-verifying reviewer itself being wrong (comments against a diff containing no such code). S9b-023 merges #84 having run only the machine-checkable half; S9b-045 records two commits landing *after* sign-off — "the approved diff is no longer the whole diff."
   - *[from B T-22]* The inversion decays where review volume drops — S9a-092/W009/W010 (later e-unit PRs merged with zero review rounds; gate counts are the PR body's own self-report, accepted), S6-188 (six substantive Lead reviews exist only on disk), S9a-018 (a stale test count explicitly classed "코드 결함 아님, 참고만").
@@ -430,7 +443,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: seed-confirmed:3 (the operational face of "AI can't judge whether it worked")
 - seen-by (Pass B): B2 — **[single-source]**
 - support (48 atom ids across 4 slices, A ∪ B):
-  S6-027, S8-028, S8-054, S8-055, S8-059, S8-W002, S8-W008, S9a-024, S9a-026, S9a-028, S9a-031, S9a-034, S9a-037, S9a-041, S9a-048, S9a-049, S9a-053, S9a-058, S9a-059, S9a-W002, S9a-W003, S9a-W004, S9a-W006, S9b-009, S9b-013, S9b-014, S9b-015, S9b-017, S9b-020, S9b-022, S9b-025, S9b-026, S9b-027, S9b-033, S9b-037, S9b-048, S9b-049, S9b-060, S9b-164, S9b-168, S9b-169, S9b-170, S9b-171, S9b-190, S9b-W001, S9b-W002, S9b-W006, S9b-W012
+  S6-027, S8-028, S8-054, S8-055, S8-059, S8-W002, S8-W008, S9a-024, S9a-026, S9a-028, S9a-031, S9a-034, S9a-037, S9a-041, S9a-048, S9a-049, S9a-053, S9a-058, S9a-059, S9a-W002, S9a-W003, S9a-W004, S9a-W006, S9b-009, S9b-013, S9b-014, S9b-015, S9b-017, S9b-020, S9b-022, S9b-025, S9b-026, S9b-027, S9b-033, S9b-037, S9b-048, S9b-049, S9b-060, S9b-164, S9b-168, S9b-169, S9b-170, S9b-171, S9b-190, S9b-W001, S9b-W002, S9b-W006, S9b-W012, S6-204, S6-208, S6-226, S8-080, S8-098, S8-099, S9c-004, S9c-053, S11a-039, S11a-042, S11b-034 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-10]* the panel **accepts** guards with known holes when the real defence is proven elsewhere and the rewrite is disproportionate — S9a-037 (blind spots documented, thread resolved anyway), S9a-048 (evasions documented rather than an AST rewrite), S9a-W003 (a comment-stripping scan independently verified as *not* eyewash). And gates that did bite are on record: S9b-W006 (four panel findings became standing gates; a flaky spec "fixed, not excused"), S9b-W002 (27 malformed records all rejected with pointers), S9b-164, S9b-171. The whole theme also rests on *reviewed* PRs; the 46 zero-activity merges had no mutation testing at all.
   - *[from B T-23]* Mutation testing also *confirmed* fixes and honest reports — S9a-W002 (self-reported 57/57·323/323 re-ran true from clean), S9a-W006, S8-W002/W006 (green gates "genuinely earned"). Green is not always a lie; it just carries no information until mutation/render proves it has teeth.
@@ -453,7 +466,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: 2 (with 1 and 4 at the seams)
 - origin: emergent
 - support (23 atom ids across 3 slices, A ∪ B):
-  S8-025, S9a-009, S9a-026, S9a-035, S9a-037, S9a-040, S9a-043, S9a-048, S9a-059, S9a-061, S9a-062, S9a-063, S9a-071, S9a-073, S9a-W005, S9a-W006, S9a-W012, S9a-W014, S9b-010, S9b-018, S9b-042, S9b-180, S9b-W007
+  S8-025, S9a-009, S9a-026, S9a-035, S9a-037, S9a-040, S9a-043, S9a-048, S9a-059, S9a-061, S9a-062, S9a-063, S9a-071, S9a-073, S9a-W005, S9a-W006, S9a-W012, S9a-W014, S9b-010, S9b-018, S9b-042, S9b-180, S9b-W007, S6-199, S6-201, S6-203, S6-216, S8-094, S9c-029, S9c-061, S9c-072, S9c-096, S11a-052 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-11]* execution produces evidence, not automatically *sufficient* evidence — S9a-073 / S9a-W014 is an executed latency matrix the agent itself disclaims as "각 조합을 한 번씩 실행한 결과이므로 … 벤치마크는 아닙니다." S9a-037 / S9a-048 show non-executed textual guards accepted when proportionate. S9a-040 is the nearest thing to a false positive from this style, and it was a mis-targeted comment, not a bad measurement.
 - gaps:
@@ -472,7 +485,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: cross (1, 2) / cross (1, 2) · origin: emergent · carried-by: S2, S3, S6, S8, S9b
 - origin: emergent
 - support (29 atom ids across 5 slices, A ∪ B):
-  S2-032, S2-036, S3-005, S3-007, S3-008, S3-014, S3-016, S3-026, S3-029, S3-032, S3-043, S3-044, S3-046, S3-058, S3-060, S6-118, S6-160, S6-162, S8-017, S8-028, S8-036, S8-038, S8-039, S8-045, S8-054, S9b-146, S9b-148, S9b-149, S9b-152
+  S2-032, S2-036, S3-005, S3-007, S3-008, S3-014, S3-016, S3-026, S3-029, S3-032, S3-043, S3-044, S3-046, S3-058, S3-060, S6-118, S6-160, S6-162, S8-017, S8-028, S8-036, S8-038, S8-039, S8-045, S8-054, S9b-146, S9b-148, S9b-149, S9b-152, S3-082, S8-097, S8-107, S9c-030, S9c-036, S9c-044, S11a-019, S11b-022, S11b-026, S11b-034, S12-007, S12-015 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-12]* not everything reduced to instrument error, and the exceptions are the T-04 physics — S3-005, S3-029, S3-032, S3-058 are model-side behaviours that survived every instrument fix, and S3-060 is the explicit boundary case (prompt fixes only changed the defect's *form*, so it was declared unfixable by prompting and pushed upstream to an authoring rule). S3-007 is the honest residual: a malformation that outlived its diagnosis and stayed labelled unexplained.
 - gaps:
@@ -512,7 +525,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: seed-confirmed:1 (the closure is built, not asked for)
 - seen-by (Pass B): B2, B5, B1 — **⇈ convergence (3 lanes)**
 - support (44 atom ids across 7 slices, A ∪ B):
-  S2-004, S2-005, S2-006, S2-010, S2-011, S2-019, S2-060, S4-065, S5-006, S5-015, S6-023, S6-036, S6-058, S6-067, S6-087, S6-093, S6-157, S6-182, S6-192, S7-005, S7-006, S7-013, S8-020, S8-029, S8-036, S8-047, S8-049, S8-053, S8-054, S8-055, S8-W006, S8-W007, S8-W008, S9b-009, S9b-020, S9b-064, S9b-113, S9b-138, S9b-142, S9b-143, S9b-164, S9b-168, S9b-171, S9b-177
+  S2-004, S2-005, S2-006, S2-010, S2-011, S2-019, S2-060, S4-065, S5-006, S5-015, S6-023, S6-036, S6-058, S6-067, S6-087, S6-093, S6-157, S6-182, S6-192, S7-005, S7-006, S7-013, S8-020, S8-029, S8-036, S8-047, S8-049, S8-053, S8-054, S8-055, S8-W006, S8-W007, S8-W008, S9b-009, S9b-020, S9b-064, S9b-113, S9b-138, S9b-142, S9b-143, S9b-164, S9b-168, S9b-171, S9b-177, S6-210, S6-224, S8-072, S8-110, S9c-024, S11a-032 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-14]* **S2-060 is the direct contradiction and it is strong** — a purely *textual* personality card produced 100% cause-concealment while an engine-style *rule* got 0% compliance. Text demonstrably changes behaviour; what it does not change is *authority*. S2-005 also shows a language-level mitigation working (proper-noun anonymisation: 0 contamination in 8 calls). And **the enforcement layer is defective at the same rate as the code**: S8-036 (the config-level version silently ignored), S8-054 (a mechanical check that was wrong in the other direction — the prefix check ran on the still-encoded path, so `%2e%2e%2f` passed), S8-055 (a mechanical guard nobody wired to CI is prose again), S9b-020, S9b-064 (the datapack A7 guard actually *blessed* the layering inversion it should have blocked), S9b-168/169/170. Construction substitutes one review target for another; it does not remove the need to mutation-test. S6-182 is self-counter-evidence: the same document that reasons carefully about privilege escalation admits one check "wasn't checking," and the fix is committed *but commented out*. S7-013 is a deliberate exception: hardening outputs may compile empty, with lint flagging rather than blocking.
   - *[from B T-06]* Structural enforcement itself failed and had to be re-grounded — S8-036/S6-157 exist *because* the configured `tools:[]` safeguard was silently not honored (a "structural" claim that was really instruction; the fix was a deeper layer). S6-093: two "structural" constraints (datapack ships to browser / lives at data/) "cannot both stand" until a build-time copy — structure can encode contradictions. So "make it impossible" is a discipline that itself needs verifying.
@@ -536,7 +549,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B3 — **[single-source]**
 - support (29 atom ids across 5 slices, A ∪ B):
-  S5-015, S6-007, S6-032, S6-033, S6-049, S6-050, S6-086, S6-090, S6-096, S6-102, S6-103, S6-105, S6-111, S6-127, S6-130, S6-133, S6-134, S6-137, S6-144, S6-183, S7-005, S7-006, S7-007, S7-010, S7-017, S8-049, S9b-054, S9b-161, S9b-165
+  S5-015, S6-007, S6-032, S6-033, S6-049, S6-050, S6-086, S6-090, S6-096, S6-102, S6-103, S6-105, S6-111, S6-127, S6-130, S6-133, S6-134, S6-137, S6-144, S6-183, S7-005, S7-006, S7-007, S7-010, S7-017, S8-049, S9b-054, S9b-161, S9b-165, S8-095, S9c-006, S9c-055, S11b-035 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-15]* the principle is aspirational at the margins and the corpus says so — **S6-137** and **S6-050** both name unguarded edges that survived (`CallRequest` hand-transcribed across the tier boundary; `contracts.ts` with "none — hand-written"), **S6-102** shows the enforcing artefact failing at *semantics* (a lint that cannot distinguish "unbound, pending hardening" from "not v0 state", polluting the worklist with twelve permanent FLAGs), and **S6-134** concedes the linter structurally cannot know authorial intent. **S5-015** is the anti-thesis from the harness side: glob-overlap validation was moved *out* of prompt-land into deterministic workflow JS because "an LLM-followed gate checklist" is neither deterministic nor resume-safe — i.e. some control must not be prose at all, which cuts against the "put the rule in the document" half.
   - *[from B T-39]* The cross-slice dated self-reversal (S6-032/S8-049/S9b-161) keeps this from being a static S6 doc-description.
@@ -559,7 +572,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: 1, 2, 3, 4
 - origin: emergent
 - support (35 atom ids across 7 slices, A ∪ B):
-  S2-010, S2-024, S2-032, S2-051, S2-052, S2-058, S3-007, S3-013, S3-014, S3-015, S3-023, S3-045, S3-046, S3-055, S3-056, S3-058, S3-062, S3-065, S6-135, S6-142, S7-005, S7-006, S7-009, S8-017, S8-035, S8-038, S8-039, S8-045, S8-049, S8-W005, S9a-086, S9a-090, S9a-091, S9a-W008, S9b-W006
+  S2-010, S2-024, S2-032, S2-051, S2-052, S2-058, S3-007, S3-013, S3-014, S3-015, S3-023, S3-045, S3-046, S3-055, S3-056, S3-058, S3-062, S3-065, S6-135, S6-142, S7-005, S7-006, S7-009, S8-017, S8-035, S8-038, S8-039, S8-045, S8-049, S8-W005, S9a-086, S9a-090, S9a-091, S9a-W008, S9b-W006, S2-075, S6-203, S6-204, S6-208, S6-220, S8-087, S8-088, S8-098, S9c-046, S9c-047, S11a-042 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-16]* **the pattern is "instrument after the injury," and the corpus prices it.** S3-046's bias went unreported through seven write-ups; S3-045's rule cost 61 calls to learn; S3-062's cost 20; S8-038's cost 30. Not every lesson got an instrument: S3-023 and S3-056 show blind coding — the rigor step no lint can replace — being *dropped* rather than automated, and S3-055 still lists it as owed; S3-007's residual has a label and no instrument. **S8-045 is the clean counter**: the NUL-byte defect of S8-017 (07-24) recurred in the probe harness (07-30) and nothing was generalised from the first occurrence. S2-032 logs six defects as "next-action candidates" and no atom shows that queue draining.
 - gaps:
@@ -578,7 +591,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: 2, 1
 - origin: emergent
 - support (25 atom ids across 4 slices, A ∪ B):
-  S4-040, S4-041, S4-042, S4-052, S4-057, S5-011, S5-029, S5-030, S5-031, S5-032, S5-W002, S5-W010, S9a-018, S9a-027, S9a-032, S9a-044, S9a-055, S9b-021, S9b-034, S9b-035, S9b-037, S9b-042, S9b-043, S9b-045, S9b-180
+  S4-040, S4-041, S4-042, S4-052, S4-057, S5-011, S5-029, S5-030, S5-031, S5-032, S5-W002, S5-W010, S9a-018, S9a-027, S9a-032, S9a-044, S9a-055, S9b-021, S9b-034, S9b-035, S9b-037, S9b-042, S9b-043, S9b-045, S9b-180, S8-098, S9c-031, S11a-039, S11a-042 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-17]* the countermeasures are bounded by their own fixtures — **S5-W002 / S5-029**: a nine-dimension green *keyless* gate was nonetheless wrong about three provider-reality behaviours, so evidence-based criteria bounded by mocks still fabricate confidence. **S5-011**: literal `</content></invoke>` tool-call syntax survived in a committed design record for ~10 days across two file moves; nobody, human or agent, caught it. **S4-042** grants an agent live credentials, which is the opposite of a distrust posture, made safe by enumeration — i.e. instruction, not evidence. And the corrections are themselves agent-authored (S9b-043, S9b-045, S9b-035, S9b-037, S9b-180), so "agents cannot be trusted to report" is too strong: **a self-report is not evidence, while an agent executing a check is.**
 - gaps:
@@ -598,7 +611,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B2 — **[single-source]**
 - support (29 atom ids across 6 slices, A ∪ B):
-  S2-001, S2-012, S2-013, S2-026, S2-045, S2-054, S2-062, S3-007, S3-012, S3-017, S3-022, S3-023, S3-025, S3-046, S3-062, S6-188, S8-017, S8-045, S9a-013, S9a-040, S9a-077, S9a-084, S9a-091, S9a-092, S9a-093, S9b-022, S9b-035, S9b-037, S9b-043
+  S2-001, S2-012, S2-013, S2-026, S2-045, S2-054, S2-062, S3-007, S3-012, S3-017, S3-022, S3-023, S3-025, S3-046, S3-062, S6-188, S8-017, S8-045, S9a-013, S9a-040, S9a-077, S9a-084, S9a-091, S9a-092, S9a-093, S9b-022, S9b-035, S9b-037, S9b-043, S6-203, S6-208, S9c-020, S9c-031, S9c-037, S11a-004, S11a-031, S11a-034, S11a-037, S11a-038 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-18]* **the confessions are all in the same document the confessing agent writes**, which is the weakest possible audit position — no atom shows an independent party discovering an *unlogged* error, so the confession rate cannot be distinguished from the error rate. S3-046 is the nearest counter: the retry bias was found by a later review pass, not by the session that created it. S3-023's dropped blind coding removes the one control that would have made these self-reads independent. And S2-001 is the same autonomy with the safety off — what lets a subagent audit the plan is what let one *replace* it; S2-012's operator constitution grants audit authority narrowly and deliberately.
   - *[from B T-29]* The confession convention partly failed to leave its audit trail — S6-188 (six reviews existed only on disk while the PRs carried zero threads).
@@ -621,7 +634,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: 1, 3
 - origin: emergent
 - support (22 atom ids across 5 slices, A ∪ B):
-  S3-028, S3-039, S3-047, S3-048, S3-051, S3-052, S4-015, S4-037, S4-073, S4-074, S5-017, S5-025, S5-028, S5-040, S5-041, S6-038, S6-107, S6-165, S9a-073, S9a-074, S9a-075, S9a-082
+  S3-028, S3-039, S3-047, S3-048, S3-051, S3-052, S4-015, S4-037, S4-073, S4-074, S5-017, S5-025, S5-028, S5-040, S5-041, S6-038, S6-107, S6-165, S9a-073, S9a-074, S9a-075, S9a-082, S9c-027, S9c-048 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-19]* **S4-015** shows the same team using membrane compliance as *judging evidence* in the same period the S4-073 leak existed — an outward claim the inward record qualifies. "Written down" is not "fixed": S4-074's guardrail was still unset at snapshot. No atom shows a narrowed claim being *re-widened* after further testing, so the discipline's payoff is unevidenced, and no atom shows S3-052's cap being tested against actual outward-facing text — it is a policy with no observed enforcement event.
 - gaps:
@@ -636,12 +649,14 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-20
   - basis: B T-32 independently asserts the dated/signed constraint blocks injected into the live dashboard, so the steering claim is corroborated; the 'single control surface' synthesis is A's.
 - #4-role: **supporting-anecdote**
+- impl-2026-08-10 amendment (proposed): re-scope as a *fleet-era* description (T-88).
 - thesis: super-pipeline runs are governed through one artifact — a living dashboard PR that is simultaneously backlog, build status, steer inbox, evidence locker and merge gate — and the human's direction of a live run migrated from a slash-command tag into dated, signed constraint blocks inside that artifact. The steering interface is itself structured; it is never free-form conversation with the swarm.
 - lanes: 2
 - origin: emergent
 - support (20 atom ids across 4 slices, A ∪ B):
-  S5-003, S5-004, S6-151, S8-014, S8-018, S9b-001, S9b-002, S9b-003, S9b-005, S9b-011, S9b-012, S9b-023, S9b-028, S9b-039, S9b-040, S9b-041, S9b-044, S9b-045, S9b-W001, S9b-W004
+  S5-003, S5-004, S6-151, S8-014, S8-018, S9b-001, S9b-002, S9b-003, S9b-005, S9b-011, S9b-012, S9b-023, S9b-028, S9b-039, S9b-040, S9b-041, S9b-044, S9b-045, S9b-W001, S9b-W004, S8-063, S8-064 (impl-2026-08-10)
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence S9c-029, S8-111 — steering migrated off the dashboard onto per-PR threads; fleet-era artefact (see T-88).
   - *[from A T-20]* the control surface **cannot express its own verdicts** — S9b-028: `gh` refuses `--request-changes` because the panel shares the author's account, so CHANGES REQUESTED arrives as an ordinary comment. S9b-045: approval is not a seal; two commits landed after sign-off. S9b-005: a run kept posting to a PR that was CLOSED and finalization needed `gh pr reopen`. S9b-003: the surface can never carry a live link, because Pages builds only from `main`. S9b-023 shows the final main-merge PR is a thin re-attestation, so the run's control surface is not `main`'s control surface. And S9b-002's advertised free-text comment steering cuts against "structured only".
 - gaps:
   - *[from A T-20]* the corpus cannot show what the human *declined* to steer, or how often `/super-steer` ran without leaving a tagged artifact — the tag audit only proves the tag is absent. Whether #110/#116 finalized under this convention is post-snapshot.
@@ -655,12 +670,13 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-21 + B T-26
   - basis: Containment 0.83. Both passes independently reach the single-account constraint and the hand-built convention that answers it.
 - #4-role: **section**
+- impl-2026-08-10 amendment (proposed): re-scope as a *fleet-era* description (T-88).
 - thesis: The multi-agent panel had to run on one GitHub account, which forbids formal approve/request-changes on your own PRs. Rather than abandon the ceremony the pipeline rebuilt it in prose — explicit verdict lines, a fixed `[수정보고]` / `[항변]` answer format, resolve authority reserved to the Lead, and thread-hygiene rules distinguishing administrative closure from resolution. The process integrity is entirely convention.
 - lanes: 2
 - origin: emergent
 - seen-by (Pass B): B2 — **[single-source]**
 - support (11 atom ids across 3 slices, A ∪ B):
-  S6-187, S9a-002, S9a-007, S9a-010, S9a-039, S9a-044, S9a-054, S9a-090, S9a-092, S9b-028, S9b-038
+  S6-187, S9a-002, S9a-007, S9a-010, S9a-039, S9a-044, S9a-054, S9a-090, S9a-092, S9b-028, S9b-038, S9c-021, S9c-046 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-21]* because verdicts live in prose rather than GitHub state, **none of it is machine-enforced** — S9a-092 shows the shape surviving with no enforcement behind it, and S9a-090 shows that no PR in the repo ran CI at all until 2026-08-03, so for most of this period the "gates" the protocol argued about ran only when someone remembered.
   - *[from B T-26]* The single-account seam did not collapse the panel — S9b-038 (on one commit R1/R2/R3 reached three genuinely different dispositions: approve / request-changes / recorded-residual, "the disagreement is the mechanism working").
@@ -679,12 +695,13 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-22 + B T-27
   - basis: Containment 0.75. Both assert the rebuttal channel and that it catches the *reviewer*.
 - #4-role: **section**
+- impl-2026-08-10 amendment (proposed): re-scope as a *fleet-era* description (T-88); T-22 specifically now runs **human↔agent** (S9c-008/009), not only agent↔agent.
 - thesis: The protocol is not reviewer-dictates-author. Authors answer with `[수정보고]` or `[항변]`; rebuttals win outright and partially; third options invented by the author beat both offered options; and the channel is what catches the *reviewer* hallucinating — comments on the wrong unit, over-stated severity, mis-cited error codes — and once ran agent→human. Seats reach genuinely different dispositions on the same commit and the record treats that as the method working.
 - lanes: 2
 - origin: emergent
 - seen-by (Pass B): B2 — **[single-source]**
 - support (26 atom ids across 3 slices, A ∪ B):
-  S6-187, S9a-007, S9a-010, S9a-012, S9a-019, S9a-029, S9a-040, S9a-044, S9a-048, S9a-050, S9a-060, S9a-062, S9a-077, S9a-091, S9b-022, S9b-028, S9b-035, S9b-036, S9b-037, S9b-038, S9b-043, S9b-055, S9b-063, S9b-144, S9b-W005, S9b-W014
+  S6-187, S9a-007, S9a-010, S9a-012, S9a-019, S9a-029, S9a-040, S9a-044, S9a-048, S9a-050, S9a-060, S9a-062, S9a-077, S9a-091, S9b-022, S9b-028, S9b-035, S9b-036, S9b-037, S9b-038, S9b-043, S9b-055, S9b-063, S9b-144, S9b-W005, S9b-W014, S9c-008, S9c-009, S9c-020, S9c-025, S9c-041, S9c-042, S9c-046 (now human↔agent, not agent↔agent) (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-22]* **S9b-W014 directly complicates the thesis** — on #68 the full R1·R2·R3 panel opened thirteen threads and *all thirteen resolved by agreement, no rebuttals*. Unanimity is the modal outcome in the one PR where the body counts it. **S9b-028** undercuts the independence premise mechanically. **S9a-010**'s authority is deliberately asymmetric (resolve reserved to the Lead), so the argument has a fixed winner-of-last-resort, and **S9a-007** means "won" and "lost" are only as real as the prose recording them. S9b-036 / S9b-063 show seats also agreeing *not* to fix things.
   - *[from B T-27]* The channel also produced pure concession (S9b-W014, 13 threads resolved by agreement, no rebuttals) and can be abused (S9a-044, an author tried to use a test to *pin* a bug as expected; the Lead ruled it not an answer).
@@ -708,7 +725,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - **THIN:** Carried from A T-23.
 - support (12 atom ids across 2 slices, A ∪ B):
-  S9a-007, S9b-021, S9b-022, S9b-025, S9b-030, S9b-034, S9b-035, S9b-036, S9b-037, S9b-045, S9b-063, S9b-W003
+  S9a-007, S9b-021, S9b-022, S9b-025, S9b-030, S9b-034, S9b-035, S9b-036, S9b-037, S9b-045, S9b-063, S9b-W003, S8-085, S8-086, S9c-023, S9c-038, S9c-066, S11a-034, S11a-050 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-23]* **S9b-045 shows a fifth, unbudgeted state** — work landing *after* the loop declared itself done. S9b-025 records a fix as sound while noting the archive still carries `[속내]` for a future unit to re-filter, i.e. "fixed" and "deferred" co-occur in one thread. And the taxonomy's proportions rest on threads captured mid-flight.
 - gaps:
@@ -728,7 +745,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B2 — **[single-source]**
 - support (19 atom ids across 3 slices, A ∪ B):
-  S6-189, S9a-W009, S9b-006, S9b-015, S9b-016, S9b-017, S9b-019, S9b-023, S9b-024, S9b-026, S9b-035, S9b-038, S9b-056, S9b-062, S9b-065, S9b-179, S9b-W001, S9b-W008, S9b-W014
+  S6-189, S9a-W009, S9b-006, S9b-015, S9b-016, S9b-017, S9b-019, S9b-023, S9b-024, S9b-026, S9b-035, S9b-038, S9b-056, S9b-062, S9b-065, S9b-179, S9b-W001, S9b-W008, S9b-W014, S8-074, S8-096, S8-099, S8-100, S9c-028, S11a-048, S11b-019 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-24]* much of what the final panel actually files is **not** cross-unit — S9b-019 (a mis-sliced 9-slice frame), S9b-056 (a NaN cost), S9b-062 (a no-op flag write) are ordinary in-unit defects that unit review simply missed, so "integration catches integration bugs" over-tidies the record. S9b-023 shows the main-merge PR running only the machine-checkable half.
   - *[from B T-28]* The final panel sometimes found nothing blocking and simply agreed (S9b-W014; S9b-038 R3 "no blocking findings remain"), and some e-units merged with zero review and shipped green (S9a-W009/W010) — integration is where the *cross-unit* class breaks, not uniformly where things break.
@@ -747,13 +764,15 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-25 + B T-42
   - basis: A derives the architecture consequence from the named parallel-agent failure mode; B derives the same rule from the coordination side (agreement-by-document, interfaces frozen before fan-out, owners named).
 - #4-role: **section**
+- impl-2026-08-10 amendment (proposed): the corpus adds two parallel-build failure modes T-25 did not name — T-89 (worktree-sync) and T-90 (stale scaffold guards).
 - thesis: One named failure mode — 'parallel agents each invent a different signature for an unspecified seam' — is the stated cause of a whole class of repo architecture, and the agents' confinement by `file_globs` collides so reliably with a single-entry SPA and with repo-wide rules that the pipeline invented a third answer: convert the conflict into a machine-checkable marker or a named follow-up. **B's addition:** the same logic replaced meetings for the two humans — each owner's spec *is* the communication, and a binding schedule assigns every open parameter an owner and a binding moment 'so nobody binds it implicitly by touching it first'.
 - lanes: 2 / 3
 - origin: emergent
 - seen-by (Pass B): B3 (+ T-09/T-30 cross) — **⇈**
 - support (33 atom ids across 5 slices, A ∪ B):
-  S4-021, S4-028, S5-006, S5-014, S5-020, S6-029, S6-065, S6-089, S6-102, S6-110, S6-136, S6-139, S6-143, S6-147, S6-148, S6-149, S6-150, S6-153, S9a-014, S9a-021, S9a-033, S9a-045, S9a-046, S9a-051, S9a-060, S9a-069, S9a-093, S9b-145, S9b-158, S9b-159, S9b-179, S9b-181, S9b-182
+  S4-021, S4-028, S5-006, S5-014, S5-020, S6-029, S6-065, S6-089, S6-102, S6-110, S6-136, S6-139, S6-143, S6-147, S6-148, S6-149, S6-150, S6-153, S9a-014, S9a-021, S9a-033, S9a-045, S9a-046, S9a-051, S9a-060, S9a-069, S9a-093, S9b-145, S9b-158, S9b-159, S9b-179, S9b-181, S9b-182, S8-065, S11a-001, S11a-014, S11a-021, S11a-028, S11b-036 (impl-2026-08-10)
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence: two new parallel-build failure modes — T-89 (worktree-sync) and T-90 (stale scaffold guards).
   - *[from A T-25]* **S6-139 carves out the hard limit** — some things a work unit *must not* decide, because inventing the temperament prose template "would be inventing game content"; seam-specification fails where the missing thing is authored content, not a signature. S9a-014's marker and S9a-046's TODO are only as good as the integrator reading them, and no slice can show whether they were honoured. **S9a-093 shows units still discovering the same worktree-sync gap on 2026-08-03**, i.e. the harness-side cause was never fixed, only routed around. S6-147/149/153 are **plans, not outcomes** at snapshot — no S6 atom reports the engine or client build actually running.
   - *[from B T-42]* Document-not-discussion failed — S9b-145 (two SSOTs on main diverged with no merge conflict), S4-021 (the pivotal DDAY-selection discussion left no document). Characteristic failure: silent divergence + unrecorded verbal decisions.
 - gaps:
@@ -776,7 +795,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B2 — **[single-source]**
 - support (28 atom ids across 4 slices, A ∪ B):
-  S6-186, S6-188, S8-015, S8-016, S8-024, S8-039, S9a-003, S9a-006, S9a-022, S9a-023, S9a-031, S9a-038, S9a-069, S9a-070, S9a-071, S9a-081, S9a-083, S9a-088, S9a-090, S9a-093, S9a-W008, S9b-004, S9b-005, S9b-040, S9b-041, S9b-042, S9b-044, S9b-130
+  S6-186, S6-188, S8-015, S8-016, S8-024, S8-039, S9a-003, S9a-006, S9a-022, S9a-023, S9a-031, S9a-038, S9a-069, S9a-070, S9a-071, S9a-081, S9a-083, S9a-088, S9a-090, S9a-093, S9a-W008, S9b-004, S9b-005, S9b-040, S9b-041, S9b-042, S9b-044, S9b-130, S8-063, S8-064, S8-096, S9c-030, S9c-040, S11a-004, S11a-008, S11a-013, S11a-052, S11b-003, S11b-012 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-26]* some harness-shaped failures *were* fixed upstream rather than merely caught at the PR layer — S6-186's Reconcile step, S9a-069's next-run architecture. So the PR layer is the detector, not necessarily the terminus. Conversely S9a-038's slash/dash bug has no recorded fix: the atom ends at the warning "이 상태로 다시 푸시하면 같은 유실이 반복된다."
   - *[from B T-25]* Some lost/killed work was clean design churn, not a bug (S9a-023, S9a-006/078). The model side *also* produced real defects (S9a-031 vacuous tests, S8-039 fixture-echoing labels), so "not the model" is a claim about *work-loss*, not correctness generally. S6-186 is the harness's own self-serving framing.
@@ -795,13 +814,15 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **A-only** — sources: A T-27
   - basis: A chronology-shaped finding — it exists only because A sharded by slice and could see the later runs against the earlier ones. B's lane sweep had no vantage point for it.
 - #4-role: **supporting-anecdote**
+- impl-2026-08-10 amendment (proposed): RESOLVED as venue migration. Maturity-vs-attrition is now answerable (T-88): adversarial review did not die, it migrated from agent↔agent unit PRs to dense human↔agent manual PRs (#140–#237; #234 carries 11 review submissions). Amend thesis to “the *fleet's* unit-PR review decayed to zero; review returned at full intensity in the manual era on a different channel.” Resolution comes from the newly-swept #140+ range, not #110/#116.
 - thesis: The adversarial multi-round review that defines the early runs is not what the later runs look like. By super/20260803–20260804, unit PRs merge with zero comments and zero review submissions while still filing confession-style bodies. Whether that is maturity or attrition is not answerable from the corpus — and it is the claim most exposed to the snapshot cut.
 - lanes: 2
 - origin: emergent
 - **THIN:** Carried from A T-27.
 - support (8 atom ids across 1 slices, A ∪ B):
-  S9a-089, S9a-090, S9a-092, S9a-093, S9a-W008, S9a-W009, S9a-W010, S9a-W015
+  S9a-089, S9a-090, S9a-092, S9a-093, S9a-W008, S9a-W009, S9a-W010, S9a-W015, S8-063, S8-064 (impl-2026-08-10)
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence S9c-001..048 — venue migration, #234's 11 review submissions (see amendment below).
   - *[from A T-27]* **the snapshot cut is a direct threat to this theme, and S9b refutes half of it.** #110 and #116 — the two largest integration PRs, in S9b's territory — carry 46/48/60 review submissions in the same window, so review did not stop; it moved off the unit PRs, and S9a-089/090/091 show heavy human review activity on 2026-08-03. The 46 zero-activity PRs also had their *bodies unread*, so "zero review" is measured from an inventory, not from reading.
 - gaps:
   - *[from A T-27]* a sweep of the 46 skipped bodies plus the post-snapshot PRs would settle direction; board and spend records would settle motive. Neither is in the corpus. **If the tail carries heavy review, this theme inverts.**
@@ -815,13 +836,15 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-28 + B T-09 + B T-30
   - basis: The densest agreement in the map: B raised it twice, from two different angles (B T-09 documents-as-machine-interface at containment 0.77, B T-30 write-documents-for-the-harness at 0.58), and both fold into A's thesis.
 - #4-role: **spine**
+- impl-2026-08-10 amendment (proposed): add counter-evidence — the instrument *failed to reach its reader* (T-89 worktree-sync gap; S11a-004/008/013, S11b-012), so the primary-reader-is-an-agent ideal broke in execution even where the spec existed.
 - thesis: The humans' main lever on a multi-agent build is not steering during the run but what they freeze before it. Decisions are pre-closed so agents stop inventing, acceptance criteria are made runnable, ambiguity is treated as a defect class ('an executable PRD ships no open ❔'; 'an invariant not written down does not exist'), and — decisively — the dependency graph is deliberately decoupled from the module DAG so the harness's parallelism actually engages. **B's addition:** because the primary readers are machines, natural language, register and precedence become functional parameters — English for anything an agent builds against, Korean reserved for authored game content, frozen throwaway inter-session contracts.
 - lanes: 2, 3 / cross (primary 3) / 2
 - origin: emergent
 - seen-by (Pass B): B3, B2, B5 — **⇈ convergence (3 lanes)** · B2 (+ T-09 cross-corroboration) — **⇈**
 - support (55 atom ids across 6 slices, A ∪ B):
-  S4-039, S4-046, S4-047, S4-049, S4-054, S4-055, S4-056, S4-057, S5-020, S6-011, S6-012, S6-013, S6-029, S6-034, S6-049, S6-050, S6-051, S6-073, S6-143, S6-147, S6-183, S6-186, S8-005, S8-027, S8-033, S8-043, S8-050, S8-053, S8-W010, S9a-005, S9a-066, S9a-067, S9a-084, S9a-087, S9a-088, S9a-093, S9b-001, S9b-002, S9b-012, S9b-016, S9b-040, S9b-041, S9b-102, S9b-104, S9b-109, S9b-116, S9b-133, S9b-159, S9b-162, S9b-172, S9b-175, S9b-179, S9b-181, S9b-182, S9b-W001
+  S4-039, S4-046, S4-047, S4-049, S4-054, S4-055, S4-056, S4-057, S5-020, S6-011, S6-012, S6-013, S6-029, S6-034, S6-049, S6-050, S6-051, S6-073, S6-143, S6-147, S6-183, S6-186, S8-005, S8-027, S8-033, S8-043, S8-050, S8-053, S8-W010, S9a-005, S9a-066, S9a-067, S9a-084, S9a-087, S9a-088, S9a-093, S9b-001, S9b-002, S9b-012, S9b-016, S9b-040, S9b-041, S9b-102, S9b-104, S9b-109, S9b-116, S9b-133, S9b-159, S9b-162, S9b-172, S9b-175, S9b-179, S9b-181, S9b-182, S9b-W001, S8-065, S9c-021, S11b-035, S11b-036, S11b-037, S11b-044 (impl-2026-08-10)
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence S11a-004, S11a-008, S11a-013, S11b-012 — spec never reached its reader (see T-89).
   - *[from A T-28]* **pre-freezing fails when the spec is wrong about reality** — S9b-012 (the PRD assumed a vendor path existed; it did not), S9b-040 (a PRD line overridden as stale at the approval gate), S9b-162 (three facts discovered only by construction, "아무도 밟지 않았을 뿐"), S9b-016 (a PRD reachability claim contradicted by the shipped data), S9b-041 (the schedule bending around a file one human had not written yet). S4-057 shows agents still "burning loops" on flaky triggers despite the rules. **S9a-093** is the sharpest: units built against `tests.md` because `spec.md`/`design.md` were *absent from the worktree* — the agent-reader pipeline failed to deliver the documents it designed for. And S9a-005 shows a document that correctly identified the decision it violated and shipped anyway.
   - *[from B T-09]* The rule is scoped, not total — S6-034/S8-050 carve out Korean for authored data and dated archive records; the one prose file outside the discipline (README, S6-013) went stale and self-contradictory. B5 argues this is a candidate *new lane* or *axis* (docs-as-interface); B3 keeps it inside lane 3.
   - *[from B T-30]* Written-everything-up-front was not sufficient on its own — S9b-W001/S6-186 (even a well-specified run hit resume/orchestration failures), S5-020 (a run against a draft spec expects "spec friction as the run's real second deliverable"). The doctrine is aspirational, not a guarantee.
@@ -848,7 +871,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B3 — **[single-source]** (overlaps T-28's content-reachability catch)
 - support (35 atom ids across 5 slices, A ∪ B):
-  S4-027, S4-028, S6-012, S6-013, S6-036, S6-051, S6-065, S6-093, S6-094, S6-102, S6-125, S6-138, S6-141, S6-142, S6-169, S6-178, S6-179, S8-026, S9a-066, S9a-074, S9a-075, S9a-087, S9b-016, S9b-035, S9b-046, S9b-056, S9b-065, S9b-145, S9b-157, S9b-163, S9b-164, S9b-171, S9b-173, S9b-177, S9b-178
+  S4-027, S4-028, S6-012, S6-013, S6-036, S6-051, S6-065, S6-093, S6-094, S6-102, S6-125, S6-138, S6-141, S6-142, S6-169, S6-178, S6-179, S8-026, S9a-066, S9a-074, S9a-075, S9a-087, S9b-016, S9b-035, S9b-046, S9b-056, S9b-065, S9b-145, S9b-157, S9b-163, S9b-164, S9b-171, S9b-173, S9b-177, S9b-178, S8-076, S8-080, S8-081, S8-082, S9c-032, S9c-041, S9c-042, S9c-053, S9c-068, S11a-010, S11a-044, S11b-029, S11b-037, S11b-038 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-29]* the project's answers work when applied — S9b-171 (a generated transcription cannot disagree with its source), S9b-164 (compiler-enforced), S9b-177 (golden test), S6-142 — so this is a solved problem class where the solution was applied unevenly, not an unsolved one. S9b-163 shows a cheap human protocol (absorb rather than throw back) keeping the divergence count down. Against the found-by-writing half: **S6-093's plugin stayed missing for days after being specified** — writing found the problem without fixing it — and S6-065 shows a drift the documents did *not* catch in time.
   - *[from B T-40]* The audit is not exhaustive — S6-013 (README self-contradiction unmanaged), S6-051 (a tracker "went stale undetected"), S9b-145. Reactive and incomplete.
@@ -872,7 +895,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: seed-confirmed:3
 - seen-by (Pass B): B2 (+ T-05 cross-corroboration) — **⇈** · B2 — **[single-source]**
 - support (28 atom ids across 5 slices, A ∪ B):
-  S4-016, S4-047, S4-050, S4-051, S4-053, S4-059, S4-W012, S5-001, S5-002, S5-003, S5-004, S5-005, S5-006, S5-010, S5-012, S5-013, S5-016, S5-017, S5-019, S5-020, S5-W005, S5-W006, S5-W008, S6-010, S6-190, S8-052, S9b-018, S9b-105
+  S4-016, S4-047, S4-050, S4-051, S4-053, S4-059, S4-W012, S5-001, S5-002, S5-003, S5-004, S5-005, S5-006, S5-010, S5-012, S5-013, S5-016, S5-017, S5-019, S5-020, S5-W005, S5-W006, S5-W008, S6-010, S6-190, S8-052, S9b-018, S9b-105, S9c-015, S9c-034, S9c-035, S11a-052, S11b-032 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-30]* **S5-012 / S5-W006** — the first frontend-mod attempt was "fidelity *governance* … with no rendered pixel ever in front of an agent that could act on it", i.e. an extension program that added rules without adding capability, and had to be fully reversed. **S5-019** — the harness's own automatic lens-seating rules defeat the fidelity mod unless a human pins it, so the extension does not compose with the machine it extends. **S4-053** — the demo_publish diff sat uncommitted and "the installed `~/.claude/` copy is what the run actually uses", so "verified against source" carries a provenance caveat at least once.
   - *[from B T-31]* The feel machinery was deliberately kept subordinate — S5-017/018 quarantine subjective image judgment from the escalation ladder ("taste stays out of the gate"), S5-019 admits the fidelity lens lands in `dropped[]` without a human pin. The harness does *not* claim to automate fun-judgment; it routes feel to a human — which *supports* seed 3.
@@ -900,7 +923,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - **THIN:** Carried from A T-31.
 - support (14 atom ids across 1 slices, A ∪ B):
-  S9a-001, S9a-002, S9a-003, S9a-005, S9a-013, S9a-025, S9a-046, S9a-064, S9a-065, S9a-068, S9a-072, S9a-075, S9a-079, S9a-088
+  S9a-001, S9a-002, S9a-003, S9a-005, S9a-013, S9a-025, S9a-046, S9a-064, S9a-065, S9a-068, S9a-072, S9a-075, S9a-079, S9a-088, S6-237, S8-079, S8-105, S8-114, S9c-012, S9c-017, S9c-060, S11a-052, S11b-035 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-31]* rule-application is not stable — S9a-003 reverses the principled cut of S9a-001 nine minutes later, by the same author; S9a-005 documents the team decision it was violating and proceeds anyway; S9a-075 finds a repo rule *overstated in the docs* rather than over-enforced, so rule-citation sometimes ran ahead of rule-compliance.
 - gaps:
@@ -919,7 +942,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: 1 (with 2 where the enforcing party is the unattended agent)
 - origin: emergent
 - support (23 atom ids across 5 slices, A ∪ B):
-  S2-018, S2-020, S2-026, S2-030, S3-003, S3-010, S3-011, S3-015, S3-017, S3-021, S3-024, S3-025, S3-026, S3-032, S3-049, S6-119, S6-142, S6-167, S8-034, S8-W009, S9b-137, S9b-141, S9b-150
+  S2-018, S2-020, S2-026, S2-030, S3-003, S3-010, S3-011, S3-015, S3-017, S3-021, S3-024, S3-025, S3-026, S3-032, S3-049, S6-119, S6-142, S6-167, S8-034, S8-W009, S9b-137, S9b-141, S9b-150, S3-069, S3-070, S3-077, S8-084, S8-085, S8-086 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-32]* **S3-017 is a direct counter-instance** — the drop condition fired on the program's best result (p=0.00006) and was *overridden*, corrected to name only the predicted stance; the entry knows how it looks ("'the drop condition was wrong' is exactly what rationalisation sounds like"). **S3-025** is the same pressure caught one step earlier: the agent proposed the rule change that would credit its own result and had to invent a separation-of-powers norm to avoid enacting it — the norm exists because the temptation was live. **S3-026** is a third amendment in the wanted direction. **S9b-150** records the human overriding a pre-registered drop condition and holding itself to a stricter test instead. A3 looked for a pre-registration quietly *dropped* rather than openly amended and found none — the amendments are all on the record with their self-serving numbers attached. Separately, pre-registration did not make the plans correct: S2-026 found a contradiction *inside* the pre-registered plan, and **S2-020 names the worst hole** — option-order (M4) was never checked, and the document itself says that if choice depends on option order "지금까지의 모든 결과에 위치 편향이 섞여 있다."
 - gaps:
@@ -938,7 +961,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: 1
 - origin: emergent
 - support (14 atom ids across 3 slices, A ∪ B):
-  S3-003, S3-006, S3-007, S3-016, S3-027, S3-028, S3-031, S3-034, S3-035, S3-036, S3-039, S6-124, S6-156, S9b-139
+  S3-003, S3-006, S3-007, S3-016, S3-027, S3-028, S3-031, S3-034, S3-035, S3-036, S3-039, S6-124, S6-156, S9b-139, S3-068, S8-112, S9c-023, S9c-044 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-33]* **the demotions are not universal and this slice under-reports the survivals.** S3-027 is the cleanest counter — the lexical-chain alternative that threatened the flagship was killed by a controlled experiment (every label renamed, effect intact, 교감 0/14 → 16/20 at p=2.2×10⁻⁶). S3-028: the fake block sited at the pipeline's strongest positive came back live = baseline (p=0.76) — the control *passed*. S3-036 cleared its pre-declared power bar with a clean placebo and 10/10 citation. **S3-016 is the reverse shape entirely** — replication *promoted* a result by showing the mechanism had worked all along and the instrument had hidden it. Per the coverage audit S3 never got its WIN promotion pass, so the demotion:survival ratio here is inflated by mining bias, not measured.
 - gaps:
@@ -977,7 +1000,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B3 (+ B2's T-36 probe-runner corroborates the runbook side) — **⇈**
 - support (37 atom ids across 5 slices, A ∪ B):
-  S2-009, S2-042, S3-002, S3-023, S3-028, S3-039, S3-056, S3-061, S3-064, S3-065, S6-037, S6-038, S6-063, S6-068, S6-076, S6-080, S6-088, S6-100, S6-107, S6-116, S6-118, S6-119, S6-124, S6-126, S6-142, S6-155, S6-158, S6-159, S6-160, S6-162, S6-164, S6-165, S6-168, S6-169, S7-014, S7-015, S9b-152
+  S2-009, S2-042, S3-002, S3-023, S3-028, S3-039, S3-056, S3-061, S3-064, S3-065, S6-037, S6-038, S6-063, S6-068, S6-076, S6-080, S6-088, S6-100, S6-107, S6-116, S6-118, S6-119, S6-124, S6-126, S6-142, S6-155, S6-158, S6-159, S6-160, S6-162, S6-164, S6-165, S6-168, S6-169, S7-014, S7-015, S9b-152, S3-082, S8-083, S9c-027, S9c-044 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-36]* **the discipline is repeatedly overruled by the deadline, and the record says so.** S6-063: the two pending human evaluations (V3 blind questionnaire, E5′ report scoring) were never separately judged and the meeting "accepted them into the concept confirmation" under schedule pressure, with the debt written down in two places. S6-037/S6-038: C-BLOCK was *adopted as the core loop* before placebo control, negative control and blind coding were done — the program shipped a decision on incomplete verification and then capped the wording rather than waiting. S6-068 pre-commits to shipping a partial spec rather than slipping schedule. S6-155 admits a numeric eligibility floor is unaffordable at N≤5 and substitutes a default.
   - *[from B T-41]* Encoded discipline was breached — S2-009 (a fabricated artifact that *faked its own audit trail*, a false `tool_uses: 0`), so "immutable raw records" is a policy defended against a demonstrated forgery, not an invariant the format guarantees. S3-023/S3-056 (blind coding traded away under deadline).
@@ -1000,7 +1023,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: 1
 - origin: emergent
 - support (15 atom ids across 4 slices, A ∪ B):
-  S3-030, S3-031, S3-032, S3-035, S3-041, S3-043, S3-051, S3-054, S3-060, S3-061, S6-059, S6-146, S6-176, S8-041, S9b-155
+  S3-030, S3-031, S3-032, S3-035, S3-041, S3-043, S3-051, S3-054, S3-060, S3-061, S6-059, S6-146, S6-176, S8-041, S9b-155, S3-075, S8-087, S8-088, S9c-066 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-37]* the conversion is not automatic and the corpus guards against it — S3-030 explicitly withholds the design reading from the machine ("That reading is 민서's call, not this run's") and S3-054 flags dead-stance findings "as leads, never as write verdicts", so the atoms support "nulls *were offered* as design law" with adoption held by a human. **S3-061 is the case where a null yielded nothing at all** — "no information", not "no difference" — and the design question was handed back unanswered.
 - gaps:
@@ -1053,6 +1076,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
   - *[from A T-40]* **generation is instrumented; selection is not.** The 우는다리 rationale, the outcome of S5-024's blind model test, and S4-030's actual drafts are all missing. If the selection rationale does not exist anywhere, that is a finding about the pipeline's weakest link.
   - *[from B T-47]* No artifact shows which models produced which draft or that arms ran concurrently rather than serially; all asset-gen evidence is from the *demos*, not DDAY (a text game shipping pre-generated NPC art, S6-042).
 - oral-only:
+  - *[impl-2026-08-10]* +support (ORAL-ONLY) OH-3 §2 — Lane 4 found no written attach this sweep (the two new packs are single-author, not rival candidates); noted THIN, not attached.
   - *[from A T-40]* OH-2's "시장 조사를 은근 많이 했는데, 각 컨셉 문서별로 있던 것으로 기억" touches the input side; S1-054/S1-016/S1-017 confirm per-doc research for four concepts (see T-64).
   - *[from B T-47]* OH-2's "why games are fun" list is context, not evidence — do not launder.
 - fit:
@@ -1069,7 +1093,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B4 — **[single-source]** (a headline win-sweep-recovered theme)
 - support (16 atom ids across 5 slices, A ∪ B):
-  S2-057, S2-058, S4-031, S7-004, S7-005, S7-013, S8-043, S8-048, S8-W005, S8-W010, S8-W015, S9b-166, S9b-167, S9b-168, S9b-W009, S9b-W013
+  S2-057, S2-058, S4-031, S7-004, S7-005, S7-013, S8-043, S8-048, S8-W005, S8-W010, S8-W015, S9b-166, S9b-167, S9b-168, S9b-W009, S9b-W013, S2-082, S2-083, S2-084, S9c-064, S9c-065 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-41]* **S7-005 inverts the usual trust story** — here the *human* is the untrusted contributor and the generated layer is the reliable one, which cuts against a simple "AI proposes, code verifies" reading. **S9b-168/169/170** show the loop is not self-sufficient: its lint silently skips `anyOf` — exactly the two newest fields; its one hand-authored input has none of the three defenses applied to generated files (a `vairable` typo produced byte-identical output); its positional drift guard is defeated by two events sharing a timestamp — all found by **a human executing the scripts**. S8-048 also records a "번역투 방지" device added to the skill, i.e. the generative half needed its own guard against a characteristic AI failure. S8-W005's own numbers (WARN 4, FLAG 43) show "certified" means consumer-blocking-error-free, not complete.
   - *[from B T-50]* Reproducibility has human-kept and machine-fragile edges — S2-057 ("프로브 전 사람 1회 독해 … 어느 회차도 그것을 대체하지 않는다"), S9b-168 (the skill's own zero-dep validator silently skipped `anyOf`, so the newest fields went unchecked), S8-048 (an LLM-based compile-scenario skill designed then discarded).
@@ -1093,7 +1117,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B1, B4 — **⇈ convergence (2 lanes; lane-1 mechanism + lane-4 authoring)**
 - support (43 atom ids across 5 slices, A ∪ B):
-  S1-045, S1-056, S2-027, S2-028, S2-032, S2-035, S2-046, S2-048, S2-050, S2-051, S2-052, S2-053, S3-047, S3-054, S6-038, S6-053, S6-057, S6-059, S6-060, S6-062, S6-063, S6-071, S6-090, S6-091, S6-131, S6-132, S6-135, S6-139, S6-158, S6-164, S6-170, S6-171, S6-172, S6-173, S6-174, S6-175, S6-176, S6-177, S7-009, S7-010, S7-011, S7-012, S7-018
+  S1-045, S1-056, S2-027, S2-028, S2-032, S2-035, S2-046, S2-048, S2-050, S2-051, S2-052, S2-053, S3-047, S3-054, S6-038, S6-053, S6-057, S6-059, S6-060, S6-062, S6-063, S6-071, S6-090, S6-091, S6-131, S6-132, S6-135, S6-139, S6-158, S6-164, S6-170, S6-171, S6-172, S6-173, S6-174, S6-175, S6-176, S6-177, S7-009, S7-010, S7-011, S7-012, S7-018, S2-078, S2-079, S2-080, S2-081, S3-075, S8-087, S8-088, S9c-022, S9c-023, S9c-045, S9c-046 (complication S9c-027) (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-42]* **the rules bend to the model rather than the reverse** in S6-060 (the length cap relaxed because the overruns held the best sentences), which complicates "rules are physics." **S6-139** marks the floor below which the discipline cannot transfer — rendering the temperament prose "would be inventing game content", so a work unit must not do it. S6-063 shows the discipline's own output quality under-verified (E5′ skipped). And T-07's counter-evidence applies: several catalogued "model failures" were authoring failures (S6-158, S2-032).
   - *[from B T-15]* The "physics" is provisional and bends — C-BLOCK "adopted but not verified" (S3-047/S6-038), all v1 measurements were sonnet and haiku must be recalibrated ("모델이 너무 유능하다" could invert, S1-045), a "dead" stance revived by a one-word relabel (S6-174). And "a large pool with a hidden matching rule is the classic unfair-puzzle shape" (S6-091) — the mechanism that makes injection precise risks an illegible lottery (the #1 cross-concept risk, S1-056). The physics rules also make good scenes un-writable (S6-170), and the best sentences kept landing in *discarded* over-length drafts (S6-060/S2-035).
@@ -1118,7 +1142,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - seen-by (Pass B): B4 (+ T-04 distrust-spine, T-29 confession-ledger cross) — **⇈**
 - **THIN:** Carried from A T-43.
 - support (14 atom ids across 4 slices, A ∪ B):
-  S1-018, S2-009, S2-032, S2-044, S2-047, S2-048, S2-053, S2-054, S2-055, S2-057, S2-058, S2-062, S3-005, S9b-133
+  S1-018, S2-009, S2-032, S2-044, S2-047, S2-048, S2-053, S2-054, S2-055, S2-057, S2-058, S2-062, S3-005, S9b-133, S2-083, S2-084, S9c-065 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-43]* **S2-057 is decisive** — 우는다리 shipped with its §9 self-check, and a two-pass paper check (orchestrator read, then a dedicated inspector subagent) turned up **18** issues; the finding-adjudication split (7 fixed / 6 rejected on a contract argument / 3 deferred to the probe's jurisdiction) shows even the inspector's yield needed a second authority. **S2-058** compounds it: 7 of those 18 were mechanically detectable, i.e. within reach of a lint the self-check never approximated. A2 searched for a case where a self-evaluation caught something a later pass missed and found none.
   - *[from B T-48]* Self-audit is model self-report, which the corpus repeatedly shows cannot certify itself — S2-062 (`refs` honest "merely because the prompt asks"), S3-005 (model fabricates block ids in its own traceability field), S2-009 (the forger reproduced the audit conventions + a false `tool_uses: 0`). The confessions are trusted only because a human re-reads.
@@ -1161,7 +1185,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B4 (+ T-28 integration-pass, T-40 doc-audit cross) — **⇈**
 - support (19 atom ids across 6 slices, A ∪ B):
-  S4-031, S6-091, S6-125, S6-135, S7-009, S7-011, S7-014, S8-026, S8-031, S9a-006, S9a-066, S9b-016, S9b-048, S9b-053, S9b-055, S9b-058, S9b-059, S9b-062, S9b-169
+  S4-031, S6-091, S6-125, S6-135, S7-009, S7-011, S7-014, S8-026, S8-031, S9a-006, S9a-066, S9b-016, S9b-048, S9b-053, S9b-055, S9b-058, S9b-059, S9b-062, S9b-169, S2-075, S2-076, S2-084, S2-085, S9c-025, S9c-048, S9c-057, S9c-063, S9c-066 (the dominant pattern of this sweep) (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-45]* the project's answer was to push content checks into the schema (S7-009, S7-011, S6-135's E5 "a lock with one key is a raffle, not deduction") and those rules do fire — S6-125 caught a `>= 1` roster rule making 7 of 19 beats unrunnable by checking against real authored data. So this is a partly-solved class, and its residue is exactly the part that needs a human's eyes (T-46).
   - *[from B T-54]* These catches are on demos that were *cut*, not the shipped game (S9a-006; DDAY has no demo, S8-031), so it is unproven the same rigor reaches DDAY content; and the reviewers are themselves AI personas — largely AI-judging-AI-content, complicating the "human judges" reading of T-05.
@@ -1180,13 +1204,14 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-46 + B T-05
   - basis: Seed 3, and the most broadly corroborated theme in either pass — all five of B's agents surfaced it independently, and A reaches the same finding with the same complication. Containment 0.67.
 - #4-role: **spine**
+- impl-2026-08-10 amendment (proposed): the boundary migrated *toward more human hands-on work* in the manual phase (human plays the live run, files first-minute requests); reinforce the “timestamp, don't state as constant” note.
 - **OH-5 update (2026-08-07, oral — does not become written):** supplies the practice-side data point this theme's `gaps` said was missing. A human ran the Doodle Life demo to the end and killed the track on a fun verdict — "너무 재미없고 게임성이 없다" — *against* a live counter-argument that a better model or prompt would fix it. So the fun verdict did land on a human, in play, and overrode a technical rebuttal. The `gaps` line "no human playtest verdict exists in any slice" is now oral-answered for the demo phase and **still open for DDAY itself**. Seed 3's rule side is strengthened; the porousness recorded in counter-evidence stands unchanged.
 - thesis: Seed 3 is **supported as a governance rule and contradicted as a description of practice.** Across every slice the final verdict — is the mechanism real, is the scenario good, is this worth keeping — is explicitly reserved for a named person; and across the same slices agent review seats routinely made accepted fun-adjacent judgments, one of them rewriting NPC dialogue on taste grounds. **B's addition:** the boundary also *migrated* under deadline (blind coding dropped, the V3/E5′ verdict skipped), so it must be timestamped, not stated as a constant.
 - lanes: cross (1, 4) / cross
 - origin: seed-confirmed:3
 - seen-by (Pass B): B5, B2, B3, B4, B1 — **⇈ convergence (all 5 agents)** — the single most broadly corroborated theme in the map
 - support (72 atom ids across 10 slices, A ∪ B):
-  S1-020, S1-022, S1-023, S1-024, S1-029, S1-038, S1-039, S2-022, S2-039, S2-040, S2-057, S2-070, S3-018, S3-023, S3-030, S3-036, S3-047, S3-054, S3-055, S3-056, S3-061, S4-011, S4-012, S4-019, S4-033, S4-043, S4-057, S5-001, S5-003, S5-005, S5-013, S5-017, S5-018, S5-019, S5-W007, S6-031, S6-047, S6-060, S6-063, S6-139, S6-145, S6-163, S6-170, S6-190, S6-191, S6-195, S7-014, S8-019, S8-035, S8-041, S8-042, S8-W005, S9a-015, S9a-016, S9a-025, S9a-052, S9a-063, S9a-068, S9a-080, S9a-W011, S9b-019, S9b-052, S9b-053, S9b-058, S9b-059, S9b-108, S9b-141, S9b-150, S9b-151, S9b-155, S9b-174, S9b-186
+  S1-020, S1-022, S1-023, S1-024, S1-029, S1-038, S1-039, S2-022, S2-039, S2-040, S2-057, S2-070, S3-018, S3-023, S3-030, S3-036, S3-047, S3-054, S3-055, S3-056, S3-061, S4-011, S4-012, S4-019, S4-033, S4-043, S4-057, S5-001, S5-003, S5-005, S5-013, S5-017, S5-018, S5-019, S5-W007, S6-031, S6-047, S6-060, S6-063, S6-139, S6-145, S6-163, S6-170, S6-190, S6-191, S6-195, S7-014, S8-019, S8-035, S8-041, S8-042, S8-W005, S9a-015, S9a-016, S9a-025, S9a-052, S9a-063, S9a-068, S9a-080, S9a-W011, S9b-019, S9b-052, S9b-053, S9b-058, S9b-059, S9b-108, S9b-141, S9b-150, S9b-151, S9b-155, S9b-174, S9b-186, S6-200, S6-206, S6-209, S6-213, S6-227, S8-111, S9c-015, S9c-029, S9c-039, S9c-050, S9c-058, S9c-059, S9c-068, S12-005, S12-016 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-46]* **agents made aesthetic calls, and they were accepted.** S9a-016 (an *agent* argues from player experience over legal data: "판정단이 처음 60초에 관찰을 눌렀을 때 빈 결과를 보면 '버그'로 읽힐 위험이 있습니다"), S9a-052 (an agent notices the evasive line answers a question nobody asked *on the path the design pushes players toward*, and rewrites both customers' lines — "그저 요즘 들어 밤이 유독 길게 느껴질 뿐이지요."), S9a-015, S9a-080; S9b-053, S9b-058 ("a one-line differentiator here buys more perceived depth than any other single string in the demo"), S9b-059, S9b-052, S9b-019 ("the single most important pixel in the demo"), S9b-174 (a *design skill* producing the client visual target). **S5-005** encodes feel as an agent-seatable review lens; **S5-W007 / S5-013** hand agents the perception task in-loop by 08-03; **S6-190** shows the game-feel lens producing three findings "a correctness-only panel would have passed"; **S6-145** operationalises fun as a *measurable policy gap* (random/greedy/oracle bots, "Gap ≈ 0 means the pack is a brute-force game") before any human playtest exists; **S8-041** made the single most consequential design cut on a p-value and a 0-for-4 count, not on taste; **S2-039** recommends keeping an **LLM as the judge** of player solutions. And the humans did not always exercise the reserved faculty: S6-063 (two scheduled human quality verdicts skipped), S9a-W011 (a bare "LGTM"), S4-019 (the two humans never agreed that fun is even the optimization target — status "가중치 합의 없음"), S4-012 (on the one live fun question they reached no conclusion).
   - *[from B T-05]* The boundary is **porous and it migrated.** (a) The team *did* push measurement into fun-adjacent territory — policy-gap "추리가 값을 하는가" is an instrument for "is this fun-shaped" (S6-145, S7-014), and game-feel became a *scored review lens* with an evidence bar (S5-005, catches at S6-190). (b) An LLM *does* judge inside the game — the kept LLM-judge, called "이 아키텍처의 존재 증명" (S2-039/S1-023/S3-036). (c) Under deadline the human verdict was *skipped or traded*, not exercised: blind coding dropped (S3-023/S3-056), V3/E5′ fun/quality evals "accepted into concept confirmation" without a separate verdict (S6-063). So the seed holds as a *rule* more cleanly than as a *practice*.
@@ -1210,7 +1235,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B2 — **[single-source]** (relates cross to T-05/T-32 human-kept boundary)
 - support (38 atom ids across 6 slices, A ∪ B):
-  S3-018, S3-020, S3-055, S4-045, S4-052, S4-060, S4-067, S5-006, S5-008, S5-009, S5-013, S5-028, S5-029, S5-W002, S5-W007, S5-W011, S6-014, S6-110, S6-191, S6-195, S8-020, S9b-007, S9b-012, S9b-042, S9b-055, S9b-107, S9b-113, S9b-123, S9b-141, S9b-150, S9b-151, S9b-166, S9b-167, S9b-174, S9b-176, S9b-183, S9b-191, S9b-W013
+  S3-018, S3-020, S3-055, S4-045, S4-052, S4-060, S4-067, S5-006, S5-008, S5-009, S5-013, S5-028, S5-029, S5-W002, S5-W007, S5-W011, S6-014, S6-110, S6-191, S6-195, S8-020, S9b-007, S9b-012, S9b-042, S9b-055, S9b-107, S9b-113, S9b-123, S9b-141, S9b-150, S9b-151, S9b-166, S9b-167, S9b-174, S9b-176, S9b-183, S9b-191, S9b-W013, S9c-005, S9c-067 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-47]* **the boundary moves, in both directions, inside the corpus.** S5-W002 — nine verification dimensions (146 tests, OpenAPI contract validation, non-root Docker checks, 4-turn mock E2E) *were* gated keylessly, so the un-delegable slice is narrow, not large. S5-W007 / S5-013 — by 08-03 the frontend-mod v2 hands agents their own build screenshot and the reference PNG and asks them to judge divergence in-loop, a perception task previously reserved for humans. S9b-012 — a human-provided path did not exist, so an agent built it in-run under approval. S9b-174, S9b-167 / S9b-W013 — scenario writing, the most creative task in the project, was delegated to a bounded loop. S4-052 shows the reverse trust direction too: the agent is trusted to *degrade honestly* rather than being fenced out. And S5-008 states the split as a rule with **no atom measuring compliance with it**.
   - *[from B T-24]* The fence is not absolute — S9b-012 (when the "provided" vendor path didn't exist on the branch, the human ratified an in-run scope expansion), S9b-113/S5-028 (the agent-arena backend *was* live-verified across both providers and MCP/Skills — with keys, run by/for a human). So the boundary is "agents can't self-verify live," not "agents never touch live."
@@ -1234,7 +1259,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B2 (+ T-05/T-04 cross) — **⇈**
 - support (39 atom ids across 5 slices, A ∪ B):
-  S3-025, S3-047, S3-056, S6-149, S6-186, S6-195, S8-038, S8-039, S9a-002, S9a-004, S9a-025, S9a-063, S9a-064, S9a-067, S9a-073, S9a-074, S9a-075, S9a-077, S9a-079, S9a-083, S9a-087, S9a-088, S9a-089, S9a-090, S9a-091, S9a-092, S9a-W007, S9a-W008, S9a-W009, S9a-W010, S9a-W011, S9b-004, S9b-011, S9b-022, S9b-040, S9b-041, S9b-042, S9b-044, S9b-168
+  S3-025, S3-047, S3-056, S6-149, S6-186, S6-195, S8-038, S8-039, S9a-002, S9a-004, S9a-025, S9a-063, S9a-064, S9a-067, S9a-073, S9a-074, S9a-075, S9a-077, S9a-079, S9a-083, S9a-087, S9a-088, S9a-089, S9a-090, S9a-091, S9a-092, S9a-W007, S9a-W008, S9a-W009, S9a-W010, S9a-W011, S9b-004, S9b-011, S9b-022, S9b-040, S9b-041, S9b-042, S9b-044, S9b-168, S8-111, S9c-029, S9c-030, S9c-039, S9c-068, S11b-042 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-48]* the human was sometimes wrong and was corrected — S9a-091 (the human's `notsup` was not the default; the agent's correction accepted), S9a-077 (a requested fix that could not run as specified), S8-038 (the human-set gate's premise was wrong and cost 30 calls), S8-039 (the human-designed instrument carried an undetected confound across every prior probe). The demanding-evidence pattern is not uniform: S9a-W011's bare "LGTM"; and S9a-092 / S9a-W009 / S9a-W010 show whole late runs merging with no human comment at all. **The clean claim "humans judge, AI measures" survives as a division of *labour*, not of *reliability*.**
   - *[from B T-32]* Human authority also *deferred* to agents — S9b-022 (Lead conceded a three-round exchange, "you were right"), and whole e-units merged with no human review (S9a-W009/W010). The wheel is human-held at the boundaries, not continuously.
@@ -1279,7 +1304,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - **THIN:** Carried from A T-50.
 - support (10 atom ids across 2 slices, A ∪ B):
-  S4-002, S4-005, S4-012, S4-019, S4-021, S4-027, S4-029, S4-032, S5-021, S5-024
+  S4-002, S4-005, S4-012, S4-019, S4-021, S4-027, S4-029, S4-032, S5-021, S5-024, S4-080, S4-081 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-50]* **THIN and possibly a description of one document's template** — the terse hand-written 07-28 note (S4-021) has no disagreements table at all, and S5's equivalent documents record *rejected alternatives* (S5-021) rather than live dissent. S5-024 makes the opposite move, pre-resolving scorer disagreement by a fixed rule.
 - gaps:
@@ -1294,12 +1319,13 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-51 + B T-13
   - basis: Seed 2. Containment 0.71. Both passes reach the same qualified verdict; A's is the sharper one and governs the merged record (see the seed table).
 - #4-role: **section**
+- impl-2026-08-10 amendment (proposed): this sweep is the **first real-deploy latency measurement** the theme flagged as untested (S12-024..027); partly closes T-51's own gap, but the Bedrock re-measurement gap (T-73/T-86) stays open.
 - thesis: Response time entered the record as a *game* constraint before any concept was chosen and every subsequent architecture decision is priced against it. But the shipping budget was an untested copy from another game until the first real deploy on 2026-08-04, and the one model decision that turned on measurement was decided on contract compliance and measurement continuity rather than on latency. **B's addition:** the *speed itself* was largely never achieved — it was sidestepped by making waiting diegetic, codified as 'latency hides in natural pauses; never block mid-action gameplay'.
 - lanes: 1 (reaching 2) / cross (primary 1, with a lane-2 build bridge and a cost cross-tie)
 - origin: seed-confirmed:2 (with a strong "how" nuance)
 - seen-by (Pass B): B1, B5, B4 — **⇈ convergence (3 lanes)**; B3 reports it **seed-unevidenced for lane 3** and B4 **seed-unevidenced for lane 4** (no creator-lane home)
 - support (53 atom ids across 10 slices, A ∪ B):
-  S1-006, S1-010, S1-014, S1-034, S1-035, S1-044, S2-063, S2-064, S2-069, S3-004, S3-039, S3-059, S3-063, S4-009, S4-044, S4-068, S4-072, S5-022, S5-023, S5-035, S5-036, S5-W004, S6-006, S6-017, S6-020, S6-021, S6-022, S6-045, S6-076, S6-080, S6-081, S6-108, S6-128, S6-170, S7-001, S8-021, S8-032, S8-036, S8-040, S8-051, S8-060, S8-W011, S8-W013, S9a-025, S9a-073, S9a-080, S9a-W014, S9b-018, S9b-046, S9b-052, S9b-160, S9b-185, S9b-W007
+  S1-006, S1-010, S1-014, S1-034, S1-035, S1-044, S2-063, S2-064, S2-069, S3-004, S3-039, S3-059, S3-063, S4-009, S4-044, S4-068, S4-072, S5-022, S5-023, S5-035, S5-036, S5-W004, S6-006, S6-017, S6-020, S6-021, S6-022, S6-045, S6-076, S6-080, S6-081, S6-108, S6-128, S6-170, S7-001, S8-021, S8-032, S8-036, S8-040, S8-051, S8-060, S8-W011, S8-W013, S9a-025, S9a-073, S9a-080, S9a-W014, S9b-018, S9b-046, S9b-052, S9b-160, S9b-185, S9b-W007, S8-078, S12-024, S12-025, S12-026, S12-027, S12-032, S12-033 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-51]* **the latency budget was inherited, not derived.** S9b-185 / S8-060: the reporter's 7 s ceiling "came from apothecary's … The arithmetic was fine; the premise — that 7 s covers a call this tier had never made — was never tested"; the one call that passed under it "did not beat the clock by being fast, it beat it by breaking the contract" (16 sentences against a required 20–30). **The rigorous model-selection benchmark was dropped twice** (S4-072, S5-023), and the shipped model was chosen "on live verification of access and schema behavior, not on the model-selection benchmark the earlier plan required". **S6-022 decides model choice on measurement continuity, not speed**: Nova 2 Lite benchmarked at 4.19 s vs haiku 7.79 s on a byte-identical prompt and **rejected**, because the gap "is almost entirely that it writes **less**" and switching "would decouple the measured mechanism from the shipped system six days before the deadline." S6-080 / S6-076 show the team unable to state a latency budget for weeks and disqualifying its own figures. S4-009 left the budget unquantified as open question #7. **And the freedom levers make every call slower** (S2-069: 29.7 → 52.9 s), so T-02 and T-51 pull against each other with no atom resolving the trade.
   - *[from B T-13]* The speed mostly did NOT materialize as measured responsiveness — ~19–75s figures withdrawn as measuring subagent round-trips not API calls (S3-004/S6-080), the first real reporter call blew its budget 2/3 and the "passing" one "beat the clock by breaking the contract" (S6-020/S8-060/S9b-185), SSE streaming was never built (typewriter is a client-side replay, S6-081). The "must appear early and visibly" requirement is asserted in guides (S6-170) but never measured against actual player perception. So the seed reads best as *illusion of pace via fiction and fallback*, not achieved speed — it lives in lane 1 with cost (T-11) as its real cross-tie; the pacing-as-freedom causal claim is under-evidenced.
@@ -1307,6 +1333,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
   - *[from A T-51]* **the seed's actual claim — that pacing *serves the illusion of freedom* — attaches to nothing in 905 atoms.** Every latency atom links speed to build cost, judge attention, contract compliance or measurement budget; A1, A2, A3, A5, A6, A7 and A8 each looked for the causal link independently and none found it. **No atom reports a human judging that the game felt fast or slow** — the chain stops at seconds measured and never reaches perceived pace. No end-to-end production latency distribution exists.
   - *[from B T-13]* No end-to-end player-felt latency measurement existed at snapshot (proxy went live 08-04 with only smoke numbers, S6-017) — the seed's payoff is unmeasured.
 - oral-only:
+  - *[impl-2026-08-10]* +oral OH-3 §2 (first real-deploy latency measurement — see amendment below).
   - *[from A T-51]* **OH-3 §2 is the richest source on this theme and A6 ran the assigned corroboration check with a mixed verdict.** *Confirmed — the method shape*: "모델과 추론 강도만 바꿔가며" matches S8-032 / S8-W011 exactly, and S6-022 is precisely a hold-the-prompt-fixed, vary-the-model benchmark whose verdict weighs quality and latency together and is made by a human. *Contradicted — the scale*: **no atom records 수십~수백 runs of a model comparison.** Every model-comparison run count is small (3 then 5 in S8-060/S8-W013; 4 measured play paths in S8-032; 10/10 in S8-040). The only tens-to-hundreds program is the *mechanism* probe, which holds the model **fixed** ("모든 테스트는 haiku", S8-036) and varies the stance set — the opposite variable. **The two programs appear conflated in memory, and A3 independently warns that reading S3-039's "381 attempts" as 윤석's sweep would be wrong.** *No trace*: "일주일은 걸렸을 일을 반나절 만에 결정했다" — nothing in any slice records elapsed time for any measurement program. *No trace*: "지연성을 게임의 일부분으로 자연스럽게 풀어낼 수 있을까" — S8-051's typewriter transport is the nearest written thing and its stated reason is transport choice, not latency-as-aesthetic. **Do not launder any of this.**
   - *[from B T-13]* OH-3 §2 uniquely frames latency as a *design problem*; the "속도감" framing is otherwise oral.
 - fit:
@@ -1322,8 +1349,9 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: 1, 2
 - origin: emergent
 - support (16 atom ids across 5 slices, A ∪ B):
-  S4-052, S4-065, S4-068, S4-071, S4-074, S4-W011, S5-022, S5-036, S5-W003, S5-W013, S6-109, S6-129, S8-020, S8-021, S8-W013, S9b-113
+  S4-052, S4-065, S4-068, S4-071, S4-074, S4-W011, S5-022, S5-036, S5-W003, S5-W013, S6-109, S6-129, S8-020, S8-021, S8-W013, S9b-113, S6-232, S6-247, S7-024, S7-033, S8-066, S9c-058, S11a-046, S12-029, S12-030, S12-032 (impl-2026-08-10)
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence S12-036 — defective fallback content on the minable channel.
   - *[from A T-52]* S4-068's own framing concedes the deployed demo runs stub-mode **forever** — the shipped judge-facing artifact never demonstrates the AI at all, which is the cost of this pattern, not a benefit; S6-129 records the precedent-not-to-repeat (`demos/apothecary/` never set its endpoint variable, "which is why that demo runs stub-only today"). S5-022 notes model quality is "bounded by validation rather than guaranteed by it". S4-074 shows the corresponding *cost* guardrail (Lambda reserved concurrency) shipping **unset**, so robustness-by-construction was not applied uniformly.
 - gaps:
   - *[from A T-52]* **no atom records how often fallback actually fired in play, or whether a player or judge could tell.** `x-llm-fallback` is an instrument nobody in the corpus reads.
@@ -1408,7 +1436,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - lanes: 2
 - origin: emergent
 - support (24 atom ids across 5 slices, A ∪ B):
-  S4-020, S4-074, S5-018, S5-025, S5-028, S5-W001, S5-W012, S6-184, S8-022, S8-038, S9b-004, S9b-040, S9b-041, S9b-042, S9b-044, S9b-113, S9b-149, S9b-153, S9b-181, S9b-184, S9b-186, S9b-W001, S9b-W004, S9b-W011
+  S4-020, S4-074, S5-018, S5-025, S5-028, S5-W001, S5-W012, S6-184, S8-022, S8-038, S9b-004, S9b-040, S9b-041, S9b-042, S9b-044, S9b-113, S9b-149, S9b-153, S9b-181, S9b-184, S9b-186, S9b-W001, S9b-W004, S9b-W011, S8-084, S8-085, S8-086, S9c-007, S9c-022, S9c-026, S9c-044 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-56]* **there is no token or dollar total anywhere in 905 atoms, no per-run cost, and no comparison against a human-only baseline.** Every figure is incidental to another decision. The headline efficiency claim in the project's story is therefore **not evidenced by the corpus.**
 - gaps:
@@ -1429,7 +1457,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B3, B4 — **⇈ convergence (2 lanes)**
 - support (33 atom ids across 5 slices, A ∪ B):
-  S1-001, S1-002, S1-004, S1-005, S1-007, S1-025, S1-028, S1-029, S1-030, S1-031, S1-033, S1-036, S1-052, S4-001, S4-007, S4-017, S4-018, S4-019, S4-021, S6-035, S6-047, S6-048, S8-004, S8-007, S8-010, S8-012, S8-013, S8-030, S8-031, S9b-103, S9b-106, S9b-109, S9b-111
+  S1-001, S1-002, S1-004, S1-005, S1-007, S1-025, S1-028, S1-029, S1-030, S1-031, S1-033, S1-036, S1-052, S4-001, S4-007, S4-017, S4-018, S4-019, S4-021, S6-035, S6-047, S6-048, S8-004, S8-007, S8-010, S8-012, S8-013, S8-030, S8-031, S9b-103, S9b-106, S9b-109, S9b-111, S4-075, S4-076, S4-077, S4-078, S4-079 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-57]* **the funnel did not select the winner.** S1-036: DDAY does *not* follow the template, opens with "darkest-context의 문제", is dated 07-27/28, and became the concept — the process produced three losing finalists and the winner arrived outside it; S8-031 records DDAY confirmed and simultaneously moved *out* of `demos/` — "declared the game while explicitly never having a demo". S4-021 records the confirmation with **no minutes for the discussion that produced it**. The funnel's own input count does not reconcile: S1 holds eight concept docs, S4-001 and S8-010 say six proposals. And S4-019 shows the two humans did not agree on what the bake-off was optimizing for.
   - *[from B T-46]* The abandonment is the built-in contradiction, confirmed cross-slice (S1-029/S6-047 retires the machinery S1-001/S8-007 built). The losing demos stayed *deployed* as selection evidence (S6-035). The curated funnel did *not* produce the final game — a failure-born new concept did (S4-021, S8-030).
@@ -1448,6 +1476,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-58
   - basis: B T-46 independently asserts that the winner was a post-demo new concept the funnel never contained, so the outcome is corroborated; A's framing of the *reasons* as almost entirely oral is A's.
 - #4-role: **section**
+- impl-2026-08-10 amendment (proposed): narrow “almost entirely oral” — the 07-27 written note (S4-075..079) now carries much of the pivot reasoning.
 - **OH-5 update (2026-08-07):** the reasons are no longer "almost entirely oral", and the outcome framing is corrected. Per-track dispositions, oral: **Doodle Life** cut 07-24 by a human play verdict *before* the other two were built — contributing reasons latency (1–2 min or failure; ~20 s for the VLM alone, against "10초도 길다"), verdict variance on identical input, and abstract translated-register NPC dialogue — with the human verdict decisive over a rebuttal that a better model would fix it, on cost-of-repair grounds. **약국** displaced, not beaten (see T-57). **darkest** lost its defence, not a verdict. The four-branch darkest critique — 인지 부조화 · 관전형 구조의 지루함 · UI/UX 정체성 결여 · 기술의 단순 소모, with 어거지 매핑 and DD-아류 named as two horns of one dilemma — replaces this theme's single-resemblance reading. **"Three demos built → none won → a fourth won" should be retired in #4** in favour of: one killed by play, one killed by a process accident, one displaced by enthusiasm. The pivot has **no single author** — seed by 윤석 (단일 task 에이전트), grown to its current form by 민서 (재난 상황 루프) — and the pivot moment is the 07-27 frame shift to 재난 시뮬레이션 + 인간 퍼즐 + 갭 분석 루프, *not* the "단일 task" phrase. OH-2's "retained core" and "problems dissolved" claims are **confirmed as present in a written artifact** (concept doc §1 and the §3 table), pending the sweep.
 - thesis: The team deferred the concept decision to *played* demos, ran the comparison, killed everything in it, and confirmed a concept that had never been in the bake-off — drafted as a replacement for the thing a demo proved didn't work. The written record carries the outcome and almost none of the reasoning. **Corrected demo set (carried from the Phase 3 brief, superseding OH-4 and both maps): apothecary + darkest-context (merged) + doodle-life (closed PR #16, `demos/doodle-life/` + `artifacts/doodle-life-evals/`, closed 2026-07-25, never deployed to `main`) → none won → DDAY.**
 - lanes: cross (1 for the designs, 2 for the builds; the selection itself has **no lane**)
@@ -1455,6 +1484,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - support (24 atom ids across 6 slices, A ∪ B):
   S1-012, S1-036, S4-010, S4-011, S4-021, S4-022, S4-023, S4-024, S4-W008, S4-W009, S6-035, S6-048, S8-019, S8-028, S8-030, S8-032, S8-046, S8-W002, S8-W003, S9a-006, S9a-078, S9a-W016, S9b-106, S9b-115
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence S4-075, S4-076, S4-077, S4-078, S4-079 — the 07-27 note puts pivot reasoning in writing; narrows “almost entirely oral” and corroborates the OH-4/OH-5-corrected sequence.
   - *[from A T-58]* **the known-wrong input lives here and is preserved, not overwritten.** S8's own OH-1-corroboration prose concludes "the count is two", "Doodle Life … no build commit and no `demos/` directory ever", "Doodle Life cut pre-build." OH-4 resolves this against the repo: Doodle Life *was* built into a demo, was never deployed, and survives only as screenshots. Both are left standing. **A residual gap remains inside the written record**: S4's own corroboration section states that at 07-24 only Doodle Life had a playable demo, apothecary was still generating, and Agent Arena had **none** — and no S4 atom records an Agent Arena demo ever existing. So the written slices now evidence Doodle Life (correcting S8) and apothecary and darkest-context, but the reconciliation of *which* three is not clean. **Preserve both counts; do not average them.**
 - gaps:
   - *[from A T-58]* **the reasons the demos lost are almost absent.** Only S8-019 (apothecary v1 demoed the shell, not the AI) and S8-030 (darkest-context's 어거지 매핑) appear; nothing on Doodle Life's verdict or on apothecary v2. The Doodle Life screenshots are **off-repo** and, per OH-4, would need `assets-manifest.json` entries to enter. A pros/cons write-up of the three unpicked concepts (OH-2's inclusion question (a)) does not exist and needs an interview.
@@ -1473,7 +1503,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B2 (+ B5 taxonomy proposal to split this into lane 2b) — **⇈**
 - support (34 atom ids across 5 slices, A ∪ B):
-  S5-W013, S6-018, S6-019, S6-020, S6-021, S6-027, S6-043, S6-044, S6-092, S6-099, S6-115, S6-129, S6-180, S6-181, S8-001, S8-022, S8-054, S8-055, S8-059, S8-060, S8-061, S8-W001, S8-W008, S8-W012, S8-W013, S9a-072, S9a-090, S9a-W008, S9b-180, S9b-184, S9b-185, S9b-187, S9b-189, S9b-191
+  S5-W013, S6-018, S6-019, S6-020, S6-021, S6-027, S6-043, S6-044, S6-092, S6-099, S6-115, S6-129, S6-180, S6-181, S8-001, S8-022, S8-054, S8-055, S8-059, S8-060, S8-061, S8-W001, S8-W008, S8-W012, S8-W013, S9a-072, S9a-090, S9a-W008, S9b-180, S9b-184, S9b-185, S9b-187, S9b-189, S9b-191, S8-075, S8-076, S8-077, S8-078, S8-079, S8-080, S8-097, S8-098, S9c-053, S11a-052, S12-022, S12-024 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-59]* **salvage also worked, repeatedly** — S6-099 (the copy strategy kept the live demo safe), S6-043 (an archived implementation earning its merge), S6-018 (the bucket and OIDC reuse "was correct"), S6-044 (plumbing built ahead of the concept decision on the grounds that it is concept-agnostic — a bet that paid), S5-W013 (the archived thin Lambda→Bedrock shape named as the DDAY runtime template), S8-022 (a *deliberate* non-copy-forward with next-work items explicitly voided). **S6-092 is the strongest counter**: the team's prior written position that relocating the harness "buys nothing and costs provenance" turned out to be wrong on both halves — the conservatism about moving inherited things was itself the error. And S7 has no atoms here at all: the data layer was authored fresh for DDAY and is untouched by this class.
   - *[from B T-37]* Not everything infra-side was unguarded — S8-W008/S6-027 (parity gate mutation-tested, 8/9 renderer mutations red), S8-W012 (deploy role scoped with `iam:simulate-principal-policy` before first use), S9a-072 (agent refused to grant itself `iam:PutRolePolicy`). Strong local guards existed even while the *wiring* into CI was missing.
@@ -1497,7 +1527,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B5, B3 — **⇈ convergence (2 lanes)**; B3 split it across three sub-themes (housekeeping / reversal-annotation / provenance) folded here
 - support (71 atom ids across 9 slices, A ∪ B):
-  S2-003, S2-014, S2-023, S2-024, S2-032, S2-035, S3-001, S3-002, S3-017, S3-024, S3-026, S3-038, S3-040, S3-046, S3-049, S3-050, S4-021, S4-032, S4-036, S4-058, S4-069, S4-070, S4-071, S4-072, S4-W004, S5-011, S5-012, S5-021, S5-023, S5-039, S5-W006, S6-002, S6-012, S6-013, S6-028, S6-030, S6-032, S6-040, S6-051, S6-052, S6-069, S6-092, S6-104, S6-123, S6-146, S6-157, S6-168, S6-178, S6-194, S7-001, S7-004, S7-015, S7-017, S8-009, S8-022, S8-031, S8-035, S8-037, S8-048, S8-051, S8-060, S8-061, S9a-081, S9a-088, S9b-101, S9b-114, S9b-127, S9b-129, S9b-130, S9b-132, S9b-158
+  S2-003, S2-014, S2-023, S2-024, S2-032, S2-035, S3-001, S3-002, S3-017, S3-024, S3-026, S3-038, S3-040, S3-046, S3-049, S3-050, S4-021, S4-032, S4-036, S4-058, S4-069, S4-070, S4-071, S4-072, S4-W004, S5-011, S5-012, S5-021, S5-023, S5-039, S5-W006, S6-002, S6-012, S6-013, S6-028, S6-030, S6-032, S6-040, S6-051, S6-052, S6-069, S6-092, S6-104, S6-123, S6-146, S6-157, S6-168, S6-178, S6-194, S7-001, S7-004, S7-015, S7-017, S8-009, S8-022, S8-031, S8-035, S8-037, S8-048, S8-051, S8-060, S8-061, S9a-081, S9a-088, S9b-101, S9b-114, S9b-127, S9b-129, S9b-130, S9b-132, S9b-158, S6-200, S6-206, S6-209, S6-219, S6-227, S8-086, S8-107, S8-114, S9c-023, S9c-037, S9c-052, S9c-062, S11b-011, S11b-031 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-60]* **preservation has its own failure mode and the corpus shows it.** S6-013 (a stale README read as a current claim rather than as a record), S6-051 / S6-178 (a scattered cross-track list going stale undetected), S6-012 (a drifted copy). S6-069 and S6-146 show the cost: a reader must check a header or a warning box to know whether the body is true. **S6-030 is a genuine counter-case inside the game design** — a removed block is discarded, not shelved, and there is no discard inventory; the preserve-everything instinct was explicitly refused where it would cost UX. **S8-009** shows a record that annotates every reversal does not thereby become consistent ("the reasons contradict"); S8-061 records a benchmark "dropped without a record"; S8-031 records an AGENTS.md drifted to "`.Codex/super/` 오기"; S9b-130 shows an entire merged PR silently absent from `main` for a day. And **S4-021** is the sharpest: the single most important pivot of the project left no record at all — *the convention is strongest exactly where the stakes are lowest.*
   - *[from A T-39]* **immutability is not completeness**, and the corpus contains the hole: S3-046's harness-created bias "had gone unreported through seven write-ups" — an append-only log cannot evidence what was never appended. S3-038 shows a permanent-looking infrastructure change made mid-run. **S2-035 is the sharpest**: the pipeline's own sentence-count retry rule was silently discarding the best material until a later scoring pass noticed — and S2-024 says "위반이 곧 데이터다" was a *v2* change, so v1 *was* laundering format failures. How many v1 retries silently overwrote a violation is unknowable; v1 didn't count them.
@@ -1520,12 +1550,13 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: A T-61 + B T-10
   - basis: Containment 0.57. Both assert that the deliverable partly assembled itself from the harness's own exhaust. B's wider framing — a reflexive AI-orchestrating-AI layer the four lanes do not name — is B's, and is also carried as taxonomy proposal 1.
 - #4-role: **section**
+- impl-2026-08-10 amendment (proposed): exceeded by T-93 (whole deliverable self-assembled vs one auto-drafted section); flag for absorption/scope check at selection.
 - thesis: Because *how the team orchestrates AI* is graded, the repo's rules were written to make the evidence a by-product of normal work — manifest entries at asset-creation time, raw call logging in the runtime, personal-account attribution, immutable history, a PR template feeding the deliverables — and one section of deliverable #4 was in fact auto-drafted by the harness from run telemetry, TODOs and the board. **B's framing, carried:** this is one face of a reflexive layer — agents mutation-testing other agents' guards, an AI running probes on other LLMs under rules that treat the referee as a contamination risk, a known-fake negative control validating the pipeline before its results are read. B argues this layer is arguably the *centre* of deliverable #4.
 - lanes: cross (2, 3) / cross (2 + 3)
 - origin: emergent
 - seen-by (Pass B): B5, B2, B3 — **⇈ convergence (3 lanes)**
 - support (33 atom ids across 8 slices, A ∪ B):
-  S2-012, S3-021, S3-064, S4-016, S4-026, S4-030, S4-034, S4-048, S4-059, S5-003, S5-004, S5-007, S5-W009, S6-001, S6-002, S6-004, S6-010, S6-015, S6-028, S6-042, S6-088, S6-159, S6-184, S6-188, S6-193, S6-194, S6-197, S6-198, S8-001, S8-003, S8-W001, S9a-008, S9b-009
+  S2-012, S3-021, S3-064, S4-016, S4-026, S4-030, S4-034, S4-048, S4-059, S5-003, S5-004, S5-007, S5-W009, S6-001, S6-002, S6-004, S6-010, S6-015, S6-028, S6-042, S6-088, S6-159, S6-184, S6-188, S6-193, S6-194, S6-197, S6-198, S8-001, S8-003, S8-W001, S9a-008, S9b-009, S8-100, S8-101, S9c-069, S9c-070, S9c-071, S9c-073 (these exceed T-61's scope → promoted to T-93; flag for absorption check) (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-61]* **the self-drafting deliverable did not happen as designed** — S5-007's own atom notes "This mining directory is the successor to that draft — mining README Phase 5 subsumes it." That is a reversal at the heart of the theme and must not be smoothed over: *the mining effort producing these very atoms exists because the auto-draft could not cover the whole.* The evidence chain has recorded holes: S6-188 (six substantive reviews exist only in local run state while the PRs show zero threads — flagged by the drafting agent itself as a claim the deliverable must not overstate), S6-184 (unknown total tokens, an unrecorded skip reason, absent open-source license attribution), S6-197 (1 of 6 screenshot attempts skipped with the reason unrecorded), S6-194, S6-198 (one run of several covered). S4-016 also concedes the strongest evidence — the harness source — cannot be shown at all.
   - *[from B T-10]* The self-authored draft has integrity holes it must confess — S6-188 (six reviews exist only on disk, not in the PR trail the deliverable wants to cite), S6-194 (a missing trailer kept), S6-198 (draft covers one run of 3+). The orchestration *tool* (super-pipeline) is deliberately kept in a separate repo, out of the deliverable (S6-010), so one could argue the method-tool is not a repo lane. A human polish and this very mining phase exist *because* the auto-draft can't close its own gaps.
@@ -1549,7 +1580,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B5, B3 — **⇈ convergence (2 lanes)**
 - support (23 atom ids across 6 slices, A ∪ B):
-  S3-020, S3-028, S3-049, S3-055, S3-064, S6-001, S6-004, S6-194, S7-004, S8-002, S8-006, S8-011, S8-013, S8-023, S8-056, S8-057, S8-058, S8-062, S9a-002, S9a-025, S9a-065, S9a-068, S9b-126
+  S3-020, S3-028, S3-049, S3-055, S3-064, S6-001, S6-004, S6-194, S7-004, S8-002, S8-006, S8-011, S8-013, S8-023, S8-056, S8-057, S8-058, S8-062, S9a-002, S9a-025, S9a-065, S9a-068, S9b-126, S6-237, S9c-060 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-62]* **every count is over a truncated 153-commit prefix** — S8-058's "exactly these two commits", S8-023's "the lone machine-local trailer", S8-011's "only 2", S8-056's per-model totals and S8-002's "33 of 153" could all move with the 117 unmined commits. S8-057 shows the hard identity rule satisfied in *intent* (personal, never corporate) while drifting from its letter, so "legible provenance" and "rule-compliant provenance" are not the same finding. **S3-064 carries the multi-vendor claim single-handed**, from one line in one file header with an uncertain date (`2026-07-29?`), and nothing shows 윤석 exercising the rejection right the ownership protocol reserves for him.
   - *[from B T-08]* The rule's *core* is uncontested — no corporate-domain address appears anywhere; the drift is in the letter, not the purpose. A theme claiming "the rule failed" would be wrong.
@@ -1574,7 +1605,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent (surfaced by the carried input defect + OH-4)
 - seen-by (Pass B): B5, B3 — **⇈ convergence (2 lanes; both call it a method-finding)**
 - support (27 atom ids across 6 slices, A ∪ B):
-  S4-008, S4-016, S4-021, S4-032, S4-053, S4-W001, S4-W002, S5-038, S6-188, S6-198, S7-004, S7-014, S7-015, S8-002, S8-009, S8-011, S8-023, S8-030, S8-031, S8-032, S8-055, S8-056, S8-057, S8-058, S8-061, S8-062, S9a-038
+  S4-008, S4-016, S4-021, S4-032, S4-053, S4-W001, S4-W002, S5-038, S6-188, S6-198, S7-004, S7-014, S7-015, S8-002, S8-009, S8-011, S8-023, S8-030, S8-031, S8-032, S8-055, S8-056, S8-057, S8-058, S8-061, S8-062, S9a-038, S9c-054, S9c-062, S9c-069, S12-038 (impl-2026-08-10)
 - counter-evidence:
   - *[from A T-63]* **the repo caught things memory did not.** S8-030's exact date and wording for DDAY's origin, S8-009's three-way flip-flop, S9a-038's slash/dash branch forensics and the entire failure record of T-10/T-12 appear in *no* oral account — the written channel is not merely lossy; it is the only channel with the failures in it, and A6 makes the point sharply: **neither OH-1/2/3/4 mentions a broken test, a false gate, or CI.** S8's coverage header is also explicit and honest about its own boundaries, so this is under-counting by method, not by carelessness. S4-032 / S4-W002 argue the opposite locally (the 07-30 minutes actively maintained with cross-references, closing 8 of 9 tracked items), and S4-016 is a deliberate bet that the repo *is* a sufficient record.
   - *[from B T-12]* The repo is not blind to its own gaps — the AI-utilization draft enumerates what it doesn't cover (S6-198); status/handoff atoms flag record-gaps (S4-021's own flag). The finding is that it can only flag gaps it *noticed*.
@@ -1753,14 +1784,16 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **both** — sources: B T-16
   - basis: A T-05 asserts the 24/24 event and calls it a design emergency, so the finding is corroborated; B is the pass that generalised it into a measurement rule (variance tracked per gate rather than pass/fail), and A folds the event into the temperament pivot rather than keeping it as a claim.
 - #4-role: **supporting-anecdote**
+- impl-2026-08-10 amendment (proposed): a genuine counter-case, preserved not resolved. In the shipped authored scenario, run-1 determinism is a **design goal**: p=1 target on the fail edge (S2-073), 138 deaths framed as “no run can be worse” (S9c-048). Over-convergence *fear* governs the mechanism/measurement layer while an authored fail-run *wants* determinism. Keep as a live tension.
 - thesis: For a game built on model judgment, determinism is as dangerous as variance — an early run set that came back 24/24 identical was a design emergency ('if every player's agent behaves identically, assembly is decoration and the core claim collapses'), so reproducibility is tracked as a measured variable per gate, not as pass/fail.
 - lanes: 1
 - origin: emergent
 - seen-by (Pass B): B1 — **[single-source]**
 - **THIN:** B T-16 is [single-source] within Pass B.
 - support (8 atom ids across 5 slices, A ∪ B):
-  S1-040, S2-015, S2-023, S3-035, S6-145, S6-154, S6-155, S7-014
+  S1-040, S2-015, S2-023, S3-035, S6-145, S6-154, S6-155, S7-014, S3-067, S3-080, S8-083 (fear side) (impl-2026-08-10)
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence S2-073, S9c-048 — run-1 determinism as a design goal (see amendment below).
   - *[from B T-16]* The opposite pole (dispersion / a gate firing unreliably) is treated as equally disqualifying (S6-154, S3-035 flipped placebos) — a two-sided constraint. The "24/24" was on sonnet, later invalidated for haiku (S2-023).
 - gaps:
   - *[from B T-16]* No production-model (haiku, schema-forced) reproducibility distribution across a full run exists; variance metrics (S6-145, S7-014) specified but unrun.
@@ -1780,8 +1813,9 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - seen-by (Pass B): B1 — **[single-source]** (merges B1-06 model-selection + B1-12 measured==deployed)
 - **THIN:** B T-17 is [single-source] within Pass B.
 - support (16 atom ids across 8 slices, A ∪ B):
-  S1-045, S2-063, S2-064, S4-072, S5-023, S5-024, S6-022, S6-027, S6-140, S6-160, S8-055, S9a-080, S9a-089, S9a-090, S9b-186, S9b-W011
+  S1-045, S2-063, S2-064, S4-072, S5-023, S5-024, S6-022, S6-027, S6-140, S6-160, S8-055, S9a-080, S9a-089, S9a-090, S9b-186, S9b-W011, S9c-044, S12-022, S12-023, S12-028 (impl-2026-08-10)
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence S9c-067, S12-038 — serving-path gap; no live Bedrock call at snapshot.
   - *[from B T-17]* The two live systems reached *opposite* model picks — apothecary/field-report recommended Nova primary (S2-064, S4-072, S9a-080), DDAY rejected Nova and kept haiku (S6-022, S9b-186) — the same measured-speed argument, different verdicts, because the binding constraint (mechanism continuity) differed. The parity guard's own enforcement was fragile: no PR in the repo had ever run CI (S8-055, S9a-090), and the byte-parity gate had a blind spot the human's fifth mutation hit (S9a-089/W007).
 - gaps:
   - *[from B T-17]* The DDAY blind dialogue-quality comparison (S5-024) was "awaiting approval," unrun; no mechanism result has yet been reproduced through the production proxy / schema-forced path — the whole re-baseline is owed (first Bedrock calls 08-04).
@@ -1801,8 +1835,9 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - seen-by (Pass B): B1 — **[single-source]**
 - **THIN:** B T-20 is [single-source] within Pass B.
 - support (11 atom ids across 3 slices, A ∪ B):
-  S4-074, S5-021, S5-022, S5-025, S5-W013, S6-023, S6-024, S6-042, S6-099, S6-109, S6-128
+  S4-074, S5-021, S5-022, S5-025, S5-W013, S6-023, S6-024, S6-042, S6-099, S6-109, S6-128, S12-019, S12-022, S12-027, S12-035 (impl-2026-08-10)
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence S12-034, S12-038 — config vs README disagree on whether the tier ran live.
   - *[from B T-20]* The guardrails are honestly incomplete — the endpoint is public and unauthenticated ("origin checking is CORS, not security," S6-024), the concurrency kill switch ships unset (S4-074), no absolute monthly cost ceiling (S5-025). The inherited apothecary numbers (7s budget) were wrong for DDAY (see T-13).
 - gaps:
   - *[from B T-20]* A full stateful agent runtime was rejected on paper (S5-021) but never trialed against DDAY's actual interaction.
@@ -1821,7 +1856,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B1, B4 — **⇈ convergence (2 lanes)**
 - support (17 atom ids across 7 slices, A ∪ B):
-  S1-050, S1-053, S2-039, S4-066, S6-007, S6-086, S6-113, S6-131, S6-132, S7-001, S7-008, S7-017, S8-048, S9b-014, S9b-015, S9b-166, S9b-W009
+  S1-050, S1-053, S2-039, S4-066, S6-007, S6-086, S6-113, S6-131, S6-132, S7-001, S7-008, S7-017, S8-048, S9b-014, S9b-015, S9b-166, S9b-W009, S7-020, S7-025, S7-026, S7-027, S7-028, S7-029, S9c-043, S12-016, S12-020, S12-029 (impl-2026-08-10)
 - counter-evidence:
   - *[from B T-21]* The data boundary leaked in practice — run-outcome thresholds lived hardcoded in `src/`, hand-copied into seven test files, so a one-token drift flipped a whole run clear→defeat while 1264 tests stayed green (S9b-015); a numeric-separator hole (`8_000`) let a tunable launder past the no-inline gate (S9b-014). And the team did *not* universally refuse AI in the pipeline — it KEPT the LLM judge (S2-039) and used a blind-reader AI to validate clue legibility (S1-053). "Code certifies, never AI" is a choice made only where paraphrase is fatal.
 - gaps:
@@ -1842,8 +1877,9 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - seen-by (Pass B): B2 — **[single-source]**
 - **THIN:** B T-33 is [single-source] within Pass B.
 - support (7 atom ids across 4 slices, A ∪ B):
-  S3-018, S3-019, S6-185, S6-186, S8-016, S9a-022, S9a-038
+  S3-018, S3-019, S6-185, S6-186, S8-016, S9a-022, S9a-038, whole S11a/S11b build — every unit spawns fresh, reads its slice, writes a note, dies (no new atom ids) (impl-2026-08-10)
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence T-89 — the “reads its slice” step failed when the slice on disk was incomplete.
   - *[from B T-33]* Persisted state is exactly where the T-25 orchestration bugs lived — on-disk/branch state got forked and force-pushed (S9a-038), resume re-manufactured merged units (S9a-022/S6-186). "State on disk" trades context-rot for branch/cache-coherence failure modes.
 - gaps:
   - *[from B T-33]* The invariant is asserted by the harness's own auto-draft (S6-185) and the probe runbook (S3); no independent measurement of rot-avoidance across a long run.
@@ -1863,7 +1899,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - seen-by (Pass B): B3 — **[single-source]**
 - **THIN:** B T-38 is [single-source] within Pass B.
 - support (5 atom ids across 2 slices, A ∪ B):
-  S4-008, S4-021, S4-032, S4-W001, S9b-107
+  S4-008, S4-021, S4-032, S4-W001, S9b-107, S4-075..081, S9c-054 (impl-2026-08-10)
 - counter-evidence:
   - *[from B T-38]* The imperfection *is* the counter-evidence — S9b-107 (speaker mis-mapping), S4-021 (no note for the pivotal discussion). AI-produced minutes are real but not authoritative or complete.
 - gaps:
@@ -1899,13 +1935,14 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - provenance: **B-only** — sources: B T-44
   - basis: **Thesis test.** A T-28 asserts document *tiering* by authority (merged at T-15); no A theme asserts the split by **mutation rate** — a permanent charter versus a freely-updated journal — or its stated purpose of giving a fresh-context agent exactly one stable file and one volatile file.
 - #4-role: **supporting-anecdote**
+- impl-2026-08-10 amendment (proposed): sharpen the thesis to include that each status.md entry preserves its own counter-position (absorbs dropped NEW-L3-03).
 - thesis: The team separated its living docs by how fast they change — CLAUDE.md holds only permanent rules and mutates only at phase transitions; status.md is the SSOT for phase/tracks/next-steps and is updated freely — explicitly so a fresh-context agent reads one stable rule file and one volatile state file, never a pile of partially-stale documents.
 - lanes: 3
 - origin: emergent
 - seen-by (Pass B): B3 — **[single-source]**
 - **THIN:** B T-44 is [single-source] within Pass B.
 - support (6 atom ids across 4 slices, A ∪ B):
-  S4-032, S6-011, S6-013, S8-004, S8-010, S9b-102
+  S4-032, S6-011, S6-013, S8-004, S8-010, S9b-102, S6-199..229, S6-235, S6-237, S6-245..247, S9c-052, S9c-068 (the entire impl sweep is status.md; absorbs dropped NEW-L3-03 — see §2/§3) (impl-2026-08-10)
 - counter-evidence:
   - *[from B T-44]* The one prose file outside the split disproves totality — S6-013 (README went stale and self-contradictory). S4-032 shows a *third* mutable-doc pattern (live amended minutes), so "two documents by mutation-rate" is an idealization the real corpus exceeds.
 - gaps:
@@ -1966,8 +2003,9 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: seed-confirmed:1 ("열린 콘텐츠, 닫힌 프로토콜")
 - seen-by (Pass B): B4 (+ B1's T-21 data-boundary cross) — **⇈**
 - support (13 atom ids across 5 slices, A ∪ B):
-  S1-053, S2-057, S6-131, S6-134, S6-135, S6-177, S7-008, S7-009, S7-011, S7-012, S7-013, S7-014, S9b-168
+  S1-053, S2-057, S6-131, S6-134, S6-135, S6-177, S7-008, S7-009, S7-011, S7-012, S7-013, S7-014, S9b-168, S2-077, S9c-047 (impl-2026-08-10)
 - counter-evidence:
+  - *[impl-2026-08-10]* +counter-evidence S2-075, S2-076, S9c-064 — the closed protocol does not hold the new graph format.
   - *[from B T-51]* The machine cannot fully certify — S7-013/S6-134 (hardening compiles empty; WARN never blocks because "only the author knows whether a collision is load-bearing"), S2-057/S6-177 (a human paper read stays mandatory), S9b-168 (the lint silently missed the very fields it was meant to guard).
 - gaps:
   - *[from B T-51]* Whether machine-passing packs are actually *fun* is out of the schema's reach (S7-014 names how the game could be proven boring, but no run existed at snapshot).
@@ -2007,7 +2045,7 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
 - origin: emergent
 - seen-by (Pass B): B4 (+ B1's T-19 two-record cross) — **⇈**
 - support (7 atom ids across 5 slices, A ∪ B):
-  S1-035, S2-035, S2-046, S5-035, S6-060, S7-002, S7-019
+  S1-035, S2-035, S2-046, S5-035, S6-060, S7-002, S7-019, S2-074, S7-022, S7-026 (impl-2026-08-10)
 - counter-evidence:
   - *[from B T-53]* Optimizing prose for machine-harvestability shaves quality — S2-035/ S6-060 (the sentence-count retry rule discarded the drafts carrying the strongest temperament expression; "최고의 문장들이 폐기본에 있었다"). Machine-first authoring collides with the human-judged fun goal.
 - gaps:
@@ -2016,6 +2054,151 @@ The `#4-role:` ranks are the thing to argue with. Two calls worth a second look:
   - *[from B T-53]* none.
 - fit:
   - *[from B T-53]* #4 section
+
+### T-85 — The phantom-speaker defect family: production hallucinations from prompts authorizing an empty room, cured rule-first
+- verdict: **proposed** (impl-2026-08-10) — net-new this sweep; has NOT been through director selection, and selection is the director's call.
+- #4-role: <proposed: **section**> — overlaps T-07/T-01 but is one coherent incident family they touch only obliquely.
+- thesis: The implementation phase's dominant runtime-AI defect was invented or misattributed **speakers** (a 기록관 conjured into an emptied room, NPC lines in the wrong mouth, an agent's own questions handed to an NPC) — each traced to a prompt *permission* that survived a fiction change, not a model weakness. The cure is rule-first (conditional permissions recast as unconditional stage facts, silence made an explicit sentinel, overproduction capped by schema) while explicitly **refusing** a validator for a wrong-but-legal speaker.
+- lanes: 1
+- origin: emergent
+- support: S12-002, S12-006, S12-011, S12-005, S12-014, S12-036, S9c-001, S9c-049; S6-243 (adjacent inner_note echo).
+- counter-evidence: S12-005 (schema cap stops only overproduction — a wrong-but-legal speaker stands by design), S12-014 (the cap pushed misattribution sideways into the unconstrained timeline channel). Looked across S12/S9c/S8 for a cure that fully closed the defect; none — every fix opened or left an adjacent hole.
+- gaps: whether the rule-first cures hold under a real Bedrock call is unproven (no live narration call at snapshot — S12-015, S12-034); a post-deploy narration smoke would answer.
+- oral-only: none
+- fit: #4 section
+
+### T-86 — Making the deployed agent the measured agent — closed for the prompt, still open at the serving path
+- verdict: **proposed** (impl-2026-08-10) — net-new this sweep; has NOT been through director selection, and selection is the director's call.
+- #4-role: <proposed: **section**> — overlaps T-73/T-06 heavily; **fold candidate into a T-73 extension**; kept net-new because the serving-path residual and never-ran-live contradiction are stated by no existing theme.
+- thesis: A class of work existed to keep "the gate numbers describe the shipped game" true in production — per-pack default prompts copied verbatim from the probe suite, a byte-identity prompt-parity gate, temperature pinned to 1, pack prose realigned to fixtures. The equivalence is nonetheless incomplete on the record: the probes ran over the Anthropic API while the game calls Bedrock through the proxy (different serving path and tool-call envelope), and at snapshot no real Bedrock call had ever run.
+- lanes: 1
+- origin: emergent
+- support: S8-081, S8-082, S12-020, S12-028, S12-037, S9c-067.
+- counter-evidence: S9c-067 (serving-path/envelope gap open), S12-034, S12-038 (no live call at snapshot; config vs README contradiction). Stated by the team, not hidden.
+- gaps: only a re-measurement through the deployed tier (unstarted work) can say whether Bedrock's path moves the measured stance distribution.
+- oral-only: none
+- fit: #4 section
+
+### T-87 — The two-tier deploy window as a runtime design constraint: sequence the bump, fall back on the unknown, make it un-misconfigurable
+- verdict: **proposed** (impl-2026-08-10) — net-new this sweep; has NOT been through director selection, and selection is the director's call.
+- #4-role: <proposed: **section**> — adjacent to T-51/T-52 but distinct: the deploy-window gap between two independently-shipped tiers.
+- thesis: Because the proxy (Bedrock tier) and the client (Pages) deploy on separate triggers, the gap between them is a first-class hazard with a doctrine: prompt versions are append-only and the bump is withheld until the proxy redeploys; an unknown pack slug is served the incumbent agent, not rejected ("wrong in character, right in shape"); timeout ceilings are bounded in config so no env value can break model<route<Lambda ordering.
+- lanes: cross (1, 2)
+- origin: emergent
+- support: S12-010, S12-030, S12-025, S12-023, S9c-005.
+- counter-evidence: S8-077 (the hazard was realized once — first live-provider deploy failed its own health probe on the origin guard it had just deployed). No atom contradicts the doctrine itself; looked in S12/S8/S9c.
+- gaps: no live player-facing version bump at snapshot; whether fallback-to-incumbent is acceptable to a judge is untested.
+- oral-only: none
+- fit: #4 section / possible #2 video beat
+
+### T-88 — From an autonomous fleet to a human-driven single-agent workshop: the method changed shape when the work changed
+- verdict: **proposed** (impl-2026-08-10) — net-new this sweep; has NOT been through director selection, and selection is the director's call.
+- #4-role: <proposed: **spine (candidate)**> — the frame that re-scopes T-20/T-21/T-22/T-27 as descriptions of *one era*; section at minimum.
+- thesis: The AI-orchestration is two eras, not one. The scaffold (engine e0–e10, client u0–u11) was built by the autonomous multi-agent super-pipeline in two overnight runs; the entire implementation/polish/live-wiring phase (#140–#237) ran as human-driven manual PRs + single-agent `claude/*` sessions + surgical single-commit PRDs. Naming the era boundary is what resolves T-27's "maturity vs attrition" — adversarial review didn't die, it moved from agent↔agent unit-PRs to dense human↔agent manual PRs.
+- lanes: 2 (with 1, 3)
+- origin: emergent
+- support: S8-063, S8-064 (the two, and last, fleet runs); S9c-001..048 (#140–#237 = 10 rich human↔agent PRs incl. #234's 11 submissions, + 10 single-agent PRs); S11b-035..044 (surgical single-commit PRDs); S8-111, S9c-029 (human plays the live run); S9c-054..061 (single-agent polish).
+- counter-evidence: not a clean break — fleet conventions persist (confession-style bodies, executable PRD S11b-035, parallelism DAG S11b-036); and the corpus never states *why* the fleet stopped for #140+ (see gaps), so "deliberate maturation" is one reading and "forced by deadline / live-wiring being human-gated" is another.
+- gaps: the corpus does not record the decision to stop the fleet — deadline? live-provider work unverifiable-by-agent (T-47)? token limits (S8-102)? An interview or a status.md diff could answer.
+- oral-only: OH-3 §3 describes the fleet ("유능한 개발팀을 고용") but is silent on the later single-agent phase; the shift is oral-silent, visible only in the PR record.
+- fit: #4 section (clearest "evolution of how AI was used") + #2 video beat.
+
+### T-89 — The worktree-sync gap: units built against a ratified spec that existed but was never delivered into their worktree
+- verdict: **proposed** (impl-2026-08-10) — net-new this sweep; has NOT been through director selection, and selection is the director's call.
+- #4-role: <proposed: **section**>
+- thesis: A recurring super-pipeline provisioning defect — the unit's ratified `spec.md`/`design.md`/contract (the "READ FIRST" artifact) was never copied into the agent's git worktree, so agents built against the prompt JSON + RED tests alone and shipped diverged from already-settled decisions. The fix is always harness-side.
+- lanes: 2
+- origin: emergent
+- support: S11a-004, S11a-008, S11a-013, S11b-012, S11a-005.
+- counter-evidence: distinct from a *wrong* spec (S11b-002, S11a-013's scope list) — here the spec was correct; only its delivery failed; and the integration branch caught the divergences (S11a-005), so net safety held. Borders T-26; kept separate as one named mechanism with one class of fix.
+- gaps: only units that wrote a discovery note are visible; total incidence and whether the harness was fixed are unmineable (off-repo harness / past snapshot).
+- oral-only: none
+- fit: #4 section
+
+### T-90 — Scaffold guards go false the moment the work they guard is done as designed; the pipeline re-aims, never deletes
+- verdict: **proposed** (impl-2026-08-10) — net-new this sweep; has NOT been through director selection, and selection is the director's call.
+- #4-role: <proposed: **section**>
+- thesis: A census/scaffold/frozen-input guard authored while one unit was alone on the tree becomes a permanent red or a vacuous green once later units land *exactly as designed*. The answer is the C12/C17 discipline: re-aim the assertion at what it now means (or defer it to the integrator), never delete or skip it.
+- lanes: 2
+- origin: emergent
+- support: S11b-003, S11a-033, S11a-050, S11a-042, S11a-048, S11a-049, S9c-034, S9c-035, S8-096, S11b-031.
+- counter-evidence: the discipline is not "never red" — some guards are deliberately left failing as noise for the integrator (S11b-003); telling an expired-premise guard from a simply-wrong one is a judgment call (S11a-050). Overlaps T-23/T-24; sharper because it is about a guard's staleness against its own future tree.
+- gaps: none material
+- oral-only: none
+- fit: #4 section
+
+### T-91 — "There is no wireable shape": work abandoned because two ratified/frozen contracts leave no consistent shape to build against
+- verdict: **proposed** (impl-2026-08-10) — net-new this sweep; has NOT been through director selection, and selection is the director's call.
+- #4-role: <proposed: **section**> — sits between T-47 and T-29; the refusal is a *reasoned architectural stop*, not a capability refusal.
+- thesis: A manual-phase stop-condition — an agent finds two already-ratified documents (or a frozen type + a prose contract) disagree so *no* implementation can satisfy both, and stops ("the hole is not 'nobody wired it', it's 'there is no wireable shape'") rather than leave plumbing around an impossible value. Recorded as a contract defect for a human, not a coding failure.
+- lanes: 2 (with 3)
+- origin: emergent
+- support: S9c-032, S11a-012, S11a-038, S11a-034, S9c-042.
+- counter-evidence: the same agents instead **mint a reversible shape and flag it** when the conflict is still *open* (S11a-021, S11a-014). The stop is chosen specifically when what collides is frozen/ratified.
+- gaps: whether humans then revised the frozen contracts is past-snapshot for several cases.
+- oral-only: none
+- fit: #4 section
+
+### T-92 — The implementation-phase g-PRD: a surgical single-commit micro-contract with a hand-authored DAG, a stop-protocol, and the exact-citation discipline that vindicated stopped executors
+*(merged from NEW-L2-05 + NEW-L3-02)*
+- verdict: **proposed** (impl-2026-08-10) — net-new this sweep; has NOT been through director selection, and selection is the director's call.
+- #4-role: <proposed: **section**> — manual-era evolution of T-28 and a concrete face of T-88; the executor-boundary + self-vindication pattern is not in T-28.
+- thesis: In the manual era the orchestration instrument became the g-PRD — one executor (a "Sonnet-class session"), one branch, exactly one commit with a fixed message, "open a PR, merge nothing," a pre-edit git-identity check, an explicit wave/parallelism declaration keyed on file-disjointness (DAG hand-authored, not harness-inferred), and a boundary clause that treats a documented refusal-to-proceed-on-a-stale-citation as a *completed* run. Change-lists were dry-run-verified on a scratch tree; the exact-citation rule repeatedly caught its own authors' stamping errors.
+- lanes: 2, 3
+- origin: emergent
+- support: S11b-035, S11b-036, S11b-037, S11b-038, S11b-044, S9c-021, S9c-041, S9c-042.
+- counter-evidence: the precision was partly aspirational — S9c-018 (~half the plan's ~84 citations carried a defect), S11b-012 (the READ-FIRST contract was absent from many worktrees), S9c-040 (a stacked PR stranded five PRDs on an orphan branch — the plumbing failed), S9c-021 ("zero instances" — the §5 rule set was unproven until executed).
+- gaps: only 4 of 30 PRDs read in full; no atom shows a low-cost executor running a g-PRD end-to-end and stopping *in production* (vindications are on scratch trees / in review).
+- oral-only: OH-3 §3 ("명세는 기능 단위로 10~20개로 쪼갰다") corroborates the decompose habit but predates and does not describe the single-commit g-PRD form.
+- fit: #4 section / #5.
+
+### T-93 — Deliverable #4 was built bottom-up by an AI mining/induction pipeline, engineered to expose its own limits (self-referential) — **THIN, self-excluded**
+- verdict: **proposed** (impl-2026-08-10) — net-new this sweep; has NOT been through director selection, and selection is the director's call.
+- #4-role: <proposed: **spine (fit) — but blocked THIN**> — cannot carry spine until de-THIN'd. **Needs the pre-#4 pipeline-artifact sweep** to mine the pipeline's own artifacts and lift the single-slice mark.
+- thesis: The AI-utilization document was not written from memory — it was constructed by an AI pipeline that mined the repo into 905 atoms across ten slices, ran two blind inductions (Pass A by slice, Pass B by lane), reconciled them into the theme map, and mapped those onto the outline — deliberately built to surface its own weaknesses (coverage gaps logged not dropped, the convergence ranking that demotes the required inventory kept legible, the thesis inverted against "we learned to prompt better").
+- lanes: 3 (self-referential; bears on all four)
+- origin: emergent
+- support: S9c-069, S9c-070, S9c-071, S9c-073. **THIN — all four atoms are single-slice S9c.** The corpus-wide artifact (atoms-S1..S12, this addendum) *is* the pipeline, but the mining effort deliberately excluded its own output (`docs/deliverables/mining/` not mined), so no atom ids exist outside S9c.
+- counter-evidence: T-63 + OH-4 + OH-5 — the pipeline was blind exactly where the biggest decision lived (missed the `dday-simulation` slug and the closed-PR demo; a false "cut pre-build" finding reached an atom file), corrected only by the oral channel; S9c-070 (the ranking demotes required content). Self-assembly is real but required human oral correction and produced a known mis-ranking — it did not run clean.
+- gaps: no atom-level evidence of the pipeline outside S9c (self-exclusion); whether the two inductions were truly blind is asserted, not checked; the human-in-the-loop steps (selection, this refresh, outline authoring) are unmined.
+- oral-only: none directly; the corrections rest on OH-4/OH-5.
+- fit: #4 spine (arguably the reflexive centre B named at T-61) / #5.
+
+### T-94 — The audio subsystem: an AI-generated creator surface that did not exist at snapshot, engineered to withhold and to be droppable
+- verdict: **proposed** (impl-2026-08-10) — net-new this sweep; has NOT been through director selection, and selection is the director's call.
+- #4-role: <proposed: **section**> — the information-withholding rule, the offline-audition-fails mixing lesson and foley-not-score accessibility are stated by no existing theme.
+- thesis: Game sound arrived post-snapshot as AI-generated cues governed as data, and its design rules are the same distrust-and-restraint posture applied to the model: sound withholds information rather than conveying it, never carries meaning alone, and is built to be cut without breaking play.
+- lanes: 4 (with 2 at the mixing/build seam)
+- origin: emergent (no snapshot theme touches audio)
+- support: S7-020, S7-021, S7-022, S7-023, S9c-058, S9c-059.
+- counter-evidence: the surface is deliberately *minimized* and cuttable (S9c-058, S7-021) — a restrained, droppable creator surface, not a rich one; overlaps T-52 (droppability) and T-75 (balance-as-data), which each own a facet.
+- gaps: no atom on how the cue *assets* were generated (tool/prompt) beyond the manifest; per-cue provenance sits in S9c-060's unmined manifest work.
+- oral-only: none
+- fit: #4 section / #2 video beat
+
+### T-95 — The graph-first scenario model: a mid-implementation rewrite that deletes the lock and makes failure structural
+- verdict: **proposed** (impl-2026-08-10) — net-new this sweep; has NOT been through director selection, and selection is the director's call.
+- #4-role: <proposed: **section**> — continues T-05's temperament-removal arc and reshapes T-41's factory; an authoring *architecture*, not a control-axis or loop.
+- thesis: Scenarios were re-architected during implementation from timeline-first, temperament-locked to an endings-first graph (endings → routes → gates → knowledge → timeline derived last) in which failure is where the agent's reach stops, not where a conditional fires — replacing an authored lock with graph shape.
+- lanes: 4
+- origin: emergent
+- support: S2-071, S2-072, S2-074, S2-077, S9c-065, S9c-066 (schema side S7-027/28/29).
+- counter-evidence: it did not ship clean — S9c-066 (a gate shipped unrepaired), S2-084 (repairs created new defects), S9c-048 (the "138 is a guarantee" framing is statistically leaky, ~0.81 joint on run 1); S2-073 wanting p=1 on the fail edge sits in tension with T-72.
+- gaps: whether the older packs (우는다리) migrate fully to the graph model or stay hybrid — the corpus shows only re-hardening (S2-085, S7-034), not rebuild.
+- oral-only: none
+- fit: #4 section / #3
+
+### T-96 — Silent structural hazards native to the graph datapack format — invisible to every automated gate, caught only by hand
+- verdict: **proposed** (impl-2026-08-10) — net-new this sweep; has NOT been through director selection, and selection is the director's call.
+- #4-role: <proposed: **section**> — a structure-level twin of T-45 (content fidelity); kept net-new because it is about the graph format's own machinery.
+- thesis: The new graph format introduced a hazard class: structural edits that destroy or reroute meaning while every compiler, schema and lint check stays green — caught only by manual probing and human review.
+- lanes: 4 (with 2 at the tooling seam)
+- origin: emergent
+- support: S2-075, S2-076, S9c-047, S9c-064.
+- counter-evidence: **all four were in fact caught** — by engine-probing (S2-075/76), by `text_head` (S9c-047), recorded pre-emptively (S9c-064). "Tooling cannot see them" holds only at the *automated-gate* level; each produced a new required check.
+- gaps: whether a unique-clock-per-node lint rule was actually landed (S2-075 only *demands* it).
+- oral-only: none
+- fit: #4 section / #2 (review-catch beat)
 
 ---
 

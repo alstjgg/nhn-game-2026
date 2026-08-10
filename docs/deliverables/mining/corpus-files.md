@@ -359,3 +359,161 @@ Unassigned/other: 37 files listed individually, 18 collapsed under 1 glob row (5
 | **total inventoried** | **172** | **437 (14 globs)** | **609** |
 
 Additionally ~391 code/asset files across demos/, tools/, authoring/, proxy/, src/, public/ and the repo root are summarized as out of scope for doc mining (one line per root above).
+
+---
+
+# Incremental sweep — implementation phase
+
+New snapshot: **main @ 8b7651f, PR #235, 2026-08-10** (mapped forward from `5a3c388`, 2026-08-04).
+
+Change set: `git diff --stat 5a3c388 origin/main` = 1099 files changed, +131072 / −468. This sweep enumerates only files ADDED or MATERIALLY CHANGED in `5a3c388..8b7651f` that are prose/decision-bearing; the 08-04 section above is untouched. Sizes are `git cat-file -s` on `origin/main` (KB on disk). No sampling caps except where noted (representative-file descriptors for glob rows; `public/` audio/image count is by name-status tally, not per-file inspection).
+
+The implementation phase since 08-04 is the DDAY production build: a super-pipeline client/engine run (PRDs → work-unit discovery → DISCOVERY.md), an audio subsystem, two more scenario packs, a new mechanism gate family (DOME), and — notably — the deliverable-mining effort's own working set landing on `main`.
+
+## New slice S11 — implementation build-record (proposed)
+
+The largest new prose cluster is the record of *how the production build ran*. It has three parts that belong together and match none of S1–S7.
+
+| path | approx size | one-line what-it-is | slice |
+|---|---|---|---|
+| DISCOVERY.md | 114 KB | Repo-root consolidated discovery log: findings the client build must NOT fix inline; units append, integrator consolidates. Largest prose file now in the repo root. | S11 |
+| discovery/e0.md … e10.md | 1–10 KB ea (12 files) | Per-work-unit discovery notes for the engine/composer/LLM units (seam friction, contract conflicts, e.g. e0 `ReportGuidance` two-owner seam). | S11 |
+| discovery/u0.md … u11.md (incl. u2f, u4s, u9d) | 3–15 KB ea (14 files) | Per-work-unit discovery notes for the client units (e.g. u0 harness-vs-contract conflict resolved to contract). | S11 |
+| discovery/live-provider-prerequisites.md | 4 KB | Prereqs for wiring the live LLM provider path. | S11 |
+| planning/prds/*.md | 30 files, 444 KB total (avg 14 KB) | super-pipeline work-unit PRDs (g1-1 … g15-1, plus hf1/hf2 hotfixes). Each stamps a plan-playtest version + base sha + branch + one-commit contract, e.g. `g2-1-U1-reveal-queue.md`. | S11 |
+
+S11 subtotal: **57 files** (1 root + 26 discovery + 30 PRDs), ~660 KB. Collapse discovery/ and prds/ into globs at Phase-1; they share fixed shapes.
+
+## S3 — mechanism (extends existing S3)
+
+New gate family **DOME** (successor to the P0–P8 program) plus C2 count/one-sentence smoke suites.
+
+| path (glob) | files | one-line what-it-is |
+|---|---|---|
+| planning/dday-mechanism/runs/DOME-*/** | 72 | Measured call records for the DOME gate program (G1 baseline/stance-c, G2, G2-r2, G3 r1–r6): calls-{baseline,live,placebo}.md + metrics-*.json; G3 splits live into k3/k4 temperament arms. |
+| planning/dday-mechanism/runs/SMOKE-C2v{5,6,7}-*-calls/** | 6 | Smoke reads for Call-2 sentence-count / one-sentence variants (J1). |
+| planning/dday-mechanism/suites/*.json (new) | 6 | Probe suite defs: DOME-G1-baseline, DOME-G2, DOME-G3, SMOKE-C2v5/v6/v7 (arms + provenance prose). |
+
+S3 additions: **84 files** across 3 globs.
+
+## S6 — living docs (extends existing S6)
+
+New docs plus material rewrites. status.md and ai-utilization.draft.md roughly quadrupled.
+
+| path | approx size | one-line what-it-is | note |
+|---|---|---|---|
+| docs/plan-audio.md | 30 KB | NEW. Plan tier for the audio subsystem: which cues exist, provenance, wiring to the view-driver seam, done-criteria. | added |
+| docs/plan-playtest.md | 50 KB | NEW. Playtest triage from 민서's 08-05 deployed-build session; versioned (v10+), the source PRDs stamp against. | added |
+| docs/handoffs/feed-register-client.md | 9 KB | NEW. Handoff — feed/register client workstream. | added |
+| docs/handoffs/feed-register-llm.md | 16 KB | NEW. Handoff — feed/register LLM workstream. | added |
+| docs/handoffs/feed-register-llm-amendment.md | 4 KB | NEW. Amendment to the feed-register LLM handoff (matches the two most recent `main` commits). | added |
+| docs/status.md | 84 KB | Project status SoT — grew from 23 KB. | major rewrite |
+| docs/deliverables/ai-utilization.draft.md | 91 KB | Deliverable #4 draft — grew from 45 KB. | major rewrite |
+| docs/spec-engine.md | 32 KB | Engine spec. | changed |
+| docs/spec-client.md | 25 KB | Client spec. | changed |
+| docs/contract-calls.md | 39 KB | LLM Calls contract. | changed |
+| docs/contract-datapack.md | 20 KB | Datapack contract. | changed |
+| docs/contract-run-artifacts.md | 3 KB | Run-artifacts contract (now backed by a real `artifacts/` file — see S7). | changed |
+| docs/scenario/gate-hardening-manual.md | 12 KB | Gate hardening manual. | changed |
+| docs/scenario/scenario-generation-guide.md | 15 KB | Scenario writing rules — grew from 10 KB. | changed |
+| docs/README.md | 18 KB | docs/ reading-order map. | changed |
+| docs/handoffs/llm-lambda-runtime.md | 13 KB | Lambda/Bedrock production runbook. | changed |
+| CLAUDE.md | 6 KB | Project instructions. | changed |
+| CONTRIBUTING.md | 1.4 KB | Contribution conventions. | changed |
+
+### docs/deliverables/mining/ — the deliverable-mining effort's OWN working set (now tracked)
+
+At the 08-04 snapshot the manifest noted `docs/deliverables/mining/` was *untracked output of this effort, excluded from the corpus*. It has since been committed to `main`. It is self-referential (this very file, `corpus-files.md`, is in the diff), so it is a build-record of the mining effort, not primary project history — with one exception, `oral-history.md`, which is a genuine new primary source.
+
+| path | approx size | one-line what-it-is |
+|---|---|---|
+| docs/deliverables/mining/oral-history.md | 36 KB | **Primary source (slice S10).** Human-memory accounts of pre-repo decisions, verbatim, with provenance + mining annotations. Mine this. |
+| docs/deliverables/mining/theme-map-final.md | 251 KB | Phase-3 reconciled theme map: 82 kept themes with verdict/provenance/`#4-role`/atom ids. Derived index of this effort. |
+| docs/deliverables/mining/theme-map-passA.md | 242 KB | Phase-2 Pass A theme map (sharded by slice, 69 records). Derived. |
+| docs/deliverables/mining/theme-map-passB.md | 93 KB | Phase-2 Pass B theme map (sharded by lane, 54 records). Derived. |
+| docs/deliverables/mining/corpus-prs.md | 26 KB | PR corpus index (companion to this files index). Derived. |
+| docs/deliverables/mining/corpus-commits.md | 8 KB | Commit corpus index. Derived. |
+| docs/deliverables/mining/corpus-files.md | 27 KB | This file. Derived. |
+| docs/deliverables/mining/deliverable4-outline.draft.md | 21 KB | Draft outline for deliverable #4 assembled from mined themes. |
+| docs/deliverables/mining/coverage-audit-successes.md | 9 KB | Coverage audit of what the mining captured. |
+| docs/deliverables/mining/phase3-brief.md | 15 KB | Phase-3 (reconcile/select) brief. |
+| docs/deliverables/mining/phase2-pass-A-brief.md | 7 KB | Phase-2 Pass A brief. |
+| docs/deliverables/mining/phase2-pass-B-brief.md | 7 KB | Phase-2 Pass B brief. |
+| docs/deliverables/mining/interview-prompts.md | 6 KB | Interview prompts feeding oral-history. |
+| docs/deliverables/mining/README.md | 6 KB | Map of the mining directory + slice model. |
+| docs/deliverables/mining/theme-format.md | 3 KB | Theme-record schema. |
+| docs/deliverables/mining/atom-format.md | 2 KB | Atom-record schema. |
+
+Surprise worth flagging: this dir shows the slice model already grew **S8/S9/S10** during the effort (oral-history.md self-labels "slice S10"). My task scoped S1–S7 + propose S11; those higher slices exist in-tree already.
+
+S6 additions: 18 tracked docs (5 new + 13 changed) + 16 mining/ meta-files.
+
+## S4 — meetings + handoffs (extends existing S4)
+
+| path | approx size | one-line what-it-is | slice |
+|---|---|---|---|
+| planning/meetings/2026-07-27-dungeon-concept-pivot.md | 14 KB | NEW meeting minutes: dungeon concept pivot (dated between the 07-24 and 07-28 minutes already in S4). | S4 |
+
+(The feed-register handoffs live under `docs/handoffs/`, catalogued in S6 per the 08-04 convention.)
+
+## S2 — scenarios (extends existing S2)
+
+New free-topic scenario line and a v2 hardening pass on 우는다리. The scenario-authoring decision docs at planning root are new.
+
+| path | approx size | one-line what-it-is | slice |
+|---|---|---|---|
+| planning/scenario-model.md | 24 KB | NEW. Scenario-model decisions record (08-09 민서 + Claude session); explicitly supersedes the stale generation-guide + write-scenario skill. | S2 |
+| planning/scenario-writer-brief.md | 38 KB | NEW. Scenario writer brief. | S2 |
+| planning/scenario-writer-brief-freetopic.md | 40 KB | NEW. Free-topic scenario writer brief. | S2 |
+| planning/dday-scenario/drafts/자유주제-멈춘회전문.md | 26 KB | NEW draft "멈춘 회전문" (free-topic line). | S2 |
+| planning/dday-scenario/drafts/자유주제-전구간정상.md | 35 KB | NEW draft "전구간 정상" (free-topic line). | S2 |
+| planning/dday-scenario/paper-check-전구간정상.md | 29 KB | NEW paper-check verdict memo for 전구간정상. | S2 |
+| planning/dday-scenario/drafts/테러리스트의전화-우는다리.md | (changed) | 우는다리 draft revised (hardening pass). | S2 |
+
+(planning root scenario docs overlap the S6 "planning root-level *.md" grouping from 08-04; assigned to S2 on theme.)
+
+S2 additions: 6 new + 1 changed.
+
+## S7 — data / artifacts prose (extends existing S7 — `artifacts/` NOW EXISTS)
+
+The 08-04 open question is answered: `artifacts/` is created and populated. Two new full datapacks landed; 우는다리 was re-hardened. New audio-policy data.
+
+| path | approx size | one-line what-it-is | slice |
+|---|---|---|---|
+| artifacts/runs/우는다리-fixture-r1.json | 12 KB | **First `artifacts/` file** — a run-record fixture (measurement output) for the 우는다리 scenario; realizes the contract-run-artifacts spec. | S7 |
+| data/scenario/멈춘회전문/draft.md | 26 KB | Compiled-from draft for the NEW 멈춘회전문 pack. | S7 |
+| data/scenario/전구간정상/draft.md | 35 KB | Compiled-from draft for the NEW 전구간정상 pack. | S7 |
+| data/policy/audio-map.json | 13 KB | NEW. Cue→asset audio policy map (balance-as-data for the audio subsystem). | S7 |
+| data/policy/report-guidance.json | (changed) | Call-3 report policy — updated. | S7 |
+
+| path (glob) | files | one-line what-it-is |
+|---|---|---|
+| data/scenario/멈춘회전문/*.json | 10 | NEW compiled datapack (meta, gates, characters, places, timeline, truths, symptoms, temperament, hardening, score). |
+| data/scenario/전구간정상/*.json | 10 | NEW compiled datapack (same 10-file shape). |
+| data/scenario/우는다리/*.json (changed) | 5 | 우는다리 pack re-hardened: gates, hardening, score, symptoms, timeline modified. |
+| data/scenario/_schema/*.schema.json (changed) | 2 | gates + temperament schemas updated. |
+| data/runs/_schema/run-record.schema.json (changed) | 1 | Run-record schema updated (matches the new artifacts fixture). |
+
+S7 additions: 5 files listed + 28 collapsed (5 globs).
+
+## Code areas (evidence by reference — for the commit/PR miners, not line-catalogued)
+
+Summarized by name-status tally on `5a3c388..8b7651f`; scope only, so Phase-1 knows what the code is.
+
+- **src/** — +128 files added, 6 modified. The DDAY production client+engine+composer built by the super-pipeline run (the subsystem the discovery/ + PRD build-record documents). Root-level `src/`, replacing the 9-file stub from 08-04.
+- **tests/** — +137 files. Unit/contract suites: `tests/styles/` (token-lint, stacking-context, hard-constraints), `tests/transport/` (wire, retry, status-map, isomorphism, degraded), `tests/windows/` (agent-file, live-feed, reports, tally), scaffold discovery guard. New `vitest.config.ts`, `tsconfig.test.json`.
+- **e2e/** — +27 files. New Playwright suite (`playwright.config.ts`).
+- **public/** — +532 files. Runtime assets: 40 audio `.m4a` cues under `public/assets/audio/` (radio/stamp/type/ambience — the audio subsystem) plus the sprite/image sets. (Counted by name-status; not per-file inspected — every audio/AI asset must have an `assets-manifest.json` entry per repo rule 5, and `assets-manifest.json` is in the diff.)
+- **tools/** — +13, 5 modified. New `tools/audio/` (build-audio-pack.mjs, synth.mjs — synthesized audio pipeline), `tools/driver/run/` (bind/pack/record/schema/validate — run-record capture), `tools/assets/stamp-license.mjs`, `tools/fonts/vendor-google-webfonts.mjs`, `tools/e2e/mirror-pack.mjs`; probe libs touched.
+- **proxy/** — +8, 8 modified. LLM tier evolution (prompt versions + Lambda/Bedrock wiring). Prompt `.md` files under `proxy/prompts/` remain S6-adjacent prose but were not individually re-diffed this sweep — flag for a targeted proxy/prompts pass.
+- **authoring/** — +1 (`lint-all-packs.mjs`), 2 modified (compile-datapack, lint-datapack) — supports the two new packs.
+- **repo root / config** — vite.config.ts, package.json, index.html, `.github/` deploy workflow (2 M), `.gitignore`, `.nvmrc`, `.env.production`, playwright/vitest/tsconfig.test configs. Config, out of scope.
+
+## Slice-mapping recommendation
+
+- **S11 earns its own file/slice — yes.** DISCOVERY.md + discovery/ + planning/prds/ (57 files, ~660 KB) are a coherent, dense record of *how the autonomous build ran* — seam frictions, contract-vs-harness conflicts, the PRD→unit→discovery loop. That is exactly the AI-orchestration story deliverable #4 needs, and it fits none of S1–S7. Recommend a dedicated S11 corpus slice; collapse discovery/ (2 globs: `e*` engine/composer, `u*` client) and planning/prds/ (1 glob) for Phase-1, keeping DISCOVERY.md standalone.
+- **S3 extends** with the DOME gate family + C2 smoke suites (84 files) — same shape as the existing P0–P8 glob rows.
+- **S6 extends** with 5 new docs (plan-audio, plan-playtest, 3 feed-register handoffs) + 13 rewrites (status.md and ai-utilization.draft.md are near-total). **Plus** the 16-file `docs/deliverables/mining/` set is now tracked: treat as the effort's own provenance (S8–S10 already emerged there), NOT re-mined as project history — except `oral-history.md`, a real primary source that should be mined.
+- **S7 extends** and its 08-04 caveat is retired: `artifacts/` exists (first file: a 우는다리 run-record fixture). Two new full datapacks + audio-map.json + schema bumps.
+- **S2 extends** with the free-topic scenario line (멈춘회전문, 전구간정상) + three new scenario-authoring decision docs at planning root (note the S6 planning-root overlap).
+- **S4 extends** by one meeting (2026-07-27 dungeon pivot).
