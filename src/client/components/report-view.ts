@@ -270,9 +270,35 @@ export function createReportView(options: ReportViewOptions): ReportView {
   let received = false
   let typed = false
 
+  /**
+   * x12 — THE CHOP LANDS ONCE PER SITTING (민서, 08-10 — "it does stamp twice").
+   *
+   * `.sig-stamp.on` carries `animation:chopIn`, so every time the class is
+   * re-added the chop swings down again. `replay()` sets `typed = false` at the
+   * top of every replay, which takes the class off — and a sealed sitting that
+   * redraws for any reason (a later round appending, the rail reconciling as the
+   * terminal record mounts) therefore stamped a second time on the way back.
+   * The two landings were fast enough that the lift between them was easy to
+   * miss; what the operator saw was the chop hitting the paper twice.
+   *
+   * The latch is safe because of WHEN it can first close. `sealed` is the day's
+   * `score`, the feed reaches it only after every report of the sitting, and a
+   * replay in flight holds `typed` false — so the first moment all three facts
+   * hold is the moment the last transmission has finished writing itself out.
+   * Nothing after that can un-certify the day: `score` is the sitting's
+   * terminal. A redraw may still retype the text under a chop that stays down,
+   * which is right — the receipt is for the sitting, not for the paint.
+   *
+   * It is a LATCH and not a rewrite of `chopDown()` on purpose. That rule is
+   * pure and proved in `environment: 'node'`; this is a fact about the DOM's
+   * animation replaying, and it belongs beside the DOM.
+   */
+  let landed = false
+
   /** Re-reads the state and lets `stamped()` write the answer. */
   function restamp(): void {
-    stamped(chopDown({ sealed, received, typed }))
+    if (chopDown({ sealed, received, typed })) landed = true
+    stamped(landed)
   }
   restamp()
 
@@ -505,6 +531,13 @@ export function createReportView(options: ReportViewOptions): ReportView {
       // report is mid-sentence; slamming the chop down here is exactly the
       // paint-time mistake x5 removed, one level up.
       sealed = on
+      // x12 — and an UNSEALED sitting releases the latch. This is the rail
+      // handing back a day that has not closed (a new sitting opening on `meta`
+      // is the same call with `scored.has()` false), and its chop has to be able
+      // to land for the first time when that day closes. Selecting a different
+      // day that HAS closed keeps the latch shut, which is correct: it is
+      // certified, and its chop was earned hours ago.
+      if (!on) landed = false
       restamp()
     },
 

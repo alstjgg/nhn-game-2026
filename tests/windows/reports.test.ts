@@ -822,15 +822,39 @@ describe('[x6] the 검인 chop goes down when the sitting has been received', ()
     expect(v.chopDown({ sealed: false, received: false, typed: true })).toBe(false)
   })
 
-  it('(e) source: `stamped()` is still the single writer of `.on`', () => {
+  it('(e) source: `stamped()` is still the single writer of `.on`, and the latch is the single closer', () => {
     const src = scannedSources().find((x) => x.file.endsWith('components/report-view.ts'))
     expect(src, 'report-view.ts is not in the scanned set').toBeTruthy()
     // one declaration and exactly one call, and the call is the rule.
     expect(src!.text.match(/\bstamped\s*\(/g) ?? []).toHaveLength(2)
-    expect(src!.text).toMatch(/stamped\(\s*chopDown\(/)
     expect(src!.text, 'a second writer of the chop class').not.toMatch(
       /stamp\.classList[\s\S]{0,80}\n[\s\S]*stamp\.classList/,
     )
+
+    // x12 — the call used to be `stamped(chopDown(…))` outright. It is now
+    // `stamped(landed)`, because a chop that comes back off the paper swings
+    // down a second time when it returns — `.sig-stamp.on` carries
+    // `animation:chopIn`, and `replay()` lifts the class at the top of every
+    // replay (민서, 08-10 — "it does stamp twice"). What this pins is that the
+    // indirection did not become a second rule: `chopDown()` is still consulted
+    // exactly once, it is still the only thing that can CLOSE the latch, and
+    // the latch is the only thing written.
+    // Two: the declaration and the ONE call. Counting the bare name would let a
+    // second reader hide behind the declaration, so the call shape is pinned
+    // separately below.
+    expect(src!.text.match(/chopDown\(/g) ?? [], 'the chop rule is read in more than one place').toHaveLength(2)
+    expect(src!.text.match(/chopDown\(\s*\{/g) ?? [], 'a second caller of the chop rule').toHaveLength(1)
+    expect(src!.text).toMatch(/if\s*\(\s*chopDown\(\s*\{[^}]*\}\s*\)\s*\)\s*landed\s*=\s*true/)
+    expect(src!.text).toMatch(/stamped\(\s*landed\s*\)/)
+
+    // …and exactly one release, so a sitting that has not closed can still earn
+    // its first chop. `seal(false)` is that release — see `seal()`.
+    // Two: the declaration and the ONE release inside `seal()`.
+    expect(src!.text.match(/landed\s*=\s*false/g) ?? [], 'the latch is released in more than one place').toHaveLength(2)
+    expect(src!.text, 'the release is not the unsealed-sitting one').toMatch(
+      /sealed\s*=\s*on[\s\S]{0,80}if\s*\(\s*!on\s*\)\s*landed\s*=\s*false/,
+    )
+    expect(src!.text.match(/landed\s*=\s*true/g) ?? [], 'the latch closes somewhere other than the rule').toHaveLength(1)
   })
 
   it('(f) source: the window seals from the draw AND from `score`, and never from the archive', () => {
