@@ -416,7 +416,9 @@ describe("tool-schema parity — the schema half of the payload", () => {
   // (which the equality check would happily accept) still goes red.
   it("npc_lines carries the one-line cap on both sides", () => {
     const slots = rosterSlots.narration;
-    const proxy = CALL_SPECS.narration.buildTool(slots) as {
+    // `CallTool.inputSchema` is `JsonValue`, so this widens through `unknown`
+    // rather than asserting a shape TS cannot see overlapping with it.
+    const proxy = CALL_SPECS.narration.buildTool(slots) as unknown as {
       inputSchema: { properties: { npc_lines: { maxItems?: number } } };
     };
     const probe = (
