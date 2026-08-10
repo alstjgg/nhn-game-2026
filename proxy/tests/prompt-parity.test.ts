@@ -242,6 +242,21 @@ const COVERAGE: Array<{
       PRESENT_NPCS: [{ id: "n1", name: "발신자" }],
     },
   },
+  // The COMMON narration beat, not the rare one: the agent speaks on gate beats
+  // only, so sixteen of 멈춘회전문's nineteen render this branch. It carried no
+  // fixture while it was a bare blank line, which is how it stayed invisible.
+  {
+    call: "narration",
+    version: "v0.4",
+    label: "silent beat — no utterance",
+    slots: {
+      TIMELINE_TAIL: ["18:44 물이 한 방울씩 떨어진다."],
+      AGENT_UTTERANCE: "",
+      FIXED_NPC_ACTION: "표기웅이 천장을 올려다본다.",
+      SCENE_SYMPTOMS: ["숨이 가빠졌다."],
+      PRESENT_NPCS: [{ id: "n1", name: "표기웅", side: "line" }],
+    },
+  },
   // THE CURRENT VERSIONS. Prompt versions are additive (handoff §5), so a new
   // pair lands with nothing rendering it — every fixture above pins an older
   // version, and a mistyped slot marker in a fresh template would first surface
@@ -329,6 +344,32 @@ describe("renderer coverage — every RENDERERS entry, not just what suites use"
     expect(
       COVERAGE.some((c) => (c.slots.SCENE_SYMPTOMS as unknown[] | undefined)?.length === 0),
     ).toBe(true);
+    expect(COVERAGE.some((c) => c.slots.AGENT_UTTERANCE === "")).toBe(true);
+  });
+
+  // Parity alone cannot see this one: deleting the sentinel from BOTH renderers
+  // leaves them agreeing on a blank line, and every test above stays green. The
+  // silence has to be asserted as present, the way the `npc_lines` cap is.
+  it("says the silence out loud when the agent did not speak", () => {
+    const rendered = renderCall(
+      {
+        call_type: "narration",
+        template_version: "v0.4",
+        slots: {
+          TIMELINE_TAIL: ["18:44 물이 한 방울씩 떨어진다."],
+          AGENT_UTTERANCE: "",
+          FIXED_NPC_ACTION: "표기웅이 천장을 올려다본다.",
+          SCENE_SYMPTOMS: [],
+          PRESENT_NPCS: [],
+        },
+      },
+      DEFAULT_PROMPT as unknown as Record<string, unknown>,
+    );
+    // The label must not stand over an empty section — that pairing is the
+    // defect (handoff amendment §1).
+    expect(rendered.user).toMatch(/\[요원의 발화[^\]]*\]\n\(없음/s);
+    // ...and the system prompt must carry the branch that tells it what to do.
+    expect(rendered.system).toContain("요원이 말하지 않은 비트");
   });
 });
 

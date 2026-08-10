@@ -125,7 +125,7 @@ One call per beat — not one per NPC.
 | Slot | Contents | Why it is needed |
 |---|---|---|
 | `TIMELINE_TAIL` | Tail of the engine timeline — **including the fixed event and controller utterance the engine already rendered** | Context. It is already on screen, so it is not to be written again |
-| `AGENT_UTTERANCE` | Call 1's `utterance` | Names what must not be echoed, and gives the validator its comparison value for detecting re-emission |
+| `AGENT_UTTERANCE` | Call 1's `utterance`, or `(없음 — 이번 비트에 발화는 없었다)` when the agent did not speak | Names what must not be echoed, and gives the validator its comparison value for detecting re-emission. **The empty case is the common one** — the agent speaks on gate beats only, so most beats render the sentinel. The renderer says the silence rather than leaving the label standing over a blank, and the base prompt branches on it. The validator compares against the raw slot value, so the sentinel is never read as an echo |
 | `FIXED_NPC_ACTION` | This beat's fixed NPC action | Not the subject of narration but a **non-contradiction constraint**. Treated as already having happened. ⚠️ **Must not be an event that demands a reply from the controller** — see below |
 | `SCENE_SYMPTOMS` | The engine's delta journal rendered into symptom sentences | The only channel by which state change reaches anything (rule 5) |
 | `PRESENT_NPCS` | List of `{id, name, side}`. `side` is `line` (across the phone line) or `room` (beside the agent, at the site's crisis post) | Speakers of `npc_lines` may come from here and nowhere else. **`side` is not decoration** — see below |
@@ -297,7 +297,7 @@ is no plan to activate it.
 | 1 | `BLOCKS` | The player — mined from the actual generated text of timeline and reports (W3, I1) |
 | 1 | `GATE_QUESTION` `STANCE_SET` | Scenario, per gate |
 | 2 | `TIMELINE_TAIL` | Tail of the engine timeline |
-| 2 | `AGENT_UTTERANCE` | Call 1's `utterance` this beat, held by the engine. Empty string on a script beat |
+| 2 | `AGENT_UTTERANCE` | Call 1's `utterance` this beat, held by the engine. Empty string on a script beat — which is most beats; the proxy renders it as a sentinel rather than a blank |
 | 2 | `FIXED_NPC_ACTION` `PRESENT_NPCS` | Scenario, per beat |
 | 2 | `SCENE_SYMPTOMS` | Engine per-beat delta journal → symptom renderer |
 | 3 | `EXPERIENCED` | Round event assembler (script + Call 2 output + Call 1 `utterance`/`inner_note`) |

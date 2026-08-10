@@ -92,6 +92,18 @@ const RENDERERS = {
   TIMELINE_EXCERPT: renderTimeline,
   // narration (contracts doc §2)
   TIMELINE_TAIL: renderTimeline,
+  // The agent speaks only on gate beats. 멈춘회전문 has nineteen beats and at
+  // most three carry an utterance — one, on a run that hands nothing over. The
+  // other sixteen used to render a labelled section with NOTHING under it,
+  // directly above an instruction not to repeat what is not there. An
+  // instruction with no anchor is where invention starts. Say the silence out
+  // loud instead, the way SCENE_SYMPTOMS says "(변화 없음)".
+  //
+  // The sentinel names no role: it renders under v0.1–v0.3's `통제관의 발화`
+  // header too, and those versions are what live requests until the client's
+  // TEMPLATE_VERSION bump lands.
+  AGENT_UTTERANCE: (v) =>
+    String(v ?? '').trim() ? String(v ?? '') : '(없음 — 이번 비트에 발화는 없었다)',
   SCENE_SYMPTOMS: (v) => (Array.isArray(v) && v.length ? v.join('\n') : '(변화 없음)'),
   PRESENT_NPCS: renderNpcs,
   // reporter (contracts doc §3) — one round's events as lines
