@@ -29,10 +29,21 @@ import { tallyLineText } from './tally-line.ts'
 
 /* ── the model ───────────────────────────────────────────────────────────── */
 
-/** The per-kind mark, ported verbatim from `app.js:405`. */
+/**
+ * The per-kind mark, ported from `app.js:405` — with ONE deviation.
+ *
+ * x10 (민서, 08-10) — `radio` is `''`. The agent's line carries no gutter mark
+ * any more, because it does not need one: it is the only thing on the paper
+ * printed in `--radio` at 700 weight, and the ink and the weight name the
+ * channel between them. `''` is the same "no mark" `wait` and `mark` have
+ * always said, and saying it that way rather than special-casing the render is
+ * the point — `.fl-c::before` still reserves its 21px, so the agent's text
+ * keeps the left edge every other kind's body text sits on. Dropping the mark
+ * must not move the column.
+ */
 export const FEED_MARKS: Record<FeedKind, string> = {
   event: '▸',
-  radio: '◈',
+  radio: '',
   npc: '—',
   symptom: '·',
   wait: '',
@@ -72,22 +83,6 @@ export interface FeedNode {
   data: Readonly<Record<string, string>>
 }
 
-/**
- * The radio label's fixed half — the callsign half arrives per sitting (M1).
- *
- * x7 — AND THIS MODULE MINTS NO PART OF THAT HALF ANY MORE. It used to spell
- * the series three times over: `` `ECHO-${Math.max(1, event.run)}` `` on the
- * `meta` case and `'ECHO-1'` twice as a default. That is `components/dossier.ts`
- * `callsignOf` copied out by hand into a window that only ever READS the name —
- * and a copy of an art decision is a way for two surfaces to disagree about who
- * the operator is watching. It is not hypothetical: the day the series was
- * renumbered so the unshaped first agent is plain `ECHO`, 식별 on the AGENT FILE
- * said `ECHO` and the radio label here would have gone on saying `ECHO-1` — the
- * same agent, the same desk, the same minute, two names. The pack carries no
- * callsign at all (D4), so there is exactly one owner of the name and this
- * window borrows it.
- */
-const RADIO_TAIL = ' · 무전'
 /** A beat that produced no symptom still prints one line (spec-client §7 #2). */
 const EMPTY_SYMPTOM = '(변화 없음)'
 
@@ -105,23 +100,31 @@ const envelope = (kind: FeedKind, clock: string, parts: FeedPart[]): FeedNode =>
  * The projection every line goes through. An unknown kind is refused here and
  * is a type error at the call site — there is no fallback render.
  *
- * x7 — the default is `callsignOf(1)` and not a literal. The parameter is
- * optional so the PURE model can be projected without a sitting to name (that
- * is how `live-feed.test.ts` calls it, in `environment: 'node'`), and what a
- * line should say when no `meta` has landed is whatever the DOCUMENT calls the
- * first agent — a question `callsignOf` answers and this module does not.
+ * x10 (민서, 08-10) — it takes a LINE and nothing else. The second parameter was
+ * the sitting's callsign, and the only thing ever built out of it was the radio
+ * caption that went with this change; a projection that no longer names the
+ * agent has no use for the name. `createRunFeed` still holds one, for the
+ * fanfold's header — which is the whole argument for the caption being gone.
  */
-export function feedLineModel(line: FeedLine, callsign = callsignOf(1)): FeedNode {
+export function feedLineModel(line: FeedLine): FeedNode {
   const kind = line.kind
   if (!Object.prototype.hasOwnProperty.call(FEED_MARKS, kind)) {
     throw new Error(`live feed: '${String(kind)}' is not a FeedKind`)
   }
   switch (kind) {
     case 'radio': {
-      const parts: FeedPart[] = [
-        { p: 'label', text: `${callsign}${RADIO_TAIL}` },
-        { p: 'text', text: line.text },
-      ]
+      // x10 (민서, 08-10) — THE UTTERANCE, ALONE. The line used to open with a
+      // block caption of its own naming the channel (`ECHO-2 · 무전`), above the
+      // sentence. Every radio line on the paper carried the same one, and the
+      // fanfold's header already prints that name once at the top of the run —
+      // so the caption was a header fact restated three or four times a beat,
+      // and it was restated directly above the only sentences in this window
+      // anyone reads it for. What marks the channel now is what marked it
+      // anyway: the ink and the weight (`.fl-radio .fl-c` — `--radio`, 700).
+      // The gutter mark went at the same time and for the same reason; see
+      // `FEED_MARKS`, and note the mark COLUMN stays reserved there so losing
+      // it does not pull the agent's text out of line with every other kind's.
+      const parts: FeedPart[] = [{ p: 'text', text: line.text }]
       // U5.4 — the slots the agent cited, named the way the AGENT FILE names
       // them. It says WHICH sentence reached the agent and nothing about how:
       // the operator reads the slot and judges the conduct themselves. An
@@ -351,8 +354,21 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
   let band = false
   let symptoms = 0
   let stamp = ''
-  // x7 — the first agent, until `meta` names the sitting. Same reasoning as
-  // `feedLineModel`'s default above: the boot state is a DOCUMENT question.
+  // The sitting's name, until `meta` lands one — and since x10 (민서, 08-10) it
+  // reaches exactly ONE surface, the fanfold's HEADER. The radio lines that used
+  // to repeat it below carry no caption any more; the header saying it once is
+  // why they do not have to.
+  //
+  // `callsignOf(1)` and not a literal, which is x7's rule and still the reason
+  // the import is here: what to call the first agent before a `meta` arrives is
+  // a DOCUMENT question, and `components/dossier.ts` is the one place that
+  // answers it. This window only ever READS the name, and a hand-copied art
+  // decision is how two surfaces come to disagree about who the operator is
+  // watching — the day the series was renumbered so the unshaped first agent is
+  // plain `ECHO`, 식별 on the AGENT FILE said `ECHO` while a copied `ECHO-1`
+  // here would have gone on saying otherwise: same agent, same desk, same
+  // minute, two names. The pack carries no callsign at all (D4), so there is
+  // exactly one owner of it and this window borrows.
   let callsign = callsignOf(1)
   let pending: { cls: FallbackClass; code: string } | null = null
 
@@ -484,7 +500,7 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
       append(feedLineModel(fallbackNoticeLine(pending.cls, line.clock)))
       pending = null
     }
-    const node = feedLineModel(line, callsign)
+    const node = feedLineModel(line)
     if (pending !== null) {
       append({ ...node, data: { 'fallback-class': pending.cls, 'fallback-code': pending.code } })
       pending = null
