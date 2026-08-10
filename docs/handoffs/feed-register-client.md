@@ -1,205 +1,174 @@
-# Handoff — scenario + client lane
+# Handoff — 시나리오 + 클라이언트 레인
 
-Owner: 민서. Branch: `fix/feed-register` (off `main` @ `cb1a70d`).
-Counterpart: [`feed-register-llm.md`](./feed-register-llm.md) — the prompt/proxy
-half. It quotes the pack freely, so B will see some of the scenario before he
-playtests; that was chosen over redacted examples deliberately.
+담당: 민서. 브랜치: `fix/feed-client`.
+B의 레인은 [`feed-register-llm.md`](./feed-register-llm.md)와 그 차이분
+[`feed-register-llm-amendment.md`](./feed-register-llm-amendment.md).
 
-Findings are from one playtest of the shipped 멈춘회전문 pack plus a read of the
-feed, engine and composer surfaces.
+## 상태
 
----
-
-## 1. The LIVE FEED prose is `timeline.json`, verbatim
-
-Confirmed. `src/engine/feed/feed.ts` pushes `script.text` with no
-transformation, and `run-feed.ts:19` states the invariant outright — *"`line.text`
-and `line.speaker` reach the document untouched — nothing here slices, pads,
-counts or reformats them."* The sentence you flagged is `t3`, character for
-character.
-
-So this is a manual sweep, and no amount of prompt work touches it.
-
-### 1.1 Edit `draft.md`, never `timeline.json`
-
-The pack is compiled: `npm run datapack:compile -- data/scenario/멈춘회전문/draft.md`.
-I verified during the last cycle that recompiling reproduces the committed pack
-byte-for-byte, so a hand-edit to `timeline.json` is overwritten on the next
-compile and lost silently.
-
-### 1.2 `hardening.json` will fight you
-
-It stores a `text_head` guard per row — the first 12 characters:
-
-```
-"t3": { "time": "18:55", "text_head": "모르는 번호가 들어왔습", ... }
-```
-
-Any rewrite that changes a row's opening needs its `text_head` updated in the
-same commit or `npm run datapack:lint -- data/scenario/멈춘회전문` fails. Same for
-`time` if you move a row.
-
-### 1.3 Four surfaces share the voice
-
-Sweep them together or they will disagree:
-
-| file | reaches the model? | reaches the player? |
-|---|---|---|
-| `timeline.json` `text` | yes — `TIMELINE_EXCERPT`, `TIMELINE_TAIL`, `EXPERIENCED` | yes — LIVE FEED `event` lines |
-| `gates.json` `scene` | yes — becomes `FIXED_NPC_ACTION` on a gate beat with no co-timed row (`driver.ts:165-172`) | yes — the gate card |
-| `gates.json` stance `label` | **yes** — `STANCE_SET` | yes |
-| `gates.json` stance `desc` | **no** — stripped in `shared/contracts.ts` | yes |
-| `symptoms.json` | yes — `SCENE_SYMPTOMS` | **no longer** (see §3.1) |
-
-`desc` is the one free surface: it never reaches the model, so it can stay in
-whatever register reads best on the card.
-
-### 1.4 The voice change is not only cosmetic — it is half the Call 2 fix
-
-Nearly every row is *reported speech from a phone call* (`…라고 물었습니다` /
-`…라고 했습니다`). Call 2 is asked what follows. The natural dramatization of
-reported Q&A is to re-stage it as live dialogue — and re-staging needs the
-agent's half of the exchange, which only NPCs can carry. That is what produced
-the three misattributed 표기웅 lines.
-
-The existing authoring lint cannot catch this: `tools/probe/lint-beat.mjs`
-looks for `?` and second-person address, and these rows have neither. The
-documented failure mode was "a fixed event that asks the agent a question"; this
-pack has found a quieter route to the same place.
-
-So the sweep target is not just "reads better in Korean" — it is **rows that
-do not invite the model to re-stage a conversation.** Member B is constraining
-Call 2 from the prompt side; this is the other end of the same defect.
-
----
-
-## 2. Register — what is yours in it
-
-Member B owns the output register (Call 3 → 존댓말, Calls 1–2 → clipped radio
-반말). Your side is the *input* register, because the model imitates what it is
-fed. Today it is fed:
-
-- `timeline.json` / `gates.json` `scene` — 존댓말, past-tense log voice
-- `symptoms.json` — 존댓말, first person (`문세라가 제가 시킨 자리를 다시 물었습니다`)
-- stance `label` — 해라체 (`…배수반을 보낸다`)
-- `TEMPERAMENT` — 해라체
-
-Four registers in one request. Whatever you land, land it consistently across
-§1.3's table.
-
----
-
-## 3. Client changes
-
-### 3.1 Stop printing symptom lines
-
-Decision: symptom lines leave the LIVE FEED entirely; `SCENE_SYMPTOMS` stays as
-a Call 2 input so the model still knows how the NPC is behaving. `symptoms.json`
-is untouched as data.
-
-Everything to remove lives in `src/client/components/run-feed.ts`:
-
-- `EMPTY_SYMPTOM` (`:92`) and `emptySymptomModel` (`:169`)
-- the `beat_end` arm that calls it (`:511`) and the `symptoms` counter it reads
-  (`:352`, `:494`, the `beat_start` reset at `:508`)
-- the `symptom` case in `feedLineModel` — it shares an arm with `event` /
-  `fallback` / `wait`, so this is removing the kind from the arm, not deleting a
-  branch
-- `FEED_MARKS.symptom` (`:37`)
-- `.fl-symptom` rules in `src/client/styles/win-live-feed.css:70-72`
-
-The `symptom` kind is on the frozen seam (`shared/view-driver.ts`, guarded by
-`seam-shapes.test.ts`), so **leave the type alone** — do what x6 did for `wait`:
-drop the line in `appendLine` before it reaches the DOM, and leave the kind
-total in the projection. `run-feed.ts:151-155` and `:470-482` are the precedent,
-including the comment explaining why.
-
-Your reasoning for the record: the citation mark over the utterance
-(`인수인계 01 · 03`, `run-feed.ts:140`) already tells the player their handover
-reached the agent, which is the signal that matters. Symptoms reported a weaker
-thing in the noisiest slot.
-
-`(변화 없음)` goes with them — it printed on every beat that moved no meter,
-which in this pack is most beats.
-
-### 3.2 Reframe NPC quotes as the agent relaying
-
-Target shape: `<name>가 "<line>"라고 한다` or a variant — reported speech in the
-agent's radio voice, instead of the current screenplay form (`— 표기웅 "…"`).
-
-**Put it in the renderer**, `feedLineModel`'s `npc` case (`run-feed.ts:144-148`),
-not in the engine. I had argued for the engine so the mined block would carry
-the speaker — that argument is dead: I verified `src/client/windows/live-feed.ts`
-has **no mining affordance at all**. Mining exists only in `reports.ts`, over
-Call 3's `f` and `b` sentences. `q` ids are absorbed into the block store and
-are unreachable by the player. So block text is moot, the engine golden stays
-untouched, and the change is wholly in your lane.
-
-Use `speakerName`, not the id — `KeptNpcLine` already carries it.
-
-Three tests move with it:
-
-- **`[u5#c9] (c)`** (`tests/windows/live-feed.test.ts:466`) is the binding one:
-  `run-feed.ts` may author exactly six Hangul literals, listed in an `ALLOWED`
-  set. Your new fragments go in, `(변화 없음)` comes out.
-- **`[u5#c9] (b)`** (`:459`) does **not** block you. It bans `.text.slice()`-style
-  method calls; template interpolation is not in the list.
-- **`(j)`** (`:180`) asserts the current label+quote part shape and needs
-  rewriting.
-
-One Korean detail the code will hit: the subject particle agrees with the
-final consonant — 표기웅**이**, 문세라**가**, 하도경**이**. Selecting it means
-inspecting the last codepoint of `speaker`, which is more authoring than this
-module has ever done. If you'd rather not, a particle-free frame sidesteps it
-entirely — `<name>의 대답 — "…"`, or `<name> — "…"라고 한다`. Cheaper and it keeps
-`[u5#c9]`'s spirit intact.
-
-`.fl-npc .fl-c b` styling (`win-live-feed.css:68`) needs revisiting either way —
-the bold brown speaker label is a screenplay convention and it is the thing that
-read wrong.
-
-### 3.3 `TEMPLATE_VERSION` — yours to land, and it lands **second**
-
-`src/composer/compose.ts:51`. Bump to whatever B publishes
-(`judgment v0.5`, `narration v0.4`, `reporter v0.4`), then update
-`docs/contract-calls.md` §10/§11 to match.
-
-**Do not merge this in the same PR as the prompts.** `proxy-deploy.yml` and the
-Pages `deploy.yml` both fire on push-to-main and run concurrently. If the
-client asks for a version the proxy hasn't deployed yet,
-`proxy/src/prompt.ts:19-25` throws `unknown_template_version` and every call on
-the live site falls back. B's PR merges first; watch its proxy deploy finish
-(it ends with a real model call asserting `x-llm-fallback: false`); then merge
-this.
-
----
-
-## 4. Decisions on record
-
-| question | decision |
+| | |
 |---|---|
-| Call 2's identity | Keep — NPCs responding to the agent. One NPC, one line, and it may not be a question or a request needing an answer. |
-| enforcement | Prompt rule, strongly worded. No validator, no engine drop rule. Schema caps `npc_lines` at 1 so the model refuses to overproduce. |
-| NPC display | Reframed as the agent relaying. Renderer-side. |
-| symptoms | Stop printing. Keep as Call 2 input. |
-| `(변화 없음)` | Gone. |
-| probe re-measurement | Not doing it. Gate measurements stand as historical, taken against `judgment v0.4`. |
-| mis-mining | Working as designed. A wrongly mined sentence is *supposed* to confuse the agent — that is the mechanic, not a bug, and nothing should be added to prevent it. |
+| 끝남 | 클라이언트 두 건 — `cfde1ce` |
+| 진행 중 | 초안 다시 쓰기 (민서) |
+| 설계 끝, 구현 전 | 피드 타이밍 |
+| B에게 넘김 | amendment 문서 |
 
 ---
 
-## 5. Open
+## 1. 끝난 것 — `cfde1ce`
 
-- **The unauthorable clock stamp.** A feed line was seen at a minute this pack
-  cannot produce — `buildSchedule` (`src/engine/beat/schedule.ts`) creates beats
-  only at authored clocks, and `hardening.json` confirms that minute is not one.
-  Additionally, the gate beat nearest it has an empty `PRESENT_NPCS`
-  (`driver.ts:174-182` builds the roster from co-timed rows, and that gate has
-  none), so it could not have produced an NPC quote at all. Did not reproduce.
-  Needs one screenshot with the minute legible before it is worth chasing.
-- **G3 still has no default that holds** — six repairs, six failures, diagnosis
-  positional rather than wording. Carried over from the previous cycle,
-  untouched by this work, and not in scope here.
-- **`proxy/events/call.json` still carries no `pack`**, so the post-deploy smoke
-  exercises `defaultPromptFor`'s fallback rather than the lookup. Also carried
-  over. Worth telling B if he ends up in that file.
+- **NPC 줄이 요원의 전달로 바뀌었다.** `— 표기웅 "당직자는 연락 안 됩니다"라고 말한다`.
+  렌더러에서만 처리한다. 화자와 대사는 여전히 그대로다.
+- **`답한다`가 아니라 `말한다`.** Call 2는 고정 사건에 대한 *반응*을 쓴다
+  (`contract-calls.md` §3 — "이 콜은 고정 사건을 서술하지 않는다 — 그에 대한 반응을 만든다").
+  답이 아닌 줄에서 거짓이 되는 틀은 슬러그 문제를 되풀이한다.
+- **조사는 붙이지 않았다.** 이/가는 이름의 받침으로 갈리고, 고르려면 `speaker`의
+  마지막 코드포인트를 읽어야 한다 — [u5#c9]가 금지하는 파생이다.
+- **징후 줄은 인쇄하지 않는다.** `SCENE_SYMPTOMS`는 그대로 Call 2 입력이다.
+  x6이 `wait`를 처리한 자리(`appendLine`)에서 똑같이 떨어뜨린다.
+
+**이전 판 handoff의 오류 하나** — `FEED_MARKS.symptom`은 지울 수 없다.
+`Record<FeedKind, string>`이라 얼어붙은 seam에 대해 총체적이어야 한다.
+
+**만들고 잡은 회귀** — 데모 하루의 마지막 분은 유일한 줄이 징후인 비트의 것이라,
+21:04까지 가는 런에서 상단 바가 21:00에 멈췄고 `score`가 자기 시각을 갖지 않는
+집계 줄이 낡은 스탬프를 물려받았다. `advanceStamp`가 떨어뜨린 줄에서도 시계를 옮긴다.
+
+**조용히 썩고 있던 가드** — `no-digit-npc`의 (a)는 스타일시트 *원문*을 훑는다.
+`.fl-symptom`을 지우며 그 사유를 적은 주석이 바로 그 선택자의 존재 검사를
+통과시켰다. 범위를 `.fl-npc`로 좁혔고 `a11y.spec.ts`도 맞췄다.
+
+**열어 둔 부수 효과** — 오디오는 MutationObserver로 DOM을 탄다. 인쇄하지 않는
+줄은 큐를 울리지 않으므로 `feed:symptom`(`data/policy/audio-map.json:81`)은
+이제 소리가 없다. 실패하지 않고 사라진다. **다시 묶을지 결정 필요.**
+
+검증: 단위 1764 · e2e 254 · `npm run check` 전부 통과.
+
+---
+
+## 2. 초안 — 어느 파일을, 어떻게
+
+### 고치는 파일
+
+```
+planning/dday-scenario/drafts/자유주제-멈춘회전문.md
+```
+
+`data/scenario/멈춘회전문/draft.md`는 **출력물**이다 — `compile-datapack.mjs:690`이
+입력을 팩 안으로 복사한다. 고쳐 봐야 다음 컴파일에 덮인다.
+
+컴파일도 되지 않는다: 슬러그는 파일명에서 나오고(`:47-50`) `draft.md`에는 대시가
+없어 `filename "draft" is not <파일 접두>-<슬러그>.md`로 죽는다.
+
+```bash
+npm run datapack:compile -- planning/dday-scenario/drafts/자유주제-멈춘회전문.md
+npm run datapack:lint -- data/scenario/멈춘회전문
+```
+
+> 초안 머리말은 원본이 `자유주제-01.md`라고 하지만 그런 파일은 없다. 위 파일이 원본이다.
+
+### 형식은 계약이다
+
+- 아홉 절의 **번호와 이름이 고정**이다 (`compile-datapack.mjs:52` `SECTION_NAMES`).
+  하나라도 없으면 죽는다.
+- 절 안의 구조도 파싱된다 — §2 표의 칸, §3의 `**이름** (나이 · 역할)`, §7의 yaml.
+
+### 줄을 나눌 때
+
+| 방식 | 비트 | Call 2 | 화면 스탬프 |
+|---|---|---|---|
+| `18:38` 두 줄 | 1 | 1 | 18:38, 18:38 |
+| `18:38` + `18:38+` | 2 | 2 | 18:38, 18:38 |
+| `18:38` + `18:39` | 2 | 2 | 18:38, 18:39 |
+
+- 같은 시각의 행들은 한 비트로 묶인다 (`schedule.ts:94` `slotAt(event.time)`).
+- 비트마다 narration 콜이 하나 붙는다 (`engine-order.test.ts`의 `SCRIPT_BEAT`).
+- `+`는 반 분(`:252` `SUB_MINUTE = 0.5`)만큼 뒤로 정렬되고 화면에는 같은 분으로 찍힌다.
+- 행이 순서를 어기면 죽지만(`:261`) **같은 시각은 허용**된다(`<`이지 `<=`가 아니다).
+- 같은 시각 분할은 **캘 수 있는 문장을 하나 더** 만든다 — `buildFeed`가 줄마다 id를 준다.
+
+### hardening을 깨뜨리는 것
+
+- 행마다 `time`과 `text_head`(**앞 12자**)를 지킨다. 어긋나면 컴파일이 죽는다(`:658`).
+  ```json
+  "t1": { "time": "18:38", "text_head": "한내돔 야간 당직 표기" }
+  ```
+- id는 **위치로 매겨진다** (`:210` `t${events.length + 1}`). 행을 하나 끼워 넣으면
+  그 아래 전부가 밀린다 — `time`·`text_head`·`effects`·`present`가 통째로 어긋난다.
+- **그래서:** 분할하는 절에서는 12자 추적을 하지 말고, 다 끝낸 뒤 `hardening.json`의
+  `timeline` 지도를 한 번에 다시 만든다.
+
+### 문장을 고칠 때
+
+- **모델에 닿는 면**: timeline `text` · gate `scene` · stance `label`.
+  stance `desc`는 **닿지 않는다** (`shared/contracts.ts`에서 잘린다) — 유일한 자유 지대.
+- **징후 문장은 초안에 없다.** `hardening.json`의 `symptoms`에만 있고 존댓말 1인칭이며
+  여전히 Call 2로 들어간다. 같이 쓸지 않으면 섞인 어투가 그대로 돌아온다.
+- **진짜 표적은 "더 나은 한국어"가 아니다.** 전달 화법으로 쓰인 행은 Call 2가 대화를
+  다시 무대에 올리도록 부추기고, 그러려면 요원의 몫이 필요하고, 그건 NPC만 나를 수 있다.
+  잘못 붙은 표기웅 세 줄이 그렇게 나왔다.
+  ```
+  t4  표기웅에게 안에 몇 명이냐고 다시 물었습니다
+  ```
+  `lint-beat.mjs`는 `?`와 2인칭만 본다. 이런 행은 깨끗하게 통과한다.
+- §5의 실어 나르는 문장과 거짓 단서는 §2의 사실을 **다시 주장**하고, 거짓 단서는
+  §7 yaml의 `false_leads`에 **한 번 더** 그대로 있다. 세 자리를 같이 움직인다.
+
+### 이번에 실제로 걸린 것
+
+- `천정` → `천장`.
+- `한내돔에 파견되었다` — 전제를 깬다. 이 팩의 `present`는 전부 `side: "line"`이고
+  §4의 장소는 회선 너머의 시점이며 §6은 요원의 권한을 청취·조회·요청으로 못박는다.
+- 표 칸 안의 줄바꿈은 파싱을 깬다.
+- 어투를 해라체로 옮기는 것은 계획과 맞다. 다만 17행 **전부**여야 한다.
+- §9의 10번(번역투 sweep)은 다시 쓰는 순간 다시 민서의 주장이 된다.
+- 플레이어에게 닿는 산문에 `런`·`갈림길`·`게이트`·`에이전트`·`기질`·`플레이어` 금지.
+  `GATE_*`는 WARN이 아니라 ERROR다.
+
+---
+
+## 3. 피드 타이밍 — 결정 끝, 구현 전
+
+**모델:** 전부 큐에 쌓고, 순서대로, 일정한 속도로 찍는다. 한 줄이 다 찍히면 다음 줄.
+시각이 바뀌는 자리에서만 조금 더 쉰다. 시계는 **모든 스탬프에서** 갱신한다.
+
+- **군집 가속 제거** — `REVEAL_CROWD_AT` / `REVEAL_CROWD_DIV`. 읽을 게 가장 많은
+  비트가 가장 빨리 지나가고 있었다.
+- **인쇄하는 줄에만 시간을 매긴다.** 지금은 이벤트마다 매긴다. `revealChars`가
+  feed가 아닌 것에 0을 주므로 `beat_start` · `waiting:judgment:on/off` ·
+  `waiting:narration:on/off` · `beat_end`가 **각각 600ms**를 쓴다. 게이트 비트 하나에
+  대여섯 개 — 군집 가속을 빼는 순간 비트마다 3초의 죽은 시간이 된다.
+- **징후는 큐에 남기되 시간을 쓰지 않는다.** 큐 앞에서 걸러내면 스탬프가 종이보다
+  먼저 도착하거나(x6이 고친 그 버그) 영영 도착하지 않는다. 남겨 두면 순서도 시계도
+  맞고 픽스처도 건드릴 필요가 없다.
+- **글자 단위 타이핑**, 빠른 속도. `components/typewriter.ts`가 이미 순수 모듈이고
+  `TypePace`를 받는다. 기본값 `READING_PACE`의 주석이 그대로 이 용도다 —
+  *"무전이 실어 오는 속도로 도착하는 피드"*.
+- **시각 간 쉼은 사이 분에 비례**하되 상한을 둔다. 이 팩의 간격은 0–33분이라
+  비례만으로는 마지막 쉼이 첫 쉼의 30배가 된다. 플레이어를 기다리게 하려는 게 아니라
+  다음 일이 '벌어지는 데 시간이 걸렸다'는 느낌만 주면 된다.
+- **`flush`는 남는다.** 얼어붙은 애니메이션(펌프가 아예 안 돈다 — 유일한 통로다),
+  reduced motion(아무것도 움직이지 않는다는 약속), seek(U1).
+  `run_end`에서만 뺀다. 펌프는 시계가 `ended`면 계속 비우고 `paused`면 flush한다 —
+  `settle()`은 이미 둘을 구분하는데 펌프가 `!running`으로 뭉갠다.
+- **엔딩이 피드를 기다린다.** 꼬리가 찍히는 중이면 아무것도 멈추지 않는다.
+  지금은 `run_end`가 `shell/run-state.ts:127`도 깨우고 `ending.ts:651`이 rate 0을 준다.
+
+**a11y 비용** — `#feedList`는 `role="log"` · `aria-live="polite"` ·
+`aria-relevant="additions"`다. 타이핑하는 다른 두 면은 라이브 영역이 아니다.
+완성된 글은 sr-only 노드로 한 번에 넣고, 타이핑은 `aria-hidden` 형제에서 한다.
+`<li>`가 글을 두 번 갖게 되므로 `.fl-c`의 `textContent`를 읽는 곳
+(`domLines`, inv 2의 숫자 스캔)이 같이 움직인다.
+
+**같이 고칠 낡은 주석** — `boot.ts:324`는 "operator presses ▶"라고 하는데
+그 버튼은 없다 (`agent-file.ts:370` — "The topbar's ×1 / ×4 / pause left with this unit").
+
+---
+
+## 4. 열린 것
+
+- **`feed:symptom` 큐** — 다시 묶을지 버릴지.
+- **18:39 스탬프** — 이 팩이 만들 수 없는 분이다. 재현 안 됨. 분이 읽히는 스크린샷 하나 필요.
+- **G3의 기본이 서지 않는다** — 여섯 번 고치고 여섯 번 실패. 이번 작업 범위 밖.
+- **`proxy/events/call.json`에 `pack`이 없다** — 배포 후 스모크가 조회가 아니라
+  `defaultPromptFor`의 폴백을 지난다.
