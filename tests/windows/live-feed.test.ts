@@ -24,8 +24,18 @@ import { fileURLToPath } from 'node:url'
 
 import type { FeedKind, FeedLine, ViewEvent } from '../../src/shared/view-driver.ts'
 import { woodariRun03 } from '../../src/client/driver/fixtures/index.ts'
-import { FEED_MARKS, feedLineModel } from '../../src/client/components/run-feed.ts'
+import { MS_PER_SIM_MIN, hhmm, mm } from '../../src/client/driver/clock.ts'
+import {
+  FEED_MARKS,
+  FEED_PACE,
+  feedGapMs,
+  feedLineModel,
+  printsFeedLine,
+  typedParts,
+  typesOut,
+} from '../../src/client/components/run-feed.ts'
 import type { FeedNode, FeedPart } from '../../src/client/components/run-feed.ts'
+import { typeDuration } from '../../src/client/components/typewriter.ts'
 import { FALLBACK_CLASS, FALLBACK_LABEL } from '../../src/client/components/fallback-notice.ts'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
@@ -76,6 +86,17 @@ const DIGIT = /\d/
 /* ── the seven kinds, and the fixture stream they are proven against ─────── */
 
 const KINDS: FeedKind[] = ['event', 'radio', 'npc', 'symptom', 'wait', 'fallback', 'mark']
+
+/**
+ * The kinds the fanfold DROPS — x6 took `wait`, x8 took `symptom`.
+ *
+ * At module scope since x11, because two blocks need it: `[u5#c1] (n)`/`(o)`
+ * hold the drop shut, and the pacing block below has to know which queued
+ * events print nothing in order to check that none of them costs the reader
+ * anything. The source-side owner of the same list is `run-feed.ts`'s
+ * `isUndrawn`, and `(o)` is what ties the two together.
+ */
+const UNDRAWN_KINDS: FeedKind[] = ['wait', 'symptom']
 
 /**
  * Reference marks — `docs/design/phase2-ui/app.js:405`, ported verbatim.
@@ -236,7 +257,9 @@ describe('[u5#c1] seven kinds map 1:1', () => {
   // shape (민서, 08-10): the line is dropped before the DOM, so a skin for it
   // could only ever be dead paint. Both undrawn kinds are banned by name below,
   // so either one growing a skin back is a failure and not a silence.
-  const UNDRAWN: FeedKind[] = ['wait', 'symptom']
+  //
+  // x11 — hoisted to module scope (`UNDRAWN_KINDS`), unchanged in content.
+  const UNDRAWN = UNDRAWN_KINDS
 
   it('(n) u1 skin selectors exist for all five DRAWN kinds — the port has somewhere to land', () => {
     const css = code('src/client/styles/win-live-feed.css')
@@ -263,18 +286,27 @@ describe('[u5#c1] seven kinds map 1:1', () => {
 
     // Door 1: `appendLine` returns before it can build a node — for BOTH
     // undrawn kinds, in one guard. x8 put `symptom` beside `wait` there.
-    // The early return that tests `line.kind` — the module has several others
-    // (`follow`, `reread`, the reveal pump), so the guard is found by what it
-    // READS, not by being first.
-    const drop = /if\s*\(([^)]*line\.kind[^)]*)\)\s*\{([^}]*)\}/.exec(source)
-    expect(drop, 'nothing short-circuits on `line.kind` before `append` any more').toBeTruthy()
-    const [, condition = '', body = ''] = drop ?? []
-    expect(body, 'the undrawn-kind guard stopped returning').toMatch(/\breturn\b/)
+    //
+    // x11 — and the two kinds are now named in a PREDICATE rather than in the
+    // `if` itself, because the reveal pump asks the same question a second time:
+    // a line that prints nothing may not cost the reader any time
+    // (`printsFeedLine`), and two lists of which kinds are undrawn would be two
+    // ways for the paper and its clock to disagree about what a beat contains.
+    // So the claim this assert carries is stronger than the one it replaces —
+    // one owner, and every reader of it found by name.
+    const owner = /const\s+(\w+)\s*=\s*\(line[^)]*\)\s*:\s*boolean\s*=>([^\n]*)/.exec(source)
+    expect(owner, 'the undrawn-kind rule is no longer a predicate over a line').toBeTruthy()
+    const [, ownerName = '', rule = ''] = owner ?? []
     for (const kind of UNDRAWN) {
-      expect(condition, `the ${kind} line no longer short-circuits before \`append\``).toMatch(
+      expect(rule, `the ${kind} line is no longer one of the undrawn kinds`).toMatch(
         new RegExp(`line\\.kind\\s*===\\s*'${kind}'`),
       )
     }
+
+    const drop = new RegExp(`if\\s*\\(\\s*${ownerName}\\(line\\)\\s*\\)\\s*\\{([^}]*)\\}`).exec(source)
+    expect(drop, 'nothing short-circuits on the undrawn kinds before `append` any more').toBeTruthy()
+    const body = drop?.[1] ?? ''
+    expect(body, 'the undrawn-kind guard stopped returning').toMatch(/\breturn\b/)
 
     // x8 — and it still moves the DESK CLOCK on its way out. A dropped line is a
     // minute the run reached, and the first cut of the symptom removal proved
@@ -282,7 +314,18 @@ describe('[u5#c1] seven kinds map 1:1', () => {
     // whose only line is a symptom, so the top bar froze at 21:00 on a run that
     // reaches 21:04 and the 집계 line inherited the stale stamp. The guard is
     // cheap and the failure is silent, which is exactly when to pin it.
+    //
+    // x11 gives it a second job: it is why a symptom stays in the reveal QUEUE
+    // instead of being filtered out at `receive`. The pump consumes it for free
+    // and this line is what it is consumed FOR.
     expect(body, 'a dropped line no longer advances the desk clock').toMatch(/advanceStamp\s*\(/)
+
+    // The second reader of the same owner — the pump. If these ever part
+    // company, one half of the module refuses to print a line while the other
+    // half charges the player time for it.
+    const prints = /export function printsFeedLine[\s\S]*?\n}/.exec(source)
+    expect(prints, '`printsFeedLine` is gone — the pump has no way to ask').toBeTruthy()
+    expect(prints?.[0] ?? '', 'the pump stopped reading the drop rule').toContain(`${ownerName}(`)
 
     // And a symptom cannot come back in by the OTHER door it used to have: the
     // `(변화 없음)` builder was a second entry into `append` that bypassed
@@ -294,15 +337,276 @@ describe('[u5#c1] seven kinds map 1:1', () => {
 
     // Door 2: the `waiting` case is inert — it may not append, and it may not
     // reach for a marker builder that no longer exists.
+    //
+    // x11 — `break` became `return false`, which is the same inertia stated one
+    // layer down: `apply` now answers whether it put a line on the paper, and a
+    // `waiting` edge answering `false` is what stops the pump charging time for
+    // it. Anything that appended would have to answer `true`, so the assert
+    // still catches a case that started drawing.
     const waiting = /case 'waiting':([\s\S]*?)(?=\n\s{6}case |\n\s{6}default)/.exec(source)
     expect(waiting, "the `waiting` case vanished from `apply` — it must stay, and stay empty").toBeTruthy()
-    expect((waiting?.[1] ?? '').trim()).toBe('break')
+    expect((waiting?.[1] ?? '').trim()).toBe('return false')
 
     // And nothing in the unit reaches for the deleted module at all.
     for (const file of SOURCES) {
       expect(`${file}:${/waiting-marker|waitingModel/.test(code(file))}`).toBe(`${file}:false`)
     }
     expect(read('src/client/components/waiting-marker.ts')).toBe('')
+  })
+})
+
+/* ══ x11 — the paper types, and only a printed line costs time ════════════
+   민서, 08-10. Three claims live here, and every one of them fails SILENTLY if
+   it rots: a feed that charges time for events nobody sees just goes quiet; a
+   flush that leaves the cursor mid-word only shows up as a truncated assertion
+   somewhere else; and a drain count that never reaches zero hangs the ending
+   with no error at all. None of them can be watched from `environment: 'node'`,
+   so each is pinned either as pure arithmetic or at the source.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+describe('x11 the reveal pump charges time for lines, never for events', () => {
+  const RUN_FEED = 'src/client/components/run-feed.ts'
+
+  /** The demo stream's printing events, counted independently of the module. */
+  const printing = EVENTS.filter(
+    (e) => e.type === 'score' || (e.type === 'feed' && !UNDRAWN_KINDS.includes(e.line.kind)),
+  )
+
+  it('(a) `printsFeedLine` answers true for exactly the events that put a line on paper', () => {
+    const said = EVENTS.filter((e) => printsFeedLine(e))
+    expect(said.length, 'the demo stream has no printing events at all — the scan is vacuous').toBeGreaterThan(0)
+    expect(said).toEqual(printing)
+  })
+
+  it('(b) every kind of event the stream carries that prints nothing is free', () => {
+    // The named cost of the old pump: a gate beat's `beat_start`, its four
+    // `waiting` edges and its `beat_end` each bought a 600 ms floor, because
+    // the delay was priced per QUEUED EVENT and everything that was not a feed
+    // line priced at zero characters. Five or six of them a beat is about three
+    // seconds of dead air between two lines that had something to say.
+    const free = EVENTS.filter((e) => !printsFeedLine(e))
+    const kinds = [...new Set(free.map((e) => e.type))].sort()
+    expect(kinds, 'the stream stopped carrying non-printing events').not.toEqual([])
+    expect(free.some((e) => e.type === 'feed'), 'no dropped feed line is in the stream').toBe(true)
+    expect(kinds).toContain('waiting')
+    expect(kinds).toContain('beat_start')
+    expect(kinds).toContain('beat_end')
+  })
+
+  it('(c) the pump consumes the free events before it can spend a millisecond', () => {
+    const source = code(RUN_FEED)
+    const step = /const printNext = [\s\S]*?\n {2}\}/.exec(source)?.[0] ?? ''
+    expect(step, 'the pump step is gone — nothing drains the queue at a pace').not.toBe('')
+
+    // The free half is everything before the pump admits it is holding a line.
+    const free = step.split('if (queue.length === 0) return')[0] ?? ''
+    expect(free, 'the free drain no longer asks whether the head prints').toContain('printsFeedLine')
+    expect(free, 'the free drain spends time on an event that prints nothing').not.toMatch(
+      /(pauseMs|holdMs|typing)\s*=[^=]/,
+    )
+
+    // …and it cannot spin. Nothing here pushes to the queue, so the loop is
+    // bounded by construction — but an unbounded synchronous loop inside an
+    // animation tick is a frozen desk rather than a slow one, and the bound is
+    // cheap enough that "by construction" is not the argument we rest on.
+    expect(free, 'the free drain lost its loop bound').toMatch(/guard/)
+    expect(/const flush = [\s\S]*?\n {2}\}/.exec(source)?.[0] ?? '', 'the flush lost its loop bound').toMatch(
+      /guard/,
+    )
+  })
+
+  it('(d) the desk-clock pause is proportional, opens above zero, and is capped', () => {
+    expect(feedGapMs('', '08:50'), 'the first line of the day waits for nothing').toBe(0)
+    expect(feedGapMs('08:50', '08:50'), 'two lines in one minute wait for nothing').toBe(0)
+    expect(feedGapMs('09:25', '08:50'), 'a backwards stamp owes a negative pause').toBe(0)
+
+    // Monotone up to the cap, and never past it.
+    const OPEN = mm('08:00')
+    let previous = 0
+    for (let gap = 1; gap <= 120; gap += 1) {
+      const ms = feedGapMs('08:00', hhmm(OPEN + gap))
+      expect(ms).toBeGreaterThanOrEqual(previous)
+      expect(ms).toBeLessThanOrEqual(feedGapMs('08:00', '12:00'))
+      previous = ms
+    }
+
+    // The cap is not decoration: it binds INSIDE the shipped pack's own range.
+    // `멈춘회전문` runs gaps of 0..33 sim-minutes and the demo fixture reaches
+    // 89, so raw proportionality would put a thirty-fold spread on the pauses
+    // of one day. Capped, the longest silence of the run is worth under four of
+    // the shortest hops.
+    const shortest = feedGapMs('08:50', '08:51')
+    const longest = feedGapMs('08:50', '10:19')
+    expect(longest / shortest, 'the pause spread grew past what a player will sit through').toBeLessThan(4)
+    expect(longest, 'the cap stopped binding on the packs we ship').toBe(feedGapMs('08:50', '09:33'))
+  })
+
+  it('(e) the whole demo day of paper still fits inside the day of sim it prints', () => {
+    // The one number the pacing block claims out loud, pinned to the constants
+    // it is a function of — `slot-board.ts`'s note is the precedent, and the
+    // reason is the same: a comment that states a total goes stale with the
+    // numbers beside it, and this one is the argument that removing the crowd
+    // divisor was affordable. What must hold is that a run drains inside its own
+    // day at ×1, with room for the report holds, and that the pacing has not
+    // been quietly tuned down to a dump.
+    let at = ''
+    let paper = 0
+    for (const event of EVENTS) {
+      // A dropped line still moves the desk clock, so it still moves the gap the
+      // next printed line is priced against — and costs nothing itself.
+      if (event.type === 'feed' && UNDRAWN_KINDS.includes(event.line.kind)) {
+        at = event.line.clock
+        continue
+      }
+      if (!printsFeedLine(event)) continue
+      if (event.type !== 'feed') {
+        // A `score` line reuses the last stamp (it carries none of its own), so
+        // it owes no pause. It types like any other line; its length is
+        // `tally-line.ts`'s business and not a fixture literal to assert here
+        // (C3), so it is priced as a bare row.
+        paper += FEED_PACE.msBetween
+        continue
+      }
+      const node = model(event.line)
+      paper += feedGapMs(at, event.line.clock)
+      const chars = nodeText(node).length
+      paper += typesOut(event.line.kind) ? typeDuration([chars], FEED_PACE) : FEED_PACE.msBetween
+      // …and the desk clock moves only for a line that HAS a stamp: a `mark` is
+      // one column wide and carries none, so the round divider does not reset
+      // what the next line's pause is measured from. Read off the model rather
+      // than off a rule restated here.
+      at = node.stamp ?? at
+    }
+    const day = (mm(woodariRun03.end) - mm(woodariRun03.start)) * MS_PER_SIM_MIN
+    expect(paper, 'the paper cannot keep up with the day it prints').toBeLessThan(day)
+    expect(paper / day).toBeLessThan(0.8)
+    expect(paper / day, 'the pacing collapsed — the day would print as a dump').toBeGreaterThan(0.4)
+  })
+})
+
+describe('x11 a flush lands the whole line, and the drain reaches zero', () => {
+  const RUN_FEED = 'src/client/components/run-feed.ts'
+  const source = (): string => code(RUN_FEED)
+
+  const PARTS: FeedPart[] = [
+    { p: 'label', text: '서지형 ' },
+    { p: 'quote', text: '막을 수 있다.' },
+    { p: 'text', text: '라고 말한다' },
+  ]
+  const whole = PARTS.map((p) => p.text).join('')
+
+  it('(a) the cursor shows a PREFIX of the line and nothing else, at every position', () => {
+    for (let chars = 0; chars <= whole.length + 5; chars += 1) {
+      const shown = typedParts(PARTS, chars).map((p) => p.text).join('')
+      expect(shown).toBe(whole.slice(0, Math.min(chars, whole.length)))
+    }
+  })
+
+  it('(b) a settled cursor is the parts themselves — the complete text, unaltered', () => {
+    expect(typedParts(PARTS, whole.length)).toEqual(PARTS)
+    expect(typedParts(PARTS, 0)).toEqual([])
+    // A part not reached yet is ABSENT, never an empty one: an empty `<q>` still
+    // renders its quote marks, so an npc line would open with a bare pair of
+    // them and fill them afterwards — the frame arriving before the utterance.
+    expect(typedParts(PARTS, 1).length).toBe(1)
+  })
+
+  it('(c) `flush` settles the typewriter as well as the queue', () => {
+    // The promise every test and every e2e read after a flush is built on:
+    // `textContent` is complete the instant it returns. `windows/live-feed.ts`
+    // hands `flush` to `seek`, which is how e2e reaches the day's terminal.
+    const flush = /const flush = [\s\S]*?\n {2}\}/.exec(source())?.[0] ?? ''
+    expect(flush, 'the flush is gone').not.toBe('')
+    expect(flush, 'a flush no longer settles the line that is typing').toMatch(/settleTyping\(\)/)
+    // …and settling paints every part, rather than moving a cursor to the end.
+    const settle = /const settleTyping = [\s\S]*?\n {2}\}/.exec(source())?.[0] ?? ''
+    expect(settle, 'settling stopped painting the whole line').toMatch(/\.parts\.map\(partNode\)/)
+  })
+
+  it('(d) what the feed owes is queued events plus the line still typing', () => {
+    const publish = /const publishPending = [\s\S]*?\n {2}\}/.exec(source())?.[0] ?? ''
+    expect(publish, 'nothing publishes the outstanding count any more').toMatch(/publishFeedPending\(/)
+    expect(publish, 'the count stopped counting the queue').toMatch(/queue\.length/)
+    expect(publish, 'the count stopped counting the line being typed').toMatch(/typing/)
+  })
+
+  it('(e) every mutation of the backlog publishes it — the ending waits on this number', () => {
+    // A count that stops being published is an ending that never comes down:
+    // `shell/feed-drain.ts` resolves on the transition to zero and nothing else
+    // wakes it. Each of these is a place the backlog changes size.
+    for (const owner of ['const receive = ', 'const flush = ', 'const printNext = ', 'const settleTyping = ']) {
+      const body = new RegExp(`${owner}[\\s\\S]*?\\n {2}\\}`).exec(source())?.[0] ?? ''
+      expect(body, `${owner.trim()} is gone`).not.toBe('')
+      expect(body, `${owner.trim()} changes the backlog without publishing it`).toMatch(/publishPending\(\)/)
+    }
+  })
+
+  it('(f) the day ends by DRAINING — `run_end` is not a flush bypass any more', () => {
+    const receive = /const receive = [\s\S]*?\n {2}\}/.exec(source())?.[0] ?? ''
+    expect(receive, 'the subscriber is gone').not.toBe('')
+    expect(receive, '`run_end` is dumping the backlog again — the ending would veil a wall').not.toMatch(
+      /run_end/,
+    )
+    // The bypasses that must stay: a frozen pump never ticks, and reduced motion
+    // is a promise that nothing animates.
+    expect(receive, 'the frozen / reduced-motion bypass is gone — lines would never land').toMatch(
+      /motionless\(\)/,
+    )
+  })
+
+  it('(g) the pump and the settle watchdog draw the same line between PAUSED and ENDED', () => {
+    // They did not, and that was the bug: `settle` flushed only a stopped desk
+    // (`!running && !ended`) while the pump flushed anything not running, so
+    // reaching 21:04 dumped the rest of the day in one frame.
+    const src = source()
+    expect(src, 'the paused/ended distinction lost its single owner').toMatch(
+      /const halted = \(\): boolean => !driver\.clock\.running && !driver\.clock\.ended/,
+    )
+    const bare = src.match(/!driver\.clock\.running/g) ?? []
+    expect(
+      `${bare.length} readings of \`!clock.running\``,
+      'something tests the clock without asking whether the run has ENDED',
+    ).toBe('1 readings of `!clock.running`')
+  })
+})
+
+/* ══ x11 — the live region pays for the typing ════════════════════════════ */
+
+describe('x11 the typed half is hidden and the announced half is whole', () => {
+  it('(a) the content column is aria-hidden and carries an sr-only twin', () => {
+    // `#feedList` is a `role="log"` / `aria-live="polite"` region, and a node
+    // whose text is rewritten every frame inside one can be re-announced per
+    // character. The DOM shape is verified in `e2e/live-feed.spec.ts` against a
+    // real desk; what is provable here is that the builder still writes it.
+    const build = /function lineElement\([\s\S]*?\n\}/.exec(code('src/client/components/run-feed.ts'))?.[0] ?? ''
+    expect(build, '`lineElement` is gone').not.toBe('')
+    expect(build, 'the typing half is back in the live region').toMatch(
+      /content\.setAttribute\('aria-hidden', 'true'\)/,
+    )
+    expect(build, 'the sr-only twin is gone — the region would announce nothing').toMatch(/SR_LINE_CLASS/)
+    expect(build, 'the twin no longer carries the complete line').toMatch(/lineText\(node\)/)
+    expect(build, '`.fl-c` lost its class or its mark — every e2e selector reads it').toMatch(/'fl-c'/)
+  })
+
+  it('(b) the sr-only recipe is EXTRACTED, not copied — one rule, and #toast still on it', () => {
+    // Comments blanked: the sheet's own note names `.sr-only` while explaining
+    // the extraction, and a scan that its prose can answer proves nothing.
+    const shell = code('src/client/styles/shell.css')
+    const rule = /([^{}\n]*\.sr-only[^{}]*)\{([^}]*)\}/.exec(shell)
+    expect(rule, '`.sr-only` is not declared in shell.css').toBeTruthy()
+    const [, selector = '', body = ''] = rule ?? []
+    expect(selector, '#toast lost the recipe it owned first').toContain('#toast')
+    // The three clauses that comment argues for at length.
+    expect(body).toMatch(/position:\s*fixed/)
+    expect(body).toMatch(/width:\s*1px/)
+    expect(body).toMatch(/clip-path:\s*inset\(50%\)/)
+    // Not `display:none` / `visibility:hidden` — either takes it out of the
+    // accessibility tree and silences the very thing it exists for.
+    expect(body).not.toMatch(/display:\s*none|visibility:\s*hidden/)
+    // And nobody copied it: the feed's sheet declares no box for the twin.
+    expect(code('src/client/styles/win-live-feed.css'), 'the recipe was duplicated into the feed sheet').not.toMatch(
+      /\.fl-sr[^{}]*\{/,
+    )
   })
 })
 
@@ -503,11 +807,35 @@ describe('[u5#c9] the window renders, never authors', () => {
     for (const file of SOURCES) expect(`${file}:${read(file).length > 0}`).toBe(`${file}:true`)
   })
 
-  it('(b) no string transform is applied to feed text or speaker', () => {
+  // x11 — NARROWED BY SHAPE, and this is the one exemption the rule has.
+  //
+  // The fanfold types its lines out (민서, 08-10), and what a typewriter draws is
+  // a PREFIX of what it is about to draw. That is a `slice`, and there is no
+  // spelling of it that is not one. What the rule was defending — that the
+  // window never derives, pads, reformats or re-authors the run's own words —
+  // survives intact, because the exemption is written as a shape rather than as
+  // a file: `.text.slice(0, <identifier>)`, from zero, once, in the one module
+  // that types. A middle, a pad, an upper-casing or a second slice all still
+  // fail, and the complete text lands regardless of the cursor (`settleTyping`
+  // repaints every part, and the sr-only twin has carried the whole line since
+  // its first frame — see the x11 block below).
+  it('(b) no string transform is applied to feed text or speaker — save the type cursor’s prefix', () => {
     const TRANSFORM =
-      /\.(text|speaker)\s*\.\s*(slice|replace|replaceAll|trim|trimStart|trimEnd|split|toUpperCase|toLowerCase|padStart|padEnd|substring|substr|normalize|concat|repeat)\b/
+      /\.(text|speaker)\s*\.\s*(slice|replace|replaceAll|trim|trimStart|trimEnd|split|toUpperCase|toLowerCase|padStart|padEnd|substring|substr|normalize|concat|repeat)\b/g
+    const PREFIX = /\.text\.slice\(0,\s*[A-Za-z_$][\w$]*\)/g
     for (const file of SOURCES) {
-      expect(`${file}:${TRANSFORM.test(code(file))}`).toBe(`${file}:false`)
+      const source = code(file)
+      const hits = source.match(TRANSFORM) ?? []
+      const prefixes = source.match(PREFIX) ?? []
+      // Every transform in the file is a type-cursor prefix …
+      expect(`${file}: ${hits.length} transforms, ${prefixes.length} of them a prefix`).toBe(
+        `${file}: ${prefixes.length} transforms, ${prefixes.length} of them a prefix`,
+      )
+      // … and only `run-feed.ts` may hold one, exactly one, ever.
+      const allowed = file.endsWith('run-feed.ts') ? 1 : 0
+      expect(`${file}: ${prefixes.length} prefix slices (max ${allowed})`).toBe(
+        `${file}: ${Math.min(prefixes.length, allowed)} prefix slices (max ${allowed})`,
+      )
     }
   })
 

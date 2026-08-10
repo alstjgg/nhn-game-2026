@@ -16,7 +16,7 @@
 // suite binds to whatever run the shell boots.
 import { expect, test } from 'playwright/test'
 import type { Page } from 'playwright/test'
-import { confirmDeploy, deployFile, turnToAgent } from './fixtures/harness.ts'
+import { confirmDeploy, deployFile, flushFeed, turnToAgent } from './fixtures/harness.ts'
 
 /* ── the seam shapes this suite reads back ───────────────────────────────── */
 
@@ -140,6 +140,22 @@ async function drainAndTime(page: Page): Promise<number> {
   })
 }
 
+/**
+ * x11 — settle the LIVE FEED (민서, 08-10).
+ *
+ * The fanfold reveals through a paced queue, and the day's close stopped
+ * emptying it: `run_end` used to dump the whole backlog in one frame, and it now
+ * drains at reading pace with `shell/ending.ts` waiting on it
+ * (`shell/feed-drain.ts`). `drain()` still returns as soon as the ledger has
+ * landed, so a read of the fanfold underneath it is a read of a day still
+ * printing — and the tail, which is where the closing 집계 line is, is the last
+ * thing to arrive.
+ *
+ * `flush()` applies what is queued and finishes the line being typed. Nothing
+ * here is asserting the reveal's pacing — that is u5's claim and lives in
+ * `e2e/live-feed.spec.ts` (`the day’s end drains`); this block is about what the
+ * closing line SAYS.
+ */
 async function drainToFinal(page: Page): Promise<void> {
   await drain(page)
   // One record: the terminal record exists once the day has closed (design #1).
@@ -188,9 +204,21 @@ test.describe('full loop back to BUILD', () => {
     // the fanfold and the record cannot part company.
     await boot(page)
     await drainToFinal(page)
+    // x11 — the CLOSING line is the last thing the day prints, so this is the
+    // one read in the file that cannot be taken while the paper is still
+    // arriving (see `flushFeed`). Unsettled, `.last()` would name whichever line
+    // the reveal had reached when the ledger happened to finish counting, and
+    // the failure would read `the feed did not close on a 집계 line` about a feed
+    // that closes on one perfectly well.
+    await flushFeed(page)
 
     const headline = await digitsOf(page, BIG)
-    const closing = await page.locator('#feedList li').last().innerText()
+    // x11 — the CONTENT column, not the whole `<li>`. The typewriter gave every
+    // line a second, sr-only copy of its own text (`.fl-sr`), so an `innerText`
+    // of the row now returns the stamp and the sentence TWICE — a `toContain`
+    // that keeps passing while saying half of what it means to. The count the
+    // operator reads is the printed one, so that is the column asked.
+    const closing = await page.locator('#feedList li').last().locator('.fl-c').innerText()
     expect(closing, 'the feed did not close on a 집계 line').toContain('집계.')
     expect(closing, `the feed closed on a count the ledger does not hold (${headline})`).toContain(
       `사망 ${headline}`,

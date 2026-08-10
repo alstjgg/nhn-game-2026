@@ -181,11 +181,22 @@ export function installAudio(deps: AudioDeps): AudioHandle {
   /* ── the §5.2 stream ───────────────────────────────────────────────────── */
 
   // NOTE — `feed` is deliberately absent from this switch. U1's reveal queue
-  // (`components/run-feed.ts`) buffers feed events and prints them 250–2400 ms
-  // apart, priced by reading length, so the event and the line the player sees
-  // are no longer the same moment: a six-line fanout would fire six carriage
-  // returns at once against a page that types them out over five seconds.
-  // Feed cues ride the REVEAL instead — see the observer below.
+  // (`components/run-feed.ts`) buffers feed events and releases them one at a
+  // time, so the event and the line the player sees are no longer the same
+  // moment: a six-line fanout would fire six carriage returns at once against a
+  // page that prints them out over several seconds. Feed cues ride the REVEAL
+  // instead — see the observer below.
+  //
+  // x11 — the numbers that used to be quoted here (250–2400 ms apart, priced by
+  // reading length) are gone, and not merely restated: the reveal is a
+  // TYPEWRITER now (민서, 08-10), so a line's duration is its own length at a
+  // fixed rate plus a pause that grows with the gap between stamps. Naming the
+  // arithmetic twice is how the second copy goes stale, and this one had.
+  //
+  // Worth knowing for anyone tuning the cue: the observer fires on the `<li>`
+  // ATTACHING, and a line now attaches EMPTY and fills. So a feed cue sounds as
+  // the print head starts the line rather than when the line is readable —
+  // which is what a carriage return is, and is why nothing here waits.
   const onEvent = (event: ViewEvent): void => {
     switch (event.type) {
       case 'waiting': {

@@ -308,6 +308,20 @@ body.booting .win{visibility:hidden}
    `position:fixed` already takes it out of the flow and `margin` is on the
    token lint's property list (`tests/styles/token-lint.test.ts`, and inv 8's
    wider scan), where a raw `-1px` is an offender. `width`/`height`/`clip-path`
-   are structural properties and take literals by that same rule.             */
-#toast{position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;
+   are structural properties and take literals by that same rule.
+
+   x11 (08-10) — `.sr-only` rides the same declarations, because the LIVE FEED
+   grew a second heard-but-never-seen node: every fanfold line now carries an
+   `.fl-sr` twin holding the complete text, since the visible half types itself
+   out inside a live region and would be re-announced per character
+   (`components/run-feed.ts`). It is one rule and not two copies for the reason
+   the paragraph above is long: every clause of this recipe is load-bearing and
+   was argued for once, and a duplicate is a place for half of that argument to
+   be forgotten. `#toast` keeps its own selector because the announcer builds it
+   by id (`shell/announcer.ts`) and carries no class of its own — and it is
+   written LAST in the list so that `#toast{…}` is still a readable rule to a
+   scanner: `tests/shell/tutorial-observer.test.ts` (c) reads exactly that shape
+   to prove the region is 1×1 and not a painted panel, and a guard that stops
+   finding what it guards is worse than the duplication this avoids.           */
+.sr-only,#toast{position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;
   overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none}

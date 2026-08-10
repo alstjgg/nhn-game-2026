@@ -55,8 +55,26 @@ import type { Hit } from './invariant-utils.ts'
  * go on holding.
  */
 const NPC_LINE_SELECTORS = ['.fl-npc'] as const
-/** The text-carrying node inside an NPC line (the clock stamp is a sibling). */
+/**
+ * The text-carrying node inside an NPC line (the clock stamp is a sibling).
+ *
+ * x11 — an NPC line has TWO text columns on the rendered desk now (민서, 08-10):
+ * `.fl-c` types itself out and is `aria-hidden`, and an `.fl-sr` twin carries
+ * the complete text for the `role="log"` to announce. `e2e/a11y.spec.ts` scopes
+ * BOTH, because a digit heard is rendered as surely as a digit seen.
+ *
+ * This file stays on `.fl-c` alone, and that is not drift. Its scans are over
+ * CSS RULES and SOURCE, not the DOM — and `.fl-sr` declares no rule of its own:
+ * its box comes from `.sr-only` in `shell.css`, which is shared chrome (`#toast`
+ * rides it too) and therefore not an NPC-scoped selector. There is no `.fl-sr`
+ * rule for a `content:` to hide in, so widening the CSS scan to it would add no
+ * reach at all — and, worse, would pass `(a)` below on the strength of the
+ * COMMENT in `win-live-feed.css` that names it, which is exactly the rot x8
+ * found when `.fl-symptom` went. `(e)` keeps that reasoning true.
+ */
 const NPC_TEXT_SELECTOR = '.fl-c'
+/** The announced twin — asserted to stay ruleless by `(e)`, never scanned. */
+const NPC_SR_SELECTOR = '.fl-sr'
 /**
  * Excluded by name. Each one renders digits legitimately: the per-line and
  * topbar clocks are chrome, the tally is score.
@@ -155,6 +173,27 @@ describe('[u9#c2] inv 2 — the scope is explicit, and it is real', () => {
     const feed = blank(read(FEED_SHEET), 'css')
     expect(feed.length, 'win-live-feed.css is missing').toBeGreaterThan(0)
     expect(formatAll(locate(rel(FEED_SHEET), feed, /\.fl-c\s+\.fl-t/))).toEqual([])
+  })
+
+  it('(e) the announced twin declares no rule of its own — the scope above stays honest', () => {
+    // x11 — the load-bearing half of `NPC_TEXT_SELECTOR`'s note. This file's CSS
+    // scan skips `.fl-sr` because there is nothing there to scan; the moment
+    // somebody gives it a rule, that stops being true and a `content:` could
+    // inject a digit into the one column an assistive-tech user actually
+    // receives, unseen by every assert in this file.
+    //
+    // Comments are blanked first, on purpose: `win-live-feed.css`'s header
+    // NAMES `.fl-sr` while explaining why it is styled elsewhere, and a raw
+    // `includes` would read that prose as a rule — the same way x8's removal
+    // note answered `(a)`'s existence check for a selector that had just been
+    // deleted. If this fires: widen `NPC_TEXT_SELECTOR` to both columns and
+    // rewrite its note, rather than deleting the new rule.
+    const declared = rulesMentioning(allSheetText(), [NPC_SR_SELECTOR]).map((r) => r.selector)
+    expect(declared, `${NPC_SR_SELECTOR} grew a rule — the NPC CSS scope must widen with it`).toEqual([])
+
+    // …and the recipe it borrows instead is real, so the twin is actually
+    // hidden. A visible `.fl-sr` would print every line on the paper twice.
+    expect(allSheetText(), 'the shared sr-only recipe is gone — `.fl-sr` is visible').toContain('.sr-only')
   })
 
   it('(d) the seam still names both NPC channels (a rename must break this scope)', () => {

@@ -320,8 +320,21 @@ export async function bootShell(): Promise<void> {
   })
 
   // 5 — open the run. `advance(0)` releases what is due at the opening minute
-  // without moving the clock; the desk then waits on hold until the operator
-  // presses ▶, so the sim never runs behind an operator who has not looked yet.
+  // without moving the clock; the rate then goes to 0 and the desk is HELD
+  // there, so the sim never runs behind an operator who has not looked yet.
+  //
+  // x11 (08-10) — WHAT TAKES THE HOLD OFF is the AGENT FILE, and this note used
+  // to say "until the operator presses ▶". There is no ▶: W4 retired the top
+  // bar's ×1 / ×4 / pause with the unit that owned them
+  // (`windows/agent-file.ts:370` — "a day is not a recording the operator
+  // scrubs, it is something they commit a file to and then watch"), so the one
+  // thing that sets this clock going is a committed file — `agent-file.ts`
+  // `startDay()`, the only `setRate` on the desk an operator's press can reach
+  // (`shell/ending.ts` stops the portal at the veil, and `windows/live-feed.ts`
+  // has one on the DEV-only `__feed` handle) — and the one thing that stops it
+  // is 21:04 (`driver/clock.ts` halts at `end`). The line below is unchanged and
+  // the hold is unchanged; only the sentence describing it was still pointing at
+  // a control that had left.
   driver.start()
   driver.advance(0)
   driver.clock.setRate(0)

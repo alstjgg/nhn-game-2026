@@ -149,6 +149,16 @@ export async function awaitRecordFinal(page: Page): Promise<void> {
  * drain crosses run close. The final-record wait is folded in HERE, so a
  * caller that reaches the desk through THIS helper always lands on a settled
  * result rather than a mid count-up.
+ *
+ * x11 — SETTLED RESULT, NOT SETTLED PAPER (민서, 08-10). That promise was once
+ * both, because `run_end` made the LIVE FEED dump its whole reveal queue in a
+ * single frame. It drains at reading pace now, with `shell/ending.ts` waiting on
+ * it (`shell/feed-drain.ts`), so this returns while the fanfold is still
+ * printing — short by however many lines the reveal still owes, and with the
+ * last line it did print stopped mid-word by the typewriter.
+ *
+ * A caller that reads the LEDGER is unaffected and needs nothing more. A caller
+ * that reads the FANFOLD wants `flushFeed` below, immediately after this.
  */
 export async function drain(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -157,6 +167,28 @@ export async function drain(page: Page): Promise<void> {
     handle.drain()
   })
   await awaitRecordFinal(page)
+}
+
+/**
+ * x11 — settle the FANFOLD (민서, 08-10): apply everything still queued and
+ * finish the line being typed, so the read after it sees complete text.
+ *
+ * Lives here rather than in each spec because three of them needed it the day
+ * the reveal became a typewriter, and a helper copied three times is three
+ * places for the next change to miss. `seek` already ends with this call
+ * (`windows/live-feed.ts`), so a seeking test needs nothing; what needs one is
+ * any lane that released the stream WITHOUT seeking — the day's own close.
+ *
+ * Calling it is not a way of dodging the reveal. The pacing is u5's own claim
+ * and is asserted in u5's own file, once, on purpose — so every other spec can
+ * be about what the paper SAYS rather than about when it got there.
+ */
+export async function flushFeed(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const handle = (window as unknown as { __feed?: { flush(): void } }).__feed
+    if (!handle) throw new Error('window.__feed is not exposed by the LIVE FEED window')
+    handle.flush()
+  })
 }
 
 /** Jumps the sim clock to `at` and releases everything due by then (u5's seek). */

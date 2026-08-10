@@ -63,6 +63,22 @@
 .fl-c::before{content:attr(data-mark);display:inline-block;width:21px;margin-left:var(--space-n21);
   color:var(--feed-mark);font-size:var(--fs-10)}
 
+/* x11 — THE ROW HAS A TWIN (민서, 08-10). `.fl-c` is typed out character by
+   character now (`components/run-feed.ts`), and `#feedList` is a `role="log"`
+   live region: rewriting a node's text every frame inside one can have a screen
+   reader re-announce the line per character. So the typing half is
+   `aria-hidden` and each row carries an `.fl-sr` sibling holding the complete
+   text, landed at once, which is what the region announces.
+
+   It takes its box from `.sr-only` in `shell.css` — the recipe `#toast` has
+   used since x6b, extracted rather than copied; the constraints on it (a 1px
+   box, no `margin`, why not `display:none`) are argued there. Nothing is
+   declared for it here on purpose: a second rule for the same node in a second
+   sheet is how one of them ends up half-true.
+
+   The mark keeps printing from `data-mark` above, so an empty `.fl-c` is a
+   gutter mark with nothing after it yet — the print head, before the line. */
+
 /* Each kind below sets its SIZE and its COLOUR; the face comes from `.fl-c` and
    is not restated. The one exception is the radio's own channel label, which is
    a fixed caption on a content line. */

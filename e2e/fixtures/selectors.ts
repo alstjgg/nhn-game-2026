@@ -44,7 +44,32 @@ export const WIN = {
 export const FEED = {
   list: '#w-feed #feedList',
   scroll: '#w-feed #feedScroll',
+  /**
+   * The line ROW. x11 — a row is not a text node any more (민서, 08-10): the
+   * reveal became a typewriter, so a line is printed twice inside it. `.fl-c`
+   * is the column the operator watches fill character by character, carrying
+   * `aria-hidden="true"` so a `role="log"` does not re-announce the line once
+   * per keystroke; `.fl-sr` is the sr-only sibling holding the COMPLETE text,
+   * appended in one go, which is what a reader actually hears.
+   *
+   * So a caller reading a line's TEXT off this selector has to say which column
+   * it means. Reading the row reads both, concatenated with the clock stamp, so
+   * a `toContainText` on it keeps passing while measuring a string no surface
+   * ever shows, and anything counting occurrences double-counts. Use it to
+   * count or classify ROWS; descend to a column to read words.
+   */
   line: '#w-feed #feedList .fl',
+  /**
+   * x11 — BOTH content columns of an NPC line, which is the scope spec §3 inv 2
+   * is about: a digit heard is rendered as surely as a digit shown, so a scan
+   * that stayed on `.fl-c` would report green while the announced half of every
+   * NPC line went unread. Kept in step with `NPC_TEXT_SELECTOR` in
+   * `e2e/a11y.spec.ts`, which carries the same pair unprefixed.
+   *
+   * The clock stamp `.fl-t` is a SIBLING of both and is deliberately outside
+   * this scope — it is chrome, and inv 2 is about NPC state.
+   */
+  npcColumns: '#w-feed #feedList .fl-npc :is(.fl-c, .fl-sr)',
   /** The behind-indicator (U2) — shown only while the feed is NOT following. */
   behind: '#w-feed #feedBehind',
 } as const
