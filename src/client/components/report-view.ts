@@ -50,30 +50,23 @@ export { TYPE_START, typeCursor }
 const PUMP = 'reports/typewriter'
 
 
-/**
- * x6 — the three facts the 검인 chop reconciles, and the ONE rule that reads
- * them. Pure, and kept beside `accumulated()` for the same reason: the DOM half
- * of the chop cannot be proved under vitest's node environment, and the RULE is
- * the part that was wrong.
- *
- * Everything about the defect lives in the conjunction. `sealed` and `typed`
- * are independent and arrive in either order — the run's `score` rides the same
- * beat as the day's last report, which at that moment is still writing itself
- * out — so whichever lands second is the one that stamps.
- */
-export interface ChopState {
-  /** The sitting has CLOSED: the driver's `score`, its terminal, has landed. */
-  sealed: boolean
-  /** The sitting filed something. A day that files nothing has nothing to certify. */
-  received: boolean
-  /** The replay on the page has run to its end. */
-  typed: boolean
-}
+/* x13 — THE 검인 CHOP IS GONE (민서, 08-10). `ChopState` and `chopDown()` stood
+   here: the rule that weighed `sealed` (the day's `score` had landed), `received`
+   (the sitting had filed something) and `typed` (the replay had run out), so a
+   receipt went on the sheet when the transmission had actually been received.
 
-/** Whether the chop is down. The single rule; `stamped()` is the single writer. */
-export function chopDown(state: ChopState): boolean {
-  return state.sealed && state.received && state.typed
-}
+   The rule was never the hard part; WHEN it first came true was. x5 stamped at
+   the end of the round that had just typed itself out, which is the whole
+   document only in a stream that files one report a day. x6 widened it to the
+   sitting. x11 made the LIVE FEED type, x12 held REPORTS until the paper reached
+   the round — and each of those moved the moment the three facts first stood
+   together. The chop landed twice, then once but early. Three rules, three wrong
+   moments, and no reproduction that survived a probe.
+
+   So it is removed rather than re-timed. What it carried — "this transmission
+   arrived" — is said by the transmission being on the page, and by the terminal
+   record under it. The signature line `.sig-line` stays; it names who was on
+   duty, which nothing else says. */
 
 /** How many of the active report's sentences are mined — both panes, by id. */
 export function minedCount(model: ReportModel, marks: MarkSets): number {
@@ -136,16 +129,6 @@ export interface ReportView {
   /** The round currently on the page, or `null` before the first report. */
   round(): number | null
   /**
-   * x6 — the sitting on the page has closed, or it has not. A FACT about the
-   * day, never an instruction to paint: the chop goes down when this and the
-   * replay have both finished, in whichever order they do (`chopDown`).
-   *
-   * The window calls it on every draw and not only when a day ends, because the
-   * archive rail can put a sitting that closed hours ago back on the desk — and
-   * every sitting but the one being played has closed.
-   */
-  seal(on: boolean): void
-  /**
    * Re-brands the callsign surface — the signature under 무전 기록, and since x5
    * the only one this window has (the pane's subtitle went with `documentHead`).
    */
@@ -181,10 +164,6 @@ interface Anchor {
  */
 const FACTS_TITLE = '현장 기록'
 const BODY_TITLE = '무전 기록'
-
-/** The chop's two lines: the seal itself, then what it certifies (x5). */
-const STAMP_SEAL = '검 인'
-const STAMP_RECEIVED = '수신 완료'
 
 /**
  * The window's own standing instruction, at the foot of both panes.
@@ -231,76 +210,11 @@ export function createReportView(options: ReportViewOptions): ReportView {
   // owner (D4 — the pack carries none); this window borrows it, unsigned sheet
   // included.
   const sigLine = el('span', 'sig-line', callsignOf(1))
-  // x5 — the 검인 chop is two lines and it lands on ARRIVAL, not on paint.
-  //
-  // It used to be printed the moment the window was built, which put a
-  // 수신-완료 mark on a blank sheet and left it there while the transmission it
-  // certifies typed itself out underneath. A chop is a receipt: it goes on when
-  // the thing has been received. `stamped()` below is the only writer.
-  //
-  // x6 — and a SITTING's receipt goes on when the SITTING has been received.
-  // x5 stamped at the end of the round that had just typed itself out, which is
-  // the whole document only in a stream that files one report per day. A live
-  // day files seven into this same sheet (`append()` below), so the mark went
-  // down under round 1 and stood there certifying a day while six more
-  // transmissions wrote themselves out beneath it. See `chopDown()` above.
-  const stamp = el('span', 'sig-stamp')
-  stamp.append(el('b', undefined, STAMP_SEAL), el('em', undefined, STAMP_RECEIVED))
-  sig.append(sigLine, stamp)
+  sig.append(sigLine)
 
   const docBody = el('article', 'doc doc-body')
   docBody.append(documentHead(BODY_TITLE), body, sig)
 
-  /**
-   * The chop is down, or it is not. The ONLY writer of `.on`, and it is reached
-   * from exactly one place — `restamp()` — so a frozen-animation paint, a rail
-   * re-selection, a live typewriter and an arriving seal all take the same road.
-   */
-  function stamped(on: boolean): void {
-    stamp.classList.toggle('on', on)
-  }
-
-  /**
-   * The three facts `chopDown()` weighs, held apart because they are written by
-   * three different things: `seal()` by the window when the day's `score`
-   * lands or when the rail hands back a day that already closed, and the other
-   * two by `replay()`.
-   */
-  let sealed = false
-  let received = false
-  let typed = false
-
-  /**
-   * x12 — THE CHOP LANDS ONCE PER SITTING (민서, 08-10 — "it does stamp twice").
-   *
-   * `.sig-stamp.on` carries `animation:chopIn`, so every time the class is
-   * re-added the chop swings down again. `replay()` sets `typed = false` at the
-   * top of every replay, which takes the class off — and a sealed sitting that
-   * redraws for any reason (a later round appending, the rail reconciling as the
-   * terminal record mounts) therefore stamped a second time on the way back.
-   * The two landings were fast enough that the lift between them was easy to
-   * miss; what the operator saw was the chop hitting the paper twice.
-   *
-   * The latch is safe because of WHEN it can first close. `sealed` is the day's
-   * `score`, the feed reaches it only after every report of the sitting, and a
-   * replay in flight holds `typed` false — so the first moment all three facts
-   * hold is the moment the last transmission has finished writing itself out.
-   * Nothing after that can un-certify the day: `score` is the sitting's
-   * terminal. A redraw may still retype the text under a chop that stays down,
-   * which is right — the receipt is for the sitting, not for the paint.
-   *
-   * It is a LATCH and not a rewrite of `chopDown()` on purpose. That rule is
-   * pure and proved in `environment: 'node'`; this is a fact about the DOM's
-   * animation replaying, and it belongs beside the DOM.
-   */
-  let landed = false
-
-  /** Re-reads the state and lets `stamped()` write the answer. */
-  function restamp(): void {
-    if (chopDown({ sealed, received, typed })) landed = true
-    stamped(landed)
-  }
-  restamp()
 
   const grid = el('div', 'rep-grid')
   grid.append(docFacts, docBody)
@@ -395,19 +309,14 @@ export function createReportView(options: ReportViewOptions): ReportView {
     // Read off the SITTING (`current`), not off `sentences`: what replays here
     // is one round, and `append()` replays round 7 of a document that already
     // carries six. Both callers set `current` to the whole sitting first.
-    received = (current?.report_body.length ?? 0) > 0
-    typed = false
     if (!animate || motionless()) {
       paint({ sentence: lengths.length, chars: 0, done: true }, sentences, nodes)
       // The frozen-animation / reduced-motion sheet is whole on its first paint,
       // so it is TYPED the moment it is painted — but it is not certified until
       // the sitting has closed. The seal rule is the same on both paths.
-      typed = true
-      restamp()
       return
     }
     paint(TYPE_START, sentences, nodes)
-    restamp()
     let elapsed = 0
     const unregister = registerAnimation(PUMP, (realMs: number) => {
       elapsed += realMs
@@ -415,11 +324,6 @@ export function createReportView(options: ReportViewOptions): ReportView {
       paint(cursor, sentences, nodes)
       if (!cursor.done) return
       unregister()
-      // The replay is over. If the day closed while it was still writing, the
-      // seal is already in hand and this is the beat the chop goes down on; if
-      // it has not closed yet, `seal()` will be.
-      typed = true
-      restamp()
       if (stopReplay === unregister) stopReplay = null
     })
     stopReplay = unregister
@@ -525,21 +429,6 @@ export function createReportView(options: ReportViewOptions): ReportView {
       return current === null ? null : current.round
     },
 
-    seal(on: boolean): void {
-      // The fact alone — whether it SHOWS is `chopDown()`'s to decide. The day
-      // whose `score` has just landed is, in the same beat, a day whose last
-      // report is mid-sentence; slamming the chop down here is exactly the
-      // paint-time mistake x5 removed, one level up.
-      sealed = on
-      // x12 — and an UNSEALED sitting releases the latch. This is the rail
-      // handing back a day that has not closed (a new sitting opening on `meta`
-      // is the same call with `scored.has()` false), and its chop has to be able
-      // to land for the first time when that day closes. Selecting a different
-      // day that HAS closed keeps the latch shut, which is correct: it is
-      // certified, and its chop was earned hours ago.
-      if (!on) landed = false
-      restamp()
-    },
 
     brand(callsign: string): void {
       sigLine.textContent = callsign

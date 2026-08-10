@@ -254,25 +254,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
    */
   const replayed = new Set<string>()
 
-  /**
-   * x6 — the sittings that have CLOSED, by run. `score` is the run's terminal
-   * (every day of the loop files one: `driver/fixtures/run-loop.ts:122`), and it
-   * is the only thing on the seam that says "this day is over". `report-view.ts`
-   * holds the 검인 chop until the sitting it certifies is in here — a day files
-   * seven reports and the receipt belongs to the day, not to the first of them.
-   *
-   * Keyed by SITTING, exactly as `filed` is and as `replayed`'s first half is.
-   *
-   * NOT seeded from `event.archive`, which is the obvious shortcut and is wrong
-   * twice over. The fixture loop lists the run just OPENED in its own archive
-   * (`fixtures/run-loop.ts:87` walks `RUN..run` inclusive, and its header says
-   * so), so seeding would seal the live day at boot and put the chop straight
-   * back under round 1 — the defect this set exists to remove. And a day
-   * archived by an EARLIER session files no `report` either: its document draws
-   * empty, and the view's own "there is a transmission to certify" half keeps it
-   * blank whatever this set holds.
-   */
-  const scored = new Set<number>()
 
   function drawDocument(): void {
     if (active === null) return
@@ -288,11 +269,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
     const key = `${active}:${model.round}`
     const first = model.report_body.length > 0 && !replayed.has(key)
     if (first) replayed.add(key)
-    // x6 — the seal BEFORE the draw, so the render's first reconciliation
-    // already knows what it is looking at. The chop is per-sitting: the rail
-    // can hand back any past day and every past day has closed, so only the one
-    // still being played comes back unsealed.
-    view.seal(scored.has(active))
     view.render(model, marks(), { replay: first })
     mountRecord()
   }
@@ -383,10 +359,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       return
     }
     if (event.type === 'score') {
-      // x6 — the day is over. This is the ONE thing on the seam that says so,
-      // and the 검인 chop in 무전 기록 waits on it: the receipt belongs to the
-      // sitting, and a sitting is seven reports.
-      scored.add(run)
       // Unmineable by construction: no `.min` node, no `sentence_id` — this
       // is a terminal, autopsy-window record, not a source document.
       //
@@ -412,12 +384,6 @@ export function mount(host: HTMLElement, driver: FixtureDriver): void {
       // a day that filed no report still takes its identity.
       sync(false)
       mountRecord()
-      // x6 — and seal by hand, for the same reason the record mounts by hand:
-      // `draw: false` never reaches `drawDocument()`, which is where a sitting
-      // normally learns whether it has closed. Nothing is stamped in this beat —
-      // the day's own report is mid-sentence and the view holds the chop until
-      // that replay finishes.
-      view.seal(scored.has(active))
       const tally = createScoreTally({ host: node })
       tally.open()
       // x12 — THE RECORD IS ON THE DESK NOW; THE NUMBER IS NOT. `open()` leaves

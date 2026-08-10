@@ -143,17 +143,10 @@ interface ReportModel {
   opens?: string[]
 }
 
-interface ChopState {
-  sealed: boolean
-  received: boolean
-  typed: boolean
-}
-
 interface ViewModule {
   typeCursor(state: TypeState, elapsedMs: number, lengths: readonly number[]): TypeState
   minedCount(model: ReportModel, marks: MarkSets): number
   accumulated(held: ReportModel | null, slice: ReportModel): ReportModel
-  chopDown(state: ChopState): boolean
 }
 
 async function minable(): Promise<MinableModule> {
@@ -772,104 +765,25 @@ describe('[w2] a sitting accumulates its rounds into one document', () => {
   })
 })
 
-/* ══ [x6] the 검인 chop is the SITTING's receipt ═════════════════════════ */
+/* ══ [x6] the 검인 chop — REMOVED (민서, 08-10) ══════════════════════════
 
-describe('[x6] the 검인 chop goes down when the sitting has been received', () => {
-  const s = (id: string): Sentence => ({ id, text: `${id} 문장`, species: 'fact' })
+   Six asserts stood here and all six were right about the rule they measured:
+   a round finishing does not stamp while the day is open; the run's `score` is
+   what stamps it once the replay has finished; seal and replay land in either
+   order and whichever is second stamps; a sitting that filed nothing stays
+   unstamped; and two source guards holding `stamped()` as the single writer and
+   the window's seal as fed from `score` rather than from the archive.
 
-  /**
-   * The defect, stated: x5 stamped at the end of the round that had just typed
-   * itself out. A live day files SEVEN rounds into one document
-   * (`tests/driver/live-desk.test.ts:126`), so the receipt went down under
-   * round 1 and stood there while six more transmissions wrote themselves out
-   * beneath it. The day's terminal is the driver's `score`.
-   */
-  it('(a) a round finishing does NOT stamp — the day is still open', async () => {
-    const v = await view()
-    let doc: ReportModel | null = null
-    for (let round = 0; round < 7; round += 1) {
-      doc = v.accumulated(doc, { round, facts: [], report_body: [s(`b${round}`)] })
-      // …the round's replay has just run to its end, and the document is real.
-      expect(
-        v.chopDown({ sealed: false, received: doc.report_body.length > 0, typed: true }),
-        `the chop went down after round ${round}, with six transmissions still to come`,
-      ).toBe(false)
-    }
-    expect(doc!.report_body, 'the seven rounds are one document — the receipt is that document’s').toHaveLength(7)
-  })
+   None of that was the problem. The rule was never wrong — WHEN its three facts
+   first stood together kept moving underneath it, because everything around it
+   moved: x11 made the LIVE FEED type, x12 held REPORTS until the paper reached
+   the round. The chop landed twice, then once but too early, and no probe here
+   or in a browser reproduced either reliably. It was removed rather than timed a
+   fourth time; `components/report-view.ts` carries the account.
 
-  it("(b) the run's `score` is what stamps it, once the replay has finished", async () => {
-    const v = await view()
-    expect(v.chopDown({ sealed: true, received: true, typed: true })).toBe(true)
-  })
+   `ChopState` / `chopDown` are gone from `ViewModule` above with it.
+   ═══════════════════════════════════════════════════════════════════════ */
 
-  it('(c) seal and replay land in EITHER order — whichever is second stamps', async () => {
-    const v = await view()
-    // `score` first: it rides the same beat as the day's last report, which at
-    // that moment is still writing itself out (`e2e/reports.spec.ts:334`).
-    expect(v.chopDown({ sealed: true, received: true, typed: false })).toBe(false)
-    expect(v.chopDown({ sealed: true, received: true, typed: true })).toBe(true)
-    // the replay first: an archived sitting repaints whole, then is sealed.
-    expect(v.chopDown({ sealed: false, received: true, typed: true })).toBe(false)
-    expect(v.chopDown({ sealed: true, received: true, typed: true })).toBe(true)
-  })
-
-  it('(d) a sitting that filed nothing stays unstamped, closed or not', async () => {
-    // `?drill=tally-lapse` — a day that files no report has no transmission to
-    // certify, and its record still lands. The guard predates x6 and survives it.
-    const v = await view()
-    expect(v.chopDown({ sealed: true, received: false, typed: true })).toBe(false)
-    expect(v.chopDown({ sealed: false, received: false, typed: true })).toBe(false)
-  })
-
-  it('(e) source: `stamped()` is still the single writer of `.on`, and the latch is the single closer', () => {
-    const src = scannedSources().find((x) => x.file.endsWith('components/report-view.ts'))
-    expect(src, 'report-view.ts is not in the scanned set').toBeTruthy()
-    // one declaration and exactly one call, and the call is the rule.
-    expect(src!.text.match(/\bstamped\s*\(/g) ?? []).toHaveLength(2)
-    expect(src!.text, 'a second writer of the chop class').not.toMatch(
-      /stamp\.classList[\s\S]{0,80}\n[\s\S]*stamp\.classList/,
-    )
-
-    // x12 — the call used to be `stamped(chopDown(…))` outright. It is now
-    // `stamped(landed)`, because a chop that comes back off the paper swings
-    // down a second time when it returns — `.sig-stamp.on` carries
-    // `animation:chopIn`, and `replay()` lifts the class at the top of every
-    // replay (민서, 08-10 — "it does stamp twice"). What this pins is that the
-    // indirection did not become a second rule: `chopDown()` is still consulted
-    // exactly once, it is still the only thing that can CLOSE the latch, and
-    // the latch is the only thing written.
-    // Two: the declaration and the ONE call. Counting the bare name would let a
-    // second reader hide behind the declaration, so the call shape is pinned
-    // separately below.
-    expect(src!.text.match(/chopDown\(/g) ?? [], 'the chop rule is read in more than one place').toHaveLength(2)
-    expect(src!.text.match(/chopDown\(\s*\{/g) ?? [], 'a second caller of the chop rule').toHaveLength(1)
-    expect(src!.text).toMatch(/if\s*\(\s*chopDown\(\s*\{[^}]*\}\s*\)\s*\)\s*landed\s*=\s*true/)
-    expect(src!.text).toMatch(/stamped\(\s*landed\s*\)/)
-
-    // …and exactly one release, so a sitting that has not closed can still earn
-    // its first chop. `seal(false)` is that release — see `seal()`.
-    // Two: the declaration and the ONE release inside `seal()`.
-    expect(src!.text.match(/landed\s*=\s*false/g) ?? [], 'the latch is released in more than one place').toHaveLength(2)
-    expect(src!.text, 'the release is not the unsealed-sitting one').toMatch(
-      /sealed\s*=\s*on[\s\S]{0,80}if\s*\(\s*!on\s*\)\s*landed\s*=\s*false/,
-    )
-    expect(src!.text.match(/landed\s*=\s*true/g) ?? [], 'the latch closes somewhere other than the rule').toHaveLength(1)
-  })
-
-  it('(f) source: the window seals from the draw AND from `score`, and never from the archive', () => {
-    const win = scannedSources().find((x) => x.file.endsWith('windows/reports.ts'))
-    expect(win, 'the REPORTS window is not in the scanned set').toBeTruthy()
-    expect(win!.text, 'the seal is not fed from the `score` event').toMatch(/scored\.add\(\s*run\s*\)/)
-    // twice: `drawDocument()` (so a rail re-selection is right) and the `score`
-    // handler (which takes `draw: false` and so never reaches the draw).
-    expect((win!.text.match(/view\.seal\(/g) ?? []).length).toBeGreaterThanOrEqual(2)
-    // Seeding from `event.archive` would seal the LIVE day at boot: the fixture
-    // loop lists the run just opened in its own archive
-    // (`driver/fixtures/run-loop.ts` — `archiveThrough` walks `RUN..run`).
-    expect(win!.text, 'the seal is seeded from the archive').not.toMatch(/scored\.add[^\n]*(?:archive|entry)/)
-  })
-})
 
 /* ══ [x10] the tear is HELD while the handover types itself out ══════════ */
 //

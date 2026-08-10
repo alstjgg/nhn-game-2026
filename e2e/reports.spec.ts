@@ -248,23 +248,17 @@ test.describe('report renders once after the last beat', () => {
     await expect(page.locator(`${FACTS} li`)).toHaveCount(0)
   })
 
-  // x6 — the DOM half of the seal rule; the rule itself is proved under node
-  // (`tests/windows/reports.test.ts`, `[x6]`). A 검인 chop is a receipt for the
-  // SITTING, and the sitting is not received until the driver's `score` — its
-  // terminal — has landed. Reduced motion is on in this describe, so the replay
-  // is finished on its first paint and `score` is the only thing left to wait
-  // for: exactly the case that used to stamp a blank sheet.
-  test('report renders once after the last beat — the 검인 chop waits for the day to close', async ({
-    page,
-  }) => {
-    const chop = page.locator(`${REP} .sig-stamp`)
-    await expect(chop, 'the signature block never mounted — the oracle is vacuous').toHaveCount(1)
-    await expect(chop, 'a 수신 완료 chop on a day that has filed nothing').toBeHidden()
+  /* x13 — 'the 검인 chop waits for the day to close' was here (민서, 08-10).
+     It was the DOM half of a rule proved under node, and it held the case that
+     used to stamp a blank sheet: reduced motion is on in this describe, so the
+     replay finished on its first paint and the driver's `score` was the only
+     thing left to wait for.
 
-    await drain(page)
-    await expect(chop).toHaveClass(/\bon\b/)
-    await expect(chop).toBeVisible()
-  })
+     There is no chop. `.sig-stamp` selects nothing, so leaving the assert would
+     have been worse than deleting it — a scope that matches no node passes
+     forever. The reason the chop went rather than being timed a fourth time is
+     in `components/report-view.ts`; what it certified is now said by the
+     transmission being on the page and by the terminal record under it. */
 
   test('report renders once after the last beat — both panes render the event, in event order', async ({
     page,

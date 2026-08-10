@@ -77,20 +77,12 @@
 .sig{margin-top:var(--space-20);display:flex;align-items:center;justify-content:flex-end;gap:var(--space-14)}
 .sig-line{font-family:var(--mono);font-size:var(--fs-11);color:var(--pap-3);letter-spacing:.14em;
   border-bottom:1px solid var(--graphite);padding:0 var(--space-22) var(--space-2)}
-/* x5 — the chop is TWO lines and it is absent until the transmission lands.
-   `검 인` is the seal; `수신 완료` is what it certifies, so it is set small under
-   it rather than beside it — a receipt has a stamp and a legend, not two
-   headings. `.on` is written by `report-view.ts`'s `stamped()` alone. */
-.sig-stamp{display:none;width:57px;height:57px;border:2px solid var(--seal);color:var(--seal);
-  flex-direction:column;align-items:center;justify-content:center;gap:var(--space-1);
-  transform:rotate(-7deg);opacity:.8;mix-blend-mode:multiply;border-radius:2px}
-.sig-stamp.on{display:flex;animation:chopIn .4s cubic-bezier(.2,1.3,.3,1) both}
-.sig-stamp b{font-family:var(--mono);font-size:var(--fs-10-5);font-weight:800;letter-spacing:.04em}
-.sig-stamp em{font-style:normal;font-family:var(--mono);font-size:var(--fs-7);
-  letter-spacing:.06em;opacity:.85}
-@keyframes chopIn{
-  0%{transform:rotate(-18deg) scale(2.2);opacity:0}
-  100%{transform:rotate(-7deg) scale(1);opacity:.8}}
+/* x13 — `.sig-stamp` and `@keyframes chopIn` are gone with the 검인 chop
+   (민서, 08-10). The rules were the seal box, its two lines and the swing that
+   put it on the paper; `report-view.ts` has the account of why the chop was
+   removed rather than re-timed. `--seal` keeps its other consumers (the fallback
+   band, the minable hover), so it stays in `tokens.css`. `.sig-line` above is
+   untouched — the signature names who was on duty, which nothing else says. */
 
 /* minable sentence */
 .min{cursor:pointer;transition:background .15s,box-shadow .15s;position:relative;
