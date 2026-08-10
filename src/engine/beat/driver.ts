@@ -21,7 +21,7 @@
 import type { BeatView, GateView, RoundView } from '../index.ts'
 import type { PresentNpc } from '../../shared/contracts.ts'
 import type { BeatPack, RoundAssemblerPort, StateCorePort } from './ports.ts'
-import type { Beat, BeatKind, OutcomeBucket, ScheduledGate } from './schedule.ts'
+import type { Beat, BeatKind, OutcomeBucket, ScheduledGate, TimelineEvent } from './schedule.ts'
 import { BeatPhaseError, StanceResolutionError } from './errors.ts'
 import { evaluateEdges } from './predicates.ts'
 import { holds, problems } from '../../shared/predicates.ts'
@@ -129,6 +129,27 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
    * answers `true` — so this is inert for every gate that does not use it.
    */
   let gateLive = gateOpen(schedule[0], state)
+  /**
+   * The events of THIS beat that are actually happening — `beat.events` minus
+   * the ones whose `exposure.extra_condition` is false on this run.
+   *
+   * Held rather than recomputed, like `gateLive` above and for a sharper
+   * version of its reason: `FIXED_NPC_ACTION` and `PRESENT_NPCS` are two
+   * readings of one question, and a beat that answered it twice could hand the
+   * model a roster with nobody in it and a fixed action naming that person.
+   *
+   * Written by `applyBeatEffects()` and NOT by `advance()`, which is where
+   * `gateLive` is read — the two are not interchangeable. A gate's
+   * `availability` is about the state the beat OPENS on, so it is read as the
+   * cursor moves; an event's exposure is about what happened, so it is read
+   * once this beat's own effects have landed. That is the moment
+   * `engine/index.ts`'s `recordOf` freezes the FEED's copy of the same answer,
+   * which is what makes the paper and the prompt agree by construction.
+   *
+   * `null` until then. Nothing can read it earlier: `beatView()` is the only
+   * consumer and it throws outside `narration`/`report`.
+   */
+  let shown: TimelineEvent[] | null = null
   let phase: BeatPhase = openingPhase(schedule[0], gateLive)
   let utterance = ''
   let symptoms: string[] = []
@@ -161,9 +182,16 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
     return hit === undefined ? charId : hit.name
   }
 
-  /** D2: the co-timed event's own text. D3: the gate's scene, when alone. */
-  function fixedAction(beat: Beat): string {
-    const authored = beat.events.map((event) => event.text).join('\n')
+  /**
+   * D2: the co-timed event's own text. D3: the gate's scene, when alone.
+   *
+   * `events` is the EXPOSED set, never `beat.events` — see `shown`. D3 needs no
+   * clause of its own for that: a beat whose every event was filtered out has
+   * nothing authored, so it falls to the gate's scene by the same test that has
+   * always caught a beat with no events at all.
+   */
+  function fixedAction(beat: Beat, events: readonly TimelineEvent[]): string {
+    const authored = events.map((event) => event.text).join('\n')
     if (authored !== '') return authored
     // A gate that is not being asked contributes no scene either: its prose
     // describes the situation the gate is about, and that situation is what
@@ -171,10 +199,26 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
     return beat.gate === null || !gateLive ? '' : beat.gate.scene
   }
 
-  function presentNpcs(beat: Beat): PresentNpc[] {
+  /**
+   * Who is on the line or in the room this beat — one entry per person.
+   *
+   * DEDUPED BY CHARACTER, because the roster is counted at the other end: the
+   * narration prompt tells the model that at most one person speaks here, and a
+   * character named by two co-timed events reached it twice and read as two
+   * people. Authoring around that means the pack has to know which rows share a
+   * minute, so the count is kept honest here instead.
+   *
+   * The FIRST entry wins, which keeps the roster in authoring order and, where
+   * two rows disagree about `side`, takes the one the author wrote first rather
+   * than inventing a tie-break.
+   */
+  function presentNpcs(events: readonly TimelineEvent[]): PresentNpc[] {
     const roster: PresentNpc[] = []
-    for (const event of beat.events) {
+    const seen = new Set<string>()
+    for (const event of events) {
       for (const npc of event.present ?? []) {
+        if (seen.has(npc.char_id)) continue
+        seen.add(npc.char_id)
         roster.push({ id: npc.char_id, name: nameOf(npc.char_id), side: npc.side })
       }
     }
@@ -259,6 +303,11 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
       // Closes this beat's journal, which is what the symptom renderer reads.
       state.journal()
       symptoms = state.renderSymptoms()
+      // …and NOW the exposure question can be asked, against a state that
+      // already carries this beat's own effects. Last of the three, after the
+      // journal has closed, so a condition reads the same run the symptoms
+      // above just described. See `shown`.
+      shown = beat.events.filter((event) => eventExposed(event.exposure?.extra_condition, state))
 
       stepLog.push({ kind: 'narration', beat: beat.index })
       if (beat.isRoundLast && beat.roundIndex !== null) {
@@ -288,6 +337,7 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
       cursor += 1
       utterance = ''
       symptoms = []
+      shown = null
       activeGroup = null
       // Read AFTER the cursor moves and before the phase is set: the previous
       // beat's effects have landed, so this is the state the gate's condition
@@ -312,11 +362,16 @@ export function createBeatDriver(deps: BeatDriverDeps): BeatDriver {
         throw new BeatPhaseError(`beatView is legal after this beat's effects, not in '${phase}'`)
       }
       const beat = beatNow()
+      // `shown` cannot be null here — the phase guard above means this beat's
+      // effects have landed, and that is where it is written. The fallback is
+      // not a tolerance: it is what keeps a future phase edit from silently
+      // handing the model an unfiltered beat instead of failing a test.
+      const events = shown ?? []
       return {
         TIMELINE_TAIL: windowLines(lineGroups),
         AGENT_UTTERANCE: utterance,
-        FIXED_NPC_ACTION: fixedAction(beat),
-        PRESENT_NPCS: presentNpcs(beat),
+        FIXED_NPC_ACTION: fixedAction(beat, events),
+        PRESENT_NPCS: presentNpcs(events),
         SCENE_SYMPTOMS: [...symptoms],
       }
     },
@@ -361,6 +416,44 @@ function gateOpen(beat: Beat | undefined, state: StateCorePort): boolean {
   if (beat?.gate == null) return false
   const condition = beat.gate.availability
   if (condition === '' || problems(condition).length > 0) return true
+  return holds(condition, state.snapshot())
+}
+
+/**
+ * Does this event's `exposure.extra_condition` hold right now?
+ *
+ * The slot was authored, compiled and linted, and for a while NOTHING read it:
+ * every event in a beat reached the feed unconditionally. 전구간정상 authors its
+ * day as exclusive pairs — the 21:22 announcement is either "차량 안에서
+ * 대기하십시오" or "차에서 내리십시오", and the closing 개요서 either names
+ * 일반 화물 or twelve pallets — so an unread condition does not merely lose a
+ * branch, it prints BOTH halves of it in the same minute.
+ *
+ * ── Un-hardened prose shows the line, it does not delete it ────────────────
+ *
+ * Exactly `gateOpen`'s rule above, for exactly its reason. `extra_condition` is
+ * a `contract-datapack` F4 slot: packs may still carry free text there pending
+ * promotion — 우는다리's t5 says 현장(관리동)을 들여다본 런에만 보임 — and
+ * `datapack:lint` FLAGs it as hardening work. Routing that through `holds()`
+ * alone would read it as `false` and silently delete two authored events from
+ * every run of a pack nobody changed. So a condition that does not PARSE is
+ * treated as "no condition authored yet". Only a real predicate is enforced,
+ * which is also why `snapshot()` is reached only when there is one to resolve.
+ *
+ * ── One predicate, two readers ─────────────────────────────────────────────
+ *
+ * It lives HERE, beside the sibling rule it copies, because it has two callers
+ * and had one for a while: `engine/index.ts`'s `scriptLinesOf` filtered the
+ * FEED with it while `fixedAction` and `presentNpcs` below walked `beat.events`
+ * whole. The two surfaces then disagreed about what happened in a beat — the
+ * paper printed one branch and `FIXED_NPC_ACTION` handed the model both, under
+ * a heading that reads `[이미 일어난 일 — 이대로 일어났다 … 모순되지도 마라]`.
+ * Two copies of the predicate would have been two ways for that to come back;
+ * one exported function is the only shape that cannot.
+ */
+export function eventExposed(condition: string | null | undefined, state: StateCorePort): boolean {
+  if (condition === null || condition === undefined || condition === '') return true
+  if (problems(condition).length > 0) return true
   return holds(condition, state.snapshot())
 }
 
