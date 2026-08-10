@@ -55,7 +55,7 @@ import { callsignOf } from './dossier.ts'
 import { FALLBACK_CLASS, fallbackNoticeLine } from './fallback-notice.ts'
 import type { FallbackClass } from './fallback-notice.ts'
 import { tallyLineText } from './tally-line.ts'
-import { READING_PACE, TYPE_START, typeCursor } from './typewriter.ts'
+import { TYPE_START, typeCursor } from './typewriter.ts'
 import type { TypePace } from './typewriter.ts'
 
 /* ── the model ───────────────────────────────────────────────────────────── */
@@ -259,24 +259,41 @@ export function feedLineModel(line: FeedLine, callsign = callsignOf(1)): FeedNod
  * two utterances and is priced higher than the report body's 130 ms. Same
  * reasoning `slot-board.ts` records for its own pair: the pause only reads as a
  * pause while it is worth a dozen-odd characters of the rate beside it, and at
- * 11 ms/char this is worth 24 of them — a row boundary, not a stop.
+ * 16 ms/char this is worth 16 of them — a row boundary, not a stop.
  */
 const FEED_ROW_MS = 260
 
 /**
- * The feed's pace. The RATE is the desk's reading pace, borrowed rather than
- * re-invented: `typewriter.ts` names that constant "the feed arriving at the
- * speed a radio delivers it", which is this surface exactly. Only the pause
- * after a row is this window's own, so `FEED_PACE` differs from `READING_PACE`
- * in one number and says so by spreading it.
+ * Real milliseconds one character costs on the fanfold.
  *
- * A slower rate was tried against the arithmetic first and cannot be had: the
- * demo day prints ~1560 characters, so a teletype's own 100 ms/char would be
- * 156 s of typing inside a 77 s day, and the feed would end the run minutes
- * behind the desk with the ending waiting on it. The reading happens in the
- * pauses; the characters only have to arrive.
+ * x12 — SLOWER THAN THE DESK'S READING PACE, and no longer borrowed from it
+ * (민서, 08-10 — "the typing speed pace is a little fast"). x11 spread
+ * `READING_PACE` here on the strength of that constant's own note, "the feed
+ * arriving at the speed a radio delivers it". Played, 11 ms/char read as a
+ * machine dumping a line rather than a transmission being received: the eye
+ * arrives at the end of the row before the row has finished being a row.
+ *
+ * The ceiling is arithmetic and it is close. The demo day prints ~1560
+ * characters into 77 s of sim at ×1, and the paper may not end the run behind
+ * the desk — the ending waits on it. A teletype's own 100 ms/char would be 156 s
+ * of typing and is impossible; 16 lands the day's paper at ~57 s, and
+ * `live-feed.test.ts` recomputes that sum from these constants against the real
+ * fixture and holds the ratio under 0.8 so the next re-tune cannot cross it
+ * quietly.
+ *
+ * The reading still happens in the PAUSES. This rate only has to make the
+ * characters look like they are arriving rather than appearing.
  */
-export const FEED_PACE: TypePace = { ...READING_PACE, msBetween: FEED_ROW_MS }
+const FEED_MS_PER_CHAR = 16
+
+/**
+ * The feed's pace: this window's own rate and its own row beat.
+ *
+ * Both numbers differ from `READING_PACE` now, so it is spelled out rather than
+ * spread — a spread would say "the report's pace, with one change" and that is
+ * no longer true of either field.
+ */
+export const FEED_PACE: TypePace = { msPerChar: FEED_MS_PER_CHAR, msBetween: FEED_ROW_MS }
 
 /**
  * The pause when the DESK CLOCK MOVES — the in-world time between two lines,
