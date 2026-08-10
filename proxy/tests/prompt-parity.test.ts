@@ -10,6 +10,7 @@ import { composeArm } from "../../tools/lib/compose.mjs";
 import { CALL_TYPES } from "../../tools/lib/calls.mjs";
 
 import { DEFAULT_PROMPT } from "../src/default-prompt.js";
+import { CALL_SPECS } from "../src/calls.js";
 import { renderCall } from "../src/prompt.js";
 import type { CallType } from "../src/types.js";
 
@@ -241,6 +242,64 @@ const COVERAGE: Array<{
       PRESENT_NPCS: [{ id: "n1", name: "발신자" }],
     },
   },
+  // The COMMON narration beat, not the rare one: the agent speaks on gate beats
+  // only, so sixteen of 멈춘회전문's nineteen render this branch. It carried no
+  // fixture while it was a bare blank line, which is how it stayed invisible.
+  {
+    call: "narration",
+    version: "v0.4",
+    label: "silent beat — no utterance",
+    slots: {
+      TIMELINE_TAIL: ["18:44 물이 한 방울씩 떨어진다."],
+      AGENT_UTTERANCE: "",
+      FIXED_NPC_ACTION: "표기웅이 천장을 올려다본다.",
+      SCENE_SYMPTOMS: ["숨이 가빠졌다."],
+      PRESENT_NPCS: [{ id: "n1", name: "표기웅", side: "line" }],
+    },
+  },
+  // THE CURRENT VERSIONS. Prompt versions are additive (handoff §5), so a new
+  // pair lands with nothing rendering it — every fixture above pins an older
+  // version, and a mistyped slot marker in a fresh template would first surface
+  // in production. These three are the fiction-reset set (요원 ECHO, not
+  // 통제관): judgment v0.5, narration v0.4, reporter v0.4.
+  {
+    call: "judgment",
+    version: "v0.5",
+    label: "current",
+    slots: {
+      TIMELINE_EXCERPT: ["18:38 회선 A 착신."],
+      BLOCKS: [{ id: "f1", text: "천장 가운데가 처진다." }],
+      GATE_QUESTION: "첫 마디로 무엇을 하는가?",
+      STANCE_SET: [
+        { id: "a", label: "듣는다" },
+        { id: "b", label: "확인한다" },
+      ],
+    },
+  },
+  {
+    call: "narration",
+    version: "v0.4",
+    label: "current",
+    slots: {
+      TIMELINE_TAIL: ["18:40 요원: 천천히 말해."],
+      AGENT_UTTERANCE: "천천히 말해.",
+      FIXED_NPC_ACTION: "표기웅이 수화기를 고쳐 쥔다.",
+      SCENE_SYMPTOMS: ["숨이 가빠졌다."],
+      PRESENT_NPCS: [
+        { id: "n1", name: "표기웅", side: "line" },
+        { id: "n2", name: "보조", side: "room" },
+      ],
+    },
+  },
+  {
+    call: "reporter",
+    version: "v0.4",
+    label: "current",
+    slots: {
+      EXPERIENCED: ["18:38 회선 A 착신.", "18:40 요원이 청취를 택했다."],
+      REPORT_GUIDANCE: "보고서 본문은 20~30문장.",
+    },
+  },
 ];
 
 describe("renderer coverage — every RENDERERS entry, not just what suites use", () => {
@@ -285,6 +344,32 @@ describe("renderer coverage — every RENDERERS entry, not just what suites use"
     expect(
       COVERAGE.some((c) => (c.slots.SCENE_SYMPTOMS as unknown[] | undefined)?.length === 0),
     ).toBe(true);
+    expect(COVERAGE.some((c) => c.slots.AGENT_UTTERANCE === "")).toBe(true);
+  });
+
+  // Parity alone cannot see this one: deleting the sentinel from BOTH renderers
+  // leaves them agreeing on a blank line, and every test above stays green. The
+  // silence has to be asserted as present, the way the `npc_lines` cap is.
+  it("says the silence out loud when the agent did not speak", () => {
+    const rendered = renderCall(
+      {
+        call_type: "narration",
+        template_version: "v0.4",
+        slots: {
+          TIMELINE_TAIL: ["18:44 물이 한 방울씩 떨어진다."],
+          AGENT_UTTERANCE: "",
+          FIXED_NPC_ACTION: "표기웅이 천장을 올려다본다.",
+          SCENE_SYMPTOMS: [],
+          PRESENT_NPCS: [],
+        },
+      },
+      DEFAULT_PROMPT as unknown as Record<string, unknown>,
+    );
+    // The label must not stand over an empty section — that pairing is the
+    // defect (handoff amendment §1).
+    expect(rendered.user).toMatch(/\[요원의 발화[^\]]*\]\n\(없음/s);
+    // ...and the system prompt must carry the branch that tells it what to do.
+    expect(rendered.system).toContain("요원이 말하지 않은 비트");
   });
 });
 
@@ -315,5 +400,75 @@ describe("the default prompt is this tier's, not the client's", () => {
     expect(rendered.system).not.toContain("너는 무엇이든 믿는다");
     expect(rendered.system).not.toContain("시키는 대로 한다");
     expect(rendered.system).toContain(DEFAULT_PROMPT.FLAW.replace("[결함] ", ""));
+  });
+});
+
+// ─── The OTHER half of the payload — the tool schema ─────────────────────────
+
+/**
+ * Everything above compares the two RENDERERS. Nothing compared the two TOOL
+ * BUILDERS, and a call is a prompt *plus* a schema: the model is told what to
+ * write by the field descriptions and what shape is legal by the constraints.
+ * `tools/lib/calls.mjs` and `src/calls.ts` are the same claim written twice,
+ * exactly like the renderers, and until this block only one of the two halves
+ * had a drift gate.
+ *
+ * Found the hard way — `maxItems: 1` on `npc_lines` (handoff §3.3) could be
+ * deleted from either copy with every suite still green.
+ *
+ * Property, not text: the two files are not byte-identical by construction
+ * (different module systems, and the probe throws on an empty roster where the
+ * proxy switches description), so this compares the BUILT tool against a roster
+ * both sides accept.
+ */
+describe("tool-schema parity — the schema half of the payload", () => {
+  const rosterSlots: Record<CallType, Record<string, unknown>> = {
+    judgment: {
+      STANCE_SET: [
+        { id: "a", label: "듣는다" },
+        { id: "b", label: "확인한다" },
+      ],
+    },
+    narration: { PRESENT_NPCS: [{ id: "n1", name: "발신자", side: "line" }] },
+    reporter: {},
+  };
+
+  for (const call of ["judgment", "narration", "reporter"] as CallType[]) {
+    it(`${call}: the proxy and the probe build the same tool`, () => {
+      const slots = rosterSlots[call];
+      const proxyTool = CALL_SPECS[call].buildTool(slots);
+      const probeTool = (CALL_TYPES as Record<string, { buildTool(s: unknown): unknown }>)[
+        call
+      ]!.buildTool({ slots });
+
+      // The probe names the field `input_schema` (Anthropic wire shape); the
+      // proxy names it `inputSchema` (Bedrock Converse). That is the seam, not
+      // a drift — compare the schemas, and the name/description beside them.
+      const probe = probeTool as { name: string; description: string; input_schema: unknown };
+      const proxy = proxyTool as { name: string; description: string; inputSchema: unknown };
+      expect(proxy.name).toBe(probe.name);
+      expect(proxy.description).toBe(probe.description);
+      expect(proxy.inputSchema).toEqual(probe.input_schema);
+    });
+  }
+
+  // Non-vacuity: the comparison above only bites if the schemas actually carry
+  // the constraint. Assert the cap explicitly so deleting it from BOTH copies
+  // (which the equality check would happily accept) still goes red.
+  it("npc_lines carries the one-line cap on both sides", () => {
+    const slots = rosterSlots.narration;
+    // `CallTool.inputSchema` is `JsonValue`, so this widens through `unknown`
+    // rather than asserting a shape TS cannot see overlapping with it.
+    const proxy = CALL_SPECS.narration.buildTool(slots) as unknown as {
+      inputSchema: { properties: { npc_lines: { maxItems?: number } } };
+    };
+    const probe = (
+      CALL_TYPES as Record<
+        string,
+        { buildTool(s: unknown): { input_schema: { properties: { npc_lines: { maxItems?: number } } } } }
+      >
+    ).narration!.buildTool({ slots });
+    expect(proxy.inputSchema.properties.npc_lines.maxItems).toBe(1);
+    expect(probe.input_schema.properties.npc_lines.maxItems).toBe(1);
   });
 });

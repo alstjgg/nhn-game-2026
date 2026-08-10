@@ -18,6 +18,18 @@
 // The rule lives in planning/dday-engine-minimal-request.md §6.1 and the call
 // contract §3; this is the check that makes it free to enforce.
 //
+// KNOWN BLIND SPOT — check A is not the only route to defect (1). 멈춘회전문
+// reproduced it with rows that are REPORTED SPEECH from a phone call
+// ("표기웅에게 안에 몇 명이냐고 다시 물었습니다"): declarative, no `?`, no
+// second-person address, so A passes them clean. Call 2 still dramatizes the
+// reported Q&A back into live dialogue, that re-staging needs the agent's half,
+// and only NPCs can carry it — same failure, quieter road. Detecting it needs a
+// reported-speech pattern this check does not have; until then the guard is the
+// narration prompt's dialogue contract (base-v0.4) plus `maxItems: 1` on
+// npc_lines. See docs/handoffs/feed-register-llm.md §3.1.
+//
+// "controller" throughout this file is the agent under its pre-DDAY name.
+//
 // Flags, never blocks — the author knows when an overlap is load-bearing.
 // Hard contract requirements (TIMELINE_TAIL must carry the fixed action and the
 // controller utterance) are enforced in lib/suite.mjs instead, where a run
@@ -58,11 +70,11 @@ const addresses = SECOND_PERSON.test(fixed);
 if (asksQuestion || addresses) {
   flag(
     'beat-boundary',
-    '고정 사건이 통제관의 응답을 요구하는 것으로 보인다.',
+    '고정 사건이 요원의 응답을 요구하는 것으로 보인다.',
     [
       asksQuestion ? '  의문형이 있다.' : null,
       addresses ? `  2인칭 호명이 있다: ${fixed.match(SECOND_PERSON)[0]}` : null,
-      '  Call 2는 통제관 대사를 만들 수 없다(통제관은 PRESENT_NPCS에 없다).',
+      '  Call 2는 요원 대사를 만들 수 없다(요원은 PRESENT_NPCS에 없다).',
       '  대화에 구멍이 남으면 모델이 NPC로 그것을 메우고, 그 발화는 상태를 움직이지 못한다(I3/W4).',
       '  → 응답을 요구하지 않는 고정 사건으로 바꾸거나, 답이 다음 Call 1의 utterance가 되도록 비트를 이어 붙인다.',
       '  근거: planning/dday-engine-minimal-request.md §6.1 (실측 4/5)',
@@ -74,7 +86,10 @@ if (asksQuestion || addresses) {
 // "이름: 대사" at line start is how the timeline renders speech.
 const legalIds = new Set(npcs.map((n) => n.id));
 const legalNames = new Set(npcs.map((n) => String(n.name ?? '').split(/[\s—-]/)[0]).filter(Boolean));
-const CONTROLLER = /^(통제관|나|플레이어)$/;
+// 통제관 is the agent's PRE-DDAY name, kept so suites written before the
+// fiction moved still lint. 요원/ECHO are what the prompts (judgment v0.5,
+// narration v0.4) and the client have called it since.
+const CONTROLLER = /^(요원|ECHO|통제관|나|플레이어)$/;
 
 const spoken = new Map(); // speaker → first line seen
 for (const line of tail) {

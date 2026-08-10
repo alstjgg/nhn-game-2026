@@ -50,16 +50,30 @@ const renderStanceSet = (set) =>
 const renderTimeline = (t) => (Array.isArray(t) ? t.join('\n') : String(t ?? ''));
 
 // NPCs render grouped by `side` when the suite marks it. The grouping is not
-// cosmetic: room-side characters kept stepping into the controller's seat and
+// cosmetic: room-side characters kept stepping into the agent's seat and
 // addressing the person on the line, and a prose rule alone did not stop it —
 // the model had to infer the two sides from names. Naming the sides in the
 // payload makes the boundary structural. `side` is optional; without it the
 // list renders flat, so existing suites are unaffected.
 // The labels carry the rule, not just the grouping. Stating it in the distant
 // constraint list left a residual leak; stating it beside the names removed it.
+//
+// The labels moved with the fiction (prompts v0.5/v0.4): the agent is a field
+// officer at the site's crisis post, not a night controller in a regional
+// situation room. `room` is now "beside the agent", which is what every
+// room-side row in the shipped packs already meant — 우는다리 calls the place
+// 위기 대응실 in its own draft. The MECHANISM is untouched; only the name of the
+// place the two sides sit in.
+//
+// ⚠️ `room` is mechanism kept for packs that author it; the SHIPPING pack does
+// not. 멈춘회전문 has zero room-side rows, which is why narration v0.4 states
+// "요원 곁에는 아무도 없다" flatly rather than as a condition — a conditional
+// left a seat open beside the agent, and an open seat is where 기록관 came from.
+// A pack that authors room rows makes the prompt and this label disagree. If one
+// ever does, the prompt sentence has to come back as a condition.
 const SIDE_LABELS = {
-  line: '회선 너머 — 통제관에게만 말한다',
-  room: '상황실 안 — 서로에게만 말한다. 회선 저쪽에는 말을 걸지 않는다',
+  line: '회선 너머 — 요원에게만 말한다',
+  room: '요원 곁 — 서로에게만 말한다. 회선 저쪽에는 말을 걸지 않는다',
 };
 const renderNpcs = (npcs) => {
   const list = npcs ?? [];
@@ -85,6 +99,18 @@ const RENDERERS = {
   TIMELINE_EXCERPT: renderTimeline,
   // narration (contracts doc §2)
   TIMELINE_TAIL: renderTimeline,
+  // The agent speaks only on gate beats. 멈춘회전문 has nineteen beats and at
+  // most three carry an utterance — one, on a run that hands nothing over. The
+  // other sixteen used to render a labelled section with NOTHING under it,
+  // directly above an instruction not to repeat what is not there. An
+  // instruction with no anchor is where invention starts. Say the silence out
+  // loud instead, the way SCENE_SYMPTOMS says "(변화 없음)".
+  //
+  // The sentinel names no role: it renders under v0.1–v0.3's `통제관의 발화`
+  // header too, and those versions are what live requests until the client's
+  // TEMPLATE_VERSION bump lands.
+  AGENT_UTTERANCE: (v) =>
+    String(v ?? '').trim() ? String(v ?? '') : '(없음 — 이번 비트에 발화는 없었다)',
   SCENE_SYMPTOMS: (v) => (Array.isArray(v) && v.length ? v.join('\n') : '(변화 없음)'),
   PRESENT_NPCS: renderNpcs,
   // reporter (contracts doc §3) — one round's events as lines
