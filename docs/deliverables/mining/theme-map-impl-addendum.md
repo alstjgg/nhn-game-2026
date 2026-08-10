@@ -1,5 +1,7 @@
 # Theme map — IMPLEMENTATION-SWEEP ADDENDUM (reconciled)
 
+> Merged into theme-map-final.md on 2026-08-10; retained as the derivation record.
+
 ## 0. What this is, and the method
 
 This is the reconciliation pass for the **implementation-phase atom sweep** (the

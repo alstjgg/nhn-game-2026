@@ -2617,7 +2617,7 @@ built demo's identity after 07-24 is still not evidenced (see T-59).
   `Opus 4.8` 16 + `(1M)` 11 on the first pipeline runs and early CLAUDE.md; `Sonnet 5` 2; five
   `Codex` on assets/backend), S8-011, S8-013 (a whole-concept replacement authored by Codex —
   cross-vendor authorship on a creative artifact), S8-023 (Codex + gpt-image-1 for asset packs, and
-  `USER <user@AL02375929.local>` leaked into permanent history "on exactly the asset work the manifest
+  `USER <user@[machine-local]>` leaked into permanent history "on exactly the asset work the manifest
   rule exists to keep clean"), S8-058 (`Claude Agent <agent@example.com>` placeholder on two
   high-stakes landings — a shipped demo and a live Lambda deploy), S8-057 (39 commits under a personal
   `13579wkd@naver.com`, distinct from the `alstjgg` noreply the identity rule names; **no corporate
