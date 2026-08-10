@@ -141,6 +141,22 @@ One call per beat — not one per NPC.
 nested objects are banned (rule 2). Same convention as the harness rendering
 blocks as `id: text`.
 
+**Register — 해라체 is the agent's, and the agent's only.** Decided 08-10,
+recorded here because Call 2 is the one call whose output has two speakers and a
+rule stated per-call cannot express that.
+
+| Output | Speaker | Register |
+|---|---|---|
+| `timeline_entries` | the narrator, writing the agent's side of the record | 해라체 — `숨이 가빠졌다.` Not 해체, not 존댓말 |
+| `npc_lines` | the NPC, in their own voice | whatever their relationship to the agent gives them. A caller speaking 존댓말 to the agent is a fact of that seat, not a character choice |
+
+The earlier phrasing — "Call 2, all output, clipped radio 반말" — did not split
+those two, and applied literally it puts 반말 in the mouth of a night duty
+officer twice the agent's age. It also collapses the distinction `PRESENT_NPCS`
+carries in `side`. Read the rule as **who is speaking**, not which call it came
+from: Call 1's `utterance` is the agent, so 해라체; Call 3 is the agent too, but
+filed as a document, so business-formal 존댓말; `npc_lines` is never the agent.
+
 **Validation**
 
 | Condition | Grade | Rationale |
