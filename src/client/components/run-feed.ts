@@ -17,7 +17,9 @@
 // pure, so inv 2's digit scan ([u5#c3]) runs in `environment: 'node'`.
 //
 // Renders only ([u5#c9]): `line.text` and `line.speaker` reach the document
-// untouched — nothing here slices, pads, counts or reformats them.
+// untouched — nothing here slices, pads, counts or reformats them. x8 gives an
+// `npc` line a fixed tail AROUND its quote (see `feedLineModel`); the frame is
+// chrome authored beside the run text, never derived from it.
 import type { FeedKind, FeedLine, FixtureDriver, ViewEvent } from '../driver/index.ts'
 import { animationsFrozen, displayStamp, registerAnimation } from '../driver/index.ts'
 import { el } from '../shell/dom.ts'
@@ -88,8 +90,28 @@ export interface FeedNode {
  * window borrows it.
  */
 const RADIO_TAIL = ' · 무전'
-/** A beat that produced no symptom still prints one line (spec-client §7 #2). */
-const EMPTY_SYMPTOM = '(변화 없음)'
+
+/**
+ * x8 — what closes an NPC line, and the whole of the reframe (민서, 08-10).
+ *
+ * Call 2 writes what an NPC says back to the AGENT over the line. The fanfold
+ * is the agent's own radio record, so the line the operator reads is the agent
+ * relaying that answer — not a character speaking into the room. `— 표기웅 "…"`
+ * is a screenplay slug and read as one; `— 표기웅 "…"라고 답한다` reads as the
+ * desk being told what was said, which is what actually happened.
+ *
+ * `말한다` and not `답한다`, though a reply is what this usually is: Call 2
+ * "generates the reaction" to the fixed event (`contract-calls.md` §3), and a
+ * reaction is not always an answer — the roster can speak to the scene or to
+ * each other. The neutral verb is true of every line the call can produce, and
+ * a frame that is false on some of them is the screenplay problem again.
+ *
+ * No subject particle, deliberately. Korean picks 이/가 by the name's final
+ * 받침, and choosing between them means reading the last codepoint of
+ * `speaker` — deriving from run text, which is the one thing [u5#c9] says this
+ * window never does. The name sits against the gutter's own `—` instead.
+ */
+const NPC_RELAY_TAIL = '라고 말한다'
 
 const envelope = (kind: FeedKind, clock: string, parts: FeedPart[]): FeedNode => ({
   kind,
@@ -145,6 +167,7 @@ export function feedLineModel(line: FeedLine, callsign = callsignOf(1)): FeedNod
       return envelope(kind, line.clock, [
         { p: 'label', text: `${line.speaker ?? ''} ` },
         { p: 'quote', text: line.text },
+        { p: 'text', text: NPC_RELAY_TAIL },
       ])
     case 'mark':
       return envelope(kind, line.clock, [{ p: 'span', text: line.text }])
@@ -153,23 +176,20 @@ export function feedLineModel(line: FeedLine, callsign = callsignOf(1)): FeedNod
     // because anything prints one: `createRunFeed` drops wait lines before they
     // reach the DOM and the waiting markers are gone (see `appendLine`). The
     // case stays so the projection is total for every kind the seam can send.
+    //
+    // x8 — and `symptom` is now the second such kind, for the same reason and
+    // by the same mechanism. It is still on the seam and still reaches Call 2 as
+    // `SCENE_SYMPTOMS` (the only channel state change has at all —
+    // `contract-calls.md` §3 rule 5); it simply no longer lands on the paper.
     case 'wait':
-    case 'event':
     case 'symptom':
+    case 'event':
     case 'fallback':
       return envelope(kind, line.clock, [{ p: 'text', text: line.text }])
     default: {
       const unhandled: never = kind
       throw new Error(`live feed: unhandled FeedKind ${String(unhandled)}`)
     }
-  }
-}
-
-/** The line a beat prints when it closed without a single symptom. */
-export function emptySymptomModel(clock: string): FeedNode {
-  return {
-    ...envelope('symptom', clock, [{ p: 'text', text: EMPTY_SYMPTOM }]),
-    data: { empty: '1' },
   }
 }
 
@@ -346,10 +366,12 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
 
   host.append(left, right, scroll, behind)
 
-  // Instance state: the green band alternates down the page (app.js:434) and a
-  // beat is watched for symptoms so a silent one still prints a line.
+  // Instance state: the green band alternates down the page (app.js:434).
+  //
+  // x8 — the symptom watch is gone with the symptom line. It counted a beat's
+  // symptoms so a silent one could still print `(변화 없음)`; nothing prints
+  // either now, so `beat_start` / `beat_end` carry nothing for this window.
   let band = false
-  let symptoms = 0
   let stamp = ''
   // x7 — the first agent, until `meta` names the sitting. Same reasoning as
   // `feedLineModel`'s default above: the boot state is a DOCUMENT question.
@@ -441,6 +463,31 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
     { passive: true },
   )
 
+  /**
+   * The desk's clock, moved by a line the run has REACHED.
+   *
+   * x6 — the top bar's clock is this stamp, published as the line lands rather
+   * than as the event arrives. The reveal queue holds lines back (and holds
+   * harder on a report), so publishing from `receive` would put the chrome ahead
+   * of the paper — the mismatch the whole slot exists to close
+   * (`shell/feed-clock.ts`).
+   *
+   * x8 — and it is called for the lines the fanfold DROPS as well as the ones it
+   * prints (민서, 08-10), which is why it is a function now. Dropping the
+   * symptom line took the desk clock with it the first time: the demo day's last
+   * minute belongs to a beat whose only line is a symptom, so the clock stopped
+   * at 21:00 on a run that reaches 21:04, and the 집계 line — which reuses this
+   * stamp because `score` carries no clock of its own — was stamped with it.
+   * A dropped line is still a minute the run got to. It is not a line the reader
+   * has to wait for, and it is dropped inside the reveal pump, so this stays in
+   * step with the paper either way.
+   */
+  const advanceStamp = (at: string | null): void => {
+    if (at === null || at === '') return
+    stamp = at
+    publishFeedStamp(at)
+  }
+
   const append = (node: FeedNode): void => {
     // BEFORE the line lands, while `scrollHeight` still describes the paper the
     // operator is actually looking at — and because a `scroll` event runs a
@@ -451,15 +498,7 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
 
     if (node.kind === 'event' || node.kind === 'npc') band = !band
     list.append(lineElement(node, (node.kind === 'event' || node.kind === 'npc') && band))
-    if (node.stamp !== null && node.stamp !== '') {
-      stamp = node.stamp
-      // x6 — the top bar's clock is THIS stamp, published as the line lands in
-      // the DOM rather than as the event arrives. The reveal queue below holds
-      // lines back (and holds harder on a report), so publishing from `receive`
-      // would put the chrome ahead of the paper again — which is the mismatch
-      // the whole slot exists to close (`shell/feed-clock.ts`).
-      publishFeedStamp(node.stamp)
-    }
+    advanceStamp(node.stamp)
     if (!attached) {
       missed += 1
       paintBehind()
@@ -479,7 +518,23 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
     //
     // Dropped HERE rather than at the model, because `feedLineModel` is the pure
     // projection the seam's every kind must survive (see its `wait` case).
-    if (line.kind === 'wait') return
+    //
+    // x8 — a symptom line is not printed either (민서, 08-10), and the reasoning
+    // rhymes. The symptoms were the engine's delta journal rendered into
+    // sentences, printed in italic under every beat: on most beats they said
+    // `(변화 없음)`, and on the rest they reported a weaker thing than the line
+    // directly above them already does. The citation mark over the utterance
+    // (`인수인계 01 · 03`) names the slots the agent actually cited, which is the
+    // signal the operator is looking for — whether their handover reached the
+    // agent. The symptoms sat in the noisiest slot on the paper saying less.
+    //
+    // They are NOT deleted upstream: `SCENE_SYMPTOMS` is the only channel state
+    // change has into Call 2 at all (`contract-calls.md` §3, rule 5), so the
+    // model still knows how the roster is behaving. Only the print is gone.
+    if (line.kind === 'wait' || line.kind === 'symptom') {
+      advanceStamp(displayStamp(line.clock))
+      return
+    }
     if (pending !== null && line.kind !== 'fallback') {
       append(feedLineModel(fallbackNoticeLine(pending.cls, line.clock)))
       pending = null
@@ -491,7 +546,6 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
     } else {
       append(node)
     }
-    if (line.kind === 'symptom') symptoms += 1
   }
 
   const apply = (event: ViewEvent): void => {
@@ -503,12 +557,6 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
         // run itself, and one guard is one place that can drift.
         callsign = callsignOf(event.run)
         stock.textContent = HEAD_STOCK + HEAD_SEP + callsign
-        break
-      case 'beat_start':
-        symptoms = 0
-        break
-      case 'beat_end':
-        if (symptoms === 0) append(emptySymptomModel(event.clock))
         break
       case 'feed':
         appendLine(event.line)
@@ -539,7 +587,9 @@ export function createRunFeed(host: HTMLElement, driver: FixtureDriver): RunFeed
         })
         break
       default:
-        // `report` and `run_end` belong to other windows.
+        // `report` and `run_end` belong to other windows — and since x8 so do
+        // `beat_start` / `beat_end`, which this window watched only to decide
+        // whether a beat owed a `(변화 없음)` line. Nothing is owed now.
         break
     }
   }

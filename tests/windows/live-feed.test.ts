@@ -24,11 +24,7 @@ import { fileURLToPath } from 'node:url'
 
 import type { FeedKind, FeedLine, ViewEvent } from '../../src/shared/view-driver.ts'
 import { woodariRun03 } from '../../src/client/driver/fixtures/index.ts'
-import {
-  FEED_MARKS,
-  emptySymptomModel,
-  feedLineModel,
-} from '../../src/client/components/run-feed.ts'
+import { FEED_MARKS, feedLineModel } from '../../src/client/components/run-feed.ts'
 import type { FeedNode, FeedPart } from '../../src/client/components/run-feed.ts'
 import { FALLBACK_CLASS, FALLBACK_LABEL } from '../../src/client/components/fallback-notice.ts'
 
@@ -177,13 +173,24 @@ describe('[u5#c1] seven kinds map 1:1', () => {
     expect(nodeText(node)).toContain(line.text)
   })
 
-  it('(j) npc renders the speaker as the label and the text inside a quote', () => {
+  // x8 — the npc line is the AGENT RELAYING what was said, not a screenplay
+  // slug (민서, 08-10). The speaker and the quote are unchanged and still
+  // verbatim; what is new is the reported-speech tail that closes the sentence.
+  it('(j) npc renders the speaker, the text inside a quote, and the relay tail last', () => {
     const line: FeedLine = { kind: 'npc', clock: '08:50', text: '막을 수 있다.', speaker: '서지형' }
     const node = model(line)
     const label = node.parts.find((p: FeedPart) => p.p === 'label')
     const quote = node.parts.find((p: FeedPart) => p.p === 'quote')
     expect(label && 'text' in label ? label.text : '').toContain('서지형')
     expect(quote && 'text' in quote ? quote.text : '').toBe(line.text)
+
+    // Order is the sentence: name, then what was said, then the framing verb.
+    expect(node.parts.map((p: FeedPart) => p.p)).toEqual(['label', 'quote', 'text'])
+    // The frame closes the line — it is a suffix, never wrapped around the text.
+    expect(nodeText(node)).toMatch(/라고 [가-힣]+다$/)
+    // …and it did not get there by touching the run's own words.
+    expect(nodeText(node)).toContain(line.text)
+    expect(nodeText(node)).toContain(line.speaker!)
   })
 
   it('(k) mark renders its text inside a span (the ruled divider), no stamp column', () => {
@@ -224,10 +231,21 @@ describe('[u5#c1] seven kinds map 1:1', () => {
   // x6 — SIX skins, not seven. The seventh was `.fl-wait`, and it went with the
   // marker: the sheet is read with its comments blanked so the header's own
   // account of the removal cannot answer this scan for it.
-  it('(n) u1 skin selectors exist for all six DRAWN kinds — the port has somewhere to land', () => {
+  //
+  // x8 — FIVE now. `.fl-symptom` went the same way and for a reason of the same
+  // shape (민서, 08-10): the line is dropped before the DOM, so a skin for it
+  // could only ever be dead paint. Both undrawn kinds are banned by name below,
+  // so either one growing a skin back is a failure and not a silence.
+  const UNDRAWN: FeedKind[] = ['wait', 'symptom']
+
+  it('(n) u1 skin selectors exist for all five DRAWN kinds — the port has somewhere to land', () => {
     const css = code('src/client/styles/win-live-feed.css')
-    for (const kind of KINDS.filter((k) => k !== 'wait')) expect(css).toContain(`.fl-${kind}`)
-    expect(css, 'the wait skin came back — nothing may carry `.fl-wait`').not.toContain('.fl-wait')
+    for (const kind of KINDS.filter((k) => !UNDRAWN.includes(k))) expect(css).toContain(`.fl-${kind}`)
+    for (const kind of UNDRAWN) {
+      expect(css, `the ${kind} skin came back — nothing may carry \`.fl-${kind}\``).not.toContain(
+        `.fl-${kind}`,
+      )
+    }
   })
 
   // x6 — the contract that replaced the whole waiting-marker mechanism, and the
@@ -240,12 +258,38 @@ describe('[u5#c1] seven kinds map 1:1', () => {
   // belongs to `e2e/run-loop.spec.ts` (`latency`), which reads `#feedList` on a
   // real desk and holds it at zero. What is provable here is that neither door
   // reaches `append`.
-  it('(o) neither door draws a line — a `wait` line is dropped, a `waiting` event lands nothing', () => {
+  it('(o) neither door draws a line — `wait` and `symptom` are dropped, a `waiting` event lands nothing', () => {
     const source = code('src/client/components/run-feed.ts')
 
-    // Door 1: `appendLine` returns before it can build a node.
-    expect(source, 'the wait line no longer short-circuits before `append`').toMatch(
-      /if\s*\(\s*line\.kind\s*===\s*'wait'\s*\)\s*return/,
+    // Door 1: `appendLine` returns before it can build a node — for BOTH
+    // undrawn kinds, in one guard. x8 put `symptom` beside `wait` there.
+    // The early return that tests `line.kind` — the module has several others
+    // (`follow`, `reread`, the reveal pump), so the guard is found by what it
+    // READS, not by being first.
+    const drop = /if\s*\(([^)]*line\.kind[^)]*)\)\s*\{([^}]*)\}/.exec(source)
+    expect(drop, 'nothing short-circuits on `line.kind` before `append` any more').toBeTruthy()
+    const [, condition = '', body = ''] = drop ?? []
+    expect(body, 'the undrawn-kind guard stopped returning').toMatch(/\breturn\b/)
+    for (const kind of UNDRAWN) {
+      expect(condition, `the ${kind} line no longer short-circuits before \`append\``).toMatch(
+        new RegExp(`line\\.kind\\s*===\\s*'${kind}'`),
+      )
+    }
+
+    // x8 — and it still moves the DESK CLOCK on its way out. A dropped line is a
+    // minute the run reached, and the first cut of the symptom removal proved
+    // what happens without this: the demo day's last minute belongs to a beat
+    // whose only line is a symptom, so the top bar froze at 21:00 on a run that
+    // reaches 21:04 and the 집계 line inherited the stale stamp. The guard is
+    // cheap and the failure is silent, which is exactly when to pin it.
+    expect(body, 'a dropped line no longer advances the desk clock').toMatch(/advanceStamp\s*\(/)
+
+    // And a symptom cannot come back in by the OTHER door it used to have: the
+    // `(변화 없음)` builder was a second entry into `append` that bypassed
+    // `appendLine` entirely, driven off `beat_end`. Both are gone.
+    expect(source, 'the empty-symptom builder is back').not.toMatch(/emptySymptomModel/)
+    expect(source, "`beat_end` is being watched again — it fed the `(변화 없음)` line").not.toMatch(
+      /case 'beat_end':/,
     )
 
     // Door 2: the `waiting` case is inert — it may not append, and it may not
@@ -296,13 +340,16 @@ describe('[u5#c3] no digit in npc/symptom nodes', () => {
     }
   })
 
-  it('(e) the empty-symptom state renders no digit either', () => {
-    const node = (emptySymptomModel as unknown as (clock: string) => FeedNode)('12:39')
-    expect(node.classes).toContain('fl-symptom')
-    expect(node.data.empty).toBe('1')
-    expect(DIGIT.test(nodeText(node))).toBe(false)
-    expect(nodeText(node)).toContain('(변화 없음)')
-  })
+  // x8 — (e) was 'the empty-symptom state renders no digit either'. It measured
+  // `emptySymptomModel`, the `(변화 없음)` line a silent beat printed; there is
+  // no such line and no such builder (민서, 08-10). The claim survives the same
+  // way the wait phrasings' did: a symptom cannot render a digit because a
+  // symptom does not render, and `[u5#c1] (o)` holds both of its doors shut.
+  //
+  // (b)–(d) above are untouched and are NOT vacuous: `feedLineModel` still
+  // projects a `symptom` line — the kind is on the frozen seam and the
+  // projection must stay total — so the scan still runs over real fixture text.
+  // What changed is only that `createRunFeed` never puts the result on paper.
 
   // x6 — (f) was 'the waiting marker renders no digit for any `for` (latency is
   // not a number)'. It measured the marker's three phrasings; there is no
@@ -468,8 +515,16 @@ describe('[u5#c9] the window renders, never authors', () => {
     const ALLOWED = new Set([
       '연속용지 · 상황실 무전 기록',
       '열람 전용 — 이 창은 조작되지 않습니다',
-      '(변화 없음)',
       ' · 무전',
+      // x8's NPC frame. Chrome, and the one piece of it that is a SENTENCE: the
+      // feed is the agent's radio record, so an NPC's answer is printed as the
+      // agent relaying it (`표기웅 “…”라고 말한다`) rather than as a screenplay
+      // slug. It authors nothing about the scenario — the speaker and the line
+      // are still the run's, verbatim, and (b) above holds that.
+      //
+      // `(변화 없음)` came OUT in the same change: the empty-symptom line that
+      // was the only thing minting it is gone.
+      '라고 말한다',
       // U5.4's citation mark. Chrome, not run text: it names a SLOT of the
       // operator's own file — the same word the AGENT FILE prints over those
       // slots — and authors nothing about the scenario.

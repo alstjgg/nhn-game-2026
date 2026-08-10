@@ -49,8 +49,13 @@ export const FEED = {
   behind: '#w-feed #feedBehind',
 } as const
 
-/** `(변화 없음)` — the empty symptom set's own copy (§7 #2), not fixture text. */
-export const EMPTY_SYMPTOM = '(변화 없음)'
+/* x8 — `EMPTY_SYMPTOM` is gone (민서, 08-10). It named `(변화 없음)`, the copy a
+   beat printed when it closed without moving anything, and there is no symptom
+   line on the paper to be empty: `run-feed.ts` drops the kind before the DOM,
+   the way it already dropped `wait`. The symptoms still exist — they are the
+   engine's delta journal and they still reach Call 2 as `SCENE_SYMPTOMS` — so a
+   suite that wants to observe one reads it off the stream, as the wait note
+   below says, and never off the DOM. `.fl-symptom` selects nothing now. */
 
 /* x6 — `WAIT_PHRASE` and the wait selector are gone (민서, 08-09). There is no
    wait phrasing left to name and no `.fl-wait` node to select: the waiting

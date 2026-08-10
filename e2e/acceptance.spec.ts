@@ -26,7 +26,6 @@ import type { Page } from 'playwright/test'
 import {
   CHROME,
   DEBUG,
-  EMPTY_SYMPTOM,
   FEED,
   FILE,
   FREE_TEXT,
@@ -115,7 +114,7 @@ test.describe('acceptance 1-7', () => {
     expect(await page.locator(CHROME.runNum).innerText()).toContain(String(lastMeta(f).run))
   })
 
-  test('#2 a full round plays in stream order, ≤3 symptoms a beat, no digit, (변화 없음) when empty', async ({
+  test('#2 a full round plays in stream order, ≤3 symptoms a beat on the stream, no digit', async ({
     page,
   }) => {
     await boot(page)
@@ -137,7 +136,11 @@ test.describe('acceptance 1-7', () => {
       cursor = at
     }
 
-    // (b) ≤3 symptom lines per beat (§7 #2).
+    // (b) ≤3 symptom lines per beat (§7 #2). Read off the STREAM, which is
+    // where the cap has always been measured and is now the only place it can
+    // be: x8 stopped printing symptom lines, so the DOM carries none (민서,
+    // 08-10). The engine still emits them and Call 2 still receives them as
+    // `SCENE_SYMPTOMS`, so the cap still governs something real.
     const perBeat = symptomsPerBeat(f)
     expect(perBeat.length, 'the round played no beats').toBeGreaterThan(0)
     expect(Math.max(...perBeat)).toBeLessThanOrEqual(3)
@@ -145,21 +148,24 @@ test.describe('acceptance 1-7', () => {
     // (c) invariant 2 — no digit renders for NPC state on the player surface.
     // The clock stamp is chrome, not state: it is excluded by selector, exactly
     // as u9's inv-2 assert does.
-    const npcLines = (await domLines(page)).filter((l) => ['npc', 'symptom'].includes(l.kind))
-    expect(npcLines.length, 'the round painted no NPC or symptom line — the scan is vacuous').toBeGreaterThan(0)
+    const npcLines = (await domLines(page)).filter((l) => l.kind === 'npc')
+    expect(npcLines.length, 'the round painted no NPC line — the scan is vacuous').toBeGreaterThan(0)
     const digits = await page
-      .locator('#w-feed .fl-npc .fl-c, #w-feed .fl-symptom .fl-c')
+      .locator('#w-feed .fl-npc .fl-c')
       .evaluateAll((nodes) => nodes.map((n) => n.textContent ?? '').filter((t) => /\d/.test(t)))
-    expect(digits, 'a digit reached an NPC or symptom line (inv 2)').toEqual([])
+    expect(digits, 'a digit reached an NPC line (inv 2)').toEqual([])
 
-    // (d) the empty symptom set renders its own copy, never a blank line.
-    const emptyBeats = perBeat.filter((n) => n === 0).length
-    if (emptyBeats > 0) {
-      await expect(page.locator(FEED.list)).toContainText(EMPTY_SYMPTOM)
-    }
+    // (d) …was 'the empty symptom set renders its own copy, never a blank line'.
+    // There is no symptom line on the paper to be empty, so `(변화 없음)` is not
+    // minted anywhere any more (x8). What replaces it is the negative: the
+    // symptom channel is CLOSED at the DOM, and the stream above proves the
+    // symptoms it is closed against are really being produced.
+    expect(perBeat.some((n) => n > 0), 'the round produced no symptom at all — (d) is vacuous').toBe(true)
+    expect(await page.locator('#w-feed .fl-symptom').count(), 'a symptom line reached the paper').toBe(0)
+    await expect(page.locator(FEED.list)).not.toContainText('(변화 없음)')
   })
 
-  test("#3 the gate's judgment is observable in the debug pane, its symptoms on the player pane", async ({
+  test("#3 the gate's judgment is observable in the debug pane, its prose on the player pane", async ({
     page,
   }) => {
     await boot(page)
@@ -196,9 +202,29 @@ test.describe('acceptance 1-7', () => {
       expect(paneText, 'the debug pane does not show the gate beat').toContain(String(beat.beat))
     }
 
-    // The player pane sees the SYMPTOMS of that judgment, never its numbers.
-    const symptoms = await page.locator('#w-feed .fl-symptom').count()
-    expect(symptoms, 'the gate produced no visible symptom on the player pane').toBeGreaterThan(0)
+    // The player pane sees the judgment as PROSE — the agent's own radio line.
+    //
+    // This half used to count `.fl-symptom` nodes: a gate moved state, the state
+    // rendered into symptom sentences, and those printed. x8 closed that channel
+    // at the DOM (민서, 08-10), so the surface a gate now leaves the player is
+    // Call 1's utterance on the radio line. The symptoms are still produced —
+    // they are what `SCENE_SYMPTOMS` carries into Call 2 — so the second half
+    // below holds the channel shut against something real rather than nothing.
+    //
+    // What is deliberately NOT asserted here: that the radio line carries no
+    // digit. Inv 2 scopes to the NPC channel, and the agent's own speech is
+    // scenario prose that may legitimately say `17시 30분`. `#2 (c)` and
+    // `a11y.spec.ts` hold the channel that inv 2 actually names.
+    expect(
+      await page.locator('#w-feed .fl-radio .fl-c').count(),
+      'the gate left nothing on the player pane at all',
+    ).toBeGreaterThan(0)
+
+    const symptoms = f.events.filter(
+      (e) => e.type === 'feed' && (e as { line?: { kind?: string } }).line?.kind === 'symptom',
+    )
+    expect(symptoms.length, 'the round produced no symptom — the next assert is vacuous').toBeGreaterThan(0)
+    expect(await page.locator('#w-feed .fl-symptom').count(), 'a symptom reached the player pane').toBe(0)
   })
 
   test("#4 the round report renders exactly once, after the round's last beat", async ({ page }) => {

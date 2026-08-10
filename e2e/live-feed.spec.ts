@@ -43,7 +43,19 @@ const MARKS: Record<string, string> = {
   mark: '',
 }
 
-const EMPTY_SYMPTOM = '(변화 없음)'
+/**
+ * Kinds the seam carries that the fanfold does NOT print, so a stream/DOM
+ * comparison has to subtract them before it can mean anything.
+ *
+ * `wait` since x6 (the waiting marker was removed outright) and `symptom` since
+ * x8 (민서, 08-10) — both are dropped in `run-feed.ts`'s `appendLine`, before a
+ * node is ever built. Neither is gone from the engine: symptoms are still the
+ * delta journal and still reach Call 2 as `SCENE_SYMPTOMS`.
+ *
+ * `(변화 없음)` used to be named here too, as the copy a symptom-free beat
+ * printed. Nothing mints it any longer.
+ */
+const UNDRAWN_KINDS = ['wait', 'symptom']
 
 interface StreamLine {
   kind: string
@@ -57,7 +69,6 @@ interface DomLine {
   stamp: string | null
   mark: string | null
   text: string
-  empty: boolean
   band: boolean
   resolved: boolean
 }
@@ -100,6 +111,15 @@ async function streamLines(page: Page): Promise<StreamLine[]> {
     .map((e) => (e as unknown as { line: StreamLine }).line)
 }
 
+/**
+ * The released lines the fanfold is supposed to PRINT — `streamLines` minus the
+ * kinds the client drops. This is the side of a stream/DOM comparison that has
+ * to move when a kind stops being drawn; `streamRendered` below is the other.
+ */
+async function drawnStreamLines(page: Page): Promise<StreamLine[]> {
+  return (await streamLines(page)).filter((l) => !UNDRAWN_KINDS.includes(l.kind))
+}
+
 async function seek(page: Page, at: string): Promise<void> {
   await page.evaluate((to) => {
     const h = (window as unknown as { __feed?: { seek(at: string): void } }).__feed
@@ -128,7 +148,6 @@ async function domLines(page: Page): Promise<DomLine[]> {
         stamp: stampNode ? (stampNode.textContent ?? '').trim() : null,
         mark: content ? content.getAttribute('data-mark') : null,
         text: (content?.textContent ?? '').trim(),
-        empty: li.dataset.empty === '1' || content?.getAttribute('data-empty') === '1',
         band: li.classList.contains('band'),
         resolved: li.classList.contains('resolved'),
       }
@@ -141,9 +160,13 @@ async function domLines(page: Page): Promise<DomLine[]> {
  * The 21:04 집계 line is one of them: minted from the `score` event
  * (`tally-line.ts`, #183), not a stream line; run-loop.spec asserts it on
  * its own.
+ *
+ * x8 — the `!l.empty` clause went with the `(변화 없음)` line, the only node
+ * that ever carried `data-empty` (민서, 08-10). The client mints exactly one
+ * kind of line of its own now, and this filter names it.
  */
 const streamRendered = (lines: DomLine[]): DomLine[] =>
-  lines.filter((l) => !l.empty && !l.text.startsWith('집계. '))
+  lines.filter((l) => !l.text.startsWith('집계. '))
 
 /* ══ the day opens on the press, never before it ══════════════════════════ */
 
@@ -201,7 +224,7 @@ test.describe('round renders in order', () => {
   })
 
   test('round renders in order — every stream line lands, in stream order', async ({ page }) => {
-    const stream = await streamLines(page)
+    const stream = await drawnStreamLines(page)
     expect(stream.length).toBeGreaterThan(30)
 
     const rendered = streamRendered(await domLines(page))
@@ -212,7 +235,7 @@ test.describe('round renders in order', () => {
   })
 
   test('round renders in order — each line shows the engine text verbatim', async ({ page }) => {
-    const stream = await streamLines(page)
+    const stream = await drawnStreamLines(page)
     const rendered = streamRendered(await domLines(page))
     for (let i = 0; i < stream.length; i += 1) {
       expect(rendered[i]?.text).toContain(stream[i]!.text)
@@ -227,8 +250,13 @@ test.describe('round renders in order', () => {
     }
   })
 
-  test('round renders in order — no beat shows more than three symptom lines', async ({ page }) => {
-    const lines = await domLines(page)
+  // x8 — the §7 #2 cap is counted on the STREAM now (민서, 08-10). It was read
+  // off the DOM, which is no longer possible and, worse, would still pass:
+  // a paper with zero symptom lines never exceeds three. The cap governs what
+  // the engine renders into `SCENE_SYMPTOMS` for Call 2, and that is where it
+  // is still real, so that is where it is measured.
+  test('round renders in order — no beat produces more than three symptom lines', async ({ page }) => {
+    const lines = await streamLines(page)
     const overloaded: number[] = []
     let beat = 0
     let symptoms = 0
@@ -244,14 +272,19 @@ test.describe('round renders in order', () => {
     expect(overloaded).toEqual([])
   })
 
-  test('round renders in order — a symptom-free beat renders the empty state', async ({ page }) => {
+  // x8 — this was 'a symptom-free beat renders the empty state', and it held the
+  // `(변화 없음)` line: a beat that moved nothing still printed one, so the
+  // player was told the beat had closed. The line is gone with the whole symptom
+  // channel, and what remains to hold is the negative — that the channel really
+  // is shut at the DOM, and that it is shut against symptoms that are genuinely
+  // being produced. Without the second half this would pass on a broken feed.
+  test('round renders in order — the symptom channel is closed at the paper', async ({ page }) => {
+    const produced = (await streamLines(page)).filter((l) => l.kind === 'symptom')
+    expect(produced.length, 'the round produced no symptom — the assert is vacuous').toBeGreaterThan(0)
+
     const lines = await domLines(page)
-    const empties = lines.filter((l) => l.empty)
-    expect(empties.length).toBeGreaterThan(0)
-    for (const e of empties) {
-      expect(e.kind).toBe('symptom')
-      expect(e.text).toContain(EMPTY_SYMPTOM)
-    }
+    expect(lines.filter((l) => l.kind === 'symptom')).toEqual([])
+    expect(lines.filter((l) => l.text.includes('(변화 없음)'))).toEqual([])
   })
 
   test('round renders in order — the head and the tail frame the fanfold', async ({ page }) => {
@@ -336,7 +369,15 @@ test.describe('silent waiting', () => {
   test('silent waiting — deterministic lines land instantly, as they always did', async ({ page }) => {
     await seek(page, '08:52')
     await expect(page.locator(`${LIST} li.fl-wait`)).toHaveCount(0)
-    expect((await domLines(page)).length).toBeGreaterThanOrEqual(4)
+    // x8 — derived, not the bare `>= 4` this used to carry. That number was
+    // read off the fixture when a symptom line was among the four; dropping the
+    // symptom channel made it three, and a hand-lowered constant would have
+    // hidden the next such change instead of catching it. What the test means
+    // is that everything the driver has RELEASED and the client DRAWS is
+    // already on the paper — so it asks exactly that.
+    const drawn = await drawnStreamLines(page)
+    expect(drawn.length, 'nothing had been released by 08:52 — the assert is vacuous').toBeGreaterThan(0)
+    expect(streamRendered(await domLines(page)).length).toBe(drawn.length)
   })
 })
 
@@ -441,7 +482,7 @@ test.describe('lines land on the clock', () => {
   test('lines land on the clock — seeking to 21:04 lands every line exactly once', async ({ page }) => {
     await setRate(page, 0)
     await seek(page, '21:04')
-    const stream = await streamLines(page)
+    const stream = await drawnStreamLines(page)
     const lines = await domLines(page)
 
     expect(streamRendered(lines).length).toBe(stream.length)

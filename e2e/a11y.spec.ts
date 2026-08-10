@@ -36,8 +36,16 @@ const MEMBRANE_OPS = ['slot', 'unslot', 'mine', 'deploy', 'new_run'] as const
 /** Any control that claims to perform a membrane op, however it is marked up. */
 const MEMBRANE_SELECTOR = MEMBRANE_OPS.map((op) => `[data-op="${op}"]`).join(', ')
 
-/** NPC channels (spec §3 inv 2). The clock stamp `.fl-t` is chrome, excluded. */
-const NPC_TEXT_SELECTOR = '.fl-npc .fl-c, .fl-symptom .fl-c'
+/**
+ * The NPC channel (spec §3 inv 2). The clock stamp `.fl-t` is chrome, excluded.
+ *
+ * x8 — ONE channel, not two. `.fl-symptom .fl-c` was the second, and the
+ * symptom line no longer reaches the DOM at all (민서, 08-10), so leaving it
+ * here would have quietly turned half the scope into a selector that matches
+ * nothing — the exact silent-emptying this assert's scoping rule exists to
+ * prevent. Kept in step with `tests/invariants/no-digit-npc.test.ts`.
+ */
+const NPC_TEXT_SELECTOR = '.fl-npc .fl-c'
 /** Digit-bearing surfaces that are score or chrome, never NPC state. */
 /* x4 — the ledger's table became record lines; the exclusion follows the
    selectors that actually carry score digits. Kept in step with

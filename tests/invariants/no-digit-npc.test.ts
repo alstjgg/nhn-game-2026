@@ -4,10 +4,11 @@
 // numbers are score, not state."
 //
 // SCOPE (P1-D scoping rule, [u9#c6]): **unit-scoped by selector**. The assert
-// is bound to the two NPC channels — the feed's `npc` and `symptom` lines —
-// and everything else is excluded *by name*, never by luck:
+// is bound to the feed's `npc` line — the one NPC channel that still reaches
+// the DOM, x8 having stopped `symptom` from doing so (see `NPC_LINE_SELECTORS`)
+// — and everything else is excluded *by name*, never by luck:
 //
-//   scoped   `.fl-npc .fl-c` · `.fl-symptom .fl-c`   ← NPC state, text only
+//   scoped   `.fl-npc .fl-c`                         ← NPC state, text only
 //   excluded `.fl-t` (the per-line clock stamp)      ← chrome, not NPC state
 //            `.clk-*` · `.tb-clock` · `.dd-*`        ← topbar clock / D-DAY
 //            `.tly-*` · `.ledger` · `.th-*` · `.tr-*` ← tally = score
@@ -37,8 +38,23 @@ import {
 } from './invariant-utils.ts'
 import type { Hit } from './invariant-utils.ts'
 
-/** The NPC channels this assert is scoped to — spec §3 inv 2's subject. */
-const NPC_LINE_SELECTORS = ['.fl-npc', '.fl-symptom'] as const
+/**
+ * The NPC channel this assert is scoped to — spec §3 inv 2's subject.
+ *
+ * x8 — ONE selector, not two. `.fl-symptom` was the other, and the symptom line
+ * no longer reaches the DOM (민서, 08-10): `run-feed.ts` drops the kind before
+ * `append`, and `win-live-feed.css` no longer carries a skin for it. Leaving it
+ * listed would have made half this scope select nothing.
+ *
+ * Worth recording how it would have gone unnoticed: (a) below scans the RAW
+ * stylesheet text, so the removal note in `win-live-feed.css`'s own header —
+ * which of course names `.fl-symptom` — answered the existence check for it.
+ * The rot the assert is built to catch would have been papered over by the
+ * comment explaining the rot. The kind itself is untouched: it is still on the
+ * frozen seam and still reaches Call 2, which is what `NPC_FEED_KINDS` and (d)
+ * go on holding.
+ */
+const NPC_LINE_SELECTORS = ['.fl-npc'] as const
 /** The text-carrying node inside an NPC line (the clock stamp is a sibling). */
 const NPC_TEXT_SELECTOR = '.fl-c'
 /**
@@ -212,14 +228,14 @@ describe('[u9#c2] the digit scanner has teeth', () => {
   })
 
   it('(c) a CSS pseudo-element counter under an NPC selector is caught', () => {
-    const sample = '.fl-symptom .fl-c::before{content:"3"}'
+    const sample = '.fl-npc .fl-c::before{content:"3"}'
     const scoped = rulesMentioning(sample, NPC_LINE_SELECTORS)
     expect(scoped).toHaveLength(1)
     expect(contentValues(scoped).some((c) => DIGIT_RE.test(c.value))).toBe(true)
   })
 
   it('(d) a CSS escape sequence in `content` is not mistaken for a rendered digit', () => {
-    const sample = '.fl-symptom .fl-c::before{content:"\\2014"}'
+    const sample = '.fl-npc .fl-c::before{content:"\\2014"}'
     const scoped = rulesMentioning(sample, NPC_LINE_SELECTORS)
     const digits = contentValues(scoped).filter((c) =>
       DIGIT_RE.test(c.value.replace(/\\[0-9a-fA-F]{1,6}\s?/g, '')),
