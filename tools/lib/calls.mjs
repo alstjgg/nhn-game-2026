@@ -236,6 +236,12 @@ const narration = {
 
   buildTool(suite) {
     if (npcIds(suite).length < 1) throw new Error('narration: slots.PRESENT_NPCS needs >= 1 npc');
+    // A QUIET beat — nothing authored happened in this minute on this run.
+    // `proxy/src/calls.ts` carries the account and the measurement; mirrored
+    // here because `prompt-parity.test.ts` compares the built tool as well as
+    // the two messages, and a schema that drifts makes the mechanism numbers
+    // stop describing the deployed system silently.
+    const quiet = !String(suite.slots?.FIXED_NPC_ACTION ?? '').trim();
     return {
       name: 'narration',
       description: '이 비트의 반응을 기록한다. 정확히 한 번만 호출한다.',
@@ -245,8 +251,9 @@ const narration = {
           timeline_entries: {
             type: 'array',
             items: { type: 'string' },
-            description:
-              '고정 사건에 뒤따르는 반응과 장면의 결. 2~3개. 한 항목은 한 문장이다 — 마침표는 항목의 맨 끝에 하나뿐이고, 항목 안에서 두 문장을 잇지 않는다. 이미 타임라인에 있는 것(고정 사건·요원 발화)은 다시 쓰지 않는다. 현장에서 남기는 짧은 기록이다 — 해라체로 끝맺는다.',
+            description: quiet
+              ? '이번 비트에는 기록된 사건이 없다. 앞 비트를 이어 붙여 채우지 않는다 — 쓸 것이 없으면 빈 배열이 정답이다. 그래도 쓸 것이 있다면(장면의 변화가 무언가를 말하고 있다면) 한 항목은 한 문장이고, 현장에서 남기는 짧은 기록이라 해라체로 끝맺는다.'
+              : '고정 사건에 뒤따르는 반응과 장면의 결. 2~3개. 한 항목은 한 문장이다 — 마침표는 항목의 맨 끝에 하나뿐이고, 항목 안에서 두 문장을 잇지 않는다. 이미 타임라인에 있는 것(고정 사건·요원 발화)은 다시 쓰지 않는다. 현장에서 남기는 짧은 기록이다 — 해라체로 끝맺는다.',
           },
           // `maxItems: 1` is the ONE mechanical half of the misattribution fix
           // (handoff §3.3). The rest is prompt wording, deliberately: the player
@@ -272,8 +279,13 @@ const narration = {
     const problems = [];
     if (!input || typeof input !== 'object') return ['response was not an object'];
 
+    // A quiet beat may legally come back with nothing — the same predicate the
+    // schema above is built from. Kept in step with `proxy/src/calls.ts`: a
+    // validator that refuses what its own schema permits turns an obedient
+    // model into a retry, and the retry count is what this file is measured on.
+    const quiet = !String(suite.slots?.FIXED_NPC_ACTION ?? '').trim();
     if (!Array.isArray(input.timeline_entries)) problems.push('timeline_entries not an array');
-    else if (!input.timeline_entries.length) problems.push('timeline_entries empty');
+    else if (!input.timeline_entries.length && !quiet) problems.push('timeline_entries empty');
     else if (input.timeline_entries.some((e) => !String(e ?? '').trim()))
       problems.push('timeline_entries has an empty entry');
 
